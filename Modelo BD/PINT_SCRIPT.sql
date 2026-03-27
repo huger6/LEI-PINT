@@ -1,1826 +1,1655 @@
 /*==============================================================*/
-/* DBMS name:      PostgreSQL 18                               */
-/* Created on:     24/03/2026 23:18:08                          */
-/*==============================================================*/
-drop index if exists ADMINISTRATORS_PK cascade;
-drop table if exists ADMINISTRATORS cascade;
-drop index if exists ANNOUNC_SL_PK cascade;
-drop table if exists ANNOUNC_SL cascade;
-drop index if exists USERS_VALIDATIONS_FK cascade;
-drop index if exists APPLICATIONS_VALIDATIONS_FK cascade;
-drop index if exists APPLICATION_VALIDATION_LOGS_PK cascade;
-drop table if exists APPLICATION_VALIDATION_LOGS cascade;
-drop index if exists AREA_UPDATEDBY_FK cascade;
-drop index if exists AREA_CREATEDBY_FK cascade;
-drop index if exists SL_AREAS_FK cascade;
-drop index if exists AREAS_PK cascade;
-drop table if exists AREAS cascade;
-drop index if exists VALIDATIONS_AWARDED_FK cascade;
-drop index if exists AWARDED_APPLICATIONS2_FK cascade;
-drop index if exists CONS_AWARDED_FK cascade;
-drop index if exists AWARDED_BADGES_PK cascade;
-drop table if exists AWARDED_BADGES cascade;
-drop index if exists BADGES_UPDATEDBY_FK cascade;
-drop index if exists BADGES_CREATEDBY_FK cascade;
-drop index if exists GOALS2_FK cascade;
-drop index if exists BADGES_INTERACTIONS2_FK cascade;
-drop index if exists AREA_BADGES_FK cascade;
-drop index if exists STAGES_BADGES2_FK cascade;
-drop index if exists BADGES_PK cascade;
-drop table if exists BADGES cascade;
-drop index if exists AWARDED_APPLICATIONS_FK cascade;
-drop index if exists APPLICATIONS_CERTIFICATES_FK cascade;
-drop index if exists TIMELINES_APPLICATIONS2_FK cascade;
-drop index if exists CONS_APLLICATIONS_FK cascade;
-drop index if exists BADGES_APPLICATIONS_FK cascade;
-drop index if exists BADGE_APPLICATIONS_PK cascade;
-drop table if exists BADGE_APPLICATIONS cascade;
-drop index if exists BADGES_REQUIREMENTS_FK cascade;
-drop index if exists STAGES_REQUIREMENTS_FK cascade;
-drop index if exists BADGE_REQUIREMENTS_PK cascade;
-drop table if exists BADGE_REQUIREMENTS cascade;
-drop index if exists APPLICATIONS_CERTIFICATES2_FK cascade;
-drop index if exists CERTIFICATES_PK cascade;
-drop table if exists CERTIFICATES cascade;
-drop index if exists CONSULTANTS_PK cascade;
-drop table if exists CONSULTANTS cascade;
-drop index if exists CONSULTANTS_SELECTED_SKILLS_PK cascade;
-drop table if exists CONSULTANTS_SELECTED_SKILLS cascade;
-drop index if exists CONSULTANT_AREAS_PK cascade;
-drop table if exists CONSULTANT_AREAS cascade;
-drop index if exists GDPR_CREATEDBY_FK cascade;
-drop index if exists GDPR_UPDATEDBY_FK cascade;
-drop index if exists GDPR_POLICIES_PK cascade;
-drop table if exists GDPR_POLICIES cascade;
-drop index if exists GOALS_FK cascade;
-drop index if exists TIMELINES_APPLICATIONS_FK cascade;
-drop index if exists CONS_TIMELINES_FK cascade;
-drop index if exists GOALS_PK cascade;
-drop table if exists GOALS cascade;
-drop index if exists LP_UPDATEDBY_FK cascade;
-drop index if exists ADMIN_LP_FK cascade;
-drop index if exists LEARNING_PATHS_PK cascade;
-drop table if exists LEARNING_PATHS cascade;
-drop index if exists LOCATIONS_PK cascade;
-drop table if exists LOCATIONS cascade;
-drop index if exists NOTIF_DEF_FK cascade;
-drop index if exists USER_NOTIFICATIONS_FK cascade;
-drop index if exists NOTIFICATIONS_PK cascade;
-drop table if exists NOTIFICATIONS cascade;
-drop index if exists NOT_DEF_PREF_FK cascade;
-drop index if exists ADMIN_DEF_FK cascade;
-drop index if exists NOTIFICATION_DEFINITIONS_PK cascade;
-drop table if exists NOTIFICATION_DEFINITIONS cascade;
-drop index if exists NOT_PREFERENCES_UPDATEDBY_FK cascade;
-drop index if exists NOT_PREFERENCES_CREATEDBY_FK cascade;
-drop index if exists NOT_DEF_PREF2_FK cascade;
-drop index if exists ANNOUNC_NOTIF2_FK cascade;
-drop index if exists NOTIF_SLAS_FK cascade;
-drop index if exists NOTIFICATE_TO_PK cascade;
-drop table if exists NOTIFICATION_PREFERENCES cascade;
-drop index if exists REQUIREMENTS_POINTS_FK cascade;
-drop index if exists BADGES_POINTS_FK cascade;
-drop index if exists CONS_POINTS_FK cascade;
-drop index if exists POINTS_HISTORY_PK cascade;
-drop table if exists POINTS_HISTORY cascade;
-drop index if exists PREFERRED_LANG_PK cascade;
-drop table if exists PREFERRED_LANG cascade;
-drop index if exists STAGES_UPDATEDBY_FK cascade;
-drop index if exists STAGES_CREATEDBY_FK cascade;
-drop index if exists STAGE_STAGECODES_FK cascade;
-drop index if exists STAGES_BADGES_FK cascade;
-drop index if exists AREAS_STAGES_FK cascade;
-drop index if exists PROGRESSION_STAGES_PK cascade;
-drop table if exists PROGRESSION_STAGES cascade;
-drop index if exists APPLICATIONS_EVIDENCES_FK cascade;
-drop index if exists REQUIREMENTS_EVIDENCES_FK cascade;
-drop index if exists REQUIREMENTS_EVIDENCES_PK cascade;
-drop table if exists REQUIREMENTS_EVIDENCES cascade;
-drop index if exists BADGE_REWARDS_FK cascade;
-drop index if exists REWARDS_PK cascade;
-drop table if exists REWARDS cascade;
-drop index if exists SL_UPDATEDBY_FK cascade;
-drop index if exists ADMIN_SL_FK cascade;
-drop index if exists SL_LP_FK cascade;
-drop index if exists SERVICES_LINES_PK cascade;
-drop table if exists SERVICES_LINES cascade;
-drop index if exists SL_SLL_FK cascade;
-drop index if exists SERVICE_LINE_LEADERS_PK cascade;
-drop table if exists SERVICE_LINE_LEADERS cascade;
-drop index if exists SKILLS_UPDATEDBY_FK cascade;
-drop index if exists SKILLS_CREATEDBY_FK cascade;
-drop index if exists BADGES_SKILLS_FK cascade;
-drop index if exists SKILLS_PK cascade;
-drop table if exists SKILLS cascade;
-drop index if exists SLAS_UPDATEDBY_FK cascade;
-drop index if exists NOT_DEF_SLAS_FK cascade;
-drop index if exists NOTIF_SLAS2_FK cascade;
-drop index if exists USER_SLAS_FK cascade;
-drop index if exists ADMIN_SLA_FK cascade;
-drop index if exists SLA_DEFINITIONS_PK cascade;
-drop table if exists SLAS cascade;
-drop index if exists SL_SLAS_PK cascade;
-drop table if exists SL_SLAS cascade;
-drop index if exists STAGE_CODE_UPDATEDBY_FK cascade;
-drop index if exists STAGE_CODE_CREATEDBY_FK cascade;
-drop index if exists STAGE_CODES_PK cascade;
-drop table if exists STAGE_CODES cascade;
-drop index if exists ANNOUNCEMENTS_UPDATEDBY_FK cascade;
-drop index if exists ANNOUNC_NOTIF_FK cascade;
-drop index if exists ANNOUNCEMENTS_ADMIN_FK cascade;
-drop index if exists USER_ANNOUNCEMENTS_FK cascade;
-drop index if exists SYSTEM_ANNOUNCEMENTS_PK cascade;
-drop table if exists SYSTEM_ANNOUNCEMENTS cascade;
-drop index if exists TALENT_MANAGERS_PK cascade;
-drop table if exists TALENT_MANAGERS cascade;
-drop index if exists LOCATION_USER_FK cascade;
-drop index if exists USER_INTERACTIONS2_FK cascade;
-drop index if exists LANG_USER_FK cascade;
-drop index if exists USERS_PK cascade;
-drop table if exists USERS cascade;
-drop index if exists BADGES_INTERACTIONS_FK cascade;
-drop index if exists USER_INTERACTIONS_FK cascade;
-drop index if exists USER_BADGES_INTERACTIONS_PK cascade;
-drop table if exists USER_BADGES_INTERACTIONS cascade;
+/* dbms name:      PostgreSQL 18                               */
+/* Created ON:     24/03/2026 23:18:08                          */
+/*==============================================================*/
+
+DROP INDEX IF EXISTS ADMINISTRATORS_PK CASCADE;
+DROP TABLE IF EXISTS administrators CASCADE;
+DROP INDEX IF EXISTS ANNOUNC_SL_PK CASCADE;
+DROP TABLE IF EXISTS announc_sl CASCADE;
+DROP INDEX IF EXISTS USERS_VALIDATIONS_FK CASCADE;
+DROP INDEX IF EXISTS APPLICATIONS_VALIDATIONS_FK CASCADE;
+DROP INDEX IF EXISTS APPLICATION_VALIDATION_LOGS_PK CASCADE;
+DROP TABLE IF EXISTS application_validation_logs CASCADE;
+DROP INDEX IF EXISTS AREA_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS AREA_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS SL_AREAS_FK CASCADE;
+DROP INDEX IF EXISTS AREAS_PK CASCADE;
+DROP TABLE IF EXISTS areas CASCADE;
+DROP INDEX IF EXISTS VALIDATIONS_AWARDED_FK CASCADE;
+DROP INDEX IF EXISTS AWARDED_APPLICATIONS2_FK CASCADE;
+DROP INDEX IF EXISTS CONS_AWARDED_FK CASCADE;
+DROP INDEX IF EXISTS AWARDED_BADGES_PK CASCADE;
+DROP TABLE IF EXISTS awarded_badges CASCADE;
+DROP INDEX IF EXISTS BADGES_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS GOALS2_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_INTERACTIONS2_FK CASCADE;
+DROP INDEX IF EXISTS AREA_BADGES_FK CASCADE;
+DROP INDEX IF EXISTS STAGES_BADGES2_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_PK CASCADE;
+DROP TABLE IF EXISTS badges CASCADE;
+DROP INDEX IF EXISTS AWARDED_APPLICATIONS_FK CASCADE;
+DROP INDEX IF EXISTS APPLICATIONS_CERTIFICATES_FK CASCADE;
+DROP INDEX IF EXISTS TIMELINES_APPLICATIONS2_FK CASCADE;
+DROP INDEX IF EXISTS CONS_APLLICATIONS_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_APPLICATIONS_FK CASCADE;
+DROP INDEX IF EXISTS BADGE_APPLICATIONS_PK CASCADE;
+DROP TABLE IF EXISTS badge_applications CASCADE;
+DROP INDEX IF EXISTS BADGES_REQUIREMENTS_FK CASCADE;
+DROP INDEX IF EXISTS STAGES_REQUIREMENTS_FK CASCADE;
+DROP INDEX IF EXISTS BADGE_REQUIREMENTS_PK CASCADE;
+DROP TABLE IF EXISTS badge_requirements CASCADE;
+DROP INDEX IF EXISTS APPLICATIONS_CERTIFICATES2_FK CASCADE;
+DROP INDEX IF EXISTS CERTIFICATES_PK CASCADE;
+DROP TABLE IF EXISTS certificates CASCADE;
+DROP INDEX IF EXISTS CONSULTANTS_PK CASCADE;
+DROP TABLE IF EXISTS consultants CASCADE;
+DROP INDEX IF EXISTS CONSULTANTS_SELECTED_SKILLS_PK CASCADE;
+DROP TABLE IF EXISTS consultants_selected_skills CASCADE;
+DROP INDEX IF EXISTS CONSULTANT_AREAS_PK CASCADE;
+DROP TABLE IF EXISTS consultant_areas CASCADE;
+DROP INDEX IF EXISTS GDPR_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS GDPR_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS GDPR_POLICIES_PK CASCADE;
+DROP TABLE IF EXISTS gdpr_policies CASCADE;
+DROP INDEX IF EXISTS GOALS_FK CASCADE;
+DROP INDEX IF EXISTS TIMELINES_APPLICATIONS_FK CASCADE;
+DROP INDEX IF EXISTS CONS_TIMELINES_FK CASCADE;
+DROP INDEX IF EXISTS GOALS_PK CASCADE;
+DROP TABLE IF EXISTS goals CASCADE;
+DROP INDEX IF EXISTS LP_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS ADMIN_LP_FK CASCADE;
+DROP INDEX IF EXISTS LEARNING_PATHS_PK CASCADE;
+DROP TABLE IF EXISTS learning_paths CASCADE;
+DROP INDEX IF EXISTS LOCATIONS_PK CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
+DROP INDEX IF EXISTS NOTIF_DEF_FK CASCADE;
+DROP INDEX IF EXISTS USER_NOTIFICATIONS_FK CASCADE;
+DROP INDEX IF EXISTS NOTIFICATIONS_PK CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP INDEX IF EXISTS NOT_DEF_PREF_FK CASCADE;
+DROP INDEX IF EXISTS ADMIN_DEF_FK CASCADE;
+DROP INDEX IF EXISTS NOTIFICATION_DEFINITIONS_PK CASCADE;
+DROP TABLE IF EXISTS notification_definitions CASCADE;
+DROP INDEX IF EXISTS NOT_PREFERENCES_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS NOT_PREFERENCES_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS NOT_DEF_PREF2_FK CASCADE;
+DROP INDEX IF EXISTS ANNOUNC_NOTIF2_FK CASCADE;
+DROP INDEX IF EXISTS NOTIF_SLAS_FK CASCADE;
+DROP INDEX IF EXISTS NOTIFICATE_TO_PK CASCADE;
+DROP TABLE IF EXISTS notification_preferences CASCADE;
+DROP INDEX IF EXISTS REQUIREMENTS_POINTS_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_POINTS_FK CASCADE;
+DROP INDEX IF EXISTS CONS_POINTS_FK CASCADE;
+DROP INDEX IF EXISTS POINTS_HISTORY_PK CASCADE;
+DROP TABLE IF EXISTS points_history CASCADE;
+DROP INDEX IF EXISTS PREFERRED_LANG_PK CASCADE;
+DROP TABLE IF EXISTS preferred_lang CASCADE;
+DROP INDEX IF EXISTS STAGES_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS STAGES_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS STAGE_STAGECODES_FK CASCADE;
+DROP INDEX IF EXISTS STAGES_BADGES_FK CASCADE;
+DROP INDEX IF EXISTS AREAS_STAGES_FK CASCADE;
+DROP INDEX IF EXISTS PROGRESSION_STAGES_PK CASCADE;
+DROP TABLE IF EXISTS progression_stages CASCADE;
+DROP INDEX IF EXISTS APPLICATIONS_EVIDENCES_FK CASCADE;
+DROP INDEX IF EXISTS REQUIREMENTS_EVIDENCES_FK CASCADE;
+DROP INDEX IF EXISTS REQUIREMENTS_EVIDENCES_PK CASCADE;
+DROP TABLE IF EXISTS requirements_evidences CASCADE;
+DROP INDEX IF EXISTS BADGE_REWARDS_FK CASCADE;
+DROP INDEX IF EXISTS REWARDS_PK CASCADE;
+DROP TABLE IF EXISTS rewards CASCADE;
+DROP INDEX IF EXISTS SL_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS ADMIN_SL_FK CASCADE;
+DROP INDEX IF EXISTS SL_LP_FK CASCADE;
+DROP INDEX IF EXISTS SERVICES_LINES_PK CASCADE;
+DROP TABLE IF EXISTS services_lines CASCADE;
+DROP INDEX IF EXISTS SL_SLL_FK CASCADE;
+DROP INDEX IF EXISTS SERVICE_LINE_LEADERS_PK CASCADE;
+DROP TABLE IF EXISTS service_line_leaders CASCADE;
+DROP INDEX IF EXISTS SKILLS_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS SKILLS_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS BADGES_SKILLS_FK CASCADE;
+DROP INDEX IF EXISTS SKILLS_PK CASCADE;
+DROP TABLE IF EXISTS skills CASCADE;
+DROP INDEX IF EXISTS SLAS_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS NOT_DEF_SLAS_FK CASCADE;
+DROP INDEX IF EXISTS NOTIF_SLAS2_FK CASCADE;
+DROP INDEX IF EXISTS USER_SLAS_FK CASCADE;
+DROP INDEX IF EXISTS ADMIN_SLA_FK CASCADE;
+DROP INDEX IF EXISTS SLA_DEFINITIONS_PK CASCADE;
+DROP TABLE IF EXISTS slas CASCADE;
+DROP INDEX IF EXISTS SL_SLAS_PK CASCADE;
+DROP TABLE IF EXISTS sl_slas CASCADE;
+DROP INDEX IF EXISTS STAGE_CODE_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS STAGE_CODE_CREATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS STAGE_CODES_PK CASCADE;
+DROP TABLE IF EXISTS stage_codes CASCADE;
+DROP INDEX IF EXISTS ANNOUNCEMENTS_UPDATEDBY_FK CASCADE;
+DROP INDEX IF EXISTS ANNOUNC_NOTIF_FK CASCADE;
+DROP INDEX IF EXISTS ANNOUNCEMENTS_ADMIN_FK CASCADE;
+DROP INDEX IF EXISTS USER_ANNOUNCEMENTS_FK CASCADE;
+DROP INDEX IF EXISTS SYSTEM_ANNOUNCEMENTS_PK CASCADE;
+DROP TABLE IF EXISTS system_announcements CASCADE;
+DROP INDEX IF EXISTS TALENT_MANAGERS_PK CASCADE;
+DROP TABLE IF EXISTS talent_managers CASCADE;
+DROP INDEX IF EXISTS LOCATION_USER_FK CASCADE;
+DROP INDEX IF EXISTS USER_INTERACTIONS2_FK CASCADE;
+DROP INDEX IF EXISTS LANG_USER_FK CASCADE;
+DROP INDEX IF EXISTS USERS_PK CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP INDEX IF EXISTS BADGES_INTERACTIONS_FK CASCADE;
+DROP INDEX IF EXISTS USER_INTERACTIONS_FK CASCADE;
+DROP INDEX IF EXISTS USER_BADGES_INTERACTIONS_PK CASCADE;
+DROP TABLE IF EXISTS user_badges_interactions CASCADE;
 
 /*==============================================================*/
-/* Table: ADMINISTRATORS                                        */
+/* TABLE: areas                                                 */
 /*==============================================================*/
-create table if not exists ADMINISTRATORS (
-   USER_ID              INTEGER                 not null,
-   PREFERRED_LANG_ID    INTEGER                 null,
-   LOCATION_ID          INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   IS_SUPER_ADMIN       BOOLEAN                 null,
-   constraint PK_ADMINISTRATORS primary key (USER_ID)
+CREATE TABLE IF NOT EXISTS areas (
+   area_id              INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   service_line_id      INTEGER                 NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   area_name            VARCHAR(100)         NOT NULL,
+   area_code            VARCHAR(20)          NULL,
+   area_description     TEXT                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   img_url              VARCHAR(512)         NULL,
+   area_slug            VARCHAR(512)         NOT NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   CONSTRAINT pk_areas PRIMARY KEY (area_id),
+   CONSTRAINT ak_identifier_slug_areas UNIQUE (area_slug)
 );
 
 /*==============================================================*/
-/* Index: ADMINISTRATORS_PK                                     */
+/* INDEX: AREAS_PK                                              */
 /*==============================================================*/
-create unique index if not exists ADMINISTRATORS_PK on ADMINISTRATORS (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS AREAS_PK ON areas (area_id);
 
 /*==============================================================*/
-/* Table: ANNOUNC_SL                                            */
+/* INDEX: SL_AREAS_FK                                           */
 /*==============================================================*/
-create table if not exists ANNOUNC_SL (
-   ANNOUNCEMENT_ID      INTEGER                 not null,
-   SERVICE_LINE_ID      INTEGER                 not null,
-   constraint PK_ANNOUNC_SL primary key (ANNOUNCEMENT_ID, SERVICE_LINE_ID)
-);
+CREATE INDEX IF NOT EXISTS SL_AREAS_FK ON areas (service_line_id);
 
 /*==============================================================*/
-/* Index: ANNOUNC_SL_PK                                         */
+/* INDEX: AREA_CREATEDBY_FK                                     */
 /*==============================================================*/
-create unique index if not exists ANNOUNC_SL_PK on ANNOUNC_SL (
-ANNOUNCEMENT_ID,
-SERVICE_LINE_ID
-);
+CREATE INDEX IF NOT EXISTS AREA_CREATEDBY_FK ON areas (user_id);
 
 /*==============================================================*/
-/* Table: APPLICATION_VALIDATION_LOGS                           */
+/* INDEX: AREA_UPDATEDBY_FK                                     */
 /*==============================================================*/
-create table if not exists APPLICATION_VALIDATION_LOGS (
-   VALIDATION_LOG_ID    INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   USER_ID              INTEGER                 null,
-   APPLICATION_ID       INTEGER                 not null,
-   VALIDATOR_FUNCTION   VARCHAR(50)          not null,
-   VALIDATOR_ACTION     VARCHAR(50)          not null,
-   VALIDATIONS_COMMENTS TEXT                 null,
-   VALIDATED_AT         TIMESTAMPTZ          not null default now(),
-   constraint PK_APPLICATION_VALIDATION_LOGS primary key (VALIDATION_LOG_ID)
-);
+CREATE INDEX IF NOT EXISTS AREA_UPDATEDBY_FK ON areas (adm_user_id);
 
 /*==============================================================*/
-/* Index: APPLICATION_VALIDATION_LOGS_PK                        */
+/* TABLE: learning_paths                                        */
 /*==============================================================*/
-create unique index if not exists APPLICATION_VALIDATION_LOGS_PK on APPLICATION_VALIDATION_LOGS (
-VALIDATION_LOG_ID
+CREATE TABLE IF NOT EXISTS learning_paths (
+   learning_path_id     INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   path_title           VARCHAR(150)         NOT NULL,
+   path_slug            VARCHAR(100)         NOT NULL,
+   path_description     TEXT                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   img_url              VARCHAR(512)         NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   CONSTRAINT pk_learning_paths PRIMARY KEY (learning_path_id),
+   CONSTRAINT ak_identifier_slug_learning UNIQUE (path_slug)
 );
 
 /*==============================================================*/
-/* Index: APPLICATIONS_VALIDATIONS_FK                           */
+/* INDEX: LEARNING_PATHS_PK                                     */
 /*==============================================================*/
-create index if not exists APPLICATIONS_VALIDATIONS_FK on APPLICATION_VALIDATION_LOGS (
-APPLICATION_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS LEARNING_PATHS_PK ON learning_paths (learning_path_id);
 
 /*==============================================================*/
-/* Index: USERS_VALIDATIONS_FK                                  */
+/* INDEX: ADMIN_LP_FK                                           */
 /*==============================================================*/
-create index if not exists USERS_VALIDATIONS_FK on APPLICATION_VALIDATION_LOGS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS ADMIN_LP_FK ON learning_paths (user_id);
 
 /*==============================================================*/
-/* Table: AREAS                                                 */
+/* INDEX: LP_UPDATEDBY_FK                                       */
 /*==============================================================*/
-create table if not exists AREAS (
-   AREA_ID              INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   SERVICE_LINE_ID      INTEGER                 not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   AREA_NAME            VARCHAR(100)         not null,
-   AREA_CODE            VARCHAR(20)          null,
-   AREA_DESCRIPTION     TEXT                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   IMG_URL              VARCHAR(512)         null,
-   AREA_SLUG            VARCHAR(512)         not null,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   constraint PK_AREAS primary key (AREA_ID),
-   constraint AK_IDENTIFIER_SLUG_AREAS unique (AREA_SLUG)
-);
+CREATE INDEX IF NOT EXISTS LP_UPDATEDBY_FK ON learning_paths (adm_user_id);
 
 /*==============================================================*/
-/* Index: AREAS_PK                                              */
+/* TABLE: services_lines                                        */
 /*==============================================================*/
-create unique index if not exists AREAS_PK on AREAS (
-AREA_ID
+CREATE TABLE IF NOT EXISTS services_lines (
+   service_line_id      INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   learning_path_id     INTEGER                 NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   service_line_name    VARCHAR(100)         NOT NULL,
+   service_line_description TEXT                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   img_url              VARCHAR(512)         NULL,
+   sl_slug              VARCHAR(512)         NOT NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   CONSTRAINT pk_services_lines PRIMARY KEY (service_line_id),
+   CONSTRAINT ak_identifier_slug_services_lines UNIQUE (sl_slug)
 );
 
 /*==============================================================*/
-/* Index: SL_AREAS_FK                                           */
+/* INDEX: SERVICES_LINES_PK                                     */
 /*==============================================================*/
-create index if not exists SL_AREAS_FK on AREAS (
-SERVICE_LINE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SERVICES_LINES_PK ON services_lines (service_line_id);
 
 /*==============================================================*/
-/* Index: AREA_CREATEDBY_FK                                     */
+/* INDEX: SL_LP_FK                                              */
 /*==============================================================*/
-create index if not exists AREA_CREATEDBY_FK on AREAS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS SL_LP_FK ON services_lines (learning_path_id);
 
 /*==============================================================*/
-/* Index: AREA_UPDATEDBY_FK                                     */
+/* INDEX: ADMIN_SL_FK                                           */
 /*==============================================================*/
-create index if not exists AREA_UPDATEDBY_FK on AREAS (
-ADM_USER_ID
-);
+CREATE INDEX IF NOT EXISTS ADMIN_SL_FK ON services_lines (user_id);
 
 /*==============================================================*/
-/* Table: AWARDED_BADGES                                        */
+/* INDEX: SL_UPDATEDBY_FK                                       */
 /*==============================================================*/
-create table if not exists AWARDED_BADGES (
-   AWARDED_BADGES_ID    INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   VALIDATION_LOG_ID    INTEGER                 null,
-   APPLICATION_ID       INTEGER                 not null,
-   USER_ID              INTEGER                 null,
-   AWARDED_AT           TIMESTAMPTZ          not null default now(),
-   IS_PUBLISHED         BOOLEAN                 not null default false,
-   PUBLIC_VERIFICATION_LINK VARCHAR(512)         null,
-   EXPIRATION_AT        TIMESTAMPTZ          null,
-   POINTS_SNAPSHOT      INTEGER                 null,
-   IS_FEATURED          BOOLEAN                 not null default false,
-   DISPLAY_ORDER        INTEGER                 null,
-   constraint PK_AWARDED_BADGES primary key (AWARDED_BADGES_ID)
-);
+CREATE INDEX IF NOT EXISTS SL_UPDATEDBY_FK ON services_lines (adm_user_id);
 
 /*==============================================================*/
-/* Index: AWARDED_BADGES_PK                                     */
+/* TABLE: stage_codes                                           */
 /*==============================================================*/
-create unique index if not exists AWARDED_BADGES_PK on AWARDED_BADGES (
-AWARDED_BADGES_ID
+CREATE TABLE IF NOT EXISTS stage_codes (
+   stage_code_id        INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   stage_code           VARCHAR(20)          NOT NULL,
+   CONSTRAINT pk_stage_codes PRIMARY KEY (stage_code_id),
+   CONSTRAINT ak_identifier_code_stage_co UNIQUE (stage_code)
 );
 
 /*==============================================================*/
-/* Index: CONS_AWARDED_FK                                       */
+/* INDEX: STAGE_CODES_PK                                        */
 /*==============================================================*/
-create index if not exists CONS_AWARDED_FK on AWARDED_BADGES (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS STAGE_CODES_PK ON stage_codes (stage_code_id);
 
 /*==============================================================*/
-/* Index: AWARDED_APPLICATIONS2_FK                              */
+/* INDEX: STAGE_CODE_CREATEDBY_FK                               */
 /*==============================================================*/
-create index if not exists AWARDED_APPLICATIONS2_FK on AWARDED_BADGES (
-APPLICATION_ID
-);
+CREATE INDEX IF NOT EXISTS STAGE_CODE_CREATEDBY_FK ON stage_codes (user_id);
 
 /*==============================================================*/
-/* Index: VALIDATIONS_AWARDED_FK                                */
+/* INDEX: STAGE_CODE_UPDATEDBY_FK                               */
 /*==============================================================*/
-create index if not exists VALIDATIONS_AWARDED_FK on AWARDED_BADGES (
-VALIDATION_LOG_ID
-);
+CREATE INDEX IF NOT EXISTS STAGE_CODE_UPDATEDBY_FK ON stage_codes (adm_user_id);
 
 /*==============================================================*/
-/* Table: BADGES                                                */
+/* TABLE: progression_stages                                    */
 /*==============================================================*/
-create table if not exists BADGES (
-   BADGE_ID             INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   GOAL_ID              INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   PROGRESSION_STAGE_ID INTEGER                 not null,
-   AREA_ID              INTEGER                 not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   BADGE_TITLE          VARCHAR(100)         not null,
-   BADGE_DESCRIPTION    TEXT                 null,
-   BADGE_IMG_URL        VARCHAR(512)         null,
-   BADGE_SLUG           VARCHAR(100)         not null,
-   BADGE_POINTS         INTEGER                 not null,
-   EXPIRATION_DURATION_DAYS INTEGER                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   ESTIMATED_TIME_TO_ACQUIRE TIME                 null,
-   BADGE_TYPE           VARCHAR(128)         not null
-      constraint CKC_BADGE_TYPE_BADGES check (BADGE_TYPE IN ('Standard', 'Special')),
-   constraint PK_BADGES primary key (BADGE_ID),
-   constraint AK_IDENTIFIER_SLUG_BADGES unique (BADGE_SLUG)
+CREATE TABLE IF NOT EXISTS progression_stages (
+   progression_stage_id INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   area_id              INTEGER                 NOT NULL,
+   badge_id             INTEGER                 NULL,
+   stage_code_id        INTEGER                 NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   stage_title          VARCHAR(100)         NOT NULL,
+   stage_sequence       INTEGER                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   stage_description    TEXT                 NULL,
+   CONSTRAINT pk_progression_stages PRIMARY KEY (progression_stage_id)
 );
 
 /*==============================================================*/
-/* Index: BADGES_PK                                             */
+/* INDEX: PROGRESSION_STAGES_PK                                 */
 /*==============================================================*/
-create unique index if not exists BADGES_PK on BADGES (
-BADGE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS PROGRESSION_STAGES_PK ON progression_stages (progression_stage_id);
 
 /*==============================================================*/
-/* Index: STAGES_BADGES2_FK                                     */
+/* INDEX: AREAS_STAGES_FK                                       */
 /*==============================================================*/
-create index if not exists STAGES_BADGES2_FK on BADGES (
-PROGRESSION_STAGE_ID
-);
+CREATE INDEX IF NOT EXISTS AREAS_STAGES_FK ON progression_stages (area_id);
 
 /*==============================================================*/
-/* Index: AREA_BADGES_FK                                        */
+/* INDEX: STAGES_BADGES_FK                                      */
 /*==============================================================*/
-create index if not exists AREA_BADGES_FK on BADGES (
-AREA_ID
-);
+CREATE INDEX IF NOT EXISTS STAGES_BADGES_FK ON progression_stages (badge_id);
 
 /*==============================================================*/
-/* Index: BADGES_INTERACTIONS2_FK                               */
+/* INDEX: STAGE_STAGECODES_FK                                   */
 /*==============================================================*/
-create index if not exists BADGES_INTERACTIONS2_FK on BADGES (
-INTERACTION_ID
-);
+CREATE INDEX IF NOT EXISTS STAGE_STAGECODES_FK ON progression_stages (stage_code_id);
 
 /*==============================================================*/
-/* Index: GOALS2_FK                                             */
+/* INDEX: STAGES_CREATEDBY_FK                                   */
 /*==============================================================*/
-create index if not exists GOALS2_FK on BADGES (
-GOAL_ID
-);
+CREATE INDEX IF NOT EXISTS STAGES_CREATEDBY_FK ON progression_stages (user_id);
 
 /*==============================================================*/
-/* Index: BADGES_CREATEDBY_FK                                   */
+/* INDEX: STAGES_UPDATEDBY_FK                                   */
 /*==============================================================*/
-create index if not exists BADGES_CREATEDBY_FK on BADGES (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS STAGES_UPDATEDBY_FK ON progression_stages (adm_user_id);
 
 /*==============================================================*/
-/* Index: BADGES_UPDATEDBY_FK                                   */
+/* TABLE: awarded_badges                                        */
 /*==============================================================*/
-create index if not exists BADGES_UPDATEDBY_FK on BADGES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS awarded_badges (
+   awarded_badges_id    INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   validation_log_id    INTEGER                 NULL,
+   application_id       INTEGER                 NOT NULL,
+   user_id              INTEGER                 NULL,
+   awarded_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   is_published         BOOLEAN                 NOT NULL DEFAULT FALSE,
+   public_verification_link VARCHAR(512)         NULL,
+   expiration_at        TIMESTAMPTZ          NULL,
+   points_snapshot      INTEGER                 NULL,
+   is_featured          BOOLEAN                 NOT NULL DEFAULT FALSE,
+   display_order        INTEGER                 NULL,
+   CONSTRAINT pk_awarded_badges PRIMARY KEY (awarded_badges_id)
 );
 
 /*==============================================================*/
-/* Table: BADGE_APPLICATIONS                                    */
+/* INDEX: AWARDED_BADGES_PK                                     */
 /*==============================================================*/
-create table if not exists BADGE_APPLICATIONS (
-   APPLICATION_ID       INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   GOAL_ID              INTEGER                 null,
-   BADGE_ID             INTEGER                 not null,
-   CERTIFICATE_ID       INTEGER                 null,
-   AWARDED_BADGES_ID    INTEGER                 null,
-   USER_ID              INTEGER                 not null,
-   APPLICATION_STATE    VARCHAR(50)          not null default 'Open'
-      constraint CKC_APPLICATION_STATE_BADGE_AP check (APPLICATION_STATE IN ('Open', 'Submitted', 'In validation', 'Closed')),
-   SUBMITTED_AT         TIMESTAMPTZ          null,
-   CLOSED_AT            TIMESTAMPTZ          null,
-   REVIEWER_NOTES       TEXT                 null,
-   APPLICATION_GUID     UUID                 not null default gen_random_uuid(),
-   OPENED_AT            TIMESTAMPTZ          not null default now(),
-   constraint PK_BADGE_APPLICATIONS primary key (APPLICATION_ID),
-   constraint AK_APPLICATION_GUID_BADGE_APPLICATIONS unique (APPLICATION_GUID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS AWARDED_BADGES_PK ON awarded_badges (awarded_badges_id);
 
 /*==============================================================*/
-/* Index: BADGE_APPLICATIONS_PK                                 */
+/* INDEX: CONS_AWARDED_FK                                       */
 /*==============================================================*/
-create unique index if not exists BADGE_APPLICATIONS_PK on BADGE_APPLICATIONS (
-APPLICATION_ID
-);
+CREATE INDEX IF NOT EXISTS CONS_AWARDED_FK ON awarded_badges (user_id);
 
 /*==============================================================*/
-/* Index: BADGES_APPLICATIONS_FK                                */
+/* INDEX: AWARDED_APPLICATIONS2_FK                              */
 /*==============================================================*/
-create index if not exists BADGES_APPLICATIONS_FK on BADGE_APPLICATIONS (
-BADGE_ID
-);
+CREATE INDEX IF NOT EXISTS AWARDED_APPLICATIONS2_FK ON awarded_badges (application_id);
 
 /*==============================================================*/
-/* Index: CONS_APLLICATIONS_FK                                  */
+/* INDEX: VALIDATIONS_AWARDED_FK                                */
 /*==============================================================*/
-create index if not exists CONS_APLLICATIONS_FK on BADGE_APPLICATIONS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS VALIDATIONS_AWARDED_FK ON awarded_badges (validation_log_id);
 
 /*==============================================================*/
-/* Index: TIMELINES_APPLICATIONS2_FK                            */
+/* TABLE: badges                                                */
 /*==============================================================*/
-create index if not exists TIMELINES_APPLICATIONS2_FK on BADGE_APPLICATIONS (
-GOAL_ID
+CREATE TABLE IF NOT EXISTS badges (
+   badge_id             INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   goal_id              INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   progression_stage_id INTEGER                 NOT NULL,
+   area_id              INTEGER                 NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   badge_title          VARCHAR(100)         NOT NULL,
+   badge_description    TEXT                 NULL,
+   badge_img_url        VARCHAR(512)         NULL,
+   badge_slug           VARCHAR(100)         NOT NULL,
+   badge_points         INTEGER                 NOT NULL,
+   expiration_duration_days INTEGER                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   estimated_time_to_acquire TIME                 NULL,
+   badge_type           VARCHAR(128)         NOT NULL
+      CONSTRAINT ckc_badge_type_badges CHECK (badge_type IN ('Standard', 'Special')),
+   CONSTRAINT pk_badges PRIMARY KEY (badge_id),
+   CONSTRAINT ak_identifier_slug_badges UNIQUE (badge_slug)
 );
 
 /*==============================================================*/
-/* Index: APPLICATIONS_CERTIFICATES_FK                          */
+/* INDEX: BADGES_PK                                             */
 /*==============================================================*/
-create index if not exists APPLICATIONS_CERTIFICATES_FK on BADGE_APPLICATIONS (
-CERTIFICATE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS BADGES_PK ON badges (badge_id);
 
 /*==============================================================*/
-/* Index: AWARDED_APPLICATIONS_FK                               */
+/* INDEX: STAGES_BADGES2_FK                                     */
 /*==============================================================*/
-create index if not exists AWARDED_APPLICATIONS_FK on BADGE_APPLICATIONS (
-AWARDED_BADGES_ID
-);
+CREATE INDEX IF NOT EXISTS STAGES_BADGES2_FK ON badges (progression_stage_id);
 
 /*==============================================================*/
-/* Table: BADGE_REQUIREMENTS                                    */
+/* INDEX: AREA_BADGES_FK                                        */
 /*==============================================================*/
-create table if not exists BADGE_REQUIREMENTS (
-   REQUIREMENT_ID       INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   PROGRESSION_STAGE_ID INTEGER                 not null,
-   BADGE_ID             INTEGER                 not null,
-   REQUIREMENT_TITLE    VARCHAR(150)         not null,
-   REQUIREMENT_DESCRIPTION TEXT                 not null,
-   REQUIREMENT_IMG_URL  VARCHAR(512)         null,
-   REQUIREMENT_SEQUENCE INTEGER                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   constraint PK_BADGE_REQUIREMENTS primary key (REQUIREMENT_ID)
-);
+CREATE INDEX IF NOT EXISTS AREA_BADGES_FK ON badges (area_id);
 
 /*==============================================================*/
-/* Index: BADGE_REQUIREMENTS_PK                                 */
+/* INDEX: BADGES_INTERACTIONS2_FK                               */
 /*==============================================================*/
-create unique index if not exists BADGE_REQUIREMENTS_PK on BADGE_REQUIREMENTS (
-REQUIREMENT_ID
-);
+CREATE INDEX IF NOT EXISTS BADGES_INTERACTIONS2_FK ON badges (interaction_id);
 
 /*==============================================================*/
-/* Index: STAGES_REQUIREMENTS_FK                                */
+/* INDEX: GOALS2_FK                                             */
 /*==============================================================*/
-create index if not exists STAGES_REQUIREMENTS_FK on BADGE_REQUIREMENTS (
-PROGRESSION_STAGE_ID
-);
+CREATE INDEX IF NOT EXISTS GOALS2_FK ON badges (goal_id);
 
 /*==============================================================*/
-/* Index: BADGES_REQUIREMENTS_FK                                */
+/* INDEX: BADGES_CREATEDBY_FK                                   */
 /*==============================================================*/
-create index if not exists BADGES_REQUIREMENTS_FK on BADGE_REQUIREMENTS (
-BADGE_ID
-);
+CREATE INDEX IF NOT EXISTS BADGES_CREATEDBY_FK ON badges (user_id);
 
 /*==============================================================*/
-/* Table: CERTIFICATES                                          */
+/* INDEX: BADGES_UPDATEDBY_FK                                   */
 /*==============================================================*/
-create table if not exists CERTIFICATES (
-   CERTIFICATE_ID       INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   APPLICATION_ID       INTEGER                 not null,
-   CERTIFICATE_TITLE    VARCHAR(150)         not null,
-   ISSUING_ENTITY       VARCHAR(150)         null,
-   ISSUE_DATE           DATE                 null,
-   CERTIFICATE_FILE_URL VARCHAR(500)         null,
-   constraint PK_CERTIFICATES primary key (CERTIFICATE_ID)
-);
+CREATE INDEX IF NOT EXISTS BADGES_UPDATEDBY_FK ON badges (adm_user_id);
 
 /*==============================================================*/
-/* Index: CERTIFICATES_PK                                       */
+/* TABLE: badge_applications                                    */
 /*==============================================================*/
-create unique index if not exists CERTIFICATES_PK on CERTIFICATES (
-CERTIFICATE_ID
+CREATE TABLE IF NOT EXISTS badge_applications (
+   application_id       INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   goal_id              INTEGER                 NULL,
+   badge_id             INTEGER                 NOT NULL,
+   certificate_id       INTEGER                 NULL,
+   awarded_badges_id    INTEGER                 NULL,
+   user_id              INTEGER                 NOT NULL,
+   application_state    VARCHAR(50)          NOT NULL DEFAULT 'Open'
+      CONSTRAINT ckc_application_state_badge_ap CHECK (application_state IN ('Open', 'Submitted', 'In validation', 'Closed')),
+   submitted_at         TIMESTAMPTZ          NULL,
+   closed_at            TIMESTAMPTZ          NULL,
+   reviewer_notes       TEXT                 NULL,
+   application_guid     UUID                 NOT NULL DEFAULT gen_random_uuid(),
+   opened_at            TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   CONSTRAINT pk_badge_applications PRIMARY KEY (application_id),
+   CONSTRAINT ak_application_guid_badge_applications UNIQUE (application_guid)
 );
 
 /*==============================================================*/
-/* Index: APPLICATIONS_CERTIFICATES2_FK                         */
+/* INDEX: BADGE_APPLICATIONS_PK                                 */
 /*==============================================================*/
-create index if not exists APPLICATIONS_CERTIFICATES2_FK on CERTIFICATES (
-APPLICATION_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS BADGE_APPLICATIONS_PK ON badge_applications (application_id);
 
 /*==============================================================*/
-/* Table: CONSULTANTS                                           */
+/* INDEX: BADGES_APPLICATIONS_FK                                */
 /*==============================================================*/
-create table if not exists CONSULTANTS (
-   USER_ID              INTEGER                 not null,
-   PREFERRED_LANG_ID    INTEGER                 null,
-   LOCATION_ID          INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   BIOGRAPHY            TEXT                 null,
-   GDPR_ACCEPTED        BOOLEAN                 not null,
-   constraint PK_CONSULTANTS primary key (USER_ID)
-);
+CREATE INDEX IF NOT EXISTS BADGES_APPLICATIONS_FK ON badge_applications (badge_id);
 
 /*==============================================================*/
-/* Index: CONSULTANTS_PK                                        */
+/* INDEX: CONS_APLLICATIONS_FK                                  */
 /*==============================================================*/
-create unique index if not exists CONSULTANTS_PK on CONSULTANTS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS CONS_APLLICATIONS_FK ON badge_applications (user_id);
 
 /*==============================================================*/
-/* Table: CONSULTANTS_SELECTED_SKILLS                           */
+/* INDEX: TIMELINES_APPLICATIONS2_FK                            */
 /*==============================================================*/
-create table if not exists CONSULTANTS_SELECTED_SKILLS (
-   USER_ID              INTEGER                 not null,
-   SKILLS_ID            INTEGER                 not null,
-   constraint PK_CONSULTANTS_SELECTED_SKILLS primary key (USER_ID, SKILLS_ID)
-);
+CREATE INDEX IF NOT EXISTS TIMELINES_APPLICATIONS2_FK ON badge_applications (goal_id);
 
 /*==============================================================*/
-/* Index: CONSULTANTS_SELECTED_SKILLS_PK                        */
+/* INDEX: APPLICATIONS_CERTIFICATES_FK                          */
 /*==============================================================*/
-create unique index if not exists CONSULTANTS_SELECTED_SKILLS_PK on CONSULTANTS_SELECTED_SKILLS (
-USER_ID,
-SKILLS_ID
-);
+CREATE INDEX IF NOT EXISTS APPLICATIONS_CERTIFICATES_FK ON badge_applications (certificate_id);
 
 /*==============================================================*/
-/* Table: CONSULTANT_AREAS                                      */
+/* INDEX: AWARDED_APPLICATIONS_FK                               */
 /*==============================================================*/
-create table if not exists CONSULTANT_AREAS (
-   USER_ID              INTEGER                 not null,
-   AREA_ID              INTEGER                 not null,
-   IS_PRIMARY           BOOLEAN                 null,
-   constraint PK_CONSULTANT_AREAS primary key (USER_ID, AREA_ID)
-);
+CREATE INDEX IF NOT EXISTS AWARDED_APPLICATIONS_FK ON badge_applications (awarded_badges_id);
 
 /*==============================================================*/
-/* Index: CONSULTANT_AREAS_PK                                   */
+/* TABLE: application_validation_logs                           */
 /*==============================================================*/
-create unique index if not exists CONSULTANT_AREAS_PK on CONSULTANT_AREAS (
-USER_ID,
-AREA_ID
+CREATE TABLE IF NOT EXISTS application_validation_logs (
+   validation_log_id    INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_id              INTEGER                 NULL,
+   application_id       INTEGER                 NOT NULL,
+   validator_function   VARCHAR(50)          NOT NULL,
+   validator_action     VARCHAR(50)          NOT NULL,
+   validations_comments TEXT                 NULL,
+   validated_at         TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   CONSTRAINT pk_application_validation_logs PRIMARY KEY (validation_log_id)
 );
 
 /*==============================================================*/
-/* Table: GDPR_POLICIES                                         */
+/* INDEX: APPLICATION_VALIDATION_LOGS_PK                        */
 /*==============================================================*/
-create table if not exists GDPR_POLICIES (
-   POLICY_ID            INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   POLICY_TYPE          VARCHAR(50)          not null
-      constraint CKC_POLICY_TYPE_GDPR check (POLICY_TYPE IN ('Privacy', 'Terms', 'Cookie')),
-   POLICY_TEXT          TEXT                 null,
-   VERSION              VARCHAR(30)          not null,
-   IS_MANDATORY         BOOLEAN              not null default true,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   constraint PK_GDPR_POLICIES primary key (POLICY_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS APPLICATION_VALIDATION_LOGS_PK ON application_validation_logs (validation_log_id);
 
 /*==============================================================*/
-/* Index: GDPR_POLICIES_PK                                      */
+/* INDEX: APPLICATIONS_VALIDATIONS_FK                           */
 /*==============================================================*/
-create unique index if not exists GDPR_POLICIES_PK on GDPR_POLICIES (
-POLICY_ID
-);
+CREATE INDEX IF NOT EXISTS APPLICATIONS_VALIDATIONS_FK ON application_validation_logs (application_id);
 
 /*==============================================================*/
-/* Index: GDPR_UPDATEDBY_FK                                     */
+/* INDEX: USERS_VALIDATIONS_FK                                  */
 /*==============================================================*/
-create index if not exists GDPR_UPDATEDBY_FK on GDPR_POLICIES (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS USERS_VALIDATIONS_FK ON application_validation_logs (user_id);
 
 /*==============================================================*/
-/* Index: GDPR_CREATEDBY_FK                                     */
+/* TABLE: badge_requirements                                    */
 /*==============================================================*/
-create index if not exists GDPR_CREATEDBY_FK on GDPR_POLICIES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS badge_requirements (
+   requirement_id       INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   progression_stage_id INTEGER                 NOT NULL,
+   badge_id             INTEGER                 NOT NULL,
+   requirement_title    VARCHAR(150)         NOT NULL,
+   requirement_description TEXT                 NOT NULL,
+   requirement_img_url  VARCHAR(512)         NULL,
+   requirement_sequence INTEGER                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   CONSTRAINT pk_badge_requirements PRIMARY KEY (requirement_id)
 );
 
 /*==============================================================*/
-/* Table: GOALS                                                 */
+/* INDEX: BADGE_REQUIREMENTS_PK                                 */
 /*==============================================================*/
-create table if not exists GOALS (
-   GOAL_ID              INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   APPLICATION_ID       INTEGER                 null,
-   BADGE_ID             INTEGER                 null,
-   USER_ID              INTEGER                 null,
-   EVENT_TITLE          VARCHAR(150)         not null,
-   EVENT_DESCRIPTION    TEXT                 null,
-   EVENT_START_DATE     TIMESTAMPTZ          null,
-   EVENT_END_DATE       TIMESTAMPTZ          null,
-   REMINDER_AT          TIMESTAMPTZ          null,
-   constraint PK_GOALS primary key (GOAL_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS BADGE_REQUIREMENTS_PK ON badge_requirements (requirement_id);
 
 /*==============================================================*/
-/* Index: GOALS_PK                                              */
+/* INDEX: STAGES_REQUIREMENTS_FK                                */
 /*==============================================================*/
-create unique index if not exists GOALS_PK on GOALS (
-GOAL_ID
-);
+CREATE INDEX IF NOT EXISTS STAGES_REQUIREMENTS_FK ON badge_requirements (progression_stage_id);
 
 /*==============================================================*/
-/* Index: CONS_TIMELINES_FK                                     */
+/* INDEX: BADGES_REQUIREMENTS_FK                                */
 /*==============================================================*/
-create index if not exists CONS_TIMELINES_FK on GOALS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS BADGES_REQUIREMENTS_FK ON badge_requirements (badge_id);
 
 /*==============================================================*/
-/* Index: TIMELINES_APPLICATIONS_FK                             */
+/* TABLE: certificates                                          */
 /*==============================================================*/
-create index if not exists TIMELINES_APPLICATIONS_FK on GOALS (
-APPLICATION_ID
+CREATE TABLE IF NOT EXISTS certificates (
+   certificate_id       INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   application_id       INTEGER                 NOT NULL,
+   certificate_title    VARCHAR(150)         NOT NULL,
+   issuing_entity       VARCHAR(150)         NULL,
+   issue_date           DATE                 NULL,
+   certificate_file_url VARCHAR(500)         NULL,
+   CONSTRAINT pk_certificates PRIMARY KEY (certificate_id)
 );
 
 /*==============================================================*/
-/* Index: GOALS_FK                                              */
+/* INDEX: CERTIFICATES_PK                                       */
 /*==============================================================*/
-create index if not exists GOALS_FK on GOALS (
-BADGE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS CERTIFICATES_PK ON certificates (certificate_id);
 
 /*==============================================================*/
-/* Table: LEARNING_PATHS                                        */
+/* INDEX: APPLICATIONS_CERTIFICATES2_FK                         */
 /*==============================================================*/
-create table if not exists LEARNING_PATHS (
-   LEARNING_PATH_ID     INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   PATH_TITLE           VARCHAR(150)         not null,
-   PATH_SLUG            VARCHAR(100)         not null,
-   PATH_DESCRIPTION     TEXT                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   IMG_URL              VARCHAR(512)         null,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   constraint PK_LEARNING_PATHS primary key (LEARNING_PATH_ID),
-   constraint AK_IDENTIFIER_SLUG_LEARNING unique (PATH_SLUG)
-);
+CREATE INDEX IF NOT EXISTS APPLICATIONS_CERTIFICATES2_FK ON certificates (application_id);
 
 /*==============================================================*/
-/* Index: LEARNING_PATHS_PK                                     */
+/* TABLE: gdpr_policies                                         */
 /*==============================================================*/
-create unique index if not exists LEARNING_PATHS_PK on LEARNING_PATHS (
-LEARNING_PATH_ID
+CREATE TABLE IF NOT EXISTS gdpr_policies (
+   policy_id            INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   policy_type          VARCHAR(50)          NOT NULL
+      CONSTRAINT ckc_policy_type_gdpr CHECK (policy_type IN ('Privacy', 'Terms', 'Cookie')),
+   policy_text          TEXT                 NULL,
+   version              VARCHAR(30)          NOT NULL,
+   is_mandatory         BOOLEAN              NOT NULL DEFAULT TRUE,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   CONSTRAINT pk_gdpr_policies PRIMARY KEY (policy_id)
 );
 
 /*==============================================================*/
-/* Index: ADMIN_LP_FK                                           */
+/* INDEX: GDPR_POLICIES_PK                                      */
 /*==============================================================*/
-create index if not exists ADMIN_LP_FK on LEARNING_PATHS (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS GDPR_POLICIES_PK ON gdpr_policies (policy_id);
 
 /*==============================================================*/
-/* Index: LP_UPDATEDBY_FK                                       */
+/* INDEX: GDPR_UPDATEDBY_FK                                     */
 /*==============================================================*/
-create index if not exists LP_UPDATEDBY_FK on LEARNING_PATHS (
-ADM_USER_ID
-);
+CREATE INDEX IF NOT EXISTS GDPR_UPDATEDBY_FK ON gdpr_policies (user_id);
 
 /*==============================================================*/
-/* Table: LOCATIONS                                             */
+/* INDEX: GDPR_CREATEDBY_FK                                     */
 /*==============================================================*/
-create table if not exists LOCATIONS (
-   LOCATION_ID          INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   LOCATION_NAME        VARCHAR(128)         not null,
-   constraint PK_LOCATIONS primary key (LOCATION_ID)
-);
+CREATE INDEX IF NOT EXISTS GDPR_CREATEDBY_FK ON gdpr_policies (adm_user_id);
 
 /*==============================================================*/
-/* Index: LOCATIONS_PK                                          */
+/* TABLE: goals                                                 */
 /*==============================================================*/
-create unique index if not exists LOCATIONS_PK on LOCATIONS (
-LOCATION_ID
+CREATE TABLE IF NOT EXISTS goals (
+   goal_id              INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   application_id       INTEGER                 NULL,
+   badge_id             INTEGER                 NULL,
+   user_id              INTEGER                 NULL,
+   event_title          VARCHAR(150)         NOT NULL,
+   event_description    TEXT                 NULL,
+   event_start_date     TIMESTAMPTZ          NULL,
+   event_end_date       TIMESTAMPTZ          NULL,
+   reminder_at          TIMESTAMPTZ          NULL,
+   CONSTRAINT pk_goals PRIMARY KEY (goal_id)
 );
 
 /*==============================================================*/
-/* Table: NOTIFICATIONS                                         */
+/* INDEX: GOALS_PK                                              */
 /*==============================================================*/
-create table if not exists NOTIFICATIONS (
-   NOTIFICATION_ID      INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   DEFINITION_ID        INTEGER                 not null,
-   USER_ID              INTEGER                 not null,
-   NOTIFICATION_PAYLOAD TEXT                 null,
-   IS_READ              BOOLEAN                 null,
-   SENT_AT              TIMESTAMPTZ          not null default now(),
-   NOTIFICATION_URL     VARCHAR(512)         null,
-   constraint PK_NOTIFICATIONS primary key (NOTIFICATION_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS GOALS_PK ON goals (goal_id);
 
 /*==============================================================*/
-/* Index: NOTIFICATIONS_PK                                      */
+/* INDEX: CONS_TIMELINES_FK                                     */
 /*==============================================================*/
-create unique index if not exists NOTIFICATIONS_PK on NOTIFICATIONS (
-NOTIFICATION_ID
-);
+CREATE INDEX IF NOT EXISTS CONS_TIMELINES_FK ON goals (user_id);
 
 /*==============================================================*/
-/* Index: USER_NOTIFICATIONS_FK                                 */
+/* INDEX: TIMELINES_APPLICATIONS_FK                             */
 /*==============================================================*/
-create index if not exists USER_NOTIFICATIONS_FK on NOTIFICATIONS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS TIMELINES_APPLICATIONS_FK ON goals (application_id);
 
 /*==============================================================*/
-/* Index: NOTIF_DEF_FK                                          */
+/* INDEX: GOALS_FK                                              */
 /*==============================================================*/
-create index if not exists NOTIF_DEF_FK on NOTIFICATIONS (
-DEFINITION_ID
-);
+CREATE INDEX IF NOT EXISTS GOALS_FK ON goals (badge_id);
 
 /*==============================================================*/
-/* Table: NOTIFICATION_DEFINITIONS                              */
+/* TABLE: locations                                             */
 /*==============================================================*/
-create table if not exists NOTIFICATION_DEFINITIONS (
-   DEFINITION_ID        INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   PREFERENCE_ID        INTEGER                 null,
-   USER_ID              INTEGER                 null,
-   CODE                 VARCHAR(128)         not null,
-   NAME                 VARCHAR(256)         not null,
-   DESCRIPTION          TEXT                 null,
-   constraint PK_NOTIFICATION_DEFINITIONS primary key (DEFINITION_ID)
+CREATE TABLE IF NOT EXISTS locations (
+   location_id          INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   location_name        VARCHAR(128)         NOT NULL,
+   CONSTRAINT pk_locations PRIMARY KEY (location_id)
 );
 
 /*==============================================================*/
-/* Index: NOTIFICATION_DEFINITIONS_PK                           */
+/* INDEX: LOCATIONS_PK                                          */
 /*==============================================================*/
-create unique index if not exists NOTIFICATION_DEFINITIONS_PK on NOTIFICATION_DEFINITIONS (
-DEFINITION_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS LOCATIONS_PK ON locations (location_id);
 
 /*==============================================================*/
-/* Index: ADMIN_DEF_FK                                          */
+/* TABLE: notifications                                         */
 /*==============================================================*/
-create index if not exists ADMIN_DEF_FK on NOTIFICATION_DEFINITIONS (
-USER_ID
+CREATE TABLE IF NOT EXISTS notifications (
+   notification_id      INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   definition_id        INTEGER                 NOT NULL,
+   user_id              INTEGER                 NOT NULL,
+   notification_payload TEXT                 NULL,
+   is_read              BOOLEAN                 NULL,
+   sent_at              TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   notification_url     VARCHAR(512)         NULL,
+   CONSTRAINT pk_notifications PRIMARY KEY (notification_id)
 );
 
 /*==============================================================*/
-/* Index: NOT_DEF_PREF_FK                                       */
+/* INDEX: NOTIFICATIONS_PK                                      */
 /*==============================================================*/
-create index if not exists NOT_DEF_PREF_FK on NOTIFICATION_DEFINITIONS (
-PREFERENCE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS NOTIFICATIONS_PK ON notifications (notification_id);
 
 /*==============================================================*/
-/* Table: NOTIFICATION_PREFERENCES                              */
+/* INDEX: USER_NOTIFICATIONS_FK                                 */
 /*==============================================================*/
-create table if not exists NOTIFICATION_PREFERENCES (
-   PREFERENCE_ID        INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   SLA_ID               INTEGER                 null,
-   ANNOUNCEMENT_ID      INTEGER                 null,
-   DEFINITION_ID        INTEGER                 null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   SEND_EMAIL           BOOLEAN                 not null,
-   SEND_PUSH            BOOLEAN                 not null,
-   TRIGGER_BEFORE_VALUE INTEGER                 null,
-   TRIGGER_BEFORE_UNIT  VARCHAR(50)          null,
-   IS_ENABLED           BOOLEAN                 not null,
-   constraint PK_NOTIFICATION_PREFERENCES primary key (PREFERENCE_ID)
-);
+CREATE INDEX IF NOT EXISTS USER_NOTIFICATIONS_FK ON notifications (user_id);
 
 /*==============================================================*/
-/* Index: NOTIFICATE_TO_PK                                      */
+/* INDEX: NOTIF_DEF_FK                                          */
 /*==============================================================*/
-create unique index if not exists NOTIFICATE_TO_PK on NOTIFICATION_PREFERENCES (
-PREFERENCE_ID
-);
+CREATE INDEX IF NOT EXISTS NOTIF_DEF_FK ON notifications (definition_id);
 
 /*==============================================================*/
-/* Index: NOTIF_SLAS_FK                                         */
+/* TABLE: notification_definitions                              */
 /*==============================================================*/
-create index if not exists NOTIF_SLAS_FK on NOTIFICATION_PREFERENCES (
-SLA_ID
+CREATE TABLE IF NOT EXISTS notification_definitions (
+   definition_id        INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   preference_id        INTEGER                 NULL,
+   user_id              INTEGER                 NULL,
+   code                 VARCHAR(128)         NOT NULL,
+   name                 VARCHAR(256)         NOT NULL,
+   description          TEXT                 NULL,
+   CONSTRAINT pk_notification_definitions PRIMARY KEY (definition_id)
 );
 
 /*==============================================================*/
-/* Index: ANNOUNC_NOTIF2_FK                                     */
+/* INDEX: NOTIFICATION_DEFINITIONS_PK                           */
 /*==============================================================*/
-create index if not exists ANNOUNC_NOTIF2_FK on NOTIFICATION_PREFERENCES (
-ANNOUNCEMENT_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS NOTIFICATION_DEFINITIONS_PK ON notification_definitions (definition_id);
 
 /*==============================================================*/
-/* Index: NOT_DEF_PREF2_FK                                      */
+/* INDEX: ADMIN_DEF_FK                                          */
 /*==============================================================*/
-create index if not exists NOT_DEF_PREF2_FK on NOTIFICATION_PREFERENCES (
-DEFINITION_ID
-);
+CREATE INDEX IF NOT EXISTS ADMIN_DEF_FK ON notification_definitions (user_id);
 
 /*==============================================================*/
-/* Index: NOT_PREFERENCES_CREATEDBY_FK                          */
+/* INDEX: NOT_DEF_PREF_FK                                       */
 /*==============================================================*/
-create index if not exists NOT_PREFERENCES_CREATEDBY_FK on NOTIFICATION_PREFERENCES (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS NOT_DEF_PREF_FK ON notification_definitions (preference_id);
 
 /*==============================================================*/
-/* Index: NOT_PREFERENCES_UPDATEDBY_FK                          */
+/* TABLE: notification_preferences                              */
 /*==============================================================*/
-create index if not exists NOT_PREFERENCES_UPDATEDBY_FK on NOTIFICATION_PREFERENCES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS notification_preferences (
+   preference_id        INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   sla_id               INTEGER                 NULL,
+   announcement_id      INTEGER                 NULL,
+   definition_id        INTEGER                 NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   send_email           BOOLEAN                 NOT NULL,
+   send_push            BOOLEAN                 NOT NULL,
+   trigger_before_value INTEGER                 NULL,
+   trigger_before_unit  VARCHAR(50)          NULL,
+   is_enabled           BOOLEAN                 NOT NULL,
+   CONSTRAINT pk_notification_preferences PRIMARY KEY (preference_id)
 );
 
 /*==============================================================*/
-/* Table: POINTS_HISTORY                                        */
+/* INDEX: NOTIFICATE_TO_PK                                      */
 /*==============================================================*/
-create table if not exists POINTS_HISTORY (
-   POINTS_HISTORY_ID    INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   REQUIREMENT_ID       INTEGER                 null,
-   BADGE_ID             INTEGER                 null,
-   USER_ID              INTEGER                 not null,
-   POINTS_DELTA         INTEGER                 not null,
-   JUSTIFICATION        TEXT                 null,
-   constraint PK_POINTS_HISTORY primary key (POINTS_HISTORY_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS NOTIFICATE_TO_PK ON notification_preferences (preference_id);
 
 /*==============================================================*/
-/* Index: POINTS_HISTORY_PK                                     */
+/* INDEX: NOTIF_SLAS_FK                                         */
 /*==============================================================*/
-create unique index if not exists POINTS_HISTORY_PK on POINTS_HISTORY (
-POINTS_HISTORY_ID
-);
+CREATE INDEX IF NOT EXISTS NOTIF_SLAS_FK ON notification_preferences (sla_id);
 
 /*==============================================================*/
-/* Index: CONS_POINTS_FK                                        */
+/* INDEX: ANNOUNC_NOTIF2_FK                                     */
 /*==============================================================*/
-create index if not exists CONS_POINTS_FK on POINTS_HISTORY (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS ANNOUNC_NOTIF2_FK ON notification_preferences (announcement_id);
 
 /*==============================================================*/
-/* Index: BADGES_POINTS_FK                                      */
+/* INDEX: NOT_DEF_PREF2_FK                                      */
 /*==============================================================*/
-create index if not exists BADGES_POINTS_FK on POINTS_HISTORY (
-BADGE_ID
-);
+CREATE INDEX IF NOT EXISTS NOT_DEF_PREF2_FK ON notification_preferences (definition_id);
 
 /*==============================================================*/
-/* Index: REQUIREMENTS_POINTS_FK                                */
+/* INDEX: NOT_PREFERENCES_CREATEDBY_FK                          */
 /*==============================================================*/
-create index if not exists REQUIREMENTS_POINTS_FK on POINTS_HISTORY (
-REQUIREMENT_ID
-);
+CREATE INDEX IF NOT EXISTS NOT_PREFERENCES_CREATEDBY_FK ON notification_preferences (user_id);
 
 /*==============================================================*/
-/* Table: PREFERRED_LANG                                        */
+/* INDEX: NOT_PREFERENCES_UPDATEDBY_FK                          */
 /*==============================================================*/
-create table if not exists PREFERRED_LANG (
-   PREFERRED_LANG_ID    INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   PREFERRED_LANG       VARCHAR(10)          not null,
-   constraint PK_PREFERRED_LANG primary key (PREFERRED_LANG_ID),
-   constraint AK_IDENTIFIER_LANG_PREFERRE unique (PREFERRED_LANG)
-);
+CREATE INDEX IF NOT EXISTS NOT_PREFERENCES_UPDATEDBY_FK ON notification_preferences (adm_user_id);
 
 /*==============================================================*/
-/* Index: PREFERRED_LANG_PK                                     */
+/* TABLE: points_history                                        */
 /*==============================================================*/
-create unique index if not exists PREFERRED_LANG_PK on PREFERRED_LANG (
-PREFERRED_LANG_ID
+CREATE TABLE IF NOT EXISTS points_history (
+   points_history_id    INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   requirement_id       INTEGER                 NULL,
+   badge_id             INTEGER                 NULL,
+   user_id              INTEGER                 NOT NULL,
+   points_delta         INTEGER                 NOT NULL,
+   justification        TEXT                 NULL,
+   CONSTRAINT pk_points_history PRIMARY KEY (points_history_id)
 );
 
 /*==============================================================*/
-/* Table: PROGRESSION_STAGES                                    */
+/* INDEX: POINTS_HISTORY_PK                                     */
 /*==============================================================*/
-create table if not exists PROGRESSION_STAGES (
-   PROGRESSION_STAGE_ID INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   AREA_ID              INTEGER                 not null,
-   BADGE_ID             INTEGER                 null,
-   STAGE_CODE_ID        INTEGER                 not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   STAGE_TITLE          VARCHAR(100)         not null,
-   STAGE_SEQUENCE       INTEGER                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   STAGE_DESCRIPTION    TEXT                 null,
-   constraint PK_PROGRESSION_STAGES primary key (PROGRESSION_STAGE_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS POINTS_HISTORY_PK ON points_history (points_history_id);
 
 /*==============================================================*/
-/* Index: PROGRESSION_STAGES_PK                                 */
+/* INDEX: CONS_POINTS_FK                                        */
 /*==============================================================*/
-create unique index if not exists PROGRESSION_STAGES_PK on PROGRESSION_STAGES (
-PROGRESSION_STAGE_ID
-);
+CREATE INDEX IF NOT EXISTS CONS_POINTS_FK ON points_history (user_id);
 
 /*==============================================================*/
-/* Index: AREAS_STAGES_FK                                       */
+/* INDEX: BADGES_POINTS_FK                                      */
 /*==============================================================*/
-create index if not exists AREAS_STAGES_FK on PROGRESSION_STAGES (
-AREA_ID
-);
+CREATE INDEX IF NOT EXISTS BADGES_POINTS_FK ON points_history (badge_id);
 
 /*==============================================================*/
-/* Index: STAGES_BADGES_FK                                      */
+/* INDEX: REQUIREMENTS_POINTS_FK                                */
 /*==============================================================*/
-create index if not exists STAGES_BADGES_FK on PROGRESSION_STAGES (
-BADGE_ID
-);
+CREATE INDEX IF NOT EXISTS REQUIREMENTS_POINTS_FK ON points_history (requirement_id);
 
 /*==============================================================*/
-/* Index: STAGE_STAGECODES_FK                                   */
+/* TABLE: preferred_lang                                        */
 /*==============================================================*/
-create index if not exists STAGE_STAGECODES_FK on PROGRESSION_STAGES (
-STAGE_CODE_ID
+CREATE TABLE IF NOT EXISTS preferred_lang (
+   preferred_lang_id    INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   preferred_lang       VARCHAR(10)          NOT NULL,
+   CONSTRAINT pk_preferred_lang PRIMARY KEY (preferred_lang_id),
+   CONSTRAINT ak_identifier_lang_preferre UNIQUE (preferred_lang)
 );
 
 /*==============================================================*/
-/* Index: STAGES_CREATEDBY_FK                                   */
+/* INDEX: PREFERRED_LANG_PK                                     */
 /*==============================================================*/
-create index if not exists STAGES_CREATEDBY_FK on PROGRESSION_STAGES (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS PREFERRED_LANG_PK ON preferred_lang (preferred_lang_id);
 
 /*==============================================================*/
-/* Index: STAGES_UPDATEDBY_FK                                   */
+/* TABLE: requirements_evidences                                */
 /*==============================================================*/
-create index if not exists STAGES_UPDATEDBY_FK on PROGRESSION_STAGES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS requirements_evidences (
+   evidence_id          INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   requirement_id       INTEGER                 NULL,
+   application_id       INTEGER                 NOT NULL,
+   evidence_file_url    VARCHAR(500)         NOT NULL,
+   evidence_file_type   VARCHAR(100)         NULL,
+   evidence_title       VARCHAR(150)         NULL,
+   evidence_description TEXT                 NULL,
+   uploaded_at          TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   tm_reviewed          BOOLEAN                 NULL,
+   sll_reviewed         BOOLEAN                 NULL,
+   CONSTRAINT pk_requirements_evidences PRIMARY KEY (evidence_id)
 );
 
 /*==============================================================*/
-/* Table: REQUIREMENTS_EVIDENCES                                */
+/* INDEX: REQUIREMENTS_EVIDENCES_PK                             */
 /*==============================================================*/
-create table if not exists REQUIREMENTS_EVIDENCES (
-   EVIDENCE_ID          INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   REQUIREMENT_ID       INTEGER                 null,
-   APPLICATION_ID       INTEGER                 not null,
-   EVIDENCE_FILE_URL    VARCHAR(500)         not null,
-   EVIDENCE_FILE_TYPE   VARCHAR(100)         null,
-   EVIDENCE_TITLE       VARCHAR(150)         null,
-   EVIDENCE_DESCRIPTION TEXT                 null,
-   UPLOADED_AT          TIMESTAMPTZ          not null default now(),
-   TM_REVIEWED          BOOLEAN                 null,
-   SLL_REVIEWED         BOOLEAN                 null,
-   constraint PK_REQUIREMENTS_EVIDENCES primary key (EVIDENCE_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS REQUIREMENTS_EVIDENCES_PK ON requirements_evidences (evidence_id);
 
 /*==============================================================*/
-/* Index: REQUIREMENTS_EVIDENCES_PK                             */
+/* INDEX: REQUIREMENTS_EVIDENCES_FK                             */
 /*==============================================================*/
-create unique index if not exists REQUIREMENTS_EVIDENCES_PK on REQUIREMENTS_EVIDENCES (
-EVIDENCE_ID
-);
+CREATE INDEX IF NOT EXISTS REQUIREMENTS_EVIDENCES_FK ON requirements_evidences (requirement_id);
 
 /*==============================================================*/
-/* Index: REQUIREMENTS_EVIDENCES_FK                             */
+/* INDEX: APPLICATIONS_EVIDENCES_FK                             */
 /*==============================================================*/
-create index if not exists REQUIREMENTS_EVIDENCES_FK on REQUIREMENTS_EVIDENCES (
-REQUIREMENT_ID
-);
+CREATE INDEX IF NOT EXISTS APPLICATIONS_EVIDENCES_FK ON requirements_evidences (application_id);
 
 /*==============================================================*/
-/* Index: APPLICATIONS_EVIDENCES_FK                             */
+/* TABLE: rewards                                               */
 /*==============================================================*/
-create index if not exists APPLICATIONS_EVIDENCES_FK on REQUIREMENTS_EVIDENCES (
-APPLICATION_ID
+CREATE TABLE IF NOT EXISTS rewards (
+   reward_id            INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   badge_id             INTEGER                 NULL,
+   special_title        VARCHAR(255)         NULL,
+   special_portrait_svg TEXT                 NULL,
+   CONSTRAINT pk_rewards PRIMARY KEY (reward_id)
 );
 
 /*==============================================================*/
-/* Table: REWARDS                                               */
+/* INDEX: REWARDS_PK                                            */
 /*==============================================================*/
-create table if not exists REWARDS (
-   REWARD_ID            INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   BADGE_ID             INTEGER                 null,
-   SPECIAL_TITLE        VARCHAR(255)         null,
-   SPECIAL_PORTRAIT_SVG TEXT                 null,
-   constraint PK_REWARDS primary key (REWARD_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS REWARDS_PK ON rewards (reward_id);
 
 /*==============================================================*/
-/* Index: REWARDS_PK                                            */
+/* INDEX: BADGE_REWARDS_FK                                      */
 /*==============================================================*/
-create unique index if not exists REWARDS_PK on REWARDS (
-REWARD_ID
-);
+CREATE INDEX IF NOT EXISTS BADGE_REWARDS_FK ON rewards (badge_id);
 
 /*==============================================================*/
-/* Index: BADGE_REWARDS_FK                                      */
+/* TABLE: skills                                                */
 /*==============================================================*/
-create index if not exists BADGE_REWARDS_FK on REWARDS (
-BADGE_ID
+CREATE TABLE IF NOT EXISTS skills (
+   skills_id            INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   badge_id             INTEGER                 NULL,
+   user_id              INTEGER                 NULL,
+   adm_user_id          INTEGER                 NULL,
+   skill_name           VARCHAR(150)         NOT NULL,
+   skill_description    TEXT                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   CONSTRAINT pk_skills PRIMARY KEY (skills_id)
 );
 
 /*==============================================================*/
-/* Table: SERVICES_LINES                                        */
+/* INDEX: SKILLS_PK                                             */
 /*==============================================================*/
-create table if not exists SERVICES_LINES (
-   SERVICE_LINE_ID      INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   LEARNING_PATH_ID     INTEGER                 not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   SERVICE_LINE_NAME    VARCHAR(100)         not null,
-   SERVICE_LINE_DESCRIPTION TEXT                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   IMG_URL              VARCHAR(512)         null,
-   SL_SLUG              VARCHAR(512)         not null,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   constraint PK_SERVICES_LINES primary key (SERVICE_LINE_ID),
-   constraint AK_IDENTIFIER_SLUG_SERVICES_LINES unique (SL_SLUG)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SKILLS_PK ON skills (skills_id);
 
 /*==============================================================*/
-/* Index: SERVICES_LINES_PK                                     */
+/* INDEX: BADGES_SKILLS_FK                                      */
 /*==============================================================*/
-create unique index if not exists SERVICES_LINES_PK on SERVICES_LINES (
-SERVICE_LINE_ID
-);
+CREATE INDEX IF NOT EXISTS BADGES_SKILLS_FK ON skills (badge_id);
 
 /*==============================================================*/
-/* Index: SL_LP_FK                                              */
+/* INDEX: SKILLS_CREATEDBY_FK                                   */
 /*==============================================================*/
-create index if not exists SL_LP_FK on SERVICES_LINES (
-LEARNING_PATH_ID
-);
+CREATE INDEX IF NOT EXISTS SKILLS_CREATEDBY_FK ON skills (user_id);
 
 /*==============================================================*/
-/* Index: ADMIN_SL_FK                                           */
+/* INDEX: SKILLS_UPDATEDBY_FK                                   */
 /*==============================================================*/
-create index if not exists ADMIN_SL_FK on SERVICES_LINES (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS SKILLS_UPDATEDBY_FK ON skills (adm_user_id);
 
 /*==============================================================*/
-/* Index: SL_UPDATEDBY_FK                                       */
+/* TABLE: slas                                                  */
 /*==============================================================*/
-create index if not exists SL_UPDATEDBY_FK on SERVICES_LINES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS slas (
+   sla_id               INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   definition_id        INTEGER                 NULL,
+   user_id              INTEGER                 NULL,
+   preference_id        INTEGER                 NULL,
+   adm_user_id          INTEGER                 NOT NULL,
+   adm_user_id2         INTEGER                 NULL,
+   sla_name             VARCHAR(100)         NOT NULL,
+   sla_description      TEXT                 NULL,
+   response_time_hours  INTEGER                 NOT NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   target_profile       VARCHAR(128)         NULL
+      CONSTRAINT ckc_target_profile_slas CHECK (target_profile IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
+   is_global            BOOLEAN                 NULL,
+   start_date           TIMESTAMPTZ          NOT NULL,
+   end_date             TIMESTAMPTZ          NOT NULL,
+   CONSTRAINT pk_slas PRIMARY KEY (sla_id)
 );
 
 /*==============================================================*/
-/* Table: SERVICE_LINE_LEADERS                                  */
+/* INDEX: SLA_DEFINITIONS_PK                                    */
 /*==============================================================*/
-create table if not exists SERVICE_LINE_LEADERS (
-   USER_ID              INTEGER                 not null,
-   SERVICE_LINE_ID      INTEGER                 not null,
-   PREFERRED_LANG_ID    INTEGER                 null,
-   LOCATION_ID          INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   BIOGRAPHY            TEXT                 null,
-   constraint PK_SERVICE_LINE_LEADERS primary key (USER_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SLA_DEFINITIONS_PK ON slas (sla_id);
 
 /*==============================================================*/
-/* Index: SERVICE_LINE_LEADERS_PK                               */
+/* INDEX: ADMIN_SLA_FK                                          */
 /*==============================================================*/
-create unique index if not exists SERVICE_LINE_LEADERS_PK on SERVICE_LINE_LEADERS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS ADMIN_SLA_FK ON slas (adm_user_id);
 
 /*==============================================================*/
-/* Index: SL_SLL_FK                                             */
+/* INDEX: USER_SLAS_FK                                          */
 /*==============================================================*/
-create index if not exists SL_SLL_FK on SERVICE_LINE_LEADERS (
-SERVICE_LINE_ID
-);
+CREATE INDEX IF NOT EXISTS USER_SLAS_FK ON slas (user_id);
 
 /*==============================================================*/
-/* Table: SKILLS                                                */
+/* INDEX: NOTIF_SLAS2_FK                                        */
 /*==============================================================*/
-create table if not exists SKILLS (
-   SKILLS_ID            INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   BADGE_ID             INTEGER                 null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   SKILL_NAME           VARCHAR(150)         not null,
-   SKILL_DESCRIPTION    TEXT                 null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   constraint PK_SKILLS primary key (SKILLS_ID)
-);
+CREATE INDEX IF NOT EXISTS NOTIF_SLAS2_FK ON slas (preference_id);
 
 /*==============================================================*/
-/* Index: SKILLS_PK                                             */
+/* INDEX: NOT_DEF_SLAS_FK                                       */
 /*==============================================================*/
-create unique index if not exists SKILLS_PK on SKILLS (
-SKILLS_ID
-);
+CREATE INDEX IF NOT EXISTS NOT_DEF_SLAS_FK ON slas (definition_id);
 
 /*==============================================================*/
-/* Index: BADGES_SKILLS_FK                                      */
+/* INDEX: SLAS_UPDATEDBY_FK                                     */
 /*==============================================================*/
-create index if not exists BADGES_SKILLS_FK on SKILLS (
-BADGE_ID
-);
+CREATE INDEX IF NOT EXISTS SLAS_UPDATEDBY_FK ON slas (adm_user_id2);
 
 /*==============================================================*/
-/* Index: SKILLS_CREATEDBY_FK                                   */
+/* TABLE: sl_slas                                               */
 /*==============================================================*/
-create index if not exists SKILLS_CREATEDBY_FK on SKILLS (
-USER_ID
+CREATE TABLE IF NOT EXISTS sl_slas (
+   service_line_id      INTEGER                 NOT NULL,
+   sla_id               INTEGER                 NOT NULL,
+   CONSTRAINT pk_sl_slas PRIMARY KEY (service_line_id, sla_id)
 );
 
 /*==============================================================*/
-/* Index: SKILLS_UPDATEDBY_FK                                   */
+/* INDEX: SL_SLAS_PK                                            */
 /*==============================================================*/
-create index if not exists SKILLS_UPDATEDBY_FK on SKILLS (
-ADM_USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SL_SLAS_PK ON sl_slas (service_line_id, sla_id);
 
 /*==============================================================*/
-/* Table: SLAS                                                  */
+/* TABLE: system_announcements                                  */
 /*==============================================================*/
-create table if not exists SLAS (
-   SLA_ID               INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   DEFINITION_ID        INTEGER                 null,
-   USER_ID              INTEGER                 null,
-   PREFERENCE_ID        INTEGER                 null,
-   ADM_USER_ID          INTEGER                 not null,
-   ADM_USER_ID2         INTEGER                 null,
-   SLA_NAME             VARCHAR(100)         not null,
-   SLA_DESCRIPTION      TEXT                 null,
-   RESPONSE_TIME_HOURS  INTEGER                 not null,
-   CREATED_AT           TIMESTAMPTZ          not null default now(),
-   UPDATED_AT           TIMESTAMPTZ          not null default now(),
-   IS_ACTIVE            BOOLEAN              not null default true,
-   TARGET_PROFILE       VARCHAR(128)         null
-      constraint CKC_TARGET_PROFILE_SLAS check (TARGET_PROFILE IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
-   IS_GLOBAL            BOOLEAN                 null,
-   START_DATE           TIMESTAMPTZ          not null,
-   END_DATE             TIMESTAMPTZ          not null,
-   constraint PK_SLAS primary key (SLA_ID)
+CREATE TABLE IF NOT EXISTS system_announcements (
+   announcement_id      INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_id              INTEGER                 NULL,
+   preference_id        INTEGER                 NOT NULL,
+   adm_user_id          INTEGER                 NULL,
+   adm_user_id2         INTEGER                 NULL,
+   announcement_title   VARCHAR(150)         NOT NULL,
+   announcement_message TEXT                 NOT NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   starts_at            TIMESTAMPTZ          NULL,
+   ends_at              TIMESTAMPTZ          NULL,
+   announcement_type    VARCHAR(128)         NULL,
+   is_global            BOOLEAN                 NULL,
+   target_profile       VARCHAR(128)         NULL
+      CONSTRAINT ckc_target_profile_system_announcements CHECK (target_profile IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'))
+   CONSTRAINT pk_system_announcements PRIMARY KEY (announcement_id),
 );
 
 /*==============================================================*/
-/* Index: SLA_DEFINITIONS_PK                                    */
+/* INDEX: SYSTEM_ANNOUNCEMENTS_PK                               */
 /*==============================================================*/
-create unique index if not exists SLA_DEFINITIONS_PK on SLAS (
-SLA_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SYSTEM_ANNOUNCEMENTS_PK ON system_announcements (announcement_id);
 
 /*==============================================================*/
-/* Index: ADMIN_SLA_FK                                          */
+/* INDEX: USER_ANNOUNCEMENTS_FK                                 */
 /*==============================================================*/
-create index if not exists ADMIN_SLA_FK on SLAS (
-ADM_USER_ID
-);
+CREATE INDEX IF NOT EXISTS USER_ANNOUNCEMENTS_FK ON system_announcements (user_id);
 
 /*==============================================================*/
-/* Index: USER_SLAS_FK                                          */
+/* INDEX: ANNOUNCEMENTS_ADMIN_FK                                */
 /*==============================================================*/
-create index if not exists USER_SLAS_FK on SLAS (
-USER_ID
-);
+CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_ADMIN_FK ON system_announcements (adm_user_id);
 
 /*==============================================================*/
-/* Index: NOTIF_SLAS2_FK                                        */
+/* INDEX: ANNOUNC_NOTIF_FK                                      */
 /*==============================================================*/
-create index if not exists NOTIF_SLAS2_FK on SLAS (
-PREFERENCE_ID
-);
+CREATE INDEX IF NOT EXISTS ANNOUNC_NOTIF_FK ON system_announcements (preference_id);
 
 /*==============================================================*/
-/* Index: NOT_DEF_SLAS_FK                                       */
+/* INDEX: ANNOUNCEMENTS_UPDATEDBY_FK                            */
 /*==============================================================*/
-create index if not exists NOT_DEF_SLAS_FK on SLAS (
-DEFINITION_ID
-);
+CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_UPDATEDBY_FK ON system_announcements (adm_user_id2);
 
 /*==============================================================*/
-/* Index: SLAS_UPDATEDBY_FK                                     */
+/* TABLE: announc_sl                                            */
 /*==============================================================*/
-create index if not exists SLAS_UPDATEDBY_FK on SLAS (
-ADM_USER_ID2
+CREATE TABLE IF NOT EXISTS announc_sl (
+   announcement_id      INTEGER                 NOT NULL,
+   service_line_id      INTEGER                 NOT NULL,
+   CONSTRAINT pk_announc_sl PRIMARY KEY (announcement_id, service_line_id)
 );
 
 /*==============================================================*/
-/* Table: SL_SLAS                                               */
+/* INDEX: ANNOUNC_SL_PK                                         */
 /*==============================================================*/
-create table if not exists SL_SLAS (
-   SERVICE_LINE_ID      INTEGER                 not null,
-   SLA_ID               INTEGER                 not null,
-   constraint PK_SL_SLAS primary key (SERVICE_LINE_ID, SLA_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS ANNOUNC_SL_PK ON announc_sl (announcement_id, service_line_id);
 
 /*==============================================================*/
-/* Index: SL_SLAS_PK                                            */
+/* TABLE: administrators                                        */
 /*==============================================================*/
-create unique index if not exists SL_SLAS_PK on SL_SLAS (
-SERVICE_LINE_ID,
-SLA_ID
+CREATE TABLE IF NOT EXISTS administrators (
+   user_id              INTEGER                 NOT NULL,
+   preferred_lang_id    INTEGER                 NULL,
+   location_id          INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   is_super_admin       BOOLEAN                 NULL,
+   CONSTRAINT pk_administrators PRIMARY KEY (user_id)
 );
 
 /*==============================================================*/
-/* Table: STAGE_CODES                                           */
+/* INDEX: ADMINISTRATORS_PK                                     */
 /*==============================================================*/
-create table if not exists STAGE_CODES (
-   STAGE_CODE_ID        INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   USER_ID              INTEGER                 null,
-   ADM_USER_ID          INTEGER                 null,
-   STAGE_CODE           VARCHAR(20)          not null,
-   constraint PK_STAGE_CODES primary key (STAGE_CODE_ID),
-   constraint AK_IDENTIFIER_CODE_STAGE_CO unique (STAGE_CODE)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS ADMINISTRATORS_PK ON administrators (user_id);
 
 /*==============================================================*/
-/* Index: STAGE_CODES_PK                                        */
+/* TABLE: consultants                                           */
 /*==============================================================*/
-create unique index if not exists STAGE_CODES_PK on STAGE_CODES (
-STAGE_CODE_ID
+CREATE TABLE IF NOT EXISTS consultants (
+   user_id              INTEGER                 NOT NULL,
+   preferred_lang_id    INTEGER                 NULL,
+   location_id          INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   biography            TEXT                 NULL,
+   gdpr_accepted        BOOLEAN                 NOT NULL,
+   CONSTRAINT pk_consultants PRIMARY KEY (user_id)
 );
 
 /*==============================================================*/
-/* Index: STAGE_CODE_CREATEDBY_FK                               */
+/* INDEX: CONSULTANTS_PK                                        */
 /*==============================================================*/
-create index if not exists STAGE_CODE_CREATEDBY_FK on STAGE_CODES (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS CONSULTANTS_PK ON consultants (user_id);
 
 /*==============================================================*/
-/* Index: STAGE_CODE_UPDATEDBY_FK                               */
+/* TABLE: consultants_selected_skills                           */
 /*==============================================================*/
-create index if not exists STAGE_CODE_UPDATEDBY_FK on STAGE_CODES (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS consultants_selected_skills (
+   user_id              INTEGER                 NOT NULL,
+   skills_id            INTEGER                 NOT NULL,
+   CONSTRAINT pk_consultants_selected_skills PRIMARY KEY (user_id, skills_id)
 );
 
 /*==============================================================*/
-/* Table: SYSTEM_ANNOUNCEMENTS                                  */
+/* INDEX: CONSULTANTS_SELECTED_SKILLS_PK                        */
 /*==============================================================*/
-create table if not exists SYSTEM_ANNOUNCEMENTS (
-   ANNOUNCEMENT_ID      INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   USER_ID              INTEGER                 null,
-   PREFERENCE_ID        INTEGER                 not null,
-   ADM_USER_ID          INTEGER                 null,
-   ADM_USER_ID2         INTEGER                 null,
-   ANNOUNCEMENT_TITLE   VARCHAR(150)         not null,
-   ANNOUNCEMENT_MESSAGE TEXT                 not null,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   STARTS_AT            TIMESTAMPTZ          null,
-   ENDS_AT              TIMESTAMPTZ          null,
-   ANNOUNCEMENT_TYPE    VARCHAR(128)         null,
-   IS_GLOBAL            BOOLEAN                 null,
-   TARGET_PROFILE       VARCHAR(128)         null
-      constraint CKC_TARGET_PROFILE_SYSTEM_ANNOUNCEMENTS check (TARGET_PROFILE IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
-   constraint PK_SYSTEM_ANNOUNCEMENTS primary key (ANNOUNCEMENT_ID)
-);
+CREATE UNIQUE INDEX IF NOT EXISTS CONSULTANTS_SELECTED_SKILLS_PK ON consultants_selected_skills (user_id, skills_id);
 
 /*==============================================================*/
-/* Index: SYSTEM_ANNOUNCEMENTS_PK                               */
+/* TABLE: consultant_areas                                      */
 /*==============================================================*/
-create unique index if not exists SYSTEM_ANNOUNCEMENTS_PK on SYSTEM_ANNOUNCEMENTS (
-ANNOUNCEMENT_ID
+CREATE TABLE IF NOT EXISTS consultant_areas (
+   user_id              INTEGER                 NOT NULL,
+   area_id              INTEGER                 NOT NULL,
+   is_primary           BOOLEAN                 NULL,
+   CONSTRAINT pk_consultant_areas PRIMARY KEY (user_id, area_id)
 );
 
 /*==============================================================*/
-/* Index: USER_ANNOUNCEMENTS_FK                                 */
+/* INDEX: CONSULTANT_AREAS_PK                                   */
 /*==============================================================*/
-create index if not exists USER_ANNOUNCEMENTS_FK on SYSTEM_ANNOUNCEMENTS (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS CONSULTANT_AREAS_PK ON consultant_areas (user_id, area_id);
 
 /*==============================================================*/
-/* Index: ANNOUNCEMENTS_ADMIN_FK                                */
+/* TABLE: service_line_leaders                                  */
 /*==============================================================*/
-create index if not exists ANNOUNCEMENTS_ADMIN_FK on SYSTEM_ANNOUNCEMENTS (
-ADM_USER_ID
+CREATE TABLE IF NOT EXISTS service_line_leaders (
+   user_id              INTEGER                 NOT NULL,
+   service_line_id      INTEGER                 NOT NULL,
+   preferred_lang_id    INTEGER                 NULL,
+   location_id          INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   biography            TEXT                 NULL,
+   CONSTRAINT pk_service_line_leaders PRIMARY KEY (user_id)
 );
 
 /*==============================================================*/
-/* Index: ANNOUNC_NOTIF_FK                                      */
+/* INDEX: SERVICE_LINE_LEADERS_PK                               */
 /*==============================================================*/
-create index if not exists ANNOUNC_NOTIF_FK on SYSTEM_ANNOUNCEMENTS (
-PREFERENCE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS SERVICE_LINE_LEADERS_PK ON service_line_leaders (user_id);
 
 /*==============================================================*/
-/* Index: ANNOUNCEMENTS_UPDATEDBY_FK                            */
+/* INDEX: SL_SLL_FK                                             */
 /*==============================================================*/
-create index if not exists ANNOUNCEMENTS_UPDATEDBY_FK on SYSTEM_ANNOUNCEMENTS (
-ADM_USER_ID2
-);
+CREATE INDEX IF NOT EXISTS SL_SLL_FK ON service_line_leaders (service_line_id);
 
 /*==============================================================*/
-/* Table: TALENT_MANAGERS                                       */
+/* TABLE: talent_managers                                       */
 /*==============================================================*/
-create table if not exists TALENT_MANAGERS (
-   USER_ID              INTEGER                 not null,
-   PREFERRED_LANG_ID    INTEGER                 null,
-   LOCATION_ID          INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   BIOGRAPHY            TEXT                 null,
-   constraint PK_TALENT_MANAGERS primary key (USER_ID)
+CREATE TABLE IF NOT EXISTS talent_managers (
+   user_id              INTEGER                 NOT NULL,
+   preferred_lang_id    INTEGER                 NULL,
+   location_id          INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   biography            TEXT                 NULL,
+   CONSTRAINT pk_talent_managers PRIMARY KEY (user_id)
 );
 
 /*==============================================================*/
-/* Index: TALENT_MANAGERS_PK                                    */
+/* INDEX: TALENT_MANAGERS_PK                                    */
 /*==============================================================*/
-create unique index if not exists TALENT_MANAGERS_PK on TALENT_MANAGERS (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS TALENT_MANAGERS_PK ON talent_managers (user_id);
 
 /*==============================================================*/
-/* Table: USERS                                                 */
+/* TABLE: users                                                 */
 /*==============================================================*/
-create table if not exists USERS (
-   USER_ID              INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   PREFERRED_LANG_ID    INTEGER                 null,
-   LOCATION_ID          INTEGER                 null,
-   INTERACTION_ID       INTEGER                 null,
-   EMAIL_ADDRESS        VARCHAR(255)         not null,
-   PASSWORD_HASH        VARCHAR(255)         not null,
-   FULL_NAME            VARCHAR(150)         not null,
-   USERNAME             VARCHAR(50)          not null,
-   PHONE_NUMBER         VARCHAR(20)          null,
-   IS_ACTIVE            BOOLEAN              not null default true,
-   FORCE_PASSWORD_CHANGE BOOLEAN             not null default true,
-   LAST_LOGIN_AT        TIMESTAMPTZ          null,
-   LAST_ONLINE          TIMESTAMPTZ          null,
-   BIRTHDATE            DATE                 null,
-   PROFILE_IMG_URL      VARCHAR(512)         null,
-   constraint PK_USERS primary key (USER_ID),
-   constraint AK_IDENTIFIER_EMAIL_USERS unique (EMAIL_ADDRESS),
-   constraint AK_IDENTIFIER_USERNAM_USERS unique (USERNAME)
+CREATE TABLE IF NOT EXISTS users (
+   user_id              INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   user_role            VARCHAR(50)          NOT NULL DEFAULT 'Consultant',
+   preferred_lang_id    INTEGER                 NULL,
+   location_id          INTEGER                 NULL,
+   interaction_id       INTEGER                 NULL,
+   email_address        VARCHAR(255)         NOT NULL,
+   password_hash        VARCHAR(255)         NOT NULL,
+   full_name            VARCHAR(150)         NOT NULL,
+   username             VARCHAR(50)          NOT NULL,
+   phone_number         VARCHAR(20)          NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   email_confirmed      BOOLEAN              NOT NULL DEFAULT FALSE,
+   force_password_change BOOLEAN             NOT NULL DEFAULT TRUE,
+   last_login_at        TIMESTAMPTZ          NULL,
+   last_online          TIMESTAMPTZ          NULL,
+   birthdate            DATE                 NULL,
+   profile_img_url      VARCHAR(512)         NULL,
+   CONSTRAINT pk_users PRIMARY KEY (user_id),
+   CONSTRAINT ak_identifier_email_users UNIQUE (email_address),
+   CONSTRAINT ak_identifier_usernam_users UNIQUE (username),
+   CONSTRAINT ckc_user_role_users CHECK (user_role IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'))
 );
 
 /*==============================================================*/
-/* Index: USERS_PK                                              */
+/* INDEX: USERS_PK                                              */
 /*==============================================================*/
-create unique index if not exists USERS_PK on USERS (
-USER_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS USERS_PK ON users (user_id);
 
 /*==============================================================*/
-/* Index: LANG_USER_FK                                          */
+/* INDEX: LANG_USER_FK                                          */
 /*==============================================================*/
-create index if not exists LANG_USER_FK on USERS (
-PREFERRED_LANG_ID
-);
+CREATE INDEX IF NOT EXISTS LANG_USER_FK ON users (preferred_lang_id);
 
 /*==============================================================*/
-/* Index: USER_INTERACTIONS2_FK                                 */
+/* INDEX: USER_INTERACTIONS2_FK                                 */
 /*==============================================================*/
-create index if not exists USER_INTERACTIONS2_FK on USERS (
-INTERACTION_ID
-);
+CREATE INDEX IF NOT EXISTS USER_INTERACTIONS2_FK ON users (interaction_id);
 
 /*==============================================================*/
-/* Index: LOCATION_USER_FK                                      */
+/* INDEX: LOCATION_USER_FK                                      */
 /*==============================================================*/
-create index if not exists LOCATION_USER_FK on USERS (
-LOCATION_ID
-);
+CREATE INDEX IF NOT EXISTS LOCATION_USER_FK ON users (location_id);
 
 /*==============================================================*/
-/* Table: USER_BADGES_INTERACTIONS                              */
+/* TABLE: user_account_tokens                                   */
 /*==============================================================*/
-create table if not exists USER_BADGES_INTERACTIONS (
-   INTERACTION_ID       INTEGER GENERATED BY DEFAULT AS IDENTITY               not null,
-   BADGE_ID             INTEGER                 not null,
-   USER_ID              INTEGER                 not null,
-   DATE                 TIMESTAMPTZ          not null default now(),
-   TYPE                 VARCHAR(150)         not null,
-   constraint PK_USER_BADGES_INTERACTIONS primary key (INTERACTION_ID)
+CREATE TABLE IF NOT EXISTS user_account_tokens (
+   token_id                INTEGER GENERATED BY DEFAULT AS IDENTITY     NOT NULL,
+   user_id                 INTEGER                                      NOT NULL,
+   token_value             VARCHAR(255)                                 NOT NULL,
+
+   --IS token to confirm account OR to reset password?
+   token_type              VARCHAR(255)                                 NOT NULL,
+
+   expires_at              TIMESTAMPTZ                                  NOT NULL,
+   created_at              TIMESTAMPTZ                                  NOT NULL DEFAULT now(),
+   is_used                 BOOLEAN                                      NOT NULL DEFAULT FALSE,
+
+   CONSTRAINT pk_user_account_tokens PRIMARY KEY (token_id),
+   CONSTRAINT ckc_token_type_user_tokens CHECK (token_type IN ('CONFIRMATION', 'PASSWORD_RESET'))
 );
 
 /*==============================================================*/
-/* Index: USER_BADGES_INTERACTIONS_PK                           */
+/* TABLE: user_refresh_tokens                                   */
 /*==============================================================*/
-create unique index if not exists USER_BADGES_INTERACTIONS_PK on USER_BADGES_INTERACTIONS (
-INTERACTION_ID
+CREATE TABLE IF NOT EXISTS user_refresh_tokens (
+   token_id                INTEGER GENERATED BY DEFAULT AS IDENTITY     NOT NULL,
+   user_id                 INTEGER                                      NOT NULL,
+   token_value             VARCHAR(512)                                 NOT NULL,
+   expires_at              TIMESTAMPTZ                                  NOT NULL,
+   created_at              TIMESTAMPTZ                                  NOT NULL DEFAULT now(),
+
+   CONSTRAINT pk_user_refresh_tokens PRIMARY KEY (token_id)
 );
 
 /*==============================================================*/
-/* Index: USER_INTERACTIONS_FK                                  */
+/* TABLE: user_badges_interactions                              */
 /*==============================================================*/
-create index if not exists USER_INTERACTIONS_FK on USER_BADGES_INTERACTIONS (
-USER_ID
+CREATE TABLE IF NOT EXISTS user_badges_interactions (
+   interaction_id       INTEGER GENERATED BY DEFAULT AS IDENTITY               NOT NULL,
+   badge_id             INTEGER                 NOT NULL,
+   user_id              INTEGER                 NOT NULL,
+   DATE                 TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   type                 VARCHAR(150)         NOT NULL,
+   CONSTRAINT pk_user_badges_interactions PRIMARY KEY (interaction_id)
 );
 
 /*==============================================================*/
-/* Index: BADGES_INTERACTIONS_FK                                */
+/* INDEX: USER_BADGES_INTERACTIONS_PK                           */
 /*==============================================================*/
-create index if not exists BADGES_INTERACTIONS_FK on USER_BADGES_INTERACTIONS (
-BADGE_ID
-);
+CREATE UNIQUE INDEX IF NOT EXISTS USER_BADGES_INTERACTIONS_PK ON user_badges_interactions (interaction_id);
+
+/*==============================================================*/
+/* INDEX: USER_INTERACTIONS_FK                                  */
+/*==============================================================*/
+CREATE INDEX IF NOT EXISTS USER_INTERACTIONS_FK ON user_badges_interactions (user_id);
+
+/*==============================================================*/
+/* INDEX: BADGES_INTERACTIONS_FK                                */
+/*==============================================================*/
+CREATE INDEX IF NOT EXISTS BADGES_INTERACTIONS_FK ON user_badges_interactions (badge_id);
+
+ALTER TABLE administrators
+   ADD CONSTRAINT fk_administ_users_inh_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table ADMINISTRATORS
-   add constraint FK_ADMINIST_USERS_INH_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE announc_sl
+   ADD CONSTRAINT fk_announc__announc_s_system_a FOREIGN KEY (announcement_id)
+      REFERENCES system_announcements (announcement_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table ANNOUNC_SL
-   add constraint FK_ANNOUNC__ANNOUNC_S_SYSTEM_A foreign key (ANNOUNCEMENT_ID)
-      references SYSTEM_ANNOUNCEMENTS (ANNOUNCEMENT_ID)
-      on delete restrict on update restrict;
+ALTER TABLE announc_sl
+   ADD CONSTRAINT fk_announc__announc_s_services FOREIGN KEY (service_line_id)
+      REFERENCES services_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table ANNOUNC_SL
-   add constraint FK_ANNOUNC__ANNOUNC_S_SERVICES foreign key (SERVICE_LINE_ID)
-      references SERVICES_LINES (SERVICE_LINE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE application_validation_logs
+   ADD CONSTRAINT fk_applicat_applicati_badge_ap FOREIGN KEY (application_id)
+      REFERENCES badge_applications (application_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table APPLICATION_VALIDATION_LOGS
-   add constraint FK_APPLICAT_APPLICATI_BADGE_AP foreign key (APPLICATION_ID)
-      references BADGE_APPLICATIONS (APPLICATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE application_validation_logs
+   ADD CONSTRAINT fk_applicat_users_val_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table APPLICATION_VALIDATION_LOGS
-   add constraint FK_APPLICAT_USERS_VAL_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE areas
+   ADD CONSTRAINT fk_areas_area_crea_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AREAS
-   add constraint FK_AREAS_AREA_CREA_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE areas
+   ADD CONSTRAINT fk_areas_area_upda_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AREAS
-   add constraint FK_AREAS_AREA_UPDA_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE areas
+   ADD CONSTRAINT fk_areas_sl_areas_services FOREIGN KEY (service_line_id)
+      REFERENCES services_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AREAS
-   add constraint FK_AREAS_SL_AREAS_SERVICES foreign key (SERVICE_LINE_ID)
-      references SERVICES_LINES (SERVICE_LINE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE awarded_badges
+   ADD CONSTRAINT fk_awarded__awarded_a_badge_ap FOREIGN KEY (application_id)
+      REFERENCES badge_applications (application_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AWARDED_BADGES
-   add constraint FK_AWARDED__AWARDED_A_BADGE_AP foreign key (APPLICATION_ID)
-      references BADGE_APPLICATIONS (APPLICATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE awarded_badges
+   ADD CONSTRAINT fk_awarded__cons_awar_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AWARDED_BADGES
-   add constraint FK_AWARDED__CONS_AWAR_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE awarded_badges
+   ADD CONSTRAINT fk_awarded__validatio_applicat FOREIGN KEY (validation_log_id)
+      REFERENCES application_validation_logs (validation_log_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table AWARDED_BADGES
-   add constraint FK_AWARDED__VALIDATIO_APPLICAT foreign key (VALIDATION_LOG_ID)
-      references APPLICATION_VALIDATION_LOGS (VALIDATION_LOG_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_area_badg_areas FOREIGN KEY (area_id)
+      REFERENCES areas (area_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_AREA_BADG_AREAS foreign key (AREA_ID)
-      references AREAS (AREA_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_badges_cr_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_BADGES_CR_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_badges_in_user_bad FOREIGN KEY (interaction_id)
+      REFERENCES user_badges_interactions (interaction_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_BADGES_IN_USER_BAD foreign key (INTERACTION_ID)
-      references USER_BADGES_INTERACTIONS (INTERACTION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_badges_up_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_BADGES_UP_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_goals2_goals FOREIGN KEY (goal_id)
+      REFERENCES goals (goal_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_GOALS2_GOALS foreign key (GOAL_ID)
-      references GOALS (GOAL_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_stages_ba_progress FOREIGN KEY (progression_stage_id)
+      REFERENCES progression_stages (progression_stage_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGES
-   add constraint FK_BADGES_STAGES_BA_PROGRESS foreign key (PROGRESSION_STAGE_ID)
-      references PROGRESSION_STAGES (PROGRESSION_STAGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_applications
+   ADD CONSTRAINT fk_badge_ap_applicati_certific FOREIGN KEY (certificate_id)
+      REFERENCES certificates (certificate_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_APPLICATIONS
-   add constraint FK_BADGE_AP_APPLICATI_CERTIFIC foreign key (CERTIFICATE_ID)
-      references CERTIFICATES (CERTIFICATE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_applications
+   ADD CONSTRAINT fk_badge_ap_awarded_a_awarded_ FOREIGN KEY (awarded_badges_id)
+      REFERENCES awarded_badges (awarded_badges_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_APPLICATIONS
-   add constraint FK_BADGE_AP_AWARDED_A_AWARDED_ foreign key (AWARDED_BADGES_ID)
-      references AWARDED_BADGES (AWARDED_BADGES_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_applications
+   ADD CONSTRAINT fk_badge_ap_badges_ap_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_APPLICATIONS
-   add constraint FK_BADGE_AP_BADGES_AP_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_applications
+   ADD CONSTRAINT fk_badge_ap_cons_apll_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_APPLICATIONS
-   add constraint FK_BADGE_AP_CONS_APLL_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_applications
+   ADD CONSTRAINT fk_badge_ap_timelines_goals FOREIGN KEY (goal_id)
+      REFERENCES goals (goal_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_APPLICATIONS
-   add constraint FK_BADGE_AP_TIMELINES_GOALS foreign key (GOAL_ID)
-      references GOALS (GOAL_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_requirements
+   ADD CONSTRAINT fk_badge_re_badges_re_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_REQUIREMENTS
-   add constraint FK_BADGE_RE_BADGES_RE_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE badge_requirements
+   ADD CONSTRAINT fk_badge_re_stages_re_progress FOREIGN KEY (progression_stage_id)
+      REFERENCES progression_stages (progression_stage_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table BADGE_REQUIREMENTS
-   add constraint FK_BADGE_RE_STAGES_RE_PROGRESS foreign key (PROGRESSION_STAGE_ID)
-      references PROGRESSION_STAGES (PROGRESSION_STAGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE certificates
+   ADD CONSTRAINT fk_certific_applicati_badge_ap FOREIGN KEY (application_id)
+      REFERENCES badge_applications (application_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CERTIFICATES
-   add constraint FK_CERTIFIC_APPLICATI_BADGE_AP foreign key (APPLICATION_ID)
-      references BADGE_APPLICATIONS (APPLICATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE consultants
+   ADD CONSTRAINT fk_consulta_users_inh_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CONSULTANTS
-   add constraint FK_CONSULTA_USERS_INH_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE consultants_selected_skills
+   ADD CONSTRAINT fk_consulta_consultan_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CONSULTANTS_SELECTED_SKILLS
-   add constraint FK_CONSULTA_CONSULTAN_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE consultants_selected_skills
+   ADD CONSTRAINT fk_consulta_consultan_skills FOREIGN KEY (skills_id)
+      REFERENCES skills (skills_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CONSULTANTS_SELECTED_SKILLS
-   add constraint FK_CONSULTA_CONSULTAN_SKILLS foreign key (SKILLS_ID)
-      references SKILLS (SKILLS_ID)
-      on delete restrict on update restrict;
+ALTER TABLE consultant_areas
+   ADD CONSTRAINT fk_consulta_consultan_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CONSULTANT_AREAS
-   add constraint FK_CONSULTA_CONSULTAN_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE consultant_areas
+   ADD CONSTRAINT fk_consulta_consultan_areas FOREIGN KEY (area_id)
+      REFERENCES areas (area_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table CONSULTANT_AREAS
-   add constraint FK_CONSULTA_CONSULTAN_AREAS foreign key (AREA_ID)
-      references AREAS (AREA_ID)
-      on delete restrict on update restrict;
+ALTER TABLE gdpr_policies
+   ADD CONSTRAINT fk_gdpr_pol_gdpr_crea_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table GDPR_POLICIES
-   add constraint FK_GDPR_POL_GDPR_CREA_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE gdpr_policies
+   ADD CONSTRAINT fk_gdpr_pol_gdpr_upda_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table GDPR_POLICIES
-   add constraint FK_GDPR_POL_GDPR_UPDA_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE goals
+   ADD CONSTRAINT fk_goals_cons_time_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table GOALS
-   add constraint FK_GOALS_CONS_TIME_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE goals
+   ADD CONSTRAINT fk_goals_goals_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table GOALS
-   add constraint FK_GOALS_GOALS_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE goals
+   ADD CONSTRAINT fk_goals_timelines_badge_ap FOREIGN KEY (application_id)
+      REFERENCES badge_applications (application_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table GOALS
-   add constraint FK_GOALS_TIMELINES_BADGE_AP foreign key (APPLICATION_ID)
-      references BADGE_APPLICATIONS (APPLICATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE learning_paths
+   ADD CONSTRAINT fk_learning_lp_create_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table LEARNING_PATHS
-   add constraint FK_LEARNING_LP_CREATE_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE learning_paths
+   ADD CONSTRAINT fk_learning_lp_update_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table LEARNING_PATHS
-   add constraint FK_LEARNING_LP_UPDATE_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notifications
+   ADD CONSTRAINT fk_notifica_notif_def_notifica FOREIGN KEY (definition_id)
+      REFERENCES notification_definitions (definition_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATIONS
-   add constraint FK_NOTIFICA_NOTIF_DEF_NOTIFICA foreign key (DEFINITION_ID)
-      references NOTIFICATION_DEFINITIONS (DEFINITION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notifications
+   ADD CONSTRAINT fk_notifica_user_noti_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATIONS
-   add constraint FK_NOTIFICA_USER_NOTI_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_definitions
+   ADD CONSTRAINT fk_notifica_admin_def_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_DEFINITIONS
-   add constraint FK_NOTIFICA_ADMIN_DEF_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_definitions
+   ADD CONSTRAINT fk_notifica_notificat_notifica FOREIGN KEY (preference_id)
+      REFERENCES notification_preferences (preference_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_DEFINITIONS
-   add constraint FK_NOTIFICA_NOTIFICAT_NOTIFICA foreign key (PREFERENCE_ID)
-      references NOTIFICATION_PREFERENCES (PREFERENCE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_preferences
+   ADD CONSTRAINT fk_notifica_announc_n_system_a FOREIGN KEY (announcement_id)
+      REFERENCES system_announcements (announcement_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_PREFERENCES
-   add constraint FK_NOTIFICA_ANNOUNC_N_SYSTEM_A foreign key (ANNOUNCEMENT_ID)
-      references SYSTEM_ANNOUNCEMENTS (ANNOUNCEMENT_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_preferences
+   ADD CONSTRAINT fk_notifica_notificat_notifica FOREIGN KEY (definition_id)
+      REFERENCES notification_definitions (definition_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_PREFERENCES
-   add constraint FK_NOTIFICA_NOTIFICAT_NOTIFICA foreign key (DEFINITION_ID)
-      references NOTIFICATION_DEFINITIONS (DEFINITION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_preferences
+   ADD CONSTRAINT fk_notifica_notif_sla_slas FOREIGN KEY (sla_id)
+      REFERENCES slas (sla_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_PREFERENCES
-   add constraint FK_NOTIFICA_NOTIF_SLA_SLAS foreign key (SLA_ID)
-      references SLAS (SLA_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_preferences
+   ADD CONSTRAINT fk_notifica_notpref_c_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_PREFERENCES
-   add constraint FK_NOTIFICA_NOTPREF_C_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE notification_preferences
+   ADD CONSTRAINT fk_notifica_notpref_u_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table NOTIFICATION_PREFERENCES
-   add constraint FK_NOTIFICA_NOTPREF_U_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE points_history
+   ADD CONSTRAINT fk_points_h_badges_po_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table POINTS_HISTORY
-   add constraint FK_POINTS_H_BADGES_PO_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE points_history
+   ADD CONSTRAINT fk_points_h_cons_poin_consulta FOREIGN KEY (user_id)
+      REFERENCES consultants (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table POINTS_HISTORY
-   add constraint FK_POINTS_H_CONS_POIN_CONSULTA foreign key (USER_ID)
-      references CONSULTANTS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE points_history
+   ADD CONSTRAINT fk_points_h_requireme_badge_re FOREIGN KEY (requirement_id)
+      REFERENCES badge_requirements (requirement_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table POINTS_HISTORY
-   add constraint FK_POINTS_H_REQUIREME_BADGE_RE foreign key (REQUIREMENT_ID)
-      references BADGE_REQUIREMENTS (REQUIREMENT_ID)
-      on delete restrict on update restrict;
+ALTER TABLE progression_stages
+   ADD CONSTRAINT fk_progress_areas_sta_areas FOREIGN KEY (area_id)
+      REFERENCES areas (area_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table PROGRESSION_STAGES
-   add constraint FK_PROGRESS_AREAS_STA_AREAS foreign key (AREA_ID)
-      references AREAS (AREA_ID)
-      on delete restrict on update restrict;
+ALTER TABLE progression_stages
+   ADD CONSTRAINT fk_progress_stages_ba_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table PROGRESSION_STAGES
-   add constraint FK_PROGRESS_STAGES_BA_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE progression_stages
+   ADD CONSTRAINT fk_progress_stages_cr_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table PROGRESSION_STAGES
-   add constraint FK_PROGRESS_STAGES_CR_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE progression_stages
+   ADD CONSTRAINT fk_progress_stages_up_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table PROGRESSION_STAGES
-   add constraint FK_PROGRESS_STAGES_UP_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE progression_stages
+   ADD CONSTRAINT fk_progress_stage_sta_stage_co FOREIGN KEY (stage_code_id)
+      REFERENCES stage_codes (stage_code_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table PROGRESSION_STAGES
-   add constraint FK_PROGRESS_STAGE_STA_STAGE_CO foreign key (STAGE_CODE_ID)
-      references STAGE_CODES (STAGE_CODE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE requirements_evidences
+   ADD CONSTRAINT fk_requirem_applicati_badge_ap FOREIGN KEY (application_id)
+      REFERENCES badge_applications (application_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table REQUIREMENTS_EVIDENCES
-   add constraint FK_REQUIREM_APPLICATI_BADGE_AP foreign key (APPLICATION_ID)
-      references BADGE_APPLICATIONS (APPLICATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE requirements_evidences
+   ADD CONSTRAINT fk_requirem_requireme_badge_re FOREIGN KEY (requirement_id)
+      REFERENCES badge_requirements (requirement_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table REQUIREMENTS_EVIDENCES
-   add constraint FK_REQUIREM_REQUIREME_BADGE_RE foreign key (REQUIREMENT_ID)
-      references BADGE_REQUIREMENTS (REQUIREMENT_ID)
-      on delete restrict on update restrict;
+ALTER TABLE rewards
+   ADD CONSTRAINT fk_rewards_badge_rew_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table REWARDS
-   add constraint FK_REWARDS_BADGE_REW_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE services_lines
+   ADD CONSTRAINT fk_services_sl_create_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SERVICES_LINES
-   add constraint FK_SERVICES_SL_CREATE_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE services_lines
+   ADD CONSTRAINT fk_services_sl_lp_learning FOREIGN KEY (learning_path_id)
+      REFERENCES learning_paths (learning_path_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SERVICES_LINES
-   add constraint FK_SERVICES_SL_LP_LEARNING foreign key (LEARNING_PATH_ID)
-      references LEARNING_PATHS (LEARNING_PATH_ID)
-      on delete restrict on update restrict;
+ALTER TABLE services_lines
+   ADD CONSTRAINT fk_services_sl_update_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SERVICES_LINES
-   add constraint FK_SERVICES_SL_UPDATE_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE service_line_leaders
+   ADD CONSTRAINT fk_service__sl_sll_services FOREIGN KEY (service_line_id)
+      REFERENCES services_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SERVICE_LINE_LEADERS
-   add constraint FK_SERVICE__SL_SLL_SERVICES foreign key (SERVICE_LINE_ID)
-      references SERVICES_LINES (SERVICE_LINE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE service_line_leaders
+   ADD CONSTRAINT fk_service__users_inh_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SERVICE_LINE_LEADERS
-   add constraint FK_SERVICE__USERS_INH_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE skills
+   ADD CONSTRAINT fk_skills_badges_sk_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SKILLS
-   add constraint FK_SKILLS_BADGES_SK_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE skills
+   ADD CONSTRAINT fk_skills_skills_cr_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SKILLS
-   add constraint FK_SKILLS_SKILLS_CR_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE skills
+   ADD CONSTRAINT fk_skills_skills_up_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SKILLS
-   add constraint FK_SKILLS_SKILLS_UP_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE slas
+   ADD CONSTRAINT fk_slas_notificat_notifica FOREIGN KEY (definition_id)
+      REFERENCES notification_definitions (definition_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SLAS
-   add constraint FK_SLAS_NOTIFICAT_NOTIFICA foreign key (DEFINITION_ID)
-      references NOTIFICATION_DEFINITIONS (DEFINITION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE slas
+   ADD CONSTRAINT fk_slas_notif_sla_notifica FOREIGN KEY (preference_id)
+      REFERENCES notification_preferences (preference_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SLAS
-   add constraint FK_SLAS_NOTIF_SLA_NOTIFICA foreign key (PREFERENCE_ID)
-      references NOTIFICATION_PREFERENCES (PREFERENCE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE slas
+   ADD CONSTRAINT fk_slas_slas_crea_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SLAS
-   add constraint FK_SLAS_SLAS_CREA_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE slas
+   ADD CONSTRAINT fk_slas_slas_upda_administ FOREIGN KEY (adm_user_id2)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SLAS
-   add constraint FK_SLAS_SLAS_UPDA_ADMINIST foreign key (ADM_USER_ID2)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE slas
+   ADD CONSTRAINT fk_slas_user_slas_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SLAS
-   add constraint FK_SLAS_USER_SLAS_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE sl_slas
+   ADD CONSTRAINT fk_sl_slas_sl_slas_services FOREIGN KEY (service_line_id)
+      REFERENCES services_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SL_SLAS
-   add constraint FK_SL_SLAS_SL_SLAS_SERVICES foreign key (SERVICE_LINE_ID)
-      references SERVICES_LINES (SERVICE_LINE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE sl_slas
+   ADD CONSTRAINT fk_sl_slas_sl_slas2_slas FOREIGN KEY (sla_id)
+      REFERENCES slas (sla_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SL_SLAS
-   add constraint FK_SL_SLAS_SL_SLAS2_SLAS foreign key (SLA_ID)
-      references SLAS (SLA_ID)
-      on delete restrict on update restrict;
+ALTER TABLE stage_codes
+   ADD CONSTRAINT fk_stage_co_stagecode_administ FOREIGN KEY (user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table STAGE_CODES
-   add constraint FK_STAGE_CO_STAGECODE_ADMINIST foreign key (USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE stage_codes
+   ADD CONSTRAINT fk_stage_co_stage_cod_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table STAGE_CODES
-   add constraint FK_STAGE_CO_STAGE_COD_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE system_announcements
+   ADD CONSTRAINT fk_system_a_announcem_administ FOREIGN KEY (adm_user_id)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SYSTEM_ANNOUNCEMENTS
-   add constraint FK_SYSTEM_A_ANNOUNCEM_ADMINIST foreign key (ADM_USER_ID)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE system_announcements
+   ADD CONSTRAINT fk_system_a_announc_n_notifica FOREIGN KEY (preference_id)
+      REFERENCES notification_preferences (preference_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SYSTEM_ANNOUNCEMENTS
-   add constraint FK_SYSTEM_A_ANNOUNC_N_NOTIFICA foreign key (PREFERENCE_ID)
-      references NOTIFICATION_PREFERENCES (PREFERENCE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE system_announcements
+   ADD CONSTRAINT fk_system_a_announc_u_administ FOREIGN KEY (adm_user_id2)
+      REFERENCES administrators (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SYSTEM_ANNOUNCEMENTS
-   add constraint FK_SYSTEM_A_ANNOUNC_U_ADMINIST foreign key (ADM_USER_ID2)
-      references ADMINISTRATORS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE system_announcements
+   ADD CONSTRAINT fk_system_a_user_anno_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table SYSTEM_ANNOUNCEMENTS
-   add constraint FK_SYSTEM_A_USER_ANNO_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE talent_managers
+   ADD CONSTRAINT fk_talent_m_users_inh_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table TALENT_MANAGERS
-   add constraint FK_TALENT_M_USERS_INH_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE users
+   ADD CONSTRAINT fk_users_lang_user_preferre FOREIGN KEY (preferred_lang_id)
+      REFERENCES preferred_lang (preferred_lang_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table USERS
-   add constraint FK_USERS_LANG_USER_PREFERRE foreign key (PREFERRED_LANG_ID)
-      references PREFERRED_LANG (PREFERRED_LANG_ID)
-      on delete restrict on update restrict;
+ALTER TABLE users
+   ADD CONSTRAINT fk_users_location__location FOREIGN KEY (location_id)
+      REFERENCES locations (location_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table USERS
-   add constraint FK_USERS_LOCATION__LOCATION foreign key (LOCATION_ID)
-      references LOCATIONS (LOCATION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE users
+   ADD CONSTRAINT fk_users_user_inte_user_bad FOREIGN KEY (interaction_id)
+      REFERENCES user_badges_interactions (interaction_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table USERS
-   add constraint FK_USERS_USER_INTE_USER_BAD foreign key (INTERACTION_ID)
-      references USER_BADGES_INTERACTIONS (INTERACTION_ID)
-      on delete restrict on update restrict;
+ALTER TABLE user_badges_interactions
+   ADD CONSTRAINT fk_user_bad_badges_in_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table USER_BADGES_INTERACTIONS
-   add constraint FK_USER_BAD_BADGES_IN_BADGES foreign key (BADGE_ID)
-      references BADGES (BADGE_ID)
-      on delete restrict on update restrict;
+ALTER TABLE user_badges_interactions
+   ADD CONSTRAINT fk_user_bad_user_inte_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-alter table USER_BADGES_INTERACTIONS
-   add constraint FK_USER_BAD_USER_INTE_USERS foreign key (USER_ID)
-      references USERS (USER_ID)
-      on delete restrict on update restrict;
+ALTER TABLE user_account_tokens  
+   ADD CONSTRAINT fk_user_tokens_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE CASCADE ON UPDATE RESTRICT;
 
+ALTER TABLE user_refresh_tokens
+   ADD CONSTRAINT fk_refresh_users FOREIGN KEY (user_id)
+      REFERENCES users (user_id)
+      ON DELETE CASCADE
