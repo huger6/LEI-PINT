@@ -1,0 +1,69 @@
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  return sequelize.define('service_line_leaders', {
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      references: {
+        model: 'users',
+        key: 'user_id'
+      }
+    },
+    service_line_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'services_lines',
+        key: 'service_line_id'
+      }
+    },
+    biography: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    location_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    interaction_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
+  }, {
+    sequelize,
+    tableName: 'service_line_leaders',
+    schema: 'public',
+    timestamps: true,
+    underscored: true,
+    indexes: [
+      {
+        name: "idx_sll_service_line",
+        fields: [
+          { name: "user_id" },
+          { name: "service_line_id" },
+        ]
+      },
+      {
+        name: "pk_service_line_leaders",
+        unique: true,
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "service_line_leaders_pk",
+        unique: true,
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "sl_sll_fk",
+        fields: [
+          { name: "service_line_id" },
+        ]
+      },
+    ]
+  });
+};

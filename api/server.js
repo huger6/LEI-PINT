@@ -3,49 +3,53 @@ const { logger } = require('./src/utils/logger');
 
 loadEnvironment();
 
-const db = require('./src/config/db');
+const { sequelize } = require('./src/config/db');
 const { app, PORT } = require('./src/app');
 
-async function startServer() {
-    try {
-        await db.testConnection();
-        logger.info('Database connection OK');
+async function verifyDatabaseConnection() {
+    await sequelize.authenticate();
+    logger.info('Database connection OK');
+}
 
-        app.listen(PORT, () => {
-            logger.info('Server started', {
-                port: PORT,
-                url: `http://localhost:${PORT}`
-            });
+function startHttpServer() {
+    app.listen(PORT, () => {
+        logger.info('Server started', {
+            port: PORT,
+            url: `http://localhost:${PORT}`
         });
-    } catch (error) {
-        logger.error('Database connection FAILED', {
+    });
+}
+
+function handleFatalError(label, error) {
+    if (error instanceof Error) {
+        logger.error(label, {
             message: error.message,
             stack: error.stack
         });
-        process.exit(1);
+    } else {
+        logger.error(label, {
+            reason: String(error)
+        });
+    }
+
+    process.exit(1);
+}
+
+async function bootstrap() {
+    try {
+        await verifyDatabaseConnection();
+        startHttpServer();
+    } catch (error) {
+        handleFatalError('Startup failed', error);
     }
 }
 
 process.on('unhandledRejection', (reason) => {
-    if (reason instanceof Error) {
-        logger.error('Unhandled promise rejection', {
-            message: reason.message,
-            stack: reason.stack
-        });
-        return;
-    }
-
-    logger.error('Unhandled promise rejection', {
-        reason: String(reason)
-    });
+    handleFatalError('Unhandled promise rejection', reason);
 });
 
 process.on('uncaughtException', (error) => {
-    logger.error('Uncaught exception', {
-        message: error.message,
-        stack: error.stack
-    });
-    process.exit(1);
+    handleFatalError('Uncaught exception', error);
 });
 
-startServer();
+bootstrap();
