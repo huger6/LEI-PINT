@@ -59,11 +59,12 @@ const loginSchema = z.object({
         errorMap: () => ({ message: "Please enter a valid email or username." })
     }),
     password: z.string().min(1, "Password is required"),
-    saveLogin: z.boolean().default(false)
+    remember: z.boolean().default(false)
 });
 
 module.exports = {
+    emailRule,
     baseUserSchema,
     registerSchema,
-    loginSchema
+    loginSchema,
 };
