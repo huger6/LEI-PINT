@@ -18,10 +18,7 @@ class NavLink extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(text, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(width: 4),
           GestureDetector(
             onTap: onPressed,

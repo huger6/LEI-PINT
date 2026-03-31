@@ -11,6 +11,8 @@ class CustomTextField extends StatefulWidget {
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final int maxLines;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomTextField({
     Key? key,
@@ -24,6 +26,8 @@ class CustomTextField extends StatefulWidget {
     this.errorText,
     this.onChanged,
     this.maxLines = 1,
+    this.readOnly = false,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -47,9 +51,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
         // Label
         Text(
           widget.label,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
 
@@ -61,6 +65,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           validator: widget.validator,
           onChanged: widget.onChanged,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
           decoration: InputDecoration(
             hintText: widget.hintText,
             prefixIcon: Icon(widget.prefixIcon),
@@ -72,9 +78,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       });
                     },
                     child: Icon(
-                      _obscureText
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
                     ),
                   )
                 : null,
