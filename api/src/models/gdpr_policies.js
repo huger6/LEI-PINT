@@ -45,31 +45,29 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'gdpr_policies',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "gdpr_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
       {
         name: "gdpr_policies_pk",
         unique: true,
         fields: [
           { name: "policy_id" },
-        ]
-      },
-      {
-        name: "gdpr_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
       {

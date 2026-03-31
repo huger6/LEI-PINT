@@ -26,16 +26,9 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'service_line_leaders',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "idx_sll_service_line",
-        fields: [
-          { name: "user_id" },
-          { name: "service_line_id" },
-        ]
-      },
       {
         name: "pk_service_line_leaders",
         unique: true,
@@ -48,12 +41,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "user_id" },
-        ]
-      },
-      {
-        name: "sl_sll_fk",
-        fields: [
-          { name: "service_line_id" },
         ]
       },
     ]

@@ -51,33 +51,24 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'progression_stages',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "areas_stages_fk",
-        fields: [
-          { name: "area_id" },
-        ]
-      },
-      {
-        name: "idx_stages_area_id",
-        fields: [
-          { name: "area_id" },
-        ]
-      },
-      {
-        name: "idx_stages_sequence",
-        fields: [
-          { name: "area_id" },
-          { name: "stage_sequence" },
-        ]
-      },
       {
         name: "pk_progression_stages",
         unique: true,
@@ -90,24 +81,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "progression_stage_id" },
-        ]
-      },
-      {
-        name: "stage_stagecodes_fk",
-        fields: [
-          { name: "stage_code_id" },
-        ]
-      },
-      {
-        name: "stages_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "stages_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
     ]

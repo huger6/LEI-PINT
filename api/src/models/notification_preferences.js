@@ -67,44 +67,24 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'notification_preferences',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "announc_notif2_fk",
-        fields: [
-          { name: "announcement_id" },
-        ]
-      },
-      {
-        name: "not_def_pref2_fk",
-        fields: [
-          { name: "definition_id" },
-        ]
-      },
-      {
-        name: "not_preferences_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "not_preferences_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "notif_slas_fk",
-        fields: [
-          { name: "sla_id" },
-        ]
-      },
       {
         name: "notificate_to_pk",
         unique: true,

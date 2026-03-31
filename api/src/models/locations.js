@@ -16,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'locations',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {

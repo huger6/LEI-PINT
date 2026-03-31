@@ -246,12 +246,8 @@ function initModels(sequelize) {
   users.hasMany(system_announcements, { as: "system_announcements", foreignKey: "user_id"});
   talent_managers.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(talent_managers, { as: "talent_manager", foreignKey: "user_id"});
-  user_account_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(user_account_tokens, { as: "user_account_tokens", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "user_id"});
-  user_refresh_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(user_refresh_tokens, { as: "user_refresh_tokens", foreignKey: "user_id"});
 
   return {
     administrators,

@@ -80,39 +80,24 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'slas',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "admin_sla_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "idx_slas_active_profile",
-        fields: [
-          { name: "is_active" },
-          { name: "target_profile" },
-        ]
-      },
-      {
-        name: "not_def_slas_fk",
-        fields: [
-          { name: "definition_id" },
-        ]
-      },
-      {
-        name: "notif_slas2_fk",
-        fields: [
-          { name: "preference_id" },
-        ]
-      },
       {
         name: "pk_slas",
         unique: true,
@@ -125,18 +110,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "sla_id" },
-        ]
-      },
-      {
-        name: "slas_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "user_slas_fk",
-        fields: [
-          { name: "user_id" },
         ]
       },
     ]

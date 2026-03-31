@@ -59,40 +59,14 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'requirements_evidences',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "applications_evidences_fk",
-        fields: [
-          { name: "application_id" },
-        ]
-      },
-      {
-        name: "idx_evidences_app_req",
-        fields: [
-          { name: "application_id" },
-          { name: "requirement_id" },
-        ]
-      },
-      {
-        name: "idx_evidences_review_status",
-        fields: [
-          { name: "tm_reviewed" },
-          { name: "sll_reviewed" },
-        ]
-      },
       {
         name: "pk_requirements_evidences",
         unique: true,
         fields: [
           { name: "evidence_id" },
-        ]
-      },
-      {
-        name: "requirements_evidences_fk",
-        fields: [
-          { name: "requirement_id" },
         ]
       },
       {

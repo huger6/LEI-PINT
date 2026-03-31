@@ -39,26 +39,24 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'skills',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "badges_skills_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "idx_skills_name",
-        fields: [
-          { name: "skill_name" },
-        ]
-      },
       {
         name: "pk_skills",
         unique: true,
@@ -67,22 +65,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "skills_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
         name: "skills_pk",
         unique: true,
         fields: [
           { name: "skills_id" },
-        ]
-      },
-      {
-        name: "skills_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
     ]

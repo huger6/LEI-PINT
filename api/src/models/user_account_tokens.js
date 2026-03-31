@@ -10,11 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      }
+      allowNull: false
     },
     token_value: {
       type: DataTypes.STRING(255),
@@ -32,21 +28,19 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'user_account_tokens',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "idx_tokens_active_user",
-        fields: [
-          { name: "user_id" },
-          { name: "token_type" },
-        ]
-      },
       {
         name: "pk_user_account_tokens",
         unique: true,

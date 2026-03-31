@@ -57,26 +57,24 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'areas',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "area_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "area_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
       {
         name: "areas_pk",
         unique: true,
@@ -85,22 +83,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "idx_areas_sl_id",
-        fields: [
-          { name: "service_line_id" },
-        ]
-      },
-      {
         name: "pk_areas",
         unique: true,
         fields: [
           { name: "area_id" },
-        ]
-      },
-      {
-        name: "sl_areas_fk",
-        fields: [
-          { name: "service_line_id" },
         ]
       },
       {

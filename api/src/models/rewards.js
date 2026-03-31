@@ -28,15 +28,9 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'rewards',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "badge_rewards_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
       {
         name: "pk_rewards",
         unique: true,
