@@ -8,7 +8,9 @@ const router = express.Router();
 
 router.post('/register', annonymousUsersOnly, authController.register);
 
-router.post('/login', annonymousUsersOnly);
+router.post('/login', annonymousUsersOnly, authController.login);
+
+router.post('/refresh', authController.refresh);
 
 router.post('/logout', loginRequired);
 
