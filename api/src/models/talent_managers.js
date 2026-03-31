@@ -13,14 +13,6 @@ module.exports = function(sequelize, DataTypes) {
     biography: {
       type: DataTypes.TEXT,
       allowNull: true
-    },
-    location_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    interaction_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
     }
   }, {
     sequelize,

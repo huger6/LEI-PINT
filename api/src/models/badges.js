@@ -33,14 +33,6 @@ module.exports = function(sequelize, DataTypes) {
         key: 'goal_id'
       }
     },
-    interaction_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'user_badges_interactions',
-        key: 'interaction_id'
-      }
-    },
     badge_title: {
       type: DataTypes.STRING(100),
       allowNull: false
@@ -113,12 +105,6 @@ module.exports = function(sequelize, DataTypes) {
         name: "badges_createdby_fk",
         fields: [
           { name: "created_by" },
-        ]
-      },
-      {
-        name: "badges_interactions2_fk",
-        fields: [
-          { name: "interaction_id" },
         ]
       },
       {

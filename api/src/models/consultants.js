@@ -12,15 +12,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     gdpr_accepted: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
-    location_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    interaction_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     biography: {
       type: DataTypes.TEXT,
