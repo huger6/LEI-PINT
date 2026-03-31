@@ -3,10 +3,11 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
-const { registerSchema } = require('../validations/auth.validation');
+const { registerSchema, loginSchema } = require('../validations/auth.validation');
 const { sendConfirmationEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
+const { search } = require('../routes/auth.routes');
 
 const register = async (req, res) => {
     const t = await sequelize.transaction();
@@ -355,7 +356,164 @@ const confirmEmail = async (req, res) => {
     }
 };
 
+const login = async (req, res) => {
+    const t = await models.sequelize.transaction();
+    const requestId = req.headers['x-request-id'] || null;
+
+    try {
+        const { identifier, password, saveLogin } = loginSchema.parse(req.body);
+
+        // Identift it is email or username
+        const isEmail = emailRule.safeParse(identifier).success;
+
+        const searchCriteria = isEmail ? { email_address: identifier } : { username: identifier };
+
+        logger.info(`Login attempt identified as ${isEmail ? 'email' : 'username'}`, {
+            requestId,
+            identifier
+        });
+
+        const user = await models.users.findOne({ where: searchCriteria });
+
+        if (!user) {
+            await t.rollback();
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid credentials.", // This is intentional
+            });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+        if (!isPasswordValid) {
+            await t.rollback();
+
+            logger.warn('Failed login attempt: wrong password.', {
+                requestId,
+                identifier
+            });
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials."
+            });
+        }
+
+        // Check if user has confirmed it's email
+        if (!user.email_confirmed) {
+            await t.rollback();
+
+            logger.warn('Failed login attempt: e-mail address is not confirmed.', {
+                requestId,
+                identifier
+            });
+            return res.status(403).json({
+                success: false,
+                message: "Please validate your e-mail address first."
+            });
+        }
+
+        // User first login is handled below as we pass force_password_change
+
+        // JWT 
+        const payload = {
+            sub: user.user_id,
+            guid: user.user_guid,
+            role: user.user_role,
+            username: user.username,
+            fpc: user.force_password_change
+        };
+
+        const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
+        });
+
+        // Generate Refresh Token (to maintain session)
+        const refreshTokenDurationDays = saveLogin ? 30 : 0.35; // 1/3 de dia
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
+
+        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
+
+        await models.user_refresh_tokens.create({
+            user_id: user.user_id,
+            token_value: refreshTokenValue,
+            expires_at: expiresAt
+        }, { transaction: t });
+
+        // Update last login date
+        await user.update({
+            last_login_at: new Date(),
+            last_online: new Date()
+        }, { transaction: t });
+
+        await t.commit();
+
+        // Send refreshToken via httpOnly cookie (secure)
+        res.cookie('refreshToken', refreshTokenValue, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            path: '/auth', // Cookie is only sent to /auth prefixed routes
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: user.force_password_change ? "Password change required" : "Login successful.",
+            data: {
+                token: accessToken,
+                fpc: user.force_password_change,
+                user: {
+                    full_name: user.full_name,
+                    username: user.username,
+                    role: user.user_role,
+                    profile_img_url: user.profile_img_url
+                }
+            }
+        })
+
+    } catch (error) {
+        if (t) await t.rollback();
+
+        // Validation error
+        if (error.name === 'ZodError') {
+            const zodIssues = error.issues || error.errors || [];
+
+            logger.warn('Login validation failed', {
+                requestId,
+                issues: zodIssues.map((err) => ({
+                    field: Array.isArray(err.path) ? err.path[0] : undefined,
+                    code: err.code,
+                    message: err.message
+                }))
+            });
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid data.",
+                errors: zodIssues.map((err) => ({
+                    field: Array.isArray(err.path) ? err.path[0] : undefined,
+                    message: err.message
+                }))
+            });
+        }
+
+        logger.error('Unexpected error processing login', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: `Error processing user login.`
+        });
+    }
+}
+
 module.exports = {
     register,
-    confirmEmail
+    confirmEmail,
+    login
 }

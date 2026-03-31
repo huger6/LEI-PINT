@@ -26,7 +26,7 @@ const baseUserSchema = z.object({
 const consultantAreasSchema = z.array(z.object({
     area_id: positiveIntIdRule,
     is_primary: z.boolean()
-    }))
+}))
     .min(1, 'You must select at least 1 area.')
     .max(5, `You can't select more than 5 areas`)
     .refine((areas) => areas.filter((area) => area.is_primary).length <= 1, {
@@ -35,7 +35,7 @@ const consultantAreasSchema = z.array(z.object({
     .refine((areas) => new Set(areas.map((area) => area.area_id)).size === areas.length, {
         message: `You can't select the same area more than once.`
     }
-);
+    );
 
 const registerSchema = z.discriminatedUnion('user_role', [
     baseUserSchema.extend({
@@ -54,7 +54,16 @@ const registerSchema = z.discriminatedUnion('user_role', [
     }),
 ]);
 
+const loginSchema = z.object({
+    identifier: z.union([emailRule, usernameRule], {
+        errorMap: () => ({ message: "Please enter a valid email or username." })
+    }),
+    password: z.string().min(1, "Password is required"),
+    saveLogin: z.boolean().default(false)
+});
+
 module.exports = {
     baseUserSchema,
-    registerSchema
+    registerSchema,
+    loginSchema
 };
