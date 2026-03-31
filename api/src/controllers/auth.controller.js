@@ -8,6 +8,7 @@ const { sendConfirmationEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
 const { search } = require('../routes/auth.routes');
+const { success } = require('zod');
 
 const register = async (req, res) => {
     const t = await sequelize.transaction();
@@ -510,10 +511,140 @@ const login = async (req, res) => {
             message: `Error processing user login.`
         });
     }
-}
+};
+
+const refresh = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    const requestId = req.headers['x-request-id'] || null;
+
+    if (!refreshToken) {
+        return res.status(401).json({
+            success: false,
+            message: "Refresh token missing."
+        });
+    }
+
+    const t = await models.sequelize.transaction();
+
+    try {
+        const [savedToken] = await sequelize.query(
+            `SELECT
+                t.user_id,
+                t.expires_at,
+                u.username,
+                u.user_role,
+                u.user_guid,
+                u.force_password_change
+            FROM user_refresh_tokens t
+            JOIN users u
+                ON t.user_id = u.user_id
+            WHERE t.token_value=:token`,
+            {
+                replacements: {
+                    token: refreshToken
+                },
+                type: QueryTypes.SELECT,
+                transaction: t
+            }
+        );
+
+        if (!savedToken || new Date() > savedToken.expires_at) {
+            if (savedToken) {
+                // Expired
+                await models.sequelize.query(
+                    `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
+                    {
+                        replacements: {
+                            token: refreshToken
+                        },
+                        transaction: t
+                    }
+                );
+            }
+
+            await t.commit();
+            res.clearCookie('refreshToken', {
+                path: '/auth'
+            });
+
+            return res.status(403).json({
+                success: false,
+                message: "Session expired or invalid."
+            });
+        }
+
+        // Generate new Access Token
+        const accessToken = jwt.sign({
+            sub: savedToken.user_id,
+            guid: savedToken.user_guid,
+            role: savedToken.user_role,
+            username: savedToken.username,
+            fpc: savedToken.force_password_change
+        }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN || '15m' });
+
+        // Create new token in DB
+        const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
+
+        // Delete old token
+        await models.sequelize.query(
+            `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
+            {
+                replacements: {
+                    token: refreshToken
+                },
+                transaction: t
+            }
+        );
+        // Insert new token
+        await models.sequelize.query(
+            `INSERT INTO user_refresh_tokens (user_id, token_value, expires_at, created_at) 
+             VALUES (:userId, :token, :expires, NOW())`,
+            {
+                replacements: {
+                    userId: savedToken.user_id,
+                    token: newRefreshTokenValue,
+                    expires: savedToken.expires_at // Maintain original expire time (it hasn't expired)
+                },
+                transaction: t
+            }
+        );
+
+        await t.commit();
+
+        // Config new cookie
+        res.cookie('refreshToken', newRefreshTokenValue, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            path: '/auth',
+            maxAge: new Date(savedToken.expires_at).getTime() - new Date().getTime()
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Token refreshed successfully.",
+            data: {
+                token: accessToken
+            }
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+
+        logger.error('Error generating/processing new token.', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: `Error generating/processing new token.`
+        });
+    }
+};
 
 module.exports = {
     register,
     confirmEmail,
-    login
+    login,
+    refresh
 }
