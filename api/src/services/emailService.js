@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const loadEnvironment = require('./loadEnv');
+const loadEnvironment = require('../config/loadEnv');
 const { logger } = require('../utils/logger');
 
 const transporter = nodemailer.createTransport({
@@ -10,55 +10,114 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+const escapeHtml = (value) => String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const sendConfirmationEmail = async (email, name, token, lang) => {
-    const confirmationUrl = `${process.env.APP_URL}/auth/confirm-email?token=${token}`;
+    const confirmationUrl = `${process.env.APP_URL}/api/auth/confirm-email?token=${token}`;
 
     const templates = {
         'pt-PT': {
             subject: 'Confirmação de Registo - Plataforma de Badges da Softinsa',
-            greeting: `Olá, ${name}!`,
-            intro: 'Obrigado por te registares na plataforma de badges da Softinsa.',
-            actionText: 'Para ativares a tua conta, clica no botão abaixo:',
-            buttonLabel: 'Confirmar E-mail',
-            expiry: 'Este link é válido por 8 horas.',
-            note: '<strong>Nota:</strong> No primeiro acesso, terás de alterar a tua password.'
+            welcome: 'Bem-vindo(a) à Plataforma de Badges da Softinsa, {name}',
+            thanks: 'Obrigado por te registares na Plataforma de Badges da Softinsa.',
+            intro: 'Para completares a configuração da tua conta, por favor verifica o teu endereço de e-mail clicando no botão abaixo:',
+            buttonLabel: 'Verificar E-mail',
+            fallbackText: 'Não consegues clicar no botão acima? Copia e cola este link no teu navegador:',
+            expiry: 'Este link é válido por 8 horas. Verifica o teu e-mail hoje para começares a usar a plataforma.',
+            note: 'Se não criaste uma conta recentemente, podes ignorar este e-mail. No primeiro acesso, terás de alterar a tua password.',
+            team: 'A Equipa Softinsa'
         },
         'en-GB': {
             subject: 'Registration Confirmation - Softinsa Badges Platform',
-            greeting: `Hello, ${name}!`,
-            intro: 'Thank you for registering on the Softinsa badges platform.',
-            actionText: 'To activate your account, click the button below:',
-            buttonLabel: 'Confirm Email',
-            expiry: 'This link is valid for 8 hours.',
-            note: '<strong>Note:</strong> On your first login, you will need to change your password.'
+            welcome: 'Welcome to Softinsa Badges Platform, {name}',
+            thanks: 'Thanks for signing up for Softinsa Badges Platform.',
+            intro: 'To complete your account setup, please verify your email address by clicking the button below:',
+            buttonLabel: 'Verify Email Address',
+            fallbackText: "Can't click the button above? Copy and paste this link into your browser:",
+            expiry: 'This link is valid for 8 hours. Verify your email address today to start using the platform.',
+            note: 'If you did not recently create an account, you can ignore this email. On your first login, you will need to change your password.',
+            team: 'The Softinsa Team'
         },
         'es-ES': {
             subject: 'Confirmación de Registro - Plataforma de Insignias de Softinsa',
-            greeting: `Hola, ${name}!`,
-            intro: 'Gracias por registrarte en la plataforma de insignias de Softinsa.',
-            actionText: 'Para activar tu cuenta, haz clic en el botón de abajo:',
-            buttonLabel: 'Confirmar Correo',
-            expiry: 'Este enlace es válido durante 8 horas.',
-            note: '<strong>Nota:</strong> En tu primer acceso, tendrás que cambiar tu contraseña.'
+            welcome: 'Bienvenido/a a la Plataforma de Insignias de Softinsa, {name}',
+            thanks: 'Gracias por registrarte en Plataforma de Insignias de Softinsa.',
+            intro: 'Para completar la configuración de tu cuenta, por favor verifica tu dirección de correo haciendo clic en el botón de abajo:',
+            buttonLabel: 'Verificar Correo',
+            fallbackText: '¿No puedes hacer clic en el botón? Copia y pega este enlace en tu navegador:',
+            expiry: 'Este enlace es válido por 8 horas. Verifica tu correo hoy para empezar a usar la plataforma.',
+            note: 'Si no has creado una cuenta recientemente, puedes ignorar este correo. En tu primer acceso, deberás cambiar tu contraseña.',
+            team: 'El Equipo de Softinsa'
         }
     };
 
-    const selectedTemplate = templates[lang] || templates['pt-PT'];
+    const t = templates[lang] || templates['pt-PT'];
+    const safeName = escapeHtml(name);
+    const welcomeMessage = t.welcome.replace('{name}', safeName);
 
     const mailOptions = {
-        from: `"Plataforma de Badges da Softinsa" <${process.env.EMAIL_USER}>`,
+        from: `"Softinsa" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: selectedTemplate.subject,
+        subject: t.subject,
         html: `
-            <div style="font-family: sans-serif; max-width: 600px;">
-                <h2>${selectedTemplate.greeting}</h2>
-                <p>${selectedTemplate.intro}</p>
-                <p>${selectedTemplate.actionText}</p>
-                <a href="${confirmationUrl}" style="display: inline-block; background: #0062ff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px;">
-                    ${selectedTemplate.buttonLabel}
-                </a>
-                <p style="margin-top: 20px;">${selectedTemplate.expiry}</p>
-                <p>${selectedTemplate.note}</p>
+            <div style="background-color: #f9f9f9; padding: 40px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 4px; overflow: hidden; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 40px 40px 20px 40px; text-align: left;">
+                            <img src="https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa.svg" alt="Softinsa" width="150" style="display: block; border: 0;">
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 0 40px 20px 40px;">
+                            <p style="font-size: 18px; font-weight: 700; line-height: 26px; margin-bottom: 12px;">
+                                ${welcomeMessage}
+                            </p>
+                            <p style="font-size: 16px; line-height: 24px; margin-bottom: 20px;">
+                                ${t.thanks} ${t.intro}
+                            </p>
+                            
+                            <div style="text-align: center; padding: 20px 0;">
+                                <a href="${confirmationUrl}" style="background: linear-gradient(90deg, #39639C 0%, #00B8E0 100%); color: #ffffff; padding: 15px 40px; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 50px; display: inline-block;">
+                                    ${t.buttonLabel}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0 40px;">
+                            <div style="background-color: #f0f7ff; padding: 20px; border-radius: 4px; text-align: center;">
+                                <p style="font-size: 13px; margin: 0 0 10px 0; color: #666666;">${t.fallbackText}</p>
+                                <a href="${confirmationUrl}" style="color: #0062ff; font-size: 12px; word-break: break-all; text-decoration: underline;">
+                                    ${confirmationUrl}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 30px 40px 40px 40px; font-size: 14px; line-height: 22px; color: #555555;">
+                            <p style="margin-bottom: 15px;">${t.expiry}</p>
+                            <p style="margin-bottom: 25px;">${t.note}</p>
+                            <p style="margin-bottom: 0;">— ${t.team}</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+                    <tr>
+                        <td style="padding: 20px 0; text-align: center; font-size: 12px; color: #999999; line-height: 18px;">
+                            &copy; ${new Date().getFullYear()} Softinsa. <br>
+                            Edifício Office Oriente, Rua do Mar da China nº3 - B6, Parque das Nações, 1990-138 Lisboa
+                        </td>
+                    </tr>
+                </table>
             </div>
         `
     };
@@ -67,7 +126,7 @@ const sendConfirmationEmail = async (email, name, token, lang) => {
         await transporter.sendMail(mailOptions);
         return { success: true };
     } catch (error) {
-        logger.error("Error sending email via Gmail:", error);
+        logger.error("Error sending email:", error);
         return { success: false, error };
     }
 };
