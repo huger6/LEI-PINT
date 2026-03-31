@@ -3,11 +3,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
-const { registerSchema, loginSchema } = require('../validations/auth.validation');
+const { emailRule, registerSchema, loginSchema } = require('../validations/auth.validation');
 const { sendConfirmationEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
-const { search } = require('../routes/auth.routes');
 const { success } = require('zod');
 
 const register = async (req, res) => {
@@ -358,11 +357,11 @@ const confirmEmail = async (req, res) => {
 };
 
 const login = async (req, res) => {
-    const t = await models.sequelize.transaction();
+    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
 
     try {
-        const { identifier, password, saveLogin } = loginSchema.parse(req.body);
+        const { identifier, password, remember } = loginSchema.parse(req.body);
 
         // Identift it is email or username
         const isEmail = emailRule.safeParse(identifier).success;
@@ -431,7 +430,7 @@ const login = async (req, res) => {
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationDays = saveLogin ? 30 : 0.35; // 1/3 de dia
+        const refreshTokenDurationDays = remember ? 30 : 0.35; // 1/3 de dia
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
@@ -503,7 +502,7 @@ const login = async (req, res) => {
 
         logger.error('Unexpected error processing login', {
             requestId,
-            error
+            error: error.stack
         });
 
         return res.status(500).json({
@@ -524,7 +523,7 @@ const refresh = async (req, res) => {
         });
     }
 
-    const t = await models.sequelize.transaction();
+    const t = await sequelize.transaction();
 
     try {
         const [savedToken] = await sequelize.query(
