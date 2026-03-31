@@ -4,6 +4,7 @@
 /*==============================================================*/
 
 DROP INDEX IF EXISTS idx_users_role_active CASCADE;
+DROP INDEX IF EXISTS idx_users_role_approved_by_active CASCADE;
 DROP INDEX IF EXISTS idx_users_full_name CASCADE;
 DROP INDEX IF EXISTS idx_badge_apps_user_state CASCADE;
 DROP INDEX IF EXISTS idx_badge_apps_state CASCADE;
@@ -50,7 +51,6 @@ DROP INDEX IF EXISTS AREA_CREATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS SL_AREAS_FK CASCADE;
 DROP INDEX IF EXISTS AREAS_PK CASCADE;
 DROP TABLE IF EXISTS areas CASCADE;
-DROP INDEX IF EXISTS VALIDATIONS_AWARDED_FK CASCADE;
 DROP INDEX IF EXISTS AWARDED_APPLICATIONS2_FK CASCADE;
 DROP INDEX IF EXISTS CONS_AWARDED_FK CASCADE;
 DROP INDEX IF EXISTS AWARDED_BADGES_PK CASCADE;
@@ -58,7 +58,6 @@ DROP TABLE IF EXISTS awarded_badges CASCADE;
 DROP INDEX IF EXISTS BADGES_UPDATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS BADGES_CREATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS GOALS2_FK CASCADE;
-DROP INDEX IF EXISTS BADGES_INTERACTIONS2_FK CASCADE;
 DROP INDEX IF EXISTS AREA_BADGES_FK CASCADE;
 DROP INDEX IF EXISTS STAGES_BADGES2_FK CASCADE;
 DROP INDEX IF EXISTS BADGES_PK CASCADE;
@@ -170,8 +169,8 @@ DROP TABLE IF EXISTS system_announcements CASCADE;
 DROP INDEX IF EXISTS TALENT_MANAGERS_PK CASCADE;
 DROP TABLE IF EXISTS talent_managers CASCADE;
 DROP INDEX IF EXISTS LOCATION_USER_FK CASCADE;
-DROP INDEX IF EXISTS USER_INTERACTIONS2_FK CASCADE;
 DROP INDEX IF EXISTS LANG_USER_FK CASCADE;
+DROP INDEX IF EXISTS APPROVEDBY_USER_FK CASCADE;
 DROP INDEX IF EXISTS USERS_PK CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP INDEX IF EXISTS BADGES_INTERACTIONS_FK CASCADE;
@@ -341,7 +340,6 @@ CREATE TABLE IF NOT EXISTS badges (
       CONSTRAINT uk_stage_badge UNIQUE (progression_stage_id),
    area_id              INTEGER                 NOT NULL, -- FK -> areas(area_id)
    goal_id              INTEGER                 NULL, -- FK -> goals(goal_id)
-   interaction_id       INTEGER                 NULL, -- FK -> user_badges_interactions(interaction_id)
    badge_title          VARCHAR(100)         NOT NULL,
    badge_slug           VARCHAR(100)         NOT NULL,
       CONSTRAINT uk_slug_badges UNIQUE (badge_slug),
@@ -526,6 +524,19 @@ CREATE TABLE IF NOT EXISTS locations (
 CREATE UNIQUE INDEX IF NOT EXISTS LOCATIONS_PK ON locations (location_id);
 
 /*==============================================================*/
+/* INSERT STATIC VALUES                                         */
+/*==============================================================*/
+INSERT INTO locations (location_name) 
+VALUES 
+   ('Lisboa'), 
+   ('Tomar'), 
+   ('Viseu'), 
+   ('Fundão'), 
+   ('Portalegre'),
+   ('Remote')
+ON CONFLICT DO NOTHING;
+
+/*==============================================================*/
 /* TABLE: notifications                                         */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS notifications (
@@ -626,6 +637,16 @@ CREATE TABLE IF NOT EXISTS preferred_lang (
 /* INDEX: PREFERRED_LANG_PK                                     */
 /*==============================================================*/
 CREATE UNIQUE INDEX IF NOT EXISTS PREFERRED_LANG_PK ON preferred_lang (preferred_lang_id);
+
+/*==============================================================*/
+/* INSERT STATIC VALUES                                         */
+/*==============================================================*/
+INSERT INTO preferred_lang (preferred_lang) 
+VALUES 
+   ('pt-PT'), 
+   ('en-GB'), 
+   ('es-ES')
+ON CONFLICT (preferred_lang) DO NOTHING;
 
 /*==============================================================*/
 /* TABLE: requirements_evidences                                */
@@ -805,9 +826,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ADMINISTRATORS_PK ON administrators (user_id);
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS consultants (
    user_id              INTEGER                 NOT NULL, -- FK -> users(user_id)
-   gdpr_accepted        BOOLEAN                 NOT NULL,
-   location_id          INTEGER                 NULL,
-   interaction_id       INTEGER                 NULL,
+   gdpr_accepted        BOOLEAN                 NOT NULL DEFAULT FALSE,
    biography            TEXT                 NULL,
 
    CONSTRAINT pk_consultants PRIMARY KEY (user_id)
@@ -856,8 +875,6 @@ CREATE TABLE IF NOT EXISTS service_line_leaders (
    user_id              INTEGER                 NOT NULL, -- FK -> users(user_id)
    service_line_id      INTEGER                 NOT NULL, -- FK -> services_lines(service_line_id)
    biography            TEXT                 NULL,
-   location_id          INTEGER                 NULL,
-   interaction_id       INTEGER                 NULL,
 
    CONSTRAINT pk_service_line_leaders PRIMARY KEY (user_id)
 );
@@ -873,8 +890,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS SERVICE_LINE_LEADERS_PK ON service_line_leader
 CREATE TABLE IF NOT EXISTS talent_managers (
    user_id              INTEGER                 NOT NULL, -- FK -> users(user_id)
    biography            TEXT                 NULL,
-   location_id          INTEGER                 NULL,
-   interaction_id       INTEGER                 NULL,
 
    CONSTRAINT pk_talent_managers PRIMARY KEY (user_id)
 );
@@ -900,9 +915,9 @@ CREATE TABLE IF NOT EXISTS users (
    phone_number         VARCHAR(20)          NULL,
    birthdate            DATE                 NULL,
    profile_img_url      VARCHAR(512)         NULL,
-   preferred_lang_id    INTEGER                 NULL, -- FK -> preferred_lang(preferred_lang_id)
-   location_id          INTEGER                 NULL, -- FK -> locations(location_id)
-   interaction_id       INTEGER                 NULL, -- FK -> user_badges_interactions(interaction_id)
+   preferred_lang_id    INTEGER              NOT NULL DEFAULT 1, -- FK -> preferred_lang(preferred_lang_id); DEFAULT is 'pt-PT' (ID=1)
+   location_id          INTEGER              NULL, -- FK -> locations(location_id)
+   approved_by          INTEGER              NULL, -- FK -> administrators(user_id)
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
    email_confirmed      BOOLEAN              NOT NULL DEFAULT FALSE,
    force_password_change BOOLEAN             NOT NULL DEFAULT TRUE,
@@ -1026,11 +1041,6 @@ ALTER TABLE badges
 ALTER TABLE badges
    ADD CONSTRAINT fk_badges_badges_cr_administ FOREIGN KEY (created_by)
       REFERENCES administrators (user_id)
-      ON DELETE RESTRICT ON UPDATE RESTRICT;
-
-ALTER TABLE badges
-   ADD CONSTRAINT fk_badges_badges_in_user_bad FOREIGN KEY (interaction_id)
-      REFERENCES user_badges_interactions (interaction_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE badges
@@ -1374,8 +1384,8 @@ ALTER TABLE users
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE users
-   ADD CONSTRAINT fk_users_user_inte_user_bad FOREIGN KEY (interaction_id)
-      REFERENCES user_badges_interactions (interaction_id)
+   ADD CONSTRAINT fk_users_approved_by_administ FOREIGN KEY (approved_by)
+      REFERENCES administrators (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE user_badges_interactions
@@ -1419,7 +1429,6 @@ CREATE INDEX IF NOT EXISTS CONS_AWARDED_FK ON awarded_badges (user_id);
 CREATE INDEX IF NOT EXISTS AWARDED_APPLICATIONS2_FK ON awarded_badges (application_id);
 CREATE INDEX IF NOT EXISTS STAGES_BADGES2_FK ON badges (progression_stage_id);
 CREATE INDEX IF NOT EXISTS AREA_BADGES_FK ON badges (area_id);
-CREATE INDEX IF NOT EXISTS BADGES_INTERACTIONS2_FK ON badges (interaction_id);
 CREATE INDEX IF NOT EXISTS GOALS2_FK ON badges (goal_id);
 CREATE INDEX IF NOT EXISTS BADGES_CREATEDBY_FK ON badges (created_by);
 CREATE INDEX IF NOT EXISTS BADGES_UPDATEDBY_FK ON badges (updated_by);
@@ -1469,8 +1478,8 @@ CREATE INDEX IF NOT EXISTS ANNOUNC_NOTIF_FK ON system_announcements (preference_
 CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_UPDATEDBY_FK ON system_announcements (updated_by);
 CREATE INDEX IF NOT EXISTS SL_SLL_FK ON service_line_leaders (service_line_id);
 CREATE INDEX IF NOT EXISTS LANG_USER_FK ON users (preferred_lang_id);
-CREATE INDEX IF NOT EXISTS USER_INTERACTIONS2_FK ON users (interaction_id);
 CREATE INDEX IF NOT EXISTS LOCATION_USER_FK ON users (location_id);
+CREATE INDEX IF NOT EXISTS APPROVEDBY_USER_FK ON users (approved_by);
 CREATE INDEX IF NOT EXISTS USER_INTERACTIONS_FK ON user_badges_interactions (user_id);
 CREATE INDEX IF NOT EXISTS BADGES_INTERACTIONS_FK ON user_badges_interactions (badge_id);
 
@@ -1478,6 +1487,7 @@ CREATE INDEX IF NOT EXISTS BADGES_INTERACTIONS_FK ON user_badges_interactions (b
 /* INDEXES FOR FASTER QUERYING                                  */
 /*==============================================================*/
 CREATE INDEX IF NOT EXISTS idx_users_role_active ON users (user_role, is_active);
+CREATE INDEX IF NOT EXISTS idx_users_role_approved_by_active ON users (user_role, approved_by) WHERE is_active = TRUE;
 CREATE INDEX IF NOT EXISTS idx_users_full_name ON users (full_name);
 CREATE INDEX IF NOT EXISTS idx_badge_apps_user_state ON badge_applications (user_id, application_state);
 CREATE INDEX IF NOT EXISTS idx_badge_apps_state ON badge_applications (application_state);

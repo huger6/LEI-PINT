@@ -132,6 +132,8 @@ function initModels(sequelize) {
   administrators.hasMany(system_announcements, { as: "system_announcements", foreignKey: "created_by"});
   system_announcements.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
   administrators.hasMany(system_announcements, { as: "updated_by_system_announcements", foreignKey: "updated_by"});
+  users.belongsTo(administrators, { as: "approved_by_administrator", foreignKey: "approved_by"});
+  administrators.hasMany(users, { as: "approved_by_users", foreignKey: "approved_by"});
   badges.belongsTo(areas, { as: "area", foreignKey: "area_id"});
   areas.hasMany(badges, { as: "badges", foreignKey: "area_id"});
   consultant_areas.belongsTo(areas, { as: "area", foreignKey: "area_id"});
@@ -166,7 +168,7 @@ function initModels(sequelize) {
   badges.hasMany(rewards, { as: "rewards", foreignKey: "badge_id"});
   skills.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(skills, { as: "skills", foreignKey: "badge_id"});
-  user_badges_interactions.belongsTo(badges, { as: "badge_badge", foreignKey: "badge_id"});
+  user_badges_interactions.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "badge_id"});
   badge_applications.belongsTo(certificates, { as: "certificate", foreignKey: "certificate_id"});
   certificates.hasMany(badge_applications, { as: "badge_applications", foreignKey: "certificate_id"});
@@ -228,10 +230,6 @@ function initModels(sequelize) {
   system_announcements.hasMany(announc_sl, { as: "announc_sls", foreignKey: "announcement_id"});
   notification_preferences.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
   system_announcements.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "announcement_id"});
-  badges.belongsTo(user_badges_interactions, { as: "interaction", foreignKey: "interaction_id"});
-  user_badges_interactions.hasMany(badges, { as: "badges", foreignKey: "interaction_id"});
-  users.belongsTo(user_badges_interactions, { as: "interaction", foreignKey: "interaction_id"});
-  user_badges_interactions.hasMany(users, { as: "interaction_users", foreignKey: "interaction_id"});
   administrators.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(administrators, { as: "administrator", foreignKey: "user_id"});
   application_validation_logs.belongsTo(users, { as: "user", foreignKey: "user_id"});

@@ -45,7 +45,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     preferred_lang_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: 1,
       references: {
         model: 'preferred_lang',
         key: 'preferred_lang_id'
@@ -59,12 +60,12 @@ module.exports = function(sequelize, DataTypes) {
         key: 'location_id'
       }
     },
-    interaction_id: {
+    approved_by: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'user_badges_interactions',
-        key: 'interaction_id'
+        model: 'administrators',
+        key: 'user_id'
       }
     },
     is_active: {
@@ -98,6 +99,12 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "approvedby_user_fk",
+        fields: [
+          { name: "approved_by" },
+        ]
+      },
+      {
         name: "idx_users_email_confirmed",
         fields: [
           { name: "email_confirmed" },
@@ -120,6 +127,13 @@ module.exports = function(sequelize, DataTypes) {
         fields: [
           { name: "user_role" },
           { name: "is_active" },
+        ]
+      },
+      {
+        name: "idx_users_role_approved_by_active",
+        fields: [
+          { name: "user_role" },
+          { name: "approved_by" },
         ]
       },
       {
@@ -153,12 +167,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "username" },
-        ]
-      },
-      {
-        name: "user_interactions2_fk",
-        fields: [
-          { name: "interaction_id" },
         ]
       },
       {
