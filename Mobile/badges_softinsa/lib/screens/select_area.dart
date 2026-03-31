@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class SelectAreaScreen extends StatefulWidget {
-  const SelectAreaScreen({super.key});
+  final Map<String, dynamic>? registrationData;
+
+  const SelectAreaScreen({super.key, this.registrationData});
 
   @override
   State<SelectAreaScreen> createState() => _SelectAreaScreenState();
@@ -50,6 +52,19 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
   bool get _canAdvance => _selectedAreas.isNotEmpty;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Receber dados dos argumentos se não foram recebidos como parâmetro do construtor
+    if (widget.registrationData == null) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        // Os dados foram recebidos; já estão acessíveis via widget.registrationData
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Usamos o ThemeData definido no app_theme.dart
     final theme = AppTheme.lightTheme;
@@ -63,16 +78,22 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // 1. Área da Imagem Superior (Placeholder)
+              // 1. Imagem do Softinsa (Logo)
               Container(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.22,
-                color: theme.colorScheme.onSurface, // Cor de placeholder
+                color: theme.colorScheme.surface,
                 child: Center(
-                  child: Icon(
-                    Icons.image_outlined,
-                    size: 64,
-                    color: theme.colorScheme.outline,
+                  child: Image.asset(
+                    'images/logotipo_softinsa.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.image_not_supported,
+                        size: 64,
+                        color: theme.colorScheme.outline,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -106,7 +127,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                 ),
               ),
 
-              // 4. Botão Avançar (Fixo no fundo)
+              // 4. Botão Confirmar (Fixo no fundo)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -129,18 +150,19 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                     // O estilo do FilledButton já usa AppColors.primary no app_theme.dart
                     onPressed: _canAdvance
                         ? () {
-                            // Ação para avançar
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Avançar com: ${_selectedAreas.toList()}',
-                                ),
-                              ),
+                            // Navegar para a página de confirmação com os dados
+                            Navigator.pushNamed(
+                              context,
+                              '/newuser-confirm',
+                              arguments: {
+                                ...?widget.registrationData,
+                                'selectedAreas': _selectedAreas.toList(),
+                              },
                             );
                           }
                         : null, // Desativa o botão se nada estiver selecionado
                     child: const Text(
-                      'Avançar',
+                      'Confirmar Áreas',
                       style: TextStyle(
                         fontFamily:
                             'Inter', // Fonte definida nas instruções anteriores
@@ -198,7 +220,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
       selected: isSelected,
       // Ocultar o ícone de check padrão do Material 3 para igualar a imagem
       showCheckmark: false,
-      shape: StadiumBorder(),
+      shape: const StadiumBorder(),
       // Configuração da Borda (Traçado)
       side: BorderSide(
         // PEDIDO LITERAL: Traçado a Primary quando selecionado.

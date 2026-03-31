@@ -59,9 +59,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
 
-        // Navegar para select_area
+        // Navegar para select_area com os dados do formulário
         Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushNamed(context, '/select_area');
+          Navigator.pushNamed(
+            context,
+            '/select-area',
+            arguments: {
+              'name': _nameController.text,
+              'username': _usernameController.text,
+              'email': _emailController.text,
+              'password': _passwordController.text,
+              'phone': _phoneController.text,
+              'birthdate': _birthdateController.text,
+              'profileImgUrl': _profileImgUrlController.text,
+              'location': _locationController.text,
+              'preferredLanguage': _preferredLanguage,
+            },
+          );
         });
       });
     } else if (!_agreedToTerms) {
