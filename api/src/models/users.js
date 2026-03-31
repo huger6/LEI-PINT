@@ -31,6 +31,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: "Consultant"
     },
+    user_guid: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4
+    },
     phone_number: {
       type: DataTypes.STRING(20),
       allowNull: true
@@ -90,64 +95,19 @@ module.exports = function(sequelize, DataTypes) {
     last_online: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'users',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "approvedby_user_fk",
-        fields: [
-          { name: "approved_by" },
-        ]
-      },
-      {
-        name: "idx_users_email_confirmed",
-        fields: [
-          { name: "email_confirmed" },
-        ]
-      },
-      {
-        name: "idx_users_full_name",
-        fields: [
-          { name: "full_name" },
-        ]
-      },
-      {
-        name: "idx_users_name_trgm",
-        fields: [
-          { name: "full_name" },
-        ]
-      },
-      {
-        name: "idx_users_role_active",
-        fields: [
-          { name: "user_role" },
-          { name: "is_active" },
-        ]
-      },
-      {
-        name: "idx_users_role_approved_by_active",
-        fields: [
-          { name: "user_role" },
-          { name: "approved_by" },
-        ]
-      },
-      {
-        name: "lang_user_fk",
-        fields: [
-          { name: "preferred_lang_id" },
-        ]
-      },
-      {
-        name: "location_user_fk",
-        fields: [
-          { name: "location_id" },
-        ]
-      },
       {
         name: "pk_users",
         unique: true,

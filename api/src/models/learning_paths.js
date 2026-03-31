@@ -45,31 +45,29 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'learning_paths',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "admin_lp_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
       {
         name: "learning_paths_pk",
         unique: true,
         fields: [
           { name: "learning_path_id" },
-        ]
-      },
-      {
-        name: "lp_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
       {

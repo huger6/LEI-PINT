@@ -45,7 +45,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'application_validation_logs',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {
@@ -56,29 +56,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "applications_validations_fk",
-        fields: [
-          { name: "application_id" },
-        ]
-      },
-      {
-        name: "idx_validation_logs_app",
-        fields: [
-          { name: "application_id" },
-          { name: "validated_at" },
-        ]
-      },
-      {
         name: "pk_application_validation_logs",
         unique: true,
         fields: [
           { name: "validation_log_id" },
-        ]
-      },
-      {
-        name: "users_validations_fk",
-        fields: [
-          { name: "user_id" },
         ]
       },
     ]

@@ -26,7 +26,7 @@ const baseUserSchema = z.object({
 const consultantAreasSchema = z.array(z.object({
     area_id: positiveIntIdRule,
     is_primary: z.boolean()
-}))
+    }))
     .min(1, 'You must select at least 1 area.')
     .max(5, `You can't select more than 5 areas`)
     .refine((areas) => areas.filter((area) => area.is_primary).length <= 1, {
@@ -34,20 +34,21 @@ const consultantAreasSchema = z.array(z.object({
     })
     .refine((areas) => new Set(areas.map((area) => area.area_id)).size === areas.length, {
         message: `You can't select the same area more than once.`
-    });
+    }
+);
 
 const registerSchema = z.discriminatedUnion('user_role', [
     baseUserSchema.extend({
-        user_role: z.literal('Consultant'),
+        user_role: z.literal('Consultant', `Allowed roles: 'Consultant', 'Talent Manager', 'Service Line Leader'.`),
         biography: biographyRule.optional(),
         areas: consultantAreasSchema
     }),
     baseUserSchema.extend({
-        user_role: z.literal('Talent Manager'),
+        user_role: z.literal('Talent Manager', `Allowed roles: 'Consultant', 'Talent Manager', 'Service Line Leader'.`),
         biography: biographyRule.optional()
     }),
     baseUserSchema.extend({
-        user_role: z.literal('Service Line Leader'),
+        user_role: z.literal('Service Line Leader', `Allowed roles: 'Consultant', 'Talent Manager', 'Service Line Leader'.`),
         biography: biographyRule.optional(),
         service_line_id: positiveIntIdRule
     }),

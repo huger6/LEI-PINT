@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'preferred_lang',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {

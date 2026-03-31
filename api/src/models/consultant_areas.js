@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'consultant_areas',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {

@@ -1,11 +1,14 @@
 const { z } = require('zod');
 const filter = require('leo-profanity');
+const loadEnvironment = require('../config/loadEnv');
+
+loadEnvironment();
 
 filter.loadDictionary('en');
 filter.add(filter.getDictionary('pt'));
 filter.add(filter.getDictionary('es'));
 
-const positiveIntIdRule = z.number().int().positive("Identifier must be a positive integer.");
+const positiveIntIdRule = z.coerce.number().int().positive("Identifier must be a positive integer.");
 
 const fullNameRule = z.string().trim()
     .min(2, 'Name must have a minimum of 2 characters.')
@@ -48,8 +51,11 @@ const birthdateRule = z.preprocess(
 );
 
 const profileImageUrlRule = z.string()
-    .url('Invalid URL.')
-    .startsWith('https://', 'URL must be safe (HTTPS).');
+    .url('Invalid URL format')
+    .startsWith(
+        `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/public/public-assets/temp/`,
+        "The image must be uploaded to the temporary storage first"
+    );
 
 const biographyRule = z.string().trim()
     .max(5000, "Biography is technically too long")
@@ -60,13 +66,13 @@ const biographyRule = z.string().trim()
     }, {
         message: "Biography cannot exceed 500 words"
     })
-        .refine((val) => {
+    .refine((val) => {
         // Check for unauthorized words
         return !filter.check(val);
     }, {
         message: "Biography contains inappropriate language"
     }
-);
+    );
 
 module.exports = {
     biographyRule,

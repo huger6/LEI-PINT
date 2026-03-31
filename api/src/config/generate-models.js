@@ -4,9 +4,9 @@ const loadEnvironment = require('./loadEnv');
 loadEnvironment();
 
 const auto = new SequelizeAuto(
-	process.env.DB_NAME, 
-	process.env.DB_USER, 
-	process.env.DB_PASSWORD, 
+	process.env.DB_NAME,
+	process.env.DB_USER,
+	process.env.DB_PASSWORD,
 	{
 		host: process.env.DB_HOST,
 		dialect: 'postgres',
@@ -19,7 +19,7 @@ const auto = new SequelizeAuto(
 			}
 		},
 		additional: {
-			timestamps: true,
+			timestamps: false, // created_at and updated_at are already in SQL script
 			underscored: true
 		},
 		caseProp: 'o',

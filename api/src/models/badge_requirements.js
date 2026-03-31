@@ -55,12 +55,22 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'badge_requirements',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {
@@ -71,41 +81,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "badges_requirements_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "idx_requirements_sequence",
-        fields: [
-          { name: "badge_id" },
-          { name: "requirement_sequence" },
-        ]
-      },
-      {
         name: "pk_badge_requirements",
         unique: true,
         fields: [
           { name: "requirement_id" },
-        ]
-      },
-      {
-        name: "requirements_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "requirements_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "stages_requirements_fk",
-        fields: [
-          { name: "progression_stage_id" },
         ]
       },
     ]

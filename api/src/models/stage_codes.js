@@ -28,12 +28,22 @@ module.exports = function(sequelize, DataTypes) {
         model: 'administrators',
         key: 'user_id'
       }
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'stage_codes',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {
@@ -41,18 +51,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "stage_code_id" },
-        ]
-      },
-      {
-        name: "stage_code_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "stage_code_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
       {

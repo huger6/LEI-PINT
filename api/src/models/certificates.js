@@ -36,15 +36,9 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'certificates',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "applications_certificates2_fk",
-        fields: [
-          { name: "application_id" },
-        ]
-      },
       {
         name: "certificates_pk",
         unique: true,

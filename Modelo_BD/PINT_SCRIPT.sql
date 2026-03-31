@@ -912,6 +912,7 @@ CREATE TABLE IF NOT EXISTS users (
    password_hash        VARCHAR(255)         NOT NULL,
    user_role            VARCHAR(50)          NOT NULL DEFAULT 'Consultant',
       CONSTRAINT ckc_user_role_users CHECK (user_role IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
+   user_guid            UUID                 NOT NULL DEFAULT gen_random_uuid(),
    phone_number         VARCHAR(20)          NULL,
    birthdate            DATE                 NULL,
    profile_img_url      VARCHAR(512)         NULL,
@@ -923,6 +924,7 @@ CREATE TABLE IF NOT EXISTS users (
    force_password_change BOOLEAN             NOT NULL DEFAULT TRUE,
    last_login_at        TIMESTAMPTZ          NULL,
    last_online          TIMESTAMPTZ          NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_users PRIMARY KEY (user_id)
 );

@@ -10,11 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      }
+      allowNull: false
     },
     token_value: {
       type: DataTypes.STRING(512),
@@ -23,12 +19,17 @@ module.exports = function(sequelize, DataTypes) {
     expires_at: {
       type: DataTypes.DATE,
       allowNull: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
     tableName: 'user_refresh_tokens',
     schema: 'public',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     indexes: [
       {
