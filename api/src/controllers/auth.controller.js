@@ -7,7 +7,6 @@ const { emailRule, passwordRule, registerSchema, loginSchema } = require('../val
 const { sendConfirmationEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
-const { success } = require('zod');
 
 const register = async (req, res) => {
     const t = await sequelize.transaction();
@@ -507,7 +506,7 @@ const login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error processing user login.`
+            message: "Error processing user login."
         });
     }
 };
@@ -636,13 +635,52 @@ const refresh = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error generating/processing new token.`
+            message: "Error generating/processing new token."
         });
     }
 };
 
 const logout = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    const requestId = req.headers['x-request-id'] || null;
 
+    const cookieOptions = {
+        path: '/',
+        httpOnly: true
+    };
+
+    try {
+        if (refreshToken) {
+            // Clear token
+            await sequelize.query(
+                `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
+                {
+                    replacements: {
+                        token: refreshToken
+                    },
+                    type: QueryTypes.DELETE
+                }
+            );
+        }
+
+        // Clear cookie
+        res.clearCookie('refreshToken', cookieOptions);
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out successfully."
+        });
+    } catch (error) {
+        logger.error('Error during logout process.', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: "Error during logout process."
+        });
+    }
 };
 
 const changePassword = async (req, res) => {
@@ -748,7 +786,7 @@ module.exports = {
     register,
     confirmEmail,
     login,
-    refresh,
     logout,
-
+    refresh,
+    changePassword
 }
