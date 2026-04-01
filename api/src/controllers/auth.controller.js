@@ -453,9 +453,9 @@ const login = async (req, res) => {
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
-            secure: true,
+            secure: false, // IMPORTANT: CHANGE THIS WHEN IN PRODUCTION
             sameSite: 'Strict',
-            path: '/auth', // Cookie is only sent to /auth prefixed routes
+            path: '/api/auth', // Cookie is only sent to /auth prefixed routes
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
@@ -550,7 +550,7 @@ const refresh = async (req, res) => {
         if (!savedToken || new Date() > savedToken.expires_at) {
             if (savedToken) {
                 // Expired
-                await models.sequelize.query(
+                await sequelize.query(
                     `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
                     {
                         replacements: {
@@ -585,7 +585,7 @@ const refresh = async (req, res) => {
         const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
 
         // Delete old token
-        await models.sequelize.query(
+        await sequelize.query(
             `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
             {
                 replacements: {
@@ -595,7 +595,7 @@ const refresh = async (req, res) => {
             }
         );
         // Insert new token
-        await models.sequelize.query(
+        await sequelize.query(
             `INSERT INTO user_refresh_tokens (user_id, token_value, expires_at, created_at) 
              VALUES (:userId, :token, :expires, NOW())`,
             {
@@ -613,9 +613,9 @@ const refresh = async (req, res) => {
         // Config new cookie
         res.cookie('refreshToken', newRefreshTokenValue, {
             httpOnly: true,
-            secure: true,
+            secure: false, // IMPORTANT: CHANGE THIS WHEN IN PRODUCTION
             sameSite: 'Strict',
-            path: '/auth',
+            path: '/api/auth',
             maxAge: new Date(savedToken.expires_at).getTime() - new Date().getTime()
         });
 
