@@ -3,10 +3,13 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
+const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
-const { sendConfirmationEmail } = require('../services/emailService');
+const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
+
+loadEnvironment();
 
 const register = async (req, res) => {
     const t = await sequelize.transaction();
@@ -184,8 +187,31 @@ const register = async (req, res) => {
             user_role: userData.user_role
         });
 
-        // Send confirmation email
-        await sendConfirmationEmail(userData.email_address, userData.full_name, tokenValue, userData.preferred_lang_id);
+        // Send confirmation email and validate service outcome.
+        const emailResult = await sendConfirmationEmail(
+            userData.email_address,
+            userData.full_name,
+            tokenValue,
+            userData.preferred_lang_id
+        );
+
+        if (!emailResult?.success) {
+            logger.error('Registration completed but confirmation email failed to send', {
+                requestId,
+                user_id: newUser.user_id,
+                email_address: userData.email_address,
+                preferred_lang_id: userData.preferred_lang_id,
+                emailError: emailResult?.error
+            });
+
+            return res.status(502).json({
+                success: false,
+                message: "Account created, but confirmation e-mail could not be sent. Please request a new confirmation e-mail or use the link below.",
+                data: {
+                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
+                }
+            });
+        }
 
         logger.info('Confirmation email sent after registration', {
             requestId,
@@ -795,11 +821,110 @@ const changePassword = async (req, res) => {
     }
 };
 
+const forgotPassword = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const { email } = req.body;
+
+    if (!emailRule.safeParse(email).success) {
+        // Email is invalid
+        return res.status(400).json({
+            success: false,
+            message: "E-mail is invalid."
+        });
+    }
+
+    const t = await sequelize.transaction();
+
+    try {
+        // Get user
+        const [user] = await sequelize.query(
+            `SELECT user_id, full_name, preferred_lang_id, email_address
+            FROM users WHERE email_address=:email`,
+            {
+                replacements: {
+                    email: email
+                },
+                type: QueryTypes.SELECT,
+                transaction: t
+            }
+        );
+
+        if (user) {
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+            const expires = new Date(Date.now() + 3600000); //1h
+
+            // Store token
+            await sequelize.query(
+                `INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
+                VALUES (:user_id, :tokenHash, 'PASSWORD_RESET', :expires)
+                ON CONFLICT (user_id, token_type) DO UPDATE SET token_value=:tokenHash, expires_at=:expires`,
+                {
+                    replacements: {
+                        user_id: user.user_id,
+                        tokenHash: tokenHash,
+                        expires: expires
+                    },
+                    transaction: t
+                }
+            );
+
+            await t.commit();
+
+            // Send email
+            const emailResult = await sendResetPasswordEmail(
+                user.email_address,
+                user.full_name,
+                resetToken,
+                user.preferred_lang_id
+            );
+
+            if (!emailResult?.success) {
+                logger.error('Password reset process completed, but failed to send e-mail.', {
+                    requestId,
+                    user_id: user.user_id,
+                    email_address: user.email_address,
+                    preferred_lang_id: user.preferred_lang_id,
+                    emailError: emailResult?.error
+                });
+
+                return res.status(502).json({
+                    success: false,
+                    message: "Failed to send e-mail with password update follow-up. Please use the link below.",
+                    data: {
+                        reset_password_link: `${process.env.APP_URL}/api/auth/reset-password?token=${resetToken}` // CHANGE TO FRONTEND LINK
+                    }
+                });
+            }
+        } else {
+            await t.commit(); // Empty 
+        }
+
+        // Always the same for improved security
+        return res.status(200).json({
+            success: true,
+            message: "A reset link has been sent to your e-mail address."
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+
+        logger.error("Forgot password error.",
+            requestId,
+            error
+        );
+        return res.status(500).json({
+            success: false,
+            message: "Error processing request."
+        });
+    }
+}
+
 module.exports = {
     register,
     confirmEmail,
     login,
     logout,
     refresh,
-    changePassword
+    changePassword,
+    forgotPassword
 }
