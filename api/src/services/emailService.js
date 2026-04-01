@@ -60,6 +60,8 @@ const sendConfirmationEmail = async (email, name, token, lang) => {
     const safeName = escapeHtml(name);
     const welcomeMessage = t.welcome.replace('{name}', safeName);
 
+    const uniqueId = Date.now().toString(36); // So email doesn't auto-hide footer
+
     const mailOptions = {
         from: `"Softinsa" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -118,6 +120,9 @@ const sendConfirmationEmail = async (email, name, token, lang) => {
                         </td>
                     </tr>
                 </table>
+                <div style="display: none; max-height: 0px; overflow: hidden;">
+                    ID: ${uniqueId}
+                </div>
             </div>
         `
     };
