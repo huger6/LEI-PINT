@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
-const { emailRule, registerSchema, loginSchema } = require('../validations/auth.validation');
+const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
 const { sendConfirmationEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
@@ -563,7 +563,7 @@ const refresh = async (req, res) => {
 
             await t.commit();
             res.clearCookie('refreshToken', {
-                path: '/auth'
+                path: '/api/auth'
             });
 
             return res.status(403).json({
@@ -641,9 +641,114 @@ const refresh = async (req, res) => {
     }
 };
 
+const logout = async (req, res) => {
+
+};
+
+const changePassword = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
+
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user_id = req.user.sub; // get from jwt
+
+        // Verify if new password is valid
+        const validPw = passwordRule.safeParse(newPassword).success;
+        if (!validPw) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "New password format is invalid."
+            });
+        }
+
+        // Get user
+        const [user] = await sequelize.query(
+            `SELECT password_hash FROM users WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    user_id: user_id
+                },
+                type: QueryTypes.SELECT,
+                transaction: t
+            }
+        );
+        // Compare current pw
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isMatch) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect."
+            });
+        }
+
+        // Check if new password is the same as old
+        const isSameAsOld = await bcrypt.compare(newPassword, user.password_hash);
+        if (isSameAsOld) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "New password cannot be the same as the current one."
+            });
+        }
+        // Update PW and set FPC false
+        const newHash = await bcrypt.hash(newPassword, 10);
+        await sequelize.query(
+            `UPDATE users SET password_hash=:newHash, force_password_change=false
+            WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    newHash: newHash,
+                    user_id: user_id
+                },
+                transaction: t
+            }
+        );
+
+        // Delete refresh tokens
+        await sequelize.query(
+            `DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    user_id: user_id
+                },
+                transaction: t
+            }
+        );
+
+        await t.commit();
+
+        // Delete cookie
+        res.clearCookie('refreshToken', {
+            path: '/api/auth'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password updated. All sessions invalidated. Please login again."
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+
+        logger.error('Error changing password.', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: `Error changing password.`
+        });
+    }
+};
+
 module.exports = {
     register,
     confirmEmail,
     login,
-    refresh
+    refresh,
+    logout,
+
 }
