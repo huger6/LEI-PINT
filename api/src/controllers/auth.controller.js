@@ -596,12 +596,25 @@ const refresh = async (req, res) => {
         // Insert new token
         await sequelize.query(
             `INSERT INTO user_refresh_tokens (user_id, token_value, expires_at, created_at) 
-             VALUES (:userId, :token, :expires, NOW())`,
+             VALUES (:user_id, :token, :expires, NOW())`,
             {
                 replacements: {
-                    userId: savedToken.user_id,
+                    user_id: savedToken.user_id,
                     token: newRefreshTokenValue,
                     expires: savedToken.expires_at // Maintain original expire time (it hasn't expired)
+                },
+                transaction: t
+            }
+        );
+
+        // Update user's last_online
+        await sequelize.query(
+            `UPDATE users
+            SET last_online=NOW()
+            WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    user_id: savedToken.user_id
                 },
                 transaction: t
             }
