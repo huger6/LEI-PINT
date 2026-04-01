@@ -64,6 +64,7 @@ const loginSchema = z.object({
 
 module.exports = {
     emailRule,
+    passwordRule,
     baseUserSchema,
     registerSchema,
     loginSchema,
