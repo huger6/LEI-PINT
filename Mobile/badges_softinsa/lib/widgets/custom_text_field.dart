@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
+  final bool isRequired;
   final String hintText;
   final IconData prefixIcon;
   final TextInputType keyboardType;
@@ -17,6 +18,7 @@ class CustomTextField extends StatefulWidget {
   const CustomTextField({
     Key? key,
     required this.label,
+    this.isRequired = false,
     required this.hintText,
     required this.prefixIcon,
     this.keyboardType = TextInputType.text,
@@ -49,11 +51,23 @@ class _CustomTextFieldState extends State<CustomTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Label
-        Text(
-          widget.label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+        RichText(
+          text: TextSpan(
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+            children: [
+              TextSpan(text: widget.label),
+              if (widget.isRequired)
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 8),
 

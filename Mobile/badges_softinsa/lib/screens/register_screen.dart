@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
@@ -22,10 +23,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _birthdateController = TextEditingController();
   final _profileImgUrlController = TextEditingController();
-  final _locationController = TextEditingController();
+  final _bioController = TextEditingController();
   bool _isLoading = false;
   bool _agreedToTerms = false;
+  String _phonePrefix = '+351';
+  String? _selectedLocation;
   String _preferredLanguage = '1';
+  final List<String> _availableLocations = const [
+    'Lisboa',
+    'Porto',
+    'Braga',
+    'Coimbra',
+    'Aveiro',
+    'Faro',
+  ];
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -53,9 +65,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passwordController.text = data['password'] ?? '';
       _confirmPasswordController.text = data['password'] ?? '';
       _phoneController.text = data['phone'] ?? '';
+      _phonePrefix = data['phonePrefix'] ?? '+351';
       _birthdateController.text = data['birthdate'] ?? '';
       _profileImgUrlController.text = data['profileImgUrl'] ?? '';
-      _locationController.text = data['location'] ?? '';
+      _bioController.text = data['bio'] ?? '';
+      _selectedLocation = data['location'];
       _preferredLanguage = data['preferredLanguage'] ?? '1';
     }
   }
@@ -69,7 +83,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneController.clear();
     _birthdateController.clear();
     _profileImgUrlController.clear();
-    _locationController.clear();
+    _bioController.clear();
+    _phonePrefix = '+351';
+    _selectedLocation = null;
     _preferredLanguage = '1';
     _agreedToTerms = false;
   }
@@ -84,8 +100,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneController.dispose();
     _birthdateController.dispose();
     _profileImgUrlController.dispose();
-    _locationController.dispose();
+    _bioController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickProfileImage() async {
+    final XFile? pickedImage = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (pickedImage == null) return;
+
+    setState(() {
+      _profileImgUrlController.text = pickedImage.path;
+    });
   }
 
   void _handleRegister() {
@@ -120,9 +149,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               'email': _emailController.text,
               'password': _passwordController.text,
               'phone': _phoneController.text,
+              'phonePrefix': _phonePrefix,
               'birthdate': _birthdateController.text,
               'profileImgUrl': _profileImgUrlController.text,
-              'location': _locationController.text,
+              'bio': _bioController.text,
+              'location': _selectedLocation,
               'preferredLanguage': _preferredLanguage,
             },
           );
@@ -169,6 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Name field
                 CustomTextField(
                   label: 'Nome Completo',
+                  isRequired: true,
                   hintText: 'João Silva',
                   prefixIcon: Icons.person_outlined,
                   keyboardType: TextInputType.name,
@@ -179,6 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Username field
                 CustomTextField(
                   label: 'Username',
+                  isRequired: true,
                   hintText: 'joaosilva',
                   prefixIcon: Icons.verified_user_outlined,
                   keyboardType: TextInputType.text,
@@ -197,6 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Email field
                 CustomTextField(
                   label: 'Email',
+                  isRequired: true,
                   hintText: 'seu.email@softinsa.com',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
@@ -207,6 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Password field
                 CustomTextField(
                   label: 'Password',
+                  isRequired: true,
                   hintText: 'Crie uma password segura',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
@@ -217,6 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Confirm password field
                 CustomTextField(
                   label: 'Confirmar Password',
+                  isRequired: true,
                   hintText: 'Confirme sua password',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
@@ -231,7 +267,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Campos Opcionais',
+                    'Campos opcionais',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -240,23 +276,83 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
 
                 // Phone field (optional)
-                CustomTextField(
-                  label: 'Telemóvel (Opcional)',
-                  hintText: '+351 912 345 678',
-                  prefixIcon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                  controller: _phoneController,
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty && value.length < 9) {
-                      return 'Telemóvel inválido';
-                    }
-                    return null;
-                  },
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Telemóvel',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: _phonePrefix,
+                            underline: const SizedBox.shrink(),
+                            items: const [
+                              DropdownMenuItem(
+                                value: '+351',
+                                child: Text('+351'),
+                              ),
+                              DropdownMenuItem(
+                                value: '+34',
+                                child: Text('+34'),
+                              ),
+                              DropdownMenuItem(
+                                value: '+33',
+                                child: Text('+33'),
+                              ),
+                              DropdownMenuItem(
+                                value: '+44',
+                                child: Text('+44'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _phonePrefix = value ?? '+351';
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              hintText: '912 345 678',
+                              prefixIcon: Icon(Icons.phone_outlined),
+                            ),
+                            validator: (value) {
+                              final normalized = (value ?? '').replaceAll(
+                                ' ',
+                                '',
+                              );
+                              if (normalized.isNotEmpty &&
+                                  normalized.length < 9) {
+                                return 'Telemóvel inválido';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
 
                 // Birthdate field (optional)
                 CustomTextField(
-                  label: 'Data de Nascimento (Opcional)',
+                  label: 'Data de Nascimento',
                   hintText: 'DD/MM/YYYY',
                   prefixIcon: Icons.calendar_today_outlined,
                   keyboardType: TextInputType.datetime,
@@ -276,34 +372,68 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
 
-                // Profile image URL field (optional)
+                // Profile image picker (optional)
                 CustomTextField(
-                  label: 'Imagem de Perfil (Opcional)',
-                  hintText: 'https://exemplo.com/imagem.jpg',
+                  label: 'Imagem de Perfil',
+                  hintText: 'Nenhum ficheiro selecionado',
                   prefixIcon: Icons.image_outlined,
-                  keyboardType: TextInputType.url,
                   controller: _profileImgUrlController,
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      if (!value.startsWith('http://') &&
-                          !value.startsWith('https://')) {
-                        return 'URL inválido';
-                      }
-                    }
-                    return null;
-                  },
+                  readOnly: true,
+                  onTap: _pickProfileImage,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _pickProfileImage,
+                    icon: const Icon(Icons.upload_file_outlined),
+                    label: const Text('Escolher do telemóvel'),
+                  ),
                 ),
 
-                // Location field (optional)
-                CustomTextField(
-                  label: 'Localidade (Opcional)',
-                  hintText: 'Lisboa',
-                  prefixIcon: Icons.location_on_outlined,
-                  keyboardType: TextInputType.text,
-                  controller: _locationController,
+                // Location dropdown (optional)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Localidade',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButton<String>(
+                            hint: const Text('Selecionar localidade'),
+                            value: _selectedLocation,
+                            isExpanded: true,
+                            underline: const SizedBox.shrink(),
+                            items: _availableLocations
+                                .map(
+                                  (location) => DropdownMenuItem(
+                                    value: location,
+                                    child: Text(location),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedLocation = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                // Preferred language (optional, defaults to 1)
+                // Preferred language (optional)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Column(
@@ -355,6 +485,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
 
+                CustomTextField(
+                  label: 'Sobre mim',
+                  hintText: 'Escreva uma breve biografia',
+                  prefixIcon: Icons.info_outline,
+                  controller: _bioController,
+                  maxLines: 4,
+                ),
+
                 // Terms and conditions checkbox
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -392,7 +530,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 // Next button
                 CustomButton(
-                  text: 'Avançar',
+                  text: 'Concluir registo',
                   isLoading: _isLoading,
                   onPressed: _handleRegister,
                 ),

@@ -61,6 +61,11 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   Widget build(BuildContext context) {
     final theme = AppTheme.lightTheme;
     final selectedAreas = _userData['selectedAreas'] as List<dynamic>? ?? [];
+    final phone = (_userData['phone'] ?? '').toString().trim();
+    final phonePrefix = (_userData['phonePrefix'] ?? '+351').toString();
+    final phoneDisplay = phone.isEmpty
+        ? '(não preenchido)'
+        : '$phonePrefix $phone';
 
     return Scaffold(
       appBar: AppBar(
@@ -92,14 +97,15 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
               _buildInfoField('Nome Completo', _userData['name'] ?? '-', theme),
               _buildInfoField('Username', _userData['username'] ?? '-', theme),
               _buildInfoField('Email', _userData['email'] ?? '-', theme),
-              _buildInfoField(
-                'Telemóvel',
-                _userData['phone'] ?? '(não preenchido)',
-                theme,
-              ),
+              _buildInfoField('Telemóvel', phoneDisplay, theme),
               _buildInfoField(
                 'Data de Nascimento',
                 _userData['birthdate'] ?? '(não preenchida)',
+                theme,
+              ),
+              _buildInfoField(
+                'Imagem de Perfil',
+                _userData['profileImgUrl'] ?? '(não preenchida)',
                 theme,
               ),
               _buildInfoField(
@@ -112,11 +118,21 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                 _getLanguageName(_userData['preferredLanguage'] ?? '1'),
                 theme,
               ),
+              _buildInfoField(
+                'Sobre mim',
+                _userData['bio'] ?? '(não preenchido)',
+                theme,
+              ),
 
               const SizedBox(height: 24),
 
               // Secção de Áreas de Interesse
               _buildSectionTitle('Áreas de Interesse', theme),
+              _buildInfoField(
+                'Área Principal',
+                _userData['mainArea'] ?? '(não definida)',
+                theme,
+              ),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),

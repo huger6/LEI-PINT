@@ -14,13 +14,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _loginController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _saveLoginData = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _loginController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -36,7 +37,9 @@ class _LoginScreenState extends State<LoginScreen> {
         // Mostrar mensagem de sucesso
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login bem-sucedido! Email: ${_emailController.text}'),
+            content: Text(
+              'Login bem-sucedido! Utilizador: ${_loginController.text}',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -67,24 +70,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 48),
 
-                // Email field
+                // Email/Username field
                 CustomTextField(
-                  label: 'Email',
-                  hintText: 'seu.email@softinsa.com',
+                  label: 'Email ou username',
+                  isRequired: true,
+                  hintText: 'seu.email@softinsa.com ou joaosilva',
                   prefixIcon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  controller: _emailController,
-                  validator: FormValidators.validateEmail,
+                  keyboardType: TextInputType.text,
+                  controller: _loginController,
+                  validator: (value) {
+                    final text = value?.trim() ?? '';
+                    if (text.isEmpty) {
+                      return 'Email ou username é obrigatório';
+                    }
+
+                    if (text.contains('@')) {
+                      return FormValidators.validateEmail(text);
+                    }
+
+                    if (text.length < 3) {
+                      return 'Username deve ter no mínimo 3 caracteres';
+                    }
+
+                    return null;
+                  },
                 ),
 
                 // Password field
                 CustomTextField(
                   label: 'Password',
+                  isRequired: true,
                   hintText: 'Insira sua password',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   controller: _passwordController,
                   validator: FormValidators.validatePassword,
+                ),
+
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _saveLoginData,
+                  onChanged: (value) {
+                    setState(() => _saveLoginData = value ?? false);
+                  },
+                  title: const Text('Guardar dados de login'),
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
 
                 // Forgot password link

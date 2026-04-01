@@ -47,9 +47,10 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
 
   // Set para guardar as áreas selecionadas (inicialmente vazio)
   final Set<String> _selectedAreas = {};
+  String? _mainArea;
 
-  // Regra de negócio: Mínimo 1 área selecionada para avançar
-  bool get _canAdvance => _selectedAreas.isNotEmpty;
+  // Regra de negócio: escolher pelo menos 1 área e definir a principal
+  bool get _canAdvance => _selectedAreas.isNotEmpty && _mainArea != null;
 
   @override
   void didChangeDependencies() {
@@ -102,7 +103,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  'Para prosseguir, selecione as suas áreas de interesse (até 5)',
+                  'Para prosseguir, selecione as suas áreas de interesse (até 5) e defina uma área principal.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
@@ -116,13 +117,46 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Wrap(
-                    spacing: 8.0, // Espaço horizontal entre chips
-                    runSpacing: 4.0, // Espaço vertical entre linhas
-                    alignment: WrapAlignment.center,
-                    children: _allAreas
-                        .map((area) => _buildAreaChip(area, theme))
-                        .toList(),
+                  child: Column(
+                    children: [
+                      Wrap(
+                        spacing: 8.0, // Espaço horizontal entre chips
+                        runSpacing: 4.0, // Espaço vertical entre linhas
+                        alignment: WrapAlignment.center,
+                        children: _allAreas
+                            .map((area) => _buildAreaChip(area, theme))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      if (_selectedAreas.isNotEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: _mainArea,
+                            hint: const Text('Escolha a área principal'),
+                            isExpanded: true,
+                            underline: const SizedBox.shrink(),
+                            items: _selectedAreas
+                                .map(
+                                  (area) => DropdownMenuItem(
+                                    value: area,
+                                    child: Text(area),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _mainArea = value;
+                              });
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -195,12 +229,13 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                                   arguments: {
                                     ...?widget.registrationData,
                                     'selectedAreas': _selectedAreas.toList(),
+                                    'mainArea': _mainArea,
                                   },
                                 );
                               }
                             : null, // Desativa o botão se nada estiver selecionado
                         child: const Text(
-                          'Confirmar Áreas',
+                          'Concluir registo',
                           style: TextStyle(
                             fontFamily:
                                 'Inter', // Fonte definida nas instruções anteriores
@@ -278,6 +313,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
             // Regra de negócio: Permitir selecionar 5 áreas no máximo
             if (_selectedAreas.length < 5) {
               _selectedAreas.add(areaName);
+              _mainArea ??= areaName;
             } else {
               // Feedback opcional ao utilizador
               ScaffoldMessenger.of(context).showSnackBar(
@@ -289,6 +325,9 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
             }
           } else {
             _selectedAreas.remove(areaName);
+            if (_mainArea == areaName) {
+              _mainArea = _selectedAreas.isEmpty ? null : _selectedAreas.first;
+            }
           }
         });
       },
