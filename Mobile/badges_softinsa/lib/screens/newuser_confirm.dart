@@ -182,7 +182,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                 height: 50,
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Voltar e Corrigir'),
+                  child: const Text('Voltar'),
                 ),
               ),
 

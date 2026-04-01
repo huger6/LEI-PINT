@@ -28,6 +28,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _preferredLanguage = '1';
 
   @override
+  void initState() {
+    super.initState();
+    // Limpar dados anteriores no initState para evitar conflitos
+    _resetForm();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Receber dados anteriores se existirem (vindo de select_area)
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      _populateFormWithPreviousData(args);
+    }
+  }
+
+  void _populateFormWithPreviousData(Map<String, dynamic> data) {
+    if (mounted) {
+      _nameController.text = data['name'] ?? '';
+      _usernameController.text = data['username'] ?? '';
+      _emailController.text = data['email'] ?? '';
+      _passwordController.text = data['password'] ?? '';
+      _confirmPasswordController.text = data['password'] ?? '';
+      _phoneController.text = data['phone'] ?? '';
+      _birthdateController.text = data['birthdate'] ?? '';
+      _profileImgUrlController.text = data['profileImgUrl'] ?? '';
+      _locationController.text = data['location'] ?? '';
+      _preferredLanguage = data['preferredLanguage'] ?? '1';
+    }
+  }
+
+  void _resetForm() {
+    _nameController.clear();
+    _usernameController.clear();
+    _emailController.clear();
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+    _phoneController.clear();
+    _birthdateController.clear();
+    _profileImgUrlController.clear();
+    _locationController.clear();
+    _preferredLanguage = '1';
+    _agreedToTerms = false;
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _usernameController.dispose();
@@ -45,8 +92,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState!.validate() && _agreedToTerms) {
       setState(() => _isLoading = true);
 
-      // Simular chamada ao backend
+      // Simular chamada ao backend com delay
       Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
+
         setState(() => _isLoading = false);
 
         // Mostrar mensagem de sucesso
@@ -56,11 +105,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               'Conta criada com sucesso! Email: ${_emailController.text}',
             ),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
           ),
         );
 
         // Navegar para select_area com os dados do formulário
-        Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
           Navigator.pushNamed(
             context,
             '/select-area',
@@ -76,7 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               'preferredLanguage': _preferredLanguage,
             },
           );
-        });
+        }
       });
     } else if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(

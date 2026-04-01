@@ -127,7 +127,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                 ),
               ),
 
-              // 4. Botão Confirmar (Fixo no fundo)
+              // 4. Botão Voltar e Confirmar (Fixo no fundo)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -144,33 +144,73 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                     ),
                   ],
                 ),
-                child: SizedBox(
-                  height: 50,
-                  child: FilledButton(
-                    // O estilo do FilledButton já usa AppColors.primary no app_theme.dart
-                    onPressed: _canAdvance
-                        ? () {
-                            // Navegar para a página de confirmação com os dados
-                            Navigator.pushNamed(
-                              context,
-                              '/newuser-confirm',
-                              arguments: {
-                                ...?widget.registrationData,
-                                'selectedAreas': _selectedAreas.toList(),
-                              },
-                            );
-                          }
-                        : null, // Desativa o botão se nada estiver selecionado
-                    child: const Text(
-                      'Confirmar Áreas',
-                      style: TextStyle(
-                        fontFamily:
-                            'Inter', // Fonte definida nas instruções anteriores
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                child: Column(
+                  children: [
+                    // Botão Voltar com cores invertidas
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Navegar de volta para register_screen com dados anteriores
+                          Navigator.pushNamed(
+                            context,
+                            '/register',
+                            arguments: widget.registrationData,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Voltar',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    // Botão Confirmar Áreas
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: FilledButton(
+                        // O estilo do FilledButton já usa AppColors.primary no app_theme.dart
+                        onPressed: _canAdvance
+                            ? () {
+                                // Navegar para a página de confirmação com os dados
+                                Navigator.pushNamed(
+                                  context,
+                                  '/newuser-confirm',
+                                  arguments: {
+                                    ...?widget.registrationData,
+                                    'selectedAreas': _selectedAreas.toList(),
+                                  },
+                                );
+                              }
+                            : null, // Desativa o botão se nada estiver selecionado
+                        child: const Text(
+                          'Confirmar Áreas',
+                          style: TextStyle(
+                            fontFamily:
+                                'Inter', // Fonte definida nas instruções anteriores
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
