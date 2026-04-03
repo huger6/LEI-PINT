@@ -188,7 +188,7 @@ const register = async (req, res) => {
             user_role: userData.user_role
         });
 
-        // Send confirmation email and validate service outcome.
+        // Send confirmation email and validate service outcome
         const emailResult = await sendConfirmationEmail(
             userData.email_address,
             userData.full_name,
@@ -1178,6 +1178,127 @@ const me = async (req, res) => {
     }
 };
 
+const resendConfirmation = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const { email } = req.body;
+
+    try {
+        const [user] = await sequelize.query(`
+            SELECT user_id, full_name, email_address, email_confirmed, preferred_lang_id
+            FROM users
+            WHERE email_address=:email
+            `,
+            {
+                replacements: {
+                    email: email
+                },
+                type: QueryTypes.SELECT
+            }
+        );
+
+        if (!user) {
+            // True for security reasons
+            return res.status(200).json({
+                success: true,
+                message: "If the account is not confirmed, a new e-mail will be sent."
+            });
+        }
+
+        if (user.email_confirmed) {
+            return res.status(400).json({
+                success: false,
+                message: "This account is already confirmed."
+            });
+        }
+
+        // Rate limit: 2 minutes
+        const [lastToken] = await sequelize.query(`
+            SELECT created_at FROM user_account_tokens
+            WHERE user_id=:user_id AND token_type='CONFIRMATION'
+            LIMIT 1`,
+            {
+                replacements: {
+                    user_id: user.user_id
+                },
+                type: QueryTypes.SELECT
+            }
+        );
+
+        if (lastToken) {
+            const now = new Date();
+            const lastSent = new Date(lastToken.created_at);
+            const diffInSeconds = (now - lastSent) / 1000;
+
+            if (diffInSeconds < 120) {
+                const waitTime = Math.ceil(120 - diffInSeconds);
+
+                return res.status(429).json({
+                    success: false,
+                    message: `Please wait ${waitTime} seconds before requesting a new e-mail.`
+                });
+            }
+        }
+
+        const tokenValue = crypto.randomBytes(32).toString('hex');
+
+        await sequelize.query(`
+            INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
+            VALUES (:user_id, :token, 'CONFIRMATION', NOW() + INTERVAL '8 hours')
+            ON CONFLICT (user_id, token_type) DO UPDATE SET
+                token_value=:token,
+                expires_at=NOW() + INTERVAL '8 hours',
+                created_at=NOW()`,
+            {
+                replacements: {
+                    user_id: user.user_id,
+                    token: tokenValue
+                }
+            }
+        );
+
+        // Send confirmation email and validate service outcome
+        const emailResult = await sendConfirmationEmail(
+            user.email_address,
+            user.full_name,
+            tokenValue,
+            user.preferred_lang_id
+        );
+
+        if (!emailResult?.success) {
+            logger.error('Failed to send confirmation email.', {
+                requestId,
+                user_id: user.user_id,
+                email_address: user.email_address,
+                preferred_lang_id: user.preferred_lang_id,
+                emailError: emailResult?.error
+            });
+
+            return res.status(502).json({
+                success: false,
+                message: "Failed to send confirmation email. Please use the link below.",
+                data: {
+                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
+                }
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "New confirmation e-mail sent."
+        });
+    } catch (error) {
+        logger.error('Error resending confirmation email', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: "Error resending confirmation email."
+        });
+    }
+}
+
 module.exports = {
     register,
     confirmEmail,
@@ -1189,5 +1310,6 @@ module.exports = {
     validateResetToken,
     resetPassword,
     verifySession,
-    me
+    me,
+    resendConfirmation
 }
