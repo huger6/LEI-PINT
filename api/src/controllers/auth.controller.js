@@ -966,9 +966,8 @@ const validateResetToken = async (req, res) => {
         });
     }
 
-}
+};
 
-// Verificar try na validateResetToken
 const resetPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const { token, newPassword } = req.body;
@@ -1088,6 +1087,97 @@ const resetPassword = async (req, res) => {
     }
 };
 
+const verifySession = async (req, res) => {
+    // loginRequired should be called, so if we are here session is good
+    return res.status(200).json({
+        success: true,
+        message: "Session is okay."
+    });
+};
+
+const me = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const user_id = req.user.sub; // from jwt
+
+    try {
+        const [result] = await sequelize.query(`
+            SELECT jsonb_strip_nulls(jsonb_build_object(
+                'id', u.user_id,
+                'guid', u.user_guid,
+                'fullName', u.full_name,
+                'username', u.username,
+                'email', u.email_address,
+                'role', u.user_role,
+                'profileImg', u.profile_img_url,
+                'lang', pl.preferred_lang,
+                'location', l.location_name,
+                'biography', COALESCE(c.biography, tm.biography, sll.biography),
+                
+                'serviceLine', COALESCE(sl_sll.service_line_name, sl_cons.service_line_name),
+                'learningPath', COALESCE(lp_sll.path_title, lp_cons.path_title),
+                
+                'areas', (
+                    SELECT json_agg(json_build_object(
+                        'id', a.area_id, 
+                        'name', a.area_name, 
+                        'isPrimary', ca.is_primary
+                    ))
+                    FROM consultant_areas ca
+                    JOIN areas a ON ca.area_id = a.area_id
+                    WHERE ca.user_id = u.user_id
+                )
+            )) AS profile
+            FROM users u
+            LEFT JOIN locations l ON u.location_id = l.location_id
+            LEFT JOIN preferred_lang pl ON u.preferred_lang_id = pl.preferred_lang_id
+            
+            LEFT JOIN consultants c ON u.user_id = c.user_id
+            LEFT JOIN talent_managers tm ON u.user_id = tm.user_id
+            LEFT JOIN service_line_leaders sll ON u.user_id = sll.user_id
+            
+            LEFT JOIN services_lines sl_sll ON sll.service_line_id = sl_sll.service_line_id
+            LEFT JOIN learning_paths lp_sll ON sl_sll.learning_path_id = lp_sll.learning_path_id
+            
+            LEFT JOIN consultant_areas ca_pri ON u.user_id = ca_pri.user_id AND ca_pri.is_primary = TRUE
+            LEFT JOIN areas a_pri ON ca_pri.area_id = a_pri.area_id
+            LEFT JOIN services_lines sl_cons ON a_pri.service_line_id = sl_cons.service_line_id
+            LEFT JOIN learning_paths lp_cons ON sl_cons.learning_path_id = lp_cons.learning_path_id
+            
+            WHERE u.user_id = :user_id
+            `,
+            {
+                replacements: {
+                    user_id: user_id
+                },
+                type: QueryTypes.SELECT
+            }
+        );
+
+        if (!result || !result.profile) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User data retreived successfully.",
+            data: result.profile
+        });
+    } catch (error) {
+        logger.error('Error fetching current user', {
+            requestId,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: "Error fetching profile information."
+        });
+    }
+};
+
 module.exports = {
     register,
     confirmEmail,
@@ -1097,5 +1187,7 @@ module.exports = {
     changePassword,
     forgotPassword,
     validateResetToken,
-    resetPassword
+    resetPassword,
+    verifySession,
+    me
 }
