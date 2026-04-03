@@ -14,7 +14,7 @@ router.get('/verify-session', loginRequired, authController.verifySession);
 
 // --- Account confirmation ---
 router.get('/confirm-email', authController.confirmEmail);
-router.post('/resend-confirmation');
+router.post('/resend-confirmation', authController.resendConfirmation);
 
 // --- Password Recovery ---
 router.post('/forgot-password', annonymousUsersOnly, authController.forgotPassword);
