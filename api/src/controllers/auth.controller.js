@@ -8,6 +8,7 @@ const { emailRule, passwordRule, registerSchema, loginSchema } = require('../val
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
+const { success } = require('zod');
 
 loadEnvironment();
 
@@ -917,7 +918,175 @@ const forgotPassword = async (req, res) => {
             message: "Error processing request."
         });
     }
+};
+
+const validateResetToken = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const { token } = req.params;
+
+    try {
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Token is required."
+            });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        const [record] = await sequelize.query(`
+            SELECT expires_at FROM user_account_tokens
+            WHERE token_value =:tokenHash AND token_type='PASSWORD_RESET'`,
+            {
+                replacements: {
+                    tokenHash: tokenHash
+                }, type: QueryTypes.SELECT
+            }
+        );
+
+        if (!record || new Date() > record.expires_at) {
+            return res.status(400).json({
+                success: false,
+                message: "Token invalid or expired."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Token is valid."
+        });
+    } catch (error) {
+        logger.error("Error validating reset token.",
+            requestId,
+            error
+        );
+        return res.status(500).json({
+            success: false,
+            message: "Error processing request."
+        });
+    }
+
 }
+
+// Verificar try na validateResetToken
+const resetPassword = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const { token, newPassword } = req.body;
+
+    const t = await sequelize.transaction();
+
+    try {
+        // Validate new pw
+        const validation = passwordRule.safeParse(newPassword);
+        if (!validation.success) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "New password does not meat security requirements (format).",
+                data: {
+                    errors: validation.error.issues
+                }
+            });
+        }
+
+        // Generate token hash
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Get token and user id
+        const [tokenRecord] = await sequelize.query(`
+            SELECT user_id, expires_at
+            FROM user_account_tokens
+            WHERE token_value=:tokenHash AND token_type='PASSWORD_RESET'
+            LIMIT 1`,
+            {
+                replacements: {
+                    tokenHash: tokenHash
+                },
+                type: QueryTypes.SELECT,
+                transaction: t
+            }
+        );
+
+        if (!tokenRecord) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or already used token"
+            });
+        }
+
+        if (new Date() > tokenRecord.expires_at) {
+            await t.rollback();
+            return res.status(410).json({
+                success: false,
+                message: "Token has expired."
+            });
+        }
+
+        // Hash new pw
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        // Update user
+        await sequelize.query(`
+            UPDATE users
+            SET password_hash=:passwordHash, force_password_change=false
+            WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    passwordHash: passwordHash,
+                    user_id: tokenRecord.user_id
+                },
+                transaction: t
+            }
+        );
+
+        // Delete used token
+        await sequelize.query(`
+            DELETE FROM user_account_tokens
+            WHERE user_id=:user_id AND token_type='PASSWORD_RESET'`,
+            {
+                replacements: {
+                    user_id: tokenRecord.user_id
+                },
+                transaction: t
+            }
+        );
+
+        // Logout all sessions
+        await sequelize.query(`
+            DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
+            {
+                replacements: {
+                    user_id: tokenRecord.user_id
+                },
+                transaction: t
+            }
+        );
+
+        await t.commit();
+
+        // Delete cookie
+        res.clearCookie('refreshToken', {
+            path: '/api/auth'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully. You can now log in with your new credentials."
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+
+        logger.error("Error reseting password",
+            requestId,
+            error
+        );
+        return res.status(500).json({
+            success: false,
+            message: "Error processing request."
+        });
+    }
+};
 
 module.exports = {
     register,
@@ -926,5 +1095,7 @@ module.exports = {
     logout,
     refresh,
     changePassword,
-    forgotPassword
+    forgotPassword,
+    validateResetToken,
+    resetPassword
 }
