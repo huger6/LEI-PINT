@@ -3,12 +3,12 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
+const redis = require('../config/redis');
 const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
 const { moveImageToPermanent } = require('../services/storageService');
-const { success } = require('zod');
 
 loadEnvironment();
 
@@ -479,7 +479,7 @@ const login = async (req, res) => {
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
-            secure: false, // IMPORTANT: CHANGE THIS WHEN IN PRODUCTION
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             path: '/api/auth', // Cookie is only sent to /auth prefixed routes
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
@@ -549,113 +549,66 @@ const refresh = async (req, res) => {
         });
     }
 
-    const t = await sequelize.transaction();
+    const oldTokenKey = `auth:refresh:${refreshToken}`;
 
     try {
-        const [savedToken] = await sequelize.query(
-            `SELECT
-                t.user_id,
-                t.expires_at,
-                u.username,
-                u.user_role,
-                u.user_guid,
-                u.force_password_change
-            FROM user_refresh_tokens t
-            JOIN users u
-                ON t.user_id = u.user_id
-            WHERE t.token_value=:token`,
-            {
-                replacements: {
-                    token: refreshToken
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        // Search token in redis
+        const cachedData = await redis.get(oldTokenKey);
 
-        if (!savedToken || new Date() > savedToken.expires_at) {
-            if (savedToken) {
-                // Expired
-                await sequelize.query(
-                    `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
-                    {
-                        replacements: {
-                            token: refreshToken
-                        },
-                        transaction: t
-                    }
-                );
-            }
-
-            await t.commit();
-            res.clearCookie('refreshToken', {
-                path: '/api/auth'
-            });
-
+        if (!cachedData) {
+            res.clearCookie('refreshToken', { path: '/api/auth' });
+            // If token isn't in cache it is invalid or expired
             return res.status(403).json({
                 success: false,
                 message: "Session expired or invalid."
             });
         }
 
-        // Generate new Access Token
+        // Get user data
+        const userData = JSON.parse(cachedData);
+
+        // Get new access token
         const accessToken = jwt.sign({
-            sub: savedToken.user_id,
-            guid: savedToken.user_guid,
-            role: savedToken.user_role,
-            username: savedToken.username,
-            fpc: savedToken.force_password_change
-        }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN || '15m' });
+            sub: userData.user_id,
+            guid: userData.user_guid,
+            role: userData.user_role,
+            username: userData.username,
+            fpc: userData.force_password_change
+        }, process.env.JWT_SECRET_KEY, {
+            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
+        });
 
-        // Create new token in DB
         const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
+        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
 
-        // Delete old token
-        await sequelize.query(
-            `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
-            {
-                replacements: {
-                    token: refreshToken
-                },
-                transaction: t
-            }
-        );
-        // Insert new token
-        await sequelize.query(
-            `INSERT INTO user_refresh_tokens (user_id, token_value, expires_at, created_at) 
-             VALUES (:user_id, :token, :expires, NOW())`,
-            {
-                replacements: {
-                    user_id: savedToken.user_id,
-                    token: newRefreshTokenValue,
-                    expires: savedToken.expires_at // Maintain original expire time (it hasn't expired)
-                },
-                transaction: t
-            }
-        );
+        //  Get original TTL
+        const remainingTTL = await redis.ttl(oldTokenKey);
 
-        // Update user's last_online
+        if (remainingTTL <= 0) {
+            throw new Error("Token TTL invalid");
+        }
+        // Delete old, set new 
+        await redis.del(oldTokenKey);
+        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
+
         await sequelize.query(
             `UPDATE users
             SET last_online=NOW()
             WHERE user_id=:user_id`,
             {
                 replacements: {
-                    user_id: savedToken.user_id
-                },
-                transaction: t
+                    user_id: userData.user_id
+                }
             }
         );
 
-        await t.commit();
-
-        // Config new cookie
+        // Set new cookie
         res.cookie('refreshToken', newRefreshTokenValue, {
             httpOnly: true,
-            secure: false, // IMPORTANT: CHANGE THIS WHEN IN PRODUCTION
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             path: '/api/auth',
-            maxAge: new Date(savedToken.expires_at).getTime() - new Date().getTime()
+            maxAge: remainingTTL * 1000
         });
 
         return res.status(200).json({
@@ -666,8 +619,6 @@ const refresh = async (req, res) => {
             }
         });
     } catch (error) {
-        if (t) await t.rollback();
-
         logger.error('Error generating/processing new token.', {
             requestId,
             error
@@ -1099,7 +1050,20 @@ const me = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const user_id = req.user.sub; // from jwt
 
+    const cacheKey = `user:profile:${user_id}`;
+
     try {
+        // Check if data is on cache
+        const cachedProfile = await redis.get(cacheKey);
+
+        if (cachedProfile) {
+            return res.status(200).json({
+                success: true,
+                message: "User data retrieved successfully.",
+                data: JSON.parse(cachedProfile)
+            });
+        }
+
         const [result] = await sequelize.query(`
             SELECT jsonb_strip_nulls(jsonb_build_object(
                 'id', u.user_id,
@@ -1160,6 +1124,9 @@ const me = async (req, res) => {
             });
         }
 
+        // Store in cache
+        await redis.set(cacheKey, JSON.stringify(result.profile), 'EX', 3600);
+
         return res.status(200).json({
             success: true,
             message: "User data retreived successfully.",
@@ -1212,31 +1179,18 @@ const resendConfirmation = async (req, res) => {
         }
 
         // Rate limit: 2 minutes
-        const [lastToken] = await sequelize.query(`
-            SELECT created_at FROM user_account_tokens
-            WHERE user_id=:user_id AND token_type='CONFIRMATION'
-            LIMIT 1`,
-            {
-                replacements: {
-                    user_id: user.user_id
-                },
-                type: QueryTypes.SELECT
-            }
-        );
+        const rateLimitKey = `auth:resend_limit:${user.user_id}`;
 
-        if (lastToken) {
-            const now = new Date();
-            const lastSent = new Date(lastToken.created_at);
-            const diffInSeconds = (now - lastSent) / 1000;
+        const isBlocked = await redis.get(rateLimitKey);
 
-            if (diffInSeconds < 120) {
-                const waitTime = Math.ceil(120 - diffInSeconds);
+        if (isBlocked) {
+            // Get time until it's unlocked
+            const remainingTime = await redis.ttl(rateLimitKey);
 
-                return res.status(429).json({
-                    success: false,
-                    message: `Please wait ${waitTime} seconds before requesting a new e-mail.`
-                });
-            }
+            return res.status(429).json({
+                success: false,
+                message: `Please wait ${remainingTime} seconds before requesting a new e-mail.`
+            });
         }
 
         const tokenValue = crypto.randomBytes(32).toString('hex');
@@ -1263,6 +1217,9 @@ const resendConfirmation = async (req, res) => {
             tokenValue,
             user.preferred_lang_id
         );
+
+        // Set cache
+        await redis.set(rateLimitKey, '1', 'EX', 120);
 
         if (!emailResult?.success) {
             logger.error('Failed to send confirmation email.', {
