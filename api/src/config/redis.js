@@ -3,8 +3,6 @@ const loadEnvironment = require('./loadEnv');
 
 loadEnvironment();
 
-console.log(process.env.REDIS_URL);
-
 const redis = new Redis(process.env.REDIS_URL, {
     // retry not to crash app
     retryStrategy(times) {
