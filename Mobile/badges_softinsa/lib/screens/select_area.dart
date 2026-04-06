@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/language_controller.dart';
 
 class SelectAreaScreen extends StatefulWidget {
   final Map<String, dynamic>? registrationData;
@@ -47,6 +48,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
 
   // Set para guardar as áreas selecionadas (inicialmente vazio)
   final Set<String> _selectedAreas = {};
+  final List<String> _selectedAreaOrder = [];
   String? _mainArea;
 
   // Regra de negócio: escolher pelo menos 1 área e definir a principal
@@ -67,6 +69,8 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     // Usamos o ThemeData definido no app_theme.dart
     final theme = AppTheme.lightTheme;
 
@@ -103,7 +107,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  'Para prosseguir, selecione as suas áreas de interesse (até 5) e defina uma área principal.',
+                  tr.tr('selectAreasDescription'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
@@ -128,34 +132,6 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                             .toList(),
                       ),
                       const SizedBox(height: 20),
-                      if (_selectedAreas.isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: DropdownButton<String>(
-                            value: _mainArea,
-                            hint: const Text('Escolha a área principal'),
-                            isExpanded: true,
-                            underline: const SizedBox.shrink(),
-                            items: _selectedAreas
-                                .map(
-                                  (area) => DropdownMenuItem(
-                                    value: area,
-                                    child: Text(area),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _mainArea = value;
-                              });
-                            },
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -203,7 +179,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                           ),
                         ),
                         child: Text(
-                          'Voltar',
+                          tr.tr('back'),
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w600,
@@ -228,14 +204,14 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                                   '/newuser-confirm',
                                   arguments: {
                                     ...?widget.registrationData,
-                                    'selectedAreas': _selectedAreas.toList(),
+                                    'selectedAreas': _selectedAreaOrder,
                                     'mainArea': _mainArea,
                                   },
                                 );
                               }
                             : null, // Desativa o botão se nada estiver selecionado
-                        child: const Text(
-                          'Concluir registo',
+                        child: Text(
+                          tr.tr('finishRegister'),
                           style: TextStyle(
                             fontFamily:
                                 'Inter', // Fonte definida nas instruções anteriores
@@ -313,20 +289,26 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
             // Regra de negócio: Permitir selecionar 5 áreas no máximo
             if (_selectedAreas.length < 5) {
               _selectedAreas.add(areaName);
+              if (!_selectedAreaOrder.contains(areaName)) {
+                _selectedAreaOrder.add(areaName);
+              }
               _mainArea ??= areaName;
             } else {
               // Feedback opcional ao utilizador
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Pode selecionar no máximo 5 áreas.'),
+                SnackBar(
+                  content: Text(LanguageScope.of(context).tr('maxFiveAreas')),
                   duration: Duration(seconds: 2),
                 ),
               );
             }
           } else {
             _selectedAreas.remove(areaName);
+            _selectedAreaOrder.remove(areaName);
             if (_mainArea == areaName) {
-              _mainArea = _selectedAreas.isEmpty ? null : _selectedAreas.first;
+              _mainArea = _selectedAreaOrder.isEmpty
+                  ? null
+                  : _selectedAreaOrder.first;
             }
           }
         });

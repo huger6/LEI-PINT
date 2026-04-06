@@ -4,6 +4,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/nav_link.dart';
 import '../utils/form_validators.dart';
+import '../utils/language_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -27,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() {
+    final tr = LanguageScope.of(context);
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -38,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Login bem-sucedido! Utilizador: ${_loginController.text}',
+              tr.tr('loginSuccess').replaceAll('{user}', _loginController.text),
             ),
             backgroundColor: Colors.green,
           ),
@@ -51,6 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+    FormValidators.setLanguageCode(tr.languageCode);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -63,8 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Header com logo e título
                 AuthHeader(
-                  title: 'Bem-vindo de volta',
-                  subtitle: 'Faça login na sua conta',
+                  title: tr.tr('welcomeBack'),
+                  subtitle: tr.tr('loginSubtitle'),
                   imagePath: 'images/logotipo_softinsa.png',
                 ),
 
@@ -72,16 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Email/Username field
                 CustomTextField(
-                  label: 'Email ou username',
+                  label: tr.tr('emailOrUsername'),
                   isRequired: true,
-                  hintText: 'seu.email@softinsa.com ou joaosilva',
+                  hintText: tr.tr('emailOrUsernameHint'),
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.text,
                   controller: _loginController,
                   validator: (value) {
                     final text = value?.trim() ?? '';
                     if (text.isEmpty) {
-                      return 'Email ou username é obrigatório';
+                      return tr.tr('emailOrUsernameRequired');
                     }
 
                     if (text.contains('@')) {
@@ -89,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
 
                     if (text.length < 3) {
-                      return 'Username deve ter no mínimo 3 caracteres';
+                      return tr.tr('usernameMinChars');
                     }
 
                     return null;
@@ -98,9 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Password field
                 CustomTextField(
-                  label: 'Password',
+                  label: tr.tr('password'),
                   isRequired: true,
-                  hintText: 'Insira sua password',
+                  hintText: tr.tr('enterPasswordHint'),
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   controller: _passwordController,
@@ -113,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onChanged: (value) {
                     setState(() => _saveLoginData = value ?? false);
                   },
-                  title: const Text('Guardar dados de login'),
+                  title: Text(tr.tr('saveLoginData')),
                   controlAffinity: ListTileControlAffinity.leading,
                 ),
 
@@ -125,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.pushNamed(context, '/forgot-password');
                     },
                     child: Text(
-                      'Esqueci-me da password',
+                      tr.tr('forgotPassword'),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.w600,
@@ -138,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Login button
                 CustomButton(
-                  text: 'Entrar',
+                  text: tr.tr('login'),
                   isLoading: _isLoading,
                   onPressed: _handleLogin,
                 ),
@@ -147,8 +152,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Sign up link
                 NavLink(
-                  text: 'Não tem conta?',
-                  linkText: 'Criar conta',
+                  text: tr.tr('noAccount'),
+                  linkText: tr.tr('register'),
                   onPressed: () {
                     Navigator.pushNamed(context, '/register');
                   },

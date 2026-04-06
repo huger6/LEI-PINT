@@ -3,6 +3,7 @@ import '../widgets/auth_header.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../utils/form_validators.dart';
+import '../utils/language_controller.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _handleSendInstructions() {
+    final tr = LanguageScope.of(context);
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -38,7 +40,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Instruções enviadas para ${_emailController.text}',
+              tr.tr('emailSentTo').replaceAll('{email}', _emailController.text),
             ),
             backgroundColor: Colors.green,
           ),
@@ -54,13 +56,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+    FormValidators.setLanguageCode(tr.languageCode);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Recuperar Password'),
+        title: Text(tr.tr('recoverPassword')),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -71,8 +76,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               // Header
               AuthHeader(
-                title: 'Recuperar Password',
-                subtitle: 'Insira seu email para receber instruções',
+                title: tr.tr('recoverPassword'),
+                subtitle: tr.tr('recoverSubtitle'),
               ),
 
               const SizedBox(height: 48),
@@ -84,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     children: [
                       CustomTextField(
-                        label: 'Email',
+                        label: tr.tr('email'),
                         hintText: 'seu.email@softinsa.com',
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
@@ -93,7 +98,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 32),
                       CustomButton(
-                        text: 'Enviar Instruções',
+                        text: tr.tr('sendInstructions'),
                         isLoading: _isLoading,
                         onPressed: _handleSendInstructions,
                       ),
@@ -121,14 +126,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Email Enviado!',
+                        tr.tr('emailSent'),
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.green[800],
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Verifique sua caixa de correio para as instruções de recuperação de password.',
+                        tr.tr('checkMailbox'),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
@@ -139,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Voltar para Login',
+                    tr.tr('backToLogin'),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.w600,
@@ -157,12 +162,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const Divider(),
                     const SizedBox(height: 24),
                     Text(
-                      'Não recebeu o email?',
+                      tr.tr('didNotReceiveEmail'),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Verifique a pasta de spam ou tente novamente com outro email.',
+                      tr.tr('checkSpam'),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),

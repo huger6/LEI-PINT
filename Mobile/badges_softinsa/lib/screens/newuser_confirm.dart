@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/app_strings.dart';
+import '../utils/language_controller.dart';
 import '../widgets/custom_button.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
@@ -35,6 +37,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   }
 
   void _handleRegister() {
+    final tr = LanguageScope.of(context);
     setState(() => _isLoading = true);
 
     // Simular chamada ao backend para registar o utilizador
@@ -44,7 +47,9 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Utilizador ${_userData['username']} registado com sucesso!',
+            tr
+                .tr('userRegisteredSuccess')
+                .replaceAll('{username}', (_userData['username'] ?? '').toString()),
           ),
           backgroundColor: Colors.green,
         ),
@@ -59,12 +64,13 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final theme = AppTheme.lightTheme;
     final selectedAreas = _userData['selectedAreas'] as List<dynamic>? ?? [];
     final phone = (_userData['phone'] ?? '').toString().trim();
     final phonePrefix = (_userData['phonePrefix'] ?? '+351').toString();
     final phoneDisplay = phone.isEmpty
-        ? '(não preenchido)'
+      ? tr.tr('notFilled')
         : '$phonePrefix $phone';
 
     return Scaffold(
@@ -73,7 +79,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Confirmar Registo'),
+        title: Text(tr.tr('confirmRegister')),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -83,7 +89,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
             children: [
               // Título
               Text(
-                'Resumo do Registo',
+                tr.tr('registerSummary'),
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: theme.colorScheme.onSurface,
@@ -93,44 +99,44 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
               const SizedBox(height: 24),
 
               // Secção de Dados Pessoais
-              _buildSectionTitle('Dados Pessoais', theme),
-              _buildInfoField('Nome Completo', _userData['name'] ?? '-', theme),
-              _buildInfoField('Username', _userData['username'] ?? '-', theme),
-              _buildInfoField('Email', _userData['email'] ?? '-', theme),
-              _buildInfoField('Telemóvel', phoneDisplay, theme),
+              _buildSectionTitle(tr.tr('personalData'), theme),
+              _buildInfoField(tr.tr('name'), _userData['name'] ?? '-', theme),
+              _buildInfoField(tr.tr('username'), _userData['username'] ?? '-', theme),
+              _buildInfoField(tr.tr('email'), _userData['email'] ?? '-', theme),
+              _buildInfoField(tr.tr('phone'), phoneDisplay, theme),
               _buildInfoField(
-                'Data de Nascimento',
-                _userData['birthdate'] ?? '(não preenchida)',
+                tr.tr('birthdate'),
+                _userData['birthdate'] ?? tr.tr('notFilledF'),
                 theme,
               ),
               _buildInfoField(
-                'Imagem de Perfil',
-                _userData['profileImgUrl'] ?? '(não preenchida)',
+                tr.tr('profileImage'),
+                _userData['profileImgUrl'] ?? tr.tr('notFilledF'),
                 theme,
               ),
               _buildInfoField(
-                'Localidade',
-                _userData['location'] ?? '(não preenchida)',
+                tr.tr('location'),
+                _userData['location'] ?? tr.tr('notFilledF'),
                 theme,
               ),
               _buildInfoField(
-                'Linguagem Preferida',
+                tr.tr('preferredLanguageOptional'),
                 _getLanguageName(_userData['preferredLanguage'] ?? '1'),
                 theme,
               ),
               _buildInfoField(
-                'Sobre mim',
-                _userData['bio'] ?? '(não preenchido)',
+                tr.tr('aboutMe'),
+                _userData['bio'] ?? tr.tr('notFilled'),
                 theme,
               ),
 
               const SizedBox(height: 24),
 
               // Secção de Áreas de Interesse
-              _buildSectionTitle('Áreas de Interesse', theme),
+              _buildSectionTitle(tr.tr('selectedAreas'), theme),
               _buildInfoField(
-                'Área Principal',
-                _userData['mainArea'] ?? '(não definida)',
+                tr.tr('mainArea'),
+                _userData['mainArea'] ?? tr.tr('notDefined'),
                 theme,
               ),
               Container(
@@ -147,7 +153,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                   children: selectedAreas.isEmpty
                       ? [
                           Text(
-                            'Nenhuma área selecionada',
+                            tr.tr('noneSelectedArea'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: Colors.grey,
                             ),
@@ -185,7 +191,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
 
               // Botão Registar
               CustomButton(
-                text: 'Registar Utilizador',
+                text: tr.tr('registerUser'),
                 isLoading: _isLoading,
                 onPressed: _handleRegister,
               ),
@@ -198,7 +204,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                 height: 50,
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Voltar'),
+                  child: Text(tr.tr('back')),
                 ),
               ),
 
@@ -258,12 +264,6 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   }
 
   String _getLanguageName(String languageCode) {
-    const Map<String, String> languages = {
-      '1': 'Português',
-      '2': 'English',
-      '3': 'Español',
-      '4': 'Français',
-    };
-    return languages[languageCode] ?? 'Português';
+    return AppStrings.languageName(languageCode);
   }
 }

@@ -5,7 +5,9 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/loading_overlay.dart';
 import '../widgets/nav_link.dart';
+import '../utils/app_strings.dart';
 import '../utils/form_validators.dart';
+import '../utils/language_controller.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -72,6 +74,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _bioController.text = data['bio'] ?? '';
       _selectedLocation = data['location'];
       _preferredLanguage = data['preferredLanguage'] ?? '1';
+      LanguageScope.of(context).setLanguageCode(_preferredLanguage);
+      FormValidators.setLanguageCode(_preferredLanguage);
     }
   }
 
@@ -129,6 +133,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _handleRegister() {
+    final tr = LanguageScope.of(context);
     _normalizeFields();
 
     if (_formKey.currentState!.validate() && _agreedToTerms) {
@@ -144,7 +149,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Conta criada com sucesso! Email: ${_emailController.text}',
+              tr
+                  .tr('accountCreatedWithEmail')
+                  .replaceAll('{email}', _emailController.text),
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
@@ -174,8 +181,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     } else if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Você deve aceitar os termos para continuar'),
+        SnackBar(
+          content: Text(tr.tr('mustAcceptTerms')),
           backgroundColor: Colors.orange,
         ),
       );
@@ -184,13 +191,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+    FormValidators.setLanguageCode(tr.languageCode);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Criar Conta'),
+        title: Text(tr.tr('createAccount')),
       ),
       body: SafeArea(
         child: Stack(
@@ -205,8 +215,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Header
                     AuthHeader(
-                      title: 'Crie sua conta',
-                      subtitle: 'Junte-se à Softinsa',
+                      title: tr.tr('registerTitle'),
+                      subtitle: tr.tr('registerSubtitle'),
                       imagePath: 'images/logotipo_softinsa.png',
                     ),
 
@@ -214,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Name field
                     CustomTextField(
-                      label: 'Nome Completo',
+                      label: tr.tr('name'),
                       isRequired: true,
                       hintText: 'João Silva',
                       prefixIcon: Icons.person_outlined,
@@ -225,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Username field
                     CustomTextField(
-                      label: 'Username',
+                      label: tr.tr('username'),
                       isRequired: true,
                       hintText: 'joaosilva',
                       prefixIcon: Icons.verified_user_outlined,
@@ -236,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Email field
                     CustomTextField(
-                      label: 'Email',
+                      label: tr.tr('email'),
                       isRequired: true,
                       hintText: 'seu.email@softinsa.com',
                       prefixIcon: Icons.email_outlined,
@@ -247,7 +257,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Password field
                     CustomTextField(
-                      label: 'Password',
+                      label: tr.tr('password'),
                       isRequired: true,
                       hintText: 'Crie uma password segura',
                       prefixIcon: Icons.lock_outlined,
@@ -258,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Confirm password field
                     CustomTextField(
-                      label: 'Confirmar Password',
+                      label: tr.tr('confirmPassword'),
                       isRequired: true,
                       hintText: 'Confirme sua password',
                       prefixIcon: Icons.lock_outlined,
@@ -275,7 +285,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Campos opcionais',
+                        tr.tr('optionalFields'),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -288,7 +298,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Telemóvel',
+                          tr.tr('phone'),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w500),
                         ),
@@ -347,7 +357,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   );
                                   if (normalized.isNotEmpty &&
                                       normalized.length < 9) {
-                                    return 'Telemóvel inválido';
+                                    return tr.tr('invalidPhone');
                                   }
                                   return null;
                                 },
@@ -361,7 +371,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Birthdate field (optional)
                     CustomTextField(
-                      label: 'Data de Nascimento',
+                      label: tr.tr('birthdate'),
                       isRequired: true,
                       hintText: 'DD/MM/YYYY',
                       prefixIcon: Icons.calendar_today_outlined,
@@ -385,8 +395,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Profile image picker (optional)
                     CustomTextField(
-                      label: 'Imagem de Perfil',
-                      hintText: 'Nenhum ficheiro selecionado',
+                      label: tr.tr('profileImage'),
+                      hintText: tr.tr('noFileSelected'),
                       prefixIcon: Icons.image_outlined,
                       controller: _profileImgUrlController,
                       readOnly: true,
@@ -397,7 +407,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: TextButton.icon(
                         onPressed: _pickProfileImage,
                         icon: const Icon(Icons.upload_file_outlined),
-                        label: const Text('Escolher do telemóvel'),
+                        label: Text(tr.tr('pickFromPhone')),
                       ),
                     ),
 
@@ -408,7 +418,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Localidade',
+                            tr.tr('location'),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 8),
@@ -422,7 +432,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 horizontal: 12,
                               ),
                               child: DropdownButton<String>(
-                                hint: const Text('Selecionar localidade'),
+                                hint: Text(tr.tr('selectLocation')),
                                 value: _selectedLocation,
                                 isExpanded: true,
                                 underline: const SizedBox.shrink(),
@@ -453,7 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Linguagem Preferida (Opcional)',
+                            tr.tr('preferredLanguageOptional'),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 8),
@@ -470,28 +480,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 value: _preferredLanguage,
                                 isExpanded: true,
                                 underline: const SizedBox.shrink(),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: '1',
-                                    child: Text('Português'),
+                                    child: Text(AppStrings.languageName('1')),
                                   ),
                                   DropdownMenuItem(
                                     value: '2',
-                                    child: Text('English'),
+                                    child: Text(AppStrings.languageName('2')),
                                   ),
                                   DropdownMenuItem(
                                     value: '3',
-                                    child: Text('Español'),
+                                    child: Text(AppStrings.languageName('3')),
                                   ),
                                   DropdownMenuItem(
                                     value: '4',
-                                    child: Text('Français'),
+                                    child: Text(AppStrings.languageName('4')),
                                   ),
                                 ],
                                 onChanged: (value) {
                                   setState(() {
                                     _preferredLanguage = value ?? '1';
                                   });
+                                  tr.setLanguageCode(_preferredLanguage);
+                                  FormValidators.setLanguageCode(
+                                    _preferredLanguage,
+                                  );
                                 },
                               ),
                             ),
@@ -501,8 +515,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     CustomTextField(
-                      label: 'Sobre mim',
-                      hintText: 'Escreva uma breve biografia',
+                      label: tr.tr('aboutMe'),
+                      hintText: tr.tr('aboutMeHint'),
                       prefixIcon: Icons.info_outline,
                       controller: _bioController,
                       maxLines: 4,
@@ -523,11 +537,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Expanded(
                             child: RichText(
                               text: TextSpan(
-                                text: 'Eu aceito os ',
+                                text: tr.tr('acceptTermsPrefix'),
                                 style: Theme.of(context).textTheme.bodySmall,
                                 children: [
                                   TextSpan(
-                                    text: 'Termos e Condições',
+                                    text: tr.tr('termsAndConditions'),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: Theme.of(context).primaryColor,
@@ -546,7 +560,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Next button
                     CustomButton(
-                      text: 'Concluir registo',
+                      text: tr.tr('finishRegister'),
                       isLoading: _isLoading,
                       onPressed: _handleRegister,
                     ),
@@ -555,8 +569,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Login link
                     NavLink(
-                      text: 'Já tem conta?',
-                      linkText: 'Fazer login',
+                      text: tr.tr('alreadyHaveAccount'),
+                      linkText: tr.tr('doLogin'),
                       onPressed: () {
                         Navigator.pop(context);
                       },

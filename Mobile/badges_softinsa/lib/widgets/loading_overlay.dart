@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../utils/language_controller.dart';
+
 class LoadingOverlay extends StatelessWidget {
   final String message;
 
-  const LoadingOverlay({super.key, this.message = 'A carregar...'});
+  const LoadingOverlay({super.key, this.message = ''});
 
   @override
   Widget build(BuildContext context) {
+    final language = LanguageScope.of(context);
+    final localizedMessage = message.isEmpty ? language.tr('loading') : message;
+
     return Positioned.fill(
       child: AbsorbPointer(
         absorbing: true,
@@ -24,7 +29,10 @@ class LoadingOverlay extends StatelessWidget {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 12),
-                  Text(message, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    localizedMessage,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ),
             ),

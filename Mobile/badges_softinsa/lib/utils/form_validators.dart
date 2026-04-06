@@ -1,23 +1,35 @@
+import 'app_strings.dart';
+
 class FormValidators {
+  static String _languageCode = AppStrings.defaultLanguageCode;
+
   static final RegExp _emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
   static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._]+$');
+
+  static void setLanguageCode(String code) {
+    _languageCode = AppStrings.supportedLanguageCodes.contains(code)
+        ? code
+        : AppStrings.defaultLanguageCode;
+  }
+
+  static String _t(String key) => AppStrings.translate(_languageCode, key);
 
   // Validação de email
   static String? validateEmail(String? value) {
     final sanitized = (value ?? '').replaceAll(RegExp(r'\s+'), '');
 
     if (sanitized.isEmpty) {
-      return 'O email é obrigatório';
+      return _t('emailRequired');
     }
 
     if (sanitized.length > 255) {
-      return 'O email deve ter no máximo 255 caracteres';
+      return _t('emailMax');
     }
 
     if (!_emailRegex.hasMatch(sanitized)) {
-      return 'Por favor, insira um email válido';
+      return _t('emailInvalid');
     }
 
     return null;
@@ -28,31 +40,31 @@ class FormValidators {
     final password = value ?? '';
 
     if (password.isEmpty) {
-      return 'A password é obrigatória';
+      return _t('passwordRequired');
     }
 
     if (password.length < 8) {
-      return 'A password deve ter no mínimo 8 caracteres';
+      return _t('passwordMin');
     }
 
     if (password.length > 100) {
-      return 'A password deve ter no máximo 100 caracteres';
+      return _t('passwordMax');
     }
 
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
-      return 'A password deve conter pelo menos 1 letra maiúscula';
+      return _t('passwordUpper');
     }
 
     if (!RegExp(r'[a-z]').hasMatch(password)) {
-      return 'A password deve conter pelo menos 1 letra minúscula';
+      return _t('passwordLower');
     }
 
     if (!RegExp(r'[0-9]').hasMatch(password)) {
-      return 'A password deve conter pelo menos 1 número';
+      return _t('passwordNumber');
     }
 
     if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(password)) {
-      return 'A password deve conter pelo menos 1 caractere especial';
+      return _t('passwordSpecial');
     }
 
     return null;
@@ -61,11 +73,11 @@ class FormValidators {
   // Validação de confirmação de password
   static String? validatePasswordConfirm(String? value, String password) {
     if (value == null || value.isEmpty) {
-      return 'Por favor, confirme a password';
+      return _t('confirmPasswordRequired');
     }
 
     if (value != password) {
-      return 'As passwords não coincidem';
+      return _t('passwordMismatch');
     }
 
     return null;
@@ -76,15 +88,15 @@ class FormValidators {
     final name = (value ?? '').trim();
 
     if (name.isEmpty) {
-      return 'O nome é obrigatório';
+      return _t('nameRequired');
     }
 
     if (name.length < 2) {
-      return 'O nome deve ter pelo menos 2 caracteres';
+      return _t('nameMin');
     }
 
     if (name.length > 255) {
-      return 'O nome deve ter no máximo 255 caracteres';
+      return _t('nameMax');
     }
 
     return null;
@@ -95,19 +107,19 @@ class FormValidators {
     final username = (value ?? '').trim();
 
     if (username.isEmpty) {
-      return 'Username é obrigatório';
+      return _t('usernameRequired');
     }
 
     if (username.length < 3) {
-      return 'Username deve ter no mínimo 3 caracteres';
+      return _t('usernameMinChars');
     }
 
     if (username.length > 50) {
-      return 'Username deve ter no máximo 50 caracteres';
+      return _t('usernameMax');
     }
 
     if (!_usernameRegex.hasMatch(username)) {
-      return 'Username só pode conter letras, números, ponto e underscore';
+      return _t('usernameFormat');
     }
 
     return null;
@@ -121,16 +133,16 @@ class FormValidators {
     }
 
     if (biography.length > 5000) {
-      return 'Biografia deve ter no máximo 5000 caracteres';
+      return _t('bioMaxChars');
     }
 
     final words = biography.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
     if (words.length > 500) {
-      return 'Biografia não pode exceder 500 palavras';
+      return _t('bioMaxWords');
     }
 
     if (filter.check(biography)) {
-      return 'Biografia contém linguagem inapropriada';
+      return _t('bioInappropriate');
     }
 
     return null;
@@ -141,12 +153,12 @@ class FormValidators {
     final birthdateText = (value ?? '').trim();
 
     if (birthdateText.isEmpty) {
-      return 'A data de nascimento é obrigatória';
+      return _t('birthdateRequired');
     }
 
     final dateRegex = RegExp(r'^\d{2}/\d{2}/\d{4}$');
     if (!dateRegex.hasMatch(birthdateText)) {
-      return 'Data de nascimento inválida';
+      return _t('birthdateInvalid');
     }
 
     final parts = birthdateText.split('/');
@@ -155,20 +167,20 @@ class FormValidators {
     final year = int.tryParse(parts[2]);
 
     if (day == null || month == null || year == null) {
-      return 'Data de nascimento inválida';
+      return _t('birthdateInvalid');
     }
 
     DateTime birthdate;
     try {
       birthdate = DateTime(year, month, day);
     } catch (_) {
-      return 'Data de nascimento inválida';
+      return _t('birthdateInvalid');
     }
 
     if (birthdate.year != year ||
         birthdate.month != month ||
         birthdate.day != day) {
-      return 'Data de nascimento inválida';
+      return _t('birthdateInvalid');
     }
 
     final now = DateTime.now();
@@ -182,7 +194,7 @@ class FormValidators {
     }
 
     if (age < 16) {
-      return 'Tens de ter pelo menos 16 anos';
+      return _t('mustBe16');
     }
 
     return null;
