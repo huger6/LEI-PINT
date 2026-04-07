@@ -1,1 +1,0 @@
- C:\\Users\\gugap\\OneDrive\\Ambiente\ de\ Trabalho\\teste\\flutter_application_1\\.dart_tool\\flutter_build\\e8cfbc7e51605bf54247da059094af9a\\native_assets.json: 

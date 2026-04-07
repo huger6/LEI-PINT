@@ -1,1 +1,0 @@
- C:\\Users\\gugap\\OneDrive\\Ambiente\ de\ Trabalho\\LEI-PINT\\Mobile\\pint_mobile\\.dart_tool\\flutter_build\\4e23a42ffa777a5f864d6a9eb671ba67\\native_assets.json: 
