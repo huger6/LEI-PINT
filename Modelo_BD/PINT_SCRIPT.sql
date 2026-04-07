@@ -379,7 +379,7 @@ CREATE TABLE IF NOT EXISTS badge_applications (
    application_guid     UUID                 NOT NULL DEFAULT gen_random_uuid(),
       CONSTRAINT uk_guid_badge_applications UNIQUE (application_guid),
    application_state    VARCHAR(30)          NOT NULL DEFAULT 'Open'
-      CONSTRAINT ckc_application_state_badge_ap CHECK (application_state IN ('Open', 'Submitted', 'In validation', 'Closed')),
+      CONSTRAINT ckc_application_state_badge_ap CHECK (application_state IN ('Open', 'Submitted', 'In validation', 'Accepted', 'Rejected')),
    reviewer_notes       TEXT                 NULL,
 
    opened_at            TIMESTAMPTZ          NOT NULL DEFAULT now(),
