@@ -1,0 +1,318 @@
+import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import '../utils/language_controller.dart';
+
+class SelectAreaScreen extends StatefulWidget {
+  final Map<String, dynamic>? registrationData;
+
+  const SelectAreaScreen({super.key, this.registrationData});
+
+  @override
+  State<SelectAreaScreen> createState() => _SelectAreaScreenState();
+}
+
+class _SelectAreaScreenState extends State<SelectAreaScreen> {
+  // Lista de áreas baseada na imagem fornecida
+  final List<String> _allAreas = [
+    'Desenvolvimento Web',
+    'Desenvolvimento Mobile',
+    'Engenharia de Software',
+    'Ciência de Dados',
+    'Inteligência Artificial',
+    'Machine Learning',
+    'Cibersegurança',
+    'Redes',
+    'Administração de Sistemas',
+    'Cloud Computing',
+    'DevOps',
+    'Bases de Dados',
+    'Big Data',
+    'Arquitetura de Software',
+    'UX/UI Design',
+    'Testes de Software',
+    'Automação',
+    'Programação',
+    'Software Open Source',
+    'Blockchain',
+    'Internet das Coisas',
+    'Realidade Virtual',
+    'Realidade Aumentada',
+    'Computação Gráfica',
+    'Jogos Digitais',
+    'Sistemas Embebidos',
+    'Robótica',
+    'Análise de Sistemas',
+    'Suporte Técnico',
+    'Gestão de TI',
+  ];
+
+  // Set para guardar as áreas selecionadas (inicialmente vazio)
+  final Set<String> _selectedAreas = {};
+  final List<String> _selectedAreaOrder = [];
+  String? _mainArea;
+
+  // Regra de negócio: escolher pelo menos 1 área e definir a principal
+  bool get _canAdvance => _selectedAreas.isNotEmpty && _mainArea != null;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Receber dados dos argumentos se não foram recebidos como parâmetro do construtor
+    if (widget.registrationData == null) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        // Os dados foram recebidos; já estão acessíveis via widget.registrationData
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
+    // Usamos o ThemeData definido no app_theme.dart
+    final theme = AppTheme.lightTheme;
+
+    var withOpacity = Colors.black.withOpacity(0.05);
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        // Fundo definido no app_colors.dart (surface: 0xFFFDF7FF)
+        backgroundColor: theme.colorScheme.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // 1. Imagem do Softinsa (Logo)
+              Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.22,
+                color: theme.colorScheme.surface,
+                child: Center(
+                  child: Image.asset(
+                    'images/logotipo_softinsa.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.image_not_supported,
+                        size: 64,
+                        color: theme.colorScheme.outline,
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // 2. Título da Página
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  tr.tr('selectAreasDescription'),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    // Cor onsurface definida no app_colors.dart
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+
+              // 3. Grelha de Chips (Scrollable)
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    children: [
+                      Wrap(
+                        spacing: 8.0, // Espaço horizontal entre chips
+                        runSpacing: 4.0, // Espaço vertical entre linhas
+                        alignment: WrapAlignment.center,
+                        children: _allAreas
+                            .map((area) => _buildAreaChip(area, theme))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 4. Botão Voltar e Confirmar (Fixo no fundo)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 24.0,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: withOpacity,
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Botão Voltar com cores invertidas
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Navegar de volta para register_screen com dados anteriores
+                          Navigator.pushNamed(
+                            context,
+                            '/register',
+                            arguments: widget.registrationData,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          tr.tr('back'),
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Botão Confirmar Áreas
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: FilledButton(
+                        // O estilo do FilledButton já usa AppColors.primary no app_theme.dart
+                        onPressed: _canAdvance
+                            ? () {
+                                // Navegar para a página de confirmação com os dados
+                                Navigator.pushNamed(
+                                  context,
+                                  '/newuser-confirm',
+                                  arguments: {
+                                    ...?widget.registrationData,
+                                    'selectedAreas': _selectedAreaOrder,
+                                    'mainArea': _mainArea,
+                                  },
+                                );
+                              }
+                            : null, // Desativa o botão se nada estiver selecionado
+                        child: Text(
+                          tr.tr('finishRegister'),
+                          style: TextStyle(
+                            fontFamily:
+                                'Inter', // Fonte definida nas instruções anteriores
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget construtor de cada Chip individual com a lógica de estilo solicitada
+  Widget _buildAreaChip(String areaName, ThemeData theme) {
+    final isSelected = _selectedAreas.contains(areaName);
+
+    /* Lógica de Cores solicitada:
+       - Traçado (Outline) a Primary.
+       - Letras (Text) a Primary.
+       - Fundo (surface) com a cor destinada no ficheiro.
+
+       No teu ficheiro ColorScheme, a cor destinada a fundos de elementos primários
+       é a `primaryContainer`. No entanto, `primary` (Cyan) sobre `primaryContainer`
+       (Cyan Claro) tem pouco contraste. Para garantir legibilidade seguindo o Material 3,
+       o correto é usar `onPrimaryContainer` para o texto. 
+
+       Vou implementar conforme a tua instrução literal (Traçado e Texto = Primary),
+       mas deixo comentado onde alterar para melhor usabilidade.
+    */
+
+    // Cores Base do ficheiro app_colors.dart
+    final Color colorPrimary = theme.colorScheme.primary; // 0xFF00B8E0
+    final Color colorPrimaryContainer =
+        theme.colorScheme.primaryContainer; // 0xFFB9EBF6
+    final Color colorOutline = theme.colorScheme.outline; // 0xFF70787C
+    final Color colorSurface = theme.colorScheme.surface; // 0xFFF5FAFD
+
+    return FilterChip(
+      label: Text(
+        areaName,
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          fontSize: 14,
+          // PEDIDO LITERAL: Texto a Primary quando selecionado.
+          // MELHORIA DE UX: Usar `isSelected ? colorOnPrimaryContainer : ...`
+          color: isSelected ? colorPrimary : theme.colorScheme.onSurface,
+        ),
+      ),
+      selected: isSelected,
+      // Ocultar o ícone de check padrão do Material 3 para igualar a imagem
+      showCheckmark: false,
+      shape: const StadiumBorder(),
+      // Configuração da Borda (Traçado)
+      side: BorderSide(
+        // PEDIDO LITERAL: Traçado a Primary quando selecionado.
+        color: isSelected ? colorPrimary : colorOutline,
+        width: isSelected ? 1.5 : 1.0,
+      ),
+      // Configuração do Fundo
+      backgroundColor: colorSurface, // Cor quando não selecionado
+      selectedColor:
+          colorPrimaryContainer, // Cor destinada no ficheiro para seleção
+      // Lógica de Seleção
+      onSelected: (bool selected) {
+        setState(() {
+          if (selected) {
+            // Regra de negócio: Permitir selecionar 5 áreas no máximo
+            if (_selectedAreas.length < 5) {
+              _selectedAreas.add(areaName);
+              if (!_selectedAreaOrder.contains(areaName)) {
+                _selectedAreaOrder.add(areaName);
+              }
+              _mainArea ??= areaName;
+            } else {
+              // Feedback opcional ao utilizador
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(LanguageScope.of(context).tr('maxFiveAreas')),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          } else {
+            _selectedAreas.remove(areaName);
+            _selectedAreaOrder.remove(areaName);
+            if (_mainArea == areaName) {
+              _mainArea = _selectedAreaOrder.isEmpty
+                  ? null
+                  : _selectedAreaOrder.first;
+            }
+          }
+        });
+      },
+    );
+  }
+}
