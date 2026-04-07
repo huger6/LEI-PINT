@@ -526,15 +526,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS LOCATIONS_PK ON locations (location_id);
 /*==============================================================*/
 /* INSERT STATIC VALUES                                         */
 /*==============================================================*/
-INSERT INTO locations (location_name) 
-VALUES 
-   ('Lisboa'), 
-   ('Tomar'), 
-   ('Viseu'), 
-   ('Fundão'), 
-   ('Portalegre'),
-   ('Remote')
-ON CONFLICT DO NOTHING;
+-- INSERT INTO locations (location_name) 
+-- VALUES 
+--    ('Lisboa'), 
+--    ('Tomar'), 
+--    ('Viseu'), 
+--    ('Fundão'), 
+--    ('Portalegre'),
+--    ('Remote')
+-- ON CONFLICT DO NOTHING;
 
 /*==============================================================*/
 /* TABLE: notifications                                         */
@@ -641,12 +641,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS PREFERRED_LANG_PK ON preferred_lang (preferred
 /*==============================================================*/
 /* INSERT STATIC VALUES                                         */
 /*==============================================================*/
-INSERT INTO preferred_lang (preferred_lang) 
-VALUES 
-   ('pt-PT'), 
-   ('en-GB'), 
-   ('es-ES')
-ON CONFLICT (preferred_lang) DO NOTHING;
+-- INSERT INTO preferred_lang (preferred_lang) 
+-- VALUES 
+--    ('pt-PT'), 
+--    ('en-GB'), 
+--    ('es-ES')
+-- ON CONFLICT (preferred_lang) DO NOTHING;
 
 /*==============================================================*/
 /* TABLE: requirements_evidences                                */
