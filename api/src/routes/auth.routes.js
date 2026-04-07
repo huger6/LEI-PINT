@@ -4,6 +4,8 @@ const authController = require('../controllers/auth.controller');
 
 const router = express.Router();
 
+// This route should be start with /auth
+
 // --- Session Management ---
 router.post('/register', annonymousUsersOnly, authController.register);
 router.post('/login', annonymousUsersOnly, authController.login);
