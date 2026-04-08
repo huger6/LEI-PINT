@@ -1,5 +1,4 @@
-const { QueryTypes } = require('sequelize');
-const { sequelize, models } = require('../config/db');
+const { models } = require('../config/db');
 const redis = require('../config/redis');
 
 const getAvailableLocations = async (req, res) => {
@@ -17,9 +16,8 @@ const getAvailableLocations = async (req, res) => {
             });
         }
 
-        const locations = await sequelize.query(`
-            SELECT * FROM locations`, {
-            type: QueryTypes.SELECT
+        const locations = await models.locations.findAll({
+            raw: true
         });
 
         await redis.set(availableLocationsKey, JSON.stringify(locations), 'EX', 86400);
