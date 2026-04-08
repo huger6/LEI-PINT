@@ -456,7 +456,7 @@ const login = async (req, res) => {
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 1/3 de dia
+        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
