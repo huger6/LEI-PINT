@@ -1,12 +1,11 @@
-const { QueryTypes } = require('sequelize');
-const { sequelize, models } = require('../config/db');
+const { models } = require('../config/db');
 const redis = require('../config/redis');
 
 const getAvailableLanguages = async (req, res) => {
     const availableLanguagesKey = `languages:available`;
 
     try {
-        // Search location in redis
+        // Search language in redis
         const cachedData = await redis.get(availableLanguagesKey);
 
         if (cachedData) {
@@ -17,9 +16,8 @@ const getAvailableLanguages = async (req, res) => {
             });
         }
 
-        const languages = await sequelize.query(`
-            SELECT * FROM preferred_lang`, {
-            type: QueryTypes.SELECT
+        const languages = await models.preferred_lang.findAll({
+            raw: true
         });
 
         await redis.set(availableLanguagesKey, JSON.stringify(languages), 'EX', 86400);

@@ -1,13 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { QueryTypes } = require('sequelize');
+const { Op } = require('sequelize');
 const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
 const { logger } = require('../utils/logger');
+const stripNullishFields = require('../utils/stripNullishFields');
 const { moveImageToPermanent } = require('../services/storageService');
 
 loadEnvironment();
@@ -51,19 +52,16 @@ const register = async (req, res) => {
         }
 
         // Validate if username or email is already in use
-        const [existingUser] = await sequelize.query(
-            `SELECT user_id, email_address, username
-            FROM users
-            WHERE email_address=:email OR username=:username
-            LIMIT 1`,
-            {
-                replacements: {
-                    email: userData.email_address,
-                    username: userData.username
-                },
-                type: QueryTypes.SELECT
-            }
-        );
+        const existingUser = await models.users.findOne({
+            attributes: ['user_id', 'email_address', 'username'],
+            where: {
+                [Op.or]: [
+                    { email_address: userData.email_address },
+                    { username: userData.username }
+                ]
+            },
+            transaction: t
+        });
 
         if (existingUser) {
             await t.rollback();
@@ -300,18 +298,13 @@ const confirmEmail = async (req, res) => {
             hasToken: Boolean(token)
         });
 
-        const [tokenRecord] = await sequelize.query(
-            `SELECT *
-            FROM user_account_tokens
-            WHERE token_value=:token AND token_type='CONFIRMATION' AND is_used=false
-            LIMIT 1`,
-            {
-                replacements: {
-                    token: token,
-                },
-                type: QueryTypes.SELECT
+        const tokenRecord = await models.user_account_tokens.findOne({
+            where: {
+                token_value: token,
+                token_type: 'CONFIRMATION',
+                is_used: false
             }
-        );
+        });
 
         // Invalid token
         if (!tokenRecord) {
@@ -591,12 +584,10 @@ const refresh = async (req, res) => {
         await redis.del(oldTokenKey);
         await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
 
-        await sequelize.query(
-            `UPDATE users
-            SET last_online=NOW()
-            WHERE user_id=:user_id`,
+        await models.users.update(
+            { last_online: new Date() },
             {
-                replacements: {
+                where: {
                     user_id: userData.user_id
                 }
             }
@@ -643,15 +634,11 @@ const logout = async (req, res) => {
     try {
         if (refreshToken) {
             // Clear token
-            await sequelize.query(
-                `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
-                {
-                    replacements: {
-                        token: refreshToken
-                    },
-                    type: QueryTypes.DELETE
+            await models.user_refresh_tokens.destroy({
+                where: {
+                    token_value: refreshToken
                 }
-            );
+            });
         }
 
         // Clear cookie
@@ -693,16 +680,10 @@ const changePassword = async (req, res) => {
         }
 
         // Get user
-        const [user] = await sequelize.query(
-            `SELECT password_hash FROM users WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const user = await models.users.findByPk(user_id, {
+            attributes: ['password_hash'],
+            transaction: t
+        });
         // Compare current pw
         const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
         if (!isMatch) {
@@ -724,12 +705,13 @@ const changePassword = async (req, res) => {
         }
         // Update PW and set FPC false
         const newHash = await bcrypt.hash(newPassword, 10);
-        await sequelize.query(
-            `UPDATE users SET password_hash=:newHash, force_password_change=false
-            WHERE user_id=:user_id`,
+        await models.users.update(
             {
-                replacements: {
-                    newHash: newHash,
+                password_hash: newHash,
+                force_password_change: false
+            },
+            {
+                where: {
                     user_id: user_id
                 },
                 transaction: t
@@ -737,15 +719,12 @@ const changePassword = async (req, res) => {
         );
 
         // Delete refresh tokens
-        await sequelize.query(
-            `DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_refresh_tokens.destroy({
+            where: {
+                user_id: user_id
+            },
+            transaction: t
+        });
 
         await t.commit();
 
@@ -789,17 +768,13 @@ const forgotPassword = async (req, res) => {
 
     try {
         // Get user
-        const [user] = await sequelize.query(
-            `SELECT user_id, full_name, preferred_lang_id, email_address
-            FROM users WHERE email_address=:email`,
-            {
-                replacements: {
-                    email: email
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const user = await models.users.findOne({
+            attributes: ['user_id', 'full_name', 'preferred_lang_id', 'email_address'],
+            where: {
+                email_address: email
+            },
+            transaction: t
+        });
 
         if (user) {
             const resetToken = crypto.randomBytes(32).toString('hex');
@@ -807,19 +782,29 @@ const forgotPassword = async (req, res) => {
             const expires = new Date(Date.now() + 3600000); //1h
 
             // Store token
-            await sequelize.query(
-                `INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
-                VALUES (:user_id, :tokenHash, 'PASSWORD_RESET', :expires)
-                ON CONFLICT (user_id, token_type) DO UPDATE SET token_value=:tokenHash, expires_at=:expires`,
-                {
-                    replacements: {
-                        user_id: user.user_id,
-                        tokenHash: tokenHash,
-                        expires: expires
-                    },
-                    transaction: t
-                }
-            );
+            const existingResetToken = await models.user_account_tokens.findOne({
+                where: {
+                    user_id: user.user_id,
+                    token_type: 'PASSWORD_RESET'
+                },
+                transaction: t
+            });
+
+            if (existingResetToken) {
+                await existingResetToken.update({
+                    token_value: tokenHash,
+                    expires_at: expires,
+                    is_used: false
+                }, { transaction: t });
+            } else {
+                await models.user_account_tokens.create({
+                    user_id: user.user_id,
+                    token_value: tokenHash,
+                    token_type: 'PASSWORD_RESET',
+                    expires_at: expires,
+                    is_used: false
+                }, { transaction: t });
+            }
 
             await t.commit();
 
@@ -885,15 +870,13 @@ const validateResetToken = async (req, res) => {
 
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-        const [record] = await sequelize.query(`
-            SELECT expires_at FROM user_account_tokens
-            WHERE token_value =:tokenHash AND token_type='PASSWORD_RESET'`,
-            {
-                replacements: {
-                    tokenHash: tokenHash
-                }, type: QueryTypes.SELECT
+        const record = await models.user_account_tokens.findOne({
+            attributes: ['expires_at'],
+            where: {
+                token_value: tokenHash,
+                token_type: 'PASSWORD_RESET'
             }
-        );
+        });
 
         if (!record || new Date() > record.expires_at) {
             return res.status(400).json({
@@ -943,19 +926,14 @@ const resetPassword = async (req, res) => {
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
         // Get token and user id
-        const [tokenRecord] = await sequelize.query(`
-            SELECT user_id, expires_at
-            FROM user_account_tokens
-            WHERE token_value=:tokenHash AND token_type='PASSWORD_RESET'
-            LIMIT 1`,
-            {
-                replacements: {
-                    tokenHash: tokenHash
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const tokenRecord = await models.user_account_tokens.findOne({
+            attributes: ['user_id', 'expires_at'],
+            where: {
+                token_value: tokenHash,
+                token_type: 'PASSWORD_RESET'
+            },
+            transaction: t
+        });
 
         if (!tokenRecord) {
             await t.rollback();
@@ -977,13 +955,13 @@ const resetPassword = async (req, res) => {
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
         // Update user
-        await sequelize.query(`
-            UPDATE users
-            SET password_hash=:passwordHash, force_password_change=false
-            WHERE user_id=:user_id`,
+        await models.users.update(
             {
-                replacements: {
-                    passwordHash: passwordHash,
+                password_hash: passwordHash,
+                force_password_change: false
+            },
+            {
+                where: {
                     user_id: tokenRecord.user_id
                 },
                 transaction: t
@@ -991,27 +969,21 @@ const resetPassword = async (req, res) => {
         );
 
         // Delete used token
-        await sequelize.query(`
-            DELETE FROM user_account_tokens
-            WHERE user_id=:user_id AND token_type='PASSWORD_RESET'`,
-            {
-                replacements: {
-                    user_id: tokenRecord.user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_account_tokens.destroy({
+            where: {
+                user_id: tokenRecord.user_id,
+                token_type: 'PASSWORD_RESET'
+            },
+            transaction: t
+        });
 
         // Logout all sessions
-        await sequelize.query(`
-            DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: tokenRecord.user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_refresh_tokens.destroy({
+            where: {
+                user_id: tokenRecord.user_id
+            },
+            transaction: t
+        });
 
         await t.commit();
 
@@ -1064,73 +1036,167 @@ const me = async (req, res) => {
             });
         }
 
-        const [result] = await sequelize.query(`
-            SELECT jsonb_strip_nulls(jsonb_build_object(
-                'id', u.user_id,
-                'guid', u.user_guid,
-                'fullName', u.full_name,
-                'username', u.username,
-                'email', u.email_address,
-                'role', u.user_role,
-                'profileImg', u.profile_img_url,
-                'lang', pl.preferred_lang,
-                'location', l.location_name,
-                'biography', COALESCE(c.biography, tm.biography, sll.biography),
-                
-                'serviceLine', COALESCE(sl_sll.service_line_name, sl_cons.service_line_name),
-                'learningPath', COALESCE(lp_sll.path_title, lp_cons.path_title),
-                
-                'areas', (
-                    SELECT json_agg(json_build_object(
-                        'id', a.area_id, 
-                        'name', a.area_name, 
-                        'isPrimary', ca.is_primary
-                    ))
-                    FROM consultant_areas ca
-                    JOIN areas a ON ca.area_id = a.area_id
-                    WHERE ca.user_id = u.user_id
-                )
-            )) AS profile
-            FROM users u
-            LEFT JOIN locations l ON u.location_id = l.location_id
-            LEFT JOIN preferred_lang pl ON u.preferred_lang_id = pl.preferred_lang_id
-            
-            LEFT JOIN consultants c ON u.user_id = c.user_id
-            LEFT JOIN talent_managers tm ON u.user_id = tm.user_id
-            LEFT JOIN service_line_leaders sll ON u.user_id = sll.user_id
-            
-            LEFT JOIN services_lines sl_sll ON sll.service_line_id = sl_sll.service_line_id
-            LEFT JOIN learning_paths lp_sll ON sl_sll.learning_path_id = lp_sll.learning_path_id
-            
-            LEFT JOIN consultant_areas ca_pri ON u.user_id = ca_pri.user_id AND ca_pri.is_primary = TRUE
-            LEFT JOIN areas a_pri ON ca_pri.area_id = a_pri.area_id
-            LEFT JOIN services_lines sl_cons ON a_pri.service_line_id = sl_cons.service_line_id
-            LEFT JOIN learning_paths lp_cons ON sl_cons.learning_path_id = lp_cons.learning_path_id
-            
-            WHERE u.user_id = :user_id
-            `,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                type: QueryTypes.SELECT
-            }
-        );
+        const user = await models.users.findByPk(user_id, {
+            attributes: [
+                'user_id',
+                'user_guid',
+                'full_name',
+                'username',
+                'email_address',
+                'user_role',
+                'profile_img_url',
+                'preferred_lang_id',
+                'location_id'
+            ],
+            raw: true
+        });
 
-        if (!result || !result.profile) {
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found."
             });
         }
 
+        const [location, preferredLang, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
+            user.location_id
+                ? models.locations.findByPk(user.location_id, {
+                    attributes: ['location_name'],
+                    raw: true
+                })
+                : null,
+            user.preferred_lang_id
+                ? models.preferred_lang.findByPk(user.preferred_lang_id, {
+                    attributes: ['preferred_lang'],
+                    raw: true
+                })
+                : null,
+            models.consultants.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography'],
+                raw: true
+            }),
+            models.talent_managers.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography'],
+                raw: true
+            }),
+            models.service_line_leaders.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography', 'service_line_id'],
+                raw: true
+            }),
+            models.consultant_areas.findAll({
+                where: { user_id: user.user_id },
+                attributes: ['area_id', 'is_primary'],
+                raw: true
+            })
+        ]);
+
+        let areasPayload = null;
+
+        if (consultantAreas.length > 0) {
+            const areaIds = consultantAreas.map((area) => area.area_id);
+            const areaRecords = await models.areas.findAll({
+                where: {
+                    area_id: {
+                        [Op.in]: areaIds
+                    }
+                },
+                attributes: ['area_id', 'area_name', 'service_line_id'],
+                raw: true
+            });
+
+            const areaById = new Map(areaRecords.map((area) => [area.area_id, area]));
+
+            areasPayload = consultantAreas
+                .map((consultantArea) => {
+                    const currentArea = areaById.get(consultantArea.area_id);
+
+                    if (!currentArea) {
+                        return null;
+                    }
+
+                    return {
+                        id: currentArea.area_id,
+                        name: currentArea.area_name,
+                        isPrimary: consultantArea.is_primary
+                    };
+                })
+                .filter(Boolean);
+
+            if (areasPayload.length === 0) {
+                areasPayload = null;
+            }
+        }
+
+        let serviceLineName = null;
+        let learningPathTitle = null;
+
+        const resolveServiceLineData = async (serviceLineId) => {
+            if (!serviceLineId) {
+                return;
+            }
+
+            const serviceLine = await models.services_lines.findByPk(serviceLineId, {
+                attributes: ['service_line_name', 'learning_path_id'],
+                raw: true
+            });
+
+            if (!serviceLine) {
+                return;
+            }
+
+            serviceLineName = serviceLine.service_line_name;
+
+            if (serviceLine.learning_path_id) {
+                const learningPath = await models.learning_paths.findByPk(serviceLine.learning_path_id, {
+                    attributes: ['path_title'],
+                    raw: true
+                });
+
+                learningPathTitle = learningPath?.path_title || null;
+            }
+        };
+
+        if (serviceLineLeader?.service_line_id) {
+            await resolveServiceLineData(serviceLineLeader.service_line_id);
+        } else if (consultantAreas.length > 0) {
+            const primaryArea = consultantAreas.find((area) => area.is_primary);
+
+            if (primaryArea) {
+                const areaWithServiceLine = await models.areas.findByPk(primaryArea.area_id, {
+                    attributes: ['service_line_id'],
+                    raw: true
+                });
+
+                await resolveServiceLineData(areaWithServiceLine?.service_line_id);
+            }
+        }
+
+        const profile = stripNullishFields({
+            id: user.user_id,
+            guid: user.user_guid,
+            fullName: user.full_name,
+            username: user.username,
+            email: user.email_address,
+            role: user.user_role,
+            profileImg: user.profile_img_url,
+            lang: preferredLang?.preferred_lang || null,
+            location: location?.location_name || null,
+            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            serviceLine: serviceLineName,
+            learningPath: learningPathTitle,
+            areas: areasPayload
+        });
+
         // Store in cache
-        await redis.set(cacheKey, JSON.stringify(result.profile), 'EX', 3600);
+        await redis.set(cacheKey, JSON.stringify(profile), 'EX', 3600);
 
         return res.status(200).json({
             success: true,
             message: "User data retreived successfully.",
-            data: result.profile
+            data: profile
         });
     } catch (error) {
         logger.error('Error fetching current user', {
@@ -1150,18 +1216,12 @@ const resendConfirmation = async (req, res) => {
     const { email } = req.body;
 
     try {
-        const [user] = await sequelize.query(`
-            SELECT user_id, full_name, email_address, email_confirmed, preferred_lang_id
-            FROM users
-            WHERE email_address=:email
-            `,
-            {
-                replacements: {
-                    email: email
-                },
-                type: QueryTypes.SELECT
+        const user = await models.users.findOne({
+            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'preferred_lang_id'],
+            where: {
+                email_address: email
             }
-        );
+        });
 
         if (!user) {
             // True for security reasons
@@ -1195,20 +1255,30 @@ const resendConfirmation = async (req, res) => {
 
         const tokenValue = crypto.randomBytes(32).toString('hex');
 
-        await sequelize.query(`
-            INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
-            VALUES (:user_id, :token, 'CONFIRMATION', NOW() + INTERVAL '8 hours')
-            ON CONFLICT (user_id, token_type) DO UPDATE SET
-                token_value=:token,
-                expires_at=NOW() + INTERVAL '8 hours',
-                created_at=NOW()`,
-            {
-                replacements: {
-                    user_id: user.user_id,
-                    token: tokenValue
-                }
+        const confirmationExpiry = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const existingConfirmationToken = await models.user_account_tokens.findOne({
+            where: {
+                user_id: user.user_id,
+                token_type: 'CONFIRMATION'
             }
-        );
+        });
+
+        if (existingConfirmationToken) {
+            await existingConfirmationToken.update({
+                token_value: tokenValue,
+                expires_at: confirmationExpiry,
+                created_at: new Date(),
+                is_used: false
+            });
+        } else {
+            await models.user_account_tokens.create({
+                user_id: user.user_id,
+                token_value: tokenValue,
+                token_type: 'CONFIRMATION',
+                expires_at: confirmationExpiry,
+                is_used: false
+            });
+        }
 
         // Send confirmation email and validate service outcome
         const emailResult = await sendConfirmationEmail(
