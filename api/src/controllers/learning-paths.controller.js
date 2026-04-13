@@ -7,6 +7,9 @@ const { getAvailableLearningPathsQuerySchema } = require('../validations/learnin
 const getAvailableLearningPaths = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
+    // Get role from JWT
+    const isAdmin = req.user?.role === 'Administrator';
+
     const queryValidation = getAvailableLearningPathsQuerySchema.safeParse(req.query);
 
     if (!queryValidation.success) {
@@ -23,7 +26,6 @@ const getAvailableLearningPaths = async (req, res) => {
     const {
         search,
         serviceLineId,
-        isAdmin,
         page,
         limit
     } = queryValidation.data;
