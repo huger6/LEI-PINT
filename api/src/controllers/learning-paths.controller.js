@@ -132,4 +132,4 @@ const getAvailableLearningPaths = async (req, res) => {
 
 module.exports = {
     getAvailableLearningPaths
-}
+};

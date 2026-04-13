@@ -42,4 +42,4 @@ const getAvailableLocations = async (req, res) => {
 
 module.exports = {
     getAvailableLocations
-}
+};
