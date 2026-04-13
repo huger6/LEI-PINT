@@ -1,5 +1,6 @@
 const { models } = require('../config/db');
 const redis = require('../config/redis');
+const { logger } = require('../utils/logger');
 
 const getAvailableLanguages = async (req, res) => {
     const availableLanguagesKey = `languages:available`;
