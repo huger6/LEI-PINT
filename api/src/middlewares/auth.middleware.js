@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const { logger } = require('../utils/logger');
-const { success } = require('zod');
 
 const loginRequired = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
