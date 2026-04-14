@@ -1,0 +1,66 @@
+const { Op } = require('sequelize');
+const { models } = require('../config/db');
+const redis = require('../config/redis');
+const { logger } = require('./logger');
+
+const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, baseWhere = {}, include = [], order = [['created_at', 'DESC']] }) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const isAdmin = req.user?.role === 'Administrator';
+
+    const queryValidation = schema.safeParse(req.query);
+    if (!queryValidation.success) return res.status(400).json({
+        success: false,
+        errors: queryValidation.error.errors
+    });
+
+    const { page, limit, search, ...filters } = queryValidation.data;
+    const offset = (page - 1) * limit;
+
+    const cacheKey = `${cachePrefix}:${Buffer.from(JSON.stringify({ ...filters, search, isAdmin, page, limit })).toString('base64')}`;
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({
+            success: true,
+            ...JSON.parse(cached)
+        });
+
+        const where = { ...baseWhere };
+        if (!isAdmin) where.is_active = true;
+
+        Object.keys(filters).forEach(key => {
+            if (filters[key]) where[key] = filters[key];
+        });
+
+        if (search) {
+            const nameField = modelName === 'progression_stages' ? 'stage_title' :
+                (modelName === 'services_lines' ? 'service_line_name' : 'area_name');
+            where[nameField] = { [Op.iLike]: `%${search}%` };
+        }
+
+        const { rows, count } = await models[modelName].findAndCountAll({
+            where, include, limit, offset, order, distinct: true
+        });
+
+        const responseData = {
+            data: rows,
+            pagination: { totalItems: count, totalPages: Math.ceil(count / limit), currentPage: page }
+        };
+
+        await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
+        return res.status(200).json({
+            success: true,
+            ...responseData
+        });
+    } catch (error) {
+        logger.error(`Error in ${cachePrefix}`, { requestId, error });
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error."
+        });
+    }
+};
+
+module.exports = {
+    handleListRequest
+};

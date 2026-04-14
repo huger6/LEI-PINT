@@ -1,7 +1,9 @@
 const { models } = require('../config/db');
 const redis = require('../config/redis');
+const { logger } = require('../utils/logger');
 
 const getAvailableLocations = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
     const availableLocationsKey = `locations:available`;
 
     try {
@@ -29,12 +31,14 @@ const getAvailableLocations = async (req, res) => {
         });
     } catch (error) {
         logger.error('Error processing available locations.', {
-            error
+            error,
+            requestId
         });
 
         return res.status(500).json({
             success: false,
-            message: "Error processing available locations."
+            message: "Error processing available locations.",
+            requestId
         });
     }
 };

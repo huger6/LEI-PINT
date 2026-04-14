@@ -33,6 +33,29 @@ const getAvailableLearningPathsQuerySchema = z.object({
 	limit: z.coerce.number().int().positive('Limit must be a positive integer.').max(100, 'Limit cannot exceed 100.').default(12)
 });
 
+const getServiceLinesQuerySchema = z.object({
+	learningPathId: positiveIntIdRule.optional(),
+	search: z.string().max(255).optional(),
+	page: z.coerce.number().int().positive().default(1),
+	limit: z.coerce.number().int().positive().max(100).default(12)
+});
+
+const getAreasQuerySchema = z.object({
+	serviceLineId: positiveIntIdRule.optional(),
+	search: z.string().max(255).optional(),
+	page: z.coerce.number().int().positive().default(1),
+	limit: z.coerce.number().int().positive().max(100).default(12)
+});
+
+const getLevelsQuerySchema = z.object({
+	areaId: positiveIntIdRule.optional(),
+	page: z.coerce.number().int().positive().default(1),
+	limit: z.coerce.number().int().positive().max(100).default(20)
+});
+
 module.exports = {
-	getAvailableLearningPathsQuerySchema
+	getAvailableLearningPathsQuerySchema,
+	getServiceLinesQuerySchema,
+	getAreasQuerySchema,
+	getLevelsQuerySchema
 };

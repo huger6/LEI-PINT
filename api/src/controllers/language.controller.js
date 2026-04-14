@@ -3,6 +3,7 @@ const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 
 const getAvailableLanguages = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
     const availableLanguagesKey = `languages:available`;
 
     try {
@@ -30,12 +31,14 @@ const getAvailableLanguages = async (req, res) => {
         });
     } catch (error) {
         logger.error('Error processing available languages.', {
-            error
+            error,
+            requestId
         });
 
         return res.status(500).json({
             success: false,
-            message: "Error processing available languages."
+            message: "Error processing available languages.",
+            requestId
         });
     }
 };
