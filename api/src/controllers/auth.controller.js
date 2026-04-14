@@ -14,8 +14,8 @@ const { moveImageToPermanent } = require('../services/storageService');
 loadEnvironment();
 
 const register = async (req, res) => {
-    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
 
     try {
         logger.info('Register flow started', {
@@ -371,13 +371,15 @@ const confirmEmail = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error confirming account."
+,
+            requestId
         });
     }
 };
 
 const login = async (req, res) => {
-    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
 
     try {
         const { identifier, password, remember } = loginSchema.parse(req.body);
@@ -527,6 +529,8 @@ const login = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error processing user login."
+,
+            requestId
         });
     }
 };
@@ -618,6 +622,8 @@ const refresh = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error generating/processing new token."
+,
+            requestId
         });
     }
 };
@@ -657,6 +663,8 @@ const logout = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error during logout process."
+,
+            requestId
         });
     }
 };
@@ -748,6 +756,8 @@ const changePassword = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: `Error changing password.`
+,
+            requestId
         });
     }
 };
@@ -852,6 +862,8 @@ const forgotPassword = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error processing request."
+,
+            requestId
         });
     }
 };
@@ -897,6 +909,8 @@ const validateResetToken = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error processing request."
+,
+            requestId
         });
     }
 
@@ -1006,15 +1020,19 @@ const resetPassword = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error processing request."
+,
+            requestId
         });
     }
 };
 
 const verifySession = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
     // loginRequired should be called, so if we are here session is good
     return res.status(200).json({
         success: true,
-        message: "Session is okay."
+        message: "Session is okay.",
+        requestId
     });
 };
 
@@ -1207,6 +1225,8 @@ const me = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error fetching profile information."
+,
+            requestId
         });
     }
 };
@@ -1322,6 +1342,8 @@ const resendConfirmation = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error resending confirmation email."
+,
+            requestId
         });
     }
 }
@@ -1329,8 +1351,8 @@ const resendConfirmation = async (req, res) => {
 // --- Admin auth ---
 
 const adminLogin = async (req, res) => {
-    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
 
     try {
         const { identifier, password, remember } = loginSchema.parse(req.body);
@@ -1472,14 +1494,16 @@ const adminLogin = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error processing admin login."
+,
+            requestId
         });
     }
 }
 
 const adminRefresh = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
     // Get cookie
     const refreshToken = req.cookies.adminRefreshToken;
-    const requestId = req.headers['x-request-id'] || null;
 
     if (!refreshToken) {
         return res.status(401).json({
@@ -1554,6 +1578,8 @@ const adminRefresh = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error generating new admin token."
+,
+            requestId
         });
     }
 };
@@ -1586,6 +1612,8 @@ const adminLogout = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error during admin logout process."
+,
+            requestId
         });
     }
 };
