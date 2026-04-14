@@ -44,6 +44,18 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "admin_def_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "not_def_pref_fk",
+        fields: [
+          { name: "preference_id" },
+        ]
+      },
+      {
         name: "notification_definitions_pk",
         unique: true,
         fields: [

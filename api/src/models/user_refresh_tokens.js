@@ -10,7 +10,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'user_id'
+      }
     },
     token_value: {
       type: DataTypes.STRING(512),

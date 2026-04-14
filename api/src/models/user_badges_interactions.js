@@ -41,6 +41,12 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "badges_interactions_fk",
+        fields: [
+          { name: "badge_id" },
+        ]
+      },
+      {
         name: "pk_user_badges_interactions",
         unique: true,
         fields: [
@@ -52,6 +58,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "interaction_id" },
+        ]
+      },
+      {
+        name: "user_interactions_fk",
+        fields: [
+          { name: "user_id" },
         ]
       },
     ]

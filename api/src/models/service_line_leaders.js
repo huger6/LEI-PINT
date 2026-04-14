@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'services_lines',
+        model: 'service_lines',
         key: 'service_line_id'
       }
     },
@@ -30,6 +30,13 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "idx_sll_service_line",
+        fields: [
+          { name: "user_id" },
+          { name: "service_line_id" },
+        ]
+      },
+      {
         name: "pk_service_line_leaders",
         unique: true,
         fields: [
@@ -41,6 +48,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "user_id" },
+        ]
+      },
+      {
+        name: "sl_sll_fk",
+        fields: [
+          { name: "service_line_id" },
         ]
       },
     ]

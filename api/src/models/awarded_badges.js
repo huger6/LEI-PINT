@@ -64,10 +64,42 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "awarded_applications2_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
         name: "awarded_badges_pk",
         unique: true,
         fields: [
           { name: "awarded_badges_id" },
+        ]
+      },
+      {
+        name: "cons_awarded_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "idx_awarded_expiration",
+        fields: [
+          { name: "expiration_at" },
+        ]
+      },
+      {
+        name: "idx_awarded_public_featured",
+        fields: [
+          { name: "is_published" },
+          { name: "is_featured" },
+        ]
+      },
+      {
+        name: "idx_awarded_user_date",
+        fields: [
+          { name: "user_id" },
+          { name: "awarded_at", order: "DESC" },
         ]
       },
       {

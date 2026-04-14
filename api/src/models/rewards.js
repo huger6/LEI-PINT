@@ -32,6 +32,12 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "badge_rewards_fk",
+        fields: [
+          { name: "badge_id" },
+        ]
+      },
+      {
         name: "pk_rewards",
         unique: true,
         fields: [
