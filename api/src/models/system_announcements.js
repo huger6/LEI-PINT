@@ -91,6 +91,32 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "announc_notif_fk",
+        fields: [
+          { name: "preference_id" },
+        ]
+      },
+      {
+        name: "announcements_admin_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "announcements_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_announcements_active_dates",
+        fields: [
+          { name: "is_active" },
+          { name: "starts_at" },
+          { name: "ends_at" },
+        ]
+      },
+      {
         name: "pk_system_announcements",
         unique: true,
         fields: [
@@ -102,6 +128,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "announcement_id" },
+        ]
+      },
+      {
+        name: "user_announcements_fk",
+        fields: [
+          { name: "user_id" },
         ]
       },
     ]

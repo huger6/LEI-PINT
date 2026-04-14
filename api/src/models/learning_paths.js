@@ -64,10 +64,22 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "admin_lp_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
         name: "learning_paths_pk",
         unique: true,
         fields: [
           { name: "learning_path_id" },
+        ]
+      },
+      {
+        name: "lp_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
         ]
       },
       {

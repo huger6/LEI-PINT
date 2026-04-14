@@ -40,6 +40,12 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "applications_certificates2_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
         name: "certificates_pk",
         unique: true,
         fields: [

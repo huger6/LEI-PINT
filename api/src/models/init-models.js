@@ -24,7 +24,7 @@ var _progression_stages = require("./progression_stages");
 var _requirements_evidences = require("./requirements_evidences");
 var _rewards = require("./rewards");
 var _service_line_leaders = require("./service_line_leaders");
-var _services_lines = require("./services_lines");
+var _service_lines = require("./service_lines");
 var _skills = require("./skills");
 var _sl_slas = require("./sl_slas");
 var _slas = require("./slas");
@@ -62,7 +62,7 @@ function initModels(sequelize) {
   var requirements_evidences = _requirements_evidences(sequelize, DataTypes);
   var rewards = _rewards(sequelize, DataTypes);
   var service_line_leaders = _service_line_leaders(sequelize, DataTypes);
-  var services_lines = _services_lines(sequelize, DataTypes);
+  var service_lines = _service_lines(sequelize, DataTypes);
   var skills = _skills(sequelize, DataTypes);
   var sl_slas = _sl_slas(sequelize, DataTypes);
   var slas = _slas(sequelize, DataTypes);
@@ -77,11 +77,11 @@ function initModels(sequelize) {
   areas.belongsToMany(consultants, { as: 'user_id_consultants', through: consultant_areas, foreignKey: "area_id", otherKey: "user_id" });
   consultants.belongsToMany(areas, { as: 'area_id_areas', through: consultant_areas, foreignKey: "user_id", otherKey: "area_id" });
   consultants.belongsToMany(skills, { as: 'skills_id_skills', through: consultants_selected_skills, foreignKey: "user_id", otherKey: "skills_id" });
-  services_lines.belongsToMany(slas, { as: 'sla_id_slas', through: sl_slas, foreignKey: "service_line_id", otherKey: "sla_id" });
-  services_lines.belongsToMany(system_announcements, { as: 'announcement_id_system_announcements', through: announc_sl, foreignKey: "service_line_id", otherKey: "announcement_id" });
+  service_lines.belongsToMany(slas, { as: 'sla_id_slas', through: sl_slas, foreignKey: "service_line_id", otherKey: "sla_id" });
+  service_lines.belongsToMany(system_announcements, { as: 'announcement_id_system_announcements', through: announc_sl, foreignKey: "service_line_id", otherKey: "announcement_id" });
   skills.belongsToMany(consultants, { as: 'user_id_consultants_consultants_selected_skills', through: consultants_selected_skills, foreignKey: "skills_id", otherKey: "user_id" });
-  slas.belongsToMany(services_lines, { as: 'service_line_id_services_lines_sl_slas', through: sl_slas, foreignKey: "sla_id", otherKey: "service_line_id" });
-  system_announcements.belongsToMany(services_lines, { as: 'service_line_id_services_lines', through: announc_sl, foreignKey: "announcement_id", otherKey: "service_line_id" });
+  slas.belongsToMany(service_lines, { as: 'service_line_id_service_lines_sl_slas', through: sl_slas, foreignKey: "sla_id", otherKey: "service_line_id" });
+  system_announcements.belongsToMany(service_lines, { as: 'service_line_id_service_lines', through: announc_sl, foreignKey: "announcement_id", otherKey: "service_line_id" });
   areas.belongsTo(administrators, { as: "created_by_administrator", foreignKey: "created_by"});
   administrators.hasMany(areas, { as: "areas", foreignKey: "created_by"});
   areas.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
@@ -112,10 +112,10 @@ function initModels(sequelize) {
   administrators.hasMany(progression_stages, { as: "progression_stages", foreignKey: "created_by"});
   progression_stages.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
   administrators.hasMany(progression_stages, { as: "updated_by_progression_stages", foreignKey: "updated_by"});
-  services_lines.belongsTo(administrators, { as: "created_by_administrator", foreignKey: "created_by"});
-  administrators.hasMany(services_lines, { as: "services_lines", foreignKey: "created_by"});
-  services_lines.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
-  administrators.hasMany(services_lines, { as: "updated_by_services_lines", foreignKey: "updated_by"});
+  service_lines.belongsTo(administrators, { as: "created_by_administrator", foreignKey: "created_by"});
+  administrators.hasMany(service_lines, { as: "service_lines", foreignKey: "created_by"});
+  service_lines.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
+  administrators.hasMany(service_lines, { as: "updated_by_service_lines", foreignKey: "updated_by"});
   skills.belongsTo(administrators, { as: "created_by_administrator", foreignKey: "created_by"});
   administrators.hasMany(skills, { as: "skills", foreignKey: "created_by"});
   skills.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
@@ -188,8 +188,8 @@ function initModels(sequelize) {
   goals.hasMany(badge_applications, { as: "badge_applications", foreignKey: "goal_id"});
   badges.belongsTo(goals, { as: "goal", foreignKey: "goal_id"});
   goals.hasMany(badges, { as: "badges", foreignKey: "goal_id"});
-  services_lines.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
-  learning_paths.hasMany(services_lines, { as: "services_lines", foreignKey: "learning_path_id"});
+  service_lines.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
+  learning_paths.hasMany(service_lines, { as: "service_lines", foreignKey: "learning_path_id"});
   users.belongsTo(locations, { as: "location", foreignKey: "location_id"});
   locations.hasMany(users, { as: "users", foreignKey: "location_id"});
   notifications.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
@@ -210,14 +210,14 @@ function initModels(sequelize) {
   progression_stages.hasMany(badge_requirements, { as: "badge_requirements", foreignKey: "progression_stage_id"});
   badges.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
   progression_stages.hasOne(badges, { as: "badge", foreignKey: "progression_stage_id"});
-  announc_sl.belongsTo(services_lines, { as: "service_line", foreignKey: "service_line_id"});
-  services_lines.hasMany(announc_sl, { as: "announc_sls", foreignKey: "service_line_id"});
-  areas.belongsTo(services_lines, { as: "service_line", foreignKey: "service_line_id"});
-  services_lines.hasMany(areas, { as: "areas", foreignKey: "service_line_id"});
-  service_line_leaders.belongsTo(services_lines, { as: "service_line", foreignKey: "service_line_id"});
-  services_lines.hasMany(service_line_leaders, { as: "service_line_leaders", foreignKey: "service_line_id"});
-  sl_slas.belongsTo(services_lines, { as: "service_line", foreignKey: "service_line_id"});
-  services_lines.hasMany(sl_slas, { as: "sl_slas", foreignKey: "service_line_id"});
+  announc_sl.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
+  service_lines.hasMany(announc_sl, { as: "announc_sls", foreignKey: "service_line_id"});
+  areas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
+  service_lines.hasMany(areas, { as: "areas", foreignKey: "service_line_id"});
+  service_line_leaders.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
+  service_lines.hasMany(service_line_leaders, { as: "service_line_leaders", foreignKey: "service_line_id"});
+  sl_slas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
+  service_lines.hasMany(sl_slas, { as: "sl_slas", foreignKey: "service_line_id"});
   consultants_selected_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
   skills.hasMany(consultants_selected_skills, { as: "consultants_selected_skills", foreignKey: "skills_id"});
   notification_preferences.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
@@ -246,8 +246,12 @@ function initModels(sequelize) {
   users.hasMany(system_announcements, { as: "system_announcements", foreignKey: "user_id"});
   talent_managers.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(talent_managers, { as: "talent_manager", foreignKey: "user_id"});
+  user_account_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(user_account_tokens, { as: "user_account_tokens", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "user_id"});
+  user_refresh_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(user_refresh_tokens, { as: "user_refresh_tokens", foreignKey: "user_id"});
 
   return {
     administrators,
@@ -275,7 +279,7 @@ function initModels(sequelize) {
     requirements_evidences,
     rewards,
     service_line_leaders,
-    services_lines,
+    service_lines,
     skills,
     sl_slas,
     slas,

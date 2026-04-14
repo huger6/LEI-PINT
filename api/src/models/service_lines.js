@@ -1,44 +1,42 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('badge_requirements', {
-    requirement_id: {
+  return sequelize.define('service_lines', {
+    service_line_id: {
       autoIncrement: true,
       autoIncrementIdentity: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    badge_id: {
+    learning_path_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'badges',
-        key: 'badge_id'
+        model: 'learning_paths',
+        key: 'learning_path_id'
       }
     },
-    progression_stage_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'progression_stages',
-        key: 'progression_stage_id'
-      }
-    },
-    requirement_title: {
-      type: DataTypes.STRING(150),
+    service_line_name: {
+      type: DataTypes.STRING(100),
       allowNull: false
     },
-    requirement_sequence: {
-      type: DataTypes.INTEGER,
+    sl_slug: {
+      type: DataTypes.STRING(512),
+      allowNull: false,
+      unique: "uk_slug_service_lines"
+    },
+    service_line_description: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
-    requirement_description: {
-      type: DataTypes.TEXT,
-      allowNull: false
-    },
-    requirement_img_url: {
+    img_url: {
       type: DataTypes.STRING(512),
       allowNull: true
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     },
     created_by: {
       type: DataTypes.INTEGER,
@@ -68,54 +66,54 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'badge_requirements',
+    tableName: 'service_lines',
     schema: 'public',
     timestamps: false,
     underscored: true,
     indexes: [
       {
-        name: "badge_requirements_pk",
-        unique: true,
-        fields: [
-          { name: "requirement_id" },
-        ]
-      },
-      {
-        name: "badges_requirements_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "idx_requirements_sequence",
-        fields: [
-          { name: "badge_id" },
-          { name: "requirement_sequence" },
-        ]
-      },
-      {
-        name: "pk_badge_requirements",
-        unique: true,
-        fields: [
-          { name: "requirement_id" },
-        ]
-      },
-      {
-        name: "requirements_createdby_fk",
+        name: "admin_sl_fk",
         fields: [
           { name: "created_by" },
         ]
       },
       {
-        name: "requirements_updatedby_fk",
+        name: "idx_sl_lp_id",
+        fields: [
+          { name: "learning_path_id" },
+        ]
+      },
+      {
+        name: "pk_service_lines",
+        unique: true,
+        fields: [
+          { name: "service_line_id" },
+        ]
+      },
+      {
+        name: "service_lines_pk",
+        unique: true,
+        fields: [
+          { name: "service_line_id" },
+        ]
+      },
+      {
+        name: "sl_lp_fk",
+        fields: [
+          { name: "learning_path_id" },
+        ]
+      },
+      {
+        name: "sl_updatedby_fk",
         fields: [
           { name: "updated_by" },
         ]
       },
       {
-        name: "stages_requirements_fk",
+        name: "uk_slug_service_lines",
+        unique: true,
         fields: [
-          { name: "progression_stage_id" },
+          { name: "sl_slug" },
         ]
       },
     ]

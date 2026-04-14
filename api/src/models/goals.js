@@ -60,6 +60,18 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
+        name: "cons_timelines_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "goals_fk",
+        fields: [
+          { name: "badge_id" },
+        ]
+      },
+      {
         name: "goals_pk",
         unique: true,
         fields: [
@@ -71,6 +83,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "goal_id" },
+        ]
+      },
+      {
+        name: "timelines_applications_fk",
+        fields: [
+          { name: "application_id" },
         ]
       },
     ]
