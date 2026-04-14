@@ -428,6 +428,8 @@ CREATE TABLE IF NOT EXISTS badge_requirements (
    requirement_sequence INTEGER                 NULL,
    requirement_description TEXT                 NOT NULL,
    requirement_img_url  VARCHAR(512)         NULL,
+   badge_points         INTEGER                 NOT NULL DEFAULT 0,
+      CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
    updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
