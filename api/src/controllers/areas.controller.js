@@ -1,7 +1,7 @@
 const { models } = require('../config/db');
 const { handleListRequest } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
-const validations = require('../validations/learning-paths.validation');
+const validations = require('../validations/learningPaths.validation');
 
 /**
  * Handles BOTH:
