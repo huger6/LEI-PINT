@@ -33,8 +33,15 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         });
 
         if (search) {
-            const nameField = modelName === 'progression_stages' ? 'stage_title' :
-                (modelName === 'services_lines' ? 'service_line_name' : 'area_name');
+            const searchFields = {
+                'progression_stages': 'stage_title',
+                'service_lines': 'service_line_name',
+                'learning_paths': 'path_title',
+                'areas': 'area_name'
+            };
+
+            const nameField = searchFields[modelName] || 'area_name';
+
             where[nameField] = { [Op.iLike]: `%${search}%` };
         }
 

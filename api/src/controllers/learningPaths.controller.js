@@ -7,6 +7,7 @@ const validations = require('../validations/learningPaths.validation');
 const getAllLearningPaths = (req, res) => {
     return handleListRequest({
         req, res,
+        schema: validations.getAvailableLearningPathsQuerySchema,
         modelName: 'learning_paths',
         cachePrefix: 'lp:list',
         order: [['path_title', 'ASC']]
