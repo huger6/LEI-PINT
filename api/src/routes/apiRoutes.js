@@ -7,6 +7,7 @@ const languages = require('./languages.routes');
 const learningPaths = require('./learningPaths.routes');
 const serviceLines = require('./serviceLines.routes');
 const areas = require('./areas.routes');
+const levels = require('./levels.routes');
 
 router.use('/auth', auth);
 router.use('/locations', locations);
@@ -19,8 +20,11 @@ router.use('/learning-paths', learningPaths);
 router.use('/learning-paths/:pathSlug/service-lines', serviceLines); // Specific
 router.use('/service-lines', serviceLines); // Generic (to list all)
 // Areas
-router.use('/learning-paths/:pathSlug/service-lines/:slSlug/areas', areas); // Specific
-router.use('/areas', areas); // Generic
+router.use('/learning-paths/:pathSlug/service-lines/:slSlug/areas', areas);
+router.use('/areas', areas);
+// Levels
+router.use('/:areaSlug/levels', levels);
+router.use('/levels', levels);
 
 
 module.exports = router;

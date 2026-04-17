@@ -55,9 +55,18 @@ const getLevelsQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().max(100).default(20)
 });
 
+const getBadgesQuerySchema = z.object({
+	areaId: positiveIntIdRule.optional(),
+	progressionStageId: positiveIntIdRule.optional(),
+	search: optionalSearchRule,
+	page: z.coerce.number().int().positive().default(1),
+	limit: z.coerce.number().int().positive().max(100).default(20)
+});
+
 module.exports = {
 	getAvailableLearningPathsQuerySchema,
 	getServiceLinesQuerySchema,
 	getAreasQuerySchema,
-	getLevelsQuerySchema
+	getLevelsQuerySchema,
+	getBadgesQuerySchema
 };

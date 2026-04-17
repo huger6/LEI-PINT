@@ -1,7 +1,7 @@
 const { models } = require('../config/db');
 const { handleListRequest } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
-const validations = require('../validations/learningPaths.validation');
+const validations = require('../validations/structure.validation');
 
 // GET /api/service-lines 
 // OR
