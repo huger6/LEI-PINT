@@ -3,11 +3,9 @@ const { handleListRequest } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/learningPaths.validation');
 
-/**
- * Handles BOTH:
- * GET /api/areas
- * GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
- */
+// GET /api/areas
+// OR
+// GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
 const getAreas = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
@@ -16,23 +14,23 @@ const getAreas = async (req, res) => {
         // If accessed via nested route, enforce Service Line (and optionally LP) parent
         if (slSlug) {
             const includeBlock = [];
-            
+
             // If the URL also has the Learning Path slug, enforce that the SL belongs to that LP
             if (pathSlug) {
                 includeBlock.push({
                     model: models.learning_paths,
-                    as: 'learning_path', // Adjust alias based on your DB associations
+                    as: 'learning_path',
                     where: { path_slug: pathSlug },
                     attributes: []
                 });
             }
 
-            const sl = await models.service_lines.findOne({ 
-                where: { sl_slug: slSlug }, 
+            const sl = await models.service_lines.findOne({
+                where: { sl_slug: slSlug },
                 include: includeBlock,
-                attributes: ['service_line_id'] 
+                attributes: ['service_line_id']
             });
-            
+
             if (!sl) {
                 return res.status(404).json({
                     success: false,
@@ -70,7 +68,7 @@ const getAreaBySlug = async (req, res) => {
         const { pathSlug, slSlug, areaSlug } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
 
-        const whereClause = { 
+        const whereClause = {
             area_slug: areaSlug,
             ...(isAdmin ? {} : { is_active: true })
         };
@@ -95,25 +93,31 @@ const getAreaBySlug = async (req, res) => {
                     attributes: []
                 }];
             }
-            
+
             includeBlock.push(slInclude);
         }
 
+        // Hide unimportant data for non admins
+        const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
+
         const area = await models.areas.findOne({
             where: whereClause,
-            include: includeBlock
+            include: includeBlock,
+            attributes: {
+                exclude: excludeFields
+            }
         });
 
         if (!area) {
-            return res.status(404).json({ 
-                success: false, 
+            return res.status(404).json({
+                success: false,
                 message: "Area not found or does not belong to this hierarchy."
             });
         }
 
-        return res.status(200).json({ 
-            success: true, 
-            data: area 
+        return res.status(200).json({
+            success: true,
+            data: area
         });
 
     } catch (error) {
@@ -125,7 +129,7 @@ const getAreaBySlug = async (req, res) => {
     }
 };
 
-module.exports = { 
-    getAreas, 
-    getAreaBySlug 
+module.exports = {
+    getAreas,
+    getAreaBySlug
 };
