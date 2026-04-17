@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const { positiveIntIdRule } = require('./shared-rules');
+const sanitizeText = require('../utils/sanitizeHtml');
 
 const optionalSearchRule = z.preprocess(
 	(value) => {
@@ -12,6 +13,7 @@ const optionalSearchRule = z.preprocess(
 	},
 	z.string()
 		.max(255, 'Search query is too long.')
+		.transform(sanitizeText)
 		.optional()
 );
 
@@ -35,14 +37,14 @@ const getAvailableLearningPathsQuerySchema = z.object({
 
 const getServiceLinesQuerySchema = z.object({
 	learningPathId: positiveIntIdRule.optional(),
-	search: z.string().max(255).optional(),
+	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(12)
 });
 
 const getAreasQuerySchema = z.object({
 	serviceLineId: positiveIntIdRule.optional(),
-	search: z.string().max(255).optional(),
+	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(12)
 });
