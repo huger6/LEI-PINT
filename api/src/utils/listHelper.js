@@ -45,8 +45,13 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
             where[nameField] = { [Op.iLike]: `%${search}%` };
         }
 
+        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
         const { rows, count } = await models[modelName].findAndCountAll({
-            where, include, limit, offset, order, distinct: true
+            where, include, limit, offset, order, distinct: true,
+            attributes: {
+                exclude: excludedFields
+            }
         });
 
         const responseData = {
