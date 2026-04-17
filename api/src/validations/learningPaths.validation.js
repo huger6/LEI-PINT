@@ -1,6 +1,6 @@
 const { z } = require('zod');
 const { positiveIntIdRule } = require('./shared-rules');
-const sanitizeText = require('../utils/sanitizeHtml');
+const sanitizeText = require('../utils/sanitizeText');
 
 const optionalSearchRule = z.preprocess(
 	(value) => {

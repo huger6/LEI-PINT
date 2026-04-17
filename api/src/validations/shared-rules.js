@@ -1,6 +1,6 @@
 const { z } = require('zod');
 const filter = require('leo-profanity');
-const sanitizeText = require('../utils/sanitizeHtml');
+const sanitizeText = require('../utils/sanitizeText');
 const loadEnvironment = require('../config/loadEnv');
 
 loadEnvironment();
