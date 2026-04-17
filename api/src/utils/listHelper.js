@@ -26,7 +26,10 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         });
 
         const where = { ...baseWhere };
-        if (!isAdmin) where.is_active = true;
+
+        const tablesWhithoutIsActive = ['progression_stages', 'locations'];
+        if (!isAdmin && !tablesWhithoutIsActive.includes(modelName))
+            where.is_active = true;
 
         Object.keys(filters).forEach(key => {
             if (filters[key]) where[key] = filters[key];
@@ -53,6 +56,16 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
                 exclude: excludedFields
             }
         });
+
+        const totalPages = Math.ceil(count / limit);
+
+        // Block if page does not exist
+        if (page > totalPages && count > 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Page not found."
+            });
+        }
 
         const responseData = {
             data: rows,
