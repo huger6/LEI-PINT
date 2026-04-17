@@ -14,9 +14,12 @@ INSERT INTO locations (location_name)
 SELECT v.location_name
 FROM (
       VALUES
-      ('Porto'),
       ('Lisboa'),
-      ('Braga')
+      ('Tomar'),
+      ('Viseu'),
+      ('Vila Real'),
+      ('Fundão'),
+      ('Portalegre')
 ) AS v(location_name)
 WHERE NOT EXISTS (
       SELECT 1
