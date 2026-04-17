@@ -20,7 +20,10 @@ const getServiceLines = async (req, res) => {
             });
 
             if (!lp) {
-                return res.status(404).json({ success: false, message: "Parent Learning Path not found." });
+                return res.status(404).json({
+                    success: false,
+                    message: "Parent Learning Path not found."
+                });
             }
 
             // Inject the ID into the query so listHelper filters by it
@@ -72,9 +75,15 @@ const getServiceLineBySlug = async (req, res) => {
             });
         }
 
+        // Hide unimportant data for non admins
+        const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
+
         const sl = await models.service_lines.findOne({
             where: whereClause,
-            include: includeBlock
+            include: includeBlock,
+            attributes: {
+                exclude: excludeFields
+            }
         });
 
         if (!sl) {
