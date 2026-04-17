@@ -370,8 +370,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error confirming account."
-,
+            message: "Error confirming account.",
             requestId
         });
     }
@@ -528,8 +527,7 @@ const login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing user login."
-,
+            message: "Error processing user login.",
             requestId
         });
     }
@@ -546,56 +544,59 @@ const refresh = async (req, res) => {
         });
     }
 
-    const oldTokenKey = `auth:refresh:${refreshToken}`;
-
     try {
-        // Search token in redis
-        const cachedData = await redis.get(oldTokenKey);
+        const storedToken = await models.user_refresh_tokens.findOne({
+            where: { token_value: refreshToken }
+        });
 
-        if (!cachedData) {
+        if (!storedToken) {
             res.clearCookie('refreshToken', { path: '/api/auth' });
-            // If token isn't in cache it is invalid or expired
             return res.status(403).json({
                 success: false,
                 message: "Session expired or invalid."
             });
         }
 
+        // Check if token has expired
+        if (new Date(storedToken.expires_at) < new Date()) {
+            await storedToken.destroy(); // clear from db
+            res.clearCookie('refreshToken', { path: '/api/auth' });
+            return res.status(403).json({
+                success: false,
+                message: "Session expired. Please login again."
+            });
+        }
+
         // Get user data
-        const userData = JSON.parse(cachedData);
+        const user = await models.users.findByPk(storedToken.user_id);
+
+        if (!user || !user.is_active) {
+            return res.status(403).json({
+                success: false,
+                message: "User account is inactive or not found."
+            });
+        }
 
         // Get new access token
         const accessToken = jwt.sign({
-            sub: userData.user_id,
-            guid: userData.user_guid,
-            role: userData.user_role,
-            username: userData.username,
-            fpc: userData.force_password_change
+            sub: user.user_id,
+            guid: user.user_guid,
+            role: user.user_role,
+            username: user.username,
+            fpc: user.force_password_change
         }, process.env.JWT_SECRET_KEY, {
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
         const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
-        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
 
-        //  Get original TTL
-        const remainingTTL = await redis.ttl(oldTokenKey);
+        await storedToken.update({
+            token_value: newRefreshTokenValue
+        });
 
-        if (remainingTTL <= 0) {
-            throw new Error("Token TTL invalid");
-        }
-        // Delete old, set new 
-        await redis.del(oldTokenKey);
-        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
+        await user.update({ last_online: new Date() });
 
-        await models.users.update(
-            { last_online: new Date() },
-            {
-                where: {
-                    user_id: userData.user_id
-                }
-            }
-        );
+        const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
         // Set new cookie
         res.cookie('refreshToken', newRefreshTokenValue, {
@@ -603,7 +604,7 @@ const refresh = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             path: '/api/auth',
-            maxAge: remainingTTL * 1000
+            maxAge: remainingTimeMs
         });
 
         return res.status(200).json({
@@ -621,8 +622,7 @@ const refresh = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error generating/processing new token."
-,
+            message: "Error generating/processing new token.",
             requestId
         });
     }
@@ -662,8 +662,7 @@ const logout = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error during logout process."
-,
+            message: "Error during logout process.",
             requestId
         });
     }
@@ -755,8 +754,7 @@ const changePassword = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error changing password.`
-,
+            message: `Error changing password.`,
             requestId
         });
     }
@@ -861,8 +859,7 @@ const forgotPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
-,
+            message: "Error processing request.",
             requestId
         });
     }
@@ -908,8 +905,7 @@ const validateResetToken = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
-,
+            message: "Error processing request.",
             requestId
         });
     }
@@ -1019,8 +1015,7 @@ const resetPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
-,
+            message: "Error processing request.",
             requestId
         });
     }
@@ -1224,8 +1219,7 @@ const me = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error fetching profile information."
-,
+            message: "Error fetching profile information.",
             requestId
         });
     }
@@ -1341,8 +1335,7 @@ const resendConfirmation = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error resending confirmation email."
-,
+            message: "Error resending confirmation email.",
             requestId
         });
     }
@@ -1493,8 +1486,7 @@ const adminLogin = async (req, res) => {
         logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
         return res.status(500).json({
             success: false,
-            message: "Error processing admin login."
-,
+            message: "Error processing admin login.",
             requestId
         });
     }
@@ -1577,8 +1569,7 @@ const adminRefresh = async (req, res) => {
         logger.error('Error generating new admin token.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error generating new admin token."
-,
+            message: "Error generating new admin token.",
             requestId
         });
     }
@@ -1611,8 +1602,7 @@ const adminLogout = async (req, res) => {
         logger.error('Error during admin logout process.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error during admin logout process."
-,
+            message: "Error during admin logout process.",
             requestId
         });
     }
