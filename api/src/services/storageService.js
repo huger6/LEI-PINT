@@ -28,4 +28,32 @@ const moveImageToPermanent = async (permanentPathPrefix, tempUrl, user_guid) => 
     return publicData.publicUrl;
 };
 
-module.exports = { moveImageToPermanent };
+const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePath, expiresInSeconds = 300) => {
+    try {
+        const { data, error } = await supabase
+            .storage
+            .from(bucketName)
+            .createSignedUploadUrl(storagePath, expiresInSeconds);
+
+        if (error) {
+            throw new Error(`Supabase Error: ${error.message}`);
+        }
+
+        const uploadUrl = `${process.env.SUPABASE_URL}/storage/v1${data.signedUrl}`;
+
+        // URL after upload
+        const finalFileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/authenticated/${bucketName}/${storagePath}`;
+
+        return { uploadUrl, finalFileUrl };
+
+    } catch (error) {
+        logger.error('Failed to generate signed upload URL in Supabase Service', { error, bucketName, storagePath });
+
+        throw error;
+    }
+};
+
+module.exports = {
+    moveImageToPermanent,
+    generateSignedUploadUrl
+};
