@@ -54,18 +54,6 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "stage_code_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "stage_code_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
         name: "stage_codes_pk",
         unique: true,
         fields: [

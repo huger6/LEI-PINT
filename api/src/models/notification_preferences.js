@@ -86,36 +86,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "announc_notif2_fk",
-        fields: [
-          { name: "announcement_id" },
-        ]
-      },
-      {
-        name: "not_def_pref2_fk",
-        fields: [
-          { name: "definition_id" },
-        ]
-      },
-      {
-        name: "not_preferences_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "not_preferences_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "notif_slas_fk",
-        fields: [
-          { name: "sla_id" },
-        ]
-      },
-      {
         name: "notificate_to_pk",
         unique: true,
         fields: [

@@ -72,18 +72,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "admin_sl_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "idx_sl_lp_id",
-        fields: [
-          { name: "learning_path_id" },
-        ]
-      },
-      {
         name: "pk_service_lines",
         unique: true,
         fields: [
@@ -95,18 +83,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "service_line_id" },
-        ]
-      },
-      {
-        name: "sl_lp_fk",
-        fields: [
-          { name: "learning_path_id" },
-        ]
-      },
-      {
-        name: "sl_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
       {

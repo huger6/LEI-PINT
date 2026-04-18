@@ -64,22 +64,10 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "gdpr_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
         name: "gdpr_policies_pk",
         unique: true,
         fields: [
           { name: "policy_id" },
-        ]
-      },
-      {
-        name: "gdpr_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
       {

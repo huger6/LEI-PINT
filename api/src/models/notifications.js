@@ -49,24 +49,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "idx_notifications_sent_at",
-        fields: [
-          { name: "sent_at", order: "DESC" },
-        ]
-      },
-      {
-        name: "idx_notifications_unread",
-        fields: [
-          { name: "user_id" },
-        ]
-      },
-      {
-        name: "notif_def_fk",
-        fields: [
-          { name: "definition_id" },
-        ]
-      },
-      {
         name: "notifications_pk",
         unique: true,
         fields: [
@@ -78,12 +60,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "notification_id" },
-        ]
-      },
-      {
-        name: "user_notifications_fk",
-        fields: [
-          { name: "user_id" },
         ]
       },
     ]

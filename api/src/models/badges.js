@@ -25,6 +25,22 @@ module.exports = function(sequelize, DataTypes) {
         key: 'area_id'
       }
     },
+    service_line_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'service_lines',
+        key: 'service_line_id'
+      }
+    },
+    learning_path_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'learning_paths',
+        key: 'learning_path_id'
+      }
+    },
     goal_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -106,18 +122,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "area_badges_fk",
-        fields: [
-          { name: "area_id" },
-        ]
-      },
-      {
-        name: "badges_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
         name: "badges_pk",
         unique: true,
         fields: [
@@ -125,53 +129,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "badges_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "goals2_fk",
-        fields: [
-          { name: "goal_id" },
-        ]
-      },
-      {
-        name: "idx_badges_area_active",
-        fields: [
-          { name: "area_id" },
-          { name: "is_active" },
-        ]
-      },
-      {
-        name: "idx_badges_points",
-        fields: [
-          { name: "badge_points", order: "DESC" },
-        ]
-      },
-      {
-        name: "idx_badges_title_trgm",
-        fields: [
-          { name: "badge_title" },
-        ]
-      },
-      {
-        name: "idx_badges_type",
-        fields: [
-          { name: "badge_type" },
-        ]
-      },
-      {
         name: "pk_badges",
         unique: true,
         fields: [
           { name: "badge_id" },
-        ]
-      },
-      {
-        name: "stages_badges2_fk",
-        fields: [
-          { name: "progression_stage_id" },
         ]
       },
       {

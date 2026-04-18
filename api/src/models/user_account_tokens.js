@@ -10,11 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      }
+      allowNull: false
     },
     token_value: {
       type: DataTypes.STRING(512),
@@ -45,13 +41,6 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     underscored: true,
     indexes: [
-      {
-        name: "idx_tokens_active_user",
-        fields: [
-          { name: "user_id" },
-          { name: "token_type" },
-        ]
-      },
       {
         name: "pk_user_account_tokens",
         unique: true,
