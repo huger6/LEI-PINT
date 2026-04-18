@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('skills', {
     skills_id: {
       autoIncrement: true,
@@ -69,6 +69,30 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "skills_id" },
+        ]
+      },
+      {
+        name: "badges_skills_fk",
+        fields: [
+          { name: "badge_id" },
+        ]
+      },
+      {
+        name: "skills_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "skills_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_skills_name",
+        fields: [
+          { name: "skill_name" },
         ]
       },
     ]

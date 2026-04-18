@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('notification_definitions', {
     definition_id: {
       autoIncrement: true,
@@ -55,6 +55,18 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "definition_id" },
+        ]
+      },
+      {
+        name: "admin_def_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "not_def_pref_fk",
+        fields: [
+          { name: "preference_id" },
         ]
       },
     ]
