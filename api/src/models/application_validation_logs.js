@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('application_validation_logs', {
     validation_log_id: {
       autoIncrement: true,
@@ -60,6 +60,25 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "validation_log_id" },
+        ]
+      },
+      {
+        name: "applications_validations_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
+        name: "users_validations_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "idx_validation_logs_app",
+        fields: [
+          { name: "application_id" },
+          { name: "validated_at" },
         ]
       },
     ]

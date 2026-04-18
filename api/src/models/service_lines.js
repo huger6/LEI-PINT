@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('service_lines', {
     service_line_id: {
       autoIncrement: true,
@@ -90,6 +90,30 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "sl_slug" },
+        ]
+      },
+      {
+        name: "sl_lp_fk",
+        fields: [
+          { name: "learning_path_id" },
+        ]
+      },
+      {
+        name: "admin_sl_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "sl_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_sl_lp_id",
+        fields: [
+          { name: "learning_path_id" },
         ]
       },
     ]

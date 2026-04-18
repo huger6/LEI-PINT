@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('gdpr_policies', {
     policy_id: {
       autoIncrement: true,
@@ -75,6 +75,18 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "policy_id" },
+        ]
+      },
+      {
+        name: "gdpr_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "gdpr_createdby_fk",
+        fields: [
+          { name: "created_by" },
         ]
       },
     ]

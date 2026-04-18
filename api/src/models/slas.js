@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('slas', {
     sla_id: {
       autoIncrement: true,
@@ -110,6 +110,43 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "sla_id" },
+        ]
+      },
+      {
+        name: "admin_sla_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "user_slas_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "notif_slas2_fk",
+        fields: [
+          { name: "preference_id" },
+        ]
+      },
+      {
+        name: "not_def_slas_fk",
+        fields: [
+          { name: "definition_id" },
+        ]
+      },
+      {
+        name: "slas_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_slas_active_profile",
+        fields: [
+          { name: "is_active" },
+          { name: "target_profile" },
         ]
       },
     ]

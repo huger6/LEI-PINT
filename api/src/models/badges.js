@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('badges', {
     badge_id: {
       autoIncrement: true,
@@ -147,6 +147,74 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "progression_stage_id" },
+        ]
+      },
+      {
+        name: "stages_badges2_fk",
+        fields: [
+          { name: "progression_stage_id" },
+        ]
+      },
+      {
+        name: "area_badges_fk",
+        fields: [
+          { name: "area_id" },
+        ]
+      },
+      {
+        name: "goals2_fk",
+        fields: [
+          { name: "goal_id" },
+        ]
+      },
+      {
+        name: "badges_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "badges_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "sl_badges_fk",
+        fields: [
+          { name: "service_line_id" },
+        ]
+      },
+      {
+        name: "lp_badges_fk",
+        fields: [
+          { name: "learning_path_id" },
+        ]
+      },
+      {
+        name: "idx_badges_area_active",
+        fields: [
+          { name: "area_id" },
+          { name: "is_active" },
+        ]
+      },
+      {
+        name: "idx_badges_points",
+        fields: [
+          { name: "badge_points", order: "DESC" },
+        ]
+      },
+      {
+        name: "idx_badges_type",
+        fields: [
+          { name: "badge_type" },
+        ]
+      },
+      {
+        name: "idx_badges_title_trgm",
+        using: "gin",
+        fields: [
+          { name: "badge_title", operator: "gin_trgm_ops" },
         ]
       },
     ]

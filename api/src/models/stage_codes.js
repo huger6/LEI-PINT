@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('stage_codes', {
     stage_code_id: {
       autoIncrement: true,
@@ -65,6 +65,18 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "stage_code" },
+        ]
+      },
+      {
+        name: "stage_code_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "stage_code_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
         ]
       },
     ]
