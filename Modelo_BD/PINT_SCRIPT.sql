@@ -340,6 +340,8 @@ CREATE TABLE IF NOT EXISTS badges (
    progression_stage_id INTEGER                 NOT NULL, -- FK -> progression_stages(progression_stage_id)
       CONSTRAINT uk_stage_badge UNIQUE (progression_stage_id),
    area_id              INTEGER                 NOT NULL, -- FK -> areas(area_id)
+   service_line_id      INTEGER                 NOT NULL, -- FK -> service_lines(service_line_id)
+   learning_path_id      INTEGER                 NOT NULL, -- FK -> learning_path(learning_path_id)
    goal_id              INTEGER                 NULL, -- FK -> goals(goal_id)
    badge_title          VARCHAR(100)         NOT NULL,
    badge_slug           VARCHAR(100)         NOT NULL,
@@ -1064,6 +1066,16 @@ ALTER TABLE badges
       REFERENCES progression_stages (progression_stage_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_sl_service_lines FOREIGN KEY (service_line_id)
+      REFERENCES service_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE badges
+   ADD CONSTRAINT fk_badges_lp_learning_paths FOREIGN KEY (learning_path_id)
+      REFERENCES learning_paths (learning_path_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
 ALTER TABLE badge_applications
    ADD CONSTRAINT fk_badge_ap_applicati_certific FOREIGN KEY (certificate_id)
       REFERENCES certificates (certificate_id)
@@ -1438,6 +1450,8 @@ CREATE INDEX IF NOT EXISTS AREA_BADGES_FK ON badges (area_id);
 CREATE INDEX IF NOT EXISTS GOALS2_FK ON badges (goal_id);
 CREATE INDEX IF NOT EXISTS BADGES_CREATEDBY_FK ON badges (created_by);
 CREATE INDEX IF NOT EXISTS BADGES_UPDATEDBY_FK ON badges (updated_by);
+CREATE INDEX IF NOT EXISTS SL_BADGES_FK ON badges (service_line_id);
+CREATE INDEX IF NOT EXISTS LP_BADGES_FK ON badges (learning_path_id);
 CREATE INDEX IF NOT EXISTS BADGES_APPLICATIONS_FK ON badge_applications (badge_id);
 CREATE INDEX IF NOT EXISTS CONS_APLLICATIONS_FK ON badge_applications (user_id);
 CREATE INDEX IF NOT EXISTS TIMELINES_APPLICATIONS2_FK ON badge_applications (goal_id);
