@@ -9,6 +9,7 @@ const serviceLines = require('./serviceLines.routes');
 const areas = require('./areas.routes');
 const levels = require('./levels.routes');
 const badges = require('./badges.routes');
+const applications = require('./applications.routes');
 
 router.use('/auth', auth);
 router.use('/locations', locations);
@@ -20,5 +21,6 @@ router.use('/service-lines', serviceLines);
 router.use('/areas', areas);
 router.use('/levels', levels);
 router.use('/badges', badges);
+router.use('/applications', applications);
 
 module.exports = router;
