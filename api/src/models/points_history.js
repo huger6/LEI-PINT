@@ -48,25 +48,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "badges_points_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "cons_points_fk",
-        fields: [
-          { name: "user_id" },
-        ]
-      },
-      {
-        name: "idx_points_user_delta",
-        fields: [
-          { name: "user_id" },
-          { name: "points_delta" },
-        ]
-      },
-      {
         name: "pk_points_history",
         unique: true,
         fields: [
@@ -78,12 +59,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "points_history_id" },
-        ]
-      },
-      {
-        name: "requirements_points_fk",
-        fields: [
-          { name: "requirement_id" },
         ]
       },
     ]

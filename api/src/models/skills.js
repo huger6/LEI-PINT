@@ -58,18 +58,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "badges_skills_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "idx_skills_name",
-        fields: [
-          { name: "skill_name" },
-        ]
-      },
-      {
         name: "pk_skills",
         unique: true,
         fields: [
@@ -77,22 +65,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "skills_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
         name: "skills_pk",
         unique: true,
         fields: [
           { name: "skills_id" },
-        ]
-      },
-      {
-        name: "skills_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
         ]
       },
     ]

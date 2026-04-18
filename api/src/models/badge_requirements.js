@@ -40,6 +40,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(512),
       allowNull: true
     },
+    badge_points: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     created_by: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -81,41 +91,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "badges_requirements_fk",
-        fields: [
-          { name: "badge_id" },
-        ]
-      },
-      {
-        name: "idx_requirements_sequence",
-        fields: [
-          { name: "badge_id" },
-          { name: "requirement_sequence" },
-        ]
-      },
-      {
         name: "pk_badge_requirements",
         unique: true,
         fields: [
           { name: "requirement_id" },
-        ]
-      },
-      {
-        name: "requirements_createdby_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "requirements_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "stages_requirements_fk",
-        fields: [
-          { name: "progression_stage_id" },
         ]
       },
     ]

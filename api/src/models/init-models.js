@@ -188,6 +188,8 @@ function initModels(sequelize) {
   goals.hasMany(badge_applications, { as: "badge_applications", foreignKey: "goal_id"});
   badges.belongsTo(goals, { as: "goal", foreignKey: "goal_id"});
   goals.hasMany(badges, { as: "badges", foreignKey: "goal_id"});
+  badges.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
+  learning_paths.hasMany(badges, { as: "badges", foreignKey: "learning_path_id"});
   service_lines.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
   learning_paths.hasMany(service_lines, { as: "service_lines", foreignKey: "learning_path_id"});
   users.belongsTo(locations, { as: "location", foreignKey: "location_id"});
@@ -214,6 +216,8 @@ function initModels(sequelize) {
   service_lines.hasMany(announc_sl, { as: "announc_sls", foreignKey: "service_line_id"});
   areas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
   service_lines.hasMany(areas, { as: "areas", foreignKey: "service_line_id"});
+  badges.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
+  service_lines.hasMany(badges, { as: "badges", foreignKey: "service_line_id"});
   service_line_leaders.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
   service_lines.hasMany(service_line_leaders, { as: "service_line_leaders", foreignKey: "service_line_id"});
   sl_slas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
@@ -246,12 +250,8 @@ function initModels(sequelize) {
   users.hasMany(system_announcements, { as: "system_announcements", foreignKey: "user_id"});
   talent_managers.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(talent_managers, { as: "talent_manager", foreignKey: "user_id"});
-  user_account_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(user_account_tokens, { as: "user_account_tokens", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "user_id"});
-  user_refresh_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(user_refresh_tokens, { as: "user_refresh_tokens", foreignKey: "user_id"});
 
   return {
     administrators,

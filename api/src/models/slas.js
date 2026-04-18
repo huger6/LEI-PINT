@@ -99,31 +99,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     indexes: [
       {
-        name: "admin_sla_fk",
-        fields: [
-          { name: "created_by" },
-        ]
-      },
-      {
-        name: "idx_slas_active_profile",
-        fields: [
-          { name: "is_active" },
-          { name: "target_profile" },
-        ]
-      },
-      {
-        name: "not_def_slas_fk",
-        fields: [
-          { name: "definition_id" },
-        ]
-      },
-      {
-        name: "notif_slas2_fk",
-        fields: [
-          { name: "preference_id" },
-        ]
-      },
-      {
         name: "pk_slas",
         unique: true,
         fields: [
@@ -135,18 +110,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "sla_id" },
-        ]
-      },
-      {
-        name: "slas_updatedby_fk",
-        fields: [
-          { name: "updated_by" },
-        ]
-      },
-      {
-        name: "user_slas_fk",
-        fields: [
-          { name: "user_id" },
         ]
       },
     ]
