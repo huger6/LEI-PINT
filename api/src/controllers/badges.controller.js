@@ -118,8 +118,8 @@ const getBadgeBySlug = async (req, res) => {
 
         const includeBlock = [
             {
-                model: models.requirements,
-                as: 'requirements',
+                model: models.badge_requirements,
+                as: 'badge_requirements',
                 attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
             }
         ];
