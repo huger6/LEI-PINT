@@ -14,7 +14,7 @@ const applicationController = require('../controllers/applications.controller');
 router.get('/', loginRequired, applicationController.getApplications);
 
 /**
- * @route   GET /api/applications/:applicationId
+ * @route   GET /api/applications/:applicationGuid
  * @desc    Application details
  */
 router.get('/:applicationId', loginRequired, applicationController.getApplicationById);
@@ -26,19 +26,24 @@ router.get('/:applicationId', loginRequired, applicationController.getApplicatio
 router.post('/start', loginRequired, applicationController.startApplication);
 
 /**
- * @route   POST /api/applications/:applicationId/evidences
+ * @route   POST /api/applications/:applicationGuid/upload-url
+ */
+router.post('/:applicationId/upload-url', loginRequired, applicationController.getUploadUrl);
+
+/**
+ * @route   POST /api/applications/:applicationGuid/evidences
  * @desc    Uploads or updates an evidence for a given requirement
  */
 router.post('/:applicationId/evidences', loginRequired, applicationController.upsertEvidence);
 
 /**
- * @route   POST /api/applications/:applicationId/submit
+ * @route   POST /api/applications/:applicationGuid/submit
  * @desc    Submits application (state -> Submitted)
  */
 router.post('/:applicationId/submit', loginRequired, applicationController.submitApplication);
 
 /**
- * @route   POST /api/applications/:applicationId/validate
+ * @route   POST /api/applications/:applicationGuid/validate
  * @desc    Aprove, reject or send back
  */
 //router.post('/:applicationId/validate', loginRequired, applicationController.validateApplication);

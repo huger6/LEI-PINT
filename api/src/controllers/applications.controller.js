@@ -2,6 +2,7 @@ const { models, sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/applications.validation');
+const { generateSignedUploadUrl } = require('../services/storageService');
 
 
 const getApplications = async (req, res) => {
@@ -102,10 +103,10 @@ const getApplicationById = async (req, res) => {
         const userId = req.user.sub;
         const role = req.user.role;
 
-        const { applicationId } = validations.applicationIdParamSchema.parse(req.params);
+        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
 
         const application = await models.badge_applications.findOne({
-            where: { application_id: applicationId },
+            where: { application_guid: applicationGuid },
             include: [
                 {
                     model: models.badges,
@@ -182,7 +183,7 @@ const getApplicationById = async (req, res) => {
 const startApplication = async (req, res) => {
     try {
         const userId = req.user.sub; // From JWT
-        const { badgeId, goalId } = validations.startApplicationSchema.safeParse(req.body);
+        const { badgeId, goalId } = validations.startApplicationSchema.parse(req.body);
 
         // Check if badge exists and is active
         const badge = await models.badges.findByPk(badgeId);
@@ -231,15 +232,65 @@ const startApplication = async (req, res) => {
     }
 };
 
+const getUploadUrl = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const userGuid = req.user.guid;
+
+        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
+        const { requirementId, fileName } = validations.getUploadUrlBodySchema.parse(req.body);
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid, user_id: userId }
+        });
+
+        if (!application || application.application_state !== 'Open') {
+            return res.status(403).json({
+                success: false,
+                message: "You can only upload evidences for your own 'Open applications'."
+            });
+        }
+
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+        const safeFileName = `${Date.now()}_req${requirementId}.${fileExtension}`;
+        const storagePath = `${userGuid}/application_${applicationGuid}/${safeFileName}`;
+
+        const { uploadUrl, finalFileUrl } = await generateSignedUploadUrl(storagePath = storagePath);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                uploadUrl, // Link PUT that expires in 5 min
+                finalFileUrl // Perm link to send on the next POST /evidences
+            }
+        })
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid data.",
+                errors: error.errors
+            });
+        }
+
+        logger.error('Error generating upload URL in controller', { error });
+        return res.status(500).json({
+            success: false,
+            message: "Error generating upload link."
+        });
+    }
+};
+
 const upsertEvidence = async (req, res) => {
     try {
         const userId = req.user.sub;
-        const { applicationId } = req.params;
-        const { requirementId, evidenceFileUrl, evidenceTitle, evidenceDescription, evidenceFileType } = validations.upsertEvidenceBodySchema.safeParse(req.body);
+        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
+        const { requirementId, evidenceFileUrl, evidenceTitle, evidenceDescription, evidenceFileType } = validations.upsertEvidenceBodySchema.parse(req.body);
 
         // Check if application is open and belongs to this user
         const application = await models.badge_applications.findOne({
-            where: { application_id: applicationId, user_id: userId }
+            where: { application_guid: applicationGuid, user_id: userId }
         });
 
         if (!application) {
@@ -271,7 +322,7 @@ const upsertEvidence = async (req, res) => {
 
         // upsert
         const [evidence, created] = await models.requirements_evidences.upsert({
-            application_id: applicationId,
+            application_id: application.application_id,
             requirement_id: requirementId,
             evidence_file_url: evidenceFileUrl,
             evidence_title: evidenceTitle,
@@ -289,6 +340,14 @@ const upsertEvidence = async (req, res) => {
         });
 
     } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid data.",
+                errors: error.errors
+            });
+        }
+
         logger.error('Error upserting evidence', { error });
         return res.status(500).json({
             success: false,
@@ -300,11 +359,11 @@ const upsertEvidence = async (req, res) => {
 const submitApplication = async (req, res) => {
     try {
         const userId = req.user.sub;
-        const { applicationId } = validations.applicationIdParamSchema.safeParse(req.params);
+        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
 
         // Get application info
         const application = await models.badge_applications.findOne({
-            where: { application_id: applicationId, user_id: userId },
+            where: { application_guid: applicationGuid, user_id: userId },
             include: [
                 { model: models.requirements_evidences, as: 'requirements_evidences' },
                 {
@@ -361,13 +420,21 @@ const submitApplication = async (req, res) => {
             success: true,
             message: "Application submitted successfully! It is now pending validation.",
             data: {
-                applicationId: application.application_id,
+                applicationGuid: application.application_guid,
                 state: application.application_state,
                 submittedAt: application.submitted_at
             }
         });
 
     } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid application identifier.",
+                errors: error.errors
+            });
+        }
+
         logger.error('Error submitting application', { error });
         return res.status(500).json({
             success: false,
@@ -380,6 +447,7 @@ module.exports = {
     getApplications,
     getApplicationById,
     startApplication,
+    getUploadUrl,
     upsertEvidence,
     submitApplication
 };

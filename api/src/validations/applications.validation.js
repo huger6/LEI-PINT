@@ -7,8 +7,8 @@ const startApplicationSchema = z.object({
     goalId: positiveIntIdRule.optional().nullable()
 });
 
-const applicationIdParamSchema = z.object({
-    applicationId: positiveIntIdRule
+const applicationGuidParamSchema = z.object({
+    applicationGuid: z.string().uuid("Invalid application identifier format.")
 });
 
 const upsertEvidenceBodySchema = z.object({
@@ -49,9 +49,21 @@ const getApplicationsQuerySchema = z.object({
     limit: z.coerce.number().int().positive().default(20)
 });
 
+const getUploadUrlBodySchema = z.object({
+    requirementId: positiveIntIdRule, // Usa a tua regra base para IDs
+
+    fileName: z.string().trim()
+        .min(1, 'File name is required.')
+        .max(255, 'File name cannot exceed 255 characters.')
+        // Esta regex garante que o ficheiro tem uma extensão (ex: .pdf, .png)
+        // Essencial porque o teu backend faz: fileName.split('.').pop()
+        .regex(/\.[0-9a-z]+$/i, 'File name must include a valid extension (e.g., document.pdf).')
+});
+
 module.exports = {
     startApplicationSchema,
-    applicationIdParamSchema,
+    applicationGuidParamSchema,
     upsertEvidenceBodySchema,
-    getApplicationsQuerySchema
+    getApplicationsQuerySchema,
+    getUploadUrlBodySchema
 };
