@@ -12,6 +12,6 @@ router.get('/', loginRequired, lpController.getAllLearningPaths);
 // GET /api/learning-paths/:pathSlug
 router.get('/:pathSlug', loginRequired, lpController.getLearningPathBySlug);
 
-router.use('/:pathSlug', slRoutes);
+router.use('/:pathSlug/service-lines', slRoutes);
 
 module.exports = router;
