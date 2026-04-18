@@ -116,7 +116,13 @@ const getBadgeBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const includeBlock = [];
+        const includeBlock = [
+            {
+                model: models.requirements,
+                as: 'requirements',
+                attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
+            }
+        ];
 
         if (stageCode) {
             const levelInclude = {
@@ -224,7 +230,10 @@ const getBadgeBySlug = async (req, res) => {
             });
         }
 
-        return res.status(200).json({ success: true, data: badge });
+        return res.status(200).json({
+            success: true,
+            data: badge
+        });
 
     } catch (error) {
         logger.error('Error fetching Badge', { error });
