@@ -436,7 +436,7 @@ CREATE TABLE IF NOT EXISTS badge_requirements (
    requirement_img_url  VARCHAR(512)         NULL,
    badge_points         INTEGER                 NOT NULL DEFAULT 0,
       CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
-   is_active            BOOLEAN              NOT NULL DEFAULT FALSE,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
    updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
