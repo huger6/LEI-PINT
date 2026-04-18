@@ -404,6 +404,15 @@ const login = async (req, res) => {
             });
         }
 
+        if (!user.is_active) {
+            await t.rollback();
+
+            return res.status(403).json({
+                success: false,
+                message: "User account is deactivated."
+            });
+        }
+
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
@@ -633,7 +642,7 @@ const logout = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
     const cookieOptions = {
-        path: '/',
+        path: '/api/auth',
         httpOnly: true
     };
 
