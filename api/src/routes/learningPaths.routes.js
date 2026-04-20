@@ -21,7 +21,7 @@ router.post('/', loginRequired, isAdmin, lpController.createLearningPath);
 // PUT /api/learning-paths/:pathSlug
 router.put('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
 
-// PUT /api/learning-paths/:pathSlug
+// DELETE /api/learning-paths/:pathSlug
 router.delete('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
 
 router.use('/:pathSlug/service-lines', slRoutes);

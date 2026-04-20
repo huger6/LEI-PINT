@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
-const { loginRequired } = require('../middlewares/auth.middleware');
+const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
 const slController = require('../controllers/serviceLines.controller');
 
 const areasRoutes = require('./levels.routes');
@@ -16,6 +16,18 @@ router.get('/', loginRequired, slController.getServiceLines);
 // OR
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug
 router.get('/:slSlug', loginRequired, slController.getServiceLineBySlug);
+
+// GET /api/service-lines/check-slug?slug=mySlug
+router.get('/check-slug', loginRequired, isAdmin, slController.checkSlugAvailability);
+
+// POST /api/service-lines/
+router.post('/', loginRequired, isAdmin, slController.createServiceLine);
+
+// PUT /api/service-lines/:slSlug
+router.put('/:slSlug', loginRequired, isAdmin, slController.updateServiceLine);
+
+// DELETE /api/service-lines/:slSlug
+router.delete('/:slSlug', loginRequired, isAdmin, slController.deleteServiceLine);
 
 router.use('/:slSlug/areas', areasRoutes);
 router.use('/:slSlug/badges', badgeRoutes);
