@@ -82,5 +82,6 @@ const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePat
 
 module.exports = {
     moveImageToPermanent,
+    moveStructureImageToPermanent,
     generateSignedUploadUrl
 };
