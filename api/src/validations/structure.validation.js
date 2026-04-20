@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { positiveIntIdRule } = require('./shared-rules');
+const { positiveIntIdRule, imgUrlRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
 const optionalSearchRule = z.preprocess(
@@ -64,10 +64,34 @@ const getBadgesQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().max(100).default(20)
 });
 
+const pathSlugParamSchema = z.object({
+	pathSlug: z.string().trim().min(1, "Learning Path slug is required.").max(500, "Slug's maximum length is 500.")
+});
+
+const createLearningPathBodySchema = z.object({
+	pathTitle: z.string().trim().min(2).max(150),
+
+	pathSlug: z.string().trim()
+		.max(150)
+		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.optional()
+		.nullable(),
+
+	pathDescription: z.string().trim().max(5000).optional().nullable(),
+	imgUrl: imgUrlRule.optional()
+});
+
+const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
 module.exports = {
 	getAvailableLearningPathsQuerySchema,
 	getServiceLinesQuerySchema,
 	getAreasQuerySchema,
 	getLevelsQuerySchema,
-	getBadgesQuerySchema
+	getBadgesQuerySchema,
+	pathSlugParamSchema,
+	createLearningPathBodySchema,
+	updateLearningPathBodySchema
 };
