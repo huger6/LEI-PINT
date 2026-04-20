@@ -52,7 +52,7 @@ const birthdateRule = z.preprocess(
     }, 'You must be at least 16 years old to register.')
 );
 
-const profileImageUrlRule = z.string()
+const imgUrlRule = z.string()
     .url('Invalid URL format')
     .startsWith(
         `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/public/public-assets/temp/`,
@@ -82,6 +82,6 @@ module.exports = {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
-    profileImageUrlRule,
+    imgUrlRule,
     usernameRule
 };

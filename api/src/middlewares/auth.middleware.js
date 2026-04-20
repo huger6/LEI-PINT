@@ -73,8 +73,11 @@ const checkRole = (...allowedRoles) => {
     }
 }
 
+const isAdmin = checkRole('Administrator');
+
 module.exports = {
     loginRequired,
     annonymousUsersOnly,
-    checkRole
+    checkRole,
+    isAdmin
 }

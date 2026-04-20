@@ -28,6 +28,33 @@ const moveImageToPermanent = async (permanentPathPrefix, tempUrl, user_guid) => 
     return publicData.publicUrl;
 };
 
+const moveStructureImageToPermanent = async (structureType, tempUrl, entityIdentifier) => {
+    if (!tempUrl || !tempUrl.includes('/temp/')) return tempUrl;
+
+    const fileName = tempUrl.split('/').pop().split('?')[0];
+    const tempPath = `temp/${fileName}`;
+
+    const permanentPath = entityIdentifier
+        ? `structure/${structureType}/${entityIdentifier}/${fileName}`
+        : `structure/${structureType}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+        .from('public-assets')
+        .move(tempPath, permanentPath);
+
+    if (error) {
+        const storageError = new Error(error.message);
+        storageError.name = 'StorageMoveError';
+        throw storageError;
+    }
+
+    const { data: publicData } = supabase.storage
+        .from('public-assets')
+        .getPublicUrl(permanentPath);
+
+    return publicData.publicUrl;
+};
+
 const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePath, expiresInSeconds = 300) => {
     try {
         const { data, error } = await supabase

@@ -7,7 +7,7 @@ const {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
-    profileImageUrlRule,
+    imgUrlRule,
     usernameRule
 } = require('./shared-rules');
 
@@ -18,7 +18,7 @@ const baseUserSchema = z.object({
     password: passwordRule,
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
-    profile_img_url: profileImageUrlRule.optional(),
+    profile_img_url: imgUrlRule.optional(),
     preferred_lang_id: positiveIntIdRule.default(1),
     location_id: positiveIntIdRule.optional()
 });
