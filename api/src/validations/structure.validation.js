@@ -28,6 +28,7 @@ const booleanQueryRule = z.preprocess(
 	z.union([z.literal('true'), z.literal('false'), z.boolean()])
 ).transform((value) => (typeof value === 'boolean' ? value : value === 'true'));
 
+// Query schemas
 const getAvailableLearningPathsQuerySchema = z.object({
 	search: optionalSearchRule,
 	serviceLineId: positiveIntIdRule.optional(),
@@ -64,10 +65,16 @@ const getBadgesQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().max(100).default(20)
 });
 
+// Path parameter schemas
 const pathSlugParamSchema = z.object({
 	pathSlug: z.string().trim().min(1, "Learning Path slug is required.").max(500, "Slug's maximum length is 500.")
 });
 
+const slSlugParamSchema = z.object({
+	slSlug: z.string().trim().min(1, "Service Line slug is required.").max(500, "Slug's maximum length is 500.")
+});
+
+// Request body schemas
 const createLearningPathBodySchema = z.object({
 	pathTitle: z.string().trim().min(2).max(150),
 
@@ -85,13 +92,39 @@ const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
 	isActive: z.boolean().optional()
 }).partial();
 
+const createServiceLineBodySchema = z.object({
+	serviceLineName: z.string().trim().min(2).max(100),
+
+	slSlug: z.string().trim()
+		.max(150)
+		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.optional()
+		.nullable(),
+
+	serviceLineDescription: z.string().trim().max(5000).optional().nullable(),
+
+	imgUrl: imgUrlRule.optional().nullable()
+});
+
+const updateServiceLineBodySchema = createServiceLineBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
 module.exports = {
+	// Query schemas
 	getAvailableLearningPathsQuerySchema,
 	getServiceLinesQuerySchema,
 	getAreasQuerySchema,
 	getLevelsQuerySchema,
 	getBadgesQuerySchema,
+
+	// Path parameter schemas
 	pathSlugParamSchema,
+	slSlugParamSchema,
+
+	// Request body schemas
 	createLearningPathBodySchema,
-	updateLearningPathBodySchema
+	updateLearningPathBodySchema,
+	createServiceLineBodySchema,
+	updateServiceLineBodySchema
 };
