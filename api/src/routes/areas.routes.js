@@ -10,7 +10,7 @@ const badgesRoutes = require('./badges.routes');
 // GET /api/areas
 // OR 
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
-router.get('/', loginRequired, areaController.getAreas);
+router.get('/', areaController.getAreas);
 
 
 // GET /api/areas/:areaSlug

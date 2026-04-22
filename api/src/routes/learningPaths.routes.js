@@ -7,7 +7,7 @@ const lpController = require('../controllers/learningPaths.controller');
 const slRoutes = require('./serviceLines.routes');
 
 // GET /api/learning-paths
-router.get('/', loginRequired, lpController.getAllLearningPaths);
+router.get('/', lpController.getAllLearningPaths);
 
 // GET /api/learning-paths/:pathSlug
 router.get('/:pathSlug', loginRequired, lpController.getLearningPathBySlug);
