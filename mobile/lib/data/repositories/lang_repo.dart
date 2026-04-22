@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../constants/api_endpoints.dart';
-import '../data/dao/language_dao.dart';
-import '../models/language_model.dart';
-import '../services/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
+import '../local/lang_dao.dart';
+import '../../models/lang_model.dart';
+import '../remote/api_client.dart';
 
 class LanguageRepository {
   final ApiClient _apiClient;
@@ -14,8 +14,9 @@ class LanguageRepository {
 
   Future<List<LanguageModel>> getAvailableLanguages() async {
     try {
-      final response = await _apiClient.dio.get(ApiEndpoints.getLanguages);
-      final payload = _extractList(response.data);
+      final payload = _extractList(
+        await _apiClient.get(ApiEndpoints.getLanguages),
+      );
       final languages = payload
           .whereType<Map>()
           .map(

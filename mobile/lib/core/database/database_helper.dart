@@ -2,6 +2,10 @@ import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
 
 class LocalDatabase {
+  LocalDatabase._();
+
+  static final LocalDatabase instance = LocalDatabase._();
+
   static const _databaseName = 'badges_softinsa.db';
   static const _databaseVersion = 1;
 

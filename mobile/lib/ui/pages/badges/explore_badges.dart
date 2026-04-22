@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../utils/badge_catalog.dart';
-import '../widgets/app_bottom_nav_bar.dart';
-import '../widgets/dashboard/explore_badge_card.dart';
-import '../widgets/modals/filter_modal.dart';
-import 'badge_detail_screen.dart';
+import '../../../injection_container.dart';
+import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/badges/explore_badge_card.dart';
+import '../../widgets/badges/filter_modal.dart';
+import 'badges_page.dart';
 
-class ExploreCompetenciesScreen extends StatelessWidget {
+class ExploreCompetenciesScreen extends StatefulWidget {
   const ExploreCompetenciesScreen({super.key});
 
   @override
+  State<ExploreCompetenciesScreen> createState() =>
+      _ExploreCompetenciesScreenState();
+}
+
+class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BadgeStore>().loadBadges();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final badges = BadgeCatalog.all;
+    final badgeStore = context.watch<BadgeStore>();
+    final badges = badgeStore.badges;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -95,31 +111,61 @@ class ExploreCompetenciesScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: badges.length,
-                  itemBuilder: (context, index) {
-                    final badge = badges[index];
-                    return ExploreBadgeCard(
-                      title: badge.title,
-                      category: badge.category,
-                      points: badge.points,
-                      level: badge.level,
-                      duration: badge.duration,
-                      medalColor: badge.medalColor,
-                      ribbonColor: badge.ribbonColor,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BadgeDetailScreen(badge: badge),
-                          ),
-                        );
-                      },
-                    );
-                  },
+              if (badgeStore.isLoading)
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (badgeStore.errorMessage != null)
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        badgeStore.errorMessage!,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                )
+              else if (badges.isEmpty)
+                const Expanded(
+                  child: Center(child: Text('Sem badges disponíveis.')),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: badges.length,
+                    itemBuilder: (context, index) {
+                      final badge = badges[index];
+                      return ExploreBadgeCard(
+                        title: badge.title,
+                        category: badge.category,
+                        points: badge.points,
+                        level: badge.level,
+                        duration: badge.duration,
+                        medalColor: badge.medalColor,
+                        ribbonColor: badge.ribbonColor,
+                        onTap: () async {
+                          final detailed = await context
+                              .read<BadgeStore>()
+                              .getBadgeDetail(badge);
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  BadgeDetailScreen(badge: detailed ?? badge),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         ),

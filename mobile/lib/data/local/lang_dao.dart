@@ -1,5 +1,5 @@
-import '../../models/language_model.dart';
-import '../local_database.dart';
+import '../../models/lang_model.dart';
+import '../../core/database/database_helper.dart';
 
 class LanguageDao {
   final LocalDatabase _database;

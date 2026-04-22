@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/badge_model.dart';
-import '../widgets/badge/badge_attributes_table.dart';
-import 'application_screen.dart';
+import '../../../models/badge_model.dart';
+import '../../widgets/badges/badge_attributes_table.dart';
+import '../applications/application_page.dart';
 
 class BadgeDetailScreen extends StatefulWidget {
   const BadgeDetailScreen({super.key, required this.badge});

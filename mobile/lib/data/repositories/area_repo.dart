@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../constants/api_endpoints.dart';
-import '../data/dao/area_dao.dart';
-import '../models/area_model.dart';
-import '../services/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
+import '../local/area_dao.dart';
+import '../../models/area_model.dart';
+import '../remote/api_client.dart';
 
 class AreaRepository {
   final ApiClient _apiClient;
@@ -14,8 +14,7 @@ class AreaRepository {
 
   Future<List<AreaModel>> getAvailableAreas() async {
     try {
-      final response = await _apiClient.dio.get(ApiEndpoints.getAreas);
-      final payload = _extractList(response.data);
+      final payload = _extractList(await _apiClient.get(ApiEndpoints.getAreas));
       final areas = payload
           .whereType<Map>()
           .map((json) => AreaModel.fromJson(Map<String, dynamic>.from(json)))

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/badge_model.dart';
+import '../../../models/badge_model.dart';
 
 class BadgeAttributesTable extends StatelessWidget {
   const BadgeAttributesTable({

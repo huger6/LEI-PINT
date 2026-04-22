@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../utils/badge_catalog.dart';
-import '../widgets/app_bottom_nav_bar.dart';
+import '../widgets/shared/app_bottom_nav_bar.dart';
 import '../widgets/dashboard/certification_donut_card.dart';
-import '../widgets/dashboard/recommended_badge_card.dart';
+import '../widgets/badges/badge_catalog.dart';
+import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
-import '../widgets/dashboard/submission_card.dart';
-import 'badge_detail_screen.dart';
+import '../widgets/applications/submission_card.dart';
+import 'badges/badges_page.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
