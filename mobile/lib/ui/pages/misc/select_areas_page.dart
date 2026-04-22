@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/area_model.dart';
-import '../repositories/area_repository.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
-import '../utils/auth_store.dart';
-import '../utils/dependency_injection.dart';
-import '../utils/language_controller.dart';
+import '../../../models/area_model.dart';
+import '../../../data/repositories/area_repo.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../injection_container.dart';
+import '../../../core/sync_manager.dart';
 
 class SelectAreaScreen extends StatefulWidget {
   final Map<String, dynamic>? registrationData;
@@ -67,7 +67,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
   }
 
   void _restoreDraftSelection() {
-    final draft = getIt<AuthStore>().draftRegistration;
+    final draft = context.read<AuthStore>().draftRegistration;
     if (draft.selectedAreas.isEmpty) {
       return;
     }
@@ -196,7 +196,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
   }
 
   Widget _buildBottomActions(ThemeData theme) {
-    final withOpacity = AppColors.onSurface.withOpacity(0.05);
+    final withOpacity = AppColors.onSurface.withValues(alpha: 0.05);
     final tr = LanguageScope.of(context);
 
     return Container(
@@ -221,7 +221,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
               onPressed: () {
                 Navigator.pushNamed(
                   context,
-                  '/register',
+                  AppRouter.register,
                   arguments: widget.registrationData,
                 );
               },
@@ -262,7 +262,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
   }
 
   void _handleAdvance() {
-    final authStore = getIt<AuthStore>();
+    final authStore = context.read<AuthStore>();
     final selectedAreas = _selectedAreaOrder
         .map((areaId) => _allAreas.firstWhere((area) => area.id == areaId))
         .toList();
@@ -278,7 +278,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
     }
 
     authStore.saveSelectedAreas(selectedAreas, mainArea);
-    Navigator.pushNamed(context, '/newuser-confirm');
+    Navigator.pushNamed(context, AppRouter.newUserConfirm);
   }
 
   Widget _buildAreaChip(AreaModel area, ThemeData theme) {

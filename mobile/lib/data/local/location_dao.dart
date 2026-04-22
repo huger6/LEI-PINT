@@ -1,5 +1,5 @@
 import '../../models/location_model.dart';
-import '../local_database.dart';
+import '../../core/database/database_helper.dart';
 
 class LocationDao {
   final LocalDatabase _database;

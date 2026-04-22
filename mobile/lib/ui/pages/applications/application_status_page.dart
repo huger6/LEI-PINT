@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../models/badge_model.dart';
-import '../utils/badge_catalog.dart';
-import '../widgets/app_bottom_nav_bar.dart';
-import '../widgets/badge/attached_files_list.dart';
-import '../widgets/badge/badge_attributes_table.dart';
-import '../widgets/dashboard/recommended_badge_card.dart';
-import 'badge_detail_screen.dart';
+import '../../../models/badge_model.dart';
+import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/badges/badge_catalog.dart';
+import '../../widgets/badges/attached_files_list.dart';
+import '../../widgets/badges/badge_attributes_table.dart';
+import '../../widgets/badges/recommended_badge_card.dart';
+import '../badges/badges_page.dart';
 
 class CandidaturaStatusScreen extends StatelessWidget {
   const CandidaturaStatusScreen({

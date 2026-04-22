@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/repositories/location_repository.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../widgets/auth_header.dart';
-import '../widgets/custom_text_field.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/loading_overlay.dart';
-import '../widgets/nav_link.dart';
-import '../utils/form_validators.dart';
-import '../utils/language_controller.dart';
-import '../theme/app_colors.dart';
-import '../models/language_model.dart';
-import '../models/location_model.dart';
-import '../repositories/language_repository.dart';
-import '../utils/auth_store.dart';
-import '../utils/dependency_injection.dart';
+import '../../../data/repositories/location_repo.dart';
+import '../../widgets/shared/auth_header.dart';
+import '../../widgets/shared/custom_text_field.dart';
+import '../../widgets/shared/custom_button.dart';
+import '../../widgets/shared/loading_overlay.dart';
+import '../../widgets/shared/nav_link.dart';
+import '../../../core/sync_manager.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../models/lang_model.dart';
+import '../../../models/location_model.dart';
+import '../../../models/dtos/registration_data.dart';
+import '../../../data/repositories/lang_repo.dart';
+import '../../../injection_container.dart';
 import 'dart:io';
 
 class RegisterScreen extends StatefulWidget {
@@ -198,6 +198,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _bioController.text = _bioController.text.trim();
   }
 
+  RegistrationData _buildRegistrationData() {
+    return RegistrationData()
+      ..fullName = _nameController.text
+      ..username = _usernameController.text
+      ..email = _emailController.text
+      ..password = _passwordController.text
+      ..phone = '$_phonePrefix${_phoneController.text}'.replaceAll(' ', '')
+      ..birthDate = _birthdateController.text
+      ..bio = _bioController.text
+      ..profileImage = _profileImgUrlController.text.isNotEmpty
+          ? File(_profileImgUrlController.text)
+          : null
+      ..location = _selectedLocation
+      ..preferredLanguage = _preferredLanguage;
+  }
+
+  void _goBackToLogin() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+
+    navigator.pushReplacementNamed(AppRouter.login);
+  }
+
   void _handleRegister() {
     final tr = LanguageScope.of(context);
     _normalizeFields();
@@ -213,25 +239,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (_formKey.currentState!.validate() && _agreedToTerms) {
-      final authStore = getIt<AuthStore>();
+      final authStore = context.read<AuthStore>();
+      final registrationData = _buildRegistrationData();
 
-      authStore.saveBasicRegistrationData(
-        fullName: _nameController.text,
-        username: _usernameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-        phone: '$_phonePrefix${_phoneController.text}'.replaceAll(' ', ''),
-        birthDate: _birthdateController.text,
-        bio: _bioController.text,
-        profileImage: _profileImgUrlController.text.isNotEmpty
-            ? File(_profileImgUrlController.text)
-            : null,
-        location:
-            _selectedLocation, // CORREÇÃO: Passa o objeto guardado do Dropdown
-        preferredLanguage: _preferredLanguage,
-      );
+      authStore.saveRegistrationDraft(registrationData);
 
-      Navigator.pushNamed(context, '/select-area');
+      Navigator.pushNamed(context, AppRouter.selectArea);
     } else if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -245,13 +258,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     FormValidators.setLanguageCode(tr.languageCode);
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _goBackToLogin,
         ),
         title: Text(tr.tr('createAccount')),
       ),
@@ -330,7 +344,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       validator: (value) =>
                           FormValidators.validatePasswordConfirm(
                             value,
-                            _passwordController.text,
+                            password: _passwordController.text,
                           ),
                     ),
 
@@ -363,7 +377,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 horizontal: 8,
                               ),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
+                                border: Border.all(color: colorScheme.outline),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButton<String>(
@@ -481,7 +495,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: colorScheme.outline),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Padding(
@@ -524,7 +538,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: colorScheme.outline),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Padding(
@@ -539,7 +553,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     )
                                   : DropdownButton<LanguageModel>(
-                                      hint: Text("Selecione o Idioma"),
+                                      hint: Text(tr.tr('selectLanguage')),
                                       value: _preferredLanguage,
                                       isExpanded: true,
                                       underline: const SizedBox.shrink(),
@@ -571,7 +585,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Biografia',
+                          tr.tr('aboutMe'),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w500),
                         ),
@@ -615,7 +629,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     text: tr.tr('termsAndConditions'),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Theme.of(context).primaryColor,
+                                          color: colorScheme.primary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                   ),
@@ -642,9 +656,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     NavLink(
                       text: tr.tr('alreadyHaveAccount'),
                       linkText: tr.tr('doLogin'),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: _goBackToLogin,
                     ),
 
                     const SizedBox(height: 40),

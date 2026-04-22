@@ -20,7 +20,17 @@ class AuthHeader extends StatelessWidget {
         if (imagePath != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 32),
-            child: Image.asset(imagePath!, height: 60),
+            child: Image.asset(
+              imagePath!,
+              height: 60,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.image_not_supported_outlined,
+                  size: 60,
+                  color: Theme.of(context).colorScheme.outline,
+                );
+              },
+            ),
           ),
 
         // Título

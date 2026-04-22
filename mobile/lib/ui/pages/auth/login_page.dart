@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import '../widgets/auth_header.dart';
-import '../widgets/custom_text_field.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/nav_link.dart';
-import '../utils/form_validators.dart';
-import '../utils/language_controller.dart';
-import '../theme/app_colors.dart';
-
-import '../utils/dependency_injection.dart';
-import '../utils/auth_store.dart';
+import 'package:provider/provider.dart';
+import '../../widgets/shared/auth_header.dart';
+import '../../widgets/shared/custom_text_field.dart';
+import '../../widgets/shared/custom_button.dart';
+import '../../widgets/shared/nav_link.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../injection_container.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -37,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final authStore = getIt<AuthStore>();
+        final authStore = context.read<AuthStore>();
 
         // CORREÇÃO AQUI: Adicionada a variável _saveLoginData como 3º argumento
         final result = await authStore.login(
@@ -67,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          Navigator.pushReplacementNamed(context, '/dashboard');
+          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -167,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/forgot-password');
+                      Navigator.pushNamed(context, AppRouter.forgotPassword);
                     },
                     child: Text(
                       tr.tr('forgotPassword'),
@@ -195,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   text: tr.tr('noAccount'),
                   linkText: tr.tr('register'),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                    Navigator.pushNamed(context, AppRouter.register);
                   },
                 ),
 

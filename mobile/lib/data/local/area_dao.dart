@@ -1,5 +1,5 @@
 import '../../models/area_model.dart';
-import '../local_database.dart';
+import '../../core/database/database_helper.dart';
 
 class AreaDao {
   final LocalDatabase _database;

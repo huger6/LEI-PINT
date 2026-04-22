@@ -2,9 +2,9 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../models/badge_model.dart';
-import '../widgets/badge/attached_files_list.dart';
-import 'candidatura_status_screen.dart';
+import '../../../models/badge_model.dart';
+import '../../widgets/badges/attached_files_list.dart';
+import 'application_status_page.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -31,7 +31,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
   }
 
   Future<void> _pickFiles() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       allowMultiple: true,
       type: FileType.any,
       withData: false,
@@ -227,10 +227,11 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
 
   Widget _buildAttachBox() {
     return DottedBorder(
-      color: _ApplicationColors.dashedBorder,
-      borderType: BorderType.RRect,
-      radius: const Radius.circular(14),
-      dashPattern: const [7, 4],
+      options: RoundedRectDottedBorderOptions(
+        color: _ApplicationColors.dashedBorder,
+        radius: const Radius.circular(14),
+        dashPattern: const [7, 4],
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: _pickFiles,

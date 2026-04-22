@@ -5,29 +5,26 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../constants/api_endpoints.dart';
-import '../utils/auth_store.dart';
+import '../../core/constants/api_endpoints.dart';
 
 class ApiClient {
   late final Dio dio;
   late final PersistCookieJar cookieJar;
-  final AuthStore authStore;
+  String? _accessToken;
 
-  ApiClient(this.authStore) {
+  ApiClient(this.dio) {
     final configuredBaseUrl = dotenv.env['API_BASE_URL']?.trim();
     final fallbackHost = Platform.isAndroid ? '10.0.2.2' : 'localhost';
     final fallbackUrl = 'http://$fallbackHost:3000/api';
 
-    dio = Dio(
-      BaseOptions(
-        baseUrl: (configuredBaseUrl != null && configuredBaseUrl.isNotEmpty)
-            ? configuredBaseUrl
-            : fallbackUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-        contentType: 'application/json',
-        headers: {'Accept': 'application/json'},
-      ),
+    dio.options = BaseOptions(
+      baseUrl: (configuredBaseUrl != null && configuredBaseUrl.isNotEmpty)
+          ? configuredBaseUrl
+          : fallbackUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      contentType: 'application/json',
+      headers: {'Accept': 'application/json'},
     );
   }
 
@@ -44,9 +41,8 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          if (authStore.accessToken != null) {
-            options.headers['Authorization'] =
-                'Bearer ${authStore.accessToken}';
+          if (_accessToken != null && _accessToken!.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $_accessToken';
           } else {
             options.headers.remove('Authorization');
           }
@@ -75,7 +71,7 @@ class ApiClient {
               }
             }
 
-            await authStore.clearSession();
+            _accessToken = null;
             await cookieJar.deleteAll();
           }
 
@@ -94,7 +90,7 @@ class ApiClient {
         if (data is Map<String, dynamic>) {
           final token = data['token']?.toString();
           if (token != null && token.isNotEmpty) {
-            authStore.setAccessToken(token);
+            _accessToken = token;
             return token;
           }
         }
@@ -116,5 +112,71 @@ class ApiClient {
       queryParameters: request.queryParameters,
       extra: request.extra,
     );
+  }
+
+  void setAccessToken(String? token) {
+    _accessToken = token;
+  }
+
+  Future<dynamic> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
+
+    return response.data;
+  }
+
+  Future<dynamic> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await dio.post(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+
+    return response.data;
+  }
+
+  Future<dynamic> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await dio.put(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+
+    return response.data;
+  }
+
+  Future<dynamic> delete(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await dio.delete(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+
+    return response.data;
   }
 }

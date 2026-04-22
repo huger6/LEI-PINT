@@ -25,7 +25,7 @@ class NavLink extends StatelessWidget {
             child: Text(
               linkText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w600,
                 decoration: TextDecoration.underline,
               ),

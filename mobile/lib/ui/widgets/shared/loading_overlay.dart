@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../utils/language_controller.dart';
+import '../../../core/sync_manager.dart';
 
 class LoadingOverlay extends StatelessWidget {
   final String message;
@@ -11,17 +11,18 @@ class LoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = LanguageScope.of(context);
     final localizedMessage = message.isEmpty ? language.tr('loading') : message;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Positioned.fill(
       child: AbsorbPointer(
         absorbing: true,
         child: ColoredBox(
-          color: Colors.black45,
+          color: colorScheme.onSurface.withValues(alpha: 0.45),
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(

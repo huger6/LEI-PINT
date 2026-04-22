@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../constants/api_endpoints.dart';
-import '../data/dao/location_dao.dart';
-import '../models/location_model.dart';
-import '../services/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
+import '../local/location_dao.dart';
+import '../../models/location_model.dart';
+import '../remote/api_client.dart';
 
 class LocationRepository {
   final ApiClient _apiClient;
@@ -14,8 +14,9 @@ class LocationRepository {
 
   Future<List<LocationModel>> getAvailableLocations() async {
     try {
-      final response = await _apiClient.dio.get(ApiEndpoints.getLocations);
-      final payload = _extractList(response.data);
+      final payload = _extractList(
+        await _apiClient.get(ApiEndpoints.getLocations),
+      );
       final locations = payload
           .whereType<Map>()
           .map(

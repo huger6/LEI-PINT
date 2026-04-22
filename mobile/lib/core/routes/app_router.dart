@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../screens/login_screen.dart';
-import '../screens/register_screen.dart';
-import '../screens/forgot_password_screen.dart';
-import '../screens/select_area.dart';
-import '../screens/newuser_confirm.dart';
-import '../screens/dashboard_screen.dart';
-import '../screens/explore_competencies_screen.dart';
+import '../../ui/pages/auth/login_page.dart';
+import '../../ui/pages/auth/register_screen.dart';
+import '../../ui/pages/auth/forgot_password_page.dart';
+import '../../ui/pages/auth/newuser_confirm.dart';
+import '../../ui/pages/misc/select_areas_page.dart';
+import '../../ui/pages/dashboard_page.dart';
+import '../../ui/pages/badges/explore_badges.dart';
 
 class AppRouter {
   static const String initial = '/';

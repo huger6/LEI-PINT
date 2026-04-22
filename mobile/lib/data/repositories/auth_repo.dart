@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../constants/api_endpoints.dart';
-import '../models/user_model.dart';
-import '../services/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
+import '../../models/user_model.dart';
+import '../remote/api_client.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -16,20 +16,20 @@ class AuthRepository {
     bool remember,
   ) async {
     try {
-      final response = await _apiClient.dio.post(
-        ApiEndpoints.login,
-        data: {
-          'identifier': identifier,
-          'password': password,
-          'remember': remember, // Agora usa a variável que passas
-        },
+      final responseMap = _asMap(
+        await _apiClient.post(
+          ApiEndpoints.login,
+          data: {
+            'identifier': identifier,
+            'password': password,
+            'remember': remember, // Agora usa a variável que passas
+          },
+        ),
       );
-
-      final responseMap = _asMap(response.data);
       final payload = _asMap(responseMap['data']);
       final token = payload['token']?.toString();
 
-      if (response.statusCode == 200 && token != null && token.isNotEmpty) {
+      if (token != null && token.isNotEmpty) {
         final profileUser = await getMe(accessToken: token);
         final fallbackUser = UserModel.fromLoginPayload(
           _asMap(payload['user']),
@@ -76,11 +76,9 @@ class AuthRepository {
   // 3. NOVO MÉTODO: refreshToken
   Future<Map<String, dynamic>> refreshToken() async {
     try {
-      // ATENÇÃO: Substitui '/refresh-endpoint' pelo endpoint real da tua API (ou cria em ApiEndpoints)
-      final response = await _apiClient.dio.post('/refresh-endpoint');
-      final responseMap = _asMap(response.data);
+      final responseMap = _asMap(await _apiClient.post(ApiEndpoints.refresh));
 
-      if (response.statusCode == 200) {
+      if (responseMap['success'] == true) {
         return {'success': true, 'data': responseMap['data']};
       }
       return {
@@ -102,16 +100,12 @@ class AuthRepository {
 
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     try {
-      final response = await _apiClient.dio.post(
-        ApiEndpoints.register,
-        data: userData,
+      final responseMap = _asMap(
+        await _apiClient.post(ApiEndpoints.register, data: userData),
       );
-
-      final responseMap = _asMap(response.data);
       final isSuccess = responseMap['success'] == true;
 
-      if ((response.statusCode == 201 || response.statusCode == 200) &&
-          isSuccess) {
+      if (isSuccess) {
         return {'success': true};
       }
 
@@ -135,12 +129,14 @@ class AuthRepository {
 
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
-      final response = await _apiClient.dio.post(
-        ApiEndpoints.forgotPassword,
-        data: {'email': email},
+      final responseMap = _asMap(
+        await _apiClient.post(
+          ApiEndpoints.forgotPassword,
+          data: {'email': email},
+        ),
       );
-      final responseMap = _asMap(response.data);
-      if (response.statusCode == 200 && responseMap['success'] == true) {
+
+      if (responseMap['success'] == true) {
         return {'success': true};
       }
       return {
@@ -165,18 +161,18 @@ class AuthRepository {
 
   Future<UserModel?> getMe({String? accessToken}) async {
     try {
-      final response = await _apiClient.dio.get(
-        ApiEndpoints.me,
-        options: accessToken != null
-            ? Options(headers: {'Authorization': 'Bearer $accessToken'})
-            : null,
+      final responseMap = _asMap(
+        await _apiClient.get(
+          ApiEndpoints.me,
+          options: accessToken != null
+              ? Options(headers: {'Authorization': 'Bearer $accessToken'})
+              : null,
+        ),
       );
-      if (response.statusCode == 200) {
-        final responseMap = _asMap(response.data);
-        final payload = _asMap(responseMap['data']);
-        if (payload.isNotEmpty) {
-          return UserModel.fromJson(payload);
-        }
+
+      final payload = _asMap(responseMap['data']);
+      if (payload.isNotEmpty) {
+        return UserModel.fromJson(payload);
       }
     } on DioException {
       return null;
@@ -188,7 +184,7 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      await _apiClient.dio.post(ApiEndpoints.logout);
+      await _apiClient.post(ApiEndpoints.logout);
     } catch (_) {}
   }
 

@@ -1,7 +1,7 @@
 import 'dart:io';
-import '../requests/area_model.dart';
-import '../requests/location_model.dart';
-import '../requests/language_model.dart';
+import '../area_model.dart';
+import '../location_model.dart';
+import '../lang_model.dart';
 
 class RegistrationData {
   String fullName = '';

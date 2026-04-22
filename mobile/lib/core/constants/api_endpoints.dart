@@ -32,4 +32,30 @@ class ApiEndpoints {
   // === Areas ===
   // GET /areas
   static const String getAreas = '/api/areas';
+
+  // === Badges ===
+  // GET /badges
+  static const String getBadges = '/api/badges';
+
+  // GET /badges/:badgeSlug
+  static String badgeBySlug(String badgeSlug) => '/api/badges/$badgeSlug';
+
+  // === Applications ===
+  // GET /applications
+  static const String getApplications = '/api/applications';
+
+  // GET /applications/:applicationId
+  static String applicationById(String applicationId) =>
+      '/api/applications/$applicationId';
+
+  // POST /applications/start
+  static const String startApplication = '/api/applications/start';
+
+  // POST /applications/:applicationId/submit
+  static String submitApplication(String applicationId) =>
+      '/api/applications/$applicationId/submit';
+
+  // === Ranking ===
+  // GET /ranking
+  static const String getRanking = '/api/ranking';
 }
