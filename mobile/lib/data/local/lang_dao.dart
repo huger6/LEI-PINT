@@ -1,0 +1,45 @@
+import '../../models/language_model.dart';
+import '../local_database.dart';
+
+class LanguageDao {
+  final LocalDatabase _database;
+
+  LanguageDao(this._database);
+
+  Future<List<LanguageModel>> getAll() async {
+    final db = await _database.database;
+    final rows = await db.query(
+      LocalDatabase.languagesTable,
+      orderBy: 'id ASC',
+    );
+
+    return rows
+        .map(
+          (row) => LanguageModel(
+            id: row['id'] as int,
+            code: row['code'] as String,
+            name: row['name'] as String,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> replaceAll(List<LanguageModel> languages) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    batch.delete(LocalDatabase.languagesTable);
+
+    for (final language in languages) {
+      batch.insert(LocalDatabase.languagesTable, {
+        'id': language.id,
+        'code': language.code,
+        'name': language.name,
+        'synced_at': now,
+      });
+    }
+
+    await batch.commit(noResult: true);
+  }
+}
