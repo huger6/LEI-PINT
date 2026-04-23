@@ -16,7 +16,6 @@ class AuthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Logo
         if (imagePath != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 32),
@@ -33,14 +32,12 @@ class AuthHeader extends StatelessWidget {
             ),
           ),
 
-        // Título
         Text(
           title,
           style: Theme.of(context).textTheme.headlineLarge,
           textAlign: TextAlign.center,
         ),
 
-        // Subtítulo
         if (subtitle != null) ...[
           const SizedBox(height: 12),
           Text(

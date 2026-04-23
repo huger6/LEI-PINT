@@ -1,19 +1,21 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
-import 'dart:ui';
-import 'core/theme/app_theme.dart';
+
 import 'core/routes/app_router.dart';
-import 'injection_container.dart';
+import 'core/theme/app_theme.dart';
 import 'data/remote/api_client.dart';
 import 'data/repositories/applications_repo.dart';
-import 'data/repositories/auth_repo.dart';
 import 'data/repositories/area_repo.dart';
+import 'data/repositories/auth_repo.dart';
 import 'data/repositories/badge_repo.dart';
-import 'data/repositories/location_repo.dart';
 import 'data/repositories/lang_repo.dart';
+import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
+import 'injection_container.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,14 +39,14 @@ void main() async {
       const Duration(seconds: 20),
       onTimeout: () {
         throw TimeoutException(
-          'setupDependencies excedeu o tempo limite de inicializacao',
+          'setupDependencies exceeded the initialization timeout',
         );
       },
     );
   } catch (e, stackTrace) {
     debugPrint('setupDependencies failed: $e');
     debugPrintStack(stackTrace: stackTrace);
-    runApp(ErrorApp(errorMessage: 'Falha na inicializacao: $e'));
+    runApp(ErrorApp(errorMessage: 'Initialization failed: $e'));
     return;
   }
 
@@ -69,7 +71,7 @@ void main() async {
     runApp(
       ErrorApp(
         errorMessage:
-            'Dependencias nao registradas: ${missingDependencies.join(', ')}',
+            'Unregistered dependencies: ${missingDependencies.join(', ')}',
       ),
     );
     return;
@@ -80,7 +82,7 @@ void main() async {
     runApp(
       const ErrorApp(
         errorMessage:
-            'Rota inicial invalida. Configure AppRouter.initial no mapa de rotas.',
+            'Invalid initial route. Configure AppRouter.initial in the route map.',
       ),
     );
     return;
@@ -139,11 +141,6 @@ class ErrorApp extends StatelessWidget {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 60),
                 const SizedBox(height: 16),
-                const Text(
-                  'Erro ao inicializar aplicação',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
                 Text(
                   errorMessage,
                   textAlign: TextAlign.center,
@@ -152,7 +149,7 @@ class ErrorApp extends StatelessWidget {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => main(),
-                  child: const Text('Tentar novamente'),
+                  child: const Text('Retry'),
                 ),
               ],
             ),
@@ -192,7 +189,6 @@ class MyApp extends StatelessWidget {
               Locale('es'),
               Locale('fr'),
             ],
-            // Determina a rota inicial baseada na autenticação
             initialRoute: authStore.isAuthenticated
                 ? AppRouter.dashboard
                 : AppRouter.initial,

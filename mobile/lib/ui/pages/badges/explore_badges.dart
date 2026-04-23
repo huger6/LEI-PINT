@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../injection_container.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/explore_badge_card.dart';
@@ -26,6 +27,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
     final badges = badgeStore.badges;
 
@@ -38,10 +40,10 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Explora novas competências',
-                      style: TextStyle(
+                      tr.tr('exploreCompetenciesTitle'),
+                      style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF212D36),
@@ -81,7 +83,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                 child: TextField(
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                    hintText: 'Procura o teu badge',
+                    hintText: tr.tr('searchBadgeHint'),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 18),
@@ -128,8 +130,8 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                   ),
                 )
               else if (badges.isEmpty)
-                const Expanded(
-                  child: Center(child: Text('Sem badges disponíveis.')),
+                Expanded(
+                  child: Center(child: Text(tr.tr('noBadgesAvailable'))),
                 )
               else
                 Expanded(
@@ -170,7 +172,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNavBar(currentTab: AppTab.explorar),
+      bottomNavigationBar: const AppBottomNavBar(currentTab: AppTab.explore),
     );
   }
 }

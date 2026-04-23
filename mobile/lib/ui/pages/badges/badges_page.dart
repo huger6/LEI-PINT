@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/badges/badge_attributes_table.dart';
 import '../applications/application_page.dart';
@@ -19,6 +20,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badge = widget.badge;
 
     return Scaffold(
@@ -65,14 +67,14 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                   children: [
                     Expanded(
                       child: _TabButton(
-                        title: 'Visão geral',
+                        title: tr.tr('overviewTab'),
                         isActive: _isOverviewTab,
                         onTap: () => setState(() => _isOverviewTab = true),
                       ),
                     ),
                     Expanded(
                       child: _TabButton(
-                        title: 'Detalhes',
+                        title: tr.tr('detailsTab'),
                         isActive: !_isOverviewTab,
                         onTap: () => setState(() => _isOverviewTab = false),
                       ),
@@ -85,9 +87,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Descrição',
-                      style: TextStyle(
+                    Text(
+                      tr.tr('description'),
+                      style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
@@ -125,9 +127,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                             vertical: 10,
                           ),
                         ),
-                        child: const Text(
-                          'Submeter candidatura',
-                          style: TextStyle(
+                        child: Text(
+                          tr.tr('submitApplication'),
+                          style: const TextStyle(
                             color: Color(0xFF5BAFDF),
                             fontWeight: FontWeight.w700,
                           ),
@@ -135,9 +137,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Competências',
-                      style: TextStyle(
+                    Text(
+                      tr.tr('skills'),
+                      style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
@@ -222,9 +224,12 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                 ),
-                child: const Text(
-                  'Requisitos',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                child: Text(
+                  tr.tr('requirements'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -256,10 +261,10 @@ class _TabButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF202020),
+                color: Color(0xFF202020),
               ),
             ),
           ),
@@ -280,6 +285,8 @@ class _RequirementsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 10),
@@ -291,10 +298,10 @@ class _RequirementsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Center(
+          Center(
             child: Text(
-              'Requisitos',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+              tr.tr('requirements'),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(height: 14),

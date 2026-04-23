@@ -28,7 +28,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Simular chamada ao backend
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           _isLoading = false;
@@ -45,7 +44,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         );
 
-        // Voltar para login após alguns segundos
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pop(context);
         });
@@ -56,7 +54,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    FormValidators.setLanguageCode(tr.languageCode);
+    FormValidators.configure(
+      languageCode: tr.languageCode,
+      translator: tr.tr,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +90,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     children: [
                       CustomTextField(
                         label: tr.tr('email'),
-                        hintText: 'seu.email@softinsa.com',
+                        hintText: tr.tr('emailHint'),
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         controller: _emailController,

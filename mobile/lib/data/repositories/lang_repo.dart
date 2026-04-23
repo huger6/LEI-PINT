@@ -30,10 +30,10 @@ class LanguageRepository {
 
       return languages;
     } on DioException catch (e) {
-      debugPrint('Erro API (languages): ${e.message}');
+      debugPrint('API error (languages): ${e.message}');
       return _languageDao.getAll();
     } catch (e) {
-      debugPrint('Erro inesperado (languages): $e');
+      debugPrint('Unexpected error (languages): $e');
       return _languageDao.getAll();
     }
   }

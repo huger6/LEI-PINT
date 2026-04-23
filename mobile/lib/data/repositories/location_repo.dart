@@ -30,10 +30,10 @@ class LocationRepository {
 
       return locations;
     } on DioException catch (e) {
-      debugPrint('Erro API (locations): ${e.message}');
+      debugPrint('API error (locations): ${e.message}');
       return _locationDao.getAll();
     } catch (e) {
-      debugPrint('Erro inesperado (locations): $e');
+      debugPrint('Unexpected error (locations): $e');
       return _locationDao.getAll();
     }
   }

@@ -9,7 +9,6 @@ class AuthRepository {
 
   AuthRepository(this._apiClient);
 
-  // 1. CORREÇÃO: Adicionado o 3º parâmetro 'remember'
   Future<Map<String, dynamic>> login(
     String identifier,
     String password,
@@ -22,7 +21,7 @@ class AuthRepository {
           data: {
             'identifier': identifier,
             'password': password,
-            'remember': remember, // Agora usa a variável que passas
+            'remember': remember,
           },
         ),
       );
@@ -59,10 +58,8 @@ class AuthRepository {
     }
   }
 
-  // 2. NOVO MÉTODO: verifySession
   Future<Map<String, dynamic>> verifySession() async {
     try {
-      // Usamos o getMe para validar se o token atual ainda funciona
       final user = await getMe();
       if (user != null) {
         return {'success': true, 'user': user};
@@ -73,7 +70,6 @@ class AuthRepository {
     }
   }
 
-  // 3. NOVO MÉTODO: refreshToken
   Future<Map<String, dynamic>> refreshToken() async {
     try {
       final responseMap = _asMap(await _apiClient.post(ApiEndpoints.refresh));

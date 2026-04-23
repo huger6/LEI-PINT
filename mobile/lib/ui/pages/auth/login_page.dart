@@ -37,7 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         final authStore = context.read<AuthStore>();
 
-        // CORREÇÃO AQUI: Adicionada a variável _saveLoginData como 3º argumento
         final result = await authStore.login(
           _loginController.text.trim(),
           _passwordController.text,
@@ -70,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                result['message'] ?? 'Erro no login. Verifique as credenciais.',
+                result['message'] ?? tr.tr('loginErrorInvalidCredentials'),
               ),
               backgroundColor: AppColors.error,
             ),
@@ -80,8 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao conectar ao servidor'),
+          SnackBar(
+            content: Text(tr.tr('loginErrorServer')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -92,7 +91,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    FormValidators.setLanguageCode(tr.languageCode);
+    FormValidators.configure(
+      languageCode: tr.languageCode,
+      translator: tr.tr,
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -104,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 40),
 
-                // Header com logo e título
                 AuthHeader(
                   title: tr.tr('welcomeBack'),
                   subtitle: tr.tr('loginSubtitle'),

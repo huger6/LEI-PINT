@@ -139,5 +139,3 @@ Future<void> setupDependencies() async {
     debugPrintStack(stackTrace: stackTrace);
   }
 }
-
-Future<void> setupDependencyInjection() => setupDependencies();

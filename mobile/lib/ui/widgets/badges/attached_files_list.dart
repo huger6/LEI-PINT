@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
+
 class AttachedDocument {
   const AttachedDocument({required this.name, required this.subtitle});
 
@@ -21,6 +23,8 @@ class AttachedFilesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Column(
       children: files.asMap().entries.map((entry) {
         final index = entry.key;
@@ -64,13 +68,13 @@ class AttachedFilesList extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Abrir ligação',
+                tooltip: tr.tr('openLink'),
                 onPressed: () {},
                 icon: const Icon(Icons.link_rounded, color: Color(0xFF556571)),
               ),
               if (!readOnly)
                 IconButton(
-                  tooltip: 'Remover ficheiro',
+                  tooltip: tr.tr('removeFile'),
                   onPressed: () => onDelete?.call(index),
                   icon: const Icon(
                     Icons.delete_outline_rounded,

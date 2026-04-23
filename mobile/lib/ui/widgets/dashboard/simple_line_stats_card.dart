@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
+
 class SimpleLineStatsCard extends StatelessWidget {
   const SimpleLineStatsCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 12),
@@ -16,13 +20,13 @@ class SimpleLineStatsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Estatísticas',
-            style: TextStyle(fontSize: 16, color: Color(0xFF8D97A5)),
+          Text(
+            tr.tr('statistics'),
+            style: const TextStyle(fontSize: 16, color: Color(0xFF8D97A5)),
           ),
-          const Text(
-            'Badges concluídos',
-            style: TextStyle(
+          Text(
+            tr.tr('completedBadges'),
+            style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: Color(0xFF66B1E6),
@@ -75,10 +79,10 @@ class SimpleLineStatsCard extends StatelessWidget {
                       color: const Color(0xFF66B1E6),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'Junho',
-                        style: TextStyle(
+                        tr.tr('monthJune'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -91,14 +95,29 @@ class SimpleLineStatsCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Abril', style: TextStyle(color: Color(0xFFA9B1BD))),
-              Text('Maio', style: TextStyle(color: Color(0xFFA9B1BD))),
-              Text('Junho', style: TextStyle(color: Color(0xFFA9B1BD))),
-              Text('Julho', style: TextStyle(color: Color(0xFFA9B1BD))),
-              Text('Agosto', style: TextStyle(color: Color(0xFFA9B1BD))),
+              Text(
+                tr.tr('monthApril'),
+                style: const TextStyle(color: Color(0xFFA9B1BD)),
+              ),
+              Text(
+                tr.tr('monthMay'),
+                style: const TextStyle(color: Color(0xFFA9B1BD)),
+              ),
+              Text(
+                tr.tr('monthJune'),
+                style: const TextStyle(color: Color(0xFFA9B1BD)),
+              ),
+              Text(
+                tr.tr('monthJuly'),
+                style: const TextStyle(color: Color(0xFFA9B1BD)),
+              ),
+              Text(
+                tr.tr('monthAugust'),
+                style: const TextStyle(color: Color(0xFFA9B1BD)),
+              ),
             ],
           ),
         ],

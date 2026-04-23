@@ -44,7 +44,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   LanguageModel? _preferredLanguage;
   List<LanguageModel> _availableLanguages = [];
 
-  // CORREÇÃO: Variáveis para a localização
   LocationModel? _selectedLocation;
   List<LocationModel> _availableLocations = [];
 
@@ -54,7 +53,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
     _resetForm();
-    // Após a tela construir, pedir os dados à API
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDropdownData();
     });
@@ -63,12 +61,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _fetchDropdownData() async {
     setState(() => _isLoadingData = true);
     try {
-      // 1. Instanciar os dois repositórios
       final langRepo = context.read<LanguageRepository>();
-
       final locationRepo = context.read<LocationRepository>();
 
-      // 2. Fazer os dois pedidos à API ao mesmo tempo (Future.wait é mais rápido!)
       final results = await Future.wait([
         langRepo.getAvailableLanguages(),
         locationRepo.getAvailableLocations(),
@@ -76,25 +71,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         setState(() {
-          // 3. Guardar os resultados nas respetivas variáveis
           _availableLanguages = results[0] as List<LanguageModel>;
           _availableLocations = results[1] as List<LocationModel>;
 
-          // Lógica original dos idiomas
           if (_availableLanguages.isNotEmpty && _preferredLanguage == null) {
             _preferredLanguage = _availableLanguages.first;
             LanguageScope.of(context).setLanguageCode(_preferredLanguage!.code);
             FormValidators.setLanguageCode(_preferredLanguage!.code);
           }
 
-          // Opcional: Se quiseres que a primeira localização venha pré-selecionada
-          // if (_availableLocations.isNotEmpty && _selectedLocation == null) {
-          //   _selectedLocation = _availableLocations.first;
-          // }
         });
       }
     } catch (e) {
-      debugPrint("Erro ao carregar locais/idiomas: $e");
+      debugPrint("Error loading locations/languages: $e");
     } finally {
       if (mounted) setState(() => _isLoadingData = false);
     }
@@ -123,7 +112,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _profileImgUrlController.text = data['profileImgUrl'] ?? '';
       _bioController.text = data['bio'] ?? '';
 
-      // Lógica para preencher localização se existir nos dados prévios
       if (data['location'] != null) {
         try {
           _selectedLocation = _availableLocations.firstWhere(
@@ -155,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _profileImgUrlController.clear();
     _bioController.clear();
 
-    _selectedLocation = null; // Limpa a localização
+    _selectedLocation = null;
     _phonePrefix = '+351';
     _preferredLanguage = null;
     _agreedToTerms = false;
@@ -259,7 +247,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    FormValidators.setLanguageCode(tr.languageCode);
+    FormValidators.configure(
+      languageCode: tr.languageCode,
+      translator: tr.tr,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -293,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('name'),
                       isRequired: true,
-                      hintText: 'João Silva',
+                      hintText: tr.tr('nameHint'),
                       prefixIcon: Icons.person_outlined,
                       keyboardType: TextInputType.name,
                       controller: _nameController,
@@ -304,7 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('username'),
                       isRequired: true,
-                      hintText: 'joaosilva',
+                      hintText: tr.tr('usernameHint'),
                       prefixIcon: Icons.verified_user_outlined,
                       keyboardType: TextInputType.text,
                       controller: _usernameController,
@@ -315,7 +306,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('email'),
                       isRequired: true,
-                      hintText: 'seu.email@softinsa.com',
+                      hintText: tr.tr('emailHint'),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       controller: _emailController,
@@ -326,7 +317,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('password'),
                       isRequired: true,
-                      hintText: 'Crie uma password segura',
+                      hintText: tr.tr('createPasswordHint'),
                       prefixIcon: Icons.lock_outlined,
                       obscureText: true,
                       controller: _passwordController,
@@ -337,7 +328,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('confirmPassword'),
                       isRequired: true,
-                      hintText: 'Confirme sua password',
+                      hintText: tr.tr('confirmPasswordHint'),
                       prefixIcon: Icons.lock_outlined,
                       obscureText: true,
                       controller: _confirmPasswordController,
@@ -416,9 +407,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               child: TextFormField(
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
-                                decoration: const InputDecoration(
-                                  hintText: '912 345 678',
-                                  prefixIcon: Icon(Icons.phone_outlined),
+                                decoration: InputDecoration(
+                                  hintText: tr.tr('phoneHint'),
+                                  prefixIcon: const Icon(Icons.phone_outlined),
                                 ),
                                 validator: (value) {
                                   final normalized = (value ?? '').replaceAll(
@@ -443,7 +434,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextField(
                       label: tr.tr('birthdate'),
                       isRequired: false,
-                      hintText: 'DD/MM/YYYY',
+                      hintText: tr.tr('birthdateHint'),
                       prefixIcon: Icons.calendar_today_outlined,
                       keyboardType: TextInputType.datetime,
                       controller: _birthdateController,
@@ -482,7 +473,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    // CORREÇÃO: Novo componente Location Dropdown
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Column(

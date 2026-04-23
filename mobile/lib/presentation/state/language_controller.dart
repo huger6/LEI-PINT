@@ -1,51 +1,94 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class LanguageController extends ChangeNotifier {
   LanguageController();
 
-  String _languageCode = '1';
+  String _languageCode = 'pt';
+  Map<String, dynamic> _localizedStrings = {};
 
   String get languageCode => _languageCode;
 
-  Locale get locale {
+  Locale get locale => Locale(_languageCode);
+
+  String get languageDatabaseId {
     switch (_languageCode) {
-      case '2':
-        return const Locale('en');
-      case '3':
-        return const Locale('es');
-      case '4':
-        return const Locale('fr');
-      case '1':
+      case 'en':
+        return '2';
+      case 'es':
+        return '3';
+      case 'fr':
+        return '4';
+      case 'pt':
       default:
-        return const Locale('pt');
+        return '1';
     }
   }
 
-  Future<void> initialize() async {}
+  Future<void> initialize() async {
+    await _loadLanguageJson(_languageCode);
+  }
 
   Future<void> setLanguageCode(String code) async {
-    if (_languageCode == code) {
+    final normalizedCode = _normalizeCode(code);
+
+    if (_languageCode == normalizedCode) {
       return;
     }
 
-    _languageCode = code;
+    _languageCode = normalizedCode;
+    await _loadLanguageJson(_languageCode);
     notifyListeners();
   }
 
-  String tr(String key) => key;
+  Future<void> _loadLanguageJson(String code) async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/translations/$code.json',
+      );
+      _localizedStrings = json.decode(jsonString);
+    } catch (e) {
+      debugPrint('Failed to load translations for $code: $e');
+      _localizedStrings = {};
+    }
+  }
 
-  static String languageName(String languageCode) {
-    switch (languageCode) {
-      case '2':
+  String tr(String key) {
+    return _localizedStrings[key]?.toString() ?? key;
+  }
+
+  static String languageName(String code) {
+    final normalized = _normalizeCode(code);
+    switch (normalized) {
+      case 'en':
         return 'English';
-      case '3':
+      case 'es':
         return 'Espanol';
-      case '4':
+      case 'fr':
         return 'Francais';
-      case '1':
+      case 'pt':
       default:
         return 'Portugues';
+    }
+  }
+
+  static String _normalizeCode(String input) {
+    switch (input.toLowerCase()) {
+      case '2':
+      case 'en':
+        return 'en';
+      case '3':
+      case 'es':
+        return 'es';
+      case '4':
+      case 'fr':
+        return 'fr';
+      case '1':
+      case 'pt':
+      default:
+        return 'pt';
     }
   }
 }

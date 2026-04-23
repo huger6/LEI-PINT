@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
+
 class CertificationDonutCard extends StatelessWidget {
   const CertificationDonutCard({
     super.key,
@@ -14,6 +16,8 @@ class CertificationDonutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 12, bottom: 12),
@@ -46,10 +50,10 @@ class CertificationDonutCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Áreas com\ncertificações',
+                    Text(
+                      tr.tr('areasWithCertifications'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         color: Color(0xFF454A52),
                         height: 1.3,

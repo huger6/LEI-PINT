@@ -61,7 +61,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
 
       setState(() {
         _isLoadingAreas = false;
-        _loadingError = 'Não foi possível carregar áreas: $e';
+        _loadingError = e.toString();
       });
     }
   }
@@ -138,7 +138,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                   ),
                 ),
               ),
-              Expanded(child: _buildBody(theme)),
+              Expanded(child: _buildBody(theme, tr)),
               _buildBottomActions(theme),
             ],
           ),
@@ -147,7 +147,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
     );
   }
 
-  Widget _buildBody(ThemeData theme) {
+  Widget _buildBody(ThemeData theme, LanguageController tr) {
     if (_isLoadingAreas) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -160,14 +160,14 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _loadingError!,
+                tr.tr('areasLoadFailed').replaceAll('{error}', _loadingError!),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: _loadAreas,
-                child: const Text('Tentar novamente'),
+                child: Text(tr.tr('tryAgain')),
               ),
             ],
           ),
@@ -178,7 +178,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
     if (_allAreas.isEmpty) {
       return Center(
         child: Text(
-          'Sem áreas disponíveis.',
+          tr.tr('noAreasAvailable'),
           style: theme.textTheme.bodyMedium,
         ),
       );
@@ -219,11 +219,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
             height: 50,
             child: OutlinedButton(
               onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRouter.register,
-                  arguments: widget.registrationData,
-                );
+                Navigator.pop(context);
               },
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: theme.colorScheme.primary, width: 1.5),

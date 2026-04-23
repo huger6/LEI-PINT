@@ -26,10 +26,10 @@ class AreaRepository {
 
       return areas;
     } on DioException catch (e) {
-      debugPrint('Erro API (areas): ${e.message}');
+      debugPrint('API error (areas): ${e.message}');
       return _areaDao.getAll();
     } catch (e) {
-      debugPrint('Erro inesperado (areas): $e');
+      debugPrint('Unexpected error (areas): $e');
       return _areaDao.getAll();
     }
   }
