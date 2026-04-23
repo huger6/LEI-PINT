@@ -2,6 +2,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import 'application_status_page.dart';
@@ -24,10 +25,6 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
   void initState() {
     super.initState();
     _requirements = widget.badge.requirements.map((item) => item.text).toList();
-
-    if (_requirements.isEmpty) {
-      _requirements.add('Sem requisito associado');
-    }
   }
 
   Future<void> _pickFiles() async {
@@ -41,12 +38,14 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       return;
     }
 
+    final tr = LanguageScope.of(context);
+
     setState(() {
       for (final file in result.files) {
         attachedFiles.add(
           AttachedDocument(
             name: file.name,
-            subtitle: 'Associado a todos os requisitos da badge',
+            subtitle: tr.tr('applicationAttachedFileSubtitle'),
           ),
         );
       }
@@ -55,12 +54,13 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final canSubmit = isTermsAccepted;
 
     return Scaffold(
       backgroundColor: _ApplicationColors.pageBackground,
       appBar: AppBar(
-        title: const Text('Candidatura'),
+        title: Text(tr.tr('applicationTitle')),
         elevation: 0,
         backgroundColor: _ApplicationColors.pageBackground,
         foregroundColor: _ApplicationColors.primaryText,
@@ -70,14 +70,17 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(number: 1, title: 'Badge selecionado'),
+            _SectionTitle(number: 1, title: tr.tr('applicationSectionBadge')),
             const SizedBox(height: 10),
             _CardContainer(child: _SelectedBadgeCard(badge: widget.badge)),
 
             const SizedBox(height: 18),
-            _SectionTitle(number: 2, title: 'Enviar evidências'),
+            _SectionTitle(
+              number: 2,
+              title: tr.tr('applicationSectionEvidence'),
+            ),
             const SizedBox(height: 10),
-            _buildAttachBox(),
+            _buildAttachBox(tr),
             const SizedBox(height: 10),
             if (attachedFiles.isNotEmpty)
               AttachedFilesList(
@@ -91,14 +94,16 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                 tilePadding: EdgeInsets.zero,
                 collapsedIconColor: _ApplicationColors.secondaryText,
                 iconColor: _ApplicationColors.secondaryText,
-                title: const Text(
-                  'Requisitos',
-                  style: TextStyle(
+                title: Text(
+                  tr.tr('requirements'),
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: _ApplicationColors.primaryText,
                   ),
                 ),
-                children: _requirements
+                children: (_requirements.isEmpty
+                        ? [tr.tr('noRequirementsLinked')]
+                        : _requirements)
                     .map(
                       (item) => ListTile(
                         dense: true,
@@ -121,7 +126,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             ),
 
             const SizedBox(height: 18),
-            _SectionTitle(number: 3, title: 'Termos e Condições'),
+            _SectionTitle(number: 3, title: tr.tr('applicationSectionTerms')),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -138,40 +143,40 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                       setState(() => isTermsAccepted = value ?? false);
                     },
                     title: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
+                      text: TextSpan(
+                        style: const TextStyle(
                           color: _ApplicationColors.secondaryText,
                           fontSize: 14,
                         ),
                         children: [
-                          TextSpan(text: 'Aceito os '),
+                          TextSpan(text: tr.tr('acceptTermsPrefix')),
                           TextSpan(
-                            text: 'termos e condições',
-                            style: TextStyle(
+                            text: tr.tr('termsAndConditions'),
+                            style: const TextStyle(
                               color: _ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          TextSpan(text: ' e a '),
+                          TextSpan(text: tr.tr('andThe')),
                           TextSpan(
-                            text: 'política de privacidade',
-                            style: TextStyle(
+                            text: tr.tr('privacyPolicy'),
+                            style: const TextStyle(
                               color: _ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          TextSpan(text: '.'),
+                          const TextSpan(text: '.'),
                         ],
                       ),
                     ),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(14, 0, 14, 12),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
                     child: Text(
-                      'Ao submeter esta candidatura, confirma que as evidências são verdadeiras e autorizas a validação pela equipa responsável.',
-                      style: TextStyle(
+                      tr.tr('applicationSubmissionDisclaimer'),
+                      style: const TextStyle(
                         fontSize: 12,
                         height: 1.35,
                         color: _ApplicationColors.mutedText,
@@ -183,7 +188,10 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             ),
 
             const SizedBox(height: 18),
-            _SectionTitle(number: 4, title: 'Submissão'),
+            _SectionTitle(
+              number: 4,
+              title: tr.tr('applicationSectionSubmission'),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
@@ -202,7 +210,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                       }
                     : null,
                 icon: const Icon(Icons.check_circle_outline_rounded),
-                label: const Text('Submeter'),
+                label: Text(tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   backgroundColor: _ApplicationColors.primaryAction,
@@ -225,7 +233,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     );
   }
 
-  Widget _buildAttachBox() {
+  Widget _buildAttachBox(LanguageController tr) {
     return DottedBorder(
       options: RoundedRectDottedBorderOptions(
         color: _ApplicationColors.dashedBorder,
@@ -242,23 +250,23 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             color: _ApplicationColors.cardBackground,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.attach_file_rounded,
                 color: _ApplicationColors.iconMuted,
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Anexar ficheiro',
-                  style: TextStyle(
+                  tr.tr('applicationAttachFile'),
+                  style: const TextStyle(
                     color: _ApplicationColors.secondaryText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.upload_file_rounded,
                 color: _ApplicationColors.iconMuted,
               ),

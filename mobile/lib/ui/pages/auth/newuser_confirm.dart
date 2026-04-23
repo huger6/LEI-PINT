@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/custom_button.dart';
 
@@ -35,34 +37,57 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
     }
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     final tr = LanguageScope.of(context);
     setState(() => _isLoading = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
+    try {
+      final authStore = context.read<AuthStore>();
+      final success = await authStore.submitRegistration();
 
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              tr
+                  .tr('userRegisteredSuccess')
+                  .replaceAll(
+                    '{username}',
+                    (_userData['username'] ?? '').toString(),
+                  ),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 1), () {
+          if (!mounted) return;
+          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.tr('registerErrorInvalidData')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            tr
-                .tr('userRegisteredSuccess')
-                .replaceAll(
-                  '{username}',
-                  (_userData['username'] ?? '').toString(),
-                ),
+            tr.tr('unexpectedError').replaceAll('{error}', e.toString()),
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.red,
         ),
       );
-
-      Future.delayed(const Duration(seconds: 1), () {
-        if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-      });
-    });
+    }
   }
 
   @override

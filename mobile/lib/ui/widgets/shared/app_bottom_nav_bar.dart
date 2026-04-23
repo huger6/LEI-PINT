@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-enum AppTab { explorar, badges, inicio, evolucao, perfil }
+import '../../../core/sync_manager.dart';
+
+enum AppTab { explore, badges, home, progress, profile }
 
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({super.key, required this.currentTab});
@@ -9,6 +11,8 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -29,15 +33,15 @@ class AppBottomNavBar extends StatelessWidget {
           Expanded(
             child: _BottomNavItem(
               icon: Icons.search_rounded,
-              label: 'Explorar',
-              isActive: currentTab == AppTab.explorar,
-              onTap: () => _handleTap(context, AppTab.explorar),
+              label: tr.tr('navExplore'),
+              isActive: currentTab == AppTab.explore,
+              onTap: () => _handleTap(context, AppTab.explore),
             ),
           ),
           Expanded(
             child: _BottomNavItem(
               icon: Icons.workspace_premium_outlined,
-              label: 'Badges',
+              label: tr.tr('navBadges'),
               isActive: currentTab == AppTab.badges,
               onTap: () => _handleTap(context, AppTab.badges),
             ),
@@ -45,25 +49,25 @@ class AppBottomNavBar extends StatelessWidget {
           Expanded(
             child: _BottomNavItem(
               icon: Icons.home_outlined,
-              label: 'Início',
-              isActive: currentTab == AppTab.inicio,
-              onTap: () => _handleTap(context, AppTab.inicio),
+              label: tr.tr('navHome'),
+              isActive: currentTab == AppTab.home,
+              onTap: () => _handleTap(context, AppTab.home),
             ),
           ),
           Expanded(
             child: _BottomNavItem(
               icon: Icons.query_stats_rounded,
-              label: 'Evolução',
-              isActive: currentTab == AppTab.evolucao,
-              onTap: () => _handleTap(context, AppTab.evolucao),
+              label: tr.tr('navProgress'),
+              isActive: currentTab == AppTab.progress,
+              onTap: () => _handleTap(context, AppTab.progress),
             ),
           ),
           Expanded(
             child: _BottomNavItem(
               icon: Icons.person_outline_rounded,
-              label: 'Perfil',
-              isActive: currentTab == AppTab.perfil,
-              onTap: () => _handleTap(context, AppTab.perfil),
+              label: tr.tr('navProfile'),
+              isActive: currentTab == AppTab.profile,
+              onTap: () => _handleTap(context, AppTab.profile),
             ),
           ),
         ],
@@ -77,17 +81,17 @@ class AppBottomNavBar extends StatelessWidget {
     }
 
     switch (target) {
-      case AppTab.explorar:
+      case AppTab.explore:
         Navigator.pushReplacementNamed(context, '/explore-competencies');
         break;
-      case AppTab.inicio:
+      case AppTab.home:
         Navigator.pushReplacementNamed(context, '/dashboard');
         break;
       case AppTab.badges:
-      case AppTab.evolucao:
-      case AppTab.perfil:
+      case AppTab.progress:
+      case AppTab.profile:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ecrã ainda não disponível.')),
+          SnackBar(content: Text(LanguageScope.of(context).tr('screenNotAvailable'))),
         );
         break;
     }

@@ -99,7 +99,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ),
 
-        // Mensagem de erro customizada
         if (widget.errorText != null) ...[
           const SizedBox(height: 8),
           Text(

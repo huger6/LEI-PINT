@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/badge_catalog.dart';
@@ -20,6 +21,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final similarBadges = BadgeCatalog.all
         .where((item) => item.title != badge.title)
         .take(3)
@@ -45,12 +47,12 @@ class CandidaturaStatusScreen extends StatelessWidget {
                       icon: const Icon(Icons.arrow_back, size: 24),
                     ),
                     const SizedBox(width: 6),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Estado da candidatura',
+                        tr.tr('applicationStatusTitle'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
                           color: _StatusColors.primaryText,
@@ -69,9 +71,11 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Candidatura ao badge “PHP Advanced”',
-                      style: TextStyle(
+                    Text(
+                      tr
+                          .tr('applicationStatusForBadge')
+                          .replaceAll('{badge}', badge.title),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: _StatusColors.primaryText,
@@ -83,27 +87,27 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Últimas atualizações',
-                style: TextStyle(
+              Text(
+                tr.tr('latestUpdates'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: _StatusColors.primaryText,
                 ),
               ),
               const SizedBox(height: 10),
-              const Row(
+              Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.sync_alt_rounded,
                     color: _StatusColors.primaryAction,
                     size: 18,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Em revisão pelo Service Line Leader',
-                      style: TextStyle(
+                      tr.tr('applicationInReviewBySll'),
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _StatusColors.highlightText,
@@ -113,17 +117,17 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              const Row(
+              Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.history_toggle_off_rounded,
                     color: _StatusColors.primaryAction,
                     size: 18,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    '01/11/2025 às 17:23',
-                    style: TextStyle(
+                    tr.tr('applicationStatusTimestamp'),
+                    style: const TextStyle(
                       fontSize: 14,
                       color: _StatusColors.secondaryText,
                     ),
@@ -131,31 +135,30 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Observações',
-                style: TextStyle(
+              Text(
+                tr.tr('notes'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: _StatusColors.primaryText,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text.rich(
+              Text.rich(
                 TextSpan(
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: _StatusColors.primaryText,
                     fontSize: 14,
                     height: 1.35,
                   ),
                   children: [
                     TextSpan(
-                      text: 'Talent Manager: ',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                      text: '${tr.tr('talentManagerLabel')}: ',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     TextSpan(
-                      text:
-                          'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non, amet incidunt laboriosam dolorem molestias harum voluptatibus, accusantium iusto molestiae dolore! Debitis, deleniti officia dicta amet voluptates accusamus placeat blanditiis.',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+                      text: tr.tr('applicationStatusPlaceholderNote'),
+                      style: const TextStyle(fontStyle: FontStyle.italic),
                     ),
                   ],
                 ),
@@ -173,9 +176,9 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ficheiros anexados',
-                      style: TextStyle(
+                    Text(
+                      tr.tr('attachedFiles'),
+                      style: const TextStyle(
                         color: _StatusColors.primaryText,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
@@ -189,9 +192,9 @@ class CandidaturaStatusScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _RequirementsExpansion(requirements: badge.requirements),
               const SizedBox(height: 12),
-              const Text(
-                'Badges semelhantes',
-                style: TextStyle(
+              Text(
+                tr.tr('similarBadges'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: _StatusColors.primaryText,
@@ -237,6 +240,8 @@ class _ProgressStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Column(
       children: [
         const Row(
@@ -255,10 +260,10 @@ class _ProgressStepper extends StatelessWidget {
         const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            _StepLabel(text: 'Enviado', isCurrent: false),
-            _StepLabel(text: 'TM', isCurrent: false),
-            _StepLabel(text: 'Service Line Leader', isCurrent: true),
+          children: [
+            _StepLabel(text: tr.tr('stepSubmitted'), isCurrent: false),
+            _StepLabel(text: tr.tr('stepTm'), isCurrent: false),
+            _StepLabel(text: tr.tr('stepServiceLineLeader'), isCurrent: true),
           ],
         ),
       ],
@@ -328,6 +333,8 @@ class _InfoExpansion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       decoration: BoxDecoration(
         color: _StatusColors.cardBackground,
@@ -337,9 +344,9 @@ class _InfoExpansion extends StatelessWidget {
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
         collapsedIconColor: _StatusColors.secondaryText,
         iconColor: _StatusColors.secondaryText,
-        title: const Text(
-          'Informações sobre o badge',
-          style: TextStyle(
+        title: Text(
+          tr.tr('badgeInfo'),
+          style: const TextStyle(
             color: _StatusColors.primaryText,
             fontWeight: FontWeight.w700,
             fontSize: 14,
@@ -359,6 +366,8 @@ class _RequirementsExpansion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       decoration: BoxDecoration(
         color: _StatusColors.cardBackground,
@@ -368,9 +377,9 @@ class _RequirementsExpansion extends StatelessWidget {
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
         collapsedIconColor: _StatusColors.secondaryText,
         iconColor: _StatusColors.secondaryText,
-        title: const Text(
-          'Requisitos',
-          style: TextStyle(
+        title: Text(
+          tr.tr('requirements'),
+          style: const TextStyle(
             color: _StatusColors.primaryText,
             fontWeight: FontWeight.w700,
             fontSize: 14,
