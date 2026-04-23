@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -127,9 +129,10 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                   draft.birthDate ?? tr.tr('notFilledF'),
                   theme,
                 ),
-                _buildInfoField(
+                _buildProfileImagePreview(
                   tr.tr('profileImage'),
-                  hasImage ? 'Imagem Selecionada' : tr.tr('notFilledF'),
+                  hasImage ? draft.profileImage : null,
+                  tr.tr('notFilledF'),
                   theme,
                 ),
                 _buildInfoField(
@@ -257,6 +260,51 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
               color: Colors.grey.shade50,
             ),
             child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileImagePreview(
+    String label,
+    File? imageFile,
+    String emptyText,
+    ThemeData theme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: double.infinity,
+            height: imageFile != null ? 180 : null,
+            padding: imageFile != null
+                ? EdgeInsets.zero
+                : const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey.shade50,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: imageFile != null
+                ? Image.file(
+                    imageFile,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Center(child: Text(emptyText)),
+                  )
+                : Text(emptyText),
           ),
         ],
       ),

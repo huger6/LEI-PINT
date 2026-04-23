@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 AuthHeader(
                   title: tr.tr('welcomeBack'),
                   subtitle: tr.tr('loginSubtitle'),
-                  imagePath: 'images/logotipo_softinsa.png',
+                  imagePath: 'assets/images/logotipo_softinsa.png',
                 ),
 
                 const SizedBox(height: 48),

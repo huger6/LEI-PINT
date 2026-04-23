@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 
 import '../../data/remote/api_client.dart';
+import '../../data/remote/supabase_storage_service.dart';
 import '../../data/repositories/auth_repo.dart';
 import '../../models/area_model.dart';
 import '../../models/dtos/registration_data.dart';
 import '../../models/user_model.dart';
 
 class AuthStore extends ChangeNotifier {
-  AuthStore(this._authRepository, this._apiClient);
+  AuthStore(this._authRepository, this._apiClient, {SupabaseStorageService? storageService})
+      : _storageService = storageService;
 
   final AuthRepository _authRepository;
   final ApiClient _apiClient;
+  final SupabaseStorageService? _storageService;
 
   String? _accessToken;
   UserModel? _currentUser;
@@ -41,6 +44,11 @@ class AuthStore extends ChangeNotifier {
   Future<bool> submitRegistration() async {
     try {
       String? profileImageUrl;
+
+      final image = _draftRegistration.profileImage;
+      if (image != null && _storageService != null) {
+        profileImageUrl = await _storageService.uploadProfileImageToTemp(image);
+      }
 
       final payload = _draftRegistration.toJson(profileImageUrl);
 
