@@ -53,6 +53,8 @@
   "birthdateHint": "DD/MM/YYYY",
   "profileImage": "Imagen de perfil",
   "noFileSelected": "Ningun archivo seleccionado",
+  "imageSelected": "Imagen seleccionada",
+  "imageUploadFailed": "Error al subir la imagen al servidor.",
   "pickFromPhone": "Elegir del telefono",
   "location": "Ubicacion",
   "selectLocation": "Seleccionar ubicacion",

@@ -14,8 +14,7 @@
   "notes": "Observacoes",
   "openLink": "Abrir ligacao",
   "removeFile": "Remover ficheiro",
-  "screenNotAvailable": "Ecra ainda nao disponivel.",
-
+  "screenNotAvailable": "Ecra ainda não disponível.",
   "welcomeBack": "Bem-vindo de volta",
   "loginSubtitle": "Introduz as tuas credenciais para continuar.",
   "emailOrUsername": "Email ou username",
@@ -32,7 +31,6 @@
   "loginSuccess": "Bem-vindo de volta, {user}!",
   "loginErrorInvalidCredentials": "Erro no login. Verifica as credenciais.",
   "loginErrorServer": "Erro ao ligar ao servidor.",
-
   "createAccount": "Criar conta",
   "registerTitle": "Cria a tua conta",
   "registerSubtitle": "Preenche os dados para criares a tua conta.",
@@ -53,6 +51,8 @@
   "birthdateHint": "DD/MM/YYYY",
   "profileImage": "Imagem de perfil",
   "noFileSelected": "Nenhum ficheiro selecionado",
+  "imageSelected": "Imagem selecionada",
+  "imageUploadFailed": "Falha ao carregar a imagem para o servidor.",
   "pickFromPhone": "Escolher do telemovel",
   "location": "Localizacao",
   "selectLocation": "Selecionar localizacao",
@@ -69,12 +69,10 @@
   "alreadyHaveAccount": "Ja tens conta?",
   "doLogin": "Iniciar sessao",
   "passwordsDoNotMatch": "As passwords nao coincidem.",
-
   "selectAreasDescription": "Escolhe ate 5 areas de especializacao e marca a tua area principal.",
   "maxFiveAreas": "Podes selecionar no maximo 5 areas.",
   "areasLoadFailed": "Falha ao carregar areas: {error}",
   "noAreasAvailable": "Sem areas disponiveis.",
-
   "confirmRegister": "Confirmar registo",
   "registerSummary": "Resumo do registo",
   "personalData": "Dados pessoais",
@@ -88,7 +86,6 @@
   "userRegisteredSuccess": "Utilizador {username} registado com sucesso!",
   "registerErrorInvalidData": "Erro ao registar utilizador. Verifica os dados.",
   "unexpectedError": "Ocorreu um erro inesperado: {error}",
-
   "recoverPassword": "Recuperar password",
   "recoverSubtitle": "Introduz o teu email para receberes instrucoes de recuperacao.",
   "sendInstructions": "Enviar instrucoes",
@@ -98,7 +95,6 @@
   "backToLogin": "Voltar ao login",
   "didNotReceiveEmail": "Nao recebeste o email?",
   "checkSpam": "Verifica tambem a pasta de spam.",
-
   "dashboardGreeting": "Boa tarde, {name}!",
   "recentSubmissions": "Submissoes recentes",
   "forYou": "Para ti",
@@ -127,7 +123,6 @@
   "navHome": "Inicio",
   "navProgress": "Evolucao",
   "navProfile": "Perfil",
-
   "exploreCompetenciesTitle": "Explora novas competencias",
   "searchBadgeHint": "Procura o teu badge",
   "noBadgesAvailable": "Sem badges disponiveis.",
@@ -149,11 +144,9 @@
   "last7Days": "Ultimos 7 dias",
   "last30Days": "Ultimos 30 dias",
   "thisYear": "Este ano",
-
   "overviewTab": "Visao geral",
   "detailsTab": "Detalhes",
   "submitApplication": "Submeter candidatura",
-
   "applicationTitle": "Candidatura",
   "applicationSectionBadge": "Badge selecionado",
   "applicationSectionEvidence": "Enviar evidencias",
@@ -163,7 +156,6 @@
   "applicationAttachedFileSubtitle": "Associado a todos os requisitos da badge",
   "noRequirementsLinked": "Sem requisito associado.",
   "applicationSubmissionDisclaimer": "Ao submeter esta candidatura, confirmas que as evidencias sao verdadeiras e autorizas a validacao pela equipa responsavel.",
-
   "applicationStatusTitle": "Estado da candidatura",
   "applicationStatusForBadge": "Candidatura ao badge \"{badge}\"",
   "latestUpdates": "Ultimas atualizacoes",
@@ -177,7 +169,6 @@
   "stepSubmitted": "Enviado",
   "stepTm": "TM",
   "stepServiceLineLeader": "Service Line Leader",
-
   "validationNameRequired": "Nome e obrigatorio.",
   "validationNameMinChars": "O nome deve ter pelo menos 2 caracteres.",
   "validationUsernameRequired": "Username e obrigatorio.",

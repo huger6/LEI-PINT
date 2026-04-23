@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'data/remote/api_client.dart';
+import 'data/remote/supabase_storage_service.dart';
 import 'data/repositories/applications_repo.dart';
 import 'data/repositories/area_repo.dart';
 import 'data/repositories/auth_repo.dart';
@@ -100,7 +101,13 @@ void main() async {
         Provider.value(value: getIt<ApplicationsRepository>()),
         Provider.value(value: getIt<RankingRepository>()),
         ChangeNotifierProvider<AuthStore>(
-          create: (_) => AuthStore(getIt<AuthRepository>(), getIt<ApiClient>()),
+          create: (_) => AuthStore(
+            getIt<AuthRepository>(),
+            getIt<ApiClient>(),
+            storageService: getIt.isRegistered<SupabaseStorageService>()
+                ? getIt<SupabaseStorageService>()
+                : null,
+          ),
         ),
         ChangeNotifierProvider<BadgeStore>(
           create: (_) => BadgeStore(getIt<BadgeRepository>()),
@@ -187,7 +194,6 @@ class MyApp extends StatelessWidget {
               Locale('pt'),
               Locale('en'),
               Locale('es'),
-              Locale('fr'),
             ],
             initialRoute: authStore.isAuthenticated
                 ? AppRouter.dashboard

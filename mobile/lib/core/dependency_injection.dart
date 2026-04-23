@@ -8,6 +8,7 @@ import '../data/local/area_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/remote/api_client.dart';
+import '../data/remote/supabase_storage_service.dart';
 import '../data/repositories/area_repo.dart';
 import '../data/repositories/applications_repo.dart';
 import '../data/repositories/auth_repo.dart';
@@ -58,6 +59,12 @@ Future<void> setupDependencies() async {
 
   if (hasSupabaseClient && !getIt.isRegistered<SupabaseClient>()) {
     getIt.registerSingleton<SupabaseClient>(Supabase.instance.client);
+  }
+
+  if (hasSupabaseClient && !getIt.isRegistered<SupabaseStorageService>()) {
+    getIt.registerLazySingleton<SupabaseStorageService>(
+      () => SupabaseStorageService(getIt<SupabaseClient>()),
+    );
   }
 
   if (!getIt.isRegistered<Dio>()) {

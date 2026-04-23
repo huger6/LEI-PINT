@@ -275,7 +275,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AuthHeader(
                       title: tr.tr('registerTitle'),
                       subtitle: tr.tr('registerSubtitle'),
-                      imagePath: 'images/logotipo_softinsa.png',
+                      imagePath: 'assets/images/logotipo_softinsa.png',
                     ),
 
                     const SizedBox(height: 48),
@@ -456,20 +456,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     // Profile image picker (optional)
-                    CustomTextField(
-                      label: tr.tr('profileImage'),
-                      hintText: tr.tr('noFileSelected'),
-                      prefixIcon: Icons.image_outlined,
-                      controller: _profileImgUrlController,
-                      readOnly: true,
-                      onTap: _pickProfileImage,
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton.icon(
-                        onPressed: _pickProfileImage,
-                        icon: const Icon(Icons.upload_file_outlined),
-                        label: Text(tr.tr('pickFromPhone')),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tr.tr('profileImage'),
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: _pickProfileImage,
+                            child: Container(
+                              width: double.infinity,
+                              height: 160,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: colorScheme.outline),
+                                borderRadius: BorderRadius.circular(8),
+                                color: colorScheme.surface,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: _profileImgUrlController.text.isNotEmpty
+                                  ? Image.file(
+                                      File(_profileImgUrlController.text),
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Center(
+                                                child: Text(
+                                                  tr.tr('noFileSelected'),
+                                                ),
+                                              ),
+                                    )
+                                  : Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.image_outlined,
+                                            size: 36,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(tr.tr('noFileSelected')),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: _pickProfileImage,
+                              icon: const Icon(Icons.upload_file_outlined),
+                              label: Text(tr.tr('pickFromPhone')),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 

@@ -19,8 +19,6 @@ class LanguageController extends ChangeNotifier {
         return '2';
       case 'es':
         return '3';
-      case 'fr':
-        return '4';
       case 'pt':
       default:
         return '1';
@@ -66,8 +64,6 @@ class LanguageController extends ChangeNotifier {
         return 'English';
       case 'es':
         return 'Espanol';
-      case 'fr':
-        return 'Francais';
       case 'pt':
       default:
         return 'Portugues';
@@ -82,9 +78,6 @@ class LanguageController extends ChangeNotifier {
       case '3':
       case 'es':
         return 'es';
-      case '4':
-      case 'fr':
-        return 'fr';
       case '1':
       case 'pt':
       default:
