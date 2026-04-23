@@ -21,16 +21,11 @@ class AppRouter {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     forgotPassword: (context) => const ForgotPasswordScreen(),
-    selectArea: (context) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return SelectAreaScreen(registrationData: args);
-    },
-    newUserConfirm: (context) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return NewUserConfirmScreen(registrationData: args);
-    },
+
+    selectArea: (context) => const SelectAreaScreen(),
+
+    newUserConfirm: (context) => const NewUserConfirmScreen(),
+
     dashboard: (context) => const DashboardScreen(),
     exploreCompetencies: (context) => const ExploreCompetenciesScreen(),
   };

@@ -7,9 +7,9 @@ import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/custom_button.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
-  final Map<String, dynamic>? registrationData;
-
-  const NewUserConfirmScreen({super.key, this.registrationData});
+  const NewUserConfirmScreen({
+    super.key,
+  }); // Já não precisamos receber dados aqui!
 
   @override
   State<NewUserConfirmScreen> createState() => _NewUserConfirmScreenState();
@@ -17,25 +17,8 @@ class NewUserConfirmScreen extends StatefulWidget {
 
 class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   bool _isLoading = false;
-  late Map<String, dynamic> _userData;
 
-  @override
-  void initState() {
-    super.initState();
-    _userData = widget.registrationData ?? {};
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_userData.isEmpty) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        _userData = args;
-      }
-    }
-  }
+  // Foram removidos o initState, o didChangeDependencies e a variável _userData!
 
   Future<void> _handleRegister() async {
     final tr = LanguageScope.of(context);
@@ -49,17 +32,16 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
+        // Vai buscar o nome ao Provider apenas para mostrar na mensagem final
+        final username = authStore.draftRegistration.username ?? '';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              tr
-                  .tr('userRegisteredSuccess')
-                  .replaceAll(
-                    '{username}',
-                    (_userData['username'] ?? '').toString(),
-                  ),
+              tr.tr('userRegisteredSuccess').replaceAll('{username}', username),
             ),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
           ),
         );
 
@@ -94,12 +76,16 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     final theme = AppTheme.lightTheme;
-    final selectedAreas = _userData['selectedAreas'] as List<dynamic>? ?? [];
-    final phone = (_userData['phone'] ?? '').toString().trim();
-    final phonePrefix = (_userData['phonePrefix'] ?? '+351').toString();
-    final phoneDisplay = phone.isEmpty
-        ? tr.tr('notFilled')
-        : '$phonePrefix $phone';
+
+    // 🌟 A MAGIA ACONTECE AQUI: Vamos buscar o rascunho completo ao Provider!
+    final draft = context.watch<AuthStore>().draftRegistration;
+
+    final selectedAreas = draft.selectedAreas;
+    final phone = (draft.phone ?? '').trim();
+    final phoneDisplay = phone.isEmpty ? tr.tr('notFilled') : phone;
+
+    // Como a imagem de perfil no rascunho é um File, verificamos se existe
+    final hasImage = draft.profileImage != null;
 
     return Theme(
       data: theme,
@@ -126,50 +112,56 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                 ),
                 const SizedBox(height: 24),
                 _buildSectionTitle(tr.tr('personalData'), theme),
-                _buildInfoField(tr.tr('name'), _userData['name'] ?? '-', theme),
+
+                // Agora lemos tudo diretamente do 'draft'
+                _buildInfoField(tr.tr('name'), draft.fullName ?? '-', theme),
                 _buildInfoField(
                   tr.tr('username'),
-                  _userData['username'] ?? '-',
+                  draft.username ?? '-',
                   theme,
                 ),
-                _buildInfoField(
-                  tr.tr('email'),
-                  _userData['email'] ?? '-',
-                  theme,
-                ),
+                _buildInfoField(tr.tr('email'), draft.email ?? '-', theme),
                 _buildInfoField(tr.tr('phone'), phoneDisplay, theme),
                 _buildInfoField(
                   tr.tr('birthdate'),
-                  _userData['birthdate'] ?? tr.tr('notFilledF'),
+                  draft.birthDate ?? tr.tr('notFilledF'),
                   theme,
                 ),
                 _buildInfoField(
                   tr.tr('profileImage'),
-                  _userData['profileImgUrl'] ?? tr.tr('notFilledF'),
+                  hasImage ? 'Imagem Selecionada' : tr.tr('notFilledF'),
                   theme,
                 ),
                 _buildInfoField(
                   tr.tr('location'),
-                  _userData['location'] ?? tr.tr('notFilledF'),
+                  draft.location?.name ?? tr.tr('notFilledF'),
                   theme,
                 ),
+
+                // Assume que o preferredLanguage tem um ID que passamos ao controlador
                 _buildInfoField(
                   tr.tr('preferredLanguageOptional'),
-                  _getLanguageName(_userData['preferredLanguage'] ?? '1'),
+                  _getLanguageName(
+                    draft.preferredLanguage?.id.toString() ?? '1',
+                  ),
                   theme,
                 ),
+
                 _buildInfoField(
                   tr.tr('aboutMe'),
-                  _userData['bio'] ?? tr.tr('notFilled'),
+                  draft.bio ?? tr.tr('notFilled'),
                   theme,
                 ),
                 const SizedBox(height: 24),
                 _buildSectionTitle(tr.tr('selectedAreas'), theme),
+
+                // Área principal
                 _buildInfoField(
                   tr.tr('mainArea'),
-                  _userData['mainArea'] ?? tr.tr('notDefined'),
+                  draft.mainArea?.name ?? tr.tr('notDefined'),
                   theme,
                 ),
+
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -197,7 +189,9 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                                     color: theme.colorScheme.primary,
                                   ),
                                 ),
-                                child: Text(area.toString()),
+                                child: Text(
+                                  area.name,
+                                ), // Lemos o 'name' do AreaModel
                               ),
                             ),
                           ),
