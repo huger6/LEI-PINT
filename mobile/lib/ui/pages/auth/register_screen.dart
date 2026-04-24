@@ -79,7 +79,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             LanguageScope.of(context).setLanguageCode(_preferredLanguage!.code);
             FormValidators.setLanguageCode(_preferredLanguage!.code);
           }
-
         });
       }
     } catch (e) {
@@ -187,12 +186,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   RegistrationData _buildRegistrationData() {
+    final phoneInput = _phoneController.text.trim();
+
+    final finalPhone = phoneInput.isEmpty
+        ? null
+        : '$_phonePrefix$phoneInput'.replaceAll(' ', '');
+
     return RegistrationData()
       ..fullName = _nameController.text
       ..username = _usernameController.text
       ..email = _emailController.text
       ..password = _passwordController.text
-      ..phone = '$_phonePrefix${_phoneController.text}'.replaceAll(' ', '')
+      ..phone = finalPhone
       ..birthDate = _birthdateController.text
       ..bio = _bioController.text
       ..profileImage = _profileImgUrlController.text.isNotEmpty
@@ -247,10 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    FormValidators.configure(
-      languageCode: tr.languageCode,
-      translator: tr.tr,
-    );
+    FormValidators.configure(languageCode: tr.languageCode, translator: tr.tr);
 
     return Scaffold(
       appBar: AppBar(

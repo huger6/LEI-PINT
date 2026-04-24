@@ -89,6 +89,9 @@ void main() async {
     return;
   }
 
+  final languageController = LanguageController();
+  await languageController.initialize();
+
   runApp(
     MultiProvider(
       providers: [
@@ -122,8 +125,8 @@ void main() async {
             getIt<RankingRepository>(),
           ),
         ),
-        ChangeNotifierProvider<LanguageController>(
-          create: (_) => LanguageController()..initialize(),
+        ChangeNotifierProvider<LanguageController>.value(
+          value: languageController,
         ),
       ],
       child: const MyApp(),
