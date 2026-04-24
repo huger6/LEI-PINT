@@ -162,11 +162,12 @@ const register = async (req, res) => {
             }, { transaction: t });
         }
 
-        // Generate email confirmation token
+        // Generate email confirmation token (store hash, send raw value)
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
         await models.user_account_tokens.create({
             user_id: newUser.user_id,
-            token_value: tokenValue,
+            token_value: tokenHash,
             token_type: 'CONFIRMATION',
             expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8h
         }, { transaction: t });
@@ -205,10 +206,7 @@ const register = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Account created, but confirmation e-mail could not be sent. Please request a new confirmation e-mail or use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                message: "Account created, but confirmation e-mail could not be sent. Please use 'resend confirmation' to request a new e-mail."
             });
         }
 
@@ -298,9 +296,10 @@ const confirmEmail = async (req, res) => {
             hasToken: Boolean(token)
         });
 
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
         const tokenRecord = await models.user_account_tokens.findOne({
             where: {
-                token_value: token,
+                token_value: hashedToken,
                 token_type: 'CONFIRMATION',
                 is_used: false
             }
@@ -393,6 +392,18 @@ const login = async (req, res) => {
             identifier
         });
 
+        // Check account lockout before hitting the DB for password comparison
+        const lockKey = `login:lock:${identifier}`;
+        const isLocked = await redis.get(lockKey);
+        if (isLocked) {
+            await t.rollback();
+            const ttl = await redis.ttl(lockKey);
+            return res.status(429).json({
+                success: false,
+                message: `Account temporarily locked due to too many failed attempts. Try again in ${ttl} seconds.`
+            });
+        }
+
         const user = await models.users.findOne({ where: searchCriteria });
 
         if (!user) {
@@ -419,15 +430,27 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             await t.rollback();
 
+            const failKey = `login:fail:${identifier}`;
+            const failCount = await redis.incr(failKey);
+            if (failCount === 1) await redis.expire(failKey, 15 * 60);
+            if (failCount >= 5) {
+                await redis.set(lockKey, '1', 'EX', 15 * 60);
+                await redis.del(failKey);
+            }
+
             logger.warn('Failed login attempt: wrong password.', {
                 requestId,
-                identifier
+                identifier,
+                failCount
             });
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials."
             });
         }
+
+        // Clear failed attempt counter on successful password match
+        await redis.del(`login:fail:${identifier}`);
 
         // Check if user has confirmed it's email
         if (!user.email_confirmed) {
@@ -455,6 +478,7 @@ const login = async (req, res) => {
         };
 
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -594,6 +618,7 @@ const refresh = async (req, res) => {
             username: user.username,
             fpc: user.force_password_change
         }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -840,14 +865,6 @@ const forgotPassword = async (req, res) => {
                     email_address: user.email_address,
                     preferred_lang_id: user.preferred_lang_id,
                     emailError: emailResult?.error
-                });
-
-                return res.status(502).json({
-                    success: false,
-                    message: "Failed to send e-mail with password update follow-up. Please use the link below.",
-                    data: {
-                        reset_password_link: `${process.env.APP_URL}/api/auth/reset-password?token=${resetToken}` // CHANGE TO FRONTEND LINK
-                    }
                 });
             }
         } else {
@@ -1255,9 +1272,10 @@ const resendConfirmation = async (req, res) => {
         }
 
         if (user.email_confirmed) {
-            return res.status(400).json({
-                success: false,
-                message: "This account is already confirmed."
+            // Return identical response to prevent enumeration of confirmed accounts
+            return res.status(200).json({
+                success: true,
+                message: "If the account is not confirmed, a new e-mail will be sent."
             });
         }
 
@@ -1277,6 +1295,7 @@ const resendConfirmation = async (req, res) => {
         }
 
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const resendTokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
 
         const confirmationExpiry = new Date(Date.now() + 8 * 60 * 60 * 1000);
         const existingConfirmationToken = await models.user_account_tokens.findOne({
@@ -1288,7 +1307,7 @@ const resendConfirmation = async (req, res) => {
 
         if (existingConfirmationToken) {
             await existingConfirmationToken.update({
-                token_value: tokenValue,
+                token_value: resendTokenHash,
                 expires_at: confirmationExpiry,
                 created_at: new Date(),
                 is_used: false
@@ -1296,7 +1315,7 @@ const resendConfirmation = async (req, res) => {
         } else {
             await models.user_account_tokens.create({
                 user_id: user.user_id,
-                token_value: tokenValue,
+                token_value: resendTokenHash,
                 token_type: 'CONFIRMATION',
                 expires_at: confirmationExpiry,
                 is_used: false
@@ -1325,10 +1344,7 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Failed to send confirmation email. Please use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                message: "Failed to send confirmation email. Please try again later."
             });
         }
 
@@ -1431,6 +1447,7 @@ const adminLogin = async (req, res) => {
         };
 
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -1453,6 +1470,21 @@ const adminLogin = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
+
+        // Store session data in Redis so adminRefresh can validate without a DB round-trip
+        const refreshTTLSeconds = Math.floor(refreshTokenDurationDays * 24 * 60 * 60);
+        await redis.set(
+            `auth:refresh:${refreshTokenValue}`,
+            JSON.stringify({
+                user_id: user.user_id,
+                user_guid: user.user_guid,
+                user_role: user.user_role,
+                username: user.username,
+                force_password_change: user.force_password_change
+            }),
+            'EX',
+            refreshTTLSeconds
+        );
 
         res.cookie('adminRefreshToken', refreshTokenValue, {
             httpOnly: true,
@@ -1544,6 +1576,7 @@ const adminRefresh = async (req, res) => {
             username: userData.username,
             fpc: userData.force_password_change
         }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -1629,5 +1662,8 @@ module.exports = {
     resetPassword,
     verifySession,
     me,
-    resendConfirmation
+    resendConfirmation,
+    adminLogin,
+    adminRefresh,
+    adminLogout
 };

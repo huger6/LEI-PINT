@@ -255,7 +255,7 @@ const getUploadUrl = async (req, res) => {
         const safeFileName = `${Date.now()}_req${requirementId}.${fileExtension}`;
         const storagePath = `${userGuid}/application_${applicationGuid}/${safeFileName}`;
 
-        const { uploadUrl, finalFileUrl } = await generateSignedUploadUrl(storagePath = storagePath);
+        const { uploadUrl, finalFileUrl } = await generateSignedUploadUrl('private-assets', storagePath);
 
         return res.status(200).json({
             success: true,

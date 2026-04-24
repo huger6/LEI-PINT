@@ -10,10 +10,12 @@ const loginRequired = (req, res, next) => {
     });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY, { algorithms: ['HS256'] });
 
         // If fpc and route isn't change-password we block the request
-        const isChangePasswordRoute = req.originalUrl.includes('change-password');
+        // Strip query string before checking to prevent bypass via ?q=change-password
+        const pathWithoutQuery = req.originalUrl.split('?')[0];
+        const isChangePasswordRoute = pathWithoutQuery.endsWith('/change-password');
 
         if (decoded.fpc && !isChangePasswordRoute) {
             return res.status(403).json({
@@ -41,7 +43,7 @@ const annonymousUsersOnly = (req, res, next) => {
 
     if (token) {
         try {
-            jwt.verify(token, process.env.JWT_SECRET_KEY);
+            jwt.verify(token, process.env.JWT_SECRET_KEY, { algorithms: ['HS256'] });
 
             return res.status(400).json({
                 success: false,

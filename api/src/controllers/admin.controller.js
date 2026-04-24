@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { sequelize, models } = require('../config/db');
+const redis = require('../config/redis');
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
 const { moveImageToPermanent } = require('../services/storageService');
 const { handleListRequest } = require('../utils/listHelper');
@@ -322,9 +323,10 @@ const createUser = async (req, res) => {
         }
 
         const confirmationToken = crypto.randomBytes(32).toString('hex');
+        const confirmationTokenHash = crypto.createHash('sha256').update(confirmationToken).digest('hex');
         await models.user_account_tokens.create({
             user_id: newUser.user_id,
-            token_value: confirmationToken,
+            token_value: confirmationTokenHash,
             token_type: 'CONFIRMATION',
             expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000),
             is_used: false
@@ -349,10 +351,7 @@ const createUser = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: 'User was created, but confirmation e-mail could not be sent.',
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${confirmationToken}`
-                }
+                message: 'User was created, but confirmation e-mail could not be sent. Use the admin reset-password flow to re-send credentials.'
             });
         }
 
@@ -430,6 +429,15 @@ const updateUser = async (req, res) => {
         }
 
         const targetRole = payload.user_role || user.user_role;
+
+        // Prevent promoting any user to Administrator via this endpoint
+        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot change a user\'s role to Administrator. Use the create user flow instead.'
+            });
+        }
 
         if (user.user_role === 'Administrator' && payload.user_role && payload.user_role !== 'Administrator') {
             await t.rollback();
@@ -631,9 +639,13 @@ const deactivateUser = async (req, res) => {
             });
         }
 
-        await user.update({
-            is_active: false
+        await sequelize.transaction(async (t) => {
+            await user.update({ is_active: false }, { transaction: t });
+            await models.user_refresh_tokens.destroy({ where: { user_id: userId }, transaction: t });
         });
+
+        // Clear cached profile so /me immediately reflects deactivation
+        await redis.del(`user:profile:${userId}`);
 
         return res.status(200).json({
             success: true,
@@ -733,10 +745,7 @@ const resetUserPassword = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: 'Password reset request was created, but e-mail could not be sent.',
-                data: {
-                    reset_password_link: `${process.env.APP_URL}/api/auth/reset-password?token=${rawResetToken}`
-                }
+                message: 'Password reset request was created, but e-mail could not be sent. Please retry or contact the user directly.'
             });
         }
 
