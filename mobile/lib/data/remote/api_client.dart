@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/api_endpoints.dart';
+import '../../core/utils/api_logger.dart';
 
 class ApiClient {
   late final Dio dio;
@@ -26,6 +27,8 @@ class ApiClient {
       contentType: 'application/json',
       headers: {'Accept': 'application/json'},
     );
+
+    dio.interceptors.add(ApiLoggerInterceptor());
   }
 
   Future<void> init() async {
