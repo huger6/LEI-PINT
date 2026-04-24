@@ -3,7 +3,17 @@ const { models } = require('../config/db');
 const redis = require('../config/redis');
 const { logger } = require('./logger');
 
-const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, baseWhere = {}, include = [], order = [['created_at', 'DESC']] }) => {
+const handleListRequest = async ({
+    req,
+    res,
+    schema,
+    modelName,
+    cachePrefix,
+    baseWhere = {},
+    include = [],
+    order = [['created_at', 'DESC']],
+    attributes = null
+}) => {
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
 
@@ -32,7 +42,10 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
             where.is_active = true;
 
         Object.keys(filters).forEach(key => {
-            if (filters[key]) where[key] = filters[key];
+            const value = filters[key];
+            if (value !== undefined && value !== null && value !== '') {
+                where[key] = value;
+            }
         });
 
         if (search) {
@@ -49,12 +62,13 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         }
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+        const finalAttributes = attributes || {
+            exclude: excludedFields
+        };
 
         const { rows, count } = await models[modelName].findAndCountAll({
             where, include, limit, offset, order, distinct: true,
-            attributes: {
-                exclude: excludedFields
-            }
+            attributes: finalAttributes
         });
 
         const totalPages = Math.ceil(count / limit);

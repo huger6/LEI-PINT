@@ -12,6 +12,7 @@ const badges = require('./badges.routes');
 const applications = require('./applications.routes');
 const ranking = require('./ranking.routes');
 const utils = require('./utils.routes');
+const admin = require('./admin.routes');
 
 router.use('/auth', auth);
 router.use('/locations', locations);
@@ -26,5 +27,6 @@ router.use('/badges', badges);
 router.use('/applications', applications);
 router.use('/ranking', ranking);
 router.use('/utils', utils);
+router.use('/admin', admin);
 
 module.exports = router;
