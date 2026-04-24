@@ -34,6 +34,10 @@ This project is a starting point for a Flutter application.
      ```bash
      flutter run
      ```
+  - Use this command to filter useless debug prints (Windows only):
+    ```bash
+    flutter run | Select-String -Pattern "OpenGLRenderer|ViewRootImpl|SurfaceView" -NotMatch
+    ```
 
 ## Additional Resources
 
