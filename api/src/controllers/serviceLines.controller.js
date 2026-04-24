@@ -4,7 +4,7 @@ const { handleListRequest } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
-const { moveStructureImageToPermanent } = require('../services/storageService');
+const { moveStructureImageToPermanent } = require('../services/storage.service');
 
 // GET /api/service-lines 
 // OR

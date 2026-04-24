@@ -6,10 +6,10 @@ const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
-const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
+const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
+const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const stripNullishFields = require('../utils/stripNullishFields');
-const { moveImageToPermanent } = require('../services/storageService');
 
 loadEnvironment();
 

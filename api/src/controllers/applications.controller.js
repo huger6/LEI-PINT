@@ -2,7 +2,7 @@ const { models, sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/applications.validation');
-const { generateSignedUploadUrl } = require('../services/storageService');
+const { generateSignedUploadUrl } = require('../services/storage.service');
 
 
 const getApplications = async (req, res) => {
