@@ -27,7 +27,7 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
 
         const where = { ...baseWhere };
 
-        const tablesWhithoutIsActive = ['progression_stages', 'locations'];
+        const tablesWhithoutIsActive = ['locations'];
         if (!isAdmin && !tablesWhithoutIsActive.includes(modelName))
             where.is_active = true;
 
