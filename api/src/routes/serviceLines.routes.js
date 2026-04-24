@@ -4,7 +4,7 @@ const router = express.Router({ mergeParams: true });
 const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
 const slController = require('../controllers/serviceLines.controller');
 
-const areasRoutes = require('./levels.routes');
+const areasRoutes = require('./areas.routes');
 const badgeRoutes = require('./badges.routes');
 
 // GET /api/service-lines
