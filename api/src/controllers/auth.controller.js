@@ -1177,7 +1177,7 @@ const me = async (req, res) => {
                 return;
             }
 
-            const serviceLine = await models.services_lines.findByPk(serviceLineId, {
+            const serviceLine = await models.service_lines.findByPk(serviceLineId, {
                 attributes: ['service_line_name', 'learning_path_id'],
                 raw: true
             });

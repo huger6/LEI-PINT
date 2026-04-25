@@ -58,7 +58,7 @@ const getLearningPathBySlug = async (req, res) => {
 
 const checkSlugAvailability = async (req, res) => {
     try {
-        const { slug } = validations.pathSlugParamSchema.parse(req.query);
+        const { slug } = validations.slugQuerySchema.parse(req.query);
 
         const lp = await models.learning_paths.findOne({ where: { path_slug: slug } });
 

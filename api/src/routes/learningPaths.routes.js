@@ -9,11 +9,11 @@ const slRoutes = require('./serviceLines.routes');
 // GET /api/learning-paths
 router.get('/', lpController.getAllLearningPaths);
 
-// GET /api/learning-paths/:pathSlug
-router.get('/:pathSlug', loginRequired, lpController.getLearningPathBySlug);
-
 // GET /api/learning-paths/check-slug?slug=mySlug
 router.get('/check-slug', loginRequired, isAdmin, lpController.checkSlugAvailability);
+
+// GET /api/learning-paths/:pathSlug
+router.get('/:pathSlug', loginRequired, lpController.getLearningPathBySlug);
 
 // POST /api/learning-paths
 router.post('/', loginRequired, isAdmin, lpController.createLearningPath);
@@ -22,7 +22,7 @@ router.post('/', loginRequired, isAdmin, lpController.createLearningPath);
 router.put('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
 
 // DELETE /api/learning-paths/:pathSlug
-router.delete('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
+router.delete('/:pathSlug', loginRequired, isAdmin, lpController.deleteLearningPath);
 
 router.use('/:pathSlug/service-lines', slRoutes);
 

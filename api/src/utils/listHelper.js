@@ -20,7 +20,7 @@ const handleListRequest = async ({
     const queryValidation = schema.safeParse(req.query);
     if (!queryValidation.success) return res.status(400).json({
         success: false,
-        errors: queryValidation.error.errors
+        errors: queryValidation.error.issues
     });
 
     const { page, limit, search, ...filters } = queryValidation.data;

@@ -224,6 +224,13 @@ const startApplication = async (req, res) => {
         });
 
     } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid data.',
+                errors: error.issues || error.errors
+            });
+        }
         logger.error('Error starting application', { error });
         return res.status(500).json({
             success: false,

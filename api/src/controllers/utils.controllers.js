@@ -25,7 +25,7 @@ const handleQueryCheck = async (req, res, label, checkFn) => {
     if (!parsed.success) {
         return res.status(400).json({
             success: false,
-            message: parsed.error.errors[0].message
+            message: parsed.error.issues[0].message
         });
     }
     const available = await checkFn(parsed.data.value);
@@ -106,7 +106,7 @@ const checkBiography = async (req, res) => {
                 success: true,
                 data: {
                     available: false,
-                    errors: parsed.error.errors.map(e => e.message)
+                    errors: parsed.error.issues.map(e => e.message)
                 }
             });
         }

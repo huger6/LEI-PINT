@@ -12,13 +12,13 @@ const badgeRoutes = require('./badges.routes');
 // GET /api/learning-paths/:pathSlug/service-lines
 router.get('/', loginRequired, slController.getServiceLines);
 
+// GET /api/service-lines/check-slug?slug=mySlug
+router.get('/check-slug', loginRequired, isAdmin, slController.checkSlugAvailability);
+
 // GET /api/service-lines/:slSlug
 // OR
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug
 router.get('/:slSlug', loginRequired, slController.getServiceLineBySlug);
-
-// GET /api/service-lines/check-slug?slug=mySlug
-router.get('/check-slug', loginRequired, isAdmin, slController.checkSlugAvailability);
 
 // POST /api/service-lines/
 router.post('/', loginRequired, isAdmin, slController.createServiceLine);
