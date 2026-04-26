@@ -6,29 +6,44 @@ const levelController = require('../controllers/levels.controller');
 
 const badgesRoutes = require('./badges.routes');
 
-// GET /api/levels
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
+/**
+ * @route   GET /api/levels
+ *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
+ * @desc    List all levels, optionally scoped to an area
+ * @access  Authenticated
+ */
 router.get('/', loginRequired, levelController.getLevels);
 
-// GET /api/levels/:stageCode
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+/**
+ * @route   GET /api/levels/:stageCode
+ *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+ * @desc    Get a single level by stage code
+ * @access  Authenticated
+ */
 router.get('/:stageCode', loginRequired, levelController.getLevelByCode);
 
-// POST /api/levels
-// OR
-// POST /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
+/**
+ * @route   POST /api/levels
+ *          POST /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
+ * @desc    Create a new level
+ * @access  Administrator
+ */
 router.post('/', loginRequired, isAdmin, levelController.createLevel);
 
-// PUT /api/levels/:stageCode
-// OR
-// PUT /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+/**
+ * @route   PUT /api/levels/:stageCode
+ *          PUT /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+ * @desc    Update an existing level
+ * @access  Administrator
+ */
 router.put('/:stageCode', loginRequired, isAdmin, levelController.updateLevel);
 
-// DELETE /api/levels/:stageCode
-// OR
-// DELETE /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+/**
+ * @route   DELETE /api/levels/:stageCode
+ *          DELETE /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
+ * @desc    Delete a level
+ * @access  Administrator
+ */
 router.delete('/:stageCode', loginRequired, isAdmin, levelController.deleteLevel);
 
 router.use('/:stageCode/badges', badgesRoutes);

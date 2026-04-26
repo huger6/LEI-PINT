@@ -3,8 +3,11 @@ const locationsController = require('../controllers/locations.controller');
 
 const router = express.Router();
 
-// This route should be start with /locations
-
+/**
+ * @route   GET /api/locations
+ * @desc    List all available office/country locations
+ * @access  Public
+ */
 router.get('/', locationsController.getAvailableLocations);
 
 module.exports = router;

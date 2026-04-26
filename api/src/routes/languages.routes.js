@@ -3,8 +3,11 @@ const langController = require('../controllers/language.controller');
 
 const router = express.Router();
 
-// This route should be start with /languages
-
+/**
+ * @route   GET /api/languages
+ * @desc    List all available i18n languages
+ * @access  Public
+ */
 router.get('/', langController.getAvailableLanguages);
 
 module.exports = router;

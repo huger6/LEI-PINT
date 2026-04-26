@@ -7,32 +7,51 @@ const areaController = require('../controllers/areas.controller');
 const levelsRoutes = require('./levels.routes');
 const badgesRoutes = require('./badges.routes');
 
-// GET /api/areas
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
+/**
+ * @route   GET /api/areas
+ *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
+ * @desc    List all areas, optionally scoped to a service line
+ * @access  Public
+ */
 router.get('/', areaController.getAreas);
 
-// GET /api/areas/check-slug?slug=mySlug
+/**
+ * @route   GET /api/areas/check-slug?slug=mySlug
+ * @desc    Check whether a given area slug is available
+ * @access  Administrator
+ */
 router.get('/check-slug', loginRequired, isAdmin, areaController.checkSlugAvailability);
 
-// GET /api/areas/:areaSlug
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+/**
+ * @route   GET /api/areas/:areaSlug
+ *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+ * @desc    Get a single area by slug
+ * @access  Authenticated
+ */
 router.get('/:areaSlug', loginRequired, areaController.getAreaBySlug);
 
-// POST /api/areas
-// OR
-// POST /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
+/**
+ * @route   POST /api/areas
+ *          POST /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
+ * @desc    Create a new area
+ * @access  Administrator
+ */
 router.post('/', loginRequired, isAdmin, areaController.createArea);
 
-// PUT /api/areas/:areaSlug
-// OR
-// PUT /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+/**
+ * @route   PUT /api/areas/:areaSlug
+ *          PUT /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+ * @desc    Update an existing area
+ * @access  Administrator
+ */
 router.put('/:areaSlug', loginRequired, isAdmin, areaController.updateArea);
 
-// DELETE /api/areas/:areaSlug
-// OR
-// DELETE /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+/**
+ * @route   DELETE /api/areas/:areaSlug
+ *          DELETE /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug
+ * @desc    Delete an area
+ * @access  Administrator
+ */
 router.delete('/:areaSlug', loginRequired, isAdmin, areaController.deleteArea);
 
 router.use('/:areaSlug/levels', levelsRoutes);
