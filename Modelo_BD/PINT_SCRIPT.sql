@@ -17,6 +17,9 @@ DROP INDEX IF EXISTS idx_awarded_user_date CASCADE;
 DROP INDEX IF EXISTS idx_awarded_expiration CASCADE;
 DROP INDEX IF EXISTS idx_awarded_public_featured CASCADE;
 DROP INDEX IF EXISTS idx_points_user_delta CASCADE;
+DROP INDEX IF EXISTS idx_points_history_user_created CASCADE;
+DROP INDEX IF EXISTS idx_interactions_user_date CASCADE;
+DROP INDEX IF EXISTS idx_interactions_badge_date CASCADE;
 DROP INDEX IF EXISTS idx_validation_logs_app CASCADE;
 DROP INDEX IF EXISTS idx_announcements_active_dates CASCADE;
 DROP INDEX IF EXISTS idx_evidences_app_req CASCADE;
@@ -622,6 +625,7 @@ CREATE TABLE IF NOT EXISTS points_history (
    badge_id             INTEGER                 NULL, -- FK -> badges(badge_id)
    points_delta         INTEGER                 NOT NULL,
    justification        TEXT                 NULL,
+   created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_points_history PRIMARY KEY (points_history_id)
 );
@@ -1524,6 +1528,9 @@ CREATE INDEX IF NOT EXISTS idx_awarded_user_date ON awarded_badges (user_id, awa
 CREATE INDEX IF NOT EXISTS idx_awarded_expiration ON awarded_badges (expiration_at) WHERE expiration_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_awarded_public_featured ON awarded_badges (is_published, is_featured);
 CREATE INDEX IF NOT EXISTS idx_points_user_delta ON points_history (user_id, points_delta);
+CREATE INDEX IF NOT EXISTS idx_points_history_user_created ON points_history (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_interactions_user_date ON user_badges_interactions (user_id, interaction_date DESC);
+CREATE INDEX IF NOT EXISTS idx_interactions_badge_date ON user_badges_interactions (badge_id, interaction_date DESC);
 CREATE INDEX IF NOT EXISTS idx_validation_logs_app ON application_validation_logs (application_id, validated_at);
 CREATE INDEX IF NOT EXISTS idx_announcements_active_dates ON system_announcements (is_active, starts_at, ends_at);
 CREATE INDEX IF NOT EXISTS idx_evidences_app_req ON requirements_evidences (application_id, requirement_id);

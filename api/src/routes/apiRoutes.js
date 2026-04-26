@@ -13,6 +13,7 @@ const applications = require('./applications.routes');
 const ranking = require('./ranking.routes');
 const utils = require('./utils.routes');
 const admin = require('./admin.routes');
+const gamification = require('./gamification.routes');
 
 router.use('/auth', auth);
 router.use('/locations', locations);
@@ -28,5 +29,6 @@ router.use('/applications', applications);
 router.use('/ranking', ranking);
 router.use('/utils', utils);
 router.use('/admin', admin);
+router.use('/gamification', gamification);
 
 module.exports = router;

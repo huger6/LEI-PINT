@@ -43,9 +43,17 @@ router.post('/:applicationGuid/evidences', loginRequired, applicationController.
 router.post('/:applicationGuid/submit', loginRequired, applicationController.submitApplication);
 
 /**
- * @route   POST /api/applications/:applicationGuid/validate
- * @desc    Aprove, reject or send back
+ * @route   PUT /api/applications/:applicationGuid/validate
+ * @desc    Accept, reject or move to 'In validation'
+ * @access  Talent Manager, Service Line Leader, Administrator
  */
-//router.post('/:applicationId/validate', loginRequired, applicationController.validateApplication);
+router.put('/:applicationGuid/validate', loginRequired, applicationController.validateApplication);
+
+/**
+ * @route   PUT /api/applications/:applicationGuid/evidences/:evidenceId/review
+ * @desc    Approve or reject a single evidence; awards requirement points when approved
+ * @access  Talent Manager, Service Line Leader
+ */
+router.put('/:applicationGuid/evidences/:evidenceId/review', loginRequired, applicationController.reviewEvidence);
 
 module.exports = router;
