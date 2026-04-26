@@ -100,6 +100,22 @@ const handleListRequest = async ({
     }
 };
 
+// Delete all cache keys whose prefix matches `${prefix}:*` using non-blocking SCAN.
+// Silently no-ops if Redis is unavailable; callers must not rely on this for correctness.
+const invalidateCacheByPrefix = async (prefix) => {
+    try {
+        let cursor = '0';
+        do {
+            const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', `${prefix}:*`, 'COUNT', 100);
+            cursor = nextCursor;
+            if (keys.length > 0) await redis.del(...keys);
+        } while (cursor !== '0');
+    } catch (err) {
+        logger.warn(`Cache invalidation failed for prefix "${prefix}"`, { error: err });
+    }
+};
+
 module.exports = {
-    handleListRequest
+    handleListRequest,
+    invalidateCacheByPrefix
 };

@@ -5,7 +5,7 @@ const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
 const { moveImageToPermanent } = require('../services/storage.service');
-const { handleListRequest } = require('../utils/listHelper');
+const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
 
@@ -334,6 +334,8 @@ const createUser = async (req, res) => {
 
         await t.commit();
 
+        await invalidateCacheByPrefix('admin:users:list');
+
         const emailResult = await sendConfirmationEmail(
             newUser.email_address,
             newUser.full_name,
@@ -573,6 +575,11 @@ const updateUser = async (req, res) => {
 
         await t.commit();
 
+        await Promise.all([
+            invalidateCacheByPrefix('admin:users:list'),
+            redis.del(`user:profile:${userId}`)
+        ]);
+
         return res.status(200).json({
             success: true,
             message: 'User updated successfully.'
@@ -645,7 +652,10 @@ const deactivateUser = async (req, res) => {
         });
 
         // Clear cached profile so /me immediately reflects deactivation
-        await redis.del(`user:profile:${userId}`);
+        await Promise.all([
+            redis.del(`user:profile:${userId}`),
+            invalidateCacheByPrefix('admin:users:list')
+        ]);
 
         return res.status(200).json({
             success: true,

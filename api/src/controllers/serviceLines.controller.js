@@ -1,6 +1,6 @@
 const { models } = require('../config/db');
 const { Op } = require('sequelize');
-const { handleListRequest } = require('../utils/listHelper');
+const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -180,6 +180,8 @@ const createServiceLine = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('sl:list');
+
         return res.status(201).json({
             success: true,
             message: "Service Line created successfully.",
@@ -263,6 +265,8 @@ const updateServiceLine = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('sl:list');
+
         return res.status(200).json({
             success: true,
             message: "Service Line updated successfully.",
@@ -313,6 +317,8 @@ const deleteServiceLine = async (req, res) => {
             is_active: false,
             updated_by: userId
         });
+
+        await invalidateCacheByPrefix('sl:list');
 
         return res.status(200).json({
             success: true,

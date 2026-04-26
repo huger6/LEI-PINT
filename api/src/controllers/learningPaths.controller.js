@@ -1,5 +1,5 @@
 const { models } = require('../config/db');
-const { handleListRequest } = require('../utils/listHelper');
+const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -113,6 +113,8 @@ const createLearningPath = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('lp:list');
+
         return res.status(201).json({
             success: true,
             message: "Learning Path created successfully.",
@@ -185,6 +187,8 @@ const updateLearningPath = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('lp:list');
+
         return res.status(200).json({
             success: true,
             message: "Learning Path updated successfully.",
@@ -234,6 +238,8 @@ const deleteLearningPath = async (req, res) => {
             is_active: false,
             updated_by: userId
         });
+
+        await invalidateCacheByPrefix('lp:list');
 
         return res.status(200).json({
             success: true,
