@@ -21,6 +21,7 @@ class RegistrationData {
     final mainAreaId =
         mainArea?.id ??
         (selectedAreas.isNotEmpty ? selectedAreas.first.id : null);
+    final normalizedPhone = _normalizePhoneNumber(phone);
 
     final selectedAreasPayload = selectedAreas
         .map(
@@ -37,7 +38,7 @@ class RegistrationData {
       'email_address': email,
       'password': password,
       'user_role': 'Consultant',
-      if (phone != null && phone!.trim().isNotEmpty) 'phone_number': phone,
+      if (normalizedPhone != null) 'phone_number': normalizedPhone,
       if (birthDate != null && birthDate!.trim().isNotEmpty)
         'birthdate': _toApiDate(birthDate!),
       if (bio != null && bio!.trim().isNotEmpty) 'biography': bio,
@@ -47,6 +48,25 @@ class RegistrationData {
       if (preferredLanguage != null) 'preferred_lang_id': preferredLanguage!.id,
       'areas': selectedAreasPayload,
     };
+  }
+
+  String? _normalizePhoneNumber(String? input) {
+    if (input == null) {
+      return null;
+    }
+
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final hasPlus = trimmed.startsWith('+');
+    final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return null;
+    }
+
+    return hasPlus ? '+$digits' : digits;
   }
 
   String _toApiDate(String input) {

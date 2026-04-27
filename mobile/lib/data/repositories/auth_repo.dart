@@ -97,7 +97,15 @@ class AuthRepository {
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     try {
       final responseMap = _asMap(
-        await _apiClient.post(ApiEndpoints.register, data: userData),
+        await _apiClient.post(
+          ApiEndpoints.register,
+          data: userData,
+          options: Options(
+            connectTimeout: const Duration(seconds: 20),
+            sendTimeout: const Duration(seconds: 45),
+            receiveTimeout: const Duration(seconds: 45),
+          ),
+        ),
       );
       final isSuccess = responseMap['success'] == true;
 
@@ -113,6 +121,24 @@ class AuthRepository {
         ),
       };
     } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        return {
+          'success': false,
+          'message':
+              'Nao foi possivel ligar ao servidor. Confirme se a API esta ativa e se o URL esta correto.',
+        };
+      }
+
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        return {
+          'success': false,
+          'message':
+              'A ligacao ao servidor demorou demasiado tempo. Tente novamente.',
+        };
+      }
+
       final message = _extractMessage(
         _asMap(e.response?.data),
         fallback: 'Erro ao criar conta.',
@@ -198,6 +224,21 @@ class AuthRepository {
     Map<String, dynamic> payload, {
     required String fallback,
   }) {
+    final errors = payload['errors'];
+    if (errors is List && errors.isNotEmpty) {
+      final firstError = errors.first;
+      if (firstError is Map) {
+        final field = firstError['field']?.toString();
+        final detail = firstError['message']?.toString();
+        if (detail != null && detail.isNotEmpty) {
+          if (field != null && field.isNotEmpty) {
+            return '$field: $detail';
+          }
+          return detail;
+        }
+      }
+    }
+
     final message = payload['message']?.toString();
     if (message != null && message.isNotEmpty) {
       return message;
@@ -206,14 +247,6 @@ class AuthRepository {
     final error = payload['error']?.toString();
     if (error != null && error.isNotEmpty) {
       return error;
-    }
-
-    final errors = payload['errors'];
-    if (errors is List && errors.isNotEmpty) {
-      final firstError = errors.first;
-      if (firstError is Map && firstError['message'] != null) {
-        return firstError['message'].toString();
-      }
     }
 
     return fallback;

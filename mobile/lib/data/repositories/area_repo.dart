@@ -27,10 +27,22 @@ class AreaRepository {
       return areas;
     } on DioException catch (e) {
       debugPrint('API error (areas): ${e.message}');
-      return _areaDao.getAll();
+      final cachedAreas = await _areaDao.getAll();
+      if (cachedAreas.isNotEmpty) {
+        return cachedAreas;
+      }
+
+      throw Exception(
+        'Failed to load areas from API. Ensure the backend is running and adb reverse is configured.',
+      );
     } catch (e) {
       debugPrint('Unexpected error (areas): $e');
-      return _areaDao.getAll();
+      final cachedAreas = await _areaDao.getAll();
+      if (cachedAreas.isNotEmpty) {
+        return cachedAreas;
+      }
+
+      rethrow;
     }
   }
 

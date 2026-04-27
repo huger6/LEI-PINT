@@ -8,6 +8,8 @@ import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
 import 'badges/badges_page.dart';
+import 'notifications/notifications_screen.dart';
+import 'evolution/points_detail_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -16,6 +18,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     const pageBackground = Color(0xFFE2E6EB);
+    const totalPoints = 1259;
 
     final submissions = <_SubmissionData>[
       _SubmissionData(
@@ -84,7 +87,27 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _DashboardTopBar(),
+                _DashboardTopBar(
+                  totalPoints: totalPoints,
+                  onPointsTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const PointsDetailScreen(totalPoints: totalPoints),
+                      ),
+                    );
+                  },
+                  onNotificationsTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const NotificationsScreen(sourceTab: AppTab.home),
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
                 Text(
                   tr
@@ -207,37 +230,49 @@ class DashboardScreen extends StatelessWidget {
 }
 
 class _DashboardTopBar extends StatelessWidget {
-  const _DashboardTopBar();
+  const _DashboardTopBar({
+    required this.totalPoints,
+    required this.onPointsTap,
+    required this.onNotificationsTap,
+  });
+
+  final int totalPoints;
+  final VoidCallback onPointsTap;
+  final VoidCallback onNotificationsTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6DC1E3), Color(0xFF658CC9)],
+        InkWell(
+          onTap: onPointsTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6DC1E3), Color(0xFF658CC9)],
+              ),
+              borderRadius: BorderRadius.circular(14),
             ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Row(
-            children: [
-              Text(
-                '1259',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 17,
+            child: Row(
+              children: [
+                Text(
+                  '$totalPoints',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                  ),
                 ),
-              ),
-              SizedBox(width: 8),
-              Icon(
-                Icons.workspace_premium_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ],
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
         const Spacer(),
@@ -251,33 +286,36 @@ class _DashboardTopBar extends StatelessWidget {
           child: const Icon(Icons.campaign_outlined, color: Color(0xFF20252B)),
         ),
         const SizedBox(width: 8),
-        Stack(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                color: Color(0xFFD2DAE2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: Color(0xFF20252B),
-              ),
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
+        GestureDetector(
+          onTap: onNotificationsTap,
+          child: Stack(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFDE5A6A),
+                  color: Color(0xFFD2DAE2),
                   shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.notifications_none,
+                  color: Color(0xFF20252B),
+                ),
               ),
-            ),
-          ],
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDE5A6A),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(width: 8),
         const CircleAvatar(

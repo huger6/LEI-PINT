@@ -24,23 +24,24 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
 
   Future<void> _handleRegister() async {
     final tr = LanguageScope.of(context);
+    final authStore = context.read<AuthStore>();
+    final pendingUsername = authStore.draftRegistration.username ?? '';
+
     setState(() => _isLoading = true);
 
     try {
-      final authStore = context.read<AuthStore>();
       final success = await authStore.submitRegistration();
 
       if (!mounted) return;
       setState(() => _isLoading = false);
 
       if (success) {
-        // Vai buscar o nome ao Provider apenas para mostrar na mensagem final
-        final username = authStore.draftRegistration.username ?? '';
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              tr.tr('userRegisteredSuccess').replaceAll('{username}', username),
+              tr
+                  .tr('userRegisteredSuccess')
+                  .replaceAll('{username}', pendingUsername),
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 5),
@@ -52,11 +53,12 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         });
       } else {
+        final errorMessage =
+            authStore.lastRegistrationError ??
+            tr.tr('registerErrorInvalidData');
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(tr.tr('registerErrorInvalidData')),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {

@@ -1,11 +1,13 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
+import '../../../presentation/state/auth_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
-import 'application_status_page.dart';
+import 'success_submission_screen.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -20,6 +22,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
   bool isTermsAccepted = false;
   final List<AttachedDocument> attachedFiles = [];
   late final List<String> _requirements;
+
+  static const String _fallbackConfirmationEmail = 'jorge.jesus@softinsa.pt';
 
   @override
   void initState() {
@@ -38,6 +42,10 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       return;
     }
 
+    if (!mounted) {
+      return;
+    }
+
     final tr = LanguageScope.of(context);
 
     setState(() {
@@ -52,10 +60,19 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     });
   }
 
+  String _resolveConfirmationEmail() {
+    final userEmail = context.read<AuthStore>().currentUser?.email.trim();
+    if (userEmail != null && userEmail.isNotEmpty) {
+      return userEmail;
+    }
+
+    return _fallbackConfirmationEmail;
+  }
+
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    final canSubmit = isTermsAccepted;
+    final canSubmit = isTermsAccepted && attachedFiles.isNotEmpty;
 
     return Scaffold(
       backgroundColor: _ApplicationColors.pageBackground,
@@ -101,27 +118,28 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                     color: _ApplicationColors.primaryText,
                   ),
                 ),
-                children: (_requirements.isEmpty
-                        ? [tr.tr('noRequirementsLinked')]
-                        : _requirements)
-                    .map(
-                      (item) => ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
-                          Icons.check_circle_outline_rounded,
-                          color: _ApplicationColors.primaryAction,
-                          size: 20,
-                        ),
-                        title: Text(
-                          item,
-                          style: const TextStyle(
-                            color: _ApplicationColors.primaryText,
+                children:
+                    (_requirements.isEmpty
+                            ? [tr.tr('noRequirementsLinked')]
+                            : _requirements)
+                        .map(
+                          (item) => ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(
+                              Icons.check_circle_outline_rounded,
+                              color: _ApplicationColors.primaryAction,
+                              size: 20,
+                            ),
+                            title: Text(
+                              item,
+                              style: const TextStyle(
+                                color: _ApplicationColors.primaryText,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                        )
+                        .toList(),
               ),
             ),
 
@@ -201,9 +219,13 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => CandidaturaStatusScreen(
+                            builder: (_) => SuccessSubmissionScreen(
                               badge: widget.badge,
-                              attachedFiles: attachedFiles,
+                              attachedFiles: List<AttachedDocument>.from(
+                                attachedFiles,
+                              ),
+                              confirmationEmail: _resolveConfirmationEmail(),
+                              submittedAt: DateTime.now(),
                             ),
                           ),
                         );
@@ -433,15 +455,12 @@ class _CardContainer extends StatelessWidget {
 class _ApplicationColors {
   static const Color pageBackground = Color(0xFFE8EEF3);
   static const Color cardBackground = Colors.white;
-  static const Color inputBackground = Color(0xFFF5F8FB);
   static const Color cardBorder = Color(0xFFD2DCE6);
   static const Color dashedBorder = Color(0xFF9DB3C6);
   static const Color primaryAction = Color(0xFF5EAEDC);
-  static const Color chipSelected = Color(0xFFE3F1FB);
   static const Color buttonDisabled = Color(0xFFAFC4D3);
   static const Color primaryText = Color(0xFF1D2A35);
   static const Color secondaryText = Color(0xFF394B59);
   static const Color mutedText = Color(0xFF61717F);
   static const Color iconMuted = Color(0xFF556571);
-  static const Color danger = Color(0xFFD45555);
 }
