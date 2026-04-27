@@ -87,12 +87,14 @@ class AppBottomNavBar extends StatelessWidget {
       case AppTab.home:
         Navigator.pushReplacementNamed(context, '/dashboard');
         break;
-      case AppTab.badges:
       case AppTab.progress:
+        Navigator.pushReplacementNamed(context, '/evolucao');
+        break;
       case AppTab.profile:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LanguageScope.of(context).tr('screenNotAvailable'))),
-        );
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+      case AppTab.badges:
+        Navigator.pushReplacementNamed(context, '/my-badges');
         break;
     }
   }

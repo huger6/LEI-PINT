@@ -6,6 +6,9 @@ import '../../ui/pages/auth/newuser_confirm.dart';
 import '../../ui/pages/misc/select_areas_page.dart';
 import '../../ui/pages/dashboard_page.dart';
 import '../../ui/pages/badges/explore_badges.dart';
+import '../../ui/pages/badges/my_badges_screen.dart';
+import '../../ui/pages/evolution/evolucao_screen.dart';
+import '../../ui/pages/profile/profile_screen.dart';
 
 class AppRouter {
   static const String initial = '/';
@@ -16,6 +19,9 @@ class AppRouter {
   static const String newUserConfirm = '/newuser-confirm';
   static const String dashboard = '/dashboard';
   static const String exploreCompetencies = '/explore-competencies';
+  static const String myBadges = '/my-badges';
+  static const String evolucao = '/evolucao';
+  static const String profile = '/profile';
 
   static Map<String, WidgetBuilder> get routes => {
     login: (context) => const LoginScreen(),
@@ -28,5 +34,8 @@ class AppRouter {
 
     dashboard: (context) => const DashboardScreen(),
     exploreCompetencies: (context) => const ExploreCompetenciesScreen(),
+    myBadges: (context) => const MyBadgesScreen(),
+    evolucao: (context) => const EvolucaoScreen(),
+    profile: (context) => const ProfileScreen(),
   };
 }

@@ -23,15 +23,28 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupDependencies() async {
   if (!dotenv.isInitialized) {
     try {
-      await dotenv.load(fileName: '.env');
+      await dotenv.load(fileName: 'badges_softinsa/project.env');
     } catch (e, stackTrace) {
-      debugPrint('.env not loaded. Continuing with fallback config: $e');
+      try {
+        await dotenv.load(fileName: '.env');
+      } catch (_) {
+        debugPrint(
+          'Environment file not loaded. Continuing with fallback config: $e',
+        );
+      }
       debugPrintStack(stackTrace: stackTrace);
     }
   }
 
-  final supabaseUrl = dotenv.env['SUPABASE_URL']?.trim() ?? '';
-  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']?.trim() ?? '';
+  final supabaseUrl =
+      (dotenv.env['SUPABASE_URL'] ?? dotenv.env['SUPABASE_STORAGE_URL'])
+          ?.trim() ??
+      '';
+  final supabaseAnonKey =
+      (dotenv.env['SUPABASE_ANON_KEY'] ??
+              dotenv.env['SUPABASE_STORAGE_API_KEY'])
+          ?.trim() ??
+      '';
 
   var hasSupabaseClient = false;
   try {

@@ -7,6 +7,7 @@ import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/explore_badge_card.dart';
 import '../../widgets/badges/filter_modal.dart';
 import 'badges_page.dart';
+import '../notifications/notifications_screen.dart';
 
 class ExploreCompetenciesScreen extends StatefulWidget {
   const ExploreCompetenciesScreen({super.key});
@@ -56,11 +57,17 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                     color: const Color(0xFF1E2932),
                   ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.notifications_none_rounded,
-                      size: 31,
-                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationsScreen(
+                            sourceTab: AppTab.explore,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.notifications_none, size: 31),
                     color: const Color(0xFF1E2932),
                   ),
                 ],
@@ -130,9 +137,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                   ),
                 )
               else if (badges.isEmpty)
-                Expanded(
-                  child: Center(child: Text(tr.tr('noBadgesAvailable'))),
-                )
+                Expanded(child: Center(child: Text(tr.tr('noBadgesAvailable'))))
               else
                 Expanded(
                   child: ListView.builder(

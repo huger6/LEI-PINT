@@ -8,8 +8,11 @@ import '../../models/dtos/registration_data.dart';
 import '../../models/user_model.dart';
 
 class AuthStore extends ChangeNotifier {
-  AuthStore(this._authRepository, this._apiClient, {SupabaseStorageService? storageService})
-      : _storageService = storageService;
+  AuthStore(
+    this._authRepository,
+    this._apiClient, {
+    SupabaseStorageService? storageService,
+  }) : _storageService = storageService;
 
   final AuthRepository _authRepository;
   final ApiClient _apiClient;
@@ -18,10 +21,12 @@ class AuthStore extends ChangeNotifier {
   String? _accessToken;
   UserModel? _currentUser;
   RegistrationData _draftRegistration = RegistrationData();
+  String? _lastRegistrationError;
 
   String? get accessToken => _accessToken;
   UserModel? get currentUser => _currentUser;
   RegistrationData get draftRegistration => _draftRegistration;
+  String? get lastRegistrationError => _lastRegistrationError;
   bool get isAuthenticated => _accessToken != null && _accessToken!.isNotEmpty;
 
   Future<Map<String, dynamic>> login(
@@ -43,6 +48,7 @@ class AuthStore extends ChangeNotifier {
 
   Future<bool> submitRegistration() async {
     try {
+      _lastRegistrationError = null;
       String? profileImageUrl;
 
       final image = _draftRegistration.profileImage;
@@ -51,8 +57,14 @@ class AuthStore extends ChangeNotifier {
       }
 
       final payload = _draftRegistration.toJson(profileImageUrl);
+      final result = await _authRepository.register(payload);
 
-      await _authRepository.register(payload);
+      if (result['success'] != true) {
+        _lastRegistrationError =
+            result['message']?.toString() ?? 'Erro ao criar conta.';
+        notifyListeners();
+        return false;
+      }
 
       _draftRegistration = RegistrationData();
       notifyListeners();
@@ -60,6 +72,8 @@ class AuthStore extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('Registration submission error: $e');
+      _lastRegistrationError = 'Erro ao criar conta. Tente novamente.';
+      notifyListeners();
       return false;
     }
   }
@@ -94,8 +108,7 @@ class AuthStore extends ChangeNotifier {
   Future<void> clearSession() async {
     _accessToken = null;
     _currentUser = null;
-    _draftRegistration =
-        RegistrationData();
+    _draftRegistration = RegistrationData();
     _apiClient.setAccessToken(null);
     notifyListeners();
   }

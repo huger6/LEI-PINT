@@ -13,6 +13,8 @@ class ApiClient {
   late final PersistCookieJar cookieJar;
   String? _accessToken;
 
+  static const String _androidHostLoopback = '10.0.2.2';
+
   ApiClient(this.dio) {
     final configuredBaseUrl = dotenv.env['API_BASE_URL']?.trim();
     final fallbackHost = Platform.isAndroid ? '10.0.2.2' : 'localhost';
@@ -53,6 +55,21 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
+          if (error.type == DioExceptionType.connectionError) {
+            final fallbackRequest = _buildAndroidLoopbackRetry(
+              error.requestOptions,
+            );
+
+            if (fallbackRequest != null) {
+              try {
+                final response = await dio.fetch<dynamic>(fallbackRequest);
+                return handler.resolve(response);
+              } on DioException {
+                // Keep original network error when retry also fails.
+              }
+            }
+          }
+
           final statusCode = error.response?.statusCode;
           final path = error.requestOptions.path;
           final isAuthRoute =
@@ -82,6 +99,24 @@ class ApiClient {
         },
       ),
     );
+  }
+
+  RequestOptions? _buildAndroidLoopbackRetry(RequestOptions request) {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+
+    final uri = request.uri;
+    final host = uri.host.toLowerCase();
+    if (host != 'localhost' && host != '127.0.0.1') {
+      return null;
+    }
+
+    final baseUrl = uri.hasPort
+        ? '${uri.scheme}://$_androidHostLoopback:${uri.port}'
+        : '${uri.scheme}://$_androidHostLoopback';
+
+    return request.copyWith(baseUrl: baseUrl, path: uri.path);
   }
 
   Future<String?> _tryRefreshToken() async {
