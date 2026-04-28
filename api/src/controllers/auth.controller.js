@@ -1652,6 +1652,182 @@ const adminLogout = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  PUT /api/auth/me
+  Update the authenticated user's profile information
+──────────────────────────────────────────────────────────────*/
+const updateProfile = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
+
+    try {
+        logger.info('Update profile flow started', {
+            requestId,
+            userId: req.user.sub
+        });
+
+        const userId = req.user.sub;
+        const { updateProfileSchema } = require('../validations/auth.validation');
+
+        // Validate request data
+        const validatedData = updateProfileSchema.parse(req.body);
+        const updates = stripNullishFields(validatedData);
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: [{ message: 'At least one field must be provided for update.' }]
+            });
+        }
+
+        // Validate location and language if provided
+        if (updates.location_id) {
+            const location = await models.locations.findByPk(updates.location_id, {
+                attributes: ['location_id'],
+                transaction: t
+            });
+
+            if (!location) {
+                await t.rollback();
+                logger.warn('Invalid location provided', {
+                    requestId,
+                    userId,
+                    locationId: updates.location_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LOCATION'
+                });
+            }
+        }
+
+        if (updates.preferred_lang_id) {
+            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
+                attributes: ['preferred_lang_id'],
+                transaction: t
+            });
+
+            if (!language) {
+                await t.rollback();
+                logger.warn('Invalid language provided', {
+                    requestId,
+                    userId,
+                    langId: updates.preferred_lang_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LANGUAGE'
+                });
+            }
+        }
+
+        // Handle profile image if provided
+        if (updates.profile_img_url) {
+            try {
+                const movedImage = await moveImageToPermanent(updates.profile_img_url);
+                updates.profile_img_url = movedImage;
+            } catch (error) {
+                await t.rollback();
+                logger.warn('Profile image move failed', {
+                    requestId,
+                    userId,
+                    error: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_PROFILE_IMAGE'
+                });
+            }
+        }
+
+        // Update user record
+        const user = await models.users.findByPk(userId, {
+            transaction: t
+        });
+
+        if (!user) {
+            await t.rollback();
+            return res.status(404).json({
+                success: false,
+                code: 'AUTH_USER_NOT_FOUND'
+            });
+        }
+
+        await user.update(updates, { transaction: t });
+
+        logger.debug('User profile updated', {
+            requestId,
+            userId,
+            fieldsUpdated: Object.keys(updates)
+        });
+
+        // Update biography for role-specific tables if provided
+        if (updates.biography) {
+            if (user.user_role === 'Consultant') {
+                await models.consultants.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Talent Manager') {
+                await models.talent_managers.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Service Line Leader') {
+                await models.service_line_leaders.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            }
+        }
+
+        await t.commit();
+
+        // Invalidate cache
+        const cacheKey = `user_profile:${userId}`;
+        await redis.del(cacheKey);
+
+        logger.info('Profile update completed successfully', {
+            requestId,
+            userId
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: 'AUTH_PROFILE_UPDATED'
+        });
+
+    } catch (error) {
+        await t.rollback();
+
+        if (error.name === 'ZodError') {
+            logger.warn('Profile update validation failed', {
+                requestId,
+                userId: req.user.sub,
+                errors: error.errors
+            });
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.errors
+            });
+        }
+
+        logger.error('Error updating user profile', {
+            requestId,
+            userId: req.user.sub,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            code: 'AUTH_PROFILE_UPDATE_FAILED',
+            requestId
+        });
+    }
+};
+
 module.exports = {
     register,
     confirmEmail,
@@ -1667,5 +1843,6 @@ module.exports = {
     resendConfirmation,
     adminLogin,
     adminRefresh,
-    adminLogout
+    adminLogout,
+    updateProfile
 };

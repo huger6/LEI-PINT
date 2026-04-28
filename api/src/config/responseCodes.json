@@ -210,5 +210,16 @@
   "UTIL_SL_SLUG_CHECK_FAILED": "500 - Unexpected error while checking service line slug availability.",
   "UTIL_LP_SLUG_CHECK_FAILED": "500 - Unexpected error while checking learning path slug availability.",
   "UTIL_BADGE_SLUG_CHECK_FAILED": "500 - Unexpected error while checking badge slug availability.",
-  "UTIL_BIOGRAPHY_CHECK_FAILED": "500 - Unexpected error while validating the biography."
+  "UTIL_BIOGRAPHY_CHECK_FAILED": "500 - Unexpected error while validating the biography.",
+  "AUTH_PROFILE_UPDATED": "200 - User profile was updated successfully.",
+  "AUTH_PROFILE_UPDATE_FAILED": "500 - Unexpected error while updating the user profile.",
+  "AUTH_INVALID_LOCATION": "400 - The provided location ID does not exist.",
+  "AUTH_INVALID_LANGUAGE": "400 - The provided language ID does not exist.",
+  "AUTH_INVALID_PROFILE_IMAGE": "400 - The profile image URL is invalid or could not be processed.",
+  "GAMIFICATION_STATS_RETRIEVED": "200 - Consultant statistics were successfully retrieved.",
+  "GAMIFICATION_STATS_FETCH_FAILED": "500 - Unexpected error while retrieving consultant statistics.",
+  "GAMIFICATION_EARNED_BADGES_RETRIEVED": "200 - Earned badges list was successfully retrieved.",
+  "GAMIFICATION_EARNED_BADGES_FETCH_FAILED": "500 - Unexpected error while retrieving earned badges.",
+  "GAMIFICATION_CONSULTANT_NOT_FOUND": "404 - The consultant was not found.",
+  "GAMIFICATION_NO_ACHIEVEMENTS": "200 - The consultant has not earned any badges yet."
 }

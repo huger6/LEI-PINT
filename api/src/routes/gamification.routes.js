@@ -38,4 +38,18 @@ router.get('/points/:userId', loginRequired, gamificationController.getConsultan
  */
 router.get('/recommendations', loginRequired, gamificationController.getRecommendations);
 
+/**
+ * @route   GET /api/gamification/consultant-stats
+ * @desc    Get comprehensive statistics for authenticated consultant (points, badges, ranking, interactions)
+ * @access  Consultant only
+ */
+router.get('/consultant-stats', loginRequired, gamificationController.getConsultantStats);
+
+/**
+ * @route   GET /api/gamification/earned-badges
+ * @desc    Get paginated list of badges earned by the authenticated consultant
+ * @access  Consultant only
+ */
+router.get('/earned-badges', loginRequired, gamificationController.getEarnedBadges);
+
 module.exports = router;

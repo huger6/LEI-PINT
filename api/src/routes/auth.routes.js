@@ -69,6 +69,13 @@ router.post('/logout', loginRequired, authController.logout);
 router.get('/me', loginRequired, authController.me);
 
 /**
+ * @route   PUT /api/auth/me
+ * @desc    Update the authenticated user's profile
+ * @access  Authenticated
+ */
+router.put('/me', loginRequired, authController.updateProfile);
+
+/**
  * @route   GET /api/auth/verify-session
  * @desc    Check whether the current session token is still valid
  * @access  Authenticated

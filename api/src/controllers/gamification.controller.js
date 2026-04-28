@@ -209,10 +209,260 @@ const getRecommendations = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  GET /api/gamification/consultant-stats
+  Returns comprehensive statistics for the authenticated consultant:
+  total points, earned badges, badges in progress, ranking position,
+  and interactions summary.
+──────────────────────────────────────────────────────────────*/
+const getConsultantStats = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const role = req.user.role;
+
+        if (role !== 'Consultant') {
+            return res.status(403).json({
+                success: false,
+                code: 'APP_ACCESS_DENIED_OWN'
+            });
+        }
+
+        // Check if consultant exists
+        const consultant = await models.consultants.findByPk(userId, {
+            attributes: ['user_id']
+        });
+
+        if (!consultant) {
+            return res.status(404).json({
+                success: false,
+                code: 'GAMIFICATION_CONSULTANT_NOT_FOUND'
+            });
+        }
+
+        // Get total points
+        const totalPointsResult = await models.sequelize.query(
+            `SELECT COALESCE(SUM(points_delta), 0) as total_points 
+             FROM points_history 
+             WHERE user_id = :userId`,
+            {
+                replacements: { userId },
+                type: models.sequelize.QueryTypes.SELECT
+            }
+        );
+        const totalPoints = totalPointsResult[0]?.total_points || 0;
+
+        // Get earned badges count
+        const earnedBadgesCount = await models.awarded_badges.count({
+            where: { user_id: userId },
+            distinct: true
+        });
+
+        // Get badges in progress (open applications)
+        const badgesInProgress = await models.badge_applications.count({
+            where: {
+                consultant_id: userId,
+                status: 'Open'
+            }
+        });
+
+        // Get ranking position
+        const rankingResult = await models.sequelize.query(
+            `SELECT position FROM get_ranking(:userId)`,
+            {
+                replacements: { userId },
+                type: models.sequelize.QueryTypes.SELECT
+            }
+        );
+        const rankingPosition = rankingResult[0]?.position || null;
+
+        // Get total interactions
+        const totalInteractions = await models.user_badges_interactions.count({
+            where: { user_id: userId }
+        });
+
+        // Get interaction breakdown
+        const interactionBreakdown = await models.user_badges_interactions.findAll({
+            attributes: [
+                'interaction_type',
+                [models.sequelize.fn('COUNT', models.sequelize.col('interaction_type')), 'count']
+            ],
+            where: { user_id: userId },
+            group: ['interaction_type'],
+            raw: true
+        });
+
+        const interactionsSummary = {};
+        interactionBreakdown.forEach(item => {
+            interactionsSummary[item.interaction_type] = parseInt(item.count, 10);
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_STATS_RETRIEVED',
+            data: {
+                totalPoints,
+                earnedBadges: earnedBadgesCount,
+                badgesInProgress,
+                rankingPosition,
+                totalInteractions,
+                interactionsSummary: interactionsSummary || {}
+            }
+        });
+
+    } catch (error) {
+        logger.error('Error fetching consultant statistics', { 
+            error,
+            userId: req.user.sub
+        });
+        return res.status(500).json({
+            success: false,
+            code: 'GAMIFICATION_STATS_FETCH_FAILED'
+        });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  GET /api/gamification/earned-badges
+  Returns a paginated list of badges the consultant has earned,
+  sorted by award date (most recent first).
+──────────────────────────────────────────────────────────────*/
+const getEarnedBadges = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const role = req.user.role;
+
+        if (role !== 'Consultant') {
+            return res.status(403).json({
+                success: false,
+                code: 'APP_ACCESS_DENIED_OWN'
+            });
+        }
+
+        const { page, limit } = validations.getRecommendationsQuerySchema.parse(req.query);
+        const offset = (page - 1) * limit;
+
+        // Check if consultant exists
+        const consultant = await models.consultants.findByPk(userId, {
+            attributes: ['user_id']
+        });
+
+        if (!consultant) {
+            return res.status(404).json({
+                success: false,
+                code: 'GAMIFICATION_CONSULTANT_NOT_FOUND'
+            });
+        }
+
+        // Get earned badges with details
+        const { count, rows } = await models.awarded_badges.findAndCountAll({
+            attributes: [
+                'awarded_badges_id',
+                'awarded_at',
+                'expiration_at',
+                'points_snapshot',
+                'is_published',
+                'is_featured',
+                'public_verification_link'
+            ],
+            include: [
+                {
+                    model: models.badge_applications,
+                    as: 'application',
+                    attributes: ['application_id', 'badge_id'],
+                    include: [
+                        {
+                            model: models.badges,
+                            as: 'badge',
+                            attributes: [
+                                'badge_id',
+                                'badge_title',
+                                'badge_slug',
+                                'badge_img_url',
+                                'description',
+                                'points_value'
+                            ]
+                        }
+                    ]
+                }
+            ],
+            where: { user_id: userId },
+            order: [['awarded_at', 'DESC']],
+            limit,
+            offset,
+            distinct: true,
+            subQuery: false
+        });
+
+        // Transform response
+        const transformedRows = rows.map(badge => ({
+            awardedBadgeId: badge.awarded_badges_id,
+            badge: badge.application?.badge ? {
+                id: badge.application.badge.badge_id,
+                title: badge.application.badge.badge_title,
+                slug: badge.application.badge.badge_slug,
+                imageUrl: badge.application.badge.badge_img_url,
+                description: badge.application.badge.description,
+                pointsValue: badge.application.badge.points_value
+            } : null,
+            awardedDate: badge.awarded_at,
+            expirationDate: badge.expiration_at,
+            pointsSnapshot: badge.points_snapshot,
+            isPublished: badge.is_published,
+            isFeatured: badge.is_featured,
+            verificationLink: badge.public_verification_link
+        }));
+
+        if (rows.length === 0) {
+            return res.status(200).json({
+                success: true,
+                code: 'GAMIFICATION_NO_ACHIEVEMENTS',
+                data: [],
+                pagination: {
+                    totalItems: 0,
+                    totalPages: 0,
+                    currentPage: page,
+                    limit
+                }
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_EARNED_BADGES_RETRIEVED',
+            data: transformedRows,
+            pagination: {
+                totalItems: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                limit
+            }
+        });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_QUERY_PARAMS',
+                errors: error.errors
+            });
+        }
+        logger.error('Error fetching earned badges', {
+            error,
+            userId: req.user.sub
+        });
+        return res.status(500).json({
+            success: false,
+            code: 'GAMIFICATION_EARNED_BADGES_FETCH_FAILED'
+        });
+    }
+};
+
 module.exports = {
     trackInteraction,
     getInteractions,
     getPointsSummary,
     getConsultantPointsById,
-    getRecommendations
+    getRecommendations,
+    getConsultantStats,
+    getEarnedBadges
 };
