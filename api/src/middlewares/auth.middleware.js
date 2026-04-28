@@ -6,7 +6,7 @@ const loginRequired = (req, res, next) => {
 
     if (!token) return res.status(401).json({
         success: false,
-        message: "Token wasn't provided."
+        code: "AUTH_TOKEN_NOT_PROVIDED"
     });
 
     try {
@@ -20,7 +20,7 @@ const loginRequired = (req, res, next) => {
         if (decoded.fpc && !isChangePasswordRoute) {
             return res.status(403).json({
                 success: false,
-                message: "Password change required before accessing this resource.",
+                code: "AUTH_FPC_REQUIRED",
                 data: {
                     force_password_change: true
                 }
@@ -33,7 +33,7 @@ const loginRequired = (req, res, next) => {
         logger.error("Invalid Token", e);
         return res.status(401).json({
             success: false,
-            message: "Session expired or token is invalid."
+            code: "AUTH_TOKEN_INVALID"
         });
     }
 }
@@ -47,7 +47,7 @@ const annonymousUsersOnly = (req, res, next) => {
 
             return res.status(400).json({
                 success: false,
-                message: "You are already logged in. Logout to access this route."
+                code: "AUTH_ALREADY_LOGGED_IN"
             });
         } catch (e) {
             // Token is invalid, so the user is not authed
@@ -62,13 +62,13 @@ const checkRole = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) return res.status(401).json({
             success: false,
-            message: "User not authenticated."
+            code: "AUTH_USER_NOT_AUTHENTICATED"
         });
 
         if (!allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: `Access denied. Authorized roles: ${allowedRoles.join(', ')}.`
+                code: "AUTH_ROLE_ACCESS_DENIED"
             });
         }
         next();

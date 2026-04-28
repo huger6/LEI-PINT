@@ -39,7 +39,7 @@ const getApplications = async (req, res) => {
             if (!sllInfo) {
                 return res.status(403).json({
                     success: false,
-                    message: "SLL profile not configured properly."
+                    code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
             // SLL only sees applications within their SL
@@ -87,7 +87,7 @@ const getApplications = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid query parameters.",
+                code: "VALIDATION_INVALID_QUERY_PARAMS",
                 errors: error.errors
             });
         }
@@ -95,7 +95,7 @@ const getApplications = async (req, res) => {
         logger.error('Error fetching applications', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "APP_FETCH_LIST_FAILED"
         });
     }
 };
@@ -140,14 +140,14 @@ const getApplicationById = async (req, res) => {
         if (!application) {
             return res.status(404).json({
                 success: false,
-                message: "Application not found."
+                code: "APP_NOT_FOUND"
             });
         }
 
         if (role === 'Consultant' && application.user_id !== userId) {
             return res.status(403).json({
                 success: false,
-                message: "Access denied. You can only view your own applications."
+                code: "APP_ACCESS_DENIED_OWN"
             });
         }
 
@@ -156,7 +156,7 @@ const getApplicationById = async (req, res) => {
             if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
                 return res.status(403).json({
                     success: false,
-                    message: "Access denied. This application does not belong to your Service Line."
+                    code: "APP_ACCESS_DENIED_SL"
                 });
             }
         }
@@ -170,14 +170,14 @@ const getApplicationById = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid application ID."
+                code: "APP_INVALID_APPLICATION_ID"
             });
         }
 
         logger.error('Error fetching application details', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "APP_FETCH_DETAIL_FAILED"
         });
     }
 };
@@ -192,7 +192,7 @@ const startApplication = async (req, res) => {
         if (!badge || !badge.is_active) {
             return res.status(404).json({
                 success: false,
-                message: "Badge not found or inactive."
+                code: "APP_BADGE_NOT_FOUND"
             });
         }
 
@@ -207,8 +207,8 @@ const startApplication = async (req, res) => {
         if (existingApp) {
             return res.status(409).json({
                 success: false,
-                message: `You already have an active application in state '${existingApp.application_state}'.`,
-                data: { applicationId: existingApp.application_id }
+                code: "APP_ALREADY_EXISTS",
+                data: { applicationId: existingApp.application_id, currentState: existingApp.application_state }
             });
         }
 
@@ -221,7 +221,7 @@ const startApplication = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Application started successfully.",
+            code: "APP_STARTED",
             data: newApp
         });
 
@@ -229,14 +229,14 @@ const startApplication = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.issues || error.errors
             });
         }
         logger.error('Error starting application', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "APP_START_FAILED"
         });
     }
 };
@@ -256,7 +256,7 @@ const getUploadUrl = async (req, res) => {
         if (!application || application.application_state !== 'Open') {
             return res.status(403).json({
                 success: false,
-                message: "You can only upload evidences for your own 'Open applications'."
+                code: "APP_UPLOAD_DENIED"
             });
         }
 
@@ -278,7 +278,7 @@ const getUploadUrl = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -286,7 +286,7 @@ const getUploadUrl = async (req, res) => {
         logger.error('Error generating upload URL in controller', { error });
         return res.status(500).json({
             success: false,
-            message: "Error generating upload link."
+            code: "APP_UPLOAD_URL_FAILED"
         });
     }
 };
@@ -305,7 +305,7 @@ const upsertEvidence = async (req, res) => {
         if (!application) {
             return res.status(404).json({
                 success: false,
-                message: "Application not found."
+                code: "APP_NOT_FOUND"
             });
         }
 
@@ -313,7 +313,7 @@ const upsertEvidence = async (req, res) => {
         if (application.application_state !== 'Open') {
             return res.status(403).json({
                 success: false,
-                message: "You can only edit evidences in an 'Open' application."
+                code: "APP_EVIDENCE_EDIT_DENIED"
             });
         }
 
@@ -325,7 +325,7 @@ const upsertEvidence = async (req, res) => {
         if (!requirement) {
             return res.status(400).json({
                 success: false,
-                message: "Requirement does not belong to this badge."
+                code: "APP_REQUIREMENT_MISMATCH"
             });
         }
 
@@ -344,7 +344,7 @@ const upsertEvidence = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: created ? "Evidence added successfully." : "Evidence updated successfully.",
+            code: created ? "APP_EVIDENCE_ADDED" : "APP_EVIDENCE_UPDATED",
             data: evidence
         });
 
@@ -352,7 +352,7 @@ const upsertEvidence = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -360,7 +360,7 @@ const upsertEvidence = async (req, res) => {
         logger.error('Error upserting evidence', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "APP_UPSERT_EVIDENCE_FAILED"
         });
     }
 };
@@ -393,14 +393,15 @@ const submitApplication = async (req, res) => {
         if (!application) {
             return res.status(404).json({
                 success: false,
-                message: "Application not found."
+                code: "APP_NOT_FOUND"
             });
         }
 
         if (application.application_state !== 'Open') {
             return res.status(403).json({
                 success: false,
-                message: `Application is/was already ${application.application_state}.`
+                code: "APP_ACTION_INVALID_STATE",
+                data: { currentState: application.application_state }
             });
         }
 
@@ -411,7 +412,7 @@ const submitApplication = async (req, res) => {
         if (submittedEvidences < totalRequirements) {
             return res.status(400).json({
                 success: false,
-                message: "Missing evidences. You must submit an evidence for every requirement before submitting the application.",
+                code: "APP_MISSING_EVIDENCES",
                 data: {
                     required: totalRequirements,
                     submitted: submittedEvidences
@@ -427,7 +428,7 @@ const submitApplication = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Application submitted successfully! It is now pending validation.",
+            code: "APP_SUBMITTED",
             data: {
                 applicationGuid: application.application_guid,
                 state: application.application_state,
@@ -439,7 +440,7 @@ const submitApplication = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid application identifier.",
+                code: "APP_INVALID_IDENTIFIER",
                 errors: error.errors
             });
         }
@@ -447,7 +448,7 @@ const submitApplication = async (req, res) => {
         logger.error('Error submitting application', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "APP_SUBMIT_FAILED"
         });
     }
 };
@@ -471,7 +472,7 @@ const validateApplication = async (req, res) => {
 
         if (!['Talent Manager', 'Service Line Leader', 'Administrator'].includes(role)) {
             await transaction.rollback();
-            return res.status(403).json({ success: false, message: 'Access denied.' });
+            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
         const { applicationGuid } = gamificationValidations.applicationGuidParamSchema.parse(req.params);
@@ -484,7 +485,7 @@ const validateApplication = async (req, res) => {
 
         if (!application) {
             await transaction.rollback();
-            return res.status(404).json({ success: false, message: 'Application not found.' });
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
         // SLL may only review applications within their own Service Line
@@ -494,7 +495,7 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({
                     success: false,
-                    message: 'Access denied. This application does not belong to your Service Line.'
+                    code: 'APP_ACCESS_DENIED_SL'
                 });
             }
         }
@@ -505,14 +506,16 @@ const validateApplication = async (req, res) => {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                message: `Cannot request review for an application in state '${state}'. Expected 'Submitted'.`
+                code: 'APP_REVIEW_INVALID_STATE',
+                data: { currentState: state }
             });
         }
         if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                message: `Cannot ${action} an application in state '${state}'.`
+                code: 'APP_ACTION_INVALID_STATE',
+                data: { currentState: state }
             });
         }
 
@@ -576,7 +579,7 @@ const validateApplication = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: `Application ${newState.toLowerCase()} successfully.`,
+            code: 'APP_STATE_CHANGED',
             data: {
                 applicationGuid: application.application_guid,
                 state: newState,
@@ -592,12 +595,12 @@ const validateApplication = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.errors
             });
         }
         logger.error('Error validating application', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'APP_VALIDATE_FAILED' });
     }
 };
 
@@ -618,7 +621,7 @@ const reviewEvidence = async (req, res) => {
 
         if (!['Talent Manager', 'Service Line Leader'].includes(role)) {
             await transaction.rollback();
-            return res.status(403).json({ success: false, message: 'Access denied.' });
+            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
         const { applicationGuid, evidenceId } = gamificationValidations.evidenceIdParamSchema.parse(req.params);
@@ -631,14 +634,14 @@ const reviewEvidence = async (req, res) => {
 
         if (!application) {
             await transaction.rollback();
-            return res.status(404).json({ success: false, message: 'Application not found.' });
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
         if (!['Submitted', 'In validation'].includes(application.application_state)) {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                message: `Evidence can only be reviewed on applications in 'Submitted' or 'In validation' state.`
+                code: 'APP_EVIDENCE_REVIEW_INVALID_STATE'
             });
         }
 
@@ -649,7 +652,7 @@ const reviewEvidence = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({
                     success: false,
-                    message: 'Access denied. This application does not belong to your Service Line.'
+                    code: 'APP_ACCESS_DENIED_SL'
                 });
             }
         }
@@ -660,7 +663,7 @@ const reviewEvidence = async (req, res) => {
 
         if (!evidence) {
             await transaction.rollback();
-            return res.status(404).json({ success: false, message: 'Evidence not found.' });
+            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
         }
 
         const reviewField = role === 'Talent Manager' ? 'tm_reviewed' : 'sll_reviewed';
@@ -688,7 +691,7 @@ const reviewEvidence = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: `Evidence ${approved ? 'approved' : 'rejected'} successfully.`,
+            code: 'APP_EVIDENCE_REVIEWED',
             data: { evidenceId, approved, reviewField }
         });
 
@@ -697,12 +700,12 @@ const reviewEvidence = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.errors
             });
         }
         logger.error('Error reviewing evidence', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'APP_EVIDENCE_REVIEW_FAILED' });
     }
 };
 

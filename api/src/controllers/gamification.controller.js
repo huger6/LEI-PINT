@@ -20,7 +20,7 @@ const trackInteraction = async (req, res) => {
         if (!badge || !badge.is_active) {
             return res.status(404).json({
                 success: false,
-                message: 'Badge not found or inactive.'
+                code: 'APP_BADGE_NOT_FOUND'
             });
         }
 
@@ -28,7 +28,7 @@ const trackInteraction = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Interaction recorded.',
+            code: 'GAMIFICATION_INTERACTION_RECORDED',
             data: interaction
         });
 
@@ -36,12 +36,12 @@ const trackInteraction = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.errors
             });
         }
         logger.error('Error tracking badge interaction', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_INTERACTION_FAILED' });
     }
 };
 
@@ -88,12 +88,12 @@ const getInteractions = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid query parameters.',
+                code: 'VALIDATION_INVALID_QUERY_PARAMS',
                 errors: error.errors
             });
         }
         logger.error('Error fetching interactions', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_INTERACTIONS_FETCH_FAILED' });
     }
 };
 
@@ -110,7 +110,7 @@ const getPointsSummary = async (req, res) => {
         if (role !== 'Consultant') {
             return res.status(403).json({
                 success: false,
-                message: 'Points are only available for consultants.'
+                code: 'GAMIFICATION_POINTS_CONSULTANT_ONLY'
             });
         }
 
@@ -126,7 +126,7 @@ const getPointsSummary = async (req, res) => {
 
     } catch (error) {
         logger.error('Error fetching points summary', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_POINTS_FETCH_FAILED' });
     }
 };
 
@@ -141,18 +141,18 @@ const getConsultantPointsById = async (req, res) => {
         if (role !== 'Administrator' && role !== 'Talent Manager') {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied.'
+                code: 'APP_ACCESS_DENIED'
             });
         }
 
         const targetUserId = parseInt(req.params.userId, 10);
         if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
-            return res.status(400).json({ success: false, message: 'Invalid user ID.' });
+            return res.status(400).json({ success: false, code: 'GAMIFICATION_INVALID_USER_ID' });
         }
 
         const consultant = await models.consultants.findByPk(targetUserId);
         if (!consultant) {
-            return res.status(404).json({ success: false, message: 'Consultant not found.' });
+            return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
         }
 
         const { totalPoints, history } = await gamificationService.getConsultantPointsSummary(targetUserId);
@@ -164,7 +164,7 @@ const getConsultantPointsById = async (req, res) => {
 
     } catch (error) {
         logger.error('Error fetching consultant points', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_CONSULTANT_POINTS_FETCH_FAILED' });
     }
 };
 
@@ -183,7 +183,7 @@ const getRecommendations = async (req, res) => {
         if (role !== 'Consultant') {
             return res.status(403).json({
                 success: false,
-                message: 'Recommendations are only available for consultants.'
+                code: 'GAMIFICATION_RECOMMENDATIONS_CONSULTANT_ONLY'
             });
         }
 
@@ -200,12 +200,12 @@ const getRecommendations = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid query parameters.',
+                code: 'VALIDATION_INVALID_QUERY_PARAMS',
                 errors: error.errors
             });
         }
         logger.error('Error fetching recommendations', { error });
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_RECOMMENDATIONS_FETCH_FAILED' });
     }
 };
 

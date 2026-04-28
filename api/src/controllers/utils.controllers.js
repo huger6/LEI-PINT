@@ -25,7 +25,8 @@ const handleQueryCheck = async (req, res, label, checkFn) => {
     if (!parsed.success) {
         return res.status(400).json({
             success: false,
-            message: parsed.error.issues[0].message
+            code: "VALIDATION_INVALID_QUERY_PARAMS",
+            errors: parsed.error.issues
         });
     }
     const available = await checkFn(parsed.data.value);
@@ -39,7 +40,7 @@ const checkUsername = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking username availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking username availability." });
+        return res.status(500).json({ success: false, code: "UTIL_USERNAME_CHECK_FAILED" });
     }
 };
 
@@ -50,7 +51,7 @@ const checkEmail = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking email availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking email availability." });
+        return res.status(500).json({ success: false, code: "UTIL_EMAIL_CHECK_FAILED" });
     }
 };
 
@@ -61,7 +62,7 @@ const checkAreaSlug = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking area slug availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking area slug availability." });
+        return res.status(500).json({ success: false, code: "UTIL_AREA_SLUG_CHECK_FAILED" });
     }
 };
 
@@ -72,7 +73,7 @@ const checkServiceLineSlug = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking service line slug availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking service line slug availability." });
+        return res.status(500).json({ success: false, code: "UTIL_SL_SLUG_CHECK_FAILED" });
     }
 };
 
@@ -83,7 +84,7 @@ const checkLearningPathSlug = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking learning path slug availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking learning path slug availability." });
+        return res.status(500).json({ success: false, code: "UTIL_LP_SLUG_CHECK_FAILED" });
     }
 };
 
@@ -94,7 +95,7 @@ const checkBadgeSlug = async (req, res) => {
         );
     } catch (error) {
         logger.error('Error checking badge slug availability', { error });
-        return res.status(500).json({ success: false, message: "Error checking badge slug availability." });
+        return res.status(500).json({ success: false, code: "UTIL_BADGE_SLUG_CHECK_FAILED" });
     }
 };
 
@@ -113,7 +114,7 @@ const checkBiography = async (req, res) => {
         return res.status(200).json({ success: true, data: { available: true } });
     } catch (error) {
         logger.error('Error checking biography', { error });
-        return res.status(500).json({ success: false, message: "Error checking biography." });
+        return res.status(500).json({ success: false, code: "UTIL_BIOGRAPHY_CHECK_FAILED" });
     }
 };
 

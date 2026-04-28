@@ -9,8 +9,8 @@ const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHel
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
 
-const throwRequestError = (status, message) => {
-    const error = new Error(message);
+const throwRequestError = (status, code) => {
+    const error = new Error(code);
     error.statusCode = status;
     throw error;
 };
@@ -24,17 +24,17 @@ const ensureReferenceDataExists = async ({
 }) => {
     if (preferredLangId) {
         const preferredLanguage = await models.preferred_lang.findByPk(preferredLangId, { transaction });
-        if (!preferredLanguage) throwRequestError(400, 'Invalid preferred_lang_id.');
+        if (!preferredLanguage) throwRequestError(400, 'ADMIN_INVALID_LANG_ID');
     }
 
     if (locationId) {
         const location = await models.locations.findByPk(locationId, { transaction });
-        if (!location) throwRequestError(400, 'Invalid location_id.');
+        if (!location) throwRequestError(400, 'ADMIN_INVALID_LOCATION_ID');
     }
 
     if (serviceLineId) {
         const serviceLine = await models.service_lines.findByPk(serviceLineId, { transaction });
-        if (!serviceLine) throwRequestError(400, 'Invalid service_line_id.');
+        if (!serviceLine) throwRequestError(400, 'ADMIN_INVALID_SERVICE_LINE_ID');
     }
 
     if (areas?.length) {
@@ -50,7 +50,7 @@ const ensureReferenceDataExists = async ({
         });
 
         if (availableAreas.length !== areaIds.length) {
-            throwRequestError(400, 'One or more selected areas are invalid.');
+            throwRequestError(400, 'ADMIN_INVALID_AREAS');
         }
     }
 };
@@ -276,7 +276,7 @@ const createUser = async (req, res) => {
             await t.rollback();
             return res.status(409).json({
                 success: false,
-                message: 'Username or email is already in use.'
+                code: 'AUTH_CREDENTIALS_CONFLICT'
             });
         }
 
@@ -353,13 +353,13 @@ const createUser = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: 'User was created, but confirmation e-mail could not be sent. Use the admin reset-password flow to re-send credentials.'
+                code: 'ADMIN_USER_CREATE_EMAIL_FAILED'
             });
         }
 
         return res.status(201).json({
             success: true,
-            message: 'User created successfully.',
+            code: 'ADMIN_USER_CREATED',
             data: {
                 user_id: newUser.user_id,
                 full_name: newUser.full_name,
@@ -378,7 +378,7 @@ const createUser = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.issues || error.errors
             });
         }
@@ -386,21 +386,21 @@ const createUser = async (req, res) => {
         if (error.statusCode) {
             return res.status(error.statusCode).json({
                 success: false,
-                message: error.message
+                code: error.message
             });
         }
 
         if (error.name === 'StorageMoveError') {
             return res.status(400).json({
                 success: false,
-                message: 'Profile image URL is invalid and could not be moved.'
+                code: 'ADMIN_PROFILE_IMAGE_MOVE_FAILED'
             });
         }
 
         logger.error('Error creating user through admin module.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            code: 'ADMIN_USER_CREATE_FAILED'
         });
     }
 };
@@ -426,7 +426,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(404).json({
                 success: false,
-                message: 'User not found.'
+                code: 'ADMIN_USER_NOT_FOUND'
             });
         }
 
@@ -437,7 +437,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Cannot change a user\'s role to Administrator. Use the create user flow instead.'
+                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
             });
         }
 
@@ -445,7 +445,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Administrator users cannot be reassigned to another role.'
+                code: 'ADMIN_CANNOT_DEMOTE_ADMIN'
             });
         }
 
@@ -453,7 +453,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'areas can only be updated for Consultant users.'
+                code: 'ADMIN_AREAS_CONSULTANT_ONLY'
             });
         }
 
@@ -461,7 +461,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'service_line_id can only be updated for Service Line Leader users.'
+                code: 'ADMIN_SERVICE_LINE_SLL_ONLY'
             });
         }
 
@@ -469,7 +469,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Changing to Consultant requires areas with one primary area.'
+                code: 'ADMIN_CONSULTANT_NEEDS_AREAS'
             });
         }
 
@@ -477,7 +477,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Changing to Service Line Leader requires service_line_id.'
+                code: 'ADMIN_SLL_NEEDS_SERVICE_LINE'
             });
         }
 
@@ -507,7 +507,7 @@ const updateUser = async (req, res) => {
                 await t.rollback();
                 return res.status(409).json({
                     success: false,
-                    message: 'Username or email is already in use.'
+                    code: 'AUTH_CREDENTIALS_CONFLICT'
                 });
             }
         }
@@ -522,7 +522,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Service Line Leader users must be linked to a service line.'
+                code: 'ADMIN_SLL_NO_SERVICE_LINE'
             });
         }
 
@@ -531,7 +531,7 @@ const updateUser = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: 'Consultant users must be linked to at least one area with one primary area.'
+                code: 'ADMIN_CONSULTANT_NO_AREAS'
             });
         }
 
@@ -582,7 +582,7 @@ const updateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'User updated successfully.'
+            code: 'ADMIN_USER_UPDATED'
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -590,7 +590,7 @@ const updateUser = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid data.',
+                code: 'VALIDATION_INVALID_DATA',
                 errors: error.issues || error.errors
             });
         }
@@ -598,21 +598,21 @@ const updateUser = async (req, res) => {
         if (error.statusCode) {
             return res.status(error.statusCode).json({
                 success: false,
-                message: error.message
+                code: error.message
             });
         }
 
         if (error.name === 'StorageMoveError') {
             return res.status(400).json({
                 success: false,
-                message: 'Profile image URL is invalid and could not be moved.'
+                code: 'ADMIN_PROFILE_IMAGE_MOVE_FAILED'
             });
         }
 
         logger.error('Error updating user through admin module.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            code: 'ADMIN_USER_UPDATE_FAILED'
         });
     }
 };
@@ -626,7 +626,7 @@ const deactivateUser = async (req, res) => {
         if (req.user.sub === userId) {
             return res.status(400).json({
                 success: false,
-                message: 'You cannot deactivate your own account.'
+                code: 'ADMIN_CANNOT_DEACTIVATE_SELF'
             });
         }
 
@@ -635,14 +635,14 @@ const deactivateUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found.'
+                code: 'ADMIN_USER_NOT_FOUND'
             });
         }
 
         if (!user.is_active) {
             return res.status(400).json({
                 success: false,
-                message: 'User is already inactive.'
+                code: 'ADMIN_USER_ALREADY_INACTIVE'
             });
         }
 
@@ -659,13 +659,13 @@ const deactivateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'User deactivated successfully.'
+            code: 'ADMIN_USER_DEACTIVATED'
         });
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid URL parameter.',
+                code: 'VALIDATION_INVALID_URL_PARAM',
                 errors: error.issues || error.errors
             });
         }
@@ -673,7 +673,7 @@ const deactivateUser = async (req, res) => {
         logger.error('Error deactivating user through admin module.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            code: 'ADMIN_USER_DEACTIVATE_FAILED'
         });
     }
 };
@@ -694,7 +694,7 @@ const resetUserPassword = async (req, res) => {
             await t.rollback();
             return res.status(404).json({
                 success: false,
-                message: 'User not found.'
+                code: 'ADMIN_USER_NOT_FOUND'
             });
         }
 
@@ -755,13 +755,13 @@ const resetUserPassword = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: 'Password reset request was created, but e-mail could not be sent. Please retry or contact the user directly.'
+                code: 'ADMIN_PASSWORD_RESET_EMAIL_FAILED'
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: 'Password reset e-mail sent successfully.'
+            code: 'ADMIN_PASSWORD_RESET_EMAIL_SENT'
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -769,7 +769,7 @@ const resetUserPassword = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid URL parameter.',
+                code: 'VALIDATION_INVALID_URL_PARAM',
                 errors: error.issues || error.errors
             });
         }
@@ -777,7 +777,7 @@ const resetUserPassword = async (req, res) => {
         logger.error('Error forcing password reset through admin module.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            code: 'ADMIN_PASSWORD_RESET_FAILED'
         });
     }
 };

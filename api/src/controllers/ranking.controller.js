@@ -28,7 +28,7 @@ const getRanking = async (req, res) => {
         if (page > totalPages && count > 0) {
             return res.status(404).json({
                 success: false,
-                message: "Page not found."
+                code: "PAGINATION_PAGE_NOT_FOUND"
             });
         }
 
@@ -47,7 +47,7 @@ const getRanking = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid query parameters.",
+                code: "VALIDATION_INVALID_QUERY_PARAMS",
                 errors: error.errors
             });
         }
@@ -55,7 +55,7 @@ const getRanking = async (req, res) => {
         logger.error('Error fetching consultant ranking', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LIST_FETCH_FAILED"
         });
     }
 };

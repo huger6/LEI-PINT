@@ -47,7 +47,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Administrator is not a valid registration role."
+                code: "AUTH_ROLE_NOT_REGISTERABLE"
             });
         }
 
@@ -75,7 +75,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or email is already in use."
+                code: "AUTH_CREDENTIALS_CONFLICT"
             });
         }
 
@@ -206,7 +206,7 @@ const register = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Account created, but confirmation e-mail could not be sent. Please use 'resend confirmation' to request a new e-mail."
+                code: "AUTH_REGISTER_EMAIL_FAILED"
             });
         }
 
@@ -219,7 +219,7 @@ const register = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Registration completed successfully. Please, check your e-mail to confirm the account."
+            code: "AUTH_REGISTER_SUCCESS"
         });
     } catch (error) {
         // DB rollback
@@ -240,7 +240,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -257,7 +257,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or e-mail is already in use. Please try again with different credentials."
+                code: "AUTH_CREDENTIALS_CONFLICT_RETRY"
             });
         }
 
@@ -270,7 +270,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Profile picture URL is invalid and could not be stored properly."
+                code: "AUTH_PROFILE_IMAGE_STORAGE_FAILED"
             });
         }
 
@@ -280,8 +280,8 @@ const register = async (req, res) => {
         });
 
         return res.status(500).json({
-            succes: false,
-            message: `Error processing user registration.`
+            success: false,
+            code: "AUTH_REGISTER_FAILED"
         });
     }
 };
@@ -313,7 +313,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Token is invalid or was already used."
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             })
         }
         // Expired token
@@ -327,7 +327,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             })
         }
 
@@ -359,7 +359,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "E-mail confirmed. You can now do your first login (remember you will need to change your password)"
+            code: "AUTH_EMAIL_CONFIRMED"
         })
     } catch (error) {
         logger.error('Unexpected error confirming email', {
@@ -369,7 +369,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error confirming account.",
+            code: "AUTH_EMAIL_CONFIRM_FAILED",
             requestId
         });
     }
@@ -400,7 +400,8 @@ const login = async (req, res) => {
             const ttl = await redis.ttl(lockKey);
             return res.status(429).json({
                 success: false,
-                message: `Account temporarily locked due to too many failed attempts. Try again in ${ttl} seconds.`
+                code: "AUTH_ACCOUNT_LOCKED",
+                data: { retryAfter: ttl }
             });
         }
 
@@ -411,7 +412,7 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid credentials.", // This is intentional
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -420,7 +421,7 @@ const login = async (req, res) => {
 
             return res.status(403).json({
                 success: false,
-                message: "User account is deactivated."
+                code: "AUTH_ACCOUNT_DEACTIVATED"
             });
         }
 
@@ -445,7 +446,7 @@ const login = async (req, res) => {
             });
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials."
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -462,13 +463,13 @@ const login = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Please validate your e-mail address first."
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
             });
         }
 
         // User first login is handled below as we pass force_password_change
 
-        // JWT 
+        // JWT
         const payload = {
             sub: user.user_id,
             guid: user.user_guid,
@@ -514,7 +515,7 @@ const login = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: user.force_password_change ? "Password change required" : "Login successful.",
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
                 fpc: user.force_password_change,
@@ -545,7 +546,7 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -560,7 +561,7 @@ const login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing user login.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -573,7 +574,7 @@ const refresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: "Refresh token missing."
+            code: "AUTH_REFRESH_TOKEN_MISSING"
         });
     }
 
@@ -586,7 +587,7 @@ const refresh = async (req, res) => {
             res.clearCookie('refreshToken', { path: '/api/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired or invalid."
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
             });
         }
 
@@ -596,7 +597,7 @@ const refresh = async (req, res) => {
             res.clearCookie('refreshToken', { path: '/api/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired. Please login again."
+                code: "AUTH_SESSION_EXPIRED"
             });
         }
 
@@ -606,7 +607,7 @@ const refresh = async (req, res) => {
         if (!user || !user.is_active) {
             return res.status(403).json({
                 success: false,
-                message: "User account is inactive or not found."
+                code: "AUTH_USER_INACTIVE_OR_NOT_FOUND"
             });
         }
 
@@ -643,7 +644,7 @@ const refresh = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Token refreshed successfully.",
+            code: "AUTH_TOKEN_REFRESHED",
             data: {
                 token: accessToken
             }
@@ -656,7 +657,7 @@ const refresh = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error generating/processing new token.",
+            code: "AUTH_TOKEN_REFRESH_FAILED",
             requestId
         });
     }
@@ -686,7 +687,7 @@ const logout = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Logged out successfully."
+            code: "AUTH_LOGOUT_SUCCESS"
         });
     } catch (error) {
         logger.error('Error during logout process.', {
@@ -696,7 +697,7 @@ const logout = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error during logout process.",
+            code: "AUTH_LOGOUT_FAILED",
             requestId
         });
     }
@@ -716,7 +717,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password format is invalid."
+                code: "AUTH_PASSWORD_FORMAT_INVALID"
             });
         }
 
@@ -731,7 +732,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Current password is incorrect."
+                code: "AUTH_CURRENT_PASSWORD_WRONG"
             });
         }
 
@@ -741,7 +742,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password cannot be the same as the current one."
+                code: "AUTH_PASSWORD_SAME_AS_CURRENT"
             });
         }
         // Update PW and set FPC false
@@ -776,7 +777,7 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password updated. All sessions invalidated. Please login again."
+            code: "AUTH_PASSWORD_CHANGED"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -788,7 +789,7 @@ const changePassword = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error changing password.`,
+            code: "AUTH_PASSWORD_CHANGE_FAILED",
             requestId
         });
     }
@@ -802,7 +803,7 @@ const forgotPassword = async (req, res) => {
         // Email is invalid
         return res.status(400).json({
             success: false,
-            message: "E-mail is invalid."
+            code: "AUTH_EMAIL_INVALID"
         });
     }
 
@@ -868,13 +869,13 @@ const forgotPassword = async (req, res) => {
                 });
             }
         } else {
-            await t.commit(); // Empty 
+            await t.commit(); // Empty
         }
 
         // Always the same for improved security
         return res.status(200).json({
             success: true,
-            message: "A reset link has been sent to your e-mail address."
+            code: "AUTH_RESET_LINK_SENT"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -885,7 +886,7 @@ const forgotPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -899,7 +900,7 @@ const validateResetToken = async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 success: false,
-                message: "Token is required."
+                code: "AUTH_TOKEN_REQUIRED"
             });
         }
 
@@ -916,13 +917,13 @@ const validateResetToken = async (req, res) => {
         if (!record || new Date() > record.expires_at) {
             return res.status(400).json({
                 success: false,
-                message: "Token invalid or expired."
+                code: "AUTH_TOKEN_INVALID_OR_EXPIRED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "Token is valid."
+            code: "AUTH_TOKEN_VALID"
         });
     } catch (error) {
         logger.error("Error validating reset token.",
@@ -931,7 +932,7 @@ const validateResetToken = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -951,7 +952,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password does not meat security requirements (format).",
+                code: "AUTH_PASSWORD_WEAK",
                 data: {
                     errors: validation.error.issues
                 }
@@ -975,7 +976,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Invalid or already used token"
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             });
         }
 
@@ -983,7 +984,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             });
         }
 
@@ -1030,7 +1031,7 @@ const resetPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password changed successfully. You can now log in with your new credentials."
+            code: "AUTH_PASSWORD_RESET_SUCCESS"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -1041,7 +1042,7 @@ const resetPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -1052,7 +1053,7 @@ const verifySession = async (req, res) => {
     // loginRequired should be called, so if we are here session is good
     return res.status(200).json({
         success: true,
-        message: "Session is okay.",
+        code: "AUTH_SESSION_VALID",
         requestId
     });
 };
@@ -1070,7 +1071,7 @@ const me = async (req, res) => {
         if (cachedProfile) {
             return res.status(200).json({
                 success: true,
-                message: "User data retrieved successfully.",
+                code: "AUTH_USER_PROFILE_RETRIEVED",
                 data: JSON.parse(cachedProfile)
             });
         }
@@ -1093,7 +1094,7 @@ const me = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found."
+                code: "AUTH_USER_NOT_FOUND"
             });
         }
 
@@ -1234,7 +1235,7 @@ const me = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "User data retreived successfully.",
+            code: "AUTH_USER_PROFILE_RETRIEVED",
             data: profile
         });
     } catch (error) {
@@ -1245,7 +1246,7 @@ const me = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error fetching profile information.",
+            code: "AUTH_PROFILE_FETCH_FAILED",
             requestId
         });
     }
@@ -1267,7 +1268,7 @@ const resendConfirmation = async (req, res) => {
             // True for security reasons
             return res.status(200).json({
                 success: true,
-                message: "If the account is not confirmed, a new e-mail will be sent."
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
@@ -1275,7 +1276,7 @@ const resendConfirmation = async (req, res) => {
             // Return identical response to prevent enumeration of confirmed accounts
             return res.status(200).json({
                 success: true,
-                message: "If the account is not confirmed, a new e-mail will be sent."
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
@@ -1290,7 +1291,8 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(429).json({
                 success: false,
-                message: `Please wait ${remainingTime} seconds before requesting a new e-mail.`
+                code: "AUTH_RESEND_RATE_LIMITED",
+                data: { retryAfter: remainingTime }
             });
         }
 
@@ -1344,13 +1346,13 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Failed to send confirmation email. Please try again later."
+                code: "AUTH_CONFIRMATION_EMAIL_FAILED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "New confirmation e-mail sent."
+            code: "AUTH_CONFIRMATION_RESENT"
         });
     } catch (error) {
         logger.error('Error resending confirmation email', {
@@ -1360,7 +1362,7 @@ const resendConfirmation = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error resending confirmation email.",
+            code: "AUTH_RESEND_CONFIRMATION_FAILED",
             requestId
         });
     }
@@ -1391,7 +1393,7 @@ const adminLogin = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Invalid credentials.",
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -1405,7 +1407,7 @@ const adminLogin = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Access denied. Administrator privileges required."
+                code: "AUTH_ADMIN_ACCESS_DENIED"
             });
         }
 
@@ -1420,7 +1422,7 @@ const adminLogin = async (req, res) => {
             });
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials."
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -1433,11 +1435,11 @@ const adminLogin = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Please validate your e-mail address first."
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
             });
         }
 
-        // Generate JWT 
+        // Generate JWT
         const payload = {
             sub: user.user_id,
             guid: user.user_guid,
@@ -1496,7 +1498,7 @@ const adminLogin = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: user.force_password_change ? "Password change required" : "Admin login successful.",
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_ADMIN_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
                 fpc: user.force_password_change,
@@ -1516,7 +1518,7 @@ const adminLogin = async (req, res) => {
             const zodIssues = error.issues || error.errors || [];
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -1527,7 +1529,7 @@ const adminLogin = async (req, res) => {
         logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
         return res.status(500).json({
             success: false,
-            message: "Error processing admin login.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -1541,7 +1543,7 @@ const adminRefresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: "Admin refresh token missing."
+            code: "AUTH_ADMIN_REFRESH_TOKEN_MISSING"
         });
     }
 
@@ -1554,7 +1556,7 @@ const adminRefresh = async (req, res) => {
             res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired or invalid."
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
             });
         }
 
@@ -1565,7 +1567,7 @@ const adminRefresh = async (req, res) => {
             res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Access denied. Role mismatch in session."
+                code: "AUTH_ADMIN_ROLE_MISMATCH"
             });
         }
 
@@ -1604,14 +1606,14 @@ const adminRefresh = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Admin token refreshed successfully.",
+            code: "AUTH_ADMIN_TOKEN_REFRESHED",
             data: { token: accessToken }
         });
     } catch (error) {
         logger.error('Error generating new admin token.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error generating new admin token.",
+            code: "AUTH_ADMIN_TOKEN_REFRESH_FAILED",
             requestId
         });
     }
@@ -1638,13 +1640,13 @@ const adminLogout = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Admin logged out successfully."
+            code: "AUTH_ADMIN_LOGOUT_SUCCESS"
         });
     } catch (error) {
         logger.error('Error during admin logout process.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error during admin logout process.",
+            code: "AUTH_ADMIN_LOGOUT_FAILED",
             requestId
         });
     }

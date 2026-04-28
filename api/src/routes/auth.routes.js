@@ -12,7 +12,7 @@ const loginLimiter = rateLimit({
     max: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many login attempts. Please try again after 15 minutes.' }
+    message: { success: false, code: 'AUTH_RATE_LIMIT_LOGIN' }
 });
 
 const registerLimiter = rateLimit({
@@ -20,7 +20,7 @@ const registerLimiter = rateLimit({
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many registration attempts. Please try again after an hour.' }
+    message: { success: false, code: 'AUTH_RATE_LIMIT_REGISTER' }
 });
 
 const forgotPasswordLimiter = rateLimit({
@@ -28,7 +28,7 @@ const forgotPasswordLimiter = rateLimit({
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many password reset requests. Please try again after an hour.' }
+    message: { success: false, code: 'AUTH_RATE_LIMIT_FORGOT_PASSWORD' }
 });
 
 // --- Session Management ---

@@ -4,7 +4,7 @@ const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 
 // GET /api/levels
-// OR 
+// OR
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
 const getLevels = async (req, res) => {
     try {
@@ -43,7 +43,7 @@ const getLevels = async (req, res) => {
             if (!area) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Area not found."
+                    code: "LEVEL_PARENT_AREA_NOT_FOUND"
                 });
             }
 
@@ -63,7 +63,7 @@ const getLevels = async (req, res) => {
         logger.error('Error listing Levels', { error });
         return res.status(500).json({
             success: false,
-            message: "Error listing Levels."
+            code: "LEVEL_LIST_FAILED"
         });
     }
 };
@@ -135,7 +135,7 @@ const getLevelByCode = async (req, res) => {
         if (!level) {
             return res.status(404).json({
                 success: false,
-                message: "Level not found or does not belong to this hierarchy."
+                code: "LEVEL_NOT_FOUND"
             });
         }
 
@@ -148,7 +148,7 @@ const getLevelByCode = async (req, res) => {
         logger.error('Error fetching Level', { error });
         return res.status(500).json({
             success: false,
-            message: "Error fetching Level."
+            code: "LEVEL_FETCH_FAILED"
         });
     }
 };
@@ -219,7 +219,7 @@ const createLevel = async (req, res) => {
             if (!area) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Area not found or does not belong to this hierarchy."
+                    code: "LEVEL_PARENT_AREA_NOT_FOUND"
                 });
             }
             areaId = area.area_id;
@@ -228,7 +228,7 @@ const createLevel = async (req, res) => {
         if (!areaId) {
             return res.status(400).json({
                 success: false,
-                message: "areaId is required."
+                code: "LEVEL_AREA_ID_REQUIRED"
             });
         }
 
@@ -248,7 +248,7 @@ const createLevel = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Level created successfully.",
+            code: "LEVEL_CREATED",
             data: newLevel
         });
 
@@ -256,7 +256,7 @@ const createLevel = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -264,7 +264,7 @@ const createLevel = async (req, res) => {
         logger.error('Error creating Level', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LEVEL_CREATE_FAILED"
         });
     }
 };
@@ -335,7 +335,7 @@ const updateLevel = async (req, res) => {
         if (!level) {
             return res.status(404).json({
                 success: false,
-                message: "Level not found or does not belong to this hierarchy."
+                code: "LEVEL_NOT_FOUND"
             });
         }
 
@@ -359,7 +359,7 @@ const updateLevel = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Level updated successfully.",
+            code: "LEVEL_UPDATED",
             data: level
         });
 
@@ -367,7 +367,7 @@ const updateLevel = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -375,7 +375,7 @@ const updateLevel = async (req, res) => {
         logger.error('Error updating Level', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LEVEL_UPDATE_FAILED"
         });
     }
 };
@@ -395,14 +395,14 @@ const deleteLevel = async (req, res) => {
         if (!level) {
             return res.status(404).json({
                 success: false,
-                message: "Level not found or does not belong to this hierarchy."
+                code: "LEVEL_NOT_FOUND"
             });
         }
 
         if (!level.is_active) {
             return res.status(400).json({
                 success: false,
-                message: "Level is already inactive."
+                code: "LEVEL_ALREADY_INACTIVE"
             });
         }
 
@@ -415,21 +415,21 @@ const deleteLevel = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Level deactivated successfully."
+            code: "LEVEL_DEACTIVATED"
         });
 
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid URL parameter."
+                code: "VALIDATION_INVALID_URL_PARAM"
             });
         }
 
         logger.error('Error deleting Level', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LEVEL_DELETE_FAILED"
         });
     }
 };

@@ -36,7 +36,7 @@ const getAreas = async (req, res) => {
             if (!sl) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Service Line not found."
+                    code: "AREA_PARENT_SL_NOT_FOUND"
                 });
             }
 
@@ -57,7 +57,7 @@ const getAreas = async (req, res) => {
         logger.error('Error listing Areas', { error });
         return res.status(500).json({
             success: false,
-            message: "Error listing Areas."
+            code: "AREA_LIST_FAILED"
         });
     }
 };
@@ -113,7 +113,7 @@ const getAreaBySlug = async (req, res) => {
         if (!area) {
             return res.status(404).json({
                 success: false,
-                message: "Area not found or does not belong to this hierarchy."
+                code: "AREA_NOT_FOUND"
             });
         }
 
@@ -126,7 +126,7 @@ const getAreaBySlug = async (req, res) => {
         logger.error('Error fetching Area', { error });
         return res.status(500).json({
             success: false,
-            message: "Error fetching Area."
+            code: "AREA_FETCH_FAILED"
         });
     }
 };
@@ -139,7 +139,7 @@ const checkSlugAvailability = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: area ? "Slug is already in use." : "Slug is available.",
+            code: area ? "SLUG_IN_USE" : "SLUG_AVAILABLE",
             data: {
                 isAvailable: !area
             }
@@ -149,7 +149,7 @@ const checkSlugAvailability = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -157,7 +157,7 @@ const checkSlugAvailability = async (req, res) => {
         logger.error('Error checking Area slug', { error });
         return res.status(500).json({
             success: false,
-            message: "Error checking slug."
+            code: "SLUG_CHECK_FAILED"
         });
     }
 };
@@ -203,7 +203,7 @@ const createArea = async (req, res) => {
             if (!sl) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Service Line not found."
+                    code: "AREA_PARENT_SL_NOT_FOUND"
                 });
             }
 
@@ -213,7 +213,7 @@ const createArea = async (req, res) => {
         if (!serviceLineId) {
             return res.status(400).json({
                 success: false,
-                message: "serviceLineId is required."
+                code: "AREA_SERVICE_LINE_REQUIRED"
             });
         }
 
@@ -246,7 +246,7 @@ const createArea = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Area created successfully.",
+            code: "AREA_CREATED",
             data: newArea
         });
 
@@ -254,7 +254,7 @@ const createArea = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -262,7 +262,7 @@ const createArea = async (req, res) => {
         logger.error('Error creating Area', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "AREA_CREATE_FAILED"
         });
     }
 };
@@ -316,7 +316,7 @@ const updateArea = async (req, res) => {
         if (!area) {
             return res.status(404).json({
                 success: false,
-                message: "Area not found or does not belong to this hierarchy."
+                code: "AREA_NOT_FOUND"
             });
         }
 
@@ -358,7 +358,7 @@ const updateArea = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Area updated successfully.",
+            code: "AREA_UPDATED",
             data: area
         });
 
@@ -366,7 +366,7 @@ const updateArea = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -374,7 +374,7 @@ const updateArea = async (req, res) => {
         logger.error('Error updating Area', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "AREA_UPDATE_FAILED"
         });
     }
 };
@@ -417,14 +417,14 @@ const deleteArea = async (req, res) => {
         if (!area) {
             return res.status(404).json({
                 success: false,
-                message: "Area not found or does not belong to this hierarchy."
+                code: "AREA_NOT_FOUND"
             });
         }
 
         if (!area.is_active) {
             return res.status(400).json({
                 success: false,
-                message: "Area is already inactive."
+                code: "AREA_ALREADY_INACTIVE"
             });
         }
 
@@ -437,21 +437,21 @@ const deleteArea = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Area deactivated successfully."
+            code: "AREA_DEACTIVATED"
         });
 
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid URL parameter."
+                code: "VALIDATION_INVALID_URL_PARAM"
             });
         }
 
         logger.error('Error deleting Area', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "AREA_DELETE_FAILED"
         });
     }
 };

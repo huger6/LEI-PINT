@@ -77,7 +77,7 @@ const handleListRequest = async ({
         if (page > totalPages && count > 0) {
             return res.status(404).json({
                 success: false,
-                message: "Page not found."
+                code: "PAGINATION_PAGE_NOT_FOUND"
             });
         }
 
@@ -95,7 +95,7 @@ const handleListRequest = async ({
         logger.error(`Error in ${cachePrefix}`, { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LIST_FETCH_FAILED"
         });
     }
 };

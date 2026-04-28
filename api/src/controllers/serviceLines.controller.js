@@ -6,7 +6,7 @@ const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
 
-// GET /api/service-lines 
+// GET /api/service-lines
 // OR
 // GET /api/learning-paths/:pathSlug/service-lines
 const getServiceLines = async (req, res) => {
@@ -25,7 +25,7 @@ const getServiceLines = async (req, res) => {
             if (!lp) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Learning Path not found."
+                    code: "SL_PARENT_LP_NOT_FOUND"
                 });
             }
 
@@ -46,7 +46,7 @@ const getServiceLines = async (req, res) => {
         logger.error('Error listing Service Lines', { error, requestId });
         return res.status(500).json({
             success: false,
-            message: "Error listing Service Lines.",
+            code: "SL_LIST_FAILED",
             requestId
         });
     }
@@ -92,7 +92,7 @@ const getServiceLineBySlug = async (req, res) => {
         if (!sl) {
             return res.status(404).json({
                 success: false,
-                message: "Service Line not found or does not belong to this path."
+                code: "SL_NOT_FOUND"
             });
         }
 
@@ -102,7 +102,7 @@ const getServiceLineBySlug = async (req, res) => {
         logger.error('Error fetching Service Line', { error, requestId });
         return res.status(500).json({
             success: false,
-            message: "Error fetching Service Line.",
+            code: "SL_FETCH_FAILED",
             requestId
         });
     }
@@ -114,7 +114,7 @@ const checkSlugAvailability = async (req, res) => {
         if (!slug) {
             return res.status(400).json({
                 success: false,
-                message: "Slug query parameter is required."
+                code: "SL_SLUG_REQUIRED"
             });
         }
 
@@ -122,7 +122,7 @@ const checkSlugAvailability = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: sl ? "Slug is already in use." : "Slug is available.",
+            code: sl ? "SLUG_IN_USE" : "SLUG_AVAILABLE",
             data: {
                 isAvailable: !sl
             }
@@ -132,7 +132,7 @@ const checkSlugAvailability = async (req, res) => {
         logger.error('Error checking SL slug', { error });
         return res.status(500).json({
             success: false,
-            message: "Error checking slug."
+            code: "SLUG_CHECK_FAILED"
         });
     }
 };
@@ -151,7 +151,7 @@ const createServiceLine = async (req, res) => {
         if (!lp) {
             return res.status(404).json({
                 success: false,
-                message: "Parent Learning Path not found."
+                code: "SL_PARENT_LP_NOT_FOUND"
             });
         }
 
@@ -162,7 +162,7 @@ const createServiceLine = async (req, res) => {
         // Handle Image Upload
         let finalImgUrl = imgUrl;
         if (imgUrl && imgUrl.includes('/temp/')) {
-            finalImgUrl = await storageService.moveStructureImageToPermanent(
+            finalImgUrl = await moveStructureImageToPermanent(
                 'service-lines',
                 imgUrl,
                 finalUniqueSlug
@@ -184,7 +184,7 @@ const createServiceLine = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Service Line created successfully.",
+            code: "SL_CREATED",
             data: newSl
         });
 
@@ -192,7 +192,7 @@ const createServiceLine = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -200,7 +200,7 @@ const createServiceLine = async (req, res) => {
         logger.error('Error creating Service Line', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "SL_CREATE_FAILED"
         });
     }
 };
@@ -225,7 +225,7 @@ const updateServiceLine = async (req, res) => {
         if (!sl) {
             return res.status(404).json({
                 success: false,
-                message: "Service Line not found."
+                code: "SL_NOT_FOUND_BY_SLUG"
             });
         }
 
@@ -248,7 +248,7 @@ const updateServiceLine = async (req, res) => {
         // Handle Image Move if a new temporary image is provided
         let finalImgUrl = imgUrl !== undefined ? imgUrl : sl.img_url;
         if (imgUrl && imgUrl.includes('/temp/')) {
-            finalImgUrl = await storageService.moveStructureImageToPermanent(
+            finalImgUrl = await moveStructureImageToPermanent(
                 'service-lines',
                 imgUrl,
                 finalNewSlug
@@ -269,7 +269,7 @@ const updateServiceLine = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Service Line updated successfully.",
+            code: "SL_UPDATED",
             data: sl
         });
 
@@ -277,7 +277,7 @@ const updateServiceLine = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -285,7 +285,7 @@ const updateServiceLine = async (req, res) => {
         logger.error('Error updating Service Line', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "SL_UPDATE_FAILED"
         });
     }
 };
@@ -301,14 +301,14 @@ const deleteServiceLine = async (req, res) => {
         if (!sl) {
             return res.status(404).json({
                 success: false,
-                message: "Service Line not found."
+                code: "SL_NOT_FOUND_BY_SLUG"
             });
         }
 
         if (!sl.is_active) {
             return res.status(400).json({
                 success: false,
-                message: "Service Line is already inactive."
+                code: "SL_ALREADY_INACTIVE"
             });
         }
 
@@ -322,21 +322,21 @@ const deleteServiceLine = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Service Line deactivated successfully."
+            code: "SL_DEACTIVATED"
         });
 
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid URL parameter."
+                code: "VALIDATION_INVALID_URL_PARAM"
             });
         }
 
         logger.error('Error deleting Service Line', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "SL_DELETE_FAILED"
         });
     }
 };

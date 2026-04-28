@@ -61,7 +61,7 @@ const getBadges = async (req, res) => {
             if (!level) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Level not found or does not belong to this Area."
+                    code: "BADGE_PARENT_LEVEL_NOT_FOUND"
                 });
             }
 
@@ -100,7 +100,7 @@ const getBadges = async (req, res) => {
         logger.error('Error listing Badges', { error });
         return res.status(500).json({
             success: false,
-            message: "Error listing Badges."
+            code: "BADGE_LIST_FAILED"
         });
     }
 };
@@ -228,7 +228,7 @@ const getBadgeBySlug = async (req, res) => {
         if (!badge) {
             return res.status(404).json({
                 success: false,
-                message: "Badge not found or does not belong to this hierarchy."
+                code: "BADGE_NOT_FOUND"
             });
         }
 
@@ -241,7 +241,7 @@ const getBadgeBySlug = async (req, res) => {
         logger.error('Error fetching Badge', { error });
         return res.status(500).json({
             success: false,
-            message: "Error fetching Badge."
+            code: "BADGE_FETCH_FAILED"
         });
     }
 };
@@ -293,7 +293,7 @@ const checkSlugAvailability = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: badge ? "Slug is already in use." : "Slug is available.",
+            code: badge ? "SLUG_IN_USE" : "SLUG_AVAILABLE",
             data: {
                 isAvailable: !badge
             }
@@ -303,7 +303,7 @@ const checkSlugAvailability = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -311,7 +311,7 @@ const checkSlugAvailability = async (req, res) => {
         logger.error('Error checking Badge slug', { error });
         return res.status(500).json({
             success: false,
-            message: "Error checking slug."
+            code: "SLUG_CHECK_FAILED"
         });
     }
 };
@@ -347,7 +347,7 @@ const createBadge = async (req, res) => {
             if (!resolvedStage) {
                 return res.status(404).json({
                     success: false,
-                    message: "Parent Level not found or does not belong to this hierarchy."
+                    code: "BADGE_PARENT_LEVEL_NOT_FOUND"
                 });
             }
             progressionStageId = resolvedStage.progression_stage_id;
@@ -367,7 +367,7 @@ const createBadge = async (req, res) => {
             if (!resolvedStage) {
                 return res.status(404).json({
                     success: false,
-                    message: "Progression stage not found."
+                    code: "BADGE_STAGE_NOT_FOUND"
                 });
             }
         }
@@ -375,7 +375,7 @@ const createBadge = async (req, res) => {
         if (!resolvedStage) {
             return res.status(400).json({
                 success: false,
-                message: "progressionStageId is required."
+                code: "BADGE_STAGE_ID_REQUIRED"
             });
         }
 
@@ -384,7 +384,7 @@ const createBadge = async (req, res) => {
         if (!areaRow || !slRow) {
             return res.status(400).json({
                 success: false,
-                message: "Could not resolve the parent Area or Service Line for this Level."
+                code: "BADGE_PARENT_HIERARCHY_MISSING"
             });
         }
 
@@ -424,7 +424,7 @@ const createBadge = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Badge created successfully.",
+            code: "BADGE_CREATED",
             data: newBadge
         });
 
@@ -432,7 +432,7 @@ const createBadge = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -440,7 +440,7 @@ const createBadge = async (req, res) => {
         logger.error('Error creating Badge', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "BADGE_CREATE_FAILED"
         });
     }
 };
@@ -572,7 +572,7 @@ const updateBadge = async (req, res) => {
         if (!badge) {
             return res.status(404).json({
                 success: false,
-                message: "Badge not found or does not belong to this hierarchy."
+                code: "BADGE_NOT_FOUND"
             });
         }
 
@@ -619,7 +619,7 @@ const updateBadge = async (req, res) => {
             if (!newStage || !newStage.area || !newStage.area.service_line) {
                 return res.status(404).json({
                     success: false,
-                    message: "Target progression stage not found."
+                    code: "BADGE_TARGET_STAGE_NOT_FOUND"
                 });
             }
 
@@ -651,7 +651,7 @@ const updateBadge = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Badge updated successfully.",
+            code: "BADGE_UPDATED",
             data: badge
         });
 
@@ -659,7 +659,7 @@ const updateBadge = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -667,7 +667,7 @@ const updateBadge = async (req, res) => {
         logger.error('Error updating Badge', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "BADGE_UPDATE_FAILED"
         });
     }
 };
@@ -688,14 +688,14 @@ const deleteBadge = async (req, res) => {
         if (!badge) {
             return res.status(404).json({
                 success: false,
-                message: "Badge not found or does not belong to this hierarchy."
+                code: "BADGE_NOT_FOUND"
             });
         }
 
         if (!badge.is_active) {
             return res.status(400).json({
                 success: false,
-                message: "Badge is already inactive."
+                code: "BADGE_ALREADY_INACTIVE"
             });
         }
 
@@ -708,21 +708,21 @@ const deleteBadge = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Badge deactivated successfully."
+            code: "BADGE_DEACTIVATED"
         });
 
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid URL parameter."
+                code: "VALIDATION_INVALID_URL_PARAM"
             });
         }
 
         logger.error('Error deleting Badge', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "BADGE_DELETE_FAILED"
         });
     }
 };
