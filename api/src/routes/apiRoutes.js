@@ -14,6 +14,7 @@ const ranking = require('./ranking.routes');
 const utils = require('./utils.routes');
 const admin = require('./admin.routes');
 const gamification = require('./gamification.routes');
+const statistics = require('./statistics.routes');
 
 // --- Auth & user session ---
 router.use('/auth', auth);
@@ -35,6 +36,7 @@ router.use('/applications', applications);
 // --- Gamification & rankings ---
 router.use('/ranking', ranking);
 router.use('/gamification', gamification);
+router.use('/statistics', statistics);
 
 // --- Utilities & admin ---
 router.use('/utils', utils);

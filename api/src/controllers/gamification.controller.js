@@ -1,6 +1,7 @@
 const { models } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
+const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
 const gamificationService = require('../services/gamification.service');
 
@@ -33,13 +34,7 @@ const trackInteraction = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
         logger.error('Error tracking badge interaction', { error });
         return res.status(500).json({ success: false, code: 'GAMIFICATION_INTERACTION_FAILED' });
     }
@@ -85,13 +80,7 @@ const getInteractions = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_QUERY_PARAMS',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error);
         logger.error('Error fetching interactions', { error });
         return res.status(500).json({ success: false, code: 'GAMIFICATION_INTERACTIONS_FETCH_FAILED' });
     }
@@ -197,13 +186,7 @@ const getRecommendations = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_QUERY_PARAMS',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error);
         logger.error('Error fetching recommendations', { error });
         return res.status(500).json({ success: false, code: 'GAMIFICATION_RECOMMENDATIONS_FETCH_FAILED' });
     }
@@ -221,103 +204,21 @@ const getConsultantStats = async (req, res) => {
         const role = req.user.role;
 
         if (role !== 'Consultant') {
-            return res.status(403).json({
-                success: false,
-                code: 'APP_ACCESS_DENIED_OWN'
-            });
+            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_OWN' });
         }
 
-        // Check if consultant exists
-        const consultant = await models.consultants.findByPk(userId, {
-            attributes: ['user_id']
-        });
-
+        const consultant = await models.consultants.findByPk(userId, { attributes: ['user_id'] });
         if (!consultant) {
-            return res.status(404).json({
-                success: false,
-                code: 'GAMIFICATION_CONSULTANT_NOT_FOUND'
-            });
+            return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
         }
 
-        // Get total points
-        const totalPointsResult = await models.sequelize.query(
-            `SELECT COALESCE(SUM(points_delta), 0) as total_points 
-             FROM points_history 
-             WHERE user_id = :userId`,
-            {
-                replacements: { userId },
-                type: models.sequelize.QueryTypes.SELECT
-            }
-        );
-        const totalPoints = totalPointsResult[0]?.total_points || 0;
+        const data = await gamificationService.getConsultantStats(userId);
 
-        // Get earned badges count
-        const earnedBadgesCount = await models.awarded_badges.count({
-            where: { user_id: userId },
-            distinct: true
-        });
-
-        // Get badges in progress (open applications)
-        const badgesInProgress = await models.badge_applications.count({
-            where: {
-                consultant_id: userId,
-                status: 'Open'
-            }
-        });
-
-        // Get ranking position
-        const rankingResult = await models.sequelize.query(
-            `SELECT position FROM get_ranking(:userId)`,
-            {
-                replacements: { userId },
-                type: models.sequelize.QueryTypes.SELECT
-            }
-        );
-        const rankingPosition = rankingResult[0]?.position || null;
-
-        // Get total interactions
-        const totalInteractions = await models.user_badges_interactions.count({
-            where: { user_id: userId }
-        });
-
-        // Get interaction breakdown
-        const interactionBreakdown = await models.user_badges_interactions.findAll({
-            attributes: [
-                'interaction_type',
-                [models.sequelize.fn('COUNT', models.sequelize.col('interaction_type')), 'count']
-            ],
-            where: { user_id: userId },
-            group: ['interaction_type'],
-            raw: true
-        });
-
-        const interactionsSummary = {};
-        interactionBreakdown.forEach(item => {
-            interactionsSummary[item.interaction_type] = parseInt(item.count, 10);
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: 'GAMIFICATION_STATS_RETRIEVED',
-            data: {
-                totalPoints,
-                earnedBadges: earnedBadgesCount,
-                badgesInProgress,
-                rankingPosition,
-                totalInteractions,
-                interactionsSummary: interactionsSummary || {}
-            }
-        });
+        return res.status(200).json({ success: true, code: 'GAMIFICATION_STATS_RETRIEVED', data });
 
     } catch (error) {
-        logger.error('Error fetching consultant statistics', { 
-            error,
-            userId: req.user.sub
-        });
-        return res.status(500).json({
-            success: false,
-            code: 'GAMIFICATION_STATS_FETCH_FAILED'
-        });
+        logger.error('Error fetching consultant statistics', { error, userId: req.user.sub });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_STATS_FETCH_FAILED' });
     }
 };
 

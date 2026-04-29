@@ -182,10 +182,60 @@ const trackInteraction = async (userId, badgeId, interactionType) => {
     return interaction;
 };
 
+/*──────────────────────────────────────────────────────────────
+  CONSULTANT STATS DASHBOARD
+  Aggregates all dashboard metrics for a consultant in one place:
+  total points, earned badges, in-progress badges, ranking
+  position, and interaction breakdown.
+──────────────────────────────────────────────────────────────*/
+const getConsultantStats = async (userId) => {
+    const [sumRows] = await sequelize.query(
+        `SELECT COALESCE(SUM(points_delta), 0)::integer AS total_points
+         FROM points_history WHERE user_id = :userId`,
+        { replacements: { userId } }
+    );
+    const totalPoints = parseInt(sumRows[0]?.total_points ?? 0, 10);
+
+    const earnedBadges = await models.awarded_badges.count({
+        where: { user_id: userId },
+        distinct: true
+    });
+
+    const badgesInProgress = await models.badge_applications.count({
+        where: { consultant_id: userId, status: 'Open' }
+    });
+
+    const [rankRows] = await sequelize.query(
+        `SELECT position FROM get_ranking(:userId)`,
+        { replacements: { userId } }
+    );
+    const rankingPosition = rankRows[0]?.position ?? null;
+
+    const totalInteractions = await models.user_badges_interactions.count({ where: { user_id: userId } });
+
+    const interactionBreakdown = await models.user_badges_interactions.findAll({
+        attributes: [
+            'interaction_type',
+            [sequelize.fn('COUNT', sequelize.col('interaction_type')), 'count']
+        ],
+        where: { user_id: userId },
+        group: ['interaction_type'],
+        raw: true
+    });
+
+    const interactionsSummary = {};
+    interactionBreakdown.forEach(({ interaction_type, count }) => {
+        interactionsSummary[interaction_type] = parseInt(count, 10);
+    });
+
+    return { totalPoints, earnedBadges, badgesInProgress, rankingPosition, totalInteractions, interactionsSummary };
+};
+
 module.exports = {
     awardRequirementPoints,
     awardBadgeCompletionPoints,
     getConsultantPointsSummary,
+    getConsultantStats,
     getRecommendations,
     trackInteraction
 };
