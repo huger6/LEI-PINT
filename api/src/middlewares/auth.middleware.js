@@ -77,9 +77,12 @@ const checkRole = (...allowedRoles) => {
 
 const isAdmin = checkRole('Administrator');
 
+const leadership = checkRole('Service Line Leader', 'Talent Manager', 'Administrator');
+
 module.exports = {
     loginRequired,
     annonymousUsersOnly,
     checkRole,
-    isAdmin
+    isAdmin,
+    leadership
 }

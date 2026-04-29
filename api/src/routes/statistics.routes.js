@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { loginRequired, checkRole } = require('../middlewares/auth.middleware');
+const { loginRequired, checkRole, leadership } = require('../middlewares/auth.middleware');
 const ctrl = require('../controllers/statistics.controller');
-
-const leadership = checkRole('Service Line Leader', 'Talent Manager', 'Administrator');
 
 /*──────────────────────────────────────────────────────────────
   Individual consultant statistics
