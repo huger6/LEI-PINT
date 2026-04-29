@@ -239,37 +239,6 @@ const getConsultantStats = async (req, res) => {
             });
         }
 
-        if (process.env.NODE_ENV === 'test') {
-            const totalPoints = Number((await models.points_history.sum('points_delta', {
-                where: { user_id: userId }
-            })) || 0);
-
-            const earnedBadgesCount = await models.awarded_badges.count({
-                where: { user_id: userId }
-            });
-
-            const badgesInProgress = await models.badge_applications.count({
-                where: { user_id: userId, application_state: 'Open' }
-            });
-
-            const totalInteractions = await models.user_badges_interactions.count({
-                where: { user_id: userId }
-            });
-
-            return res.status(200).json({
-                success: true,
-                code: 'GAMIFICATION_STATS_RETRIEVED',
-                data: {
-                    totalPoints,
-                    earnedBadges: earnedBadgesCount,
-                    badgesInProgress,
-                    rankingPosition: null,
-                    totalInteractions,
-                    interactionsSummary: {}
-                }
-            });
-        }
-
         // Get total points
         const totalPointsResult = await sequelize.query(
             `SELECT COALESCE(SUM(points_delta), 0) as total_points 
@@ -296,15 +265,26 @@ const getConsultantStats = async (req, res) => {
             }
         });
 
-        // Get ranking position
+        // Get ranking position using cross-db SQL (Postgres/SQLite)
         const rankingResult = await sequelize.query(
-            `SELECT position FROM get_ranking(:userId)`,
+            `SELECT ranked.position
+             FROM (
+                SELECT
+                    c.user_id,
+                    ROW_NUMBER() OVER (
+                        ORDER BY COALESCE(SUM(ph.points_delta), 0) DESC, c.user_id ASC
+                    ) AS position
+                FROM consultants c
+                LEFT JOIN points_history ph ON ph.user_id = c.user_id
+                GROUP BY c.user_id
+             ) ranked
+             WHERE ranked.user_id = :userId`,
             {
                 replacements: { userId },
                 type: QueryTypes.SELECT
             }
         );
-        const rankingPosition = rankingResult[0]?.position || null;
+        const rankingPosition = rankingResult[0]?.position ?? null;
 
         // Get total interactions
         const totalInteractions = await models.user_badges_interactions.count({
@@ -384,7 +364,11 @@ const getEarnedBadges = async (req, res) => {
             });
         }
 
-        if (process.env.NODE_ENV === 'test') {
+        const totalEarnedBadges = await models.awarded_badges.count({
+            where: { user_id: userId }
+        });
+
+        if (totalEarnedBadges === 0) {
             return res.status(200).json({
                 success: true,
                 code: 'GAMIFICATION_NO_ACHIEVEMENTS',

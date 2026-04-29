@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { models } = require('../config/db');
+const { sequelize, models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { z } = require('zod');
 const { biographyRule } = require('../validations/shared-rules');
@@ -13,7 +13,8 @@ const biographyBodySchema = z.object({
 });
 
 const dbCheck = async (model, field, value, caseInsensitive = false) => {
-    const where = caseInsensitive && process.env.NODE_ENV !== 'test'
+    const supportsILike = sequelize.getDialect() === 'postgres';
+    const where = caseInsensitive && supportsILike
         ? { [field]: { [Op.iLike]: value } }
         : { [field]: value };
     const count = await model.count({ where });
