@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('user_account_tokens', {
     token_id: {
       autoIncrement: true,
@@ -13,11 +13,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     token_value: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(512),
       allowNull: false
     },
     token_type: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(50),
       allowNull: false
     },
     expires_at: {
@@ -47,6 +47,16 @@ module.exports = function(sequelize, DataTypes) {
         fields: [
           { name: "token_id" },
         ]
+      },
+      {
+        name: "idx_tokens_active_user",
+        fields: [
+          { name: "user_id" },
+          { name: "token_type" },
+        ],
+        where: {
+          is_used: false
+        }
       },
     ]
   });

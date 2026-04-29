@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('goals', {
     goal_id: {
       autoIncrement: true,
@@ -71,6 +71,24 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "goal_id" },
+        ]
+      },
+      {
+        name: "cons_timelines_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "timelines_applications_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
+        name: "goals_fk",
+        fields: [
+          { name: "badge_id" },
         ]
       },
     ]

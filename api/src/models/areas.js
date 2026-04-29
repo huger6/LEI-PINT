@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('areas', {
     area_id: {
       autoIncrement: true,
@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'services_lines',
+        model: 'service_lines',
         key: 'service_line_id'
       }
     },
@@ -94,6 +94,30 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "area_slug" },
+        ]
+      },
+      {
+        name: "sl_areas_fk",
+        fields: [
+          { name: "service_line_id" },
+        ]
+      },
+      {
+        name: "area_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "area_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_areas_sl_id",
+        fields: [
+          { name: "service_line_id" },
         ]
       },
     ]

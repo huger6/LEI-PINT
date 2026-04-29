@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('users', {
     user_id: {
       autoIncrement: true,
@@ -135,6 +135,63 @@ module.exports = function(sequelize, DataTypes) {
         fields: [
           { name: "user_id" },
         ]
+      },
+      {
+        name: "lang_user_fk",
+        fields: [
+          { name: "preferred_lang_id" },
+        ]
+      },
+      {
+        name: "location_user_fk",
+        fields: [
+          { name: "location_id" },
+        ]
+      },
+      {
+        name: "approvedby_user_fk",
+        fields: [
+          { name: "approved_by" },
+        ]
+      },
+      {
+        name: "idx_users_role_active",
+        fields: [
+          { name: "user_role" },
+          { name: "is_active" },
+        ]
+      },
+      {
+        name: "idx_users_role_approved_by_active",
+        fields: [
+          { name: "user_role" },
+          { name: "approved_by" },
+        ],
+        where: {
+          is_active: true
+        }
+      },
+      {
+        name: "idx_users_full_name",
+        fields: [
+          { name: "full_name" },
+        ]
+      },
+      {
+        name: "idx_users_name_trgm",
+        using: "gin",
+        fields: [
+          { name: "full_name", operator: "gin_trgm_ops" },
+        ]
+      },
+      {
+        name: "idx_users_email_confirmed",
+        fields: [
+          { name: "email_confirmed" },
+        ],
+        where: {
+          email_confirmed: false
+        }
       },
     ]
   });

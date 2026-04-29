@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('learning_paths', {
     learning_path_id: {
       autoIncrement: true,
@@ -82,6 +82,18 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "path_slug" },
+        ]
+      },
+      {
+        name: "admin_lp_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "lp_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
         ]
       },
     ]

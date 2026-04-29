@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('certificates', {
     certificate_id: {
       autoIncrement: true,
@@ -51,6 +51,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "certificate_id" },
+        ]
+      },
+      {
+        name: "applications_certificates2_fk",
+        fields: [
+          { name: "application_id" },
         ]
       },
     ]

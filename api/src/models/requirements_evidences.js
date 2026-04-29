@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('requirements_evidences', {
     evidence_id: {
       autoIncrement: true,
@@ -82,6 +82,32 @@ module.exports = function(sequelize, DataTypes) {
         fields: [
           { name: "application_id" },
           { name: "requirement_id" },
+        ]
+      },
+      {
+        name: "requirements_evidences_fk",
+        fields: [
+          { name: "requirement_id" },
+        ]
+      },
+      {
+        name: "applications_evidences_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
+        name: "idx_evidences_app_req",
+        fields: [
+          { name: "application_id" },
+          { name: "requirement_id" },
+        ]
+      },
+      {
+        name: "idx_evidences_review_status",
+        fields: [
+          { name: "tm_reviewed" },
+          { name: "sll_reviewed" },
         ]
       },
     ]

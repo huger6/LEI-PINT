@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('rewards', {
     reward_id: {
       autoIncrement: true,
@@ -43,6 +43,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "reward_id" },
+        ]
+      },
+      {
+        name: "badge_rewards_fk",
+        fields: [
+          { name: "badge_id" },
         ]
       },
     ]
