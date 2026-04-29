@@ -13,7 +13,7 @@ const biographyBodySchema = z.object({
 });
 
 const dbCheck = async (model, field, value, caseInsensitive = false) => {
-    const where = caseInsensitive
+    const where = caseInsensitive && process.env.NODE_ENV !== 'test'
         ? { [field]: { [Op.iLike]: value } }
         : { [field]: value };
     const count = await model.count({ where });

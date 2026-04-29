@@ -93,6 +93,8 @@ const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
 }).partial();
 
 const createServiceLineBodySchema = z.object({
+	learningPathId: positiveIntIdRule.optional(),
+
 	serviceLineName: z.string().trim().min(2).max(100),
 
 	slSlug: z.string().trim()

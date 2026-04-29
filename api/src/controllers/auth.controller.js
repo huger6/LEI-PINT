@@ -1785,7 +1785,7 @@ const updateProfile = async (req, res) => {
         await t.commit();
 
         // Invalidate cache
-        const cacheKey = `user_profile:${userId}`;
+        const cacheKey = `user:profile:${userId}`;
         await redis.del(cacheKey);
 
         logger.info('Profile update completed successfully', {
