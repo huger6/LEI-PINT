@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('notification_preferences', {
     preference_id: {
       autoIncrement: true,
@@ -97,6 +97,36 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "preference_id" },
+        ]
+      },
+      {
+        name: "notif_slas_fk",
+        fields: [
+          { name: "sla_id" },
+        ]
+      },
+      {
+        name: "announc_notif2_fk",
+        fields: [
+          { name: "announcement_id" },
+        ]
+      },
+      {
+        name: "not_def_pref2_fk",
+        fields: [
+          { name: "definition_id" },
+        ]
+      },
+      {
+        name: "not_preferences_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "not_preferences_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
         ]
       },
     ]

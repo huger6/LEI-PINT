@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('system_announcements', {
     announcement_id: {
       autoIncrement: true,
@@ -102,6 +102,38 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "announcement_id" },
+        ]
+      },
+      {
+        name: "user_announcements_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "announcements_admin_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "announc_notif_fk",
+        fields: [
+          { name: "preference_id" },
+        ]
+      },
+      {
+        name: "announcements_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_announcements_active_dates",
+        fields: [
+          { name: "is_active" },
+          { name: "starts_at" },
+          { name: "ends_at" },
         ]
       },
     ]

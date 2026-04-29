@@ -1,20 +1,21 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { QueryTypes } = require('sequelize');
+const { Op } = require('sequelize');
 const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
-const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
+const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
+const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
-const { moveImageToPermanent } = require('../services/storageService');
+const stripNullishFields = require('../utils/stripNullishFields');
 
 loadEnvironment();
 
 const register = async (req, res) => {
-    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
 
     try {
         logger.info('Register flow started', {
@@ -46,24 +47,21 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Administrator is not a valid registration role."
+                code: "AUTH_ROLE_NOT_REGISTERABLE"
             });
         }
 
         // Validate if username or email is already in use
-        const [existingUser] = await sequelize.query(
-            `SELECT user_id, email_address, username
-            FROM users
-            WHERE email_address=:email OR username=:username
-            LIMIT 1`,
-            {
-                replacements: {
-                    email: userData.email_address,
-                    username: userData.username
-                },
-                type: QueryTypes.SELECT
-            }
-        );
+        const existingUser = await models.users.findOne({
+            attributes: ['user_id', 'email_address', 'username'],
+            where: {
+                [Op.or]: [
+                    { email_address: userData.email_address },
+                    { username: userData.username }
+                ]
+            },
+            transaction: t
+        });
 
         if (existingUser) {
             await t.rollback();
@@ -77,7 +75,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or email is already in use."
+                code: "AUTH_CREDENTIALS_CONFLICT"
             });
         }
 
@@ -164,11 +162,12 @@ const register = async (req, res) => {
             }, { transaction: t });
         }
 
-        // Generate email confirmation token
+        // Generate email confirmation token (store hash, send raw value)
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
         await models.user_account_tokens.create({
             user_id: newUser.user_id,
-            token_value: tokenValue,
+            token_value: tokenHash,
             token_type: 'CONFIRMATION',
             expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8h
         }, { transaction: t });
@@ -207,10 +206,7 @@ const register = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Account created, but confirmation e-mail could not be sent. Please request a new confirmation e-mail or use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                code: "AUTH_REGISTER_EMAIL_FAILED"
             });
         }
 
@@ -223,7 +219,7 @@ const register = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Registration completed successfully. Please, check your e-mail to confirm the account."
+            code: "AUTH_REGISTER_SUCCESS"
         });
     } catch (error) {
         // DB rollback
@@ -244,7 +240,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -261,7 +257,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or e-mail is already in use. Please try again with different credentials."
+                code: "AUTH_CREDENTIALS_CONFLICT_RETRY"
             });
         }
 
@@ -274,7 +270,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Profile picture URL is invalid and could not be stored properly."
+                code: "AUTH_PROFILE_IMAGE_STORAGE_FAILED"
             });
         }
 
@@ -284,8 +280,8 @@ const register = async (req, res) => {
         });
 
         return res.status(500).json({
-            succes: false,
-            message: `Error processing user registration.`
+            success: false,
+            code: "AUTH_REGISTER_FAILED"
         });
     }
 };
@@ -300,18 +296,14 @@ const confirmEmail = async (req, res) => {
             hasToken: Boolean(token)
         });
 
-        const [tokenRecord] = await sequelize.query(
-            `SELECT *
-            FROM user_account_tokens
-            WHERE token_value=:token AND token_type='CONFIRMATION' AND is_used=false
-            LIMIT 1`,
-            {
-                replacements: {
-                    token: token,
-                },
-                type: QueryTypes.SELECT
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        const tokenRecord = await models.user_account_tokens.findOne({
+            where: {
+                token_value: hashedToken,
+                token_type: 'CONFIRMATION',
+                is_used: false
             }
-        );
+        });
 
         // Invalid token
         if (!tokenRecord) {
@@ -321,7 +313,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Token is invalid or was already used."
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             })
         }
         // Expired token
@@ -335,7 +327,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             })
         }
 
@@ -367,7 +359,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "E-mail confirmed. You can now do your first login (remember you will need to change your password)"
+            code: "AUTH_EMAIL_CONFIRMED"
         })
     } catch (error) {
         logger.error('Unexpected error confirming email', {
@@ -377,14 +369,15 @@ const confirmEmail = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error confirming account."
+            code: "AUTH_EMAIL_CONFIRM_FAILED",
+            requestId
         });
     }
 };
 
 const login = async (req, res) => {
-    const t = await sequelize.transaction();
     const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
 
     try {
         const { identifier, password, remember } = loginSchema.parse(req.body);
@@ -399,6 +392,19 @@ const login = async (req, res) => {
             identifier
         });
 
+        // Check account lockout before hitting the DB for password comparison
+        const lockKey = `login:lock:${identifier}`;
+        const isLocked = await redis.get(lockKey);
+        if (isLocked) {
+            await t.rollback();
+            const ttl = await redis.ttl(lockKey);
+            return res.status(429).json({
+                success: false,
+                code: "AUTH_ACCOUNT_LOCKED",
+                data: { retryAfter: ttl }
+            });
+        }
+
         const user = await models.users.findOne({ where: searchCriteria });
 
         if (!user) {
@@ -406,7 +412,16 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid credentials.", // This is intentional
+                code: "AUTH_INVALID_CREDENTIALS"
+            });
+        }
+
+        if (!user.is_active) {
+            await t.rollback();
+
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_ACCOUNT_DEACTIVATED"
             });
         }
 
@@ -416,15 +431,27 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             await t.rollback();
 
+            const failKey = `login:fail:${identifier}`;
+            const failCount = await redis.incr(failKey);
+            if (failCount === 1) await redis.expire(failKey, 15 * 60);
+            if (failCount >= 5) {
+                await redis.set(lockKey, '1', 'EX', 15 * 60);
+                await redis.del(failKey);
+            }
+
             logger.warn('Failed login attempt: wrong password.', {
                 requestId,
-                identifier
+                identifier,
+                failCount
             });
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials."
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
+
+        // Clear failed attempt counter on successful password match
+        await redis.del(`login:fail:${identifier}`);
 
         // Check if user has confirmed it's email
         if (!user.email_confirmed) {
@@ -436,13 +463,13 @@ const login = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Please validate your e-mail address first."
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
             });
         }
 
         // User first login is handled below as we pass force_password_change
 
-        // JWT 
+        // JWT
         const payload = {
             sub: user.user_id,
             guid: user.user_guid,
@@ -452,11 +479,12 @@ const login = async (req, res) => {
         };
 
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 1/3 de dia
+        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
@@ -487,7 +515,7 @@ const login = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: user.force_password_change ? "Password change required" : "Login successful.",
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
                 fpc: user.force_password_change,
@@ -518,7 +546,7 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -533,7 +561,8 @@ const login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing user login."
+            code: "AUTH_REQUEST_FAILED",
+            requestId
         });
     }
 };
@@ -545,62 +574,64 @@ const refresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: "Refresh token missing."
+            code: "AUTH_REFRESH_TOKEN_MISSING"
         });
     }
 
-    const oldTokenKey = `auth:refresh:${refreshToken}`;
-
     try {
-        // Search token in redis
-        const cachedData = await redis.get(oldTokenKey);
+        const storedToken = await models.user_refresh_tokens.findOne({
+            where: { token_value: refreshToken }
+        });
 
-        if (!cachedData) {
+        if (!storedToken) {
             res.clearCookie('refreshToken', { path: '/api/auth' });
-            // If token isn't in cache it is invalid or expired
             return res.status(403).json({
                 success: false,
-                message: "Session expired or invalid."
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
+            });
+        }
+
+        // Check if token has expired
+        if (new Date(storedToken.expires_at) < new Date()) {
+            await storedToken.destroy(); // clear from db
+            res.clearCookie('refreshToken', { path: '/api/auth' });
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_SESSION_EXPIRED"
             });
         }
 
         // Get user data
-        const userData = JSON.parse(cachedData);
+        const user = await models.users.findByPk(storedToken.user_id);
+
+        if (!user || !user.is_active) {
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_USER_INACTIVE_OR_NOT_FOUND"
+            });
+        }
 
         // Get new access token
         const accessToken = jwt.sign({
-            sub: userData.user_id,
-            guid: userData.user_guid,
-            role: userData.user_role,
-            username: userData.username,
-            fpc: userData.force_password_change
+            sub: user.user_id,
+            guid: user.user_guid,
+            role: user.user_role,
+            username: user.username,
+            fpc: user.force_password_change
         }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
         const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
-        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
 
-        //  Get original TTL
-        const remainingTTL = await redis.ttl(oldTokenKey);
+        await storedToken.update({
+            token_value: newRefreshTokenValue
+        });
 
-        if (remainingTTL <= 0) {
-            throw new Error("Token TTL invalid");
-        }
-        // Delete old, set new 
-        await redis.del(oldTokenKey);
-        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
+        await user.update({ last_online: new Date() });
 
-        await sequelize.query(
-            `UPDATE users
-            SET last_online=NOW()
-            WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: userData.user_id
-                }
-            }
-        );
+        const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
         // Set new cookie
         res.cookie('refreshToken', newRefreshTokenValue, {
@@ -608,12 +639,12 @@ const refresh = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             path: '/api/auth',
-            maxAge: remainingTTL * 1000
+            maxAge: remainingTimeMs
         });
 
         return res.status(200).json({
             success: true,
-            message: "Token refreshed successfully.",
+            code: "AUTH_TOKEN_REFRESHED",
             data: {
                 token: accessToken
             }
@@ -626,7 +657,8 @@ const refresh = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error generating/processing new token."
+            code: "AUTH_TOKEN_REFRESH_FAILED",
+            requestId
         });
     }
 };
@@ -636,22 +668,18 @@ const logout = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
     const cookieOptions = {
-        path: '/',
+        path: '/api/auth',
         httpOnly: true
     };
 
     try {
         if (refreshToken) {
             // Clear token
-            await sequelize.query(
-                `DELETE FROM user_refresh_tokens WHERE token_value=:token`,
-                {
-                    replacements: {
-                        token: refreshToken
-                    },
-                    type: QueryTypes.DELETE
+            await models.user_refresh_tokens.destroy({
+                where: {
+                    token_value: refreshToken
                 }
-            );
+            });
         }
 
         // Clear cookie
@@ -659,7 +687,7 @@ const logout = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Logged out successfully."
+            code: "AUTH_LOGOUT_SUCCESS"
         });
     } catch (error) {
         logger.error('Error during logout process.', {
@@ -669,7 +697,8 @@ const logout = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error during logout process."
+            code: "AUTH_LOGOUT_FAILED",
+            requestId
         });
     }
 };
@@ -688,28 +717,22 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password format is invalid."
+                code: "AUTH_PASSWORD_FORMAT_INVALID"
             });
         }
 
         // Get user
-        const [user] = await sequelize.query(
-            `SELECT password_hash FROM users WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const user = await models.users.findByPk(user_id, {
+            attributes: ['password_hash'],
+            transaction: t
+        });
         // Compare current pw
         const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
         if (!isMatch) {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Current password is incorrect."
+                code: "AUTH_CURRENT_PASSWORD_WRONG"
             });
         }
 
@@ -719,17 +742,18 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password cannot be the same as the current one."
+                code: "AUTH_PASSWORD_SAME_AS_CURRENT"
             });
         }
         // Update PW and set FPC false
         const newHash = await bcrypt.hash(newPassword, 10);
-        await sequelize.query(
-            `UPDATE users SET password_hash=:newHash, force_password_change=false
-            WHERE user_id=:user_id`,
+        await models.users.update(
             {
-                replacements: {
-                    newHash: newHash,
+                password_hash: newHash,
+                force_password_change: false
+            },
+            {
+                where: {
                     user_id: user_id
                 },
                 transaction: t
@@ -737,15 +761,12 @@ const changePassword = async (req, res) => {
         );
 
         // Delete refresh tokens
-        await sequelize.query(
-            `DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_refresh_tokens.destroy({
+            where: {
+                user_id: user_id
+            },
+            transaction: t
+        });
 
         await t.commit();
 
@@ -756,7 +777,7 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password updated. All sessions invalidated. Please login again."
+            code: "AUTH_PASSWORD_CHANGED"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -768,7 +789,8 @@ const changePassword = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error changing password.`
+            code: "AUTH_PASSWORD_CHANGE_FAILED",
+            requestId
         });
     }
 };
@@ -781,7 +803,7 @@ const forgotPassword = async (req, res) => {
         // Email is invalid
         return res.status(400).json({
             success: false,
-            message: "E-mail is invalid."
+            code: "AUTH_EMAIL_INVALID"
         });
     }
 
@@ -789,17 +811,13 @@ const forgotPassword = async (req, res) => {
 
     try {
         // Get user
-        const [user] = await sequelize.query(
-            `SELECT user_id, full_name, preferred_lang_id, email_address
-            FROM users WHERE email_address=:email`,
-            {
-                replacements: {
-                    email: email
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const user = await models.users.findOne({
+            attributes: ['user_id', 'full_name', 'preferred_lang_id', 'email_address'],
+            where: {
+                email_address: email
+            },
+            transaction: t
+        });
 
         if (user) {
             const resetToken = crypto.randomBytes(32).toString('hex');
@@ -807,19 +825,29 @@ const forgotPassword = async (req, res) => {
             const expires = new Date(Date.now() + 3600000); //1h
 
             // Store token
-            await sequelize.query(
-                `INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
-                VALUES (:user_id, :tokenHash, 'PASSWORD_RESET', :expires)
-                ON CONFLICT (user_id, token_type) DO UPDATE SET token_value=:tokenHash, expires_at=:expires`,
-                {
-                    replacements: {
-                        user_id: user.user_id,
-                        tokenHash: tokenHash,
-                        expires: expires
-                    },
-                    transaction: t
-                }
-            );
+            const existingResetToken = await models.user_account_tokens.findOne({
+                where: {
+                    user_id: user.user_id,
+                    token_type: 'PASSWORD_RESET'
+                },
+                transaction: t
+            });
+
+            if (existingResetToken) {
+                await existingResetToken.update({
+                    token_value: tokenHash,
+                    expires_at: expires,
+                    is_used: false
+                }, { transaction: t });
+            } else {
+                await models.user_account_tokens.create({
+                    user_id: user.user_id,
+                    token_value: tokenHash,
+                    token_type: 'PASSWORD_RESET',
+                    expires_at: expires,
+                    is_used: false
+                }, { transaction: t });
+            }
 
             await t.commit();
 
@@ -839,23 +867,15 @@ const forgotPassword = async (req, res) => {
                     preferred_lang_id: user.preferred_lang_id,
                     emailError: emailResult?.error
                 });
-
-                return res.status(502).json({
-                    success: false,
-                    message: "Failed to send e-mail with password update follow-up. Please use the link below.",
-                    data: {
-                        reset_password_link: `${process.env.APP_URL}/api/auth/reset-password?token=${resetToken}` // CHANGE TO FRONTEND LINK
-                    }
-                });
             }
         } else {
-            await t.commit(); // Empty 
+            await t.commit(); // Empty
         }
 
         // Always the same for improved security
         return res.status(200).json({
             success: true,
-            message: "A reset link has been sent to your e-mail address."
+            code: "AUTH_RESET_LINK_SENT"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -866,7 +886,8 @@ const forgotPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
+            code: "AUTH_REQUEST_FAILED",
+            requestId
         });
     }
 };
@@ -879,32 +900,30 @@ const validateResetToken = async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 success: false,
-                message: "Token is required."
+                code: "AUTH_TOKEN_REQUIRED"
             });
         }
 
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-        const [record] = await sequelize.query(`
-            SELECT expires_at FROM user_account_tokens
-            WHERE token_value =:tokenHash AND token_type='PASSWORD_RESET'`,
-            {
-                replacements: {
-                    tokenHash: tokenHash
-                }, type: QueryTypes.SELECT
+        const record = await models.user_account_tokens.findOne({
+            attributes: ['expires_at'],
+            where: {
+                token_value: tokenHash,
+                token_type: 'PASSWORD_RESET'
             }
-        );
+        });
 
         if (!record || new Date() > record.expires_at) {
             return res.status(400).json({
                 success: false,
-                message: "Token invalid or expired."
+                code: "AUTH_TOKEN_INVALID_OR_EXPIRED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "Token is valid."
+            code: "AUTH_TOKEN_VALID"
         });
     } catch (error) {
         logger.error("Error validating reset token.",
@@ -913,7 +932,8 @@ const validateResetToken = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
+            code: "AUTH_REQUEST_FAILED",
+            requestId
         });
     }
 
@@ -932,7 +952,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password does not meat security requirements (format).",
+                code: "AUTH_PASSWORD_WEAK",
                 data: {
                     errors: validation.error.issues
                 }
@@ -943,25 +963,20 @@ const resetPassword = async (req, res) => {
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
         // Get token and user id
-        const [tokenRecord] = await sequelize.query(`
-            SELECT user_id, expires_at
-            FROM user_account_tokens
-            WHERE token_value=:tokenHash AND token_type='PASSWORD_RESET'
-            LIMIT 1`,
-            {
-                replacements: {
-                    tokenHash: tokenHash
-                },
-                type: QueryTypes.SELECT,
-                transaction: t
-            }
-        );
+        const tokenRecord = await models.user_account_tokens.findOne({
+            attributes: ['user_id', 'expires_at'],
+            where: {
+                token_value: tokenHash,
+                token_type: 'PASSWORD_RESET'
+            },
+            transaction: t
+        });
 
         if (!tokenRecord) {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Invalid or already used token"
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             });
         }
 
@@ -969,7 +984,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             });
         }
 
@@ -977,13 +992,13 @@ const resetPassword = async (req, res) => {
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
         // Update user
-        await sequelize.query(`
-            UPDATE users
-            SET password_hash=:passwordHash, force_password_change=false
-            WHERE user_id=:user_id`,
+        await models.users.update(
             {
-                replacements: {
-                    passwordHash: passwordHash,
+                password_hash: passwordHash,
+                force_password_change: false
+            },
+            {
+                where: {
                     user_id: tokenRecord.user_id
                 },
                 transaction: t
@@ -991,27 +1006,21 @@ const resetPassword = async (req, res) => {
         );
 
         // Delete used token
-        await sequelize.query(`
-            DELETE FROM user_account_tokens
-            WHERE user_id=:user_id AND token_type='PASSWORD_RESET'`,
-            {
-                replacements: {
-                    user_id: tokenRecord.user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_account_tokens.destroy({
+            where: {
+                user_id: tokenRecord.user_id,
+                token_type: 'PASSWORD_RESET'
+            },
+            transaction: t
+        });
 
         // Logout all sessions
-        await sequelize.query(`
-            DELETE FROM user_refresh_tokens WHERE user_id=:user_id`,
-            {
-                replacements: {
-                    user_id: tokenRecord.user_id
-                },
-                transaction: t
-            }
-        );
+        await models.user_refresh_tokens.destroy({
+            where: {
+                user_id: tokenRecord.user_id
+            },
+            transaction: t
+        });
 
         await t.commit();
 
@@ -1022,7 +1031,7 @@ const resetPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password changed successfully. You can now log in with your new credentials."
+            code: "AUTH_PASSWORD_RESET_SUCCESS"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -1033,16 +1042,19 @@ const resetPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request."
+            code: "AUTH_REQUEST_FAILED",
+            requestId
         });
     }
 };
 
 const verifySession = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
     // loginRequired should be called, so if we are here session is good
     return res.status(200).json({
         success: true,
-        message: "Session is okay."
+        code: "AUTH_SESSION_VALID",
+        requestId
     });
 };
 
@@ -1059,78 +1071,172 @@ const me = async (req, res) => {
         if (cachedProfile) {
             return res.status(200).json({
                 success: true,
-                message: "User data retrieved successfully.",
+                code: "AUTH_USER_PROFILE_RETRIEVED",
                 data: JSON.parse(cachedProfile)
             });
         }
 
-        const [result] = await sequelize.query(`
-            SELECT jsonb_strip_nulls(jsonb_build_object(
-                'id', u.user_id,
-                'guid', u.user_guid,
-                'fullName', u.full_name,
-                'username', u.username,
-                'email', u.email_address,
-                'role', u.user_role,
-                'profileImg', u.profile_img_url,
-                'lang', pl.preferred_lang,
-                'location', l.location_name,
-                'biography', COALESCE(c.biography, tm.biography, sll.biography),
-                
-                'serviceLine', COALESCE(sl_sll.service_line_name, sl_cons.service_line_name),
-                'learningPath', COALESCE(lp_sll.path_title, lp_cons.path_title),
-                
-                'areas', (
-                    SELECT json_agg(json_build_object(
-                        'id', a.area_id, 
-                        'name', a.area_name, 
-                        'isPrimary', ca.is_primary
-                    ))
-                    FROM consultant_areas ca
-                    JOIN areas a ON ca.area_id = a.area_id
-                    WHERE ca.user_id = u.user_id
-                )
-            )) AS profile
-            FROM users u
-            LEFT JOIN locations l ON u.location_id = l.location_id
-            LEFT JOIN preferred_lang pl ON u.preferred_lang_id = pl.preferred_lang_id
-            
-            LEFT JOIN consultants c ON u.user_id = c.user_id
-            LEFT JOIN talent_managers tm ON u.user_id = tm.user_id
-            LEFT JOIN service_line_leaders sll ON u.user_id = sll.user_id
-            
-            LEFT JOIN services_lines sl_sll ON sll.service_line_id = sl_sll.service_line_id
-            LEFT JOIN learning_paths lp_sll ON sl_sll.learning_path_id = lp_sll.learning_path_id
-            
-            LEFT JOIN consultant_areas ca_pri ON u.user_id = ca_pri.user_id AND ca_pri.is_primary = TRUE
-            LEFT JOIN areas a_pri ON ca_pri.area_id = a_pri.area_id
-            LEFT JOIN services_lines sl_cons ON a_pri.service_line_id = sl_cons.service_line_id
-            LEFT JOIN learning_paths lp_cons ON sl_cons.learning_path_id = lp_cons.learning_path_id
-            
-            WHERE u.user_id = :user_id
-            `,
-            {
-                replacements: {
-                    user_id: user_id
-                },
-                type: QueryTypes.SELECT
-            }
-        );
+        const user = await models.users.findByPk(user_id, {
+            attributes: [
+                'user_id',
+                'user_guid',
+                'full_name',
+                'username',
+                'email_address',
+                'user_role',
+                'profile_img_url',
+                'preferred_lang_id',
+                'location_id'
+            ],
+            raw: true
+        });
 
-        if (!result || !result.profile) {
+        if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found."
+                code: "AUTH_USER_NOT_FOUND"
             });
         }
 
+        const [location, preferredLang, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
+            user.location_id
+                ? models.locations.findByPk(user.location_id, {
+                    attributes: ['location_name'],
+                    raw: true
+                })
+                : null,
+            user.preferred_lang_id
+                ? models.preferred_lang.findByPk(user.preferred_lang_id, {
+                    attributes: ['preferred_lang'],
+                    raw: true
+                })
+                : null,
+            models.consultants.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography'],
+                raw: true
+            }),
+            models.talent_managers.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography'],
+                raw: true
+            }),
+            models.service_line_leaders.findOne({
+                where: { user_id: user.user_id },
+                attributes: ['biography', 'service_line_id'],
+                raw: true
+            }),
+            models.consultant_areas.findAll({
+                where: { user_id: user.user_id },
+                attributes: ['area_id', 'is_primary'],
+                raw: true
+            })
+        ]);
+
+        let areasPayload = null;
+
+        if (consultantAreas.length > 0) {
+            const areaIds = consultantAreas.map((area) => area.area_id);
+            const areaRecords = await models.areas.findAll({
+                where: {
+                    area_id: {
+                        [Op.in]: areaIds
+                    }
+                },
+                attributes: ['area_id', 'area_name', 'service_line_id'],
+                raw: true
+            });
+
+            const areaById = new Map(areaRecords.map((area) => [area.area_id, area]));
+
+            areasPayload = consultantAreas
+                .map((consultantArea) => {
+                    const currentArea = areaById.get(consultantArea.area_id);
+
+                    if (!currentArea) {
+                        return null;
+                    }
+
+                    return {
+                        id: currentArea.area_id,
+                        name: currentArea.area_name,
+                        isPrimary: consultantArea.is_primary
+                    };
+                })
+                .filter(Boolean);
+
+            if (areasPayload.length === 0) {
+                areasPayload = null;
+            }
+        }
+
+        let serviceLineName = null;
+        let learningPathTitle = null;
+
+        const resolveServiceLineData = async (serviceLineId) => {
+            if (!serviceLineId) {
+                return;
+            }
+
+            const serviceLine = await models.service_lines.findByPk(serviceLineId, {
+                attributes: ['service_line_name', 'learning_path_id'],
+                raw: true
+            });
+
+            if (!serviceLine) {
+                return;
+            }
+
+            serviceLineName = serviceLine.service_line_name;
+
+            if (serviceLine.learning_path_id) {
+                const learningPath = await models.learning_paths.findByPk(serviceLine.learning_path_id, {
+                    attributes: ['path_title'],
+                    raw: true
+                });
+
+                learningPathTitle = learningPath?.path_title || null;
+            }
+        };
+
+        if (serviceLineLeader?.service_line_id) {
+            await resolveServiceLineData(serviceLineLeader.service_line_id);
+        } else if (consultantAreas.length > 0) {
+            const primaryArea = consultantAreas.find((area) => area.is_primary);
+
+            if (primaryArea) {
+                const areaWithServiceLine = await models.areas.findByPk(primaryArea.area_id, {
+                    attributes: ['service_line_id'],
+                    raw: true
+                });
+
+                await resolveServiceLineData(areaWithServiceLine?.service_line_id);
+            }
+        }
+
+        const profile = stripNullishFields({
+            id: user.user_id,
+            guid: user.user_guid,
+            fullName: user.full_name,
+            username: user.username,
+            email: user.email_address,
+            role: user.user_role,
+            profileImg: user.profile_img_url,
+            lang: preferredLang?.preferred_lang || null,
+            location: location?.location_name || null,
+            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            serviceLine: serviceLineName,
+            learningPath: learningPathTitle,
+            areas: areasPayload
+        });
+
         // Store in cache
-        await redis.set(cacheKey, JSON.stringify(result.profile), 'EX', 3600);
+        await redis.set(cacheKey, JSON.stringify(profile), 'EX', 3600);
 
         return res.status(200).json({
             success: true,
-            message: "User data retreived successfully.",
-            data: result.profile
+            code: "AUTH_USER_PROFILE_RETRIEVED",
+            data: profile
         });
     } catch (error) {
         logger.error('Error fetching current user', {
@@ -1140,7 +1246,8 @@ const me = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error fetching profile information."
+            code: "AUTH_PROFILE_FETCH_FAILED",
+            requestId
         });
     }
 };
@@ -1150,31 +1257,26 @@ const resendConfirmation = async (req, res) => {
     const { email } = req.body;
 
     try {
-        const [user] = await sequelize.query(`
-            SELECT user_id, full_name, email_address, email_confirmed, preferred_lang_id
-            FROM users
-            WHERE email_address=:email
-            `,
-            {
-                replacements: {
-                    email: email
-                },
-                type: QueryTypes.SELECT
+        const user = await models.users.findOne({
+            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'preferred_lang_id'],
+            where: {
+                email_address: email
             }
-        );
+        });
 
         if (!user) {
             // True for security reasons
             return res.status(200).json({
                 success: true,
-                message: "If the account is not confirmed, a new e-mail will be sent."
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
         if (user.email_confirmed) {
-            return res.status(400).json({
-                success: false,
-                message: "This account is already confirmed."
+            // Return identical response to prevent enumeration of confirmed accounts
+            return res.status(200).json({
+                success: true,
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
@@ -1189,26 +1291,38 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(429).json({
                 success: false,
-                message: `Please wait ${remainingTime} seconds before requesting a new e-mail.`
+                code: "AUTH_RESEND_RATE_LIMITED",
+                data: { retryAfter: remainingTime }
             });
         }
 
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const resendTokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
 
-        await sequelize.query(`
-            INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
-            VALUES (:user_id, :token, 'CONFIRMATION', NOW() + INTERVAL '8 hours')
-            ON CONFLICT (user_id, token_type) DO UPDATE SET
-                token_value=:token,
-                expires_at=NOW() + INTERVAL '8 hours',
-                created_at=NOW()`,
-            {
-                replacements: {
-                    user_id: user.user_id,
-                    token: tokenValue
-                }
+        const confirmationExpiry = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const existingConfirmationToken = await models.user_account_tokens.findOne({
+            where: {
+                user_id: user.user_id,
+                token_type: 'CONFIRMATION'
             }
-        );
+        });
+
+        if (existingConfirmationToken) {
+            await existingConfirmationToken.update({
+                token_value: resendTokenHash,
+                expires_at: confirmationExpiry,
+                created_at: new Date(),
+                is_used: false
+            });
+        } else {
+            await models.user_account_tokens.create({
+                user_id: user.user_id,
+                token_value: resendTokenHash,
+                token_type: 'CONFIRMATION',
+                expires_at: confirmationExpiry,
+                is_used: false
+            });
+        }
 
         // Send confirmation email and validate service outcome
         const emailResult = await sendConfirmationEmail(
@@ -1232,16 +1346,13 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Failed to send confirmation email. Please use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                code: "AUTH_CONFIRMATION_EMAIL_FAILED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "New confirmation e-mail sent."
+            code: "AUTH_CONFIRMATION_RESENT"
         });
     } catch (error) {
         logger.error('Error resending confirmation email', {
@@ -1251,10 +1362,471 @@ const resendConfirmation = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error resending confirmation email."
+            code: "AUTH_RESEND_CONFIRMATION_FAILED",
+            requestId
         });
     }
 }
+
+// --- Admin auth ---
+
+const adminLogin = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
+
+    try {
+        const { identifier, password, remember } = loginSchema.parse(req.body);
+
+        // Email or username?
+        const isEmail = emailRule.safeParse(identifier).success;
+        const searchCriteria = isEmail ? { email_address: identifier } : { username: identifier };
+
+        logger.info(`Admin login attempt identified as ${isEmail ? 'email' : 'username'}`, {
+            requestId,
+            identifier
+        });
+
+        // Get user
+        const user = await models.users.findOne({ where: searchCriteria, transaction: t });
+
+        if (!user) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: "AUTH_INVALID_CREDENTIALS"
+            });
+        }
+
+        // Check if user is indeed an admin
+        if (user.user_role !== 'Administrator') {
+            await t.rollback();
+            logger.warn('Failed admin login attempt: user is not an administrator.', {
+                requestId,
+                identifier,
+                role: user.user_role
+            });
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_ADMIN_ACCESS_DENIED"
+            });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+        if (!isPasswordValid) {
+            await t.rollback();
+            logger.warn('Failed admin login attempt: wrong password.', {
+                requestId,
+                identifier
+            });
+            return res.status(401).json({
+                success: false,
+                code: "AUTH_INVALID_CREDENTIALS"
+            });
+        }
+
+        // Check if email is confirmed
+        if (!user.email_confirmed) {
+            await t.rollback();
+            logger.warn('Failed admin login attempt: e-mail address is not confirmed.', {
+                requestId,
+                identifier
+            });
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
+            });
+        }
+
+        // Generate JWT
+        const payload = {
+            sub: user.user_id,
+            guid: user.user_guid,
+            role: user.user_role,
+            username: user.username,
+            fpc: user.force_password_change
+        };
+
+        const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
+            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
+        });
+
+        // Generate refresh token
+        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
+
+        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
+
+        await models.user_refresh_tokens.create({
+            user_id: user.user_id,
+            token_value: refreshTokenValue,
+            expires_at: expiresAt
+        }, { transaction: t });
+
+        await user.update({
+            last_login_at: new Date(),
+            last_online: new Date()
+        }, { transaction: t });
+
+        await t.commit();
+
+        // Store session data in Redis so adminRefresh can validate without a DB round-trip
+        const refreshTTLSeconds = Math.floor(refreshTokenDurationDays * 24 * 60 * 60);
+        await redis.set(
+            `auth:refresh:${refreshTokenValue}`,
+            JSON.stringify({
+                user_id: user.user_id,
+                user_guid: user.user_guid,
+                user_role: user.user_role,
+                username: user.username,
+                force_password_change: user.force_password_change
+            }),
+            'EX',
+            refreshTTLSeconds
+        );
+
+        res.cookie('adminRefreshToken', refreshTokenValue, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            path: '/api/admin/auth',
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_ADMIN_LOGIN_SUCCESS",
+            data: {
+                token: accessToken,
+                fpc: user.force_password_change,
+                user: {
+                    full_name: user.full_name,
+                    username: user.username,
+                    role: user.user_role,
+                    profile_img_url: user.profile_img_url
+                }
+            }
+        });
+
+    } catch (error) {
+        if (t) await t.rollback();
+
+        if (error.name === 'ZodError') {
+            const zodIssues = error.issues || error.errors || [];
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: zodIssues.map((err) => ({
+                    field: Array.isArray(err.path) ? err.path[0] : undefined,
+                    message: err.message
+                }))
+            });
+        }
+
+        logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
+        return res.status(500).json({
+            success: false,
+            code: "AUTH_REQUEST_FAILED",
+            requestId
+        });
+    }
+}
+
+const adminRefresh = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    // Get cookie
+    const refreshToken = req.cookies.adminRefreshToken;
+
+    if (!refreshToken) {
+        return res.status(401).json({
+            success: false,
+            code: "AUTH_ADMIN_REFRESH_TOKEN_MISSING"
+        });
+    }
+
+    const oldTokenKey = `auth:refresh:${refreshToken}`;
+
+    try {
+        const cachedData = await redis.get(oldTokenKey);
+
+        if (!cachedData) {
+            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
+            });
+        }
+
+        const userData = JSON.parse(cachedData);
+
+        // Check if role stored in cache is still an admin
+        if (userData.user_role !== 'Administrator') {
+            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
+            return res.status(403).json({
+                success: false,
+                code: "AUTH_ADMIN_ROLE_MISMATCH"
+            });
+        }
+
+        const accessToken = jwt.sign({
+            sub: userData.user_id,
+            guid: userData.user_guid,
+            role: userData.user_role,
+            username: userData.username,
+            fpc: userData.force_password_change
+        }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
+            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
+        });
+
+        const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
+        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
+        const remainingTTL = await redis.ttl(oldTokenKey);
+
+        if (remainingTTL <= 0) throw new Error("Token TTL invalid");
+
+        await redis.del(oldTokenKey);
+        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
+
+        await models.users.update(
+            { last_online: new Date() },
+            { where: { user_id: userData.user_id } }
+        );
+
+        res.cookie('adminRefreshToken', newRefreshTokenValue, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            path: '/api/admin/auth',
+            maxAge: remainingTTL * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: "AUTH_ADMIN_TOKEN_REFRESHED",
+            data: { token: accessToken }
+        });
+    } catch (error) {
+        logger.error('Error generating new admin token.', { requestId, error });
+        return res.status(500).json({
+            success: false,
+            code: "AUTH_ADMIN_TOKEN_REFRESH_FAILED",
+            requestId
+        });
+    }
+};
+
+const adminLogout = async (req, res) => {
+    const refreshToken = req.cookies.adminRefreshToken;
+    const requestId = req.headers['x-request-id'] || null;
+
+    const cookieOptions = {
+        path: '/api/admin/auth',
+        httpOnly: true
+    };
+
+    try {
+        if (refreshToken) {
+            await models.user_refresh_tokens.destroy({
+                where: { token_value: refreshToken }
+            });
+            await redis.del(`auth:refresh:${refreshToken}`);
+        }
+
+        res.clearCookie('adminRefreshToken', cookieOptions);
+
+        return res.status(200).json({
+            success: true,
+            code: "AUTH_ADMIN_LOGOUT_SUCCESS"
+        });
+    } catch (error) {
+        logger.error('Error during admin logout process.', { requestId, error });
+        return res.status(500).json({
+            success: false,
+            code: "AUTH_ADMIN_LOGOUT_FAILED",
+            requestId
+        });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  PUT /api/auth/me
+  Update the authenticated user's profile information
+──────────────────────────────────────────────────────────────*/
+const updateProfile = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
+
+    try {
+        logger.info('Update profile flow started', {
+            requestId,
+            userId: req.user.sub
+        });
+
+        const userId = req.user.sub;
+        const { updateProfileSchema } = require('../validations/auth.validation');
+
+        // Validate request data
+        const validatedData = updateProfileSchema.parse(req.body);
+        const updates = stripNullishFields(validatedData);
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: [{ message: 'At least one field must be provided for update.' }]
+            });
+        }
+
+        // Validate location and language if provided
+        if (updates.location_id) {
+            const location = await models.locations.findByPk(updates.location_id, {
+                attributes: ['location_id'],
+                transaction: t
+            });
+
+            if (!location) {
+                await t.rollback();
+                logger.warn('Invalid location provided', {
+                    requestId,
+                    userId,
+                    locationId: updates.location_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LOCATION'
+                });
+            }
+        }
+
+        if (updates.preferred_lang_id) {
+            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
+                attributes: ['preferred_lang_id'],
+                transaction: t
+            });
+
+            if (!language) {
+                await t.rollback();
+                logger.warn('Invalid language provided', {
+                    requestId,
+                    userId,
+                    langId: updates.preferred_lang_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LANGUAGE'
+                });
+            }
+        }
+
+        // Handle profile image if provided
+        if (updates.profile_img_url) {
+            try {
+                const movedImage = await moveImageToPermanent(updates.profile_img_url);
+                updates.profile_img_url = movedImage;
+            } catch (error) {
+                await t.rollback();
+                logger.warn('Profile image move failed', {
+                    requestId,
+                    userId,
+                    error: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_PROFILE_IMAGE'
+                });
+            }
+        }
+
+        // Update user record
+        const user = await models.users.findByPk(userId, {
+            transaction: t
+        });
+
+        if (!user) {
+            await t.rollback();
+            return res.status(404).json({
+                success: false,
+                code: 'AUTH_USER_NOT_FOUND'
+            });
+        }
+
+        await user.update(updates, { transaction: t });
+
+        logger.debug('User profile updated', {
+            requestId,
+            userId,
+            fieldsUpdated: Object.keys(updates)
+        });
+
+        // Update biography for role-specific tables if provided
+        if (updates.biography) {
+            if (user.user_role === 'Consultant') {
+                await models.consultants.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Talent Manager') {
+                await models.talent_managers.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Service Line Leader') {
+                await models.service_line_leaders.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            }
+        }
+
+        await t.commit();
+
+        // Invalidate cache
+        const cacheKey = `user_profile:${userId}`;
+        await redis.del(cacheKey);
+
+        logger.info('Profile update completed successfully', {
+            requestId,
+            userId
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: 'AUTH_PROFILE_UPDATED'
+        });
+
+    } catch (error) {
+        await t.rollback();
+
+        if (error.name === 'ZodError') {
+            logger.warn('Profile update validation failed', {
+                requestId,
+                userId: req.user.sub,
+                errors: error.errors
+            });
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.errors
+            });
+        }
+
+        logger.error('Error updating user profile', {
+            requestId,
+            userId: req.user.sub,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            code: 'AUTH_PROFILE_UPDATE_FAILED',
+            requestId
+        });
+    }
+};
 
 module.exports = {
     register,
@@ -1268,5 +1840,9 @@ module.exports = {
     resetPassword,
     verifySession,
     me,
-    resendConfirmation
-}
+    resendConfirmation,
+    adminLogin,
+    adminRefresh,
+    adminLogout,
+    updateProfile
+};

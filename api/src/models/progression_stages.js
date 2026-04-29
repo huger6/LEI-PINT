@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('progression_stages', {
     progression_stage_id: {
       autoIncrement: true,
@@ -35,6 +35,11 @@ module.exports = function(sequelize, DataTypes) {
     stage_description: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     },
     created_by: {
       type: DataTypes.INTEGER,
@@ -81,6 +86,43 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "progression_stage_id" },
+        ]
+      },
+      {
+        name: "areas_stages_fk",
+        fields: [
+          { name: "area_id" },
+        ]
+      },
+      {
+        name: "stage_stagecodes_fk",
+        fields: [
+          { name: "stage_code_id" },
+        ]
+      },
+      {
+        name: "stages_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "stages_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_stages_area_id",
+        fields: [
+          { name: "area_id" },
+        ]
+      },
+      {
+        name: "idx_stages_sequence",
+        fields: [
+          { name: "area_id" },
+          { name: "stage_sequence" },
         ]
       },
     ]

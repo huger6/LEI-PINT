@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('awarded_badges', {
     awarded_badges_id: {
       autoIncrement: true,
@@ -82,6 +82,43 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "public_verification_link" },
+        ]
+      },
+      {
+        name: "cons_awarded_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "awarded_applications2_fk",
+        fields: [
+          { name: "application_id" },
+        ]
+      },
+      {
+        name: "idx_awarded_user_date",
+        fields: [
+          { name: "user_id" },
+          { name: "awarded_at", order: "DESC" },
+        ]
+      },
+      {
+        name: "idx_awarded_expiration",
+        fields: [
+          { name: "expiration_at" },
+        ],
+        where: {
+          expiration_at: {
+            [Sequelize.Op.ne]: null
+          }
+        }
+      },
+      {
+        name: "idx_awarded_public_featured",
+        fields: [
+          { name: "is_published" },
+          { name: "is_featured" },
         ]
       },
     ]

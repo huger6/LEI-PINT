@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('badge_requirements', {
     requirement_id: {
       autoIncrement: true,
@@ -39,6 +39,16 @@ module.exports = function(sequelize, DataTypes) {
     requirement_img_url: {
       type: DataTypes.STRING(512),
       allowNull: true
+    },
+    badge_points: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     },
     created_by: {
       type: DataTypes.INTEGER,
@@ -85,6 +95,37 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "requirement_id" },
+        ]
+      },
+      {
+        name: "stages_requirements_fk",
+        fields: [
+          { name: "progression_stage_id" },
+        ]
+      },
+      {
+        name: "badges_requirements_fk",
+        fields: [
+          { name: "badge_id" },
+        ]
+      },
+      {
+        name: "requirements_createdby_fk",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
+      {
+        name: "requirements_updatedby_fk",
+        fields: [
+          { name: "updated_by" },
+        ]
+      },
+      {
+        name: "idx_requirements_sequence",
+        fields: [
+          { name: "badge_id" },
+          { name: "requirement_sequence" },
         ]
       },
     ]

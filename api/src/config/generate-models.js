@@ -12,6 +12,9 @@ const auto = new SequelizeAuto(
 		dialect: 'postgres',
 		port: process.env.DB_PORT,
 		directory: './src/models',
+		logging: console.log,
+		indices: true,
+		noInitModels: false,
 		dialectOptions: {
 			ssl: {
 				require: true,
@@ -30,7 +33,7 @@ console.log("Starting sequelize-auto...");
 
 auto.run().then(data => {
 	console.log("Models generated successfully to ./models");
-	console.log("Tables processed: ", Object.keys(data.tables));
+	//console.log("Tables processed: ", Object.keys(data.tables));
 }).catch(err => {
 	console.error("Error generating models:", err);
 });
