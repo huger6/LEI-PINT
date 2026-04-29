@@ -1,5 +1,5 @@
-const { models } = require('../config/db');
-const { Op } = require('sequelize');
+const { sequelize, models } = require('../config/db');
+const { Op, QueryTypes, fn, col } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
@@ -212,9 +212,86 @@ const getConsultantStats = async (req, res) => {
             return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
         }
 
-        const data = await gamificationService.getConsultantStats(userId);
+        // Get total points
+        const totalPointsResult = await sequelize.query(
+            `SELECT COALESCE(SUM(points_delta), 0) as total_points 
+             FROM points_history 
+             WHERE user_id = :userId`,
+            {
+                replacements: { userId },
+                type: QueryTypes.SELECT
+            }
+        );
+        const totalPoints = totalPointsResult[0]?.total_points || 0;
 
-        return res.status(200).json({ success: true, code: 'GAMIFICATION_STATS_RETRIEVED', data });
+        // Get earned badges count
+        const earnedBadgesCount = await models.awarded_badges.count({
+            where: { user_id: userId },
+            distinct: true
+        });
+
+        // Get badges in progress (open applications)
+        const badgesInProgress = await models.badge_applications.count({
+            where: {
+                user_id: userId,
+                application_state: 'Open'
+            }
+        });
+
+        // Get ranking position using cross-db SQL (Postgres/SQLite)
+        const rankingResult = await sequelize.query(
+            `SELECT ranked.position
+             FROM (
+                SELECT
+                    c.user_id,
+                    ROW_NUMBER() OVER (
+                        ORDER BY COALESCE(SUM(ph.points_delta), 0) DESC, c.user_id ASC
+                    ) AS position
+                FROM consultants c
+                LEFT JOIN points_history ph ON ph.user_id = c.user_id
+                GROUP BY c.user_id
+             ) ranked
+             WHERE ranked.user_id = :userId`,
+            {
+                replacements: { userId },
+                type: QueryTypes.SELECT
+            }
+        );
+        const rankingPosition = rankingResult[0]?.position ?? null;
+
+        // Get total interactions
+        const totalInteractions = await models.user_badges_interactions.count({
+            where: { user_id: userId }
+        });
+
+        // Get interaction breakdown
+        const interactionBreakdown = await models.user_badges_interactions.findAll({
+            attributes: [
+                'interaction_type',
+                [fn('COUNT', col('interaction_type')), 'count']
+            ],
+            where: { user_id: userId },
+            group: ['interaction_type'],
+            raw: true
+        });
+
+        const interactionsSummary = {};
+        interactionBreakdown.forEach(item => {
+            interactionsSummary[item.interaction_type] = parseInt(item.count, 10);
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_STATS_RETRIEVED',
+            data: {
+                totalPoints,
+                earnedBadges: earnedBadgesCount,
+                badgesInProgress,
+                rankingPosition,
+                totalInteractions,
+                interactionsSummary: interactionsSummary || {}
+            }
+        });
 
     } catch (error) {
         logger.error('Error fetching consultant statistics', { error, userId: req.user.sub });
@@ -251,6 +328,24 @@ const getEarnedBadges = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 code: 'GAMIFICATION_CONSULTANT_NOT_FOUND'
+            });
+        }
+
+        const totalEarnedBadges = await models.awarded_badges.count({
+            where: { user_id: userId }
+        });
+
+        if (totalEarnedBadges === 0) {
+            return res.status(200).json({
+                success: true,
+                code: 'GAMIFICATION_NO_ACHIEVEMENTS',
+                data: [],
+                pagination: {
+                    totalItems: 0,
+                    totalPages: 0,
+                    currentPage: page,
+                    limit
+                }
             });
         }
 
