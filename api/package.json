@@ -28,17 +28,17 @@
     "nodemailer": "^8.0.4",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
-    "pg-mem": "^3.0.14",
     "sanitize-html": "^2.17.3",
-    "sequelize": "^6.37.8",
-    "sqlite3": "^6.0.1",
+    "sequelize": "^6.37.0",
     "winston": "^3.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.1.14",
+    "pg-mem": "^3.0.14",
     "sequelize-auto": "^0.8.8",
+    "sqlite3": "^6.0.1",
     "supertest": "^7.2.2"
   }
 }
