@@ -8,7 +8,7 @@ const validate = (schema) => (req, res, next) => {
         if (error instanceof z.ZodError) {
             return res.status(400).json({
                 success: false,
-                message: "Error validating data.",
+                code: "VALIDATION_DATA_ERROR",
                 errors: error.errors.map(err => ({
                     field: err.path.join('.'),
                     message: err.message

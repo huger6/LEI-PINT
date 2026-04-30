@@ -3,14 +3,24 @@ const { models } = require('../config/db');
 const redis = require('../config/redis');
 const { logger } = require('./logger');
 
-const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, baseWhere = {}, include = [], order = [['created_at', 'DESC']] }) => {
+const handleListRequest = async ({
+    req,
+    res,
+    schema,
+    modelName,
+    cachePrefix,
+    baseWhere = {},
+    include = [],
+    order = [['created_at', 'DESC']],
+    attributes = null
+}) => {
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
 
     const queryValidation = schema.safeParse(req.query);
     if (!queryValidation.success) return res.status(400).json({
         success: false,
-        errors: queryValidation.error.errors
+        errors: queryValidation.error.issues
     });
 
     const { page, limit, search, ...filters } = queryValidation.data;
@@ -27,12 +37,15 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
 
         const where = { ...baseWhere };
 
-        const tablesWhithoutIsActive = ['progression_stages', 'locations'];
+        const tablesWhithoutIsActive = ['locations'];
         if (!isAdmin && !tablesWhithoutIsActive.includes(modelName))
             where.is_active = true;
 
         Object.keys(filters).forEach(key => {
-            if (filters[key]) where[key] = filters[key];
+            const value = filters[key];
+            if (value !== undefined && value !== null && value !== '') {
+                where[key] = value;
+            }
         });
 
         if (search) {
@@ -49,12 +62,13 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         }
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+        const finalAttributes = attributes || {
+            exclude: excludedFields
+        };
 
         const { rows, count } = await models[modelName].findAndCountAll({
             where, include, limit, offset, order, distinct: true,
-            attributes: {
-                exclude: excludedFields
-            }
+            attributes: finalAttributes
         });
 
         const totalPages = Math.ceil(count / limit);
@@ -63,7 +77,7 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         if (page > totalPages && count > 0) {
             return res.status(404).json({
                 success: false,
-                message: "Page not found."
+                code: "PAGINATION_PAGE_NOT_FOUND"
             });
         }
 
@@ -81,11 +95,27 @@ const handleListRequest = async ({ req, res, schema, modelName, cachePrefix, bas
         logger.error(`Error in ${cachePrefix}`, { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LIST_FETCH_FAILED"
         });
     }
 };
 
+// Delete all cache keys whose prefix matches `${prefix}:*` using non-blocking SCAN.
+// Silently no-ops if Redis is unavailable; callers must not rely on this for correctness.
+const invalidateCacheByPrefix = async (prefix) => {
+    try {
+        let cursor = '0';
+        do {
+            const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', `${prefix}:*`, 'COUNT', 100);
+            cursor = nextCursor;
+            if (keys.length > 0) await redis.del(...keys);
+        } while (cursor !== '0');
+    } catch (err) {
+        logger.warn(`Cache invalidation failed for prefix "${prefix}"`, { error: err });
+    }
+};
+
 module.exports = {
-    handleListRequest
+    handleListRequest,
+    invalidateCacheByPrefix
 };

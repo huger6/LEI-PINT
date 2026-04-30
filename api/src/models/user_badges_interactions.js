@@ -66,6 +66,20 @@ module.exports = function (sequelize, DataTypes) {
           { name: "badge_id" },
         ]
       },
+      {
+        name: "idx_interactions_user_date",
+        fields: [
+          { name: "user_id" },
+          { name: "interaction_date", order: "DESC" },
+        ]
+      },
+      {
+        name: "idx_interactions_badge_date",
+        fields: [
+          { name: "badge_id" },
+          { name: "interaction_date", order: "DESC" },
+        ]
+      },
     ]
   });
 };

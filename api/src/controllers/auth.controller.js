@@ -6,10 +6,10 @@ const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const loadEnvironment = require('../config/loadEnv');
 const { emailRule, passwordRule, registerSchema, loginSchema } = require('../validations/auth.validation');
-const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/emailService');
+const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
+const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const stripNullishFields = require('../utils/stripNullishFields');
-const { moveImageToPermanent } = require('../services/storageService');
 
 loadEnvironment();
 
@@ -47,7 +47,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Administrator is not a valid registration role."
+                code: "AUTH_ROLE_NOT_REGISTERABLE"
             });
         }
 
@@ -75,7 +75,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or email is already in use."
+                code: "AUTH_CREDENTIALS_CONFLICT"
             });
         }
 
@@ -162,11 +162,12 @@ const register = async (req, res) => {
             }, { transaction: t });
         }
 
-        // Generate email confirmation token
+        // Generate email confirmation token (store hash, send raw value)
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
         await models.user_account_tokens.create({
             user_id: newUser.user_id,
-            token_value: tokenValue,
+            token_value: tokenHash,
             token_type: 'CONFIRMATION',
             expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8h
         }, { transaction: t });
@@ -205,10 +206,7 @@ const register = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Account created, but confirmation e-mail could not be sent. Please request a new confirmation e-mail or use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                code: "AUTH_REGISTER_EMAIL_FAILED"
             });
         }
 
@@ -221,7 +219,7 @@ const register = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Registration completed successfully. Please, check your e-mail to confirm the account."
+            code: "AUTH_REGISTER_SUCCESS"
         });
     } catch (error) {
         // DB rollback
@@ -242,7 +240,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -259,7 +257,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                message: "Username or e-mail is already in use. Please try again with different credentials."
+                code: "AUTH_CREDENTIALS_CONFLICT_RETRY"
             });
         }
 
@@ -272,7 +270,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Profile picture URL is invalid and could not be stored properly."
+                code: "AUTH_PROFILE_IMAGE_STORAGE_FAILED"
             });
         }
 
@@ -282,8 +280,8 @@ const register = async (req, res) => {
         });
 
         return res.status(500).json({
-            succes: false,
-            message: `Error processing user registration.`
+            success: false,
+            code: "AUTH_REGISTER_FAILED"
         });
     }
 };
@@ -298,9 +296,10 @@ const confirmEmail = async (req, res) => {
             hasToken: Boolean(token)
         });
 
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
         const tokenRecord = await models.user_account_tokens.findOne({
             where: {
-                token_value: token,
+                token_value: hashedToken,
                 token_type: 'CONFIRMATION',
                 is_used: false
             }
@@ -314,7 +313,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Token is invalid or was already used."
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             })
         }
         // Expired token
@@ -328,7 +327,7 @@ const confirmEmail = async (req, res) => {
 
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             })
         }
 
@@ -360,7 +359,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "E-mail confirmed. You can now do your first login (remember you will need to change your password)"
+            code: "AUTH_EMAIL_CONFIRMED"
         })
     } catch (error) {
         logger.error('Unexpected error confirming email', {
@@ -370,7 +369,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error confirming account.",
+            code: "AUTH_EMAIL_CONFIRM_FAILED",
             requestId
         });
     }
@@ -393,6 +392,19 @@ const login = async (req, res) => {
             identifier
         });
 
+        // Check account lockout before hitting the DB for password comparison
+        const lockKey = `login:lock:${identifier}`;
+        const isLocked = await redis.get(lockKey);
+        if (isLocked) {
+            await t.rollback();
+            const ttl = await redis.ttl(lockKey);
+            return res.status(429).json({
+                success: false,
+                code: "AUTH_ACCOUNT_LOCKED",
+                data: { retryAfter: ttl }
+            });
+        }
+
         const user = await models.users.findOne({ where: searchCriteria });
 
         if (!user) {
@@ -400,7 +412,7 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid credentials.", // This is intentional
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -409,7 +421,7 @@ const login = async (req, res) => {
 
             return res.status(403).json({
                 success: false,
-                message: "User account is deactivated."
+                code: "AUTH_ACCOUNT_DEACTIVATED"
             });
         }
 
@@ -419,15 +431,27 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             await t.rollback();
 
+            const failKey = `login:fail:${identifier}`;
+            const failCount = await redis.incr(failKey);
+            if (failCount === 1) await redis.expire(failKey, 15 * 60);
+            if (failCount >= 5) {
+                await redis.set(lockKey, '1', 'EX', 15 * 60);
+                await redis.del(failKey);
+            }
+
             logger.warn('Failed login attempt: wrong password.', {
                 requestId,
-                identifier
+                identifier,
+                failCount
             });
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials."
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
+
+        // Clear failed attempt counter on successful password match
+        await redis.del(`login:fail:${identifier}`);
 
         // Check if user has confirmed it's email
         if (!user.email_confirmed) {
@@ -439,13 +463,13 @@ const login = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Please validate your e-mail address first."
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
             });
         }
 
         // User first login is handled below as we pass force_password_change
 
-        // JWT 
+        // JWT
         const payload = {
             sub: user.user_id,
             guid: user.user_guid,
@@ -455,6 +479,7 @@ const login = async (req, res) => {
         };
 
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -490,7 +515,7 @@ const login = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: user.force_password_change ? "Password change required" : "Login successful.",
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
                 fpc: user.force_password_change,
@@ -521,7 +546,7 @@ const login = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -536,7 +561,7 @@ const login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing user login.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -549,7 +574,7 @@ const refresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: "Refresh token missing."
+            code: "AUTH_REFRESH_TOKEN_MISSING"
         });
     }
 
@@ -562,7 +587,7 @@ const refresh = async (req, res) => {
             res.clearCookie('refreshToken', { path: '/api/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired or invalid."
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
             });
         }
 
@@ -572,7 +597,7 @@ const refresh = async (req, res) => {
             res.clearCookie('refreshToken', { path: '/api/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired. Please login again."
+                code: "AUTH_SESSION_EXPIRED"
             });
         }
 
@@ -582,7 +607,7 @@ const refresh = async (req, res) => {
         if (!user || !user.is_active) {
             return res.status(403).json({
                 success: false,
-                message: "User account is inactive or not found."
+                code: "AUTH_USER_INACTIVE_OR_NOT_FOUND"
             });
         }
 
@@ -594,6 +619,7 @@ const refresh = async (req, res) => {
             username: user.username,
             fpc: user.force_password_change
         }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -618,7 +644,7 @@ const refresh = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Token refreshed successfully.",
+            code: "AUTH_TOKEN_REFRESHED",
             data: {
                 token: accessToken
             }
@@ -631,7 +657,7 @@ const refresh = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error generating/processing new token.",
+            code: "AUTH_TOKEN_REFRESH_FAILED",
             requestId
         });
     }
@@ -661,7 +687,7 @@ const logout = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Logged out successfully."
+            code: "AUTH_LOGOUT_SUCCESS"
         });
     } catch (error) {
         logger.error('Error during logout process.', {
@@ -671,7 +697,7 @@ const logout = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error during logout process.",
+            code: "AUTH_LOGOUT_FAILED",
             requestId
         });
     }
@@ -691,7 +717,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password format is invalid."
+                code: "AUTH_PASSWORD_FORMAT_INVALID"
             });
         }
 
@@ -706,7 +732,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Current password is incorrect."
+                code: "AUTH_CURRENT_PASSWORD_WRONG"
             });
         }
 
@@ -716,7 +742,7 @@ const changePassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password cannot be the same as the current one."
+                code: "AUTH_PASSWORD_SAME_AS_CURRENT"
             });
         }
         // Update PW and set FPC false
@@ -751,7 +777,7 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password updated. All sessions invalidated. Please login again."
+            code: "AUTH_PASSWORD_CHANGED"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -763,7 +789,7 @@ const changePassword = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: `Error changing password.`,
+            code: "AUTH_PASSWORD_CHANGE_FAILED",
             requestId
         });
     }
@@ -777,7 +803,7 @@ const forgotPassword = async (req, res) => {
         // Email is invalid
         return res.status(400).json({
             success: false,
-            message: "E-mail is invalid."
+            code: "AUTH_EMAIL_INVALID"
         });
     }
 
@@ -841,23 +867,15 @@ const forgotPassword = async (req, res) => {
                     preferred_lang_id: user.preferred_lang_id,
                     emailError: emailResult?.error
                 });
-
-                return res.status(502).json({
-                    success: false,
-                    message: "Failed to send e-mail with password update follow-up. Please use the link below.",
-                    data: {
-                        reset_password_link: `${process.env.APP_URL}/api/auth/reset-password?token=${resetToken}` // CHANGE TO FRONTEND LINK
-                    }
-                });
             }
         } else {
-            await t.commit(); // Empty 
+            await t.commit(); // Empty
         }
 
         // Always the same for improved security
         return res.status(200).json({
             success: true,
-            message: "A reset link has been sent to your e-mail address."
+            code: "AUTH_RESET_LINK_SENT"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -868,7 +886,7 @@ const forgotPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -882,7 +900,7 @@ const validateResetToken = async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 success: false,
-                message: "Token is required."
+                code: "AUTH_TOKEN_REQUIRED"
             });
         }
 
@@ -899,13 +917,13 @@ const validateResetToken = async (req, res) => {
         if (!record || new Date() > record.expires_at) {
             return res.status(400).json({
                 success: false,
-                message: "Token invalid or expired."
+                code: "AUTH_TOKEN_INVALID_OR_EXPIRED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "Token is valid."
+            code: "AUTH_TOKEN_VALID"
         });
     } catch (error) {
         logger.error("Error validating reset token.",
@@ -914,7 +932,7 @@ const validateResetToken = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -934,7 +952,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "New password does not meat security requirements (format).",
+                code: "AUTH_PASSWORD_WEAK",
                 data: {
                     errors: validation.error.issues
                 }
@@ -958,7 +976,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Invalid or already used token"
+                code: "AUTH_TOKEN_INVALID_OR_USED"
             });
         }
 
@@ -966,7 +984,7 @@ const resetPassword = async (req, res) => {
             await t.rollback();
             return res.status(410).json({
                 success: false,
-                message: "Token has expired."
+                code: "AUTH_TOKEN_EXPIRED"
             });
         }
 
@@ -1013,7 +1031,7 @@ const resetPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password changed successfully. You can now log in with your new credentials."
+            code: "AUTH_PASSWORD_RESET_SUCCESS"
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -1024,7 +1042,7 @@ const resetPassword = async (req, res) => {
         );
         return res.status(500).json({
             success: false,
-            message: "Error processing request.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -1035,7 +1053,7 @@ const verifySession = async (req, res) => {
     // loginRequired should be called, so if we are here session is good
     return res.status(200).json({
         success: true,
-        message: "Session is okay.",
+        code: "AUTH_SESSION_VALID",
         requestId
     });
 };
@@ -1053,7 +1071,7 @@ const me = async (req, res) => {
         if (cachedProfile) {
             return res.status(200).json({
                 success: true,
-                message: "User data retrieved successfully.",
+                code: "AUTH_USER_PROFILE_RETRIEVED",
                 data: JSON.parse(cachedProfile)
             });
         }
@@ -1076,7 +1094,7 @@ const me = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found."
+                code: "AUTH_USER_NOT_FOUND"
             });
         }
 
@@ -1160,7 +1178,7 @@ const me = async (req, res) => {
                 return;
             }
 
-            const serviceLine = await models.services_lines.findByPk(serviceLineId, {
+            const serviceLine = await models.service_lines.findByPk(serviceLineId, {
                 attributes: ['service_line_name', 'learning_path_id'],
                 raw: true
             });
@@ -1217,7 +1235,7 @@ const me = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "User data retreived successfully.",
+            code: "AUTH_USER_PROFILE_RETRIEVED",
             data: profile
         });
     } catch (error) {
@@ -1228,7 +1246,7 @@ const me = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error fetching profile information.",
+            code: "AUTH_PROFILE_FETCH_FAILED",
             requestId
         });
     }
@@ -1250,14 +1268,15 @@ const resendConfirmation = async (req, res) => {
             // True for security reasons
             return res.status(200).json({
                 success: true,
-                message: "If the account is not confirmed, a new e-mail will be sent."
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
         if (user.email_confirmed) {
-            return res.status(400).json({
-                success: false,
-                message: "This account is already confirmed."
+            // Return identical response to prevent enumeration of confirmed accounts
+            return res.status(200).json({
+                success: true,
+                code: "AUTH_RESEND_CONFIRMATION_SENT"
             });
         }
 
@@ -1272,11 +1291,13 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(429).json({
                 success: false,
-                message: `Please wait ${remainingTime} seconds before requesting a new e-mail.`
+                code: "AUTH_RESEND_RATE_LIMITED",
+                data: { retryAfter: remainingTime }
             });
         }
 
         const tokenValue = crypto.randomBytes(32).toString('hex');
+        const resendTokenHash = crypto.createHash('sha256').update(tokenValue).digest('hex');
 
         const confirmationExpiry = new Date(Date.now() + 8 * 60 * 60 * 1000);
         const existingConfirmationToken = await models.user_account_tokens.findOne({
@@ -1288,7 +1309,7 @@ const resendConfirmation = async (req, res) => {
 
         if (existingConfirmationToken) {
             await existingConfirmationToken.update({
-                token_value: tokenValue,
+                token_value: resendTokenHash,
                 expires_at: confirmationExpiry,
                 created_at: new Date(),
                 is_used: false
@@ -1296,7 +1317,7 @@ const resendConfirmation = async (req, res) => {
         } else {
             await models.user_account_tokens.create({
                 user_id: user.user_id,
-                token_value: tokenValue,
+                token_value: resendTokenHash,
                 token_type: 'CONFIRMATION',
                 expires_at: confirmationExpiry,
                 is_used: false
@@ -1325,16 +1346,13 @@ const resendConfirmation = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Failed to send confirmation email. Please use the link below.",
-                data: {
-                    verification_link: `${process.env.APP_URL}/api/auth/confirm-email?token=${tokenValue}` // CHANGE TO FRONTEND LINK
-                }
+                code: "AUTH_CONFIRMATION_EMAIL_FAILED"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "New confirmation e-mail sent."
+            code: "AUTH_CONFIRMATION_RESENT"
         });
     } catch (error) {
         logger.error('Error resending confirmation email', {
@@ -1344,7 +1362,7 @@ const resendConfirmation = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error resending confirmation email.",
+            code: "AUTH_RESEND_CONFIRMATION_FAILED",
             requestId
         });
     }
@@ -1375,7 +1393,7 @@ const adminLogin = async (req, res) => {
             await t.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Invalid credentials.",
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -1389,7 +1407,7 @@ const adminLogin = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Access denied. Administrator privileges required."
+                code: "AUTH_ADMIN_ACCESS_DENIED"
             });
         }
 
@@ -1404,7 +1422,7 @@ const adminLogin = async (req, res) => {
             });
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials."
+                code: "AUTH_INVALID_CREDENTIALS"
             });
         }
 
@@ -1417,11 +1435,11 @@ const adminLogin = async (req, res) => {
             });
             return res.status(403).json({
                 success: false,
-                message: "Please validate your e-mail address first."
+                code: "AUTH_EMAIL_NOT_CONFIRMED"
             });
         }
 
-        // Generate JWT 
+        // Generate JWT
         const payload = {
             sub: user.user_id,
             guid: user.user_guid,
@@ -1431,6 +1449,7 @@ const adminLogin = async (req, res) => {
         };
 
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -1454,6 +1473,21 @@ const adminLogin = async (req, res) => {
 
         await t.commit();
 
+        // Store session data in Redis so adminRefresh can validate without a DB round-trip
+        const refreshTTLSeconds = Math.floor(refreshTokenDurationDays * 24 * 60 * 60);
+        await redis.set(
+            `auth:refresh:${refreshTokenValue}`,
+            JSON.stringify({
+                user_id: user.user_id,
+                user_guid: user.user_guid,
+                user_role: user.user_role,
+                username: user.username,
+                force_password_change: user.force_password_change
+            }),
+            'EX',
+            refreshTTLSeconds
+        );
+
         res.cookie('adminRefreshToken', refreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -1464,7 +1498,7 @@ const adminLogin = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: user.force_password_change ? "Password change required" : "Admin login successful.",
+            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_ADMIN_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
                 fpc: user.force_password_change,
@@ -1484,7 +1518,7 @@ const adminLogin = async (req, res) => {
             const zodIssues = error.issues || error.errors || [];
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
                     message: err.message
@@ -1495,7 +1529,7 @@ const adminLogin = async (req, res) => {
         logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
         return res.status(500).json({
             success: false,
-            message: "Error processing admin login.",
+            code: "AUTH_REQUEST_FAILED",
             requestId
         });
     }
@@ -1509,7 +1543,7 @@ const adminRefresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: "Admin refresh token missing."
+            code: "AUTH_ADMIN_REFRESH_TOKEN_MISSING"
         });
     }
 
@@ -1522,7 +1556,7 @@ const adminRefresh = async (req, res) => {
             res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Session expired or invalid."
+                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
             });
         }
 
@@ -1533,7 +1567,7 @@ const adminRefresh = async (req, res) => {
             res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
             return res.status(403).json({
                 success: false,
-                message: "Access denied. Role mismatch in session."
+                code: "AUTH_ADMIN_ROLE_MISMATCH"
             });
         }
 
@@ -1544,6 +1578,7 @@ const adminRefresh = async (req, res) => {
             username: userData.username,
             fpc: userData.force_password_change
         }, process.env.JWT_SECRET_KEY, {
+            algorithm: 'HS256',
             expiresIn: process.env.JWT_EXPIRES_IN || '15m'
         });
 
@@ -1571,14 +1606,14 @@ const adminRefresh = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Admin token refreshed successfully.",
+            code: "AUTH_ADMIN_TOKEN_REFRESHED",
             data: { token: accessToken }
         });
     } catch (error) {
         logger.error('Error generating new admin token.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error generating new admin token.",
+            code: "AUTH_ADMIN_TOKEN_REFRESH_FAILED",
             requestId
         });
     }
@@ -1605,13 +1640,189 @@ const adminLogout = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Admin logged out successfully."
+            code: "AUTH_ADMIN_LOGOUT_SUCCESS"
         });
     } catch (error) {
         logger.error('Error during admin logout process.', { requestId, error });
         return res.status(500).json({
             success: false,
-            message: "Error during admin logout process.",
+            code: "AUTH_ADMIN_LOGOUT_FAILED",
+            requestId
+        });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  PUT /api/auth/me
+  Update the authenticated user's profile information
+──────────────────────────────────────────────────────────────*/
+const updateProfile = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const t = await sequelize.transaction();
+
+    try {
+        logger.info('Update profile flow started', {
+            requestId,
+            userId: req.user.sub
+        });
+
+        const userId = req.user.sub;
+        const { updateProfileSchema } = require('../validations/auth.validation');
+
+        // Validate request data
+        const validatedData = updateProfileSchema.parse(req.body);
+        const updates = stripNullishFields(validatedData);
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: [{ message: 'At least one field must be provided for update.' }]
+            });
+        }
+
+        // Validate location and language if provided
+        if (updates.location_id) {
+            const location = await models.locations.findByPk(updates.location_id, {
+                attributes: ['location_id'],
+                transaction: t
+            });
+
+            if (!location) {
+                await t.rollback();
+                logger.warn('Invalid location provided', {
+                    requestId,
+                    userId,
+                    locationId: updates.location_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LOCATION'
+                });
+            }
+        }
+
+        if (updates.preferred_lang_id) {
+            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
+                attributes: ['preferred_lang_id'],
+                transaction: t
+            });
+
+            if (!language) {
+                await t.rollback();
+                logger.warn('Invalid language provided', {
+                    requestId,
+                    userId,
+                    langId: updates.preferred_lang_id
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_LANGUAGE'
+                });
+            }
+        }
+
+        // Handle profile image if provided
+        if (updates.profile_img_url) {
+            try {
+                const movedImage = await moveImageToPermanent(updates.profile_img_url);
+                updates.profile_img_url = movedImage;
+            } catch (error) {
+                await t.rollback();
+                logger.warn('Profile image move failed', {
+                    requestId,
+                    userId,
+                    error: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    code: 'AUTH_INVALID_PROFILE_IMAGE'
+                });
+            }
+        }
+
+        // Update user record
+        const user = await models.users.findByPk(userId, {
+            transaction: t
+        });
+
+        if (!user) {
+            await t.rollback();
+            return res.status(404).json({
+                success: false,
+                code: 'AUTH_USER_NOT_FOUND'
+            });
+        }
+
+        await user.update(updates, { transaction: t });
+
+        logger.debug('User profile updated', {
+            requestId,
+            userId,
+            fieldsUpdated: Object.keys(updates)
+        });
+
+        // Update biography for role-specific tables if provided
+        if (updates.biography) {
+            if (user.user_role === 'Consultant') {
+                await models.consultants.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Talent Manager') {
+                await models.talent_managers.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            } else if (user.user_role === 'Service Line Leader') {
+                await models.service_line_leaders.update(
+                    { biography: updates.biography },
+                    { where: { user_id: userId }, transaction: t }
+                );
+            }
+        }
+
+        await t.commit();
+
+        // Invalidate cache
+        const cacheKey = `user_profile:${userId}`;
+        await redis.del(cacheKey);
+
+        logger.info('Profile update completed successfully', {
+            requestId,
+            userId
+        });
+
+        return res.status(200).json({
+            success: true,
+            code: 'AUTH_PROFILE_UPDATED'
+        });
+
+    } catch (error) {
+        await t.rollback();
+
+        if (error.name === 'ZodError') {
+            logger.warn('Profile update validation failed', {
+                requestId,
+                userId: req.user.sub,
+                errors: error.errors
+            });
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.errors
+            });
+        }
+
+        logger.error('Error updating user profile', {
+            requestId,
+            userId: req.user.sub,
+            error
+        });
+
+        return res.status(500).json({
+            success: false,
+            code: 'AUTH_PROFILE_UPDATE_FAILED',
             requestId
         });
     }
@@ -1629,5 +1840,9 @@ module.exports = {
     resetPassword,
     verifySession,
     me,
-    resendConfirmation
+    resendConfirmation,
+    adminLogin,
+    adminRefresh,
+    adminLogout,
+    updateProfile
 };

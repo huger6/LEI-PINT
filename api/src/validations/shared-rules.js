@@ -34,10 +34,8 @@ const passwordRule = z.string()
     .regex(/[^a-zA-Z0-9]/, 'Password must have at least 1 special character (!@#$%^&*)');
 
 const phoneNumberRule = z.string()
-    .transform((val) => val.replace(/[\s\-()]+/g, ''))
-    .refine((val) => /^\+\d{7,15}$/.test(val), {
-        message: 'Invalid format. Use the international standart (must include prefix).'
-    });
+    .regex(/^\+\d{7,15}$/, 'Invalid format. Use the international standart (must include prefix).')
+    .transform(val => val.replace(/\s+/g, ''));
 
 const birthdateRule = z.preprocess(
     (arg) => (typeof arg === 'string' || arg instanceof Date ? new Date(arg) : arg),
