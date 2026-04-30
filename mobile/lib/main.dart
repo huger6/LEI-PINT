@@ -136,7 +136,7 @@ void main() async {
 
 class ErrorApp extends StatelessWidget {
   final String errorMessage;
-  const ErrorApp({Key? key, required this.errorMessage}) : super(key: key);
+  const ErrorApp({super.key, required this.errorMessage});
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +171,7 @@ class ErrorApp extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

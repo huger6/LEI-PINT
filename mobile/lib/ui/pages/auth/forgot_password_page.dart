@@ -7,7 +7,7 @@ import '../../widgets/shared/custom_button.dart';
 import '../../../core/sync_manager.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -31,12 +31,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       setState(() => _isLoading = true);
 
       Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
           _emailSent = true;
         });
 
-        // Mostrar mensagem de sucesso
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -47,6 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         );
 
         Future.delayed(const Duration(seconds: 3), () {
+          if (!mounted) return;
           Navigator.pop(context);
         });
       });

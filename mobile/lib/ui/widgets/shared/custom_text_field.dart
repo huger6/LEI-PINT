@@ -16,7 +16,7 @@ class CustomTextField extends StatefulWidget {
   final VoidCallback? onTap;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.isRequired = false,
     required this.hintText,
@@ -30,7 +30,7 @@ class CustomTextField extends StatefulWidget {
     this.maxLines = 1,
     this.readOnly = false,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();

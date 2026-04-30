@@ -629,7 +629,7 @@ class _ApplicationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: state.color.withOpacity(0.7), width: 1.7),
+        border: Border.all(color: state.color.withValues(alpha: 0.7), width: 1.7),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),

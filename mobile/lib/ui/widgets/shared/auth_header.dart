@@ -6,11 +6,11 @@ class AuthHeader extends StatelessWidget {
   final String? imagePath;
 
   const AuthHeader({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     this.imagePath,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
