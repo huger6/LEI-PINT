@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/shared/auth_header.dart';
+import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../../core/sync_manager.dart';
@@ -67,12 +68,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         title: Text(tr.tr('recoverPassword')),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const AuthParticleBackground(),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
 
               // Header
               AuthHeader(
@@ -152,29 +157,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ],
 
-              const SizedBox(height: 60),
+                  const SizedBox(height: 60),
 
               // Help section
-              if (!_emailSent)
-                Column(
-                  children: [
-                    const Divider(),
-                    const SizedBox(height: 24),
-                    Text(
-                      tr.tr('didNotReceiveEmail'),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                  if (!_emailSent)
+                    Column(
+                      children: [
+                        const Divider(),
+                        const SizedBox(height: 24),
+                        Text(
+                          tr.tr('didNotReceiveEmail'),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          tr.tr('checkSpam'),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      tr.tr('checkSpam'),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

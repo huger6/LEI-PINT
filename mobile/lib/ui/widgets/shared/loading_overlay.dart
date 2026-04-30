@@ -17,18 +17,28 @@ class LoadingOverlay extends StatelessWidget {
       child: AbsorbPointer(
         absorbing: true,
         child: ColoredBox(
-          color: colorScheme.onSurface.withValues(alpha: 0.45),
+          color: Colors.white.withValues(alpha: 0.58),
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.14),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.12),
+                    blurRadius: 22,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(),
+                  CircularProgressIndicator(color: colorScheme.primary),
                   const SizedBox(height: 12),
                   Text(
                     localizedMessage,

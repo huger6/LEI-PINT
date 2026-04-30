@@ -23,7 +23,7 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupDependencies() async {
   if (!dotenv.isInitialized) {
     try {
-      await dotenv.load(fileName: 'badges_softinsa/project.env');
+      await dotenv.load(fileName: 'project.env');
     } catch (e, stackTrace) {
       try {
         await dotenv.load(fileName: '.env');

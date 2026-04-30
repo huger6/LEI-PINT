@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/routes/app_router.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/custom_button.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
@@ -50,7 +52,11 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
 
         Future.delayed(const Duration(seconds: 1), () {
           if (!mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRouter.login,
+            (route) => false,
+          );
         });
       } else {
         final errorMessage =
@@ -101,12 +107,16 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           ),
           title: Text(tr.tr('confirmRegister')),
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            const AuthParticleBackground(),
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 Text(
                   tr.tr('registerSummary'),
                   style: theme.textTheme.headlineSmall?.copyWith(
@@ -217,10 +227,12 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                     child: Text(tr.tr('back')),
                   ),
                 ),
-                const SizedBox(height: 40),
-              ],
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
