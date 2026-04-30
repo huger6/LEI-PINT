@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../ui/pages/auth/auth_loading_screen.dart';
 import '../../ui/pages/auth/login_page.dart';
 import '../../ui/pages/auth/register_screen.dart';
 import '../../ui/pages/auth/forgot_password_page.dart';
@@ -11,8 +12,9 @@ import '../../ui/pages/evolution/evolucao_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 
 class AppRouter {
-  static const String initial = '/';
-  static const String login = '/';
+  static const String initial = '/loading';
+  static const String loading = '/loading';
+  static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String selectArea = '/select-area';
@@ -24,6 +26,7 @@ class AppRouter {
   static const String profile = '/profile';
 
   static Map<String, WidgetBuilder> get routes => {
+    loading: (context) => const AuthLoadingScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     forgotPassword: (context) => const ForgotPasswordScreen(),

@@ -176,7 +176,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageController = context.watch<LanguageController>();
-    final authStore = context.watch<AuthStore>();
 
     return LanguageScope(
       controller: languageController,
@@ -198,9 +197,7 @@ class MyApp extends StatelessWidget {
               Locale('en'),
               Locale('es'),
             ],
-            initialRoute: authStore.isAuthenticated
-                ? AppRouter.dashboard
-                : AppRouter.initial,
+            initialRoute: AppRouter.initial,
             routes: AppRouter.routes,
           );
         },

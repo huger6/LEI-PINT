@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../injection_container.dart';
 import '../../../core/sync_manager.dart';
+import '../../widgets/shared/auth_particle_background.dart';
 
 class SelectAreaScreen extends StatefulWidget {
   final Map<String, dynamic>? registrationData;
@@ -105,43 +106,48 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
     return Theme(
       data: theme,
       child: Scaffold(
-        backgroundColor: theme.colorScheme.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.22,
-                color: theme.colorScheme.surface,
-                child: Center(
-                  child: Image.asset(
-                    'images/logotipo_softinsa.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
-                        size: 64,
-                        color: theme.colorScheme.outline,
-                      );
-                    },
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            const AuthParticleBackground(),
+            SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.22,
+                    color: Colors.transparent,
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/logotipo_softinsa.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.image_not_supported,
+                            size: 64,
+                            color: theme.colorScheme.outline,
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  tr.tr('selectAreasDescription'),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      tr.tr('selectAreasDescription'),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
                   ),
-                ),
+                  Expanded(child: _buildBody(theme, tr)),
+                  _buildBottomActions(theme),
+                ],
               ),
-              Expanded(child: _buildBody(theme, tr)),
-              _buildBottomActions(theme),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

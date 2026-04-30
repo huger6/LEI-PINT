@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../data/repositories/location_repo.dart';
 import '../../widgets/shared/auth_header.dart';
+import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
@@ -262,15 +263,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         title: Text(tr.tr('createAccount')),
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const AuthParticleBackground(),
+          SafeArea(
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
                     const SizedBox(height: 24),
 
                     // Header
@@ -696,14 +701,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onPressed: _goBackToLogin,
                     ),
 
-                    const SizedBox(height: 40),
-                  ],
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                if (_isLoading) const LoadingOverlay(),
+              ],
             ),
-            if (_isLoading) const LoadingOverlay(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
