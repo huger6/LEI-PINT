@@ -14,8 +14,11 @@ class AreaDao {
         .map(
           (row) => AreaModel(
             id: row['id'] as int,
+            serviceLineId: row['service_line_id'] as int?,
             name: row['name'] as String,
             slug: row['slug'] as String?,
+            description: row['description'] as String?,
+            imgUrl: row['img_url'] as String?,
           ),
         )
         .toList();
@@ -31,8 +34,11 @@ class AreaDao {
     for (final area in areas) {
       batch.insert(LocalDatabase.areasTable, {
         'id': area.id,
+        'service_line_id': area.serviceLineId,
         'name': area.name,
         'slug': area.slug,
+        'description': area.description,
+        'img_url': area.imgUrl,
         'synced_at': now,
       });
     }
