@@ -6,11 +6,11 @@ class NavLink extends StatelessWidget {
   final VoidCallback onPressed;
 
   const NavLink({
-    Key? key,
+    super.key,
     required this.text,
     required this.linkText,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 
 import '../../core/utils/badge_visuals.dart';
 import '../../data/repositories/applications_repo.dart';
@@ -26,7 +27,7 @@ class DashboardSubmission {
 
   final BadgeModel badge;
   final String status;
-  final dynamic statusColor;
+  final Color statusColor;
   final String timestamp;
 }
 
