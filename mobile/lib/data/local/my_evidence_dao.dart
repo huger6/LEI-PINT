@@ -74,6 +74,24 @@ class MyEvidenceDao {
     );
   }
 
+  /// Replaces all server-confirmed evidences (pending_sync = 0) with the
+  /// provided list. Locally-created rows not yet pushed are kept.
+  Future<void> replaceAll(List<MyEvidenceModel> evidences) async {
+    final db = await _database.database;
+    final batch = db.batch();
+
+    batch.delete(
+      LocalDatabase.myEvidencesTable,
+      where: 'pending_sync = 0',
+    );
+
+    for (final ev in evidences) {
+      batch.insert(LocalDatabase.myEvidencesTable, ev.toRow());
+    }
+
+    await batch.commit(noResult: true);
+  }
+
   Future<void> delete(int localId) async {
     final db = await _database.database;
     await db.delete(

@@ -56,6 +56,39 @@ class MyApplicationModel {
     );
   }
 
+  factory MyApplicationModel.fromJson(Map<String, dynamic> json) {
+    return MyApplicationModel(
+      localId: 0,
+      serverId: _toInt(json['id'] ?? json['application_id']),
+      badgeId: _toInt(json['badge_id']),
+      applicationGuid:
+          (json['application_guid'] ?? json['applicationGuid'] ?? '')
+              .toString(),
+      state:
+          (json['application_state'] ?? json['state'] ?? 'Open').toString(),
+      reviewerNotes: json['reviewer_notes']?.toString() ??
+          json['reviewerNotes']?.toString(),
+      openedAt:
+          _parseDate(json['opened_at'] ?? json['openedAt']) ?? DateTime.now(),
+      submittedAt: _parseDate(json['submitted_at'] ?? json['submittedAt']),
+      closedAt: _parseDate(json['closed_at'] ?? json['closedAt']),
+      syncedAt: DateTime.now(),
+      pendingSync: false,
+    );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    return DateTime.tryParse(value.toString());
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   Map<String, dynamic> toRow() {
     return {
       if (serverId != null) 'server_id': serverId,

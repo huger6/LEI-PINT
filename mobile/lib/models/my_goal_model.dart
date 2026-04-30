@@ -25,6 +25,38 @@ class MyGoalModel {
     this.pendingSync = true,
   });
 
+  factory MyGoalModel.fromJson(
+    Map<String, dynamic> json, {
+    int? applicationLocalId,
+  }) {
+    return MyGoalModel(
+      localId: 0,
+      serverId: _toInt(json['id'] ?? json['goal_id']),
+      badgeId: json['badge_id'] != null ? _toInt(json['badge_id']) : null,
+      applicationLocalId: applicationLocalId,
+      title: (json['title'] ?? json['goal_title'] ?? '').toString(),
+      description: json['description']?.toString() ??
+          json['goal_description']?.toString(),
+      startDate: _parseDate(json['start_date'] ?? json['startDate']),
+      endDate: _parseDate(json['end_date'] ?? json['endDate']),
+      reminderAt: _parseDate(json['reminder_at'] ?? json['reminderAt']),
+      syncedAt: DateTime.now(),
+      pendingSync: false,
+    );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    return DateTime.tryParse(value.toString());
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   MyGoalModel copyWith({
     int? serverId,
     String? title,

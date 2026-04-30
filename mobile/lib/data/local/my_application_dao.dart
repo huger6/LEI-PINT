@@ -131,6 +131,24 @@ class MyApplicationDao {
     );
   }
 
+  /// Replaces all server-confirmed applications (pending_sync = 0) with the
+  /// provided list. Locally-created rows that have not yet been pushed are kept.
+  Future<void> replaceAll(List<MyApplicationModel> applications) async {
+    final db = await _database.database;
+    final batch = db.batch();
+
+    batch.delete(
+      LocalDatabase.myApplicationsTable,
+      where: 'pending_sync = 0',
+    );
+
+    for (final app in applications) {
+      batch.insert(LocalDatabase.myApplicationsTable, app.toRow());
+    }
+
+    await batch.commit(noResult: true);
+  }
+
   Future<void> delete(int localId) async {
     final db = await _database.database;
     await db.delete(

@@ -24,6 +24,24 @@ class LanguageDao {
         .toList();
   }
 
+  Future<LanguageModel?> getById(int id) async {
+    final db = await _database.database;
+    final rows = await db.query(
+      LocalDatabase.languagesTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rows.isEmpty) return null;
+    final row = rows.first;
+    return LanguageModel(
+      id: row['id'] as int,
+      code: row['code'] as String,
+      name: row['name'] as String,
+    );
+  }
+
   Future<void> replaceAll(List<LanguageModel> languages) async {
     final db = await _database.database;
     final batch = db.batch();

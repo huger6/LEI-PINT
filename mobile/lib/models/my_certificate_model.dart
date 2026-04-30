@@ -23,6 +23,33 @@ class MyCertificateModel {
     this.pendingSync = true,
   });
 
+  factory MyCertificateModel.fromJson(
+    Map<String, dynamic> json, {
+    required int applicationLocalId,
+  }) {
+    return MyCertificateModel(
+      localId: 0,
+      serverId: _toInt(json['id'] ?? json['certificate_id']),
+      applicationLocalId: applicationLocalId,
+      title: (json['title'] ?? json['certificate_title'] ?? '').toString(),
+      issuingEntity: json['issuing_entity']?.toString() ??
+          json['issuingEntity']?.toString(),
+      issueDate:
+          json['issue_date']?.toString() ?? json['issueDate']?.toString(),
+      fileUrl:
+          json['file_url']?.toString() ?? json['fileUrl']?.toString(),
+      isLocalFile: false,
+      syncedAt: DateTime.now(),
+      pendingSync: false,
+    );
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   MyCertificateModel copyWith({
     int? serverId,
     String? fileUrl,
