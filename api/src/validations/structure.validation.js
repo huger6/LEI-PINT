@@ -2,20 +2,15 @@ const { z } = require('zod');
 const { positiveIntIdRule, imgUrlRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
-const optionalSearchRule = z.preprocess(
-	(value) => {
-		if (typeof value !== 'string') {
-			return value;
-		}
-
+const optionalSearchRule = z
+	.string()
+	.max(255, 'Search query is too long.')
+	.optional()
+	.transform((value) => {
+		if (value === undefined) return undefined;
 		const trimmed = value.trim();
-		return trimmed === '' ? undefined : trimmed;
-	},
-	z.string()
-		.max(255, 'Search query is too long.')
-		.transform(sanitizeText)
-		.optional()
-);
+		return trimmed === '' ? undefined : sanitizeText(trimmed);
+	});
 
 const booleanQueryRule = z.preprocess(
 	(value) => {
@@ -93,6 +88,8 @@ const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
 }).partial();
 
 const createServiceLineBodySchema = z.object({
+	learningPathId: positiveIntIdRule.optional(),
+
 	serviceLineName: z.string().trim().min(2).max(100),
 
 	slSlug: z.string().trim()
