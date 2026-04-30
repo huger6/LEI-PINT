@@ -47,9 +47,6 @@ class LanguageModel {
       if (value == '3' || value.startsWith('es')) {
         return '3';
       }
-      if (value == '4' || value.startsWith('fr')) {
-        return '4';
-      }
     }
 
     if (fallbackId >= 1 && fallbackId <= 4) {
@@ -64,12 +61,10 @@ class LanguageModel {
       case 2:
         return 'English';
       case 3:
-        return 'Espanol';
-      case 4:
-        return 'Francais';
+        return 'Español';
       case 1:
       default:
-        return 'Portugues';
+        return 'Português';
     }
   }
 }
