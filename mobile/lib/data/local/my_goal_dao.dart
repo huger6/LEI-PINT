@@ -67,6 +67,24 @@ class MyGoalDao {
     );
   }
 
+  /// Replaces all server-confirmed goals (pending_sync = 0) with the provided
+  /// list. Locally-created rows not yet pushed are kept.
+  Future<void> replaceAll(List<MyGoalModel> goals) async {
+    final db = await _database.database;
+    final batch = db.batch();
+
+    batch.delete(
+      LocalDatabase.myGoalsTable,
+      where: 'pending_sync = 0',
+    );
+
+    for (final goal in goals) {
+      batch.insert(LocalDatabase.myGoalsTable, goal.toRow());
+    }
+
+    await batch.commit(noResult: true);
+  }
+
   Future<void> delete(int localId) async {
     final db = await _database.database;
     await db.delete(

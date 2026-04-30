@@ -27,6 +27,43 @@ class MyEvidenceModel {
     this.pendingSync = true,
   });
 
+  factory MyEvidenceModel.fromJson(
+    Map<String, dynamic> json, {
+    required int applicationLocalId,
+  }) {
+    return MyEvidenceModel(
+      localId: 0,
+      serverId: _toInt(json['id'] ?? json['evidence_id']),
+      applicationLocalId: applicationLocalId,
+      requirementId: json['requirement_id'] != null
+          ? _toInt(json['requirement_id'])
+          : null,
+      fileUrl: (json['file_url'] ?? json['fileUrl'] ?? '').toString(),
+      title: json['title']?.toString(),
+      description: json['description']?.toString(),
+      fileType:
+          json['file_type']?.toString() ?? json['fileType']?.toString(),
+      isLocalFile: false,
+      uploadedAt:
+          _parseDate(json['uploaded_at'] ?? json['uploadedAt']) ??
+          DateTime.now(),
+      syncedAt: DateTime.now(),
+      pendingSync: false,
+    );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    return DateTime.tryParse(value.toString());
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   MyEvidenceModel copyWith({
     int? serverId,
     String? fileUrl,

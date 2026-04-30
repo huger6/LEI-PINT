@@ -24,6 +24,27 @@ class AreaDao {
         .toList();
   }
 
+  Future<AreaModel?> getById(int id) async {
+    final db = await _database.database;
+    final rows = await db.query(
+      LocalDatabase.areasTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rows.isEmpty) return null;
+    final row = rows.first;
+    return AreaModel(
+      id: row['id'] as int,
+      serviceLineId: row['service_line_id'] as int?,
+      name: row['name'] as String,
+      slug: row['slug'] as String?,
+      description: row['description'] as String?,
+      imgUrl: row['img_url'] as String?,
+    );
+  }
+
   Future<void> replaceAll(List<AreaModel> areas) async {
     final db = await _database.database;
     final batch = db.batch();

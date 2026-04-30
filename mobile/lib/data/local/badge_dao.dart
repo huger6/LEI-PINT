@@ -67,35 +67,6 @@ class BadgeDao {
     return _fromRow(rows.first);
   }
 
-  Future<void> replaceAll(List<BadgeModel> badges) async {
-    final db = await _database.database;
-    final batch = db.batch();
-    final now = DateTime.now().millisecondsSinceEpoch;
-
-    batch.delete(LocalDatabase.badgesTable);
-
-    for (final badge in badges) {
-      batch.insert(LocalDatabase.badgesTable, {
-        'id': badge.id,
-        'slug': badge.slug,
-        'title': badge.title,
-        'badge_type': 'Standard',
-        'points': badge.points,
-        'expiration_days': null,
-        'estimated_time': badge.duration.isNotEmpty ? badge.duration : null,
-        'description': badge.description.isNotEmpty ? badge.description : null,
-        'img_url': null,
-        'area_id': 0,
-        'service_line_id': 0,
-        'learning_path_id': 0,
-        'progression_stage_id': 0,
-        'synced_at': now,
-      });
-    }
-
-    await batch.commit(noResult: true);
-  }
-
   Future<void> replaceAllFromJson(List<Map<String, dynamic>> rows) async {
     final db = await _database.database;
     final batch = db.batch();
