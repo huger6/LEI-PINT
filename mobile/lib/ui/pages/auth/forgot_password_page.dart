@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/shared/auth_header.dart';
 import '../../widgets/shared/auth_particle_background.dart';
+import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../../core/sync_manager.dart';
@@ -55,10 +56,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    FormValidators.configure(
-      languageCode: tr.languageCode,
-      translator: tr.tr,
-    );
+    final colorScheme = Theme.of(context).colorScheme;
+    FormValidators.configure(languageCode: tr.languageCode, translator: tr.tr);
 
     return Scaffold(
       appBar: AppBar(
@@ -74,110 +73,117 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const AuthParticleBackground(),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  const SizedBox(height: 40),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              child: AuthContentCard(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
 
-              // Header
-              AuthHeader(
-                title: tr.tr('recoverPassword'),
-                subtitle: tr.tr('recoverSubtitle'),
-              ),
+                    // Header
+                    AuthHeader(
+                      title: tr.tr('recoverPassword'),
+                      subtitle: tr.tr('recoverSubtitle'),
+                    ),
 
-              const SizedBox(height: 48),
+                    const SizedBox(height: 36),
 
-              if (!_emailSent) ...[
-                // Email input form
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      CustomTextField(
-                        label: tr.tr('email'),
-                        hintText: tr.tr('emailHint'),
-                        prefixIcon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        controller: _emailController,
-                        validator: FormValidators.validateEmail,
+                    if (!_emailSent) ...[
+                      // Email input form
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            CustomTextField(
+                              label: tr.tr('email'),
+                              hintText: tr.tr('emailHint'),
+                              prefixIcon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                              controller: _emailController,
+                              validator: FormValidators.validateEmail,
+                            ),
+                            const SizedBox(height: 28),
+                            CustomButton(
+                              text: tr.tr('sendInstructions'),
+                              isLoading: _isLoading,
+                              onPressed: _handleSendInstructions,
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 32),
-                      CustomButton(
-                        text: tr.tr('sendInstructions'),
-                        isLoading: _isLoading,
-                        onPressed: _handleSendInstructions,
+                    ] else ...[
+                      // Success message
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer.withValues(
+                            alpha: 0.56,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: colorScheme.primary.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: colorScheme.primary,
+                              size: 50,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              tr.tr('emailSent'),
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(color: colorScheme.onSurface),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              tr.tr('checkMailbox'),
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          tr.tr('backToLogin'),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ] else ...[
-                // Success message
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F8E9),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFF558B2F),
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.green[700],
-                        size: 48,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        tr.tr('emailSent'),
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(color: Colors.green[800]),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        tr.tr('checkMailbox'),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    tr.tr('backToLogin'),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
 
-                  const SizedBox(height: 60),
+                    const SizedBox(height: 30),
 
-              // Help section
-                  if (!_emailSent)
-                    Column(
-                      children: [
-                        const Divider(),
-                        const SizedBox(height: 24),
-                        Text(
-                          tr.tr('didNotReceiveEmail'),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          tr.tr('checkSpam'),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                ],
+                    // Help section
+                    if (!_emailSent)
+                      Column(
+                        children: [
+                          Divider(
+                            color: colorScheme.outline.withValues(alpha: 0.22),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            tr.tr('didNotReceiveEmail'),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            tr.tr('checkSpam'),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
           ),

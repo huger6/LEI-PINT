@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 class AuthParticleBackground extends StatelessWidget {
   final int particleCount;
 
-  const AuthParticleBackground({
-    super.key,
-    this.particleCount = 36,
-  });
+  const AuthParticleBackground({super.key, this.particleCount = 36});
 
   @override
   Widget build(BuildContext context) {
@@ -18,36 +15,39 @@ class AuthParticleBackground extends StatelessWidget {
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFF8FDFF),
-                Color(0xFFECF9FD),
-                Color(0xFFFDFEFF),
+                Color(0xFFF3F9FF),
+                Color(0xFFEAF5FF),
+                Color(0xFFF7FBFF),
+                Color(0xFFFEFEFF),
               ],
+              stops: [0, 0.32, 0.68, 1],
             ),
           ),
         ),
         const _SoftGlow(
-          alignment: Alignment(-1.1, -1.05),
-          size: 260,
-          color: Color(0x5500B8E0),
+          alignment: Alignment(-1.05, -1.04),
+          size: 300,
+          color: Color(0x4D00B8E0),
         ),
         const _SoftGlow(
-          alignment: Alignment(1.05, -0.65),
-          size: 220,
-          color: Color(0x4439639C),
+          alignment: Alignment(1.08, -0.76),
+          size: 250,
+          color: Color(0x3339639C),
         ),
         const _SoftGlow(
-          alignment: Alignment(0.9, 1.15),
-          size: 280,
-          color: Color(0x3A00B8E0),
+          alignment: Alignment(0.92, 1.15),
+          size: 320,
+          color: Color(0x2900B8E0),
         ),
-        IgnorePointer(
-          child: _ParticleLayer(
-            particleCount: particleCount,
-          ),
+        const _SoftGlow(
+          alignment: Alignment(-0.88, 1.05),
+          size: 240,
+          color: Color(0x1E39639C),
         ),
+        IgnorePointer(child: _ParticleLayer(particleCount: particleCount)),
       ],
     );
   }
@@ -73,12 +73,7 @@ class _SoftGlow extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              color,
-              color.withValues(alpha: 0),
-            ],
-          ),
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
         ),
       ),
     );
@@ -133,10 +128,7 @@ class _ParticlePainter extends CustomPainter {
   final double progress;
   final int particleCount;
 
-  _ParticlePainter({
-    required this.progress,
-    required this.particleCount,
-  });
+  _ParticlePainter({required this.progress, required this.particleCount});
 
   static const List<Color> _palette = [
     Color(0xFF00B8E0),
@@ -156,9 +148,11 @@ class _ParticlePainter extends CustomPainter {
       final oscillation = 12 + (_hash(i * 5.4 + 0.66) * 38);
 
       final yProgress = (baseY + progress * speed) % 1;
-      final x = (baseX * size.width) +
+      final x =
+          (baseX * size.width) +
           math.sin((progress * math.pi * 2) + phase) * oscillation;
-      final y = yProgress * size.height +
+      final y =
+          yProgress * size.height +
           math.cos((progress * math.pi * 1.4) + phase) * (oscillation * 0.5);
 
       final radius = 1.2 + (drift * 3.8);
