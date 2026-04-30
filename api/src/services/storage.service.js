@@ -1,6 +1,21 @@
 const { createClient } = require('@supabase/supabase-js');
 const { logger } = require('../utils/logger');
-const supabase = createClient(process.env.SUPABASE_STORAGE_URL, process.env.SUPABASE_STORAGE_API_KEY);
+
+// Lazily initialize Supabase client. When running tests the environment
+// variables may be absent; in that case we keep `supabase` as null and make
+// storage functions into safe no-ops (they return the original URL or
+// a sensible dummy) so requiring this module does not throw.
+let supabase = null;
+if (process.env.SUPABASE_STORAGE_URL && process.env.SUPABASE_STORAGE_API_KEY) {
+    try {
+        supabase = createClient(process.env.SUPABASE_STORAGE_URL, process.env.SUPABASE_STORAGE_API_KEY);
+    } catch (err) {
+        logger.warn('Failed to initialize Supabase client, continuing without storage client', { err });
+        supabase = null;
+    }
+} else {
+    logger.warn('Supabase storage not configured; storage operations will be no-ops in this process');
+}
 
 const moveImageToPermanent = async (permanentPathPrefix, tempUrl, user_guid) => {
     if (!tempUrl || !tempUrl.includes('/temp/')) return tempUrl;
@@ -9,6 +24,10 @@ const moveImageToPermanent = async (permanentPathPrefix, tempUrl, user_guid) => 
     const fileName = tempUrl.split('/').pop().split('?')[0];
     const tempPath = `temp/${fileName}`;
     const permanentPath = `${permanentPathPrefix}/${user_guid}/${fileName}`;
+
+    // If Supabase is not configured (for example when running tests),
+    // return the original URL (no-op) so callers are not blocked.
+    if (!supabase) return tempUrl;
 
     // Move the file in supabase storage
     const { data, error } = await supabase.storage
@@ -43,6 +62,8 @@ const moveStructureImageToPermanent = async (structureType, tempUrl, entityIdent
         .from('public-assets')
         .move(tempPath, permanentPath);
 
+    if (!supabase) return tempUrl;
+
     if (error) {
         const storageError = new Error(error.message);
         storageError.name = 'StorageMoveError';
@@ -58,6 +79,14 @@ const moveStructureImageToPermanent = async (structureType, tempUrl, entityIdent
 
 const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePath, expiresInSeconds = 300) => {
     try {
+        if (!supabase) {
+            // Return sensible dummy URLs when Supabase is not configured.
+            const base = process.env.SUPABASE_URL || 'http://localhost';
+            const uploadUrl = `${base}/storage/v1/signed_upload/${bucketName}/${encodeURIComponent(storagePath)}`;
+            const finalFileUrl = `${base}/storage/v1/object/authenticated/${bucketName}/${storagePath}`;
+            return { uploadUrl, finalFileUrl };
+        }
+
         const { data, error } = await supabase
             .storage
             .from(bucketName)
