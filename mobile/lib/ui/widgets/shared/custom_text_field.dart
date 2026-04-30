@@ -55,7 +55,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           text: TextSpan(
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             children: [
               TextSpan(text: widget.label),
               if (widget.isRequired)
@@ -85,13 +85,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
             hintText: widget.hintText,
             prefixIcon: Icon(widget.prefixIcon),
             suffixIcon: widget.obscureText
-                ? GestureDetector(
-                    onTap: () {
+                ? IconButton(
+                    onPressed: () {
                       setState(() {
                         _obscureText = !_obscureText;
                       });
                     },
-                    child: Icon(
+                    icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
                     ),
                   )
@@ -109,7 +109,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ],
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
       ],
     );
   }

@@ -8,6 +8,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/auth_particle_background.dart';
+import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_button.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
@@ -113,122 +114,139 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
             const AuthParticleBackground(),
             SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(
-                  tr.tr('registerSummary'),
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildSectionTitle(tr.tr('personalData'), theme),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                child: AuthContentCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr.tr('registerSummary'),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSectionTitle(tr.tr('personalData'), theme),
 
-                // Agora lemos tudo diretamente do 'draft'
-                _buildInfoField(tr.tr('name'), draft.fullName ?? '-', theme),
-                _buildInfoField(
-                  tr.tr('username'),
-                  draft.username ?? '-',
-                  theme,
-                ),
-                _buildInfoField(tr.tr('email'), draft.email ?? '-', theme),
-                _buildInfoField(tr.tr('phone'), phoneDisplay, theme),
-                _buildInfoField(
-                  tr.tr('birthdate'),
-                  draft.birthDate ?? tr.tr('notFilledF'),
-                  theme,
-                ),
-                _buildProfileImagePreview(
-                  tr.tr('profileImage'),
-                  hasImage ? draft.profileImage : null,
-                  tr.tr('notFilledF'),
-                  theme,
-                ),
-                _buildInfoField(
-                  tr.tr('location'),
-                  draft.location?.name ?? tr.tr('notFilledF'),
-                  theme,
-                ),
+                      // Agora lemos tudo diretamente do 'draft'
+                      _buildInfoField(
+                        tr.tr('name'),
+                        draft.fullName ?? '-',
+                        theme,
+                      ),
+                      _buildInfoField(
+                        tr.tr('username'),
+                        draft.username ?? '-',
+                        theme,
+                      ),
+                      _buildInfoField(
+                        tr.tr('email'),
+                        draft.email ?? '-',
+                        theme,
+                      ),
+                      _buildInfoField(tr.tr('phone'), phoneDisplay, theme),
+                      _buildInfoField(
+                        tr.tr('birthdate'),
+                        draft.birthDate ?? tr.tr('notFilledF'),
+                        theme,
+                      ),
+                      _buildProfileImagePreview(
+                        tr.tr('profileImage'),
+                        hasImage ? draft.profileImage : null,
+                        tr.tr('notFilledF'),
+                        theme,
+                      ),
+                      _buildInfoField(
+                        tr.tr('location'),
+                        draft.location?.name ?? tr.tr('notFilledF'),
+                        theme,
+                      ),
 
-                // Assume que o preferredLanguage tem um ID que passamos ao controlador
-                _buildInfoField(
-                  tr.tr('preferredLanguageOptional'),
-                  _getLanguageName(
-                    draft.preferredLanguage?.id.toString() ?? '1',
-                  ),
-                  theme,
-                ),
+                      // Assume que o preferredLanguage tem um ID que passamos ao controlador
+                      _buildInfoField(
+                        tr.tr('preferredLanguageOptional'),
+                        _getLanguageName(
+                          draft.preferredLanguage?.id.toString() ?? '1',
+                        ),
+                        theme,
+                      ),
 
-                _buildInfoField(
-                  tr.tr('aboutMe'),
-                  draft.bio ?? tr.tr('notFilled'),
-                  theme,
-                ),
-                const SizedBox(height: 24),
-                _buildSectionTitle(tr.tr('selectedAreas'), theme),
+                      _buildInfoField(
+                        tr.tr('aboutMe'),
+                        draft.bio ?? tr.tr('notFilled'),
+                        theme,
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSectionTitle(tr.tr('selectedAreas'), theme),
 
-                // Área principal
-                _buildInfoField(
-                  tr.tr('mainArea'),
-                  draft.mainArea?.name ?? tr.tr('notDefined'),
-                  theme,
-                ),
+                      // Área principal
+                      _buildInfoField(
+                        tr.tr('mainArea'),
+                        draft.mainArea?.name ?? tr.tr('notDefined'),
+                        theme,
+                      ),
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                    color: theme.colorScheme.surface,
-                  ),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: selectedAreas.isEmpty
-                        ? [Text(tr.tr('noneSelectedArea'))]
-                        : List<Widget>.from(
-                            selectedAreas.map(
-                              (area) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                                child: Text(
-                                  area.name,
-                                ), // Lemos o 'name' do AreaModel
-                              ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.24,
                             ),
                           ),
+                          borderRadius: BorderRadius.circular(18),
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.9,
+                          ),
+                        ),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: selectedAreas.isEmpty
+                              ? [Text(tr.tr('noneSelectedArea'))]
+                              : List<Widget>.from(
+                                  selectedAreas.map(
+                                    (area) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            theme.colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        area.name,
+                                      ), // Lemos o 'name' do AreaModel
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      CustomButton(
+                        text: tr.tr('registerUser'),
+                        isLoading: _isLoading,
+                        onPressed: _handleRegister,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(tr.tr('back')),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 32),
-                CustomButton(
-                  text: tr.tr('registerUser'),
-                  isLoading: _isLoading,
-                  onPressed: _handleRegister,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(tr.tr('back')),
-                  ),
-                ),
-                    const SizedBox(height: 40),
-                  ],
                 ),
               ),
             ),
@@ -260,7 +278,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.grey.shade600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -269,9 +287,11 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade50,
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.24),
+              ),
+              borderRadius: BorderRadius.circular(18),
+              color: theme.colorScheme.surface.withValues(alpha: 0.9),
             ),
             child: Text(value),
           ),
@@ -294,7 +314,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.grey.shade600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -306,9 +326,11 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                 ? EdgeInsets.zero
                 : const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade50,
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.24),
+              ),
+              borderRadius: BorderRadius.circular(18),
+              color: theme.colorScheme.surface.withValues(alpha: 0.9),
             ),
             clipBehavior: Clip.antiAlias,
             child: imageFile != null

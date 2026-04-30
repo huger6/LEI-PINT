@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends StatefulWidget {
+class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isLoading;
@@ -15,42 +15,64 @@ class CustomButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = true,
     this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-    this.borderRadius = 8,
+    this.borderRadius = 12,
   }) : super(key: key);
 
   @override
-  State<CustomButton> createState() => _CustomButtonState();
-}
-
-class _CustomButtonState extends State<CustomButton> {
-  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDisabled = isLoading;
 
     return SizedBox(
-      width: widget.isFullWidth ? double.infinity : null,
+      width: isFullWidth ? double.infinity : null,
       child: ElevatedButton(
-        onPressed: widget.isLoading ? null : widget.onPressed,
+        onPressed: isDisabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          padding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          disabledBackgroundColor: Colors.transparent,
           foregroundColor: colorScheme.onPrimary,
-          padding: widget.padding,
+          disabledForegroundColor: colorScheme.onPrimary.withValues(alpha: 0.8),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
         ),
-        child: widget.isLoading
-            ? SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    colorScheme.onPrimary,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            gradient: isDisabled
+                ? LinearGradient(
+                    colors: [
+                      colorScheme.outline.withValues(alpha: 0.45),
+                      colorScheme.outline.withValues(alpha: 0.35),
+                    ],
+                  )
+                : LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [colorScheme.primary, colorScheme.secondary],
                   ),
-                ),
-              )
-            : Text(widget.text),
+          ),
+          child: Padding(
+            padding: padding,
+            child: Center(
+              child: isLoading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
+                      ),
+                    )
+                  : Text(text),
+            ),
+          ),
+        ),
       ),
     );
   }
