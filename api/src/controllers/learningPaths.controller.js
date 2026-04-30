@@ -1,9 +1,9 @@
 const { models } = require('../config/db');
-const { handleListRequest } = require('../utils/listHelper');
+const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
-const { moveStructureImageToPermanent } = require('../services/storageService');
+const { moveStructureImageToPermanent } = require('../services/storage.service');
 
 // GET /api/learning-paths
 const getAllLearningPaths = (req, res) => {
@@ -37,7 +37,7 @@ const getLearningPathBySlug = async (req, res) => {
 
         if (!lp) return res.status(404).json({
             success: false,
-            message: "Learning Path not found."
+            code: "LP_NOT_FOUND"
         });
 
         return res.status(200).json({
@@ -50,7 +50,7 @@ const getLearningPathBySlug = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Internal server error.",
+            code: "LP_FETCH_FAILED",
             requestId
         });
     }
@@ -58,13 +58,13 @@ const getLearningPathBySlug = async (req, res) => {
 
 const checkSlugAvailability = async (req, res) => {
     try {
-        const { slug } = validations.pathSlugParamSchema.parse(req.query);
+        const { slug } = validations.slugQuerySchema.parse(req.query);
 
         const lp = await models.learning_paths.findOne({ where: { path_slug: slug } });
 
         return res.status(200).json({
             success: true,
-            message: lp ? "Slug is already in use." : "Slug is available.",
+            code: lp ? "SLUG_IN_USE" : "SLUG_AVAILABLE",
             data: {
                 isAvailable: !lp
             }
@@ -74,7 +74,7 @@ const checkSlugAvailability = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -82,7 +82,7 @@ const checkSlugAvailability = async (req, res) => {
         logger.error('Error creating Learning Path', { error });
         return res.status(500).json({
             success: false,
-            message: "Error checking slug."
+            code: "SLUG_CHECK_FAILED"
         });
     }
 };
@@ -113,9 +113,11 @@ const createLearningPath = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('lp:list');
+
         return res.status(201).json({
             success: true,
-            message: "Learning Path created successfully.",
+            code: "LP_CREATED",
             data: newLp
         });
 
@@ -123,7 +125,7 @@ const createLearningPath = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -131,7 +133,7 @@ const createLearningPath = async (req, res) => {
         logger.error('Error creating Learning Path', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LP_CREATE_FAILED"
         });
     }
 };
@@ -156,7 +158,7 @@ const updateLearningPath = async (req, res) => {
         if (!lp) {
             return res.status(404).json({
                 success: false,
-                message: "Learning Path not found."
+                code: "LP_NOT_FOUND"
             });
         }
 
@@ -166,7 +168,6 @@ const updateLearningPath = async (req, res) => {
             // Manual has priority
             const textToSlugify = manualNewSlug ? manualNewSlug : pathTitle;
 
-            // Usamos a nossa função helper! Passamos o ID do LP atual para o ignorar na verificação de colisões
             finalNewSlug = await generateUniqueSlug(
                 models.learning_paths,
                 'path_slug',
@@ -185,9 +186,11 @@ const updateLearningPath = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('lp:list');
+
         return res.status(200).json({
             success: true,
-            message: "Learning Path updated successfully.",
+            code: "LP_UPDATED",
             data: lp
         });
 
@@ -195,7 +198,7 @@ const updateLearningPath = async (req, res) => {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid data.",
+                code: "VALIDATION_INVALID_DATA",
                 errors: error.errors
             });
         }
@@ -203,7 +206,7 @@ const updateLearningPath = async (req, res) => {
         logger.error('Error updating Learning Path', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LP_UPDATE_FAILED"
         });
     }
 };
@@ -219,14 +222,14 @@ const deleteLearningPath = async (req, res) => {
         if (!lp) {
             return res.status(404).json({
                 success: false,
-                message: "Learning Path not found."
+                code: "LP_NOT_FOUND"
             });
         }
 
         if (!lp.is_active) {
             return res.status(400).json({
                 success: false,
-                message: "Learning Path is already inactive."
+                code: "LP_ALREADY_INACTIVE"
             });
         }
 
@@ -235,23 +238,25 @@ const deleteLearningPath = async (req, res) => {
             updated_by: userId
         });
 
+        await invalidateCacheByPrefix('lp:list');
+
         return res.status(200).json({
             success: true,
-            message: "Learning Path deactivated successfully."
+            code: "LP_DEACTIVATED"
         });
 
     } catch (error) {
         if (error.name === 'ZodError') {
             return res.status(400).json({
                 success: false,
-                message: "Invalid URL parameter."
+                code: "VALIDATION_INVALID_URL_PARAM"
             });
         }
 
         logger.error('Error deleting Learning Path', { error });
         return res.status(500).json({
             success: false,
-            message: "Internal server error."
+            code: "LP_DELETE_FAILED"
         });
     }
 };

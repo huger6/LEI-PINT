@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { logger } = require('../utils/logger');
 const supabase = createClient(process.env.SUPABASE_STORAGE_URL, process.env.SUPABASE_STORAGE_API_KEY);
 
 const moveImageToPermanent = async (permanentPathPrefix, tempUrl, user_guid) => {

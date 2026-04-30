@@ -4,29 +4,51 @@ const router = express.Router({ mergeParams: true });
 const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
 const slController = require('../controllers/serviceLines.controller');
 
-const areasRoutes = require('./levels.routes');
+const areasRoutes = require('./areas.routes');
 const badgeRoutes = require('./badges.routes');
 
-// GET /api/service-lines
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines
+/**
+ * @route   GET /api/service-lines
+ *          GET /api/learning-paths/:pathSlug/service-lines
+ * @desc    List all service lines, optionally scoped to a learning path
+ * @access  Authenticated
+ */
 router.get('/', loginRequired, slController.getServiceLines);
 
-// GET /api/service-lines/:slSlug
-// OR
-// GET /api/learning-paths/:pathSlug/service-lines/:slSlug
-router.get('/:slSlug', loginRequired, slController.getServiceLineBySlug);
-
-// GET /api/service-lines/check-slug?slug=mySlug
+/**
+ * @route   GET /api/service-lines/check-slug?slug=mySlug
+ * @desc    Check whether a given service line slug is available
+ * @access  Administrator
+ */
 router.get('/check-slug', loginRequired, isAdmin, slController.checkSlugAvailability);
 
-// POST /api/service-lines/
+/**
+ * @route   GET /api/service-lines/:slSlug
+ *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug
+ * @desc    Get a single service line by slug
+ * @access  Authenticated
+ */
+router.get('/:slSlug', loginRequired, slController.getServiceLineBySlug);
+
+/**
+ * @route   POST /api/service-lines
+ * @desc    Create a new service line
+ * @access  Administrator
+ */
 router.post('/', loginRequired, isAdmin, slController.createServiceLine);
 
-// PUT /api/service-lines/:slSlug
+/**
+ * @route   PUT /api/service-lines/:slSlug
+ * @desc    Update an existing service line
+ * @access  Administrator
+ */
 router.put('/:slSlug', loginRequired, isAdmin, slController.updateServiceLine);
 
-// DELETE /api/service-lines/:slSlug
+/**
+ * @route   DELETE /api/service-lines/:slSlug
+ * @desc    Delete a service line
+ * @access  Administrator
+ */
 router.delete('/:slSlug', loginRequired, isAdmin, slController.deleteServiceLine);
 
 router.use('/:slSlug/areas', areasRoutes);
