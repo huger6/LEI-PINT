@@ -5,31 +5,70 @@ const { logger } = require('../utils/logger');
 
 loadEnvironment();
 
-const sequelize = new Sequelize(
-	process.env.DB_NAME,
-	process.env.DB_USER,
-	process.env.DB_PASSWORD,
-	{
-		host: process.env.DB_HOST,
-		dialect: 'postgres',
-		port: process.env.DB_PORT || 5432,
-		logging: false,
-		dialectOptions: {
-			ssl: {
-				require: true,
-				rejectUnauthorized: true
+let sequelize;
+
+const sanitizeModelsForTest = (modelsObject) => {
+	for (const model of Object.values(modelsObject)) {
+		model.options.schema = undefined;
+		model._schema = undefined;
+		model._schemaDelimiter = '';
+
+		for (const attribute of Object.values(model.rawAttributes)) {
+			delete attribute.references;
+			delete attribute.onDelete;
+			delete attribute.onUpdate;
+
+			if (attribute.defaultValue && attribute.defaultValue.constructor && attribute.defaultValue.constructor.name === 'Fn') {
+				attribute.defaultValue = Sequelize.literal('CURRENT_TIMESTAMP');
 			}
-		},
+		}
+
+		model.options.indexes = [];
+		model.refreshAttributes();
+	}
+};
+
+if (process.env.NODE_ENV === 'test') {
+	sequelize = new Sequelize({
+		dialect: 'sqlite',
+		storage: ':memory:',
+		logging: false,
 		define: {
 			underscored: true,
 			timestamps: true
 		}
-	}
-);
+	});
+} else {
+	sequelize = new Sequelize(
+		process.env.DB_NAME,
+		process.env.DB_USER,
+		process.env.DB_PASSWORD,
+		{
+			host: process.env.DB_HOST,
+			dialect: 'postgres',
+			port: process.env.DB_PORT || 5432,
+			logging: false,
+			dialectOptions: {
+				ssl: {
+					require: true,
+					rejectUnauthorized: true
+				}
+			},
+			define: {
+				underscored: true,
+				timestamps: true
+			}
+		}
+	);
+}
 
 const models = initModels(sequelize);
 
-module.exports = { 
-	sequelize, 
-	models 
+if (process.env.NODE_ENV === 'test') {
+	sanitizeModelsForTest(models);
+}
+
+module.exports = {
+sequelize,
+models
 };

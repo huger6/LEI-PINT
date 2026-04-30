@@ -141,13 +141,18 @@ const createServiceLine = async (req, res) => {
     try {
         const userId = req.user.sub; // Admin ID
 
-        // Extract parent pathSlug from URL to find the parent Learning Path ID
-        const { pathSlug } = validations.pathSlugParamSchema.parse(req.params);
+        // Extract parent pathSlug from URL if this route is nested, otherwise
+        // allow the caller to provide the parent learningPathId directly.
+        const { pathSlug } = req.params.pathSlug
+            ? validations.pathSlugParamSchema.parse(req.params)
+            : { pathSlug: null };
 
-        const { serviceLineName, slSlug, serviceLineDescription, imgUrl } = validations.createServiceLineBodySchema.parse(req.body);
+        const { learningPathId, serviceLineName, slSlug, serviceLineDescription, imgUrl } = validations.createServiceLineBodySchema.parse(req.body);
 
         // Find the parent Learning Path
-        const lp = await models.learning_paths.findOne({ where: { path_slug: pathSlug } });
+        const lp = learningPathId
+            ? await models.learning_paths.findByPk(learningPathId)
+            : await models.learning_paths.findOne({ where: { path_slug: pathSlug } });
         if (!lp) {
             return res.status(404).json({
                 success: false,
