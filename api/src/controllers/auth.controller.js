@@ -75,7 +75,7 @@ const register = async (req, res) => {
 
             return res.status(409).json({
                 success: false,
-                code: "AUTH_CREDENTIALS_CONFLICT"
+                code: 'AUTH_CREDENTIALS_CONFLICT'
             });
         }
 
@@ -240,10 +240,10 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                code: "VALIDATION_INVALID_DATA",
+                code: 'VALIDATION_INVALID_DATA',
                 errors: zodIssues.map((err) => ({
                     field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
+                    code: err.code || 'VALIDATION_INVALID_DATA'
                 }))
             });
         }
@@ -255,9 +255,9 @@ const register = async (req, res) => {
                 error
             });
 
-            return res.status(409).json({
+            return res.status(400).json({
                 success: false,
-                code: "AUTH_CREDENTIALS_CONFLICT_RETRY"
+                code: 'VALIDATION_INVALID_DATA'
             });
         }
 
@@ -270,7 +270,7 @@ const register = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                code: "AUTH_PROFILE_IMAGE_STORAGE_FAILED"
+                code: 'AUTH_PROFILE_IMAGE_STORAGE_FAILED'
             });
         }
 
@@ -281,7 +281,7 @@ const register = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            code: "AUTH_REGISTER_FAILED"
+            code: 'AUTH_REGISTER_FAILED'
         });
     }
 };
@@ -313,8 +313,8 @@ const confirmEmail = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                code: "AUTH_TOKEN_INVALID_OR_USED"
-            })
+                code: 'AUTH_TOKEN_INVALID_OR_USED'
+            });
         }
         // Expired token
         else if (new Date() > tokenRecord.expires_at) {
@@ -327,8 +327,8 @@ const confirmEmail = async (req, res) => {
 
             return res.status(410).json({
                 success: false,
-                code: "AUTH_TOKEN_EXPIRED"
-            })
+                code: 'AUTH_TOKEN_EXPIRED'
+            });
         }
 
         // Activate account
@@ -359,8 +359,8 @@ const confirmEmail = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            code: "AUTH_EMAIL_CONFIRMED"
-        })
+            code: 'AUTH_EMAIL_CONFIRMED'
+        });
     } catch (error) {
         logger.error('Unexpected error confirming email', {
             requestId,
@@ -369,7 +369,7 @@ const confirmEmail = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            code: "AUTH_EMAIL_CONFIRM_FAILED",
+            code: 'AUTH_EMAIL_CONFIRM_FAILED',
             requestId
         });
     }
@@ -1677,7 +1677,7 @@ const updateProfile = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 code: 'VALIDATION_INVALID_DATA',
-                errors: [{ message: 'At least one field must be provided for update.' }]
+                errors: [{ code: 'VALIDATION_INVALID_DATA', detail: 'At least one field must be provided for update.' }]
             });
         }
 
@@ -1785,7 +1785,7 @@ const updateProfile = async (req, res) => {
         await t.commit();
 
         // Invalidate cache
-        const cacheKey = `user_profile:${userId}`;
+        const cacheKey = `user:profile:${userId}`;
         await redis.del(cacheKey);
 
         logger.info('Profile update completed successfully', {

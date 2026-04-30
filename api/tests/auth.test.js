@@ -183,6 +183,35 @@ describe('GET /api/auth/me', () => {
 });
 
 // ─────────────────────────────────────────────
+// PUT /api/auth/me
+// ─────────────────────────────────────────────
+describe('PUT /api/auth/me', () => {
+    test('200 – Updates the current user profile', async () => {
+        const updatedName = `Updated Admin ${S}`;
+
+        const updateRes = await request(app)
+            .put('/api/auth/me')
+            .set(authHeader(adminToken))
+            .send({ full_name: updatedName });
+
+        expect(updateRes.status).toBe(200);
+        expect(updateRes.body.code).toBe('AUTH_PROFILE_UPDATED');
+
+        const profileRes = await request(app)
+            .get('/api/auth/me')
+            .set(authHeader(adminToken));
+
+        expect(profileRes.status).toBe(200);
+        expect(profileRes.body.data.fullName).toBe(updatedName);
+    });
+
+    test('401 – No token', async () => {
+        const res = await request(app).put('/api/auth/me').send({ full_name: 'No Auth' });
+        expect(res.status).toBe(401);
+    });
+});
+
+// ─────────────────────────────────────────────
 // GET /api/auth/verify-session
 // ─────────────────────────────────────────────
 describe('GET /api/auth/verify-session', () => {
