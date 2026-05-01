@@ -25,11 +25,11 @@ router.get('/interactions', loginRequired, gamificationController.getInteraction
 router.get('/points', loginRequired, gamificationController.getPointsSummary);
 
 /**
- * @route   GET /api/gamification/points/:userId
+ * @route   GET /api/gamification/points/:userGuid
  * @desc    Get a specific consultant's points summary (Admin / TM only)
  * @access  Administrator, Talent Manager
  */
-router.get('/points/:userId', loginRequired, gamificationController.getConsultantPointsById);
+router.get('/points/:userGuid', loginRequired, gamificationController.getConsultantPointsById);
 
 /**
  * @route   GET /api/gamification/recommendations

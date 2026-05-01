@@ -38,7 +38,7 @@ const getRanking = async (req, res) => {
 
             const fallbackRows = await sequelize.query(
                 `SELECT
-                    u.user_id,
+                    u.user_guid,
                     u.full_name,
                     u.username,
                     u.profile_img_url,
@@ -68,8 +68,8 @@ const getRanking = async (req, res) => {
                         WHERE ca.user_id = c.user_id
                           AND sl.learning_path_id = :learningPathId
                     ))
-                 GROUP BY u.user_id, u.full_name, u.username, u.profile_img_url
-                 ORDER BY total_points DESC, u.user_id ASC
+                 GROUP BY u.user_guid, u.full_name, u.username, u.profile_img_url
+                 ORDER BY total_points DESC, u.user_guid ASC
                  LIMIT :limit OFFSET :offset`,
                 {
                     replacements: filters,

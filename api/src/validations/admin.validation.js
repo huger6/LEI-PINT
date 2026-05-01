@@ -7,6 +7,7 @@ const {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
+    uuidRule,
     imgUrlRule,
     usernameRule
 } = require('./shared-rules');
@@ -38,7 +39,7 @@ const consultantAreasSchema = z.array(z.object({
     });
 
 const userIdParamSchema = z.object({
-    userId: positiveIntIdRule
+    userGuid: uuidRule
 });
 
 const listUsersQuerySchema = z.object({

@@ -1215,7 +1215,6 @@ const me = async (req, res) => {
         }
 
         const profile = stripNullishFields({
-            id: user.user_id,
             guid: user.user_guid,
             fullName: user.full_name,
             username: user.username,

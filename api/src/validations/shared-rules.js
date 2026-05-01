@@ -11,6 +11,8 @@ filter.add(filter.getDictionary('es'));
 
 const positiveIntIdRule = z.coerce.number().int().positive("Identifier must be a positive integer.");
 
+const uuidRule = z.string().uuid('Identifier must be a valid UUID.');
+
 const fullNameRule = z.string().trim()
     .min(2, 'Name must have a minimum of 2 characters.')
     .max(255, 'Name must have a maximum of 255 characters.')
@@ -82,6 +84,7 @@ module.exports = {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
+    uuidRule,
     imgUrlRule,
     usernameRule
 };

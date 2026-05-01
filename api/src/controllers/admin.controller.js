@@ -361,7 +361,7 @@ const createUser = async (req, res) => {
             success: true,
             code: 'ADMIN_USER_CREATED',
             data: {
-                user_id: newUser.user_id,
+                user_guid: newUser.user_guid,
                 full_name: newUser.full_name,
                 username: newUser.username,
                 email_address: newUser.email_address,
@@ -411,10 +411,11 @@ const updateUser = async (req, res) => {
     const t = await sequelize.transaction();
 
     try {
-        const { userId } = validations.userIdParamSchema.parse(req.params);
+        const { userGuid } = validations.userIdParamSchema.parse(req.params);
         const payload = validations.updateUserBodySchema.parse(req.body);
 
-        const user = await models.users.findByPk(userId, {
+        const user = await models.users.findOne({
+            where: { user_guid: userGuid },
             include: [
                 { model: models.consultants, as: 'consultant', include: [{ model: models.consultant_areas, as: 'consultant_areas' }] },
                 { model: models.service_line_leaders, as: 'service_line_leader' }
@@ -495,7 +496,7 @@ const updateUser = async (req, res) => {
                         },
                         {
                             user_id: {
-                                [Op.ne]: userId
+                                [Op.ne]: user.user_id
                             }
                         }
                     ]
@@ -577,7 +578,7 @@ const updateUser = async (req, res) => {
 
         await Promise.all([
             invalidateCacheByPrefix('admin:users:list'),
-            redis.del(`user:profile:${userId}`)
+            redis.del(`user:profile:${user.user_id}`)
         ]);
 
         return res.status(200).json({
@@ -621,21 +622,21 @@ const deactivateUser = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
     try {
-        const { userId } = validations.userIdParamSchema.parse(req.params);
+        const { userGuid } = validations.userIdParamSchema.parse(req.params);
 
-        if (req.user.sub === userId) {
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_DEACTIVATE_SELF'
-            });
-        }
-
-        const user = await models.users.findByPk(userId);
+        const user = await models.users.findOne({ where: { user_guid: userGuid } });
 
         if (!user) {
             return res.status(404).json({
                 success: false,
                 code: 'ADMIN_USER_NOT_FOUND'
+            });
+        }
+
+        if (req.user.sub === user.user_id) {
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_DEACTIVATE_SELF'
             });
         }
 
@@ -648,12 +649,12 @@ const deactivateUser = async (req, res) => {
 
         await sequelize.transaction(async (t) => {
             await user.update({ is_active: false }, { transaction: t });
-            await models.user_refresh_tokens.destroy({ where: { user_id: userId }, transaction: t });
+            await models.user_refresh_tokens.destroy({ where: { user_id: user.user_id }, transaction: t });
         });
 
         // Clear cached profile so /me immediately reflects deactivation
         await Promise.all([
-            redis.del(`user:profile:${userId}`),
+            redis.del(`user:profile:${user.user_id}`),
             invalidateCacheByPrefix('admin:users:list')
         ]);
 
@@ -683,9 +684,10 @@ const resetUserPassword = async (req, res) => {
     const t = await sequelize.transaction();
 
     try {
-        const { userId } = validations.userIdParamSchema.parse(req.params);
+        const { userGuid } = validations.userIdParamSchema.parse(req.params);
 
-        const user = await models.users.findByPk(userId, {
+        const user = await models.users.findOne({
+            where: { user_guid: userGuid },
             attributes: ['user_id', 'full_name', 'email_address', 'preferred_lang_id'],
             transaction: t
         });

@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { positiveIntIdRule } = require('./shared-rules');
+const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const dateRule = z.coerce.date();
 
@@ -9,11 +9,11 @@ const pointsHistoryQuerySchema = z.object({
 });
 
 const userIdParamSchema = z.object({
-    userId: positiveIntIdRule
+    userGuid: uuidRule
 });
 
 const peerComparisonQuerySchema = z.object({
-    userId: positiveIntIdRule.optional(),
+    userGuid: uuidRule.optional(),
     tolerance: z.coerce.number().min(0).max(1).default(0.25)
 });
 
