@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AuthLayout from '../components/AuthLayout';
-import AuthCard from '../components/AuthCard';
-import FormInput from '../components/FormInput';
-import FormButton from '../components/FormButton';
-import * as authApi from '../api/auth.js';
-import api from '../api/axios.js';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, register } from '../../features/auth';
+import api from '../../services/api.js';
+import FormInput from '../../components/FormInput/FormInput';
+import FormButton from '../../components/FormButton/FormButton';
 import styles from './RegisterPage.module.css';
 
 const ROLES = [
@@ -156,7 +155,7 @@ export default function RegisterPage() {
       if (role === 'Service Line Leader' && form.service_line_id)
         payload.service_line_id = Number(form.service_line_id);
 
-      await authApi.register(payload);
+      await register(payload);
       setSuccess(true);
     } catch (err) {
       const code = err?.response?.data?.code;

@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AuthLayout from '../components/AuthLayout';
-import AuthCard from '../components/AuthCard';
-import FormInput from '../components/FormInput';
-import FormButton from '../components/FormButton';
-import { useAuth } from '../hooks/useAuth';
-import { changePassword } from '../api/auth.js';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, useAuth, changePassword } from '../../features/auth';
+import FormInput from '../../components/FormInput/FormInput';
+import FormButton from '../../components/FormButton/FormButton';
 import styles from './ChangePasswordPage.module.css';
 
 const PASSWORD_RULES = [

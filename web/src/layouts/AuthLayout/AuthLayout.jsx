@@ -1,5 +1,5 @@
-import ParticlesBackground from './ParticlesBackground';
-import Logo from './Logo';
+import ParticlesBackground from '../../features/auth/components/ParticlesBackground/ParticlesBackground';
+import Logo from '../../components/Logo/Logo';
 import styles from './AuthLayout.module.css';
 
 export default function AuthLayout({ children }) {

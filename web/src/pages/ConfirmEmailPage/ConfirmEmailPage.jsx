@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import AuthLayout from '../components/AuthLayout';
-import AuthCard from '../components/AuthCard';
-import FormButton from '../components/FormButton';
-import { confirmEmail } from '../api/auth.js';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, confirmEmail } from '../../features/auth';
+import FormButton from '../../components/FormButton/FormButton';
 import styles from './ConfirmEmailPage.module.css';
 
 export default function ConfirmEmailPage() {

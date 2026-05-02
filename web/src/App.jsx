@@ -1,14 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './hooks/useAuth';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import ConfirmEmailPage from './pages/ConfirmEmailPage';
-import ResendConfirmationPage from './pages/ResendConfirmationPage';
-import ChangePasswordPage from './pages/ChangePasswordPage';
-import styles from './App.module.css';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './features/auth';
+import LoginPage from './pages/LoginPage/LoginPage';
+import RegisterPage from './pages/RegisterPage/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage';
+import ConfirmEmailPage from './pages/ConfirmEmailPage/ConfirmEmailPage';
+import ResendConfirmationPage from './pages/ResendConfirmationPage/ResendConfirmationPage';
+import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage';
+import styles from './assets/styles/componentes/App.module.css';
 
 function LoadingScreen() {
   return (
@@ -35,6 +34,25 @@ function ProtectedRoute({ children, requireFpc = false }) {
   return children;
 }
 
+function HomePlaceholder() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
+  return (
+    <div className={styles.placeholder}>
+      App placeholder — protected home
+      <button className={styles.logoutBtn} onClick={handleLogout}>
+        Log out
+      </button>
+    </div>
+  );
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -56,7 +74,7 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <div className={styles.placeholder}>App placeholder — protected home</div>
+            <HomePlaceholder />
           </ProtectedRoute>
         }
       />
