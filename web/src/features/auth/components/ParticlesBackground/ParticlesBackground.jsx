@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import Particles, { initParticlesEngine } from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';
 import styles from './ParticlesBackground.module.css';
@@ -31,13 +31,21 @@ const particlesConfig = {
   detectRetina: true,
 };
 
-export default function ParticlesBackground() {
+let engineInitPromise = null;
+function getEngine() {
+  if (!engineInitPromise) {
+    engineInitPromise = initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    });
+  }
+  return engineInitPromise;
+}
+
+const ParticlesBackground = memo(function ParticlesBackground() {
   const [engineReady, setEngineReady] = useState(false);
 
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => setEngineReady(true));
+    getEngine().then(() => setEngineReady(true));
   }, []);
 
   if (!engineReady) return null;
@@ -49,4 +57,6 @@ export default function ParticlesBackground() {
       options={particlesConfig}
     />
   );
-}
+});
+
+export default ParticlesBackground;

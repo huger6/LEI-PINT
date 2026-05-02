@@ -1,4 +1,4 @@
-import api from './axios.js';
+import api from '../../../services/api.js';
 
 export const login = (identifier, password, remember) =>
   api.post('/auth/login', { identifier, password, remember });
