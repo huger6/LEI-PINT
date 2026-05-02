@@ -1,0 +1,64 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.4rem;
+  color: var(--color-on-primary-container);
+}
+
+.hint {
+  color: var(--color-outline);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-primary-container);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.errorIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.backLink {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  margin-top: -0.25rem;
+}

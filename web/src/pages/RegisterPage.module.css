@@ -1,0 +1,279 @@
+.title {
+  font-size: 1.4rem;
+  color: var(--color-on-primary-container);
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-outline);
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.stepBar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--color-primary-container);
+  transition: background 0.25s;
+}
+
+.stepActive {
+  background: var(--color-primary);
+}
+
+.roleGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.roleCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 1rem 1.125rem;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.roleCard:hover {
+  border-color: var(--color-primary);
+  background: rgba(185, 235, 246, 0.25);
+}
+
+.roleCardActive {
+  border-color: var(--color-primary);
+  background: rgba(185, 235, 246, 0.35);
+  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+}
+
+.roleLabel {
+  font-weight: 600;
+  color: var(--color-on-primary-container);
+  font-size: 0.9375rem;
+}
+
+.roleDesc {
+  font-size: 0.8125rem;
+  color: var(--color-outline);
+  line-height: 1.4;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.passwordField {
+  position: relative;
+}
+
+.eyeToggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(25%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  line-height: 1;
+  color: var(--color-outline);
+}
+
+.pwRules {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(185, 235, 246, 0.2);
+  border-radius: 8px;
+}
+
+.pwRule {
+  font-size: 0.8125rem;
+  color: var(--color-outline);
+  transition: color 0.15s;
+}
+
+.pwRuleOk {
+  color: var(--color-success);
+}
+
+.btnRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.selectField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.selectLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-on-primary-container);
+}
+
+.select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: border-color 0.18s;
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+}
+
+.areasSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.areaChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.areaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.areaChip:hover {
+  border-color: var(--color-primary);
+}
+
+.areaChipActive {
+  border-color: var(--color-primary);
+  background: rgba(185, 235, 246, 0.4);
+  color: var(--color-on-primary-container);
+}
+
+.primaryBadge {
+  color: var(--color-outline);
+  font-size: 0.875rem;
+  transition: color 0.15s;
+}
+
+.primaryBadgeOn {
+  color: var(--color-warning);
+}
+
+.areaHint {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.areaError {
+  font-size: 0.8125rem;
+  color: var(--color-on-error-container);
+}
+
+.errorBanner {
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+.refLoading {
+  text-align: center;
+  color: var(--color-outline);
+  padding: 1rem 0;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-outline);
+}
+
+.successState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.successMsg {
+  text-align: center;
+  color: var(--color-outline);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
