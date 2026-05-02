@@ -1,0 +1,69 @@
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import AuthLayout from '../components/AuthLayout';
+import AuthCard from '../components/AuthCard';
+import FormButton from '../components/FormButton';
+import { confirmEmail } from '../api/auth.js';
+import styles from './ConfirmEmailPage.module.css';
+
+export default function ConfirmEmailPage() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (!token) {
+      setErrorMsg('No confirmation token found in the link.');
+      setStatus('error');
+      return;
+    }
+    confirmEmail(token)
+      .then(() => setStatus('success'))
+      .catch((err) => {
+        const code = err?.response?.data?.code;
+        if (code === 'AUTH_TOKEN_EXPIRED') {
+          setErrorMsg('This confirmation link has expired.');
+        } else {
+          setErrorMsg('This confirmation link is invalid or has already been used.');
+        }
+        setStatus('error');
+      });
+  }, [token]);
+
+  return (
+    <AuthLayout>
+      <AuthCard>
+        {status === 'loading' && (
+          <div className={styles.state}>
+            <div className={styles.spinner} aria-label="Confirming email…" />
+            <p className={styles.hint}>Confirming your email address…</p>
+          </div>
+        )}
+
+        {status === 'success' && (
+          <div className={styles.state}>
+            <div className={styles.successIcon}>✓</div>
+            <h2 className={styles.title}>Email confirmed!</h2>
+            <p className={styles.hint}>Your account is now active. You can sign in.</p>
+            <Link to="/login">
+              <FormButton type="button">Go to login</FormButton>
+            </Link>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className={styles.state}>
+            <div className={styles.errorIcon}>✕</div>
+            <h2 className={styles.title}>Confirmation failed</h2>
+            <p className={styles.hint}>{errorMsg}</p>
+            <Link to="/resend-confirmation">
+              <FormButton type="button">Resend confirmation email</FormButton>
+            </Link>
+            <Link to="/login" className={styles.backLink}>Back to login</Link>
+          </div>
+        )}
+      </AuthCard>
+    </AuthLayout>
+  );
+}
