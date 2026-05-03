@@ -1,4 +1,4 @@
-export { AuthProvider, AuthContext } from '../../store/AuthContext';
+export { AuthProvider, AuthContext } from '../../context/AuthContext';
 export { useAuth } from './hooks/useAuth';
 export { default as AuthCard } from './components/AuthCard/AuthCard';
 export {

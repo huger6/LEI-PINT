@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import {
   validateBiography,
   validateBirthdate,
@@ -13,6 +14,8 @@ import {
   validateRequiredPositiveIntId,
   validateUsername,
 } from './rules';
+
+const tl = (field) => i18n.t(`validation.fields.${field}`, { defaultValue: field });
 
 const collect = (entries) => {
   const errors = {};
@@ -41,8 +44,8 @@ export const validateRegisterStep3 = (form, role) => {
     ['phone_number', validatePhoneNumber(form.phone_number)],
     ['birthdate', validateBirthdate(form.birthdate)],
     ['biography', validateBiography(form.biography)],
-    ['preferred_lang_id', validatePositiveIntId(form.preferred_lang_id, 'Preferred language')],
-    ['location_id', validatePositiveIntId(form.location_id, 'Location')],
+    ['preferred_lang_id', validatePositiveIntId(form.preferred_lang_id, tl('preferred_lang_id'))],
+    ['location_id', validatePositiveIntId(form.location_id, tl('location_id'))],
   ];
   if (role === 'Consultant') {
     entries.push(['areas', validateConsultantAreas(form.areas)]);
@@ -50,7 +53,7 @@ export const validateRegisterStep3 = (form, role) => {
   if (role === 'Service Line Leader') {
     entries.push([
       'service_line_id',
-      validateRequiredPositiveIntId(form.service_line_id, 'Service line'),
+      validateRequiredPositiveIntId(form.service_line_id, tl('service_line_id')),
     ]);
   }
   return collect(entries);
@@ -67,7 +70,7 @@ export const validateResetPasswordForm = (form) =>
     ['newPassword', validatePassword(form.newPassword)],
     [
       'confirmPassword',
-      validateMatch(form.confirmPassword, form.newPassword, 'Confirmation password'),
+      validateMatch(form.confirmPassword, form.newPassword, tl('confirmPassword')),
     ],
   ]);
 
@@ -77,7 +80,7 @@ export const validateChangePasswordForm = (form) => {
     ['newPassword', validatePassword(form.newPassword)],
     [
       'confirmPassword',
-      validateMatch(form.confirmPassword, form.newPassword, 'Confirmation password'),
+      validateMatch(form.confirmPassword, form.newPassword, tl('confirmPassword')),
     ],
   ]);
   if (
@@ -85,7 +88,7 @@ export const validateChangePasswordForm = (form) => {
     !errors.currentPassword &&
     form.newPassword === form.currentPassword
   ) {
-    errors.newPassword = 'New password must be different from the current one.';
+    errors.newPassword = i18n.t('validation.passwordSameAsCurrent');
   }
   return errors;
 };

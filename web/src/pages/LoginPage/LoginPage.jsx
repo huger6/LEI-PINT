@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
@@ -12,6 +13,7 @@ import { resolveErrorMessage, isCode } from '../../validations';
 const INITIAL = { identifier: '', password: '', remember: false };
 
 export default function LoginPage() {
+	const { t } = useTranslation();
 	const { login } = useAuth();
 	const navigate = useNavigate();
 
@@ -20,6 +22,8 @@ export default function LoginPage() {
 	const [error, setError] = useState('');
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
 	const [loading, setLoading] = useState(false);
+
+	const loginEmail = form.identifier.trim().includes('@') ? form.identifier.trim() : '';
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -31,7 +35,7 @@ export default function LoginPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		if (!form.identifier.trim() || !form.password) {
-			setError('Please fill in all fields.');
+			setError(t('login.fillAllFields'));
 			return;
 		}
 
@@ -59,90 +63,111 @@ export default function LoginPage() {
 	return (
 		<AuthLayout>
 			<Helmet>
-				<title>Sign In — Softinsa</title>
-				<meta name="description" content="Sign in to your Softinsa account." />
+				<title>{t('login.title')}</title>
+				<meta name="description" content={t('login.metaDescription')} />
 			</Helmet>
 			<AuthCard>
-				<Logo />
-				<h2 className={`text-center mb-1 ${styles.title}`}>Welcome back</h2>
-				<p className={`text-center mb-4 small ${styles.subtitle}`}>Sign in to your account</p>
-
-				<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
-					<FormInput
-						name="identifier"
-						value={form.identifier}
-						onChange={handleChange}
-						id="identifier"
-						label="Email or Username"
-						type="text"
-						placeholder="you@example.com"
-						autoComplete="username"
-						autoFocus
-					/>
-
-					<div className="position-relative">
-						<FormInput
-							name="password"
-							value={form.password}
-							onChange={handleChange}
-							id="password"
-							label="Password"
-							type={showPassword ? 'text' : 'password'}
-							placeholder="••••••••"
-							autoComplete="current-password"
-						/>
+				{emailNotConfirmed ? (
+					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
+						<div className={styles.warningIcon}>⚠</div>
+						<h2 className={`mb-0 ${styles.title}`}>{t('login.emailNotConfirmed')}</h2>
+						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
+							{t('login.emailNotConfirmedDesc')}
+						</p>
+						<Link
+							to="/resend-confirmation"
+							state={{ email: loginEmail }}
+							className="small"
+							style={{ color: 'var(--color-primary)' }}
+						>
+							{t('login.resendConfirmation')}
+						</Link>
 						<button
 							type="button"
-							className={styles.eyeToggle}
-							onClick={() => setShowPassword((v) => !v)}
-							aria-label={showPassword ? 'Hide password' : 'Show password'}
-							tabIndex={-1}
+							className="btn btn-link small p-0"
+							style={{ color: 'var(--color-outline)' }}
+							onClick={() => setEmailNotConfirmed(false)}
 						>
-							<i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
+							{t('backToLoginArrow')}
 						</button>
 					</div>
+				) : (
+					<>
+						<Logo />
+						<h2 className={`text-center mb-1 ${styles.title}`}>{t('login.welcome')}</h2>
+						<p className={`text-center mb-4 small ${styles.subtitle}`}>{t('login.subtitle')}</p>
 
-					<div className="d-flex align-items-center justify-content-between gap-2">
-						<div className="d-flex align-items-center form-check mb-0 gap-2">
-							<input
-								name="remember"
-								checked={form.remember}
+						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
+							<FormInput
+								name="identifier"
+								value={form.identifier}
 								onChange={handleChange}
-								type="checkbox"
-								id="remember"
-								className={`form-check-input ${styles.rememberCheckbox}`}
+								id="identifier"
+								label={t('login.emailOrUsername')}
+								type="text"
+								placeholder={t('emailPlaceholder')}
+								autoComplete="username"
+								autoFocus
 							/>
-							<label htmlFor="remember" className={`form-check-label small ${styles.rememberMe}`}>
-								Remember me
-							</label>
-						</div>
-						<Link to="/forgot-password" className="small text-nowrap" style={{ color: 'var(--color-primary)' }}>
-							Forgot password?
-						</Link>
-					</div>
 
-					{error && (
-						<div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">
-							{error}
-						</div>
-					)}
+							<div className="position-relative">
+								<FormInput
+									name="password"
+									value={form.password}
+									onChange={handleChange}
+									id="password"
+									label={t('login.password')}
+									type={showPassword ? 'text' : 'password'}
+									placeholder={t('passwordPlaceholder')}
+									autoComplete="current-password"
+								/>
+								<button
+									type="button"
+									className={styles.eyeToggle}
+									onClick={() => setShowPassword((v) => !v)}
+									aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
+									tabIndex={-1}
+								>
+									<i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
+								</button>
+							</div>
 
-					{emailNotConfirmed && (
-						<div className="alert alert-warning py-2 px-3 mb-0 small" role="alert">
-							Your email is not confirmed.{' '}
-							<Link to="/resend-confirmation">Resend confirmation email</Link>
-						</div>
-					)}
+							<div className="d-flex align-items-center justify-content-between gap-2">
+								<div className="d-flex align-items-center form-check mb-0 gap-2">
+									<input
+										name="remember"
+										checked={form.remember}
+										onChange={handleChange}
+										type="checkbox"
+										id="remember"
+										className={`form-check-input ${styles.rememberCheckbox}`}
+									/>
+									<label htmlFor="remember" className={`form-check-label small ${styles.rememberMe}`}>
+										{t('login.rememberMe')}
+									</label>
+								</div>
+								<Link to="/forgot-password" className="small text-nowrap" style={{ color: 'var(--color-primary)' }}>
+									{t('login.forgotPassword')}
+								</Link>
+							</div>
 
-					<FormButton type="submit" loading={loading}>
-						Sign in
-					</FormButton>
-				</form>
+							{error && (
+								<div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">
+									{error}
+								</div>
+							)}
 
-				<p className="text-center mt-4 small mb-0" style={{ color: 'var(--color-outline)' }}>
-					Don&apos;t have an account?{' '}
-					<Link to="/register">Create one</Link>
-				</p>
+							<FormButton type="submit" loading={loading}>
+								{t('login.signIn')}
+							</FormButton>
+						</form>
+
+						<p className="text-center mt-4 small mb-0" style={{ color: 'var(--color-outline)' }}>
+							{t('login.noAccount')}{' '}
+							<Link to="/register">{t('login.createOne')}</Link>
+						</p>
+					</>
+				)}
 			</AuthCard>
 		</AuthLayout>
 	);

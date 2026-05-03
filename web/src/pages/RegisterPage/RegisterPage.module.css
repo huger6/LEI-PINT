@@ -7,7 +7,6 @@
   color: var(--color-outline);
 }
 
-/* Step progress bar */
 .stepBar {
   display: flex;
   gap: 0.5rem;
@@ -26,7 +25,6 @@
   background: var(--color-primary);
 }
 
-/* Role selection cards */
 .roleGrid {
   display: flex;
   flex-direction: column;
@@ -72,7 +70,6 @@
   line-height: 1.4;
 }
 
-/* Password toggle */
 .eyeToggle {
   position: absolute;
   right: 0.75rem;
@@ -87,7 +84,6 @@
   color: var(--color-outline);
 }
 
-/* Password rules list */
 .pwRules {
   background: rgba(185, 235, 246, 0.2);
   font-size: 0.8125rem;
@@ -102,35 +98,112 @@
   color: var(--color-success);
 }
 
-/* Select / textarea overrides */
 .selectLabel {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-on-primary-container);
 }
 
-.select {
+.selectWrap {
+  position: relative;
+}
+
+.selectWrap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.9rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--color-outline);
+  border-bottom: 2px solid var(--color-outline);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+.selectModern,
+.phoneInput,
+.dateInput,
+.textarea {
   border: 1.5px solid var(--color-outline);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.82) 100%);
   color: var(--color-on-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.selectModern {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.25rem;
+}
+
+.phoneInput,
+.dateInput {
+  min-height: calc(1.5em + 0.75rem + 2px);
+}
+
+.phoneInput {
+  letter-spacing: 0.03em;
+}
+
+.dateWrap {
+  position: relative;
+}
+
+.dateWrap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.9rem;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  border: 2px solid var(--color-outline);
+  border-radius: 0.2rem;
+  pointer-events: none;
+}
+
+.dateInput::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+}
+
+.selectModern:focus,
+.phoneInput:focus,
+.dateInput:focus,
+.textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+  transform: translateY(-1px);
+}
+
+.phoneRow {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.5rem;
 }
 
 .textarea {
-  border: 1.5px solid var(--color-outline);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--color-on-surface);
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
 }
 
-/* Area chips */
 .areasSection {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.noDataMessage {
+  border: 1px dashed var(--color-outline);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--color-outline);
+  padding: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .areaChips {
@@ -172,7 +245,6 @@
   color: var(--color-warning);
 }
 
-/* Success state */
 .successIcon {
   width: 56px;
   height: 56px;
@@ -182,6 +254,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
+}
+
+@media (max-width: 576px) {
+  .phoneRow {
+    grid-template-columns: 1fr;
+  }
 }

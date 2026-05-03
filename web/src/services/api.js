@@ -26,8 +26,25 @@ const processQueue = (error, token = null) => {
 };
 
 api.interceptors.response.use(
-	(response) => response,
+	(response) => {
+		console.log('[API RESPONSE]', {
+			method: response.config?.method?.toUpperCase(),
+			url: response.config?.url,
+			status: response.status,
+			data: response.data,
+		});
+		return response;
+	},
 	async (error) => {
+		if (error.response) {
+			console.log('[API RESPONSE ERROR]', {
+				method: error.config?.method?.toUpperCase(),
+				url: error.config?.url,
+				status: error.response.status,
+				data: error.response.data,
+			});
+		}
+
 		const original = error.config;
 		const status = error.response?.status;
 		const url = original?.url ?? '';
