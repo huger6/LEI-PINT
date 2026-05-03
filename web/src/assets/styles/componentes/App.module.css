@@ -1,47 +1,26 @@
-.loadingScreen {
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-background);
-}
-
-.loadingSpinner {
-  width: 40px;
-  height: 40px;
-  border: 3.5px solid var(--color-primary-container);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  min-height: 100dvh;
-  font-size: 1.125rem;
-  color: var(--color-outline);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	min-height: 100dvh;
+	font-size: 1.125rem;
+	color: var(--color-outline);
 }
 
 .logoutBtn {
-  padding: 0.5rem 1.25rem;
-  border: 1.5px solid var(--color-primary);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--color-primary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.18s;
+	padding: 0.5rem 1.25rem;
+	border: 1.5px solid var(--color-primary);
+	border-radius: 8px;
+	background: transparent;
+	color: var(--color-primary);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.18s;
 }
 
 .logoutBtn:hover {
-  background: rgba(0, 184, 224, 0.08);
+	background: rgba(0, 184, 224, 0.08);
 }
