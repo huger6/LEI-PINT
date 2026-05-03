@@ -7,19 +7,15 @@ import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import styles from './LoginPage.module.css';
 import Logo from '../../components/Logo/Logo';
+import { resolveErrorMessage, isCode } from '../../validations';
 
-const ERROR_MESSAGES = {
-	AUTH_INVALID_CREDENTIALS: 'Invalid email/username or password.',
-	AUTH_ACCOUNT_DEACTIVATED: 'This account has been deactivated.',
-	AUTH_ACCOUNT_LOCKED: 'Too many failed attempts. Please try again later.',
-	AUTH_RATE_LIMIT_LOGIN: 'Too many login attempts. Please wait before trying again.',
-};
+const INITIAL = { identifier: '', password: '', remember: false };
 
 export default function LoginPage() {
 	const { login } = useAuth();
 	const navigate = useNavigate();
 
-	const [form, setForm] = useState({ identifier: '', password: '', remember: false });
+	const [form, setForm] = useState(INITIAL);
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
@@ -34,23 +30,27 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (!form.identifier || !form.password) {
+		if (!form.identifier.trim() || !form.password) {
 			setError('Please fill in all fields.');
 			return;
 		}
+
 		setLoading(true);
 		setError('');
 		setEmailNotConfirmed(false);
 		try {
-			const fpc = await login(form.identifier, form.password, form.remember);
+			const fpc = await login(
+				form.identifier.trim(),
+				form.password,
+				form.remember
+			);
 			navigate(fpc ? '/change-password' : '/', { replace: true });
 		} catch (err) {
-			const code = err?.response?.data?.code;
-			if (code === 'AUTH_EMAIL_NOT_CONFIRMED') {
+			if (isCode(err, 'AUTH_EMAIL_NOT_CONFIRMED')) {
 				setEmailNotConfirmed(true);
-			} else {
-				setError(ERROR_MESSAGES[code] ?? 'Something went wrong. Please try again.');
+				return;
 			}
+			setError(resolveErrorMessage(err));
 		} finally {
 			setLoading(false);
 		}
@@ -69,26 +69,26 @@ export default function LoginPage() {
 
 				<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
 					<FormInput
-						id="identifier"
 						name="identifier"
+						value={form.identifier}
+						onChange={handleChange}
+						id="identifier"
 						label="Email or Username"
 						type="text"
 						placeholder="you@example.com"
-						value={form.identifier}
-						onChange={handleChange}
 						autoComplete="username"
 						autoFocus
 					/>
 
 					<div className="position-relative">
 						<FormInput
-							id="password"
 							name="password"
+							value={form.password}
+							onChange={handleChange}
+							id="password"
 							label="Password"
 							type={showPassword ? 'text' : 'password'}
 							placeholder="••••••••"
-							value={form.password}
-							onChange={handleChange}
 							autoComplete="current-password"
 						/>
 						<button
@@ -105,11 +105,11 @@ export default function LoginPage() {
 					<div className="d-flex align-items-center justify-content-between gap-2">
 						<div className="d-flex align-items-center form-check mb-0 gap-2">
 							<input
-								type="checkbox"
-								id="remember"
 								name="remember"
 								checked={form.remember}
 								onChange={handleChange}
+								type="checkbox"
+								id="remember"
 								className={`form-check-input ${styles.rememberCheckbox}`}
 							/>
 							<label htmlFor="remember" className={`form-check-label small ${styles.rememberMe}`}>

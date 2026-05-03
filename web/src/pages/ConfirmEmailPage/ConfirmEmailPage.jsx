@@ -5,11 +5,12 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, confirmEmail } from '../../features/auth';
 import FormButton from '../../components/FormButton/FormButton';
 import styles from './ConfirmEmailPage.module.css';
+import { resolveErrorMessage } from '../../validations';
 
 export default function ConfirmEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
@@ -21,12 +22,7 @@ export default function ConfirmEmailPage() {
     confirmEmail(token)
       .then(() => setStatus('success'))
       .catch((err) => {
-        const code = err?.response?.data?.code;
-        if (code === 'AUTH_TOKEN_EXPIRED') {
-          setErrorMsg('This confirmation link has expired.');
-        } else {
-          setErrorMsg('This confirmation link is invalid or has already been used.');
-        }
+        setErrorMsg(resolveErrorMessage(err));
         setStatus('error');
       });
   }, [token]);
