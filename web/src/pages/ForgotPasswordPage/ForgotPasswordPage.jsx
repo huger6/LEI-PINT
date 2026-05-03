@@ -5,6 +5,7 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import hideEmail from '../../utils/utils';
 import styles from './ForgotPasswordPage.module.css';
 import {
 	validateForgotPasswordForm,
@@ -51,8 +52,8 @@ export default function ForgotPasswordPage() {
 	return (
 		<AuthLayout>
 			<Helmet>
-				<title>Forgot Password — LEI-PINT</title>
-				<meta name="description" content="Reset your LEI-PINT password. Enter your email to receive a reset link." />
+				<title>Forgot Password — Softinsa</title>
+				<meta name="description" content="Reset your Softinsa Badges Platform password. Enter your email to receive a reset link." />
 			</Helmet>
 			<AuthCard>
 				{sent ? (
@@ -60,7 +61,7 @@ export default function ForgotPasswordPage() {
 						<div className={styles.sentIcon}>✉</div>
 						<h2 className={`mb-0 ${styles.title}`}>Check your inbox</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
-							If an account exists for <strong>{email}</strong>, you will receive a
+							If an account exists for <strong>{hideEmail(email)}</strong>, you will receive a
 							password reset link shortly.
 						</p>
 						<Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
