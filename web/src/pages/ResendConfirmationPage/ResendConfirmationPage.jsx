@@ -6,33 +6,57 @@ import { AuthCard, resendConfirmation } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import styles from './ResendConfirmationPage.module.css';
+import {
+  useFormValidation,
+  validateResendConfirmationForm,
+  hasErrors,
+  resolveErrorMessage,
+  resolveErrorField,
+  extractFieldErrors,
+} from '../../validations';
+
+const INITIAL = { email: '' };
 
 export default function ResendConfirmationPage() {
-  const [email, setEmail] = useState('');
+  const form = useFormValidation({
+    initialValues: INITIAL,
+    validate: validateResendConfirmationForm,
+  });
   const [loading, setLoading] = useState(false);
+  const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
 
+  const fieldError = (name) =>
+    form.getFieldProps(name).error ?? serverFieldErrors[name];
+
+  const onChange = (e) => {
+    form.handleChange(e);
+    setServerFieldErrors({});
+    setError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) { setError('Please enter your email address.'); return; }
+    form.markAllTouched();
+    if (hasErrors(form.errors)) return;
+
     setLoading(true);
     setError('');
+    setServerFieldErrors({});
     try {
-      await resendConfirmation(email);
+      await resendConfirmation(form.values.email.trim());
       setSent(true);
     } catch (err) {
-      const code = err?.response?.data?.code;
-      const retryAfter = err?.response?.data?.data?.retryAfter;
-      if (code === 'AUTH_RESEND_RATE_LIMITED') {
-        setError(
-          retryAfter
-            ? `Please wait ${retryAfter} seconds before requesting another email.`
-            : 'Please wait a moment before requesting another email.'
-        );
-      } else {
-        setError('Failed to send email. Please try again.');
+      const backendFields = extractFieldErrors(err);
+      if (Object.keys(backendFields).length) {
+        setServerFieldErrors(backendFields);
+        return;
       }
+      const focusField = resolveErrorField(err);
+      const message = resolveErrorMessage(err);
+      if (focusField === 'email') setServerFieldErrors({ email: message });
+      else setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,7 +74,7 @@ export default function ResendConfirmationPage() {
             <div className={styles.sentIcon}>✉</div>
             <h2 className={`mb-0 ${styles.title}`}>Email sent!</h2>
             <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
-              A new confirmation link has been sent to <strong>{email}</strong>. Check your
+              A new confirmation link has been sent to <strong>{form.values.email}</strong>. Check your
               inbox and spam folder.
             </p>
             <Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
@@ -63,12 +87,13 @@ export default function ResendConfirmationPage() {
             </p>
             <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
               <FormInput
+                {...form.getFieldProps('email')}
+                onChange={onChange}
                 id="email"
                 label="Email address"
                 type="email"
                 placeholder="you@example.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                error={fieldError('email')}
                 autoFocus
               />
               {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}

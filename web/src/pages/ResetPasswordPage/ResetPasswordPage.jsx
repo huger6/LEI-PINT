@@ -6,65 +6,89 @@ import { AuthCard, validateResetToken, resetPassword } from '../../features/auth
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import styles from './ResetPasswordPage.module.css';
+import {
+  PASSWORD_RULES,
+  useFormValidation,
+  validateResetPasswordForm,
+  hasErrors,
+  resolveErrorMessage,
+  resolveErrorField,
+  extractFieldErrors,
+  isCode,
+} from '../../validations';
 
-const PASSWORD_RULES = [
-  { label: 'At least 8 characters', test: (v) => v.length >= 8 },
-  { label: 'One uppercase letter', test: (v) => /[A-Z]/.test(v) },
-  { label: 'One lowercase letter', test: (v) => /[a-z]/.test(v) },
-  { label: 'One digit', test: (v) => /\d/.test(v) },
-  { label: 'One special character', test: (v) => /[^A-Za-z0-9]/.test(v) },
-];
+const INITIAL = { newPassword: '', confirmPassword: '' };
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
-  const [tokenStatus, setTokenStatus] = useState('loading'); // 'loading' | 'valid' | 'invalid'
-  const [form, setForm] = useState({ newPassword: '', confirmPassword: '' });
+  const form = useFormValidation({
+    initialValues: INITIAL,
+    validate: validateResetPasswordForm,
+  });
+
+  const [tokenStatus, setTokenStatus] = useState('loading');
+  const [tokenErrorMsg, setTokenErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (!token) { setTokenStatus('invalid'); return; }
+    if (!token) {
+      setTokenErrorMsg('No reset token found in the link.');
+      setTokenStatus('invalid');
+      return;
+    }
     validateResetToken(token)
       .then(() => setTokenStatus('valid'))
-      .catch(() => setTokenStatus('invalid'));
+      .catch((err) => {
+        if (isCode(err, 'AUTH_TOKEN_EXPIRED')) {
+          setTokenErrorMsg('This reset link has expired. Please request a new one.');
+        } else {
+          setTokenErrorMsg(resolveErrorMessage(err));
+        }
+        setTokenStatus('invalid');
+      });
   }, [token]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const fieldError = (name) =>
+    form.getFieldProps(name).error ?? serverFieldErrors[name];
+
+  const onChange = (e) => {
+    form.handleChange(e);
+    setServerFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
     setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (PASSWORD_RULES.some((r) => !r.test(form.newPassword))) {
-      setError('Password does not meet all requirements.');
-      return;
-    }
-    if (form.newPassword !== form.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
+    form.markAllTouched();
+    if (hasErrors(form.errors)) return;
+
     setLoading(true);
     setError('');
+    setServerFieldErrors({});
     try {
-      await resetPassword(token, form.newPassword);
+      await resetPassword(token, form.values.newPassword);
       setSuccess(true);
     } catch (err) {
-      const code = err?.response?.data?.code;
-      if (code === 'AUTH_TOKEN_EXPIRED') {
-        setError('This reset link has expired. Please request a new one.');
-      } else if (code === 'AUTH_TOKEN_INVALID_OR_USED') {
-        setError('This link is invalid or has already been used.');
-      } else if (code === 'AUTH_PASSWORD_WEAK') {
-        setError('Password does not meet the security requirements.');
-      } else {
-        setError('Something went wrong. Please try again.');
+      if (isCode(err, 'AUTH_TOKEN_EXPIRED') || isCode(err, 'AUTH_TOKEN_INVALID_OR_USED')) {
+        setTokenErrorMsg(resolveErrorMessage(err));
+        setTokenStatus('invalid');
+        return;
       }
+      const backendFields = extractFieldErrors(err);
+      if (Object.keys(backendFields).length) {
+        setServerFieldErrors(backendFields);
+        return;
+      }
+      const focusField = resolveErrorField(err);
+      const message = resolveErrorMessage(err);
+      if (focusField) setServerFieldErrors({ [focusField]: message });
+      else setError(message);
     } finally {
       setLoading(false);
     }
@@ -89,7 +113,7 @@ export default function ResetPasswordPage() {
             <div className={styles.errorIcon}>✕</div>
             <h2 className={`mb-0 ${styles.title}`}>Invalid or expired link</h2>
             <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
-              This password reset link is invalid or has already been used.
+              {tokenErrorMsg || 'This password reset link is invalid or has already been used.'}
             </p>
             <Link to="/forgot-password">
               <FormButton type="button">Request a new link</FormButton>
@@ -104,13 +128,13 @@ export default function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
               <div className="position-relative">
                 <FormInput
+                  {...form.getFieldProps('newPassword')}
+                  onChange={onChange}
                   id="newPassword"
-                  name="newPassword"
                   label="New Password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  value={form.newPassword}
-                  onChange={handleChange}
+                  error={fieldError('newPassword')}
                   autoFocus
                 />
                 <button
@@ -124,27 +148,27 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
 
-              {form.newPassword && (
+              {form.values.newPassword && (
                 <ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
                   {PASSWORD_RULES.map((rule) => (
                     <li
                       key={rule.label}
-                      className={`${styles.pwRule} ${rule.test(form.newPassword) ? styles.pwRuleOk : ''}`}
+                      className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
                     >
-                      {rule.test(form.newPassword) ? '✓' : '○'} {rule.label}
+                      {rule.test(form.values.newPassword) ? '✓' : '○'} {rule.label}
                     </li>
                   ))}
                 </ul>
               )}
 
               <FormInput
+                {...form.getFieldProps('confirmPassword')}
+                onChange={onChange}
                 id="confirmPassword"
-                name="confirmPassword"
                 label="Confirm Password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                value={form.confirmPassword}
-                onChange={handleChange}
+                error={fieldError('confirmPassword')}
               />
 
               {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
