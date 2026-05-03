@@ -70,19 +70,19 @@ export default function ChangePasswordPage() {
     <AuthLayout>
       <AuthCard>
         {success ? (
-          <div className={styles.successState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-4 text-center">
             <div className={styles.successIcon}>✓</div>
-            <h2 className={styles.title}>Password changed!</h2>
-            <p className={styles.hint}>Redirecting you to login…</p>
+            <h2 className={`mb-0 ${styles.title}`}>Password changed!</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>Redirecting you to login…</p>
           </div>
         ) : (
           <>
-            <h2 className={styles.title}>Change your password</h2>
-            <p className={styles.subtitle}>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Change your password</h2>
+            <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
               You are required to set a new password before continuing.
             </p>
-            <form onSubmit={handleSubmit} className={styles.form} noValidate>
-              <div className={styles.passwordField}>
+            <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
+              <div className="position-relative">
                 <FormInput
                   id="currentPassword"
                   name="currentPassword"
@@ -105,7 +105,7 @@ export default function ChangePasswordPage() {
                 </button>
               </div>
 
-              <div className={styles.passwordField}>
+              <div className="position-relative">
                 <FormInput
                   id="newPassword"
                   name="newPassword"
@@ -128,7 +128,7 @@ export default function ChangePasswordPage() {
               </div>
 
               {form.newPassword && (
-                <ul className={styles.pwRules}>
+                <ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
                   {PASSWORD_RULES.map((rule) => (
                     <li
                       key={rule.label}
@@ -151,7 +151,7 @@ export default function ChangePasswordPage() {
                 autoComplete="new-password"
               />
 
-              {error && <div className={styles.errorBanner} role="alert">{error}</div>}
+              {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
 
               <FormButton type="submit" loading={loading}>Change password</FormButton>
             </form>

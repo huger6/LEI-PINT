@@ -57,10 +57,10 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       <AuthCard>
-        <h2 className={styles.title}>Welcome back</h2>
-        <p className={styles.subtitle}>Sign in to your account</p>
+        <h2 className={`text-center mb-1 ${styles.title}`}>Welcome back</h2>
+        <p className={`text-center mb-4 small ${styles.subtitle}`}>Sign in to your account</p>
 
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
           <FormInput
             id="identifier"
             name="identifier"
@@ -73,7 +73,7 @@ export default function LoginPage() {
             autoFocus
           />
 
-          <div className={styles.passwordField}>
+          <div className="position-relative">
             <FormInput
               id="password"
               name="password"
@@ -95,30 +95,33 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className={styles.row}>
-            <label className={styles.checkboxLabel}>
+          <div className="d-flex align-items-center justify-content-between gap-2">
+            <div className="form-check mb-0">
               <input
                 type="checkbox"
+                id="remember"
                 name="remember"
                 checked={form.remember}
                 onChange={handleChange}
-                className={styles.checkbox}
+                className="form-check-input"
               />
-              Remember me
-            </label>
-            <Link to="/forgot-password" className={styles.forgotLink}>
+              <label htmlFor="remember" className="form-check-label small">
+                Remember me
+              </label>
+            </div>
+            <Link to="/forgot-password" className="small text-nowrap" style={{ color: 'var(--color-primary)' }}>
               Forgot password?
             </Link>
           </div>
 
           {error && (
-            <div className={styles.errorBanner} role="alert">
+            <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">
               {error}
             </div>
           )}
 
           {emailNotConfirmed && (
-            <div className={styles.warningBanner} role="alert">
+            <div className="alert alert-warning py-2 px-3 mb-0 small" role="alert">
               Your email is not confirmed.{' '}
               <Link to="/resend-confirmation">Resend confirmation email</Link>
             </div>
@@ -129,7 +132,7 @@ export default function LoginPage() {
           </FormButton>
         </form>
 
-        <p className={styles.footer}>
+        <p className="text-center mt-4 small mb-0" style={{ color: 'var(--color-outline)' }}>
           Don&apos;t have an account?{' '}
           <Link to="/register">Create one</Link>
         </p>

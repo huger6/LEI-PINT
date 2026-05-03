@@ -73,17 +73,17 @@ export default function ResetPasswordPage() {
     <AuthLayout>
       <AuthCard>
         {tokenStatus === 'loading' && (
-          <div className={styles.centerState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.spinner} aria-label="Validating link…" />
-            <p className={styles.hint}>Validating your reset link…</p>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>Validating your reset link…</p>
           </div>
         )}
 
         {tokenStatus === 'invalid' && (
-          <div className={styles.centerState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.errorIcon}>✕</div>
-            <h2 className={styles.title}>Invalid or expired link</h2>
-            <p className={styles.hint}>
+            <h2 className={`mb-0 ${styles.title}`}>Invalid or expired link</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
               This password reset link is invalid or has already been used.
             </p>
             <Link to="/forgot-password">
@@ -94,10 +94,10 @@ export default function ResetPasswordPage() {
 
         {tokenStatus === 'valid' && !success && (
           <>
-            <h2 className={styles.title}>Reset your password</h2>
-            <p className={styles.subtitle}>Choose a strong new password.</p>
-            <form onSubmit={handleSubmit} className={styles.form} noValidate>
-              <div className={styles.passwordField}>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Reset your password</h2>
+            <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>Choose a strong new password.</p>
+            <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
+              <div className="position-relative">
                 <FormInput
                   id="newPassword"
                   name="newPassword"
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
               </div>
 
               {form.newPassword && (
-                <ul className={styles.pwRules}>
+                <ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
                   {PASSWORD_RULES.map((rule) => (
                     <li
                       key={rule.label}
@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
                 onChange={handleChange}
               />
 
-              {error && <div className={styles.errorBanner} role="alert">{error}</div>}
+              {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
 
               <FormButton type="submit" loading={loading}>Reset password</FormButton>
             </form>
@@ -150,10 +150,10 @@ export default function ResetPasswordPage() {
         )}
 
         {success && (
-          <div className={styles.centerState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.successIcon}>✓</div>
-            <h2 className={styles.title}>Password reset!</h2>
-            <p className={styles.hint}>You can now sign in with your new password.</p>
+            <h2 className={`mb-0 ${styles.title}`}>Password reset!</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>You can now sign in with your new password.</p>
             <Link to="/login">
               <FormButton type="button">Go to login</FormButton>
             </Link>
