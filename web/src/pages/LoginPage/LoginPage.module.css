@@ -18,6 +18,10 @@
 	color: var(--color-on-primary-container);
 }
 
+.warningIcon {
+	font-size: 2.5rem;
+}
+
 .eyeToggle {
 	position: absolute;
 	right: 0.75rem;

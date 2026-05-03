@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
@@ -16,6 +17,7 @@ import {
 } from '../../validations';
 
 export default function ForgotPasswordPage() {
+	const { t } = useTranslation();
 	const [email, setEmail] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -52,25 +54,24 @@ export default function ForgotPasswordPage() {
 	return (
 		<AuthLayout>
 			<Helmet>
-				<title>Forgot Password — Softinsa</title>
-				<meta name="description" content="Reset your Softinsa Badges Platform password. Enter your email to receive a reset link." />
+				<title>{t('forgotPassword.title')}</title>
+				<meta name="description" content={t('forgotPassword.metaDescription')} />
 			</Helmet>
 			<AuthCard>
 				{sent ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
 						<div className={styles.sentIcon}>✉</div>
-						<h2 className={`mb-0 ${styles.title}`}>Check your inbox</h2>
+						<h2 className={`mb-0 ${styles.title}`}>{t('forgotPassword.checkInbox')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
-							If an account exists for <strong>{hideEmail(email)}</strong>, you will receive a
-							password reset link shortly.
+							<Trans i18nKey="forgotPassword.checkInboxDesc" values={{ email: hideEmail(email) }} components={{ strong: <strong /> }} />
 						</p>
-						<Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
+						<Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>{t('backToLogin')}</Link>
 					</div>
 				) : (
 					<>
-						<h2 className={`text-center mb-1 ${styles.title}`}>Forgot password?</h2>
+						<h2 className={`text-center mb-1 ${styles.title}`}>{t('forgotPassword.heading')}</h2>
 						<p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
-							Enter your email and we&apos;ll send you a reset link.
+							{t('forgotPassword.subtitle')}
 						</p>
 						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
 							<FormInput
@@ -78,17 +79,17 @@ export default function ForgotPasswordPage() {
 								value={email}
 								onChange={(e) => { setEmail(e.target.value); setError(''); }}
 								id="email"
-								label="Email address"
+								label={t('forgotPassword.emailAddress')}
 								type="email"
-								placeholder="you@example.com"
+								placeholder={t('emailPlaceholder')}
 								autoFocus
 							/>
 							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
-							<FormButton type="submit" loading={loading}>Send reset link</FormButton>
+							<FormButton type="submit" loading={loading}>{t('forgotPassword.sendResetLink')}</FormButton>
 						</form>
 						<Link to="/login">
 							<FormButton variant="ghost" type="button" className="mt-2">
-								<i className="bi bi-arrow-left me-2" />Back to login
+								<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
 							</FormButton>
 						</Link>
 					</>

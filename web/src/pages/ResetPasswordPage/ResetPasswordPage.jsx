@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
@@ -20,6 +21,7 @@ import {
 const INITIAL = { newPassword: '', confirmPassword: '' };
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
@@ -38,7 +40,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!token) {
-      setTokenErrorMsg('No reset token found in the link.');
+      setTokenErrorMsg(t('resetPassword.noTokenFound'));
       setTokenStatus('invalid');
       return;
     }
@@ -46,13 +48,13 @@ export default function ResetPasswordPage() {
       .then(() => setTokenStatus('valid'))
       .catch((err) => {
         if (isCode(err, 'AUTH_TOKEN_EXPIRED')) {
-          setTokenErrorMsg('This reset link has expired. Please request a new one.');
+          setTokenErrorMsg(t('resetPassword.tokenExpired'));
         } else {
           setTokenErrorMsg(resolveErrorMessage(err));
         }
         setTokenStatus('invalid');
       });
-  }, [token]);
+  }, [token, t]);
 
   const fieldError = (name) =>
     form.getFieldProps(name).error ?? serverFieldErrors[name];
@@ -97,43 +99,43 @@ export default function ResetPasswordPage() {
   return (
     <AuthLayout>
       <Helmet>
-        <title>Reset Password — LEI-PINT</title>
-        <meta name="description" content="Choose a new password for your LEI-PINT account." />
+        <title>{t('resetPassword.title')}</title>
+        <meta name="description" content={t('resetPassword.metaDescription')} />
       </Helmet>
       <AuthCard>
         {tokenStatus === 'loading' && (
           <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-            <div className={styles.spinner} aria-label="Validating link…" />
-            <p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>Validating your reset link…</p>
+            <div className={styles.spinner} aria-label={t('resetPassword.validatingLink')} />
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>{t('resetPassword.validatingLink')}</p>
           </div>
         )}
 
         {tokenStatus === 'invalid' && (
           <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.errorIcon}>✕</div>
-            <h2 className={`mb-0 ${styles.title}`}>Invalid or expired link</h2>
+            <h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.invalidOrExpired')}</h2>
             <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
-              {tokenErrorMsg || 'This password reset link is invalid or has already been used.'}
+              {tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
             </p>
             <Link to="/forgot-password">
-              <FormButton type="button">Request a new link</FormButton>
+              <FormButton type="button">{t('resetPassword.requestNewLink')}</FormButton>
             </Link>
           </div>
         )}
 
         {tokenStatus === 'valid' && !success && (
           <>
-            <h2 className={`text-center mb-1 ${styles.title}`}>Reset your password</h2>
-            <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>Choose a strong new password.</p>
+            <h2 className={`text-center mb-1 ${styles.title}`}>{t('resetPassword.heading')}</h2>
+            <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>{t('resetPassword.subtitle')}</p>
             <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
               <div className="position-relative">
                 <FormInput
                   {...form.getFieldProps('newPassword')}
                   onChange={onChange}
                   id="newPassword"
-                  label="New Password"
+                  label={t('resetPassword.newPassword')}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   error={fieldError('newPassword')}
                   autoFocus
                 />
@@ -142,7 +144,7 @@ export default function ResetPasswordPage() {
                   className={styles.eyeToggle}
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
-                  aria-label="Toggle password visibility"
+                  aria-label={t('togglePasswordVisibility')}
                 >
                   <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
                 </button>
@@ -152,10 +154,10 @@ export default function ResetPasswordPage() {
                 <ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
                   {PASSWORD_RULES.map((rule) => (
                     <li
-                      key={rule.label}
+                      key={rule.key}
                       className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
                     >
-                      {rule.test(form.values.newPassword) ? '✓' : '○'} {rule.label}
+                      {rule.test(form.values.newPassword) ? t('resetPassword.pwRulePass') : t('resetPassword.pwRuleFail')} {t(`passwordRules.${rule.key}`)}
                     </li>
                   ))}
                 </ul>
@@ -165,15 +167,15 @@ export default function ResetPasswordPage() {
                 {...form.getFieldProps('confirmPassword')}
                 onChange={onChange}
                 id="confirmPassword"
-                label="Confirm Password"
+                label={t('resetPassword.confirmPassword')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 error={fieldError('confirmPassword')}
               />
 
               {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
 
-              <FormButton type="submit" loading={loading}>Reset password</FormButton>
+              <FormButton type="submit" loading={loading}>{t('resetPassword.resetBtn')}</FormButton>
             </form>
           </>
         )}
@@ -181,10 +183,10 @@ export default function ResetPasswordPage() {
         {success && (
           <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.successIcon}>✓</div>
-            <h2 className={`mb-0 ${styles.title}`}>Password reset!</h2>
-            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>You can now sign in with your new password.</p>
+            <h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.successHeading')}</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('resetPassword.successDesc')}</p>
             <Link to="/login">
-              <FormButton type="button">Go to login</FormButton>
+              <FormButton type="button">{t('goToLogin')}</FormButton>
             </Link>
           </div>
         )}

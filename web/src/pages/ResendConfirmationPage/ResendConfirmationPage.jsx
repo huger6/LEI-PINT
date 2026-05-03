@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import styles from './ResendConfirmationPage.module.css';
 import {
-  useFormValidation,
   validateResendConfirmationForm,
   hasErrors,
   resolveErrorMessage,
@@ -15,48 +14,38 @@ import {
   extractFieldErrors,
 } from '../../validations';
 
-const INITIAL = { email: '' };
-
 export default function ResendConfirmationPage() {
-  const form = useFormValidation({
-    initialValues: INITIAL,
-    validate: validateResendConfirmationForm,
-  });
+  const location = useLocation();
+  const { email: initialEmail = '', message: redirectMessage = '' } = location.state ?? {};
+
+  const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
-  const [serverFieldErrors, setServerFieldErrors] = useState({});
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
 
-  const fieldError = (name) =>
-    form.getFieldProps(name).error ?? serverFieldErrors[name];
-
-  const onChange = (e) => {
-    form.handleChange(e);
-    setServerFieldErrors({});
-    setError('');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    form.markAllTouched();
-    if (hasErrors(form.errors)) return;
+
+    const validationErrors = validateResendConfirmationForm({ email });
+    if (hasErrors(validationErrors)) {
+      setError(validationErrors.email);
+      return;
+    }
 
     setLoading(true);
     setError('');
-    setServerFieldErrors({});
     try {
-      await resendConfirmation(form.values.email.trim());
+      await resendConfirmation(email.trim());
       setSent(true);
     } catch (err) {
       const backendFields = extractFieldErrors(err);
-      if (Object.keys(backendFields).length) {
-        setServerFieldErrors(backendFields);
+      if (backendFields.email) {
+        setError(backendFields.email);
         return;
       }
       const focusField = resolveErrorField(err);
       const message = resolveErrorMessage(err);
-      if (focusField === 'email') setServerFieldErrors({ email: message });
-      else setError(message);
+      setError(focusField === 'email' ? message : message);
     } finally {
       setLoading(false);
     }
@@ -65,8 +54,8 @@ export default function ResendConfirmationPage() {
   return (
     <AuthLayout>
       <Helmet>
-        <title>Resend Confirmation — LEI-PINT</title>
-        <meta name="description" content="Request a new confirmation email for your LEI-PINT account." />
+        <title>Resend Confirmation — Softinsa</title>
+        <meta name="description" content="Request a new confirmation email for your Softinsa Badges Platform account." />
       </Helmet>
       <AuthCard>
         {sent ? (
@@ -74,7 +63,7 @@ export default function ResendConfirmationPage() {
             <div className={styles.sentIcon}>✉</div>
             <h2 className={`mb-0 ${styles.title}`}>Email sent!</h2>
             <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
-              A new confirmation link has been sent to <strong>{form.values.email}</strong>. Check your
+              A new confirmation link has been sent to <strong>{email}</strong>. Check your
               inbox and spam folder.
             </p>
             <Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
@@ -85,15 +74,20 @@ export default function ResendConfirmationPage() {
             <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
               Enter your email and we&apos;ll send a new confirmation link.
             </p>
+            {redirectMessage && (
+              <div className="alert alert-warning py-2 px-3 mb-3 small" role="alert">
+                {redirectMessage}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
               <FormInput
-                {...form.getFieldProps('email')}
-                onChange={onChange}
+                name="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 id="email"
                 label="Email address"
                 type="email"
                 placeholder="you@example.com"
-                error={fieldError('email')}
                 autoFocus
               />
               {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
