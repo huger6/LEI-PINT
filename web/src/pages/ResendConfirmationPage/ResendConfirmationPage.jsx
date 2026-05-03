@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../../features/auth';
@@ -39,6 +40,10 @@ export default function ResendConfirmationPage() {
 
   return (
     <AuthLayout>
+      <Helmet>
+        <title>Resend Confirmation — LEI-PINT</title>
+        <meta name="description" content="Request a new confirmation email for your LEI-PINT account." />
+      </Helmet>
       <AuthCard>
         {sent ? (
           <div className="d-flex flex-column align-items-center gap-3 py-2 text-center">

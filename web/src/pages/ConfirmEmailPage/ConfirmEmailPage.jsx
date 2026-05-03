@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, confirmEmail } from '../../features/auth';
@@ -32,6 +33,10 @@ export default function ConfirmEmailPage() {
 
   return (
     <AuthLayout>
+      <Helmet>
+        <title>Confirm Email — LEI-PINT</title>
+        <meta name="description" content="Confirming your LEI-PINT email address." />
+      </Helmet>
       <AuthCard>
         {status === 'loading' && (
           <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">

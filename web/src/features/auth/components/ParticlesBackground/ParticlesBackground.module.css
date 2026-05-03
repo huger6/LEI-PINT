@@ -1,13 +1,11 @@
 .particles {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
 }
 
 .particles canvas {
-  filter:
-    drop-shadow(0 0 6px rgba(0, 184, 224, 0.8))
-    drop-shadow(0 0 14px rgba(0, 184, 224, 0.45))
-    drop-shadow(0 0 28px rgba(57, 99, 156, 0.3));
+	filter:
+		drop-shadow(0 0 6px rgba(0, 184, 224, 0.8)) drop-shadow(0 0 14px rgba(0, 184, 224, 0.45)) drop-shadow(0 0 28px rgba(57, 99, 156, 0.3));
 }

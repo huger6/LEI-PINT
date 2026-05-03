@@ -50,6 +50,26 @@
   transform: scale(0.98);
 }
 
+.primary:disabled {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: transparent;
+  opacity: 1;
+}
+
+.secondary:disabled {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  opacity: 1;
+}
+
+.ghost:disabled {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  opacity: 1;
+}
+
 .spinner {
   width: 18px;
   height: 18px;

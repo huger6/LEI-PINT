@@ -1,4 +1,7 @@
 :root {
+  --font-body: 'Inter', 'Roboto', system-ui, sans-serif;
+  --font-heading: 'Playfair Display', 'Inter', system-ui, serif;
+
   --color-primary: #00B8E0;
   --color-on-primary: #FFFFFF;
   --color-primary-container: #B9EBF6;

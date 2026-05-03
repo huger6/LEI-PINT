@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, register } from '../../features/auth';
@@ -174,6 +175,10 @@ export default function RegisterPage() {
   if (success) {
     return (
       <AuthLayout>
+        <Helmet>
+          <title>Account Created — LEI-PINT</title>
+          <meta name="description" content="Your LEI-PINT account has been created. Check your email to confirm." />
+        </Helmet>
         <AuthCard>
           <div className="d-flex flex-column align-items-center gap-3 py-2">
             <div className={styles.successIcon}>✓</div>
@@ -192,6 +197,10 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout>
+      <Helmet>
+        <title>Create Account — LEI-PINT</title>
+        <meta name="description" content="Create a new LEI-PINT account. Choose your role and get started." />
+      </Helmet>
       <AuthCard>
         <div className={styles.stepBar}>
           {[1, 2, 3].map((s) => (
@@ -280,7 +289,7 @@ export default function RegisterPage() {
                   tabIndex={-1}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
                 </button>
               </div>
 
