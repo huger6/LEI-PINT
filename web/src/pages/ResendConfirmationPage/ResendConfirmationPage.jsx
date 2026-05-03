@@ -41,22 +41,22 @@ export default function ResendConfirmationPage() {
     <AuthLayout>
       <AuthCard>
         {sent ? (
-          <div className={styles.sentState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
             <div className={styles.sentIcon}>✉</div>
-            <h2 className={styles.title}>Email sent!</h2>
-            <p className={styles.body}>
+            <h2 className={`mb-0 ${styles.title}`}>Email sent!</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
               A new confirmation link has been sent to <strong>{email}</strong>. Check your
               inbox and spam folder.
             </p>
-            <Link to="/login" className={styles.backLink}>Back to login</Link>
+            <Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
           </div>
         ) : (
           <>
-            <h2 className={styles.title}>Resend confirmation</h2>
-            <p className={styles.subtitle}>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Resend confirmation</h2>
+            <p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
               Enter your email and we&apos;ll send a new confirmation link.
             </p>
-            <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            <form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
               <FormInput
                 id="email"
                 label="Email address"
@@ -66,10 +66,10 @@ export default function ResendConfirmationPage() {
                 onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 autoFocus
               />
-              {error && <div className={styles.errorBanner} role="alert">{error}</div>}
+              {error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
               <FormButton type="submit" loading={loading}>Resend email</FormButton>
             </form>
-            <p className={styles.footer}>
+            <p className="text-center mt-4 mb-0 small">
               <Link to="/login">← Back to login</Link>
             </p>
           </>

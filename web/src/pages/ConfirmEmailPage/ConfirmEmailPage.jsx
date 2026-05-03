@@ -34,17 +34,17 @@ export default function ConfirmEmailPage() {
     <AuthLayout>
       <AuthCard>
         {status === 'loading' && (
-          <div className={styles.state}>
-            <div className={styles.spinner} aria-label="Confirming email…" />
-            <p className={styles.hint}>Confirming your email address…</p>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
+            <div className={styles.spinner} role="status" aria-label="Confirming email…" />
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>Confirming your email address…</p>
           </div>
         )}
 
         {status === 'success' && (
-          <div className={styles.state}>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.successIcon}>✓</div>
-            <h2 className={styles.title}>Email confirmed!</h2>
-            <p className={styles.hint}>Your account is now active. You can sign in.</p>
+            <h2 className={`mb-0 ${styles.title}`}>Email confirmed!</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>Your account is now active. You can sign in.</p>
             <Link to="/login">
               <FormButton type="button">Go to login</FormButton>
             </Link>
@@ -52,14 +52,14 @@ export default function ConfirmEmailPage() {
         )}
 
         {status === 'error' && (
-          <div className={styles.state}>
+          <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
             <div className={styles.errorIcon}>✕</div>
-            <h2 className={styles.title}>Confirmation failed</h2>
-            <p className={styles.hint}>{errorMsg}</p>
+            <h2 className={`mb-0 ${styles.title}`}>Confirmation failed</h2>
+            <p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{errorMsg}</p>
             <Link to="/resend-confirmation">
               <FormButton type="button">Resend confirmation email</FormButton>
             </Link>
-            <Link to="/login" className={styles.backLink}>Back to login</Link>
+            <Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>Back to login</Link>
           </div>
         )}
       </AuthCard>

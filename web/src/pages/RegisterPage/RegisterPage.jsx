@@ -175,10 +175,10 @@ export default function RegisterPage() {
     return (
       <AuthLayout>
         <AuthCard>
-          <div className={styles.successState}>
+          <div className="d-flex flex-column align-items-center gap-3 py-2">
             <div className={styles.successIcon}>✓</div>
-            <h2 className={styles.title}>Account created!</h2>
-            <p className={styles.successMsg}>
+            <h2 className={`text-center mb-0 ${styles.title}`}>Account created!</h2>
+            <p className="text-center mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
               Check your email for a confirmation link before signing in.
             </p>
             <Link to="/login">
@@ -205,8 +205,8 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <div>
-            <h2 className={styles.title}>Create an account</h2>
-            <p className={styles.subtitle}>Choose your role to get started</p>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Create an account</h2>
+            <p className={`text-center mb-3 small ${styles.subtitle}`}>Choose your role to get started</p>
             <div className={styles.roleGrid}>
               {ROLES.map((r) => (
                 <button
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                 </button>
               ))}
             </div>
-            <p className={styles.footer}>
+            <p className="text-center mt-3 mb-0 small" style={{ color: 'var(--color-outline)' }}>
               Already have an account? <Link to="/login">Sign in</Link>
             </p>
           </div>
@@ -228,9 +228,9 @@ export default function RegisterPage() {
 
         {step === 2 && (
           <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} noValidate>
-            <h2 className={styles.title}>Basic information</h2>
-            <p className={styles.subtitle}>Registering as <strong>{role}</strong></p>
-            <div className={styles.form}>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Basic information</h2>
+            <p className={`text-center mb-3 small ${styles.subtitle}`}>Registering as <strong>{role}</strong></p>
+            <div className="vstack gap-3">
               <FormInput
                 id="full_name"
                 name="full_name"
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 error={errors.email_address}
               />
-              <div className={styles.passwordField}>
+              <div className="position-relative">
                 <FormInput
                   id="password"
                   name="password"
@@ -285,7 +285,7 @@ export default function RegisterPage() {
               </div>
 
               {form.password && (
-                <ul className={styles.pwRules} aria-label="Password requirements">
+                <ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`} aria-label="Password requirements">
                   {PASSWORD_RULES.map((rule) => (
                     <li
                       key={rule.label}
@@ -297,11 +297,13 @@ export default function RegisterPage() {
                 </ul>
               )}
 
-              <div className={styles.btnRow}>
-                <FormButton type="button" variant="secondary" onClick={handleBack}>
-                  Back
-                </FormButton>
-                <FormButton type="submit">Continue</FormButton>
+              <div className="row g-2 mt-1">
+                <div className="col">
+                  <FormButton type="button" variant="secondary" onClick={handleBack}>Back</FormButton>
+                </div>
+                <div className="col">
+                  <FormButton type="submit">Continue</FormButton>
+                </div>
               </div>
             </div>
           </form>
@@ -309,11 +311,11 @@ export default function RegisterPage() {
 
         {step === 3 && (
           <form onSubmit={handleSubmit} noValidate>
-            <h2 className={styles.title}>Additional details</h2>
-            <p className={styles.subtitle}>All fields below are optional unless noted</p>
-            <div className={styles.form}>
+            <h2 className={`text-center mb-1 ${styles.title}`}>Additional details</h2>
+            <p className={`text-center mb-3 small ${styles.subtitle}`}>All fields below are optional unless noted</p>
+            <div className="vstack gap-3">
               {refLoading ? (
-                <div className={styles.refLoading}>Loading options…</div>
+                <p className="text-center py-3 mb-0 small" style={{ color: 'var(--color-outline)' }}>Loading options…</p>
               ) : (
                 <>
                   <FormInput
@@ -336,14 +338,14 @@ export default function RegisterPage() {
                   />
 
                   {languages.length > 0 && (
-                    <div className={styles.selectField}>
-                      <label htmlFor="preferred_lang_id" className={styles.selectLabel}>Preferred Language</label>
+                    <div>
+                      <label htmlFor="preferred_lang_id" className={`form-label ${styles.selectLabel}`}>Preferred Language</label>
                       <select
                         id="preferred_lang_id"
                         name="preferred_lang_id"
                         value={form.preferred_lang_id}
                         onChange={handleChange}
-                        className={styles.select}
+                        className={`form-select ${styles.select}`}
                       >
                         <option value="">Select language</option>
                         {languages.map((l) => (
@@ -354,14 +356,14 @@ export default function RegisterPage() {
                   )}
 
                   {locations.length > 0 && (
-                    <div className={styles.selectField}>
-                      <label htmlFor="location_id" className={styles.selectLabel}>Location</label>
+                    <div>
+                      <label htmlFor="location_id" className={`form-label ${styles.selectLabel}`}>Location</label>
                       <select
                         id="location_id"
                         name="location_id"
                         value={form.location_id}
                         onChange={handleChange}
-                        className={styles.select}
+                        className={`form-select ${styles.select}`}
                       >
                         <option value="">Select location</option>
                         {locations.map((l) => (
@@ -371,8 +373,8 @@ export default function RegisterPage() {
                     </div>
                   )}
 
-                  <div className={styles.selectField}>
-                    <label htmlFor="biography" className={styles.selectLabel}>Biography</label>
+                  <div>
+                    <label htmlFor="biography" className={`form-label ${styles.selectLabel}`}>Biography</label>
                     <textarea
                       id="biography"
                       name="biography"
@@ -380,7 +382,7 @@ export default function RegisterPage() {
                       placeholder="Tell us about yourself…"
                       value={form.biography}
                       onChange={handleChange}
-                      className={styles.textarea}
+                      className={`form-control ${styles.textarea}`}
                       maxLength={5000}
                     />
                   </div>
@@ -388,7 +390,7 @@ export default function RegisterPage() {
                   {role === 'Consultant' && (
                     <div className={styles.areasSection}>
                       <span className={styles.selectLabel}>Areas of Expertise (1–5)</span>
-                      {errors.areas && <span className={styles.areaError}>{errors.areas}</span>}
+                      {errors.areas && <span className="small" style={{ color: 'var(--color-on-error-container)' }}>{errors.areas}</span>}
                       <div className={styles.areaChips}>
                         {areas.map((a) => {
                           const selected = form.areas.find((fa) => fa.area_id === a.id);
@@ -413,7 +415,7 @@ export default function RegisterPage() {
                           );
                         })}
                       </div>
-                      <p className={styles.areaHint}>Click ★ to set your primary area.</p>
+                      <p className="small mb-0" style={{ color: 'var(--color-outline)' }}>Click ★ to set your primary area.</p>
                     </div>
                   )}
 
@@ -432,16 +434,16 @@ export default function RegisterPage() {
               )}
 
               {apiError && (
-                <div className={styles.errorBanner} role="alert">{apiError}</div>
+                <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{apiError}</div>
               )}
 
-              <div className={styles.btnRow}>
-                <FormButton type="button" variant="secondary" onClick={handleBack}>
-                  Back
-                </FormButton>
-                <FormButton type="submit" loading={loading}>
-                  Create account
-                </FormButton>
+              <div className="row g-2 mt-1">
+                <div className="col">
+                  <FormButton type="button" variant="secondary" onClick={handleBack}>Back</FormButton>
+                </div>
+                <div className="col">
+                  <FormButton type="submit" loading={loading}>Create account</FormButton>
+                </div>
               </div>
             </div>
           </form>

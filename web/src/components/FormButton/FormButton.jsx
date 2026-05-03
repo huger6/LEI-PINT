@@ -14,10 +14,10 @@ export default function FormButton({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${styles.btn} ${styles[variant]} ${loading ? styles.loading : ''} ${className ?? ''}`}
+      className={`btn w-100 d-flex align-items-center justify-content-center position-relative ${styles[variant]} ${className ?? ''}`}
     >
-      {loading ? <span className={styles.spinner} aria-hidden="true" /> : null}
-      <span className={loading ? styles.hiddenText : ''}>{children}</span>
+      {loading && <span className={styles.spinner} aria-hidden="true" />}
+      <span className={loading ? 'invisible' : ''}>{children}</span>
     </button>
   );
 }

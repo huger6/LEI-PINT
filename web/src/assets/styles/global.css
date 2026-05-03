@@ -48,3 +48,32 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.25;
 }
+
+/* Bootstrap overrides — align with brand colours */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(0, 184, 224, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.form-check-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(0, 184, 224, 0.25);
+}
+
+.alert-danger {
+  --bs-alert-color: var(--color-on-error-container);
+  --bs-alert-bg: var(--color-error-container);
+  --bs-alert-border-color: transparent;
+}
+
+.alert-warning {
+  --bs-alert-color: #7a5e00;
+  --bs-alert-bg: rgba(207, 166, 0, 0.12);
+  --bs-alert-border-color: transparent;
+}

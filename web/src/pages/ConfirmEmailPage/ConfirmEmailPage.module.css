@@ -1,21 +1,6 @@
-.state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  text-align: center;
-}
-
 .title {
   font-size: 1.4rem;
   color: var(--color-on-primary-container);
-}
-
-.hint {
-  color: var(--color-outline);
-  font-size: 0.9375rem;
-  line-height: 1.5;
 }
 
 .spinner {
@@ -55,10 +40,4 @@
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 700;
-}
-
-.backLink {
-  font-size: 0.875rem;
-  color: var(--color-primary);
-  margin-top: -0.25rem;
 }
