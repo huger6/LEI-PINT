@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../../features/auth';
@@ -71,6 +72,10 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout>
+      <Helmet>
+        <title>Reset Password — LEI-PINT</title>
+        <meta name="description" content="Choose a new password for your LEI-PINT account." />
+      </Helmet>
       <AuthCard>
         {tokenStatus === 'loading' && (
           <div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
@@ -115,7 +120,7 @@ export default function ResetPasswordPage() {
                   tabIndex={-1}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
                 </button>
               </div>
 

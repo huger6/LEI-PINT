@@ -10,7 +10,7 @@ html {
 }
 
 body {
-  font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
   background: var(--color-background);
   color: var(--color-on-background);
   line-height: 1.5;
@@ -44,6 +44,7 @@ img {
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   color: var(--color-on-surface);
   font-weight: 600;
   line-height: 1.25;

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../../features/auth';
@@ -34,6 +35,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout>
+      <Helmet>
+        <title>Forgot Password — LEI-PINT</title>
+        <meta name="description" content="Reset your LEI-PINT password. Enter your email to receive a reset link." />
+      </Helmet>
       <AuthCard>
         {sent ? (
           <div className="d-flex flex-column align-items-center gap-3 py-2 text-center">

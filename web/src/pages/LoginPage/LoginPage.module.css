@@ -1,22 +1,33 @@
 .title {
-  font-size: 1.5rem;
-  color: var(--color-on-primary-container);
+	font-size: 1.5rem;
+	color: var(--color-on-primary-container);
 }
 
 .subtitle {
-  color: var(--color-outline);
+	color: var(--color-outline);
+}
+
+.rememberCheckbox {
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.rememberMe {
+	color: var(--color-on-primary-container);
 }
 
 .eyeToggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(25%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.25rem;
-  line-height: 1;
-  color: var(--color-outline);
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(25%);
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 1rem;
+	padding: 0.25rem;
+	line-height: 1;
+	color: var(--color-outline);
 }

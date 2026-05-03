@@ -1,11 +1,11 @@
 .wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1.5rem;
 }
 
 .logo {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
+	height: 48px;
+	width: auto;
+	object-fit: contain;
 }
