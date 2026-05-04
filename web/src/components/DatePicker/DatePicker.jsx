@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import CustomSelect from '../CustomSelect/CustomSelect';
 import styles from './DatePicker.module.css';
 
 const DEFAULT_YEAR_START = 1900;
@@ -190,7 +191,10 @@ export default function DatePicker({
 	const minYear = Math.min(rawMinYear, maxYear);
 
 	const yearOptions = useMemo(
-		() => Array.from({ length: maxYear - minYear + 1 }, (_, idx) => maxYear - idx),
+		() => Array.from({ length: maxYear - minYear + 1 }, (_, idx) => ({
+			value: maxYear - idx,
+			label: String(maxYear - idx),
+		})),
 		[maxYear, minYear]
 	);
 
@@ -270,27 +274,22 @@ export default function DatePicker({
 						</button>
 
 						<div className={styles.selectRow}>
-							<select
-								className={styles.select}
+							<CustomSelect
+								id={`${id}-month`}
 								value={activeMonth.getMonth()}
 								onChange={handleMonthChange}
-								aria-label="Select month"
-							>
-								{monthOptions.map((opt) => (
-									<option key={opt.value} value={opt.value}>{opt.label}</option>
-								))}
-							</select>
-
-							<select
-								className={styles.select}
+								options={monthOptions}
+								ariaLabel="Select month"
+								compact
+							/>
+							<CustomSelect
+								id={`${id}-year`}
 								value={activeMonth.getFullYear()}
 								onChange={handleYearChange}
-								aria-label="Select year"
-							>
-								{yearOptions.map((year) => (
-									<option key={year} value={year}>{year}</option>
-								))}
-							</select>
+								options={yearOptions}
+								ariaLabel="Select year"
+								compact
+							/>
 						</div>
 
 						<button

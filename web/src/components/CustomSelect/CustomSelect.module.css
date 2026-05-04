@@ -47,6 +47,23 @@
 	box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
 }
 
+.triggerCompact {
+	min-height: 30px;
+	padding: 0.2rem 0.45rem;
+	padding-right: 1.6rem;
+	font-size: 0.83rem;
+	font-weight: 600;
+	border-width: 1px;
+	border-color: rgba(0, 184, 224, 0.25);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.9);
+}
+
+.triggerCompact.triggerOpen,
+.triggerCompact:focus-visible {
+	box-shadow: 0 0 0 2px rgba(0, 184, 224, 0.15);
+}
+
 .triggerDisabled {
 	opacity: 0.55;
 	cursor: not-allowed;
@@ -79,6 +96,12 @@
 	transition: transform 0.25s ease;
 }
 
+.chevronCompact {
+	right: 0.55rem;
+	width: 0.38rem;
+	height: 0.38rem;
+}
+
 .chevronOpen {
 	transform: translateY(-35%) rotate(-135deg);
 }
@@ -99,6 +122,12 @@
 	opacity: 0;
 	transform: translateY(-4px);
 	animation: dropdownIn 0.18s ease forwards;
+}
+
+.dropdownCompact {
+	max-height: 180px;
+	border-radius: 10px;
+	padding: 3px;
 }
 
 .dropdownUp {
@@ -138,6 +167,12 @@
 
 .dropdown::-webkit-scrollbar-thumb:hover {
 	background: var(--color-outline);
+}
+
+.optionCompact {
+	padding: 0.3rem 0.5rem;
+	font-size: 0.8rem;
+	border-radius: 6px;
 }
 
 .option {

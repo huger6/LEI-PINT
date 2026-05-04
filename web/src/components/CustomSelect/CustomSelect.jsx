@@ -12,6 +12,7 @@ export default function CustomSelect({
 	disabled = false,
 	error = false,
 	ariaLabel,
+	compact = false,
 }) {
 	const [open, setOpen] = useState(false);
 	const [focusIndex, setFocusIndex] = useState(-1);
@@ -121,6 +122,7 @@ export default function CustomSelect({
 
 	const triggerClass = [
 		styles.trigger,
+		compact && styles.triggerCompact,
 		open && styles.triggerOpen,
 		error && styles.triggerError,
 		disabled && styles.triggerDisabled,
@@ -128,7 +130,11 @@ export default function CustomSelect({
 		.filter(Boolean)
 		.join(' ');
 
-	const chevronClass = [styles.chevron, open && styles.chevronOpen]
+	const chevronClass = [
+		styles.chevron,
+		compact && styles.chevronCompact,
+		open && styles.chevronOpen,
+	]
 		.filter(Boolean)
 		.join(' ');
 
@@ -162,13 +168,18 @@ export default function CustomSelect({
 					aria-activedescendant={
 						focusIndex >= 0 ? `${id}-option-${focusIndex}` : undefined
 					}
-					className={`${styles.dropdown} ${dropUp ? styles.dropdownUp : ''}`}
+					className={[
+						styles.dropdown,
+						compact && styles.dropdownCompact,
+						dropUp && styles.dropdownUp,
+					].filter(Boolean).join(' ')}
 				>
 					{options.map((opt, i) => {
 						const isSelected = String(opt.value) === String(value);
 						const isFocused = i === focusIndex;
 						const optClass = [
 							styles.option,
+							compact && styles.optionCompact,
 							isSelected && styles.optionSelected,
 							isFocused && styles.optionFocused,
 						]
