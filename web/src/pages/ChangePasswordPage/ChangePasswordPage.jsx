@@ -84,7 +84,7 @@ export default function ChangePasswordPage() {
 			<AuthCard>
 				{success ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-4 text-center">
-						<div className={styles.successIcon}>✓</div>
+						<div className={styles.successIcon}><i className="bi bi-check-lg" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('changePassword.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>{t('changePassword.redirecting')}</p>
 					</div>
@@ -147,7 +147,7 @@ export default function ChangePasswordPage() {
 											key={rule.key}
 											className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
 										>
-											{rule.test(form.values.newPassword) ? t('changePassword.pwRulePass') : t('changePassword.pwRuleFail')} {t(`passwordRules.${rule.key}`)}
+											<i className={`bi ${rule.test(form.values.newPassword) ? 'bi-check2' : 'bi-circle'}`} aria-hidden="true" /> {t(`passwordRules.${rule.key}`)}
 										</li>
 									))}
 								</ul>

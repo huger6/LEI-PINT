@@ -45,7 +45,7 @@ export default function ConfirmEmailPage() {
 
 				{status === 'success' && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.successIcon}>✓</div>
+						<div className={styles.successIcon}><i className="bi bi-check-lg" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('confirmEmail.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('confirmEmail.successDesc')}</p>
 						<Link to="/login">
@@ -56,7 +56,7 @@ export default function ConfirmEmailPage() {
 
 				{status === 'error' && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.errorIcon}>✕</div>
+						<div className={styles.errorIcon}><i className="bi bi-x-lg" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('confirmEmail.failedHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{errorMsg}</p>
 						<Link to="/resend-confirmation">

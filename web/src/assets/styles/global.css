@@ -87,6 +87,12 @@ h6 {
 	box-shadow: 0 0 0 0.25rem rgba(0, 184, 224, 0.25);
 }
 
+.form-control.is-invalid,
+.form-select.is-invalid {
+	background-image: none;
+	padding-right: 0.75rem;
+}
+
 .alert-danger {
 	--bs-alert-color: var(--color-on-error-container);
 	--bs-alert-bg: var(--color-error-container);

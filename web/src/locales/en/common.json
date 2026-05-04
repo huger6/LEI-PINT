@@ -1,6 +1,6 @@
 {
 	"backToLogin": "Back to login",
-	"backToLoginArrow": "← Back to login",
+	"backToLoginArrow": "Back to login",
 	"goToLogin": "Go to login",
 	"loading": "Loading…",
 	"logoAlt": "Softinsa Badges Platform",
@@ -118,8 +118,8 @@
 		"resetBtn": "Reset password",
 		"successHeading": "Password reset!",
 		"successDesc": "You can now sign in with your new password.",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"confirmEmail": {
 		"title": "Confirm Email — Softinsa Badges Platform",
@@ -152,8 +152,8 @@
 		"newPassword": "New Password",
 		"confirmNewPassword": "Confirm New Password",
 		"changeBtn": "Change password",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"home": {
 		"placeholder": "App placeholder — protected home",

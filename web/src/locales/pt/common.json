@@ -1,6 +1,6 @@
 {
 	"backToLogin": "Voltar ao login",
-	"backToLoginArrow": "← Voltar ao login",
+	"backToLoginArrow": "Voltar ao login",
 	"goToLogin": "Ir para login",
 	"loading": "A carregar…",
 	"logoAlt": "Plataforma de Badges Softinsa",
@@ -118,8 +118,8 @@
 		"resetBtn": "Redefinir palavra-passe",
 		"successHeading": "Palavra-passe redefinida!",
 		"successDesc": "Agora pode iniciar sessão com a sua nova palavra-passe.",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"confirmEmail": {
 		"title": "Confirmar Email — Plataforma de Badges da Softinsa",
@@ -152,8 +152,8 @@
 		"newPassword": "Nova Palavra-passe",
 		"confirmNewPassword": "Confirmar Nova Palavra-passe",
 		"changeBtn": "Alterar palavra-passe",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"home": {
 		"placeholder": "Placeholder da aplicação — página principal protegida",

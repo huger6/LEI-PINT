@@ -1,6 +1,6 @@
 {
 	"backToLogin": "Volver al inicio de sesión",
-	"backToLoginArrow": "← Volver al inicio de sesión",
+	"backToLoginArrow": "Volver al inicio de sesión",
 	"goToLogin": "Ir al inicio de sesión",
 	"loading": "Cargando…",
 	"logoAlt": "Plataforma de Badges Softinsa",
@@ -118,8 +118,8 @@
 		"resetBtn": "Restablecer contraseña",
 		"successHeading": "¡Contraseña restablecida!",
 		"successDesc": "Ahora puedes iniciar sesión con tu nueva contraseña.",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"confirmEmail": {
 		"title": "Confirmar Email — Plataforma de Badges Softinsa",
@@ -152,8 +152,8 @@
 		"newPassword": "Nueva Contraseña",
 		"confirmNewPassword": "Confirmar Nueva Contraseña",
 		"changeBtn": "Cambiar contraseña",
-		"pwRulePass": "✓",
-		"pwRuleFail": "○"
+		"pwRulePass": "OK",
+		"pwRuleFail": "-"
 	},
 	"home": {
 		"placeholder": "Placeholder de la aplicación — página principal protegida",

@@ -65,7 +65,7 @@ export default function ResendConfirmationPage() {
 			<AuthCard>
 				{sent ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
-						<div className={styles.sentIcon}>✉</div>
+						<div className={styles.sentIcon}><i className="bi bi-envelope" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resendConfirmation.emailSent')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="resendConfirmation.emailSentDesc" values={{ email }} components={{ strong: <strong /> }} />
