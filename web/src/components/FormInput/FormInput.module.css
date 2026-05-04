@@ -25,7 +25,6 @@
 .inputError {
 	border-color: var(--color-error);
 	background: var(--color-error-container);
-	background-image: none !important;
 }
 
 .inputError:focus {

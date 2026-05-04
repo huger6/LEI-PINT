@@ -7,6 +7,8 @@ import { AuthCard, register } from '../../features/auth';
 import api from '../../services/api.js';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import CustomSelect from '../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../components/DatePicker/DatePicker';
 import styles from './RegisterPage.module.css';
 import {
 	PASSWORD_RULES,
@@ -102,7 +104,7 @@ const HINT_COLORS = {
 };
 
 export default function RegisterPage() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [step, setStep] = useState(1);
 	const [role, setRole] = useState('');
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
@@ -454,8 +456,6 @@ export default function RegisterPage() {
 		return null;
 	};
 
-	const selectClass = (field) =>
-		`form-select ${styles.selectModern} ${fieldError(field) ? 'is-invalid' : ''}`;
 	const textareaClass = `form-control ${styles.textarea} ${biographyError ? 'is-invalid' : ''}`;
 
 	const continueDisabled = step2HasPending;
@@ -603,19 +603,15 @@ export default function RegisterPage() {
 									<div>
 										<label htmlFor="phone_local_number" className={`form-label ${styles.selectLabel}`}>{t('register.phoneNumber')}</label>
 										<div className={styles.phoneRow}>
-											<div className={styles.selectWrap}>
-												<select
-													value={phonePrefix}
-													onChange={onPhonePrefixChange}
-													onBlur={() => setFieldTouched('phone_number', true)}
-													className={`form-select ${styles.selectModern} ${phoneError ? 'is-invalid' : ''}`}
-													aria-label={t('register.countryPhonePrefix')}
-												>
-													{COUNTRY_PHONE_PREFIXES.map((prefix) => (
-														<option key={prefix.value} value={prefix.value}>{prefix.label}</option>
-													))}
-												</select>
-											</div>
+											<CustomSelect
+												id="phone_prefix"
+												value={phonePrefix}
+												onChange={onPhonePrefixChange}
+												onBlur={() => setFieldTouched('phone_number', true)}
+												options={COUNTRY_PHONE_PREFIXES}
+												error={!!phoneError}
+												ariaLabel={t('register.countryPhonePrefix')}
+											/>
 											<input
 												id="phone_local_number"
 												name="phone_local_number"
@@ -636,17 +632,18 @@ export default function RegisterPage() {
 
 									<div>
 										<label htmlFor="birthdate" className={`form-label ${styles.selectLabel}`}>{t('register.dateOfBirth')}</label>
-										<div className={styles.dateWrap}>
-											<input
-												{...form.getFieldProps('birthdate')}
-												onChange={onChange}
-												onBlur={handleBlur}
-												id="birthdate"
-												type="date"
-												max={getMinBirthdate()}
-												className={`form-control ${styles.dateInput} ${birthdateError ? 'is-invalid' : ''}`}
-											/>
-										</div>
+										<DatePicker
+											id="birthdate"
+											name="birthdate"
+											value={values.birthdate}
+											onChange={onChange}
+											onBlur={handleBlur}
+											max={getMinBirthdate()}
+											error={!!birthdateError}
+											ariaLabel={t('register.dateOfBirth')}
+											locale={i18n.language}
+											placeholder="DD-MM-YYYY"
+										/>
 										{birthdateError && (
 											<div className="invalid-feedback d-block">{birthdateError}</div>
 										)}
@@ -654,21 +651,17 @@ export default function RegisterPage() {
 
 									<div>
 										<label htmlFor="preferred_lang_id" className={`form-label ${styles.selectLabel}`}>{t('register.preferredLanguage')}</label>
-										<div className={styles.selectWrap}>
-											<select
-												{...form.getFieldProps('preferred_lang_id')}
-												onChange={onChange}
-												onBlur={handleBlur}
-												id="preferred_lang_id"
-												className={selectClass('preferred_lang_id')}
-												disabled={languageOptions.length === 0}
-											>
-												<option value="">{languageOptions.length === 0 ? t('register.noLanguagesAvailable') : t('register.selectLanguage')}</option>
-												{languageOptions.map((language) => (
-													<option key={language.id} value={language.id}>{language.name}</option>
-												))}
-											</select>
-										</div>
+										<CustomSelect
+											id="preferred_lang_id"
+											name="preferred_lang_id"
+											value={form.values.preferred_lang_id}
+											onChange={onChange}
+											onBlur={handleBlur}
+											options={languageOptions.map((l) => ({ value: l.id, label: l.name }))}
+											placeholder={languageOptions.length === 0 ? t('register.noLanguagesAvailable') : t('register.selectLanguage')}
+											disabled={languageOptions.length === 0}
+											error={!!fieldError('preferred_lang_id')}
+										/>
 										{fieldError('preferred_lang_id') && (
 											<div className="invalid-feedback d-block">{fieldError('preferred_lang_id')}</div>
 										)}
@@ -676,21 +669,17 @@ export default function RegisterPage() {
 
 									<div>
 										<label htmlFor="location_id" className={`form-label ${styles.selectLabel}`}>{t('register.location')}</label>
-										<div className={styles.selectWrap}>
-											<select
-												{...form.getFieldProps('location_id')}
-												onChange={onChange}
-												onBlur={handleBlur}
-												id="location_id"
-												className={selectClass('location_id')}
-												disabled={locationOptions.length === 0}
-											>
-												<option value="">{locationOptions.length === 0 ? t('register.noLocationsAvailable') : t('register.selectLocation')}</option>
-												{locationOptions.map((location) => (
-													<option key={location.id} value={location.id}>{location.name}</option>
-												))}
-											</select>
-										</div>
+										<CustomSelect
+											id="location_id"
+											name="location_id"
+											value={form.values.location_id}
+											onChange={onChange}
+											onBlur={handleBlur}
+											options={locationOptions.map((l) => ({ value: l.id, label: l.name }))}
+											placeholder={locationOptions.length === 0 ? t('register.noLocationsAvailable') : t('register.selectLocation')}
+											disabled={locationOptions.length === 0}
+											error={!!fieldError('location_id')}
+										/>
 										{fieldError('location_id') && (
 											<div className="invalid-feedback d-block">{fieldError('location_id')}</div>
 										)}
@@ -743,7 +732,7 @@ export default function RegisterPage() {
 																			onClick={(event) => { event.stopPropagation(); setPrimary(area.id); }}
 																			title={t('register.setAsPrimary')}
 																		>
-																			*
+																			<i className="bi bi-star" aria-hidden="true" />
 																		</span>
 																	)}
 																</button>

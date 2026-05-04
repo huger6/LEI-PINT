@@ -104,26 +104,7 @@
 	color: var(--color-on-primary-container);
 }
 
-.selectWrap {
-	position: relative;
-}
-
-.selectWrap::after {
-	content: '';
-	position: absolute;
-	top: 50%;
-	right: 0.9rem;
-	width: 0.5rem;
-	height: 0.5rem;
-	border-right: 2px solid var(--color-outline);
-	border-bottom: 2px solid var(--color-outline);
-	transform: translateY(-65%) rotate(45deg);
-	pointer-events: none;
-}
-
-.selectModern,
 .phoneInput,
-.dateInput,
 .textarea {
 	border: 1.5px solid var(--color-outline);
 	border-radius: 12px;
@@ -132,15 +113,7 @@
 	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.selectModern {
-	appearance: none;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	padding-right: 2.25rem;
-}
-
-.phoneInput,
-.dateInput {
+.phoneInput {
 	min-height: calc(1.5em + 0.75rem + 2px);
 }
 
@@ -148,31 +121,7 @@
 	letter-spacing: 0.03em;
 }
 
-.dateWrap {
-	position: relative;
-}
-
-.dateWrap::after {
-	content: '';
-	position: absolute;
-	top: 50%;
-	right: 0.9rem;
-	width: 1rem;
-	height: 1rem;
-	transform: translateY(-50%);
-	border: 2px solid var(--color-outline);
-	border-radius: 0.2rem;
-	pointer-events: none;
-}
-
-.dateInput::-webkit-calendar-picker-indicator {
-	opacity: 0;
-	cursor: pointer;
-}
-
-.selectModern:focus,
 .phoneInput:focus,
-.dateInput:focus,
 .textarea:focus {
 	border-color: var(--color-primary);
 	box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);

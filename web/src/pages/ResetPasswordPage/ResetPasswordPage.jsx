@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
 
 				{tokenStatus === 'invalid' && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.errorIcon}>✕</div>
+						<div className={styles.errorIcon}><i className="bi bi-x-lg" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.invalidOrExpired')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
@@ -157,7 +157,7 @@ export default function ResetPasswordPage() {
 											key={rule.key}
 											className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
 										>
-											{rule.test(form.values.newPassword) ? t('resetPassword.pwRulePass') : t('resetPassword.pwRuleFail')} {t(`passwordRules.${rule.key}`)}
+											<i className={`bi ${rule.test(form.values.newPassword) ? 'bi-check2' : 'bi-circle'}`} aria-hidden="true" /> {t(`passwordRules.${rule.key}`)}
 										</li>
 									))}
 								</ul>
@@ -182,7 +182,7 @@ export default function ResetPasswordPage() {
 
 				{success && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.successIcon}>✓</div>
+						<div className={styles.successIcon}><i className="bi bi-check-lg" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('resetPassword.successDesc')}</p>
 						<Link to="/login">

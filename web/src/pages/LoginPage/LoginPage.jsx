@@ -69,7 +69,7 @@ export default function LoginPage() {
 			<AuthCard>
 				{emailNotConfirmed ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
-						<div className={styles.warningIcon}>⚠</div>
+						<div className={styles.warningIcon}><i className="bi bi-exclamation-triangle" aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('login.emailNotConfirmed')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							{t('login.emailNotConfirmedDesc')}
