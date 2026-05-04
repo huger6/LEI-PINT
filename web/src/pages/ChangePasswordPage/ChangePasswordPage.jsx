@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth, changePassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
@@ -19,6 +20,7 @@ import {
 const INITIAL = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
 export default function ChangePasswordPage() {
+	const { t } = useTranslation();
 	const { logout } = useAuth();
 	const navigate = useNavigate();
 
@@ -76,21 +78,21 @@ export default function ChangePasswordPage() {
 	return (
 		<AuthLayout>
 			<Helmet>
-				<title>Change Password — LEI-PINT</title>
-				<meta name="description" content="Set a new password for your LEI-PINT account before continuing." />
+				<title>{t('changePassword.title')}</title>
+				<meta name="description" content={t('changePassword.metaDescription')} />
 			</Helmet>
 			<AuthCard>
 				{success ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-4 text-center">
 						<div className={styles.successIcon}>✓</div>
-						<h2 className={`mb-0 ${styles.title}`}>Password changed!</h2>
-						<p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>Redirecting you to login…</p>
+						<h2 className={`mb-0 ${styles.title}`}>{t('changePassword.successHeading')}</h2>
+						<p className="mb-0 small" style={{ color: 'var(--color-outline)' }}>{t('changePassword.redirecting')}</p>
 					</div>
 				) : (
 					<>
-						<h2 className={`text-center mb-1 ${styles.title}`}>Change your password</h2>
+						<h2 className={`text-center mb-1 ${styles.title}`}>{t('changePassword.heading')}</h2>
 						<p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
-							You are required to set a new password before continuing.
+							{t('changePassword.subtitle')}
 						</p>
 						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
 							<div className="position-relative">
@@ -98,9 +100,9 @@ export default function ChangePasswordPage() {
 									{...form.getFieldProps('currentPassword')}
 									onChange={onChange}
 									id="currentPassword"
-									label="Current Password"
+									label={t('changePassword.currentPassword')}
 									type={showCurrent ? 'text' : 'password'}
-									placeholder="••••••••"
+									placeholder={t('passwordPlaceholder')}
 									error={fieldError('currentPassword')}
 									autoFocus
 									autoComplete="current-password"
@@ -110,7 +112,7 @@ export default function ChangePasswordPage() {
 									className={styles.eyeToggle}
 									onClick={() => setShowCurrent((v) => !v)}
 									tabIndex={-1}
-									aria-label="Toggle password visibility"
+									aria-label={t('togglePasswordVisibility')}
 								>
 									<i className={`bi ${showCurrent ? 'bi-eye-slash' : 'bi-eye'}`} />
 								</button>
@@ -121,9 +123,9 @@ export default function ChangePasswordPage() {
 									{...form.getFieldProps('newPassword')}
 									onChange={onChange}
 									id="newPassword"
-									label="New Password"
+									label={t('changePassword.newPassword')}
 									type={showNew ? 'text' : 'password'}
-									placeholder="••••••••"
+									placeholder={t('passwordPlaceholder')}
 									error={fieldError('newPassword')}
 									autoComplete="new-password"
 								/>
@@ -132,7 +134,7 @@ export default function ChangePasswordPage() {
 									className={styles.eyeToggle}
 									onClick={() => setShowNew((v) => !v)}
 									tabIndex={-1}
-									aria-label="Toggle password visibility"
+									aria-label={t('togglePasswordVisibility')}
 								>
 									<i className={`bi ${showNew ? 'bi-eye-slash' : 'bi-eye'}`} />
 								</button>
@@ -142,10 +144,10 @@ export default function ChangePasswordPage() {
 								<ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
 									{PASSWORD_RULES.map((rule) => (
 										<li
-											key={rule.label}
+											key={rule.key}
 											className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
 										>
-											{rule.test(form.values.newPassword) ? '✓' : '○'} {rule.label}
+											{rule.test(form.values.newPassword) ? t('changePassword.pwRulePass') : t('changePassword.pwRuleFail')} {t(`passwordRules.${rule.key}`)}
 										</li>
 									))}
 								</ul>
@@ -155,16 +157,16 @@ export default function ChangePasswordPage() {
 								{...form.getFieldProps('confirmPassword')}
 								onChange={onChange}
 								id="confirmPassword"
-								label="Confirm New Password"
+								label={t('changePassword.confirmNewPassword')}
 								type={showNew ? 'text' : 'password'}
-								placeholder="••••••••"
+								placeholder={t('passwordPlaceholder')}
 								error={fieldError('confirmPassword')}
 								autoComplete="new-password"
 							/>
 
 							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
 
-							<FormButton type="submit" loading={loading}>Change password</FormButton>
+							<FormButton type="submit" loading={loading}>{t('changePassword.changeBtn')}</FormButton>
 						</form>
 					</>
 				)}
