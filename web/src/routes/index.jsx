@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 import { useAuth } from '../features/auth';
@@ -10,6 +11,7 @@ import {
 import styles from '../assets/styles/componentes/App.module.css';
 
 function HomePlaceholder() {
+	const { t } = useTranslation();
 	const { logout } = useAuth();
 	const navigate = useNavigate();
 
@@ -20,9 +22,9 @@ function HomePlaceholder() {
 
 	return (
 		<div className={styles.placeholder}>
-			App placeholder — protected home
+			{t('home.placeholder')}
 			<button className={styles.logoutBtn} onClick={handleLogout}>
-				Log out
+				{t('home.logout')}
 			</button>
 		</div>
 	);
