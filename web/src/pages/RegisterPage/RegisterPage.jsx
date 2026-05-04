@@ -739,7 +739,7 @@ export default function RegisterPage() {
 															);
 														})}
 													</div>
-													<p className="small mb-0" style={{ color: 'var(--color-outline)' }}>{t('register.primaryAreaHint')}</p>
+													<p className="small mb-0" style={{ color: 'var(--color-outline)' }}><Trans i18nKey="register.primaryAreaHint" components={{ icon: <i className="bi bi-star" /> }} /></p>
 												</>
 											)}
 										</div>
