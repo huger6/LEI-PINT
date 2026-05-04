@@ -181,7 +181,7 @@
 		"passwordRequired": "A palavra-passe é obrigatória.",
 		"passwordMaxLength": "A palavra-passe deve ter no máximo 100 caracteres.",
 		"passwordMustInclude": "A palavra-passe deve incluir: {{rule}}.",
-		"phoneInvalid": "Formato inválido. Use o padrão internacional (deve incluir prefixo, ex. +351912345678).",
+		"phoneInvalid": "Formato de número de telefone inválido.",
 		"dateInvalid": "Data inválida.",
 		"dateFuture": "A data de nascimento não pode ser no futuro.",
 		"dateMinAge": "Deve ter pelo menos 16 anos para se registar.",

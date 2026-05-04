@@ -9,6 +9,7 @@ import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import CustomSelect from '../../components/CustomSelect/CustomSelect';
 import DatePicker from '../../components/DatePicker/DatePicker';
+import { capitalizeName } from '../../utils/utils';
 import styles from './RegisterPage.module.css';
 import {
 	PASSWORD_RULES,
@@ -31,30 +32,31 @@ import {
 	fetchBiographyValidity,
 	mergeError,
 } from '../../validations';
+import { usePhoneMetadata } from '../../services/libphonenumber';
 
 const ROLE_KEYS = ['Consultant', 'Talent Manager', 'Service Line Leader'];
 
-const COUNTRY_PHONE_PREFIXES = [
-	{ value: '+1', label: 'US/CA (+1)' },
-	{ value: '+44', label: 'UK (+44)' },
-	{ value: '+33', label: 'France (+33)' },
-	{ value: '+34', label: 'Spain (+34)' },
-	{ value: '+39', label: 'Italy (+39)' },
-	{ value: '+49', label: 'Germany (+49)' },
-	{ value: '+31', label: 'Netherlands (+31)' },
-	{ value: '+32', label: 'Belgium (+32)' },
-	{ value: '+351', label: 'Portugal (+351)' },
-	{ value: '+55', label: 'Brazil (+55)' },
-	{ value: '+52', label: 'Mexico (+52)' },
+const FALLBACK_PHONE_PREFIXES = [
 	{ value: '+54', label: 'Argentina (+54)' },
-	{ value: '+91', label: 'India (+91)' },
-	{ value: '+81', label: 'Japan (+81)' },
-	{ value: '+82', label: 'South Korea (+82)' },
 	{ value: '+61', label: 'Australia (+61)' },
-	{ value: '+64', label: 'New Zealand (+64)' },
+	{ value: '+32', label: 'Belgium (+32)' },
+	{ value: '+55', label: 'Brazil (+55)' },
 	{ value: '+86', label: 'China (+86)' },
-	{ value: '+971', label: 'UAE (+971)' },
+	{ value: '+33', label: 'France (+33)' },
+	{ value: '+49', label: 'Germany (+49)' },
+	{ value: '+91', label: 'India (+91)' },
+	{ value: '+39', label: 'Italy (+39)' },
+	{ value: '+81', label: 'Japan (+81)' },
+	{ value: '+52', label: 'Mexico (+52)' },
+	{ value: '+31', label: 'Netherlands (+31)' },
+	{ value: '+64', label: 'New Zealand (+64)' },
+	{ value: '+351', label: 'Portugal (+351)' },
 	{ value: '+27', label: 'South Africa (+27)' },
+	{ value: '+82', label: 'South Korea (+82)' },
+	{ value: '+34', label: 'Spain (+34)' },
+	{ value: '+971', label: 'UAE (+971)' },
+	{ value: '+44', label: 'UK (+44)' },
+	{ value: '+1', label: 'US/CA (+1)' },
 ];
 
 const MIN_AGE = 16;
@@ -121,12 +123,15 @@ export default function RegisterPage() {
 	const [phonePrefix, setPhonePrefix] = useState('+351');
 	const [phoneLocalDisplay, setPhoneLocalDisplay] = useState('');
 
+	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
+	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
+
 	const validate = useCallback(
 		(vals) => ({
 			...validateRegisterStep2(vals),
-			...validateRegisterStep3(vals, role),
+			...validateRegisterStep3(vals, role, { phoneMetadata }),
 		}),
-		[role]
+		[role, phoneMetadata]
 	);
 
 	const form = useFormValidation({ initialValues: INITIAL_FORM, validate });
@@ -359,7 +364,7 @@ export default function RegisterPage() {
 
 		try {
 			const payload = {
-				full_name: values.full_name.trim(),
+				full_name: capitalizeName(values.full_name),
 				username: values.username.trim(),
 				email_address: values.email_address.trim(),
 				password: values.password,
@@ -608,7 +613,7 @@ export default function RegisterPage() {
 												value={phonePrefix}
 												onChange={onPhonePrefixChange}
 												onBlur={() => setFieldTouched('phone_number', true)}
-												options={COUNTRY_PHONE_PREFIXES}
+												options={phonePrefixes}
 												error={!!phoneError}
 												ariaLabel={t('register.countryPhonePrefix')}
 											/>

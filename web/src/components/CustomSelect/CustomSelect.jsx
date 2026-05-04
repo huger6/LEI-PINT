@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import styles from './CustomSelect.module.css';
 
 export default function CustomSelect({
@@ -20,8 +20,15 @@ export default function CustomSelect({
 	const wrapperRef = useRef(null);
 	const triggerRef = useRef(null);
 	const listRef = useRef(null);
+	const searchBufferRef = useRef('');
+	const searchTimerRef = useRef(null);
 
 	const selected = options.find((o) => String(o.value) === String(value));
+
+	const optionLabelsLower = useMemo(
+		() => options.map((o) => String(o.label).toLowerCase()),
+		[options]
+	);
 
 	const close = useCallback(() => {
 		setOpen(false);
@@ -76,12 +83,26 @@ export default function CustomSelect({
 	const handleKeyDown = (e) => {
 		if (disabled) return;
 
+		const jumpToLetter = (key) => {
+			clearTimeout(searchTimerRef.current);
+			searchBufferRef.current += key.toLowerCase();
+			searchTimerRef.current = setTimeout(() => { searchBufferRef.current = ''; }, 500);
+
+			const query = searchBufferRef.current;
+			const idx = optionLabelsLower.findIndex((label) => label.startsWith(query));
+			if (idx >= 0) setFocusIndex(idx);
+		};
+
 		if (!open) {
 			if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
 				e.preventDefault();
 				setOpen(true);
 				const idx = options.findIndex((o) => String(o.value) === String(value));
 				setFocusIndex(idx >= 0 ? idx : 0);
+			} else if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
+				e.preventDefault();
+				setOpen(true);
+				jumpToLetter(e.key);
 			}
 			return;
 		}
@@ -116,6 +137,12 @@ export default function CustomSelect({
 			case 'End':
 				e.preventDefault();
 				setFocusIndex(options.length - 1);
+				break;
+			default:
+				if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
+					e.preventDefault();
+					jumpToLetter(e.key);
+				}
 				break;
 		}
 	};

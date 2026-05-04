@@ -39,9 +39,9 @@ export const validateRegisterStep2 = (form) =>
 		['password', validatePassword(form.password)],
 	]);
 
-export const validateRegisterStep3 = (form, role) => {
+export const validateRegisterStep3 = (form, role, { phoneMetadata } = {}) => {
 	const entries = [
-		['phone_number', validatePhoneNumber(form.phone_number)],
+		['phone_number', validatePhoneNumber(form.phone_number, phoneMetadata)],
 		['birthdate', validateBirthdate(form.birthdate)],
 		['biography', validateBiography(form.biography)],
 		['preferred_lang_id', validatePositiveIntId(form.preferred_lang_id, tl('preferred_lang_id'))],
