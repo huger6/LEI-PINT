@@ -1,6 +1,6 @@
 .spinner {
-  color: var(--color-primary);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-width: 3.5px;
+	color: var(--color-primary);
+	width: 2.5rem;
+	height: 2.5rem;
+	border-width: 3.5px;
 }

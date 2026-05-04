@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 							<FormButton type="submit" loading={loading}>{t('forgotPassword.sendResetLink')}</FormButton>
 						</form>
 						<Link to="/login">
-							<FormButton variant="ghost" type="button" className="mt-2">
+							<FormButton variant="ghost" type="button" className="mt-1">
 								<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
 							</FormButton>
 						</Link>

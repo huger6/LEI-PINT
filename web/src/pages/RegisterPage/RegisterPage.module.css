@@ -1,265 +1,265 @@
 .title {
-  font-size: 1.4rem;
-  color: var(--color-on-primary-container);
+	font-size: 1.4rem;
+	color: var(--color-on-primary-container);
 }
 
 .subtitle {
-  color: var(--color-outline);
+	color: var(--color-outline);
 }
 
 .stepBar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 1.5rem;
 }
 
 .step {
-  flex: 1;
-  height: 4px;
-  border-radius: 4px;
-  background: var(--color-primary-container);
-  transition: background 0.25s;
+	flex: 1;
+	height: 4px;
+	border-radius: 4px;
+	background: var(--color-primary-container);
+	transition: background 0.25s;
 }
 
 .stepActive {
-  background: var(--color-primary);
+	background: var(--color-primary);
 }
 
 .roleGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
 }
 
 .roleCard {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  padding: 1rem 1.125rem;
-  border: 1.5px solid var(--color-outline);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
-  width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
+	padding: 1rem 1.125rem;
+	border: 1.5px solid var(--color-outline);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.5);
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+	width: 100%;
 }
 
 .roleCard:hover {
-  border-color: var(--color-primary);
-  background: rgba(185, 235, 246, 0.25);
+	border-color: var(--color-primary);
+	background: rgba(185, 235, 246, 0.25);
 }
 
 .roleCardActive {
-  border-color: var(--color-primary);
-  background: rgba(185, 235, 246, 0.35);
-  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+	border-color: var(--color-primary);
+	background: rgba(185, 235, 246, 0.35);
+	box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
 }
 
 .roleLabel {
-  font-weight: 600;
-  color: var(--color-on-primary-container);
-  font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--color-on-primary-container);
+	font-size: 0.9375rem;
 }
 
 .roleDesc {
-  font-size: 0.8125rem;
-  color: var(--color-outline);
-  line-height: 1.4;
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	line-height: 1.4;
 }
 
 .eyeToggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(25%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.25rem;
-  line-height: 1;
-  color: var(--color-outline);
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(25%);
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 1rem;
+	padding: 0.25rem;
+	line-height: 1;
+	color: var(--color-outline);
 }
 
 .pwRules {
-  background: rgba(185, 235, 246, 0.2);
-  font-size: 0.8125rem;
+	background: rgba(185, 235, 246, 0.2);
+	font-size: 0.8125rem;
 }
 
 .pwRule {
-  color: var(--color-outline);
-  transition: color 0.15s;
+	color: var(--color-outline);
+	transition: color 0.15s;
 }
 
 .pwRuleOk {
-  color: var(--color-success);
+	color: var(--color-success);
 }
 
 .selectLabel {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-on-primary-container);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-on-primary-container);
 }
 
 .selectWrap {
-  position: relative;
+	position: relative;
 }
 
 .selectWrap::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 0.9rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-right: 2px solid var(--color-outline);
-  border-bottom: 2px solid var(--color-outline);
-  transform: translateY(-65%) rotate(45deg);
-  pointer-events: none;
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: 0.9rem;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-right: 2px solid var(--color-outline);
+	border-bottom: 2px solid var(--color-outline);
+	transform: translateY(-65%) rotate(45deg);
+	pointer-events: none;
 }
 
 .selectModern,
 .phoneInput,
 .dateInput,
 .textarea {
-  border: 1.5px solid var(--color-outline);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.82) 100%);
-  color: var(--color-on-surface);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+	border: 1.5px solid var(--color-outline);
+	border-radius: 12px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.82) 100%);
+	color: var(--color-on-surface);
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .selectModern {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 2.25rem;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	padding-right: 2.25rem;
 }
 
 .phoneInput,
 .dateInput {
-  min-height: calc(1.5em + 0.75rem + 2px);
+	min-height: calc(1.5em + 0.75rem + 2px);
 }
 
 .phoneInput {
-  letter-spacing: 0.03em;
+	letter-spacing: 0.03em;
 }
 
 .dateWrap {
-  position: relative;
+	position: relative;
 }
 
 .dateWrap::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 0.9rem;
-  width: 1rem;
-  height: 1rem;
-  transform: translateY(-50%);
-  border: 2px solid var(--color-outline);
-  border-radius: 0.2rem;
-  pointer-events: none;
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: 0.9rem;
+	width: 1rem;
+	height: 1rem;
+	transform: translateY(-50%);
+	border: 2px solid var(--color-outline);
+	border-radius: 0.2rem;
+	pointer-events: none;
 }
 
 .dateInput::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  cursor: pointer;
+	opacity: 0;
+	cursor: pointer;
 }
 
 .selectModern:focus,
 .phoneInput:focus,
 .dateInput:focus,
 .textarea:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
-  transform: translateY(-1px);
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px rgba(0, 184, 224, 0.15);
+	transform: translateY(-1px);
 }
 
 .phoneRow {
-  display: grid;
-  grid-template-columns: 11rem minmax(0, 1fr);
-  gap: 0.5rem;
+	display: grid;
+	grid-template-columns: 11rem minmax(0, 1fr);
+	gap: 0.5rem;
 }
 
 .textarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
+	resize: vertical;
+	min-height: 80px;
+	font-family: inherit;
 }
 
 .areasSection {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
 .noDataMessage {
-  border: 1px dashed var(--color-outline);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.62);
-  color: var(--color-outline);
-  padding: 0.75rem;
-  font-size: 0.85rem;
+	border: 1px dashed var(--color-outline);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.62);
+	color: var(--color-outline);
+	padding: 0.75rem;
+	font-size: 0.85rem;
 }
 
 .areaChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 }
 
 .areaChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.35rem 0.75rem;
-  border: 1.5px solid var(--color-outline);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.5);
-  font-size: 0.8125rem;
-  cursor: pointer;
-  transition: border-color 0.18s, background 0.18s;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.35rem 0.75rem;
+	border: 1.5px solid var(--color-outline);
+	border-radius: 20px;
+	background: rgba(255, 255, 255, 0.5);
+	font-size: 0.8125rem;
+	cursor: pointer;
+	transition: border-color 0.18s, background 0.18s;
 }
 
 .areaChip:hover {
-  border-color: var(--color-primary);
+	border-color: var(--color-primary);
 }
 
 .areaChipActive {
-  border-color: var(--color-primary);
-  background: rgba(185, 235, 246, 0.4);
-  color: var(--color-on-primary-container);
+	border-color: var(--color-primary);
+	background: rgba(185, 235, 246, 0.4);
+	color: var(--color-on-primary-container);
 }
 
 .primaryBadge {
-  color: var(--color-outline);
-  font-size: 0.875rem;
-  transition: color 0.15s;
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	transition: color 0.15s;
 }
 
 .primaryBadgeOn {
-  color: var(--color-warning);
+	color: var(--color-warning);
 }
 
 .successIcon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--color-success);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  font-weight: 700;
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	background: var(--color-success);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.35rem;
+	font-weight: 700;
 }
 
 @media (max-width: 576px) {
-  .phoneRow {
-    grid-template-columns: 1fr;
-  }
+	.phoneRow {
+		grid-template-columns: 1fr;
+	}
 }
