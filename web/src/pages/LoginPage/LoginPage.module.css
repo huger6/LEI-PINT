@@ -22,6 +22,19 @@
 	font-size: 2.5rem;
 }
 
+.emailActions {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.emailActionLink {
+	width: 100%;
+	display: block;
+	text-decoration: none;
+}
+
 .eyeToggle {
 	position: absolute;
 	right: 0.75rem;

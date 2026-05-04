@@ -74,22 +74,23 @@ export default function LoginPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							{t('login.emailNotConfirmedDesc')}
 						</p>
-						<Link
-							to="/resend-confirmation"
-							state={{ email: loginEmail }}
-							className="small"
-							style={{ color: 'var(--color-primary)' }}
-						>
-							{t('login.resendConfirmation')}
-						</Link>
-						<button
-							type="button"
-							className="btn btn-link small p-0"
-							style={{ color: 'var(--color-outline)' }}
-							onClick={() => setEmailNotConfirmed(false)}
-						>
-							{t('backToLoginArrow')}
-						</button>
+						<div className={styles.emailActions}>
+							<Link
+								to={loginEmail ? `/resend-confirmation?email=${encodeURIComponent(loginEmail)}` : '/resend-confirmation'}
+								state={{ email: loginEmail }}
+								className={styles.emailActionLink}
+								style={{ color: 'var(--color-primary)' }}
+							>
+								<FormButton type="button">
+									{t('login.resendConfirmation')}
+								</FormButton>
+							</Link>
+							<Link to="/login" className={styles.emailActionLink}>
+								<FormButton variant="ghost" type="button">
+									<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
+								</FormButton>
+							</Link>
+						</div>
 					</div>
 				) : (
 					<>
