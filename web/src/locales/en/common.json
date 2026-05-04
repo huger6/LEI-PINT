@@ -5,7 +5,7 @@
 	"loading": "Loading…",
 	"logoAlt": "Softinsa Badges Platform",
 	"togglePasswordVisibility": "Toggle password visibility",
-	"passwordPlaceholder": "••••••••",
+	"passwordPlaceholder": "Password",
 	"emailPlaceholder": "you@example.com",
 	"login": {
 		"title": "Sign In — Softinsa",
@@ -27,10 +27,10 @@
 		"createOne": "Create one"
 	},
 	"register": {
-		"title": "Create Account - LEI-PINT",
-		"metaDescription": "Create a new LEI-PINT account. Choose your role and get started.",
-		"successTitle": "Account Created - LEI-PINT",
-		"successMetaDescription": "Your LEI-PINT account has been created. Check your email to confirm.",
+		"title": "Create Account - Softinsa Badges Platform",
+		"metaDescription": "Create a new Softinsa Badges Platform account. Choose your role and get started.",
+		"successTitle": "Account Created - Softinsa Badges Platform",
+		"successMetaDescription": "Your Softinsa Badges Platform account has been created. Check your email to confirm.",
 		"accountCreated": "Account created!",
 		"checkEmailConfirmation": "Check your email for a confirmation link before signing in.",
 		"createAccount": "Create an account",
@@ -103,8 +103,8 @@
 		"sendResetLink": "Send reset link"
 	},
 	"resetPassword": {
-		"title": "Reset Password — LEI-PINT",
-		"metaDescription": "Choose a new password for your LEI-PINT account.",
+		"title": "Reset Password — Softinsa Badges Platform",
+		"metaDescription": "Choose a new password for your Softinsa Badges Platform account.",
 		"validatingLink": "Validating your reset link…",
 		"invalidOrExpired": "Invalid or expired link",
 		"invalidOrExpiredDesc": "This password reset link is invalid or has already been used.",
@@ -122,8 +122,8 @@
 		"pwRuleFail": "○"
 	},
 	"confirmEmail": {
-		"title": "Confirm Email — LEI-PINT",
-		"metaDescription": "Confirming your LEI-PINT email address.",
+		"title": "Confirm Email — Softinsa Badges Platform",
+		"metaDescription": "Confirming your Softinsa Badges Platform email address.",
 		"confirming": "Confirming your email address…",
 		"successHeading": "Email confirmed!",
 		"successDesc": "Your account is now active. You can sign in.",
@@ -142,8 +142,8 @@
 		"resendBtn": "Resend email"
 	},
 	"changePassword": {
-		"title": "Change Password — LEI-PINT",
-		"metaDescription": "Set a new password for your LEI-PINT account before continuing.",
+		"title": "Change Password — Softinsa Badges Platform",
+		"metaDescription": "Set a new password for your Softinsa Badges Platform account before continuing.",
 		"successHeading": "Password changed!",
 		"redirecting": "Redirecting you to login…",
 		"heading": "Change your password",
