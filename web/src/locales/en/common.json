@@ -181,7 +181,7 @@
 		"passwordRequired": "Password is required.",
 		"passwordMaxLength": "Password must have a maximum of 100 characters.",
 		"passwordMustInclude": "Password must include: {{rule}}.",
-		"phoneInvalid": "Invalid format. Use the international standard (must include prefix, e.g. +351912345678).",
+		"phoneInvalid": "Invalid phone number format.",
 		"dateInvalid": "Invalid date.",
 		"dateFuture": "Date of birth cannot be in the future.",
 		"dateMinAge": "You must be at least 16 years old to register.",

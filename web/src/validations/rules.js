@@ -1,4 +1,5 @@
 import i18n from '../i18n';
+import { validatePhoneWithMetadata } from '../services/libphonenumber/validator';
 
 const t = (key, opts) => i18n.t(key, opts);
 
@@ -6,7 +7,7 @@ const labelOf = (field) => t(`validation.fields.${field}`, { defaultValue: field
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9._]+$/;
-const PHONE_REGEX = /^\+\d{7,15}$/;
+const PHONE_REGEX_FALLBACK = /^\+\d{7,15}$/;
 
 const required = (value) =>
 	value === undefined ||
@@ -67,10 +68,14 @@ export const validatePasswordPresence = (value) => {
 	return null;
 };
 
-export const validatePhoneNumber = (value) => {
+export const validatePhoneNumber = (value, metadata) => {
 	if (required(value)) return null;
 	const v = value.replace(/\s+/g, '');
-	if (!PHONE_REGEX.test(v)) return t('validation.phoneInvalid');
+	if (!PHONE_REGEX_FALLBACK.test(v)) return t('validation.phoneInvalid');
+	if (metadata) {
+		const result = validatePhoneWithMetadata(v, metadata);
+		if (!result.valid) return t('validation.phoneInvalid');
+	}
 	return null;
 };
 
