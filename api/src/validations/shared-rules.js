@@ -5,6 +5,8 @@ const loadEnvironment = require('../config/loadEnv');
 
 loadEnvironment();
 
+filter.addDictionary('pt', require('./dictionaries/pt.json'));
+filter.addDictionary('es', require('./dictionaries/es.json'));
 filter.loadDictionary('en');
 filter.add(filter.getDictionary('pt'));
 filter.add(filter.getDictionary('es'));
