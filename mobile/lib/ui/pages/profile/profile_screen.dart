@@ -201,13 +201,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
-                icon: Icons.person_outline_rounded,
-                label: 'Conta',
+                icon: Icons.edit_note_rounded,
+                label: 'As minhas características',
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
                 icon: Icons.notifications_none_rounded,
-                label: 'Notificações',
+                label: 'Preferências notificações',
+              ),
+              const SizedBox(height: 8),
+              const _ProfileMenuTile(
+                icon: Icons.person_outline_rounded,
+                label: 'Editar perfil',
+              ),
+              const SizedBox(height: 8),
+              _ProfileMenuTile(
+                icon: Icons.email_outlined,
+                label: 'Editar assinatura de email',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRouter.emailSignature),
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
@@ -225,8 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
-                icon: Icons.help_outline_rounded,
-                label: 'Centro de ajuda',
+                icon: Icons.privacy_tip_outlined,
+                label: 'Políticas de privacidade',
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
@@ -235,8 +247,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               const _ProfileMenuTile(
-                icon: Icons.privacy_tip_outlined,
-                label: 'Política de privacidade',
+                icon: Icons.help_outline_rounded,
+                label: 'Ajuda',
               ),
               const SizedBox(height: 10),
               Container(
@@ -376,24 +388,13 @@ class _BadgesStatsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: const [
-              Text(
-                'Badges Obtidos',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF3C4453),
-                ),
-              ),
-              Spacer(),
-              _LegendItem(color: Color(0xFFE57D97), label: 'Os seus dados'),
-              SizedBox(width: 12),
-              _LegendItem(
-                color: Color(0xFF494CE6),
-                label: 'Média dos consultores',
-              ),
-            ],
+          const Text(
+            'Badges Obtidos',
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF3C4453),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -526,6 +527,18 @@ class _BadgesStatsCard extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              _LegendItem(color: Color(0xFFE57D97), label: 'Os seus dados'),
+              SizedBox(width: 28),
+              _LegendItem(
+                color: Color(0xFF494CE6),
+                label: 'Média dos consultores',
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -562,14 +575,16 @@ class _LegendItem extends StatelessWidget {
 }
 
 class _ProfileMenuTile extends StatelessWidget {
-  const _ProfileMenuTile({required this.icon, required this.label});
+  const _ProfileMenuTile({required this.icon, required this.label, this.onTap});
 
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -582,7 +597,16 @@ class _ProfileMenuTile extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF5D9FD1)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: Color(0xFFD5EAF6),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFF4D9ECC), size: 20),
+        ),
         title: Text(
           label,
           style: const TextStyle(
@@ -594,7 +618,7 @@ class _ProfileMenuTile extends StatelessWidget {
           Icons.chevron_right_rounded,
           color: Color(0xFF8B96A1),
         ),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }
