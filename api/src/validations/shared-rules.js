@@ -1,6 +1,7 @@
 const { z } = require('zod');
 const filter = require('leo-profanity');
 const sanitizeText = require('../utils/sanitizeText');
+const formatFullName = require('../utils/formatFullName');
 const loadEnvironment = require('../config/loadEnv');
 
 loadEnvironment();
@@ -18,7 +19,8 @@ const uuidRule = z.string().uuid('Identifier must be a valid UUID.');
 const fullNameRule = z.string().trim()
     .min(2, 'Name must have a minimum of 2 characters.')
     .max(255, 'Name must have a maximum of 255 characters.')
-    .transform(sanitizeText);
+    .transform(sanitizeText)
+    .transform(formatFullName);
 
 const usernameRule = z.string().trim()
     .min(3, 'Username must have a minimum of 3 characters.')
