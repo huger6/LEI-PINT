@@ -16,6 +16,7 @@ import { capitalizeName } from '../../utils/utils';
 import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../utils/phone';
 import { getMinBirthdate } from '../../utils/date';
 import { extractCollection } from '../../utils/collections';
+import { uploadProfileImageToTemp, PROFILE_IMAGE_MAX_FILE_SIZE_BYTES } from '../../services/storage';
 import styles from './RegisterPage.module.css';
 import {
 	validateRegisterStep2,
@@ -53,6 +54,14 @@ const INITIAL_FORM = {
 	location_id: '',
 	areas: [],
 	service_line_id: '',
+	profile_img_url: '',
+};
+
+const PROFILE_UPLOAD_STATUS = {
+	IDLE: 'idle',
+	UPLOADING: 'uploading',
+	UPLOADED: 'uploaded',
+	FAILED: 'failed',
 };
 
 const STATUS_HINT_CLASS = 'small mt-1 mb-0';
@@ -79,6 +88,9 @@ export default function RegisterPage() {
 	const [refLoading, setRefLoading] = useState(false);
 	const [phonePrefix, setPhonePrefix] = useState('+351');
 	const [phoneLocalDisplay, setPhoneLocalDisplay] = useState('');
+	const [profileUploadStatus, setProfileUploadStatus] = useState(PROFILE_UPLOAD_STATUS.IDLE);
+	const [profileUploadError, setProfileUploadError] = useState('');
+	const [profileUploadFileName, setProfileUploadFileName] = useState('');
 
 	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
 	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
@@ -162,6 +174,42 @@ export default function RegisterPage() {
 		setApiError('');
 		setApiInfo('');
 	}, []);
+
+	const resolveProfileUploadError = useCallback((error) => {
+		const sizeMb = PROFILE_IMAGE_MAX_FILE_SIZE_BYTES / (1024 * 1024);
+		switch (error?.code) {
+		case 'PROFILE_IMAGE_INVALID_FORMAT':
+			return t('validation.profileImageInvalidFormat');
+		case 'PROFILE_IMAGE_TOO_LARGE':
+			return t('validation.profileImageTooLarge', { sizeMb });
+		case 'SUPABASE_UPLOAD_FAILED':
+		case 'SUPABASE_CONFIG_MISSING':
+		default:
+			return t('register.profilePictureUploadFailed');
+		}
+	}, [t]);
+
+	const onProfileImageChange = useCallback(async (event) => {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file) return;
+
+		clearFeedbackFor('profile_img_url');
+		setFieldTouched('profile_img_url', true);
+		setFieldValue('profile_img_url', '');
+		setProfileUploadError('');
+		setProfileUploadFileName(file.name);
+		setProfileUploadStatus(PROFILE_UPLOAD_STATUS.UPLOADING);
+
+		try {
+			const { publicUrl } = await uploadProfileImageToTemp(file);
+			setFieldValue('profile_img_url', publicUrl);
+			setProfileUploadStatus(PROFILE_UPLOAD_STATUS.UPLOADED);
+		} catch (error) {
+			setProfileUploadStatus(PROFILE_UPLOAD_STATUS.FAILED);
+			setProfileUploadError(resolveProfileUploadError(error));
+		}
+	}, [clearFeedbackFor, resolveProfileUploadError, setFieldTouched, setFieldValue]);
 
 	const applyPhoneValue = useCallback((prefix, rawLocalValue) => {
 		const prefixDigitsCount = normalizePhoneDigits(prefix).length;
@@ -314,6 +362,10 @@ export default function RegisterPage() {
 		) {
 			return;
 		}
+		if (profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING) {
+			setApiError(t('register.profilePictureUploadInProgress'));
+			return;
+		}
 
 		setLoading(true);
 		setApiError('');
@@ -333,6 +385,7 @@ export default function RegisterPage() {
 			if (values.biography) payload.biography = values.biography.trim();
 			if (values.preferred_lang_id) payload.preferred_lang_id = Number(values.preferred_lang_id);
 			if (values.location_id) payload.location_id = Number(values.location_id);
+			if (values.profile_img_url) payload.profile_img_url = values.profile_img_url;
 			if (role === 'Consultant') payload.areas = values.areas;
 			if (role === 'Service Line Leader' && values.service_line_id)
 				payload.service_line_id = Number(values.service_line_id);
@@ -387,6 +440,7 @@ export default function RegisterPage() {
 	const biographyError = fieldError('biography', biographyAsyncError);
 	const phoneError = fieldError('phone_number');
 	const birthdateError = fieldError('birthdate');
+	const profileImageError = fieldError('profile_img_url') || profileUploadError;
 
 	const renderUsernameHint = () => {
 		if (usernameError) return null;
@@ -543,6 +597,32 @@ export default function RegisterPage() {
 								<p className="text-center py-3 mb-0 small" style={{ color: 'var(--color-outline)' }}>{t('register.loadingOptions')}</p>
 							) : (
 								<>
+									<div>
+										<FormInput
+											id="profile_img_upload"
+											name="profile_img_upload"
+											label={t('register.profilePicture')}
+											type="file"
+											accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/svg+xml,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif"
+											onChange={onProfileImageChange}
+											onBlur={() => setFieldTouched('profile_img_url', true)}
+											error={profileImageError}
+										/>
+										<p className={`small mt-1 mb-0 ${styles.fileHint}`}>
+											{t('register.profilePictureHint', { sizeMb: PROFILE_IMAGE_MAX_FILE_SIZE_BYTES / (1024 * 1024) })}
+										</p>
+										{profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING && (
+											<p className={STATUS_HINT_CLASS} style={HINT_COLORS.muted}>
+												{t('register.profilePictureUploading')}
+											</p>
+										)}
+										{profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADED && !profileImageError && (
+											<p className={STATUS_HINT_CLASS} style={HINT_COLORS.ok}>
+												{t('register.profilePictureUploaded', { fileName: profileUploadFileName })}
+											</p>
+										)}
+									</div>
+
 									<div>
 										<label htmlFor="phone_local_number" className={`form-label ${styles.selectLabel}`}>{t('register.phoneNumber')}</label>
 										<div className={styles.phoneRow}>
@@ -710,7 +790,13 @@ export default function RegisterPage() {
 									<FormButton type="button" variant="secondary" onClick={handleBack}>{t('register.back')}</FormButton>
 								</div>
 								<div className="col">
-									<FormButton type="submit" loading={loading}>{t('register.createAccountBtn')}</FormButton>
+									<FormButton
+										type="submit"
+										loading={loading}
+										disabled={profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING}
+									>
+										{t('register.createAccountBtn')}
+									</FormButton>
 								</div>
 							</div>
 						</div>

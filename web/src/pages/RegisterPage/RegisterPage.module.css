@@ -76,6 +76,10 @@
 	color: var(--color-on-primary-container);
 }
 
+.fileHint {
+	color: var(--color-outline);
+}
+
 .phoneInput,
 .textarea {
 	border: 1.5px solid var(--color-outline);

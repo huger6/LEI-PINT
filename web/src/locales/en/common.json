@@ -61,6 +61,12 @@
 		"location": "Location",
 		"selectLocation": "Select location",
 		"noLocationsAvailable": "No locations available",
+		"profilePicture": "Profile Picture",
+		"profilePictureHint": "Accepted image formats only. Maximum size: {{sizeMb}}MB.",
+		"profilePictureUploading": "Uploading profile picture...",
+		"profilePictureUploaded": "Profile picture uploaded: {{fileName}}",
+		"profilePictureUploadFailed": "We couldn't upload your profile picture. Please re-upload or try again later.",
+		"profilePictureUploadInProgress": "Please wait for the profile picture upload to finish.",
 		"biography": "Biography",
 		"biographyPlaceholder": "Tell us about yourself...",
 		"areasOfExpertise": "Areas of Expertise (1-5)",
@@ -187,6 +193,8 @@
 		"dateMinAge": "You must be at least 16 years old to register.",
 		"biographyTooLong": "Biography is too long.",
 		"biographyMaxWords": "Biography cannot exceed 500 words.",
+		"profileImageInvalidFormat": "Please select a valid image file.",
+		"profileImageTooLarge": "The profile image must be {{sizeMb}}MB or smaller.",
 		"positiveInteger": "{{label}} must be a positive integer.",
 		"areasMin": "You must select at least 1 area.",
 		"areasMax": "You can't select more than 5 areas.",
@@ -211,7 +219,8 @@
 			"preferred_lang_id": "Preferred language",
 			"location_id": "Location",
 			"service_line_id": "Service line",
-			"areas": "Areas of expertise"
+			"areas": "Areas of expertise",
+			"profile_img_url": "Profile picture"
 		}
 	}
 }

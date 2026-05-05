@@ -61,6 +61,12 @@
 		"location": "Localização",
 		"selectLocation": "Selecionar localização",
 		"noLocationsAvailable": "Nenhuma localização disponível",
+		"profilePicture": "Foto de Perfil",
+		"profilePictureHint": "Apenas formatos de imagem. Tamanho máximo: {{sizeMb}}MB.",
+		"profilePictureUploading": "A carregar foto de perfil...",
+		"profilePictureUploaded": "Foto de perfil carregada: {{fileName}}",
+		"profilePictureUploadFailed": "Não foi possível carregar a sua foto de perfil. Reenvie a imagem ou tente novamente mais tarde.",
+		"profilePictureUploadInProgress": "Aguarde que o carregamento da foto de perfil termine.",
 		"biography": "Biografia",
 		"biographyPlaceholder": "Conte-nos sobre si...",
 		"areasOfExpertise": "Áreas de Especialização (1-5)",
@@ -187,6 +193,8 @@
 		"dateMinAge": "Deve ter pelo menos 16 anos para se registar.",
 		"biographyTooLong": "A biografia é demasiado longa.",
 		"biographyMaxWords": "A biografia não pode exceder 500 palavras.",
+		"profileImageInvalidFormat": "Selecione um ficheiro de imagem válido.",
+		"profileImageTooLarge": "A imagem de perfil deve ter no máximo {{sizeMb}}MB.",
 		"positiveInteger": "{{label}} deve ser um número inteiro positivo.",
 		"areasMin": "Deve selecionar pelo menos 1 área.",
 		"areasMax": "Não pode selecionar mais de 5 áreas.",
@@ -211,7 +219,8 @@
 			"preferred_lang_id": "Idioma preferido",
 			"location_id": "Localização",
 			"service_line_id": "Linha de serviço",
-			"areas": "Áreas de especialização"
+			"areas": "Áreas de especialização",
+			"profile_img_url": "Foto de perfil"
 		}
 	}
 }
