@@ -28,15 +28,15 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _birthdateController = TextEditingController();
-  final _profileImgUrlController = TextEditingController();
-  final _bioController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+  late final TextEditingController _confirmPasswordController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _birthdateController;
+  late final TextEditingController _profileImgUrlController;
+  late final TextEditingController _bioController;
 
   bool _isLoading = false;
   bool _isLoadingData = true;
@@ -54,6 +54,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _usernameController = TextEditingController();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
+    _phoneController = TextEditingController();
+    _birthdateController = TextEditingController();
+    _profileImgUrlController = TextEditingController();
+    _bioController = TextEditingController();
     _resetForm();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDropdownData();
