@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const requestLogger = require('./middlewares/logger.middleware');
+require('./validations/error-map'); // Necessary for validation codes to run
 
 
 const apiRoutes = require('./routes/apiRoutes');

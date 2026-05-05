@@ -1,4 +1,5 @@
 const { z } = require('zod');
+require('./error-map');
 const { positiveIntIdRule } = require('./shared-rules');
 
 const rankingQuerySchema = z.object({

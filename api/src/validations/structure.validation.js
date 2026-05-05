@@ -1,10 +1,11 @@
 const { z } = require('zod');
+require('./error-map');
 const { positiveIntIdRule, imgUrlRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
 const optionalSearchRule = z
 	.string()
-	.max(255, 'Search query is too long.')
+	.max(255, 'VALIDATION_SEARCH_QUERY_MAX_LENGTH')
 	.optional()
 	.transform((value) => {
 		if (value === undefined) return undefined;
@@ -27,8 +28,8 @@ const booleanQueryRule = z.preprocess(
 const getAvailableLearningPathsQuerySchema = z.object({
 	search: optionalSearchRule,
 	serviceLineId: positiveIntIdRule.optional(),
-	page: z.coerce.number().int().positive('Page must be a positive integer.').default(1),
-	limit: z.coerce.number().int().positive('Limit must be a positive integer.').max(100, 'Limit cannot exceed 100.').default(12)
+	page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
+	limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(12)
 });
 
 const getServiceLinesQuerySchema = z.object({
@@ -62,11 +63,11 @@ const getBadgesQuerySchema = z.object({
 
 // Path parameter schemas
 const pathSlugParamSchema = z.object({
-	pathSlug: z.string().trim().min(1, "Learning Path slug is required.").max(500, "Slug's maximum length is 500.")
+	pathSlug: z.string().trim().min(1, 'VALIDATION_LEARNING_PATH_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 const slSlugParamSchema = z.object({
-	slSlug: z.string().trim().min(1, "Service Line slug is required.").max(500, "Slug's maximum length is 500.")
+	slSlug: z.string().trim().min(1, 'VALIDATION_SERVICE_LINE_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 // Request body schemas
@@ -75,7 +76,7 @@ const createLearningPathBodySchema = z.object({
 
 	pathSlug: z.string().trim()
 		.max(150)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -94,7 +95,7 @@ const createServiceLineBodySchema = z.object({
 
 	slSlug: z.string().trim()
 		.max(150)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -109,7 +110,7 @@ const updateServiceLineBodySchema = createServiceLineBodySchema.extend({
 
 // --- Areas ---
 const areaSlugParamSchema = z.object({
-	areaSlug: z.string().trim().min(1, "Area slug is required.").max(500, "Slug's maximum length is 500.")
+	areaSlug: z.string().trim().min(1, 'VALIDATION_AREA_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 const createAreaBodySchema = z.object({
@@ -119,7 +120,7 @@ const createAreaBodySchema = z.object({
 
 	areaSlug: z.string().trim()
 		.max(150)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -136,7 +137,7 @@ const updateAreaBodySchema = createAreaBodySchema.extend({
 
 // --- Levels (Progression Stages) ---
 const stageCodeParamSchema = z.object({
-	stageCode: z.string().trim().min(1, "Stage code is required.").max(20, "Stage code maximum length is 20.")
+	stageCode: z.string().trim().min(1, 'VALIDATION_STAGE_CODE_REQUIRED').max(20, 'VALIDATION_STAGE_CODE_MAX_LENGTH')
 });
 
 const createLevelBodySchema = z.object({
@@ -157,7 +158,7 @@ const updateLevelBodySchema = createLevelBodySchema.extend({
 
 // --- Badges ---
 const badgeSlugParamSchema = z.object({
-	badgeSlug: z.string().trim().min(1, "Badge slug is required.").max(100, "Slug's maximum length is 100.")
+	badgeSlug: z.string().trim().min(1, 'VALIDATION_BADGE_SLUG_REQUIRED').max(100, 'VALIDATION_BADGE_SLUG_MAX_100')
 });
 
 const createBadgeBodySchema = z.object({
@@ -168,7 +169,7 @@ const createBadgeBodySchema = z.object({
 
 	badgeSlug: z.string().trim()
 		.max(100)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -179,7 +180,7 @@ const createBadgeBodySchema = z.object({
 	expirationDurationDays: z.coerce.number().int().positive().optional().nullable(),
 
 	estimatedTimeToAcquire: z.string().trim()
-		.regex(/^\d{2}:\d{2}(:\d{2})?$/, "Estimated time must be in HH:MM or HH:MM:SS format.")
+		.regex(/^\d{2}:\d{2}(:\d{2})?$/, 'VALIDATION_ESTIMATED_TIME_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -193,7 +194,7 @@ const updateBadgeBodySchema = createBadgeBodySchema.extend({
 }).partial();
 
 const slugQuerySchema = z.object({
-	slug: z.string().trim().min(1, "Slug is required.").max(500)
+	slug: z.string().trim().min(1, 'VALIDATION_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 module.exports = {

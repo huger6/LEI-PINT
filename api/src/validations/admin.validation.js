@@ -1,4 +1,5 @@
 const { z } = require('zod');
+require('./error-map');
 const {
     biographyRule,
     birthdateRule,
@@ -29,13 +30,13 @@ const consultantAreasSchema = z.array(z.object({
     area_id: positiveIntIdRule,
     is_primary: z.boolean()
 }))
-    .min(1, 'You must select at least 1 area.')
-    .max(5, "You can't select more than 5 areas.")
+    .min(1, 'VALIDATION_AREAS_MIN_SELECTION')
+    .max(5, 'VALIDATION_AREAS_MAX_SELECTION')
     .refine((areas) => areas.filter((area) => area.is_primary).length === 1, {
-        message: 'Exactly one area must be defined as primary.'
+        message: 'VALIDATION_AREAS_PRIMARY_REQUIRED_EXACTLY_ONE'
     })
     .refine((areas) => new Set(areas.map((area) => area.area_id)).size === areas.length, {
-        message: "You can't select the same area more than once."
+        message: 'VALIDATION_AREAS_DUPLICATED'
     });
 
 const userIdParamSchema = z.object({
@@ -109,14 +110,14 @@ const updateUserBodySchema = z.object({
 })
     .refine(
         (data) => Object.values(data).some((value) => value !== undefined),
-        { message: 'At least one field must be provided.' }
+        { message: 'VALIDATION_UPDATE_AT_LEAST_ONE_FIELD_REQUIRED' }
     )
     .superRefine((data, ctx) => {
         if (data.user_role === 'Consultant' && !data.areas) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['areas'],
-                message: 'Consultant users must include at least one area with one primary area.'
+                message: 'VALIDATION_CONSULTANT_AREAS_REQUIRED'
             });
         }
 
@@ -124,7 +125,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['service_line_id'],
-                message: 'Service Line Leader users must include service_line_id.'
+                message: 'VALIDATION_SLL_SERVICE_LINE_REQUIRED'
             });
         }
 
@@ -132,7 +133,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['areas'],
-                message: 'areas can only be sent for Consultant users.'
+                message: 'VALIDATION_AREAS_ONLY_FOR_CONSULTANT'
             });
         }
 
@@ -140,7 +141,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['service_line_id'],
-                message: 'service_line_id can only be sent for Service Line Leader users.'
+                message: 'VALIDATION_SERVICE_LINE_ONLY_FOR_SLL'
             });
         }
     });
