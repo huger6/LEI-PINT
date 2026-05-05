@@ -6,10 +6,12 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth, changePassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import PasswordRules from '../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../components/FormAlert/FormAlert';
+import { useFormWithServerErrors } from '../../hooks/useFormWithServerErrors';
 import styles from './ChangePasswordPage.module.css';
 import {
-	PASSWORD_RULES,
-	useFormValidation,
 	validateChangePasswordForm,
 	hasErrors,
 	resolveErrorMessage,
@@ -17,33 +19,20 @@ import {
 	extractFieldErrors,
 } from '../../validations';
 
-const INITIAL = { currentPassword: '', newPassword: '', confirmPassword: '' };
-
 export default function ChangePasswordPage() {
 	const { t } = useTranslation();
 	const { logout } = useAuth();
 	const navigate = useNavigate();
 
-	const form = useFormValidation({
-		initialValues: INITIAL,
+	const form = useFormWithServerErrors({
+		initialValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
 		validate: validateChangePasswordForm,
 	});
 
 	const [showCurrent, setShowCurrent] = useState(false);
 	const [showNew, setShowNew] = useState(false);
-	const [serverFieldErrors, setServerFieldErrors] = useState({});
-	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
-
-	const fieldError = (name) =>
-		form.getFieldProps(name).error ?? serverFieldErrors[name];
-
-	const onChange = (e) => {
-		form.handleChange(e);
-		setServerFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
-		setError('');
-	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -51,8 +40,7 @@ export default function ChangePasswordPage() {
 		if (hasErrors(form.errors)) return;
 
 		setLoading(true);
-		setError('');
-		setServerFieldErrors({});
+		form.clearServerErrors();
 		try {
 			await changePassword(form.values.currentPassword, form.values.newPassword);
 			setSuccess(true);
@@ -63,13 +51,13 @@ export default function ChangePasswordPage() {
 		} catch (err) {
 			const backendFields = extractFieldErrors(err);
 			if (Object.keys(backendFields).length) {
-				setServerFieldErrors(backendFields);
+				form.setServerFieldErrors(backendFields);
 				return;
 			}
 			const focusField = resolveErrorField(err);
 			const message = resolveErrorMessage(err);
-			if (focusField) setServerFieldErrors({ [focusField]: message });
-			else setError(message);
+			if (focusField) form.setServerFieldErrors({ [focusField]: message });
+			else form.setError(message);
 		} finally {
 			setLoading(false);
 		}
@@ -98,74 +86,46 @@ export default function ChangePasswordPage() {
 							<div className="position-relative">
 								<FormInput
 									{...form.getFieldProps('currentPassword')}
-									onChange={onChange}
+									onChange={form.onChange}
 									id="currentPassword"
 									label={t('changePassword.currentPassword')}
 									type={showCurrent ? 'text' : 'password'}
 									placeholder={t('passwordPlaceholder')}
-									error={fieldError('currentPassword')}
+									error={form.fieldError('currentPassword')}
 									autoFocus
 									autoComplete="current-password"
 								/>
-								<button
-									type="button"
-									className={styles.eyeToggle}
-									onClick={() => setShowCurrent((v) => !v)}
-									tabIndex={-1}
-									aria-label={t('togglePasswordVisibility')}
-								>
-									<i className={`bi ${showCurrent ? 'bi-eye-slash' : 'bi-eye'}`} />
-								</button>
+								<PasswordToggle show={showCurrent} onToggle={() => setShowCurrent((v) => !v)} />
 							</div>
 
 							<div className="position-relative">
 								<FormInput
 									{...form.getFieldProps('newPassword')}
-									onChange={onChange}
+									onChange={form.onChange}
 									id="newPassword"
 									label={t('changePassword.newPassword')}
 									type={showNew ? 'text' : 'password'}
 									placeholder={t('passwordPlaceholder')}
-									error={fieldError('newPassword')}
+									error={form.fieldError('newPassword')}
 									autoComplete="new-password"
 								/>
-								<button
-									type="button"
-									className={styles.eyeToggle}
-									onClick={() => setShowNew((v) => !v)}
-									tabIndex={-1}
-									aria-label={t('togglePasswordVisibility')}
-								>
-									<i className={`bi ${showNew ? 'bi-eye-slash' : 'bi-eye'}`} />
-								</button>
+								<PasswordToggle show={showNew} onToggle={() => setShowNew((v) => !v)} />
 							</div>
 
-							{form.values.newPassword && (
-								<ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
-									{PASSWORD_RULES.map((rule) => (
-										<li
-											key={rule.key}
-											className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
-										>
-											<i className={`bi ${rule.test(form.values.newPassword) ? 'bi-check2' : 'bi-circle'}`} aria-hidden="true" /> {t(`passwordRules.${rule.key}`)}
-										</li>
-									))}
-								</ul>
-							)}
+							<PasswordRules password={form.values.newPassword} />
 
 							<FormInput
 								{...form.getFieldProps('confirmPassword')}
-								onChange={onChange}
+								onChange={form.onChange}
 								id="confirmPassword"
 								label={t('changePassword.confirmNewPassword')}
 								type={showNew ? 'text' : 'password'}
 								placeholder={t('passwordPlaceholder')}
-								error={fieldError('confirmPassword')}
+								error={form.fieldError('confirmPassword')}
 								autoComplete="new-password"
 							/>
 
-							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
-
+							<FormAlert message={form.error} />
 							<FormButton type="submit" loading={loading}>{t('changePassword.changeBtn')}</FormButton>
 						</form>
 					</>

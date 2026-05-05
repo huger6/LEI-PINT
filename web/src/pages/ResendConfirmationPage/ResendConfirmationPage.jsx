@@ -6,6 +6,7 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import FormAlert from '../../components/FormAlert/FormAlert';
 import styles from './ResendConfirmationPage.module.css';
 import {
 	validateResendConfirmationForm,
@@ -82,11 +83,7 @@ export default function ResendConfirmationPage() {
 						<p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>
 							{t('resendConfirmation.subtitle')}
 						</p>
-						{redirectMessage && (
-							<div className="alert alert-warning py-2 px-3 mb-3 small" role="alert">
-								{redirectMessage}
-							</div>
-						)}
+						<FormAlert message={redirectMessage} variant="warning" className="mb-3" />
 						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
 							<FormInput
 								name="email"
@@ -98,7 +95,7 @@ export default function ResendConfirmationPage() {
 								placeholder={t('emailPlaceholder')}
 								autoFocus
 							/>
-							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
+							<FormAlert message={error} />
 							<FormButton type="submit" loading={loading}>{t('resendConfirmation.resendBtn')}</FormButton>
 						</form>
 						<p className="text-center mt-1 mb-0 small">

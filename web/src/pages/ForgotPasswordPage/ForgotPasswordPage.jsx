@@ -6,6 +6,7 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import FormAlert from '../../components/FormAlert/FormAlert';
 import hideEmail from '../../utils/utils';
 import styles from './ForgotPasswordPage.module.css';
 import {
@@ -84,7 +85,7 @@ export default function ForgotPasswordPage() {
 								placeholder={t('emailPlaceholder')}
 								autoFocus
 							/>
-							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
+							<FormAlert message={error} />
 							<FormButton type="submit" loading={loading}>{t('forgotPassword.sendResetLink')}</FormButton>
 						</form>
 						<Link to="/login">

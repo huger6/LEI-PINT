@@ -9,10 +9,15 @@ import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
 import CustomSelect from '../../components/CustomSelect/CustomSelect';
 import DatePicker from '../../components/DatePicker/DatePicker';
+import PasswordRules from '../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../components/FormAlert/FormAlert';
 import { capitalizeName } from '../../utils/utils';
+import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../utils/phone';
+import { getMinBirthdate } from '../../utils/date';
+import { extractCollection } from '../../utils/collections';
 import styles from './RegisterPage.module.css';
 import {
-	PASSWORD_RULES,
 	validateRegisterStep2,
 	validateRegisterStep3,
 	validateUsername,
@@ -35,54 +40,6 @@ import {
 import { usePhoneMetadata } from '../../services/libphonenumber';
 
 const ROLE_KEYS = ['Consultant', 'Talent Manager', 'Service Line Leader'];
-
-const FALLBACK_PHONE_PREFIXES = [
-	{ value: '+54', label: 'Argentina (+54)' },
-	{ value: '+61', label: 'Australia (+61)' },
-	{ value: '+32', label: 'Belgium (+32)' },
-	{ value: '+55', label: 'Brazil (+55)' },
-	{ value: '+86', label: 'China (+86)' },
-	{ value: '+33', label: 'France (+33)' },
-	{ value: '+49', label: 'Germany (+49)' },
-	{ value: '+91', label: 'India (+91)' },
-	{ value: '+39', label: 'Italy (+39)' },
-	{ value: '+81', label: 'Japan (+81)' },
-	{ value: '+52', label: 'Mexico (+52)' },
-	{ value: '+31', label: 'Netherlands (+31)' },
-	{ value: '+64', label: 'New Zealand (+64)' },
-	{ value: '+351', label: 'Portugal (+351)' },
-	{ value: '+27', label: 'South Africa (+27)' },
-	{ value: '+82', label: 'South Korea (+82)' },
-	{ value: '+34', label: 'Spain (+34)' },
-	{ value: '+971', label: 'UAE (+971)' },
-	{ value: '+44', label: 'UK (+44)' },
-	{ value: '+1', label: 'US/CA (+1)' },
-];
-
-const MIN_AGE = 16;
-const DIGITS_ONLY_REGEX = /\D+/g;
-
-function getMinBirthdate() {
-	const d = new Date();
-	d.setFullYear(d.getFullYear() - MIN_AGE);
-	return d.toISOString().split('T')[0];
-}
-
-function extractCollection(response) {
-	const payload = response?.data?.data;
-	if (Array.isArray(payload)) return payload;
-	if (Array.isArray(payload?.data)) return payload.data;
-	return [];
-}
-
-function normalizePhoneDigits(value) {
-	return String(value ?? '').replace(DIGITS_ONLY_REGEX, '');
-}
-
-function groupByThree(value) {
-	const digits = normalizePhoneDigits(value);
-	return digits.match(/.{1,3}/g)?.join(' ') ?? '';
-}
 
 const INITIAL_FORM = {
 	full_name: '',
@@ -560,29 +517,10 @@ export default function RegisterPage() {
 									placeholder={t('register.enterPasswordPlaceholder')}
 									error={fieldError('password')}
 								/>
-								<button
-									type="button"
-									className={styles.eyeToggle}
-									onClick={() => setShowPassword((v) => !v)}
-									tabIndex={-1}
-									aria-label={t('togglePasswordVisibility')}
-								>
-									<i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
-								</button>
+								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
 							</div>
 
-							{values.password && (
-								<ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`} aria-label={t('register.password')}>
-									{PASSWORD_RULES.map((rule) => (
-										<li
-											key={rule.key}
-											className={`${styles.pwRule} ${rule.test(values.password) ? styles.pwRuleOk : ''}`}
-										>
-											{rule.test(values.password) ? t('register.pwRuleOk') : t('register.pwRuleFail')} {t(`passwordRules.${rule.key}`)}
-										</li>
-									))}
-								</ul>
-							)}
+							<PasswordRules password={values.password} />
 
 							<div className="row g-2 mt-1">
 								<div className="col">
@@ -765,9 +703,7 @@ export default function RegisterPage() {
 								</>
 							)}
 
-							{apiError && (
-								<div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{apiError}</div>
-							)}
+							<FormAlert message={apiError} />
 
 							<div className="row g-2 mt-1">
 								<div className="col">
