@@ -16,9 +16,8 @@ class MyBadgesScreen extends StatefulWidget {
 }
 
 class _MyBadgesScreenState extends State<MyBadgesScreen> {
-  final TextEditingController _badgesSearchController = TextEditingController();
-  final TextEditingController _applicationsSearchController =
-      TextEditingController();
+  late final TextEditingController _badgesSearchController;
+  late final TextEditingController _applicationsSearchController;
 
   bool _isLoadingApplications = true;
   String? _applicationsError;
@@ -28,6 +27,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   @override
   void initState() {
     super.initState();
+    _badgesSearchController = TextEditingController();
+    _applicationsSearchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadScreenData();
     });
@@ -629,7 +630,10 @@ class _ApplicationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: state.color.withValues(alpha: 0.7), width: 1.7),
+        border: Border.all(
+          color: state.color.withValues(alpha: 0.7),
+          width: 1.7,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),
