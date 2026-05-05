@@ -10,6 +10,7 @@ import '../../ui/pages/badges/explore_badges.dart';
 import '../../ui/pages/badges/my_badges_screen.dart';
 import '../../ui/pages/evolution/evolucao_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
+import '../../ui/pages/profile/email_signature_screen.dart';
 
 class AppRouter {
   static const String initial = '/loading';
@@ -24,6 +25,7 @@ class AppRouter {
   static const String myBadges = '/my-badges';
   static const String evolucao = '/evolucao';
   static const String profile = '/profile';
+  static const String emailSignature = '/email-signature';
 
   static Map<String, WidgetBuilder> get routes => {
     loading: (context) => const AuthLoadingScreen(),
@@ -40,5 +42,6 @@ class AppRouter {
     myBadges: (context) => const MyBadgesScreen(),
     evolucao: (context) => const EvolucaoScreen(),
     profile: (context) => const ProfileScreen(),
+    emailSignature: (context) => const EmailSignatureScreen(),
   };
 }
