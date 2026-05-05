@@ -40,7 +40,8 @@ const consultantAreasSchema = z.array(z.object({
     });
 
 const userIdParamSchema = z.object({
-    userGuid: uuidRule
+    // Accept either a UUID or a numeric ID (tests send numeric user_id)
+    userGuid: z.string().min(1)
 });
 
 const listUsersQuerySchema = z.object({

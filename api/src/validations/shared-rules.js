@@ -23,6 +23,12 @@ const fullNameRule = z.string().trim()
     .transform(sanitizeText)
     .transform(formatFullName);
 
+// Variant used for profile updates where we should not change user's casing
+const fullNameNoFormat = z.string().trim()
+    .min(2, 'Name must have a minimum of 2 characters.')
+    .max(255, 'Name must have a maximum of 255 characters.')
+    .transform(sanitizeText);
+
 const usernameRule = z.string().trim()
     .min(3, 'VALIDATION_USERNAME_MIN_LENGTH')
     .max(50, 'VALIDATION_USERNAME_MAX_LENGTH')
@@ -86,6 +92,7 @@ module.exports = {
     birthdateRule,
     emailRule,
     fullNameRule,
+    fullNameNoFormat,
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
