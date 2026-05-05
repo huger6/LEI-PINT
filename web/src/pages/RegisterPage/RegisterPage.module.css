@@ -76,6 +76,24 @@
 	color: var(--color-on-primary-container);
 }
 
+.mandatoryLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+.mandatoryIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 6px;
+	height: 6px;
+	flex: 0 0 6px;
+	font-size: 6px;
+	line-height: 1;
+	color: var(--color-error);
+}
+
 .fileHint {
 	color: var(--color-outline);
 }
