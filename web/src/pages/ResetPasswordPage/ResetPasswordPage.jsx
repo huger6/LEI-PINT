@@ -6,10 +6,12 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
+import PasswordRules from '../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../components/FormAlert/FormAlert';
+import { useFormWithServerErrors } from '../../hooks/useFormWithServerErrors';
 import styles from './ResetPasswordPage.module.css';
 import {
-	PASSWORD_RULES,
-	useFormValidation,
 	validateResetPasswordForm,
 	hasErrors,
 	resolveErrorMessage,
@@ -18,23 +20,19 @@ import {
 	isCode,
 } from '../../validations';
 
-const INITIAL = { newPassword: '', confirmPassword: '' };
-
 export default function ResetPasswordPage() {
 	const { t } = useTranslation();
 	const [searchParams] = useSearchParams();
 	const token = searchParams.get('token');
 
-	const form = useFormValidation({
-		initialValues: INITIAL,
+	const form = useFormWithServerErrors({
+		initialValues: { newPassword: '', confirmPassword: '' },
 		validate: validateResetPasswordForm,
 	});
 
 	const [tokenStatus, setTokenStatus] = useState('loading');
 	const [tokenErrorMsg, setTokenErrorMsg] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
-	const [serverFieldErrors, setServerFieldErrors] = useState({});
-	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 
@@ -56,23 +54,13 @@ export default function ResetPasswordPage() {
 			});
 	}, [token, t]);
 
-	const fieldError = (name) =>
-		form.getFieldProps(name).error ?? serverFieldErrors[name];
-
-	const onChange = (e) => {
-		form.handleChange(e);
-		setServerFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
-		setError('');
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		form.markAllTouched();
 		if (hasErrors(form.errors)) return;
 
 		setLoading(true);
-		setError('');
-		setServerFieldErrors({});
+		form.clearServerErrors();
 		try {
 			await resetPassword(token, form.values.newPassword);
 			setSuccess(true);
@@ -84,13 +72,13 @@ export default function ResetPasswordPage() {
 			}
 			const backendFields = extractFieldErrors(err);
 			if (Object.keys(backendFields).length) {
-				setServerFieldErrors(backendFields);
+				form.setServerFieldErrors(backendFields);
 				return;
 			}
 			const focusField = resolveErrorField(err);
 			const message = resolveErrorMessage(err);
-			if (focusField) setServerFieldErrors({ [focusField]: message });
-			else setError(message);
+			if (focusField) form.setServerFieldErrors({ [focusField]: message });
+			else form.setError(message);
 		} finally {
 			setLoading(false);
 		}
@@ -131,50 +119,30 @@ export default function ResetPasswordPage() {
 							<div className="position-relative">
 								<FormInput
 									{...form.getFieldProps('newPassword')}
-									onChange={onChange}
+									onChange={form.onChange}
 									id="newPassword"
 									label={t('resetPassword.newPassword')}
 									type={showPassword ? 'text' : 'password'}
 									placeholder={t('passwordPlaceholder')}
-									error={fieldError('newPassword')}
+									error={form.fieldError('newPassword')}
 									autoFocus
 								/>
-								<button
-									type="button"
-									className={styles.eyeToggle}
-									onClick={() => setShowPassword((v) => !v)}
-									tabIndex={-1}
-									aria-label={t('togglePasswordVisibility')}
-								>
-									<i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
-								</button>
+								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
 							</div>
 
-							{form.values.newPassword && (
-								<ul className={`list-unstyled vstack gap-1 py-2 px-3 mb-0 rounded ${styles.pwRules}`}>
-									{PASSWORD_RULES.map((rule) => (
-										<li
-											key={rule.key}
-											className={`${styles.pwRule} ${rule.test(form.values.newPassword) ? styles.pwRuleOk : ''}`}
-										>
-											<i className={`bi ${rule.test(form.values.newPassword) ? 'bi-check2' : 'bi-circle'}`} aria-hidden="true" /> {t(`passwordRules.${rule.key}`)}
-										</li>
-									))}
-								</ul>
-							)}
+							<PasswordRules password={form.values.newPassword} />
 
 							<FormInput
 								{...form.getFieldProps('confirmPassword')}
-								onChange={onChange}
+								onChange={form.onChange}
 								id="confirmPassword"
 								label={t('resetPassword.confirmPassword')}
 								type={showPassword ? 'text' : 'password'}
 								placeholder={t('passwordPlaceholder')}
-								error={fieldError('confirmPassword')}
+								error={form.fieldError('confirmPassword')}
 							/>
 
-							{error && <div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">{error}</div>}
-
+							<FormAlert message={form.error} />
 							<FormButton type="submit" loading={loading}>{t('resetPassword.resetBtn')}</FormButton>
 						</form>
 					</>

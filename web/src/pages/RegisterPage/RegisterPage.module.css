@@ -70,34 +70,6 @@
 	line-height: 1.4;
 }
 
-.eyeToggle {
-	position: absolute;
-	right: 0.75rem;
-	top: 50%;
-	transform: translateY(25%);
-	background: none;
-	border: none;
-	cursor: pointer;
-	font-size: 1rem;
-	padding: 0.25rem;
-	line-height: 1;
-	color: var(--color-outline);
-}
-
-.pwRules {
-	background: rgba(185, 235, 246, 0.2);
-	font-size: 0.8125rem;
-}
-
-.pwRule {
-	color: var(--color-outline);
-	transition: color 0.15s;
-}
-
-.pwRuleOk {
-	color: var(--color-success);
-}
-
 .selectLabel {
 	font-size: 0.875rem;
 	font-weight: 500;
@@ -115,9 +87,6 @@
 
 .phoneInput {
 	min-height: calc(1.5em + 0.75rem + 2px);
-}
-
-.phoneInput {
 	letter-spacing: 0.03em;
 }
 

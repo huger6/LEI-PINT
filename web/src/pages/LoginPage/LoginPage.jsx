@@ -6,18 +6,18 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth } from '../../features/auth';
 import FormInput from '../../components/FormInput/FormInput';
 import FormButton from '../../components/FormButton/FormButton';
-import styles from './LoginPage.module.css';
+import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../components/FormAlert/FormAlert';
 import Logo from '../../components/Logo/Logo';
+import styles from './LoginPage.module.css';
 import { resolveErrorMessage, isCode } from '../../validations';
-
-const INITIAL = { identifier: '', password: '', remember: false };
 
 export default function LoginPage() {
 	const { t } = useTranslation();
 	const { login } = useAuth();
 	const navigate = useNavigate();
 
-	const [form, setForm] = useState(INITIAL);
+	const [form, setForm] = useState({ identifier: '', password: '', remember: false });
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
@@ -122,15 +122,7 @@ export default function LoginPage() {
 									placeholder={t('passwordPlaceholder')}
 									autoComplete="current-password"
 								/>
-								<button
-									type="button"
-									className={styles.eyeToggle}
-									onClick={() => setShowPassword((v) => !v)}
-									aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
-									tabIndex={-1}
-								>
-									<i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
-								</button>
+								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
 							</div>
 
 							<div className="d-flex align-items-center justify-content-between gap-2">
@@ -152,11 +144,7 @@ export default function LoginPage() {
 								</Link>
 							</div>
 
-							{error && (
-								<div className="alert alert-danger py-2 px-3 mb-0 small" role="alert">
-									{error}
-								</div>
-							)}
+							<FormAlert message={error} />
 
 							<FormButton type="submit" loading={loading}>
 								{t('login.signIn')}
