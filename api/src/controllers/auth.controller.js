@@ -93,7 +93,7 @@ const register = async (req, res) => {
             birthdate: userData.birthdate,
             profile_img_url: userData.profile_img_url,
             location_id: userData.location_id,
-            preferred_lang_id: userData.preferred_lang_id,
+            language_id: userData.language_id,
             approved_by: null, // Needs to be approved by admin if TM or SLL
             is_active: true,
             email_confirmed: false,
@@ -192,7 +192,7 @@ const register = async (req, res) => {
             userData.email_address,
             userData.full_name,
             tokenValue,
-            userData.preferred_lang_id
+            userData.language_id
         );
 
         if (!emailResult?.success) {
@@ -200,7 +200,7 @@ const register = async (req, res) => {
                 requestId,
                 user_id: newUser.user_id,
                 email_address: userData.email_address,
-                preferred_lang_id: userData.preferred_lang_id,
+                language_id: userData.language_id,
                 emailError: emailResult?.error
             });
 
@@ -214,7 +214,7 @@ const register = async (req, res) => {
             requestId,
             user_id: newUser.user_id,
             email_address: userData.email_address,
-            preferred_lang_id: userData.preferred_lang_id
+            language_id: userData.language_id
         });
 
         return res.status(201).json({
@@ -812,7 +812,7 @@ const forgotPassword = async (req, res) => {
     try {
         // Get user
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'preferred_lang_id', 'email_address'],
+            attributes: ['user_id', 'full_name', 'language_id', 'email_address'],
             where: {
                 email_address: email
             },
@@ -856,7 +856,7 @@ const forgotPassword = async (req, res) => {
                 user.email_address,
                 user.full_name,
                 resetToken,
-                user.preferred_lang_id
+                user.language_id
             );
 
             if (!emailResult?.success) {
@@ -864,7 +864,7 @@ const forgotPassword = async (req, res) => {
                     requestId,
                     user_id: user.user_id,
                     email_address: user.email_address,
-                    preferred_lang_id: user.preferred_lang_id,
+                    language_id: user.language_id,
                     emailError: emailResult?.error
                 });
             }
@@ -1085,7 +1085,7 @@ const me = async (req, res) => {
                 'email_address',
                 'user_role',
                 'profile_img_url',
-                'preferred_lang_id',
+                'language_id',
                 'location_id'
             ],
             raw: true
@@ -1098,16 +1098,16 @@ const me = async (req, res) => {
             });
         }
 
-        const [location, preferredLang, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
+        const [location, languageRecord, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
             user.location_id
                 ? models.locations.findByPk(user.location_id, {
                     attributes: ['location_name'],
                     raw: true
                 })
                 : null,
-            user.preferred_lang_id
-                ? models.preferred_lang.findByPk(user.preferred_lang_id, {
-                    attributes: ['preferred_lang'],
+            user.language_id
+                ? models.languages.findByPk(user.language_id, {
+                    attributes: ['language_iso'],
                     raw: true
                 })
                 : null,
@@ -1221,7 +1221,7 @@ const me = async (req, res) => {
             email: user.email_address,
             role: user.user_role,
             profileImg: user.profile_img_url,
-            lang: preferredLang?.preferred_lang || null,
+            lang: languageRecord?.language_iso || null,
             location: location?.location_name || null,
             biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
             serviceLine: serviceLineName,
@@ -1257,7 +1257,7 @@ const resendConfirmation = async (req, res) => {
 
     try {
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'preferred_lang_id'],
+            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'language_id'],
             where: {
                 email_address: email
             }
@@ -1328,7 +1328,7 @@ const resendConfirmation = async (req, res) => {
             user.email_address,
             user.full_name,
             tokenValue,
-            user.preferred_lang_id
+            user.language_id
         );
 
         // Set cache
@@ -1339,7 +1339,7 @@ const resendConfirmation = async (req, res) => {
                 requestId,
                 user_id: user.user_id,
                 email_address: user.email_address,
-                preferred_lang_id: user.preferred_lang_id,
+                language_id: user.language_id,
                 emailError: emailResult?.error
             });
 
@@ -1413,9 +1413,9 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        if (updates.preferred_lang_id) {
-            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
-                attributes: ['preferred_lang_id'],
+        if (updates.language_id) {
+            const language = await models.languages.findByPk(updates.language_id, {
+                attributes: ['language_id'],
                 transaction: t
             });
 
@@ -1424,7 +1424,7 @@ const updateProfile = async (req, res) => {
                 logger.warn('Invalid language provided', {
                     requestId,
                     userId,
-                    langId: updates.preferred_lang_id
+                    langId: updates.language_id
                 });
                 return res.status(400).json({
                     success: false,
@@ -1554,4 +1554,3 @@ module.exports = {
     resendConfirmation,
     updateProfile
 };
-

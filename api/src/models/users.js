@@ -48,13 +48,13 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(512),
       allowNull: true
     },
-    preferred_lang_id: {
+    language_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 1,
       references: {
-        model: 'preferred_lang',
-        key: 'preferred_lang_id'
+        model: 'languages',
+        key: 'language_id'
       }
     },
     location_id: {
@@ -139,7 +139,7 @@ module.exports = function (sequelize, DataTypes) {
       {
         name: "lang_user_fk",
         fields: [
-          { name: "preferred_lang_id" },
+          { name: "language_id" },
         ]
       },
       {
@@ -196,3 +196,4 @@ module.exports = function (sequelize, DataTypes) {
     ]
   });
 };
+

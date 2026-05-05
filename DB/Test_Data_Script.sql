@@ -2,12 +2,12 @@
     1. DADOS BASE (LINGUAS E LOCALIZACOES)
     ============================================================ */
 
-INSERT INTO preferred_lang (preferred_lang)
+INSERT INTO languages (language_iso, language_name)
 VALUES
-('pt-PT'),
-('en-GB'),
-('es-ES')
-ON CONFLICT (preferred_lang) DO NOTHING;
+('pt-PT', 'Portuguese (Portugal)'),
+('en-GB', 'English (United Kingdom)'),
+('es-ES', 'Spanish (Spain)')
+ON CONFLICT (language_iso) DO NOTHING;
 
 INSERT INTO locations (location_name)
 SELECT v.location_name
@@ -17,7 +17,7 @@ FROM (
       ('Tomar'),
       ('Viseu'),
       ('Vila Real'),
-      ('Fundão'),
+      ('Fundao'),
       ('Portalegre')
 ) AS v(location_name)
 WHERE NOT EXISTS (
@@ -33,7 +33,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO users
 (full_name, username, email_address, password_hash,
- user_role, preferred_lang_id, location_id,
+ user_role, language_id, location_id,
  email_confirmed, force_password_change)
 SELECT
       v.full_name,
@@ -41,7 +41,7 @@ SELECT
       v.email_address,
       v.password_hash,
       v.user_role,
-      pl.preferred_lang_id,
+      pl.language_id,
       (
             SELECT l.location_id
             FROM locations l
@@ -90,9 +90,9 @@ FROM (
        'hash_sll_9', 'Service Line Leader', 'pt-PT', 'Braga'),
       ('Eduardo Vieira', 'evieira', 'eduardo.vieira@softinsa.pt',
        'hash_sll_10', 'Service Line Leader', 'en-GB', 'Porto')
-) AS v(full_name, username, email_address, password_hash, user_role, preferred_lang, location_name)
-JOIN preferred_lang pl
-   ON pl.preferred_lang = v.preferred_lang
+) AS v(full_name, username, email_address, password_hash, user_role, language_iso, location_name)
+JOIN languages pl
+   ON pl.language_iso = v.language_iso
 ON CONFLICT (username) DO NOTHING;
 
 
@@ -653,3 +653,4 @@ WHERE NOT EXISTS (
          AND ph.badge_id = ar.badge_id
          AND ph.justification = 'Atribuicao do badge ' || ar.badge_title
 );
+

@@ -16,15 +16,15 @@ const throwRequestError = (status, code) => {
 };
 
 const ensureReferenceDataExists = async ({
-    preferredLangId,
+    languageId,
     locationId,
     areas,
     serviceLineId,
     transaction
 }) => {
-    if (preferredLangId) {
-        const preferredLanguage = await models.preferred_lang.findByPk(preferredLangId, { transaction });
-        if (!preferredLanguage) throwRequestError(400, 'ADMIN_INVALID_LANG_ID');
+    if (languageId) {
+        const language = await models.languages.findByPk(languageId, { transaction });
+        if (!language) throwRequestError(400, 'ADMIN_INVALID_LANG_ID');
     }
 
     if (locationId) {
@@ -245,7 +245,7 @@ const createUser = async (req, res) => {
             phone_number,
             birthdate,
             profile_img_url,
-            preferred_lang_id,
+            language_id,
             location_id,
             biography,
             areas,
@@ -254,7 +254,7 @@ const createUser = async (req, res) => {
         } = validatedBody;
 
         await ensureReferenceDataExists({
-            preferredLangId: preferred_lang_id,
+            languageId: language_id,
             locationId: location_id,
             areas,
             serviceLineId: service_line_id,
@@ -291,7 +291,7 @@ const createUser = async (req, res) => {
             phone_number: phone_number || null,
             birthdate: birthdate || null,
             profile_img_url: profile_img_url || null,
-            preferred_lang_id,
+            language_id,
             location_id: location_id || null,
             approved_by: adminUserId,
             is_active: true,
@@ -340,7 +340,7 @@ const createUser = async (req, res) => {
             newUser.email_address,
             newUser.full_name,
             confirmationToken,
-            newUser.preferred_lang_id
+            newUser.language_id
         );
 
         if (!emailResult?.success) {
@@ -367,7 +367,7 @@ const createUser = async (req, res) => {
                 email_address: newUser.email_address,
                 user_role: newUser.user_role,
                 location_id: newUser.location_id,
-                preferred_lang_id: newUser.preferred_lang_id,
+                language_id: newUser.language_id,
                 is_active: newUser.is_active,
                 email_confirmed: newUser.email_confirmed
             }
@@ -537,7 +537,7 @@ const updateUser = async (req, res) => {
         }
 
         await ensureReferenceDataExists({
-            preferredLangId: payload.preferred_lang_id,
+            languageId: payload.language_id,
             locationId: payload.location_id,
             areas: payload.areas,
             serviceLineId: effectiveServiceLineId,
@@ -558,7 +558,7 @@ const updateUser = async (req, res) => {
             phone_number: payload.phone_number !== undefined ? payload.phone_number : user.phone_number,
             birthdate: payload.birthdate !== undefined ? payload.birthdate : user.birthdate,
             profile_img_url: finalProfileImage,
-            preferred_lang_id: payload.preferred_lang_id !== undefined ? payload.preferred_lang_id : user.preferred_lang_id,
+            language_id: payload.language_id !== undefined ? payload.language_id : user.language_id,
             location_id: payload.location_id !== undefined ? payload.location_id : user.location_id,
             user_role: targetRole,
             approved_by: payload.approve_member ? adminUserId : user.approved_by
@@ -688,7 +688,7 @@ const resetUserPassword = async (req, res) => {
 
         const user = await models.users.findOne({
             where: { user_guid: userGuid },
-            attributes: ['user_id', 'full_name', 'email_address', 'preferred_lang_id'],
+            attributes: ['user_id', 'full_name', 'email_address', 'language_id'],
             transaction: t
         });
 
@@ -744,7 +744,7 @@ const resetUserPassword = async (req, res) => {
             user.email_address,
             user.full_name,
             rawResetToken,
-            user.preferred_lang_id
+            user.language_id
         );
 
         if (!emailResult?.success) {

@@ -19,7 +19,7 @@ const baseUserSchema = z.object({
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
     profile_img_url: imgUrlRule.optional(),
-    preferred_lang_id: positiveIntIdRule.default(1),
+    language_id: positiveIntIdRule.default(1),
     location_id: positiveIntIdRule.optional()
 });
 
@@ -67,7 +67,7 @@ const updateProfileSchema = z.object({
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
     profile_img_url: imgUrlRule.optional(),
-    preferred_lang_id: positiveIntIdRule.optional(),
+    language_id: positiveIntIdRule.optional(),
     location_id: positiveIntIdRule.optional(),
     biography: biographyRule.optional()
 });
