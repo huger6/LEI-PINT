@@ -441,6 +441,12 @@ export default function RegisterPage() {
 	const phoneError = fieldError('phone_number');
 	const birthdateError = fieldError('birthdate');
 	const profileImageError = fieldError('profile_img_url') || profileUploadError;
+	const withMandatoryIcon = (label) => (
+		<span className={styles.mandatoryLabel}>
+			{label}
+			<i className={`bi bi-asterisk ${styles.mandatoryIcon}`} aria-hidden="true" />
+		</span>
+	);
 
 	const renderUsernameHint = () => {
 		if (usernameError) return null;
@@ -528,7 +534,7 @@ export default function RegisterPage() {
 								onChange={onChange}
 								onBlur={handleBlur}
 								id="full_name"
-								label={t('register.fullName')}
+								label={withMandatoryIcon(t('register.fullName'))}
 								type="text"
 								placeholder={t('register.fullNamePlaceholder')}
 								error={fieldError('full_name')}
@@ -540,7 +546,7 @@ export default function RegisterPage() {
 									onChange={onChange}
 									onBlur={handleBlur}
 									id="username"
-									label={t('register.username')}
+									label={withMandatoryIcon(t('register.username'))}
 									type="text"
 									placeholder={t('register.usernamePlaceholder')}
 									error={usernameError}
@@ -553,7 +559,7 @@ export default function RegisterPage() {
 									onChange={onChange}
 									onBlur={handleBlur}
 									id="email_address"
-									label={t('register.email')}
+									label={withMandatoryIcon(t('register.email'))}
 									type="email"
 									placeholder={t('emailPlaceholder')}
 									error={emailError}
@@ -566,7 +572,7 @@ export default function RegisterPage() {
 									onChange={onChange}
 									onBlur={handleBlur}
 									id="password"
-									label={t('register.password')}
+									label={withMandatoryIcon(t('register.password'))}
 									type={showPassword ? 'text' : 'password'}
 									placeholder={t('register.enterPasswordPlaceholder')}
 									error={fieldError('password')}
@@ -591,7 +597,6 @@ export default function RegisterPage() {
 				{step === 3 && (
 					<form onSubmit={handleSubmit} noValidate>
 						<h2 className={`text-center mb-1 ${styles.title}`}>{t('register.additionalDetails')}</h2>
-						<p className={`text-center mb-3 small ${styles.subtitle}`}>{t('register.allFieldsOptional')}</p>
 						<div className="vstack gap-3">
 							{refLoading ? (
 								<p className="text-center py-3 mb-0 small" style={{ color: 'var(--color-outline)' }}>{t('register.loadingOptions')}</p>
@@ -728,7 +733,7 @@ export default function RegisterPage() {
 
 									{role === 'Consultant' && (
 										<div className={styles.areasSection}>
-											<span className={styles.selectLabel}>{t('register.areasOfExpertise')}</span>
+											<span className={styles.selectLabel}>{withMandatoryIcon(t('register.areasOfExpertise'))}</span>
 											{(touched.areas || submitAttempted) && liveErrors.areas && (
 												<span className="small" style={{ color: 'var(--color-on-error-container)' }}>
 													{t('register.warning', { error: liveErrors.areas })}
@@ -774,7 +779,7 @@ export default function RegisterPage() {
 											onChange={onChange}
 											onBlur={handleBlur}
 											id="service_line_id"
-											label={t('register.serviceLineId')}
+											label={withMandatoryIcon(t('register.serviceLineId'))}
 											type="number"
 											placeholder={t('register.serviceLineIdPlaceholder')}
 											error={fieldError('service_line_id')}
