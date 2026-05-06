@@ -97,6 +97,7 @@
 
 .collapsed .content {
     gap: 0;
+    justify-content: center;
 }
 
 .collapsed .label,
