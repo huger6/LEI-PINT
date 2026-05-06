@@ -10,14 +10,14 @@
 }
 
 .primary:hover:not(:disabled) {
-	background: #009fc4;
+	background: var(--color-primary-hover-solid);
 	color: var(--color-on-primary);
 }
 
 .secondary {
 	background: var(--color-secondary-container);
 	color: var(--color-on-secondary-container);
-	border: 1.5px solid rgba(57, 99, 156, 0.25);
+	border: 1.5px solid var(--color-secondary-border-soft);
 	border-radius: 10px;
 	font-weight: 600;
 	font-size: 0.9375rem;
@@ -25,7 +25,7 @@
 }
 
 .secondary:hover:not(:disabled) {
-	background: #bcd8e8;
+	background: var(--color-secondary-container-hover);
 	color: var(--color-on-secondary-container);
 }
 
@@ -40,7 +40,7 @@
 }
 
 .ghost:hover:not(:disabled) {
-	background: rgba(0, 184, 224, 0.08);
+	background: var(--color-primary-hover-bg-soft);
 	color: var(--color-primary);
 }
 
@@ -73,7 +73,7 @@
 .spinner {
 	width: 18px;
 	height: 18px;
-	border: 2.5px solid rgba(255, 255, 255, 0.35);
+	border: 2.5px solid var(--color-spinner-border-on-primary);
 	border-top-color: #fff;
 	border-radius: 50%;
 	animation: spin 0.65s linear infinite;
@@ -83,7 +83,7 @@
 
 .secondary .spinner,
 .ghost .spinner {
-	border-color: rgba(57, 99, 156, 0.3);
+	border-color: var(--color-spinner-border-secondary);
 	border-top-color: var(--color-secondary);
 }
 

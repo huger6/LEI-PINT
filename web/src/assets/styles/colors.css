@@ -26,4 +26,57 @@
 	--color-success: #04CE00;
 	--color-warning: #CFA600;
 	--color-badge-premium: #FFCC00;
+
+	--color-primary-hover-solid: #009fc4;
+	--color-secondary-container-hover: #bcd8e8;
+
+	--color-primary-hover-bg-soft: rgba(0, 184, 224, 0.08);
+	--color-primary-hover-bg: rgba(0, 184, 224, 0.12);
+	--color-primary-focus-ring: rgba(0, 184, 224, 0.15);
+	--color-primary-focus-ring-strong: rgba(0, 184, 224, 0.25);
+	--color-primary-border-soft: rgba(0, 184, 224, 0.25);
+	--color-primary-border-medium: rgba(0, 184, 224, 0.45);
+
+	--color-primary-container-hover-soft: rgba(185, 235, 246, 0.25);
+	--color-primary-container-hover: rgba(185, 235, 246, 0.35);
+	--color-primary-container-hover-medium: rgba(185, 235, 246, 0.4);
+	--color-primary-container-hover-strong: rgba(185, 235, 246, 0.45);
+	--color-primary-container-hover-selected: rgba(185, 235, 246, 0.5);
+	--color-primary-container-hover-selected-strong: rgba(185, 235, 246, 0.65);
+
+	--color-surface-overlay-50: rgba(255, 255, 255, 0.5);
+	--color-surface-overlay-60: rgba(255, 255, 255, 0.6);
+	--color-surface-overlay-62: rgba(255, 255, 255, 0.62);
+	--color-surface-overlay-72: rgba(245, 250, 253, 0.72);
+	--color-surface-overlay-85: rgba(255, 255, 255, 0.85);
+	--color-surface-overlay-88: rgba(255, 255, 255, 0.88);
+	--color-surface-overlay-90: rgba(255, 255, 255, 0.9);
+	--color-surface-disabled: rgba(240, 240, 240, 0.6);
+
+	--color-error-focus-ring: rgba(179, 38, 30, 0.12);
+	--color-warning-container-soft: rgba(207, 166, 0, 0.12);
+	--color-secondary-border-soft: rgba(57, 99, 156, 0.25);
+	--color-spinner-border-on-primary: rgba(255, 255, 255, 0.35);
+	--color-spinner-border-secondary: rgba(57, 99, 156, 0.3);
+
+	--gradient-brand-active: linear-gradient(
+		90deg,
+		rgba(0, 184, 224, 0.7) 0%,
+		rgba(57, 99, 156, 0.7) 100%
+	);
+	--gradient-surface-field: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.95) 0%,
+		rgba(248, 252, 255, 0.82) 100%
+	);
+	--gradient-surface-dropdown: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.98) 0%,
+		rgba(248, 252, 255, 0.95) 100%
+	);
+	--gradient-surface-panel: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.98) 0%,
+		rgba(241, 251, 255, 0.96) 100%
+	);
 }

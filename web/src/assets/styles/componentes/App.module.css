@@ -1,4 +1,4 @@
-.placeholder {
+/* .placeholder {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -7,7 +7,7 @@
 	min-height: 100dvh;
 	font-size: 1.125rem;
 	color: var(--color-outline);
-}
+} */
 
 .logoutBtn {
 	padding: 0.5rem 1.25rem;
@@ -22,5 +22,5 @@
 }
 
 .logoutBtn:hover {
-	background: rgba(0, 184, 224, 0.08);
+	background: var(--color-primary-hover-bg-soft);
 }

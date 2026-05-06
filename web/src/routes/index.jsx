@@ -8,27 +8,8 @@ import {
 	authOpenRoutes,
 	authFpcRoutes,
 } from '../features/auth/routes';
-import styles from '../assets/styles/componentes/App.module.css';
-
-function HomePlaceholder() {
-	const { t } = useTranslation();
-	const { logout } = useAuth();
-	const navigate = useNavigate();
-
-	const handleLogout = async () => {
-		await logout();
-		navigate('/login', { replace: true });
-	};
-
-	return (
-		<div className={styles.placeholder}>
-			{t('home.placeholder')}
-			<button className={styles.logoutBtn} onClick={handleLogout}>
-				{t('home.logout')}
-			</button>
-		</div>
-	);
-}
+import SidebarOption from '../components/Sidebar/SidebarOption/SidebarOption';
+import Dashboard from '../pages/Dashboard/Dashboard';
 
 export default function AppRoutes() {
 	return (
@@ -50,7 +31,7 @@ export default function AppRoutes() {
 			</Route>
 
 			<Route element={<ProtectedRoute />}>
-				<Route path="/" element={<HomePlaceholder />} />
+				<Route path="/" element={<Dashboard />} />
 			</Route>
 
 			<Route path="*" element={<Navigate to="/login" replace />} />
