@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../features/auth/hooks/useAuth';
 import styles from './Sidebar.module.css';
 import SidebarOption from './SidebarOption/SidebarOption';
+import ConfirmToast from '../ConfirmToast/ConfirmToast';
 import Icon from '../Icons/Icons';
 
 export default function Sidebar() {
     const { t } = useTranslation();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     const menuItems = [
         { to: '/', icon: 'home', label: 'sidebar.home' },
@@ -20,10 +25,11 @@ export default function Sidebar() {
         { to: '/announcements', icon: 'megaphone', label: 'sidebar.announcements', news: true },
     ];
 
-    const bottomItems = [
-        { to: '/settings', icon: 'settings', label: 'sidebar.settings' },
-        { to: '/logout', icon: 'exit-door', label: 'sidebar.logout' },
-    ];
+    const handleLogout = async () => {
+        setShowLogoutConfirm(false);
+        await logout();
+        navigate('/login');
+    };
 
     return (
         <aside className={`${styles.sidebarShell} ${collapsed ? styles.collapsed : ''}`}>
@@ -61,20 +67,33 @@ export default function Sidebar() {
             </nav>
 
             <div className={styles.bottomSection}>
-                {bottomItems.map((item) => (
-                    <NavLink key={item.to} to={item.to} className={styles.navLink}>
-                        {({ isActive }) => (
-                            <SidebarOption
-                                as="div"
-                                icon={item.icon}
-                                label={item.label}
-                                active={isActive}
-                                collapsed={collapsed}
-                            />
-                        )}
-                    </NavLink>
-                ))}
+                <NavLink to="/settings" className={styles.navLink}>
+                    {({ isActive }) => (
+                        <SidebarOption
+                            as="div"
+                            icon="settings"
+                            label="sidebar.settings"
+                            active={isActive}
+                            collapsed={collapsed}
+                        />
+                    )}
+                </NavLink>
+                <SidebarOption
+                    icon="exit-door"
+                    label="sidebar.logout"
+                    collapsed={collapsed}
+                    onClick={() => setShowLogoutConfirm(true)}
+                />
             </div>
+
+            <ConfirmToast
+                open={showLogoutConfirm}
+                message={t('confirmToast.logoutMessage')}
+                confirmLabel={t('confirmToast.yes')}
+                cancelLabel={t('confirmToast.no')}
+                onConfirm={handleLogout}
+                onCancel={() => setShowLogoutConfirm(false)}
+            />
         </aside>
     );
 }
