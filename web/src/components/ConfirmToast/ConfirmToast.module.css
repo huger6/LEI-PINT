@@ -1,0 +1,97 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    animation: fadeIn 200ms ease;
+}
+
+.toast {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    padding: 24px 28px;
+    min-width: 320px;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideDown 250ms ease;
+}
+
+.message {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--color-on-background);
+    text-align: center;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.cancelBtn,
+.confirmBtn {
+    flex: 1;
+    max-width: 140px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 200ms ease, transform 100ms ease;
+    border: none;
+}
+
+.cancelBtn {
+    background: var(--color-secondary-container);
+    color: var(--color-on-secondary-container);
+    border: 1.5px solid var(--color-secondary-border-soft);
+}
+
+.cancelBtn:hover {
+    background: var(--color-secondary-container-hover);
+}
+
+.confirmBtn {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.confirmBtn:hover {
+    background: var(--color-primary-hover-solid);
+}
+
+.cancelBtn:active,
+.confirmBtn:active {
+    transform: scale(0.97);
+}
+
+.cancelBtn:focus-visible,
+.confirmBtn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

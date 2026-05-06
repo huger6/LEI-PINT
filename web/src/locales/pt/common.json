@@ -182,6 +182,11 @@
 		"connectivityDescription": "Partilhe as suas conquistas no LinkedIn e mantenha-se conectado via Teams.",
 		"copyright": "© {{year}} Softinsa - Plataforma de Gestao de Credenciais Verificadas. Todos os direitos reservados."
 	},
+	"confirmToast": {
+		"logoutMessage": "Tem a certeza que deseja terminar sessão?",
+		"yes": "Sim",
+		"no": "Não"
+	},
 	"sidebar": {
 		"menu": "Menu",
 		"home": "Início",
