@@ -74,7 +74,7 @@ h6 {
 .form-control:focus,
 .form-select:focus {
 	border-color: var(--color-primary);
-	box-shadow: 0 0 0 0.25rem rgba(0, 184, 224, 0.25);
+	box-shadow: 0 0 0 0.25rem var(--color-primary-focus-ring-strong);
 }
 
 .form-check-input:checked {
@@ -84,7 +84,7 @@ h6 {
 
 .form-check-input:focus {
 	border-color: var(--color-primary);
-	box-shadow: 0 0 0 0.25rem rgba(0, 184, 224, 0.25);
+	box-shadow: 0 0 0 0.25rem var(--color-primary-focus-ring-strong);
 }
 
 .form-control.is-invalid,
@@ -101,6 +101,6 @@ h6 {
 
 .alert-warning {
 	--bs-alert-color: #7a5e00;
-	--bs-alert-bg: rgba(207, 166, 0, 0.12);
+	--bs-alert-bg: var(--color-warning-container-soft);
 	--bs-alert-border-color: transparent;
 }

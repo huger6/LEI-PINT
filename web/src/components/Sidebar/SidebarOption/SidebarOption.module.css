@@ -1,0 +1,107 @@
+.sidebarOption {
+    position: relative;
+    width: 100%;
+    min-height: 48px;
+    padding: 4px 16px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-on-background);
+    display: inline-flex;
+    align-items: center;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 200ms ease;
+}
+
+.sidebarOption::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    border-radius: 0 4px 4px 0;
+    background: var(--color-primary);
+    transition: transform 200ms ease;
+}
+
+.content {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: gap 200ms ease;
+}
+
+.sidebarOption:not(.active):hover {
+    background: var(--color-primary-hover-bg-soft);
+}
+
+.sidebarOption:not(.active):hover::before {
+    transform: translateY(-50%) scaleY(1);
+}
+
+.sidebarOption:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.active,
+.active:hover {
+    background: var(--color-primary-container-hover-selected);
+    color: var(--color-on-background);
+}
+
+.active::before {
+    transform: translateY(-50%) scaleY(1);
+    background: var(--gradient-brand-active);
+}
+
+.icon {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 200ms ease;
+}
+
+.newsDot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00B8E0 0%, #39639C 100%);
+    flex: 0 0 auto;
+    transition: opacity 200ms ease;
+}
+
+.collapsed .content {
+    gap: 0;
+}
+
+.collapsed .label,
+.collapsed .newsDot {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+}
