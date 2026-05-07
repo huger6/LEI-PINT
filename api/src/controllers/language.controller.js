@@ -18,7 +18,7 @@ const getAvailableLanguages = async (req, res) => {
             });
         }
 
-        const languages = await models.preferred_lang.findAll({
+        const languages = await models.languages.findAll({
             raw: true
         });
 
@@ -47,3 +47,4 @@ const getAvailableLanguages = async (req, res) => {
 module.exports = {
     getAvailableLanguages
 };
+

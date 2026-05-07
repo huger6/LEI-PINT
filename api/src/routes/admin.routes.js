@@ -18,24 +18,24 @@ router.get('/users', loginRequired, isAdmin, adminController.getUsers);
 router.post('/users', loginRequired, isAdmin, adminController.createUser);
 
 /**
- * @route   PUT /api/admin/users/:userId
+ * @route   PUT /api/admin/users/:userGuid
  * @desc    Update a user's profile or role
  * @access  Administrator
  */
-router.put('/users/:userId', loginRequired, isAdmin, adminController.updateUser);
+router.put('/users/:userGuid', loginRequired, isAdmin, adminController.updateUser);
 
 /**
- * @route   DELETE /api/admin/users/:userId
+ * @route   DELETE /api/admin/users/:userGuid
  * @desc    Deactivate a user account (soft delete)
  * @access  Administrator
  */
-router.delete('/users/:userId', loginRequired, isAdmin, adminController.deactivateUser);
+router.delete('/users/:userGuid', loginRequired, isAdmin, adminController.deactivateUser);
 
 /**
- * @route   POST /api/admin/users/:userId/reset-password
+ * @route   POST /api/admin/users/:userGuid/reset-password
  * @desc    Trigger a password reset for a specific user
  * @access  Administrator
  */
-router.post('/users/:userId/reset-password', loginRequired, isAdmin, adminController.resetUserPassword);
+router.post('/users/:userGuid/reset-password', loginRequired, isAdmin, adminController.resetUserPassword);
 
 module.exports = router;

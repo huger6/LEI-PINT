@@ -1,4 +1,5 @@
 const { z } = require('zod');
+require('./error-map');
 const sanitizeText = require('../utils/sanitizeText');
 const { positiveIntIdRule } = require('./shared-rules');
 
@@ -8,31 +9,31 @@ const startApplicationSchema = z.object({
 });
 
 const applicationGuidParamSchema = z.object({
-    applicationGuid: z.string().uuid("Invalid application identifier format.")
+    applicationGuid: z.string().uuid('VALIDATION_APPLICATION_GUID_INVALID')
 });
 
 const upsertEvidenceBodySchema = z.object({
     requirementId: positiveIntIdRule,
 
     evidenceFileUrl: z.string().trim()
-        .url('Invalid URL format.')
-        .max(500, 'URL cannot exceed 500 characters.'),
+        .url('VALIDATION_EVIDENCE_URL_INVALID')
+        .max(500, 'VALIDATION_EVIDENCE_URL_MAX_LENGTH'),
 
     evidenceTitle: z.string().trim()
-        .min(1, 'Title cannot be empty.')
-        .max(150, 'Title cannot exceed 150 characters.')
+        .min(1, 'VALIDATION_EVIDENCE_TITLE_REQUIRED')
+        .max(150, 'VALIDATION_EVIDENCE_TITLE_MAX_LENGTH')
         .transform(sanitizeText)
         .optional()
         .nullable(),
 
     evidenceDescription: z.string().trim()
-        .max(5000, 'Description is technically too long.')
+        .max(5000, 'VALIDATION_EVIDENCE_DESCRIPTION_MAX_LENGTH')
         .transform(sanitizeText)
         .optional()
         .nullable(),
 
     evidenceFileType: z.string().trim()
-        .max(100, 'File type cannot exceed 100 characters.')
+        .max(100, 'VALIDATION_EVIDENCE_FILE_TYPE_MAX_LENGTH')
         .optional()
         .nullable()
 });
@@ -53,11 +54,11 @@ const getUploadUrlBodySchema = z.object({
     requirementId: positiveIntIdRule, // Usa a tua regra base para IDs
 
     fileName: z.string().trim()
-        .min(1, 'File name is required.')
-        .max(255, 'File name cannot exceed 255 characters.')
+        .min(1, 'VALIDATION_UPLOAD_FILE_NAME_REQUIRED')
+        .max(255, 'VALIDATION_UPLOAD_FILE_NAME_MAX_LENGTH')
         // Esta regex garante que o ficheiro tem uma extensão (ex: .pdf, .png)
         // Essencial porque o teu backend faz: fileName.split('.').pop()
-        .regex(/\.[0-9a-z]+$/i, 'File name must include a valid extension (e.g., document.pdf).')
+        .regex(/\.[0-9a-z]+$/i, 'VALIDATION_UPLOAD_FILE_EXTENSION_INVALID')
 });
 
 module.exports = {

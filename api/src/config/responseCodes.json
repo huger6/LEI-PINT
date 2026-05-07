@@ -50,14 +50,6 @@
   "AUTH_USER_NOT_FOUND": "404 - No user was found for the authenticated session user ID.",
   "AUTH_PROFILE_FETCH_FAILED": "500 - Unexpected error occurred while fetching the user profile.",
   "AUTH_REFRESH_TOKEN_MISSING": "401 - No refresh token cookie was present in the request.",
-  "AUTH_ADMIN_ACCESS_DENIED": "403 - Access restricted to Administrator accounts only.",
-  "AUTH_ADMIN_LOGIN_SUCCESS": "200 - Admin authentication successful.",
-  "AUTH_ADMIN_REFRESH_TOKEN_MISSING": "401 - No admin refresh token cookie was present in the request.",
-  "AUTH_ADMIN_ROLE_MISMATCH": "403 - The role stored in the session cache does not match Administrator.",
-  "AUTH_ADMIN_TOKEN_REFRESHED": "200 - A new admin access token was issued.",
-  "AUTH_ADMIN_TOKEN_REFRESH_FAILED": "500 - Unexpected error occurred while generating the new admin token.",
-  "AUTH_ADMIN_LOGOUT_SUCCESS": "200 - The admin session was terminated and the cookie was cleared.",
-  "AUTH_ADMIN_LOGOUT_FAILED": "500 - Unexpected error occurred during the admin logout process.",
   "AUTH_FPC_REQUIRED": "403 - A password change is required before accessing this resource.",
   "AUTH_ROLE_ACCESS_DENIED": "403 - The authenticated role is not permitted to access this route.",
   "AUTH_RATE_LIMIT_LOGIN": "429 - Too many login attempts from this client; try again after 15 minutes.",
@@ -86,7 +78,7 @@
   "ADMIN_SLL_NO_SERVICE_LINE": "400 - A Service Line Leader user must always be linked to a service line.",
   "ADMIN_CONSULTANT_NO_AREAS": "400 - A Consultant must be linked to at least one area with one marked as primary.",
   "ADMIN_PROFILE_IMAGE_MOVE_FAILED": "400 - The profile image URL is invalid or the file could not be moved from temporary storage.",
-  "ADMIN_INVALID_LANG_ID": "400 - The provided preferred_lang_id does not match any existing language.",
+  "ADMIN_INVALID_LANG_ID": "400 - The provided language_id does not match any existing language.",
   "ADMIN_INVALID_LOCATION_ID": "400 - The provided location_id does not match any existing location.",
   "ADMIN_INVALID_SERVICE_LINE_ID": "400 - The provided service_line_id does not match any existing service line.",
   "ADMIN_INVALID_AREAS": "400 - One or more area IDs in the provided list are invalid.",
@@ -249,3 +241,4 @@
   "STATS_USER_ENROLLMENT_RETRIEVED": "200 - User enrollment statistics retrieved successfully.",
   "STATS_USER_ENROLLMENT_FAILED": "500 - Unexpected error while fetching user enrollment statistics."
 }
+

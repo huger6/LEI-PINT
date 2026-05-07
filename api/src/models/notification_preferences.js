@@ -12,8 +12,8 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'notification_preferences',
-        key: 'preference_id'
+        model: 'notification_definitions',
+        key: 'definition_id'
       }
     },
     sla_id: {
