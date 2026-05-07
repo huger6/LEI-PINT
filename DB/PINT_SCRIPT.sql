@@ -108,6 +108,7 @@ DROP INDEX IF EXISTS NOTIF_DEF_FK CASCADE;
 DROP INDEX IF EXISTS USER_NOTIFICATIONS_FK CASCADE;
 DROP INDEX IF EXISTS NOTIFICATIONS_PK CASCADE;
 DROP TABLE IF EXISTS notifications CASCADE;
+DROP INDEX IF EXISTS NOT_DEF_PREF_FK CASCADE;
 DROP INDEX IF EXISTS ADMIN_DEF_FK CASCADE;
 DROP INDEX IF EXISTS NOTIFICATION_DEFINITIONS_PK CASCADE;
 DROP TABLE IF EXISTS notification_definitions CASCADE;
@@ -557,9 +558,7 @@ CREATE TABLE IF NOT EXISTS notifications (
    definition_id        INTEGER                 NOT NULL, -- FK -> notification_definitions(definition_id)
    notification_payload TEXT                 NULL,
    notification_url     VARCHAR(512)         NULL,
-   notification_type    VARCHAR(50)          NOT NULL
-      CONSTRAINT ckc_notification_type CHECK (notification_type IN ('HOME', 'BADGES', 'APPLICATIONS', 'ACHIEVEMENTS', 'POINTS', 'OBJECTIVES', 'EVOLUTION', 'ANNOUNCEMENTS', 'SYSTEM')),
-   is_read              BOOLEAN              NOT NULL DEFAULT FALSE,
+   is_read              BOOLEAN                 NULL,
    sent_at              TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_notifications PRIMARY KEY (notification_id)
@@ -578,7 +577,7 @@ CREATE TABLE IF NOT EXISTS notification_definitions (
    code                 VARCHAR(128)         NOT NULL,
    name                 VARCHAR(256)         NOT NULL,
    description          TEXT                 NULL,
-   target_route         VARCHAR(256)         NULL,
+   preference_id        INTEGER                 NULL, -- FK -> notification_preferences(preference_id)
    user_id              INTEGER                 NULL, -- FK -> administrators(user_id)
 
    CONSTRAINT pk_notification_definitions PRIMARY KEY (definition_id)
@@ -788,7 +787,7 @@ CREATE TABLE IF NOT EXISTS system_announcements (
       CONSTRAINT ckc_target_profile_system_announcements CHECK (target_profile IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
    is_global            BOOLEAN                 NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
-   preference_id        INTEGER                 NULL, -- FK -> notification_preferences(preference_id)
+   preference_id        INTEGER                 NOT NULL, -- FK -> notification_preferences(preference_id)
    user_id              INTEGER                 NULL, -- FK -> users(user_id)
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
@@ -1210,6 +1209,11 @@ ALTER TABLE notification_definitions
       REFERENCES administrators (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
+ALTER TABLE notification_definitions
+   ADD CONSTRAINT fk_notifica_notificat_notifica FOREIGN KEY (preference_id)
+      REFERENCES notification_preferences (preference_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
 ALTER TABLE notification_preferences
    ADD CONSTRAINT fk_notifica_announc_n_system_a FOREIGN KEY (announcement_id)
       REFERENCES system_announcements (announcement_id)
@@ -1476,6 +1480,7 @@ CREATE INDEX IF NOT EXISTS GOALS_FK ON goals (badge_id);
 CREATE INDEX IF NOT EXISTS USER_NOTIFICATIONS_FK ON notifications (user_id);
 CREATE INDEX IF NOT EXISTS NOTIF_DEF_FK ON notifications (definition_id);
 CREATE INDEX IF NOT EXISTS ADMIN_DEF_FK ON notification_definitions (user_id);
+CREATE INDEX IF NOT EXISTS NOT_DEF_PREF_FK ON notification_definitions (preference_id);
 CREATE INDEX IF NOT EXISTS NOTIF_SLAS_FK ON notification_preferences (sla_id);
 CREATE INDEX IF NOT EXISTS ANNOUNC_NOTIF2_FK ON notification_preferences (announcement_id);
 CREATE INDEX IF NOT EXISTS NOT_DEF_PREF2_FK ON notification_preferences (definition_id);
