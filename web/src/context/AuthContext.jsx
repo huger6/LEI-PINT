@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
 import * as authApi from '../features/auth/api/authApi.js';
+import { setApiToken, clearApiToken } from '../services/api.js';
 
 export const AuthContext = createContext(null);
 
@@ -11,7 +12,7 @@ export function AuthProvider({ children }) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	const clearAuth = useCallback(() => {
-		localStorage.removeItem('authToken');
+		clearApiToken();
 		setUser(null);
 		setToken(null);
 		setFpc(false);
@@ -25,30 +26,26 @@ export function AuthProvider({ children }) {
 	}, [clearAuth]);
 
 	useEffect(() => {
-		const storedToken = localStorage.getItem('authToken');
-		if (!storedToken) {
-			setIsLoading(false);
-			return;
-		}
-
 		authApi
-			.verifySession()
-			.then(() => {
-				setToken(storedToken);
+			.refreshToken()
+			.then(({ data }) => {
+				const newToken = data.data.token;
+				setApiToken(newToken);
+				setToken(newToken);
 				setIsAuthenticated(true);
 			})
 			.catch(() => {
-				clearAuth();
+				// No valid session — refresh token cookie absent or expired
 			})
 			.finally(() => {
 				setIsLoading(false);
 			});
-	}, [clearAuth]);
+	}, []);
 
 	const login = useCallback(async (identifier, password, remember) => {
 		const { data } = await authApi.login(identifier, password, remember);
 		const { token: newToken, fpc: forcePwChange, user: userData } = data.data;
-		localStorage.setItem('authToken', newToken);
+		setApiToken(newToken);
 		setToken(newToken);
 		setUser(userData);
 		setFpc(forcePwChange);
