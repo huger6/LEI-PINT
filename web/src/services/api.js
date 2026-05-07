@@ -6,10 +6,14 @@ const api = axios.create({
 	headers: { 'Content-Type': 'application/json' },
 });
 
+let _token = null;
+
+export const setApiToken = (token) => { _token = token; };
+export const clearApiToken = () => { _token = null; };
+
 api.interceptors.request.use((config) => {
-	const token = localStorage.getItem('authToken');
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
+	if (_token) {
+		config.headers.Authorization = `Bearer ${_token}`;
 	}
 	return config;
 });
@@ -27,16 +31,18 @@ const processQueue = (error, token = null) => {
 
 api.interceptors.response.use(
 	(response) => {
-		console.log('[API RESPONSE]', {
-			method: response.config?.method?.toUpperCase(),
-			url: response.config?.url,
-			status: response.status,
-			data: response.data,
-		});
+		if (import.meta.env.DEV) {
+			console.log('[API RESPONSE]', {
+				method: response.config?.method?.toUpperCase(),
+				url: response.config?.url,
+				status: response.status,
+				data: response.data,
+			});
+		}
 		return response;
 	},
 	async (error) => {
-		if (error.response) {
+		if (import.meta.env.DEV && error.response) {
 			console.log('[API RESPONSE ERROR]', {
 				method: error.config?.method?.toUpperCase(),
 				url: error.config?.url,
@@ -68,14 +74,13 @@ api.interceptors.response.use(
 			try {
 				const { data } = await api.post('/auth/refresh');
 				const newToken = data.data.token;
-				localStorage.setItem('authToken', newToken);
-				api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+				_token = newToken;
 				processQueue(null, newToken);
 				original.headers.Authorization = `Bearer ${newToken}`;
 				return api(original);
 			} catch (refreshError) {
 				processQueue(refreshError, null);
-				localStorage.removeItem('authToken');
+				_token = null;
 				window.dispatchEvent(new CustomEvent('auth:logout'));
 				return Promise.reject(refreshError);
 			} finally {
