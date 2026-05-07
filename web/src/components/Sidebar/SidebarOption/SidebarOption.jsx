@@ -37,7 +37,7 @@ export default function SidebarOption({
             {...rest}
         >
             <div className={styles.content}>
-                <span className={styles.icon}>
+                <span className={`${styles.icon}${news ? ` ${styles.hasNews}` : ''}`}>
                     <Icon
                         name={icon}
                         size={24}

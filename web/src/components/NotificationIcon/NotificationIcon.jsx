@@ -1,0 +1,15 @@
+import styles from './NotificationIcon.module.css';
+import Icon from '../Icons/Icons';
+
+export default function NotificationIcon({ count = 0 }) {
+    return (
+        <div className={styles.notificationIcon}>
+            <Icon name="bell" size={24} color="var(--color-on-background)" />
+            {count > 0 && (
+                <span className={`${styles.notificationCount} badge rounded-pill`}>
+                    {count}
+                </span>
+            )}
+        </div>
+    );
+}
