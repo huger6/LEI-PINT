@@ -19,7 +19,7 @@
 }
 
 .header {
-    padding: 16px;
+    padding: 8px 16px;
     border-bottom: 1px solid #DEE3E6;
     display: flex;
     align-items: center;
@@ -39,6 +39,10 @@
     cursor: pointer;
     flex-shrink: 0;
     transition: background 200ms ease;
+}
+
+.sidebarShell:not(.collapsed) .toggleButton {
+    margin-left: 6px;
 }
 
 .toggleButton:hover {
