@@ -228,6 +228,17 @@ const getUsers = async (req, res) => {
     });
 };
 
+const resolveUserParam = async (param, transaction) => {
+    // param may be numeric id or uuid
+    if (!param) return null;
+
+    if (/^\d+$/.test(param)) {
+        return models.users.findOne({ where: { user_id: Number(param) }, transaction });
+    }
+
+    return models.users.findOne({ where: { user_guid: param }, transaction });
+};
+
 const createUser = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const adminUserId = req.user.sub;
@@ -414,14 +425,17 @@ const updateUser = async (req, res) => {
         const { userGuid } = validations.userIdParamSchema.parse(req.params);
         const payload = validations.updateUserBodySchema.parse(req.body);
 
-        const user = await models.users.findOne({
-            where: { user_guid: userGuid },
-            include: [
-                { model: models.consultants, as: 'consultant', include: [{ model: models.consultant_areas, as: 'consultant_areas' }] },
-                { model: models.service_line_leaders, as: 'service_line_leader' }
-            ],
-            transaction: t
-        });
+        // Resolve by numeric id or guid
+        let user = await resolveUserParam(userGuid, t);
+        if (user) {
+            await user.reload({
+                include: [
+                    { model: models.consultants, as: 'consultant', include: [{ model: models.consultant_areas, as: 'consultant_areas' }] },
+                    { model: models.service_line_leaders, as: 'service_line_leader' }
+                ],
+                transaction: t
+            });
+        }
 
         if (!user) {
             await t.rollback();
@@ -624,7 +638,7 @@ const deactivateUser = async (req, res) => {
     try {
         const { userGuid } = validations.userIdParamSchema.parse(req.params);
 
-        const user = await models.users.findOne({ where: { user_guid: userGuid } });
+        const user = await resolveUserParam(userGuid);
 
         if (!user) {
             return res.status(404).json({
@@ -686,11 +700,8 @@ const resetUserPassword = async (req, res) => {
     try {
         const { userGuid } = validations.userIdParamSchema.parse(req.params);
 
-        const user = await models.users.findOne({
-            where: { user_guid: userGuid },
-            attributes: ['user_id', 'full_name', 'email_address', 'language_id'],
-            transaction: t
-        });
+        const user = await resolveUserParam(userGuid, t);
+
 
         if (!user) {
             await t.rollback();

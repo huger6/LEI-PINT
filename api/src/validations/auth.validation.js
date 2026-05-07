@@ -63,8 +63,10 @@ const loginSchema = z.object({
     remember: z.boolean().default(false)
 });
 
+const { fullNameNoFormat } = require('./shared-rules');
+
 const updateProfileSchema = z.object({
-    full_name: fullNameRule.optional(),
+    full_name: fullNameNoFormat.optional(),
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
     profile_img_url: imgUrlRule.optional(),

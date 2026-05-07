@@ -5,6 +5,7 @@ const validations = require('../validations/applications.validation');
 const gamificationValidations = require('../validations/gamification.validation');
 const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
+const notificationsService = require('../services/notifications.service');
 
 
 const getApplications = async (req, res) => {
@@ -426,6 +427,43 @@ const submitApplication = async (req, res) => {
             submitted_at: new Date()
         });
 
+        // Create notifications: applicant confirmation, SLLs and Talent Managers
+        try {
+            // Notify applicant
+            await notificationsService.createNotification({
+                userId: application.user_id,
+                title: 'Candidatura submetida',
+                body: `A sua candidatura ao badge "${application.badge.badge_title}" foi submetida.`,
+                url: `/applications/${application.application_guid}`
+            });
+
+            // Notify Service Line Leaders for this badge (if any)
+            if (application.badge && application.badge.service_line_id) {
+                const slls = await models.service_line_leaders.findAll({ where: { service_line_id: application.badge.service_line_id } });
+                for (const sll of slls) {
+                    await notificationsService.createNotification({
+                        userId: sll.user_id,
+                        title: 'Nova candidatura',
+                        body: `Foi submetida uma nova candidatura ao badge "${application.badge.badge_title}".`,
+                        url: `/admin/applications/${application.application_guid}`
+                    });
+                }
+            }
+
+            // Notify Talent Managers
+            const tms = await models.talent_managers.findAll();
+            for (const tm of tms) {
+                await notificationsService.createNotification({
+                    userId: tm.user_id,
+                    title: 'Nova candidatura submetida',
+                    body: `Nova candidatura ao badge "${application.badge.badge_title}" disponível para revisão.`,
+                    url: `/admin/applications/${application.application_guid}`
+                });
+            }
+        } catch (notifErr) {
+            logger.error('Failed to create notifications on submitApplication', { error: notifErr });
+        }
+
         return res.status(200).json({
             success: true,
             code: "APP_SUBMITTED",
@@ -576,6 +614,35 @@ const validateApplication = async (req, res) => {
         }
 
         await transaction.commit();
+
+        // Notifications after successful state change
+        try {
+            // Notify applicant about state change
+            if (['In validation', 'Accepted', 'Rejected'].includes(newState)) {
+                let title;
+                let body;
+                if (newState === 'In validation') {
+                    title = 'Candidatura em validação';
+                    body = `A sua candidatura ao badge "${application.badge.badge_title}" está a ser validada.`;
+                } else if (newState === 'Accepted') {
+                    title = 'Candidatura aceite';
+                    body = `A sua candidatura ao badge "${application.badge.badge_title}" foi aceite.`;
+                } else {
+                    title = 'Candidatura rejeitada';
+                    body = `A sua candidatura ao badge "${application.badge.badge_title}" foi rejeitada.`;
+                }
+
+                await notificationsService.createNotification({
+                    userId: application.user_id,
+                    title,
+                    body,
+                    url: `/applications/${application.application_guid}`
+                });
+            }
+
+        } catch (notifErr) {
+            logger.error('Failed to create notifications on validateApplication', { error: notifErr });
+        }
 
         return res.status(200).json({
             success: true,
