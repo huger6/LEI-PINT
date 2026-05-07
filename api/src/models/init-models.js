@@ -198,10 +198,8 @@ function initModels(sequelize) {
   notification_definitions.hasMany(notifications, { as: "notifications", foreignKey: "definition_id"});
   slas.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
   notification_definitions.hasMany(slas, { as: "slas", foreignKey: "definition_id"});
-  notification_definitions.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(notification_definitions, { as: "notification_definitions", foreignKey: "preference_id"});
-  notification_preferences.belongsTo(notification_preferences, { as: "definition", foreignKey: "definition_id"});
-  notification_preferences.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
+  notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
+  notification_definitions.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
   slas.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
   notification_preferences.hasMany(slas, { as: "preference_slas", foreignKey: "preference_id"});
   system_announcements.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
