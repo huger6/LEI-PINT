@@ -3,16 +3,20 @@ const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/statistics.validation');
 const statsService = require('../services/statistics.service');
+const { uuidRule } = require('../validations/shared-rules');
 
 /*──────────────────────────────────────────────────────────────
   Resolve which consultant a leader/admin wants to inspect.
   Consultants are restricted to themselves; SLL/TM/Admin can
   pass ?userId=, otherwise default to the authenticated user.
 ──────────────────────────────────────────────────────────────*/
-const resolveTargetUserId = (req) => {
-    const requested = req.query.userId ? parseInt(req.query.userId, 10) : null;
+const resolveTargetUserId = async (req) => {
     if (req.user.role === 'Consultant') return req.user.sub;
-    if (requested && Number.isInteger(requested) && requested > 0) return requested;
+    const requestedGuid = req.query.userGuid;
+    if (requestedGuid && uuidRule.safeParse(requestedGuid).success) {
+        const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
+        if (user) return user.user_id;
+    }
     return req.user.sub;
 };
 
@@ -51,7 +55,7 @@ const assertConsultantExists = async (res, userId) => {
 ──────────────────────────────────────────────────────────────*/
 const getLearningPathProgress = async (req, res) => {
     try {
-        const targetUserId = resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req);
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getLearningPathProgress(targetUserId);
@@ -70,7 +74,7 @@ const getLearningPathProgress = async (req, res) => {
 const getPointsHistory = async (req, res) => {
     try {
         const { page, limit } = validations.pointsHistoryQuerySchema.parse(req.query);
-        const targetUserId = resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req);
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPointsHistory(targetUserId, { page, limit });
@@ -94,7 +98,7 @@ const getPointsHistory = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getAcquisitionTimeline = async (req, res) => {
     try {
-        const targetUserId = resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req);
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getAcquisitionTimeline(targetUserId);
@@ -119,8 +123,13 @@ const getAcquisitionTimeline = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getPeerComparison = async (req, res) => {
     try {
-        const { userId, tolerance } = validations.peerComparisonQuerySchema.parse(req.query);
-        const targetUserId = userId || req.user.sub;
+        const { userGuid, tolerance } = validations.peerComparisonQuerySchema.parse(req.query);
+        let targetUserId = req.user.sub;
+        if (userGuid) {
+            const user = await models.users.findOne({ where: { user_guid: userGuid }, attributes: ['user_id'] });
+            if (!user) return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
+            targetUserId = user.user_id;
+        }
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPeerComparison(targetUserId, tolerance);

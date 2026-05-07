@@ -1,5 +1,6 @@
 const { z } = require('zod');
-const { positiveIntIdRule } = require('./shared-rules');
+require('./error-map');
+const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const dateRule = z.coerce.date();
 
@@ -9,11 +10,11 @@ const pointsHistoryQuerySchema = z.object({
 });
 
 const userIdParamSchema = z.object({
-    userId: positiveIntIdRule
+    userGuid: uuidRule
 });
 
 const peerComparisonQuerySchema = z.object({
-    userId: positiveIntIdRule.optional(),
+    userGuid: uuidRule.optional(),
     tolerance: z.coerce.number().min(0).max(1).default(0.25)
 });
 
@@ -27,7 +28,7 @@ const badgeDistributionQuerySchema = z.object({
     dateTo: dateRule.optional()
 }).refine(
     (data) => !(data.dateFrom && data.dateTo) || data.dateFrom <= data.dateTo,
-    { message: 'dateFrom must be before or equal to dateTo', path: ['dateFrom'] }
+    { message: 'VALIDATION_DATE_RANGE_INVALID', path: ['dateFrom'] }
 );
 
 const badgesByRangeQuerySchema = z.object({
@@ -39,7 +40,7 @@ const badgesByRangeQuerySchema = z.object({
     stageId: positiveIntIdRule.optional()
 }).refine(
     (data) => data.dateFrom <= data.dateTo,
-    { message: 'dateFrom must be before or equal to dateTo', path: ['dateFrom'] }
+    { message: 'VALIDATION_DATE_RANGE_INVALID', path: ['dateFrom'] }
 );
 
 module.exports = {

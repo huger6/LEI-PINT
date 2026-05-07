@@ -19,7 +19,7 @@ var _notification_definitions = require("./notification_definitions");
 var _notification_preferences = require("./notification_preferences");
 var _notifications = require("./notifications");
 var _points_history = require("./points_history");
-var _preferred_lang = require("./preferred_lang");
+var _languages = require("./languages");
 var _progression_stages = require("./progression_stages");
 var _requirements_evidences = require("./requirements_evidences");
 var _rewards = require("./rewards");
@@ -57,7 +57,7 @@ function initModels(sequelize) {
   var notification_preferences = _notification_preferences(sequelize, DataTypes);
   var notifications = _notifications(sequelize, DataTypes);
   var points_history = _points_history(sequelize, DataTypes);
-  var preferred_lang = _preferred_lang(sequelize, DataTypes);
+  var languages = _languages(sequelize, DataTypes);
   var progression_stages = _progression_stages(sequelize, DataTypes);
   var requirements_evidences = _requirements_evidences(sequelize, DataTypes);
   var rewards = _rewards(sequelize, DataTypes);
@@ -198,16 +198,14 @@ function initModels(sequelize) {
   notification_definitions.hasMany(notifications, { as: "notifications", foreignKey: "definition_id"});
   slas.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
   notification_definitions.hasMany(slas, { as: "slas", foreignKey: "definition_id"});
-  notification_definitions.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(notification_definitions, { as: "notification_definitions", foreignKey: "preference_id"});
-  notification_preferences.belongsTo(notification_preferences, { as: "definition", foreignKey: "definition_id"});
-  notification_preferences.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
+  notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
+  notification_definitions.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
   slas.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
   notification_preferences.hasMany(slas, { as: "preference_slas", foreignKey: "preference_id"});
   system_announcements.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
   notification_preferences.hasMany(system_announcements, { as: "system_announcements", foreignKey: "preference_id"});
-  users.belongsTo(preferred_lang, { as: "preferred_lang", foreignKey: "preferred_lang_id"});
-  preferred_lang.hasMany(users, { as: "users", foreignKey: "preferred_lang_id"});
+  users.belongsTo(languages, { as: "language", foreignKey: "language_id"});
+  languages.hasMany(users, { as: "users", foreignKey: "language_id"});
   badge_requirements.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
   progression_stages.hasMany(badge_requirements, { as: "badge_requirements", foreignKey: "progression_stage_id"});
   badges.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
@@ -274,7 +272,7 @@ function initModels(sequelize) {
     notification_preferences,
     notifications,
     points_history,
-    preferred_lang,
+    languages,
     progression_stages,
     requirements_evidences,
     rewards,

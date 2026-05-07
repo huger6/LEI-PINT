@@ -1,4 +1,5 @@
 const { z } = require('zod');
+require('./error-map');
 
 const INTERACTION_TYPES = ['VIEW', 'SHARE_LINKEDIN', 'FAVORITE'];
 

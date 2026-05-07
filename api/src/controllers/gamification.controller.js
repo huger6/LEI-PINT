@@ -3,6 +3,7 @@ const { Op, QueryTypes, fn, col } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
+const { uuidRule } = require('../validations/shared-rules');
 const gamificationService = require('../services/gamification.service');
 
 /*──────────────────────────────────────────────────────────────
@@ -134,17 +135,22 @@ const getConsultantPointsById = async (req, res) => {
             });
         }
 
-        const targetUserId = parseInt(req.params.userId, 10);
-        if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
+        const userGuid = req.params.userGuid;
+        if (!uuidRule.safeParse(userGuid).success) {
             return res.status(400).json({ success: false, code: 'GAMIFICATION_INVALID_USER_ID' });
         }
 
-        const consultant = await models.consultants.findByPk(targetUserId);
+        const user = await models.users.findOne({ where: { user_guid: userGuid }, attributes: ['user_id'] });
+        if (!user) {
+            return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
+        }
+
+        const consultant = await models.consultants.findByPk(user.user_id);
         if (!consultant) {
             return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
         }
 
-        const { totalPoints, history } = await gamificationService.getConsultantPointsSummary(targetUserId);
+        const { totalPoints, history } = await gamificationService.getConsultantPointsSummary(user.user_id);
 
         return res.status(200).json({
             success: true,

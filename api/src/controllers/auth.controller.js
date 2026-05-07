@@ -93,7 +93,7 @@ const register = async (req, res) => {
             birthdate: userData.birthdate,
             profile_img_url: userData.profile_img_url,
             location_id: userData.location_id,
-            preferred_lang_id: userData.preferred_lang_id,
+            language_id: userData.language_id,
             approved_by: null, // Needs to be approved by admin if TM or SLL
             is_active: true,
             email_confirmed: false,
@@ -192,7 +192,7 @@ const register = async (req, res) => {
             userData.email_address,
             userData.full_name,
             tokenValue,
-            userData.preferred_lang_id
+            userData.language_id
         );
 
         if (!emailResult?.success) {
@@ -200,7 +200,7 @@ const register = async (req, res) => {
                 requestId,
                 user_id: newUser.user_id,
                 email_address: userData.email_address,
-                preferred_lang_id: userData.preferred_lang_id,
+                language_id: userData.language_id,
                 emailError: emailResult?.error
             });
 
@@ -214,7 +214,7 @@ const register = async (req, res) => {
             requestId,
             user_id: newUser.user_id,
             email_address: userData.email_address,
-            preferred_lang_id: userData.preferred_lang_id
+            language_id: userData.language_id
         });
 
         return res.status(201).json({
@@ -812,7 +812,7 @@ const forgotPassword = async (req, res) => {
     try {
         // Get user
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'preferred_lang_id', 'email_address'],
+            attributes: ['user_id', 'full_name', 'language_id', 'email_address'],
             where: {
                 email_address: email
             },
@@ -856,7 +856,7 @@ const forgotPassword = async (req, res) => {
                 user.email_address,
                 user.full_name,
                 resetToken,
-                user.preferred_lang_id
+                user.language_id
             );
 
             if (!emailResult?.success) {
@@ -864,7 +864,7 @@ const forgotPassword = async (req, res) => {
                     requestId,
                     user_id: user.user_id,
                     email_address: user.email_address,
-                    preferred_lang_id: user.preferred_lang_id,
+                    language_id: user.language_id,
                     emailError: emailResult?.error
                 });
             }
@@ -1085,7 +1085,7 @@ const me = async (req, res) => {
                 'email_address',
                 'user_role',
                 'profile_img_url',
-                'preferred_lang_id',
+                'language_id',
                 'location_id'
             ],
             raw: true
@@ -1098,16 +1098,16 @@ const me = async (req, res) => {
             });
         }
 
-        const [location, preferredLang, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
+        const [location, languageRecord, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
             user.location_id
                 ? models.locations.findByPk(user.location_id, {
                     attributes: ['location_name'],
                     raw: true
                 })
                 : null,
-            user.preferred_lang_id
-                ? models.preferred_lang.findByPk(user.preferred_lang_id, {
-                    attributes: ['preferred_lang'],
+            user.language_id
+                ? models.languages.findByPk(user.language_id, {
+                    attributes: ['language_iso'],
                     raw: true
                 })
                 : null,
@@ -1215,14 +1215,13 @@ const me = async (req, res) => {
         }
 
         const profile = stripNullishFields({
-            id: user.user_id,
             guid: user.user_guid,
             fullName: user.full_name,
             username: user.username,
             email: user.email_address,
             role: user.user_role,
             profileImg: user.profile_img_url,
-            lang: preferredLang?.preferred_lang || null,
+            lang: languageRecord?.language_iso || null,
             location: location?.location_name || null,
             biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
             serviceLine: serviceLineName,
@@ -1258,7 +1257,7 @@ const resendConfirmation = async (req, res) => {
 
     try {
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'preferred_lang_id'],
+            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'language_id'],
             where: {
                 email_address: email
             }
@@ -1329,7 +1328,7 @@ const resendConfirmation = async (req, res) => {
             user.email_address,
             user.full_name,
             tokenValue,
-            user.preferred_lang_id
+            user.language_id
         );
 
         // Set cache
@@ -1340,7 +1339,7 @@ const resendConfirmation = async (req, res) => {
                 requestId,
                 user_id: user.user_id,
                 email_address: user.email_address,
-                preferred_lang_id: user.preferred_lang_id,
+                language_id: user.language_id,
                 emailError: emailResult?.error
             });
 
@@ -1368,294 +1367,6 @@ const resendConfirmation = async (req, res) => {
     }
 }
 
-// --- Admin auth ---
-
-const adminLogin = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const t = await sequelize.transaction();
-
-    try {
-        const { identifier, password, remember } = loginSchema.parse(req.body);
-
-        // Email or username?
-        const isEmail = emailRule.safeParse(identifier).success;
-        const searchCriteria = isEmail ? { email_address: identifier } : { username: identifier };
-
-        logger.info(`Admin login attempt identified as ${isEmail ? 'email' : 'username'}`, {
-            requestId,
-            identifier
-        });
-
-        // Get user
-        const user = await models.users.findOne({ where: searchCriteria, transaction: t });
-
-        if (!user) {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_INVALID_CREDENTIALS"
-            });
-        }
-
-        // Check if user is indeed an admin
-        if (user.user_role !== 'Administrator') {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: user is not an administrator.', {
-                requestId,
-                identifier,
-                role: user.user_role
-            });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_ADMIN_ACCESS_DENIED"
-            });
-        }
-
-        // Check password
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-
-        if (!isPasswordValid) {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: wrong password.', {
-                requestId,
-                identifier
-            });
-            return res.status(401).json({
-                success: false,
-                code: "AUTH_INVALID_CREDENTIALS"
-            });
-        }
-
-        // Check if email is confirmed
-        if (!user.email_confirmed) {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: e-mail address is not confirmed.', {
-                requestId,
-                identifier
-            });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_EMAIL_NOT_CONFIRMED"
-            });
-        }
-
-        // Generate JWT
-        const payload = {
-            sub: user.user_id,
-            guid: user.user_guid,
-            role: user.user_role,
-            username: user.username,
-            fpc: user.force_password_change
-        };
-
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-            algorithm: 'HS256',
-            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
-        });
-
-        // Generate refresh token
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
-
-        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
-
-        await models.user_refresh_tokens.create({
-            user_id: user.user_id,
-            token_value: refreshTokenValue,
-            expires_at: expiresAt
-        }, { transaction: t });
-
-        await user.update({
-            last_login_at: new Date(),
-            last_online: new Date()
-        }, { transaction: t });
-
-        await t.commit();
-
-        // Store session data in Redis so adminRefresh can validate without a DB round-trip
-        const refreshTTLSeconds = Math.floor(refreshTokenDurationDays * 24 * 60 * 60);
-        await redis.set(
-            `auth:refresh:${refreshTokenValue}`,
-            JSON.stringify({
-                user_id: user.user_id,
-                user_guid: user.user_guid,
-                user_role: user.user_role,
-                username: user.username,
-                force_password_change: user.force_password_change
-            }),
-            'EX',
-            refreshTTLSeconds
-        );
-
-        res.cookie('adminRefreshToken', refreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            path: '/api/admin/auth',
-            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_ADMIN_LOGIN_SUCCESS",
-            data: {
-                token: accessToken,
-                fpc: user.force_password_change,
-                user: {
-                    full_name: user.full_name,
-                    username: user.username,
-                    role: user.user_role,
-                    profile_img_url: user.profile_img_url
-                }
-            }
-        });
-
-    } catch (error) {
-        if (t) await t.rollback();
-
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
-                }))
-            });
-        }
-
-        logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_REQUEST_FAILED",
-            requestId
-        });
-    }
-}
-
-const adminRefresh = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    // Get cookie
-    const refreshToken = req.cookies.adminRefreshToken;
-
-    if (!refreshToken) {
-        return res.status(401).json({
-            success: false,
-            code: "AUTH_ADMIN_REFRESH_TOKEN_MISSING"
-        });
-    }
-
-    const oldTokenKey = `auth:refresh:${refreshToken}`;
-
-    try {
-        const cachedData = await redis.get(oldTokenKey);
-
-        if (!cachedData) {
-            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
-            });
-        }
-
-        const userData = JSON.parse(cachedData);
-
-        // Check if role stored in cache is still an admin
-        if (userData.user_role !== 'Administrator') {
-            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_ADMIN_ROLE_MISMATCH"
-            });
-        }
-
-        const accessToken = jwt.sign({
-            sub: userData.user_id,
-            guid: userData.user_guid,
-            role: userData.user_role,
-            username: userData.username,
-            fpc: userData.force_password_change
-        }, process.env.JWT_SECRET_KEY, {
-            algorithm: 'HS256',
-            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
-        });
-
-        const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
-        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
-        const remainingTTL = await redis.ttl(oldTokenKey);
-
-        if (remainingTTL <= 0) throw new Error("Token TTL invalid");
-
-        await redis.del(oldTokenKey);
-        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
-
-        await models.users.update(
-            { last_online: new Date() },
-            { where: { user_id: userData.user_id } }
-        );
-
-        res.cookie('adminRefreshToken', newRefreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            path: '/api/admin/auth',
-            maxAge: remainingTTL * 1000
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: "AUTH_ADMIN_TOKEN_REFRESHED",
-            data: { token: accessToken }
-        });
-    } catch (error) {
-        logger.error('Error generating new admin token.', { requestId, error });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_ADMIN_TOKEN_REFRESH_FAILED",
-            requestId
-        });
-    }
-};
-
-const adminLogout = async (req, res) => {
-    const refreshToken = req.cookies.adminRefreshToken;
-    const requestId = req.headers['x-request-id'] || null;
-
-    const cookieOptions = {
-        path: '/api/admin/auth',
-        httpOnly: true
-    };
-
-    try {
-        if (refreshToken) {
-            await models.user_refresh_tokens.destroy({
-                where: { token_value: refreshToken }
-            });
-            await redis.del(`auth:refresh:${refreshToken}`);
-        }
-
-        res.clearCookie('adminRefreshToken', cookieOptions);
-
-        return res.status(200).json({
-            success: true,
-            code: "AUTH_ADMIN_LOGOUT_SUCCESS"
-        });
-    } catch (error) {
-        logger.error('Error during admin logout process.', { requestId, error });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_ADMIN_LOGOUT_FAILED",
-            requestId
-        });
-    }
-};
-
-/*──────────────────────────────────────────────────────────────
-  PUT /api/auth/me
-  Update the authenticated user's profile information
-──────────────────────────────────────────────────────────────*/
 const updateProfile = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const t = await sequelize.transaction();
@@ -1702,9 +1413,9 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        if (updates.preferred_lang_id) {
-            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
-                attributes: ['preferred_lang_id'],
+        if (updates.language_id) {
+            const language = await models.languages.findByPk(updates.language_id, {
+                attributes: ['language_id'],
                 transaction: t
             });
 
@@ -1713,7 +1424,7 @@ const updateProfile = async (req, res) => {
                 logger.warn('Invalid language provided', {
                     requestId,
                     userId,
-                    langId: updates.preferred_lang_id
+                    langId: updates.language_id
                 });
                 return res.status(400).json({
                     success: false,
@@ -1841,8 +1552,5 @@ module.exports = {
     verifySession,
     me,
     resendConfirmation,
-    adminLogin,
-    adminRefresh,
-    adminLogout,
     updateProfile
 };

@@ -1,44 +1,48 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('preferred_lang', {
-    preferred_lang_id: {
+  return sequelize.define('languages', {
+    language_id: {
       autoIncrement: true,
       autoIncrementIdentity: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    preferred_lang: {
+    language_iso: {
       type: DataTypes.STRING(20),
       allowNull: false,
       unique: "uk_lang_preferred"
+    },
+    language_name: {
+      type: DataTypes.STRING(128),
+      allowNull: false
     }
   }, {
     sequelize,
-    tableName: 'preferred_lang',
+    tableName: 'languages',
     schema: 'public',
     timestamps: false,
     underscored: true,
     indexes: [
       {
-        name: "pk_preferred_lang",
+        name: "pk_languages",
         unique: true,
         fields: [
-          { name: "preferred_lang_id" },
+          { name: "language_id" },
         ]
       },
       {
-        name: "preferred_lang_pk",
+        name: "languages_pk",
         unique: true,
         fields: [
-          { name: "preferred_lang_id" },
+          { name: "language_id" },
         ]
       },
       {
         name: "uk_lang_preferred",
         unique: true,
         fields: [
-          { name: "preferred_lang" },
+          { name: "language_iso" },
         ]
       },
     ]
