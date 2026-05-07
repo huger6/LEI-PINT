@@ -61,4 +61,8 @@ function emitToUser(userId, event, data) {
     io.to(`user:${userId}`).emit(event, data);
 }
 
-module.exports = { initWebSocket, getIO, emitToUser };
+module.exports = {
+    initWebSocket,
+    getIO,
+    emitToUser
+};

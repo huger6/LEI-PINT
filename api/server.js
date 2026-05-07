@@ -18,6 +18,10 @@ function startHttpServer() {
     const server = http.createServer(app);
     initWebSocket(server);
 
+    server.on('error', (error) => {
+        handleFatalError('HTTP server error', error);
+    });
+
     server.listen(PORT, () => {
         logger.info('Server started', {
             port: PORT,
@@ -27,18 +31,12 @@ function startHttpServer() {
 }
 
 function handleFatalError(label, error) {
-    if (error instanceof Error) {
-        logger.error(label, {
-            message: error.message,
-            stack: error.stack
-        });
-    } else {
-        logger.error(label, {
-            reason: String(error)
-        });
-    }
+    const logArgs = error instanceof Error
+        ? { message: error.message, stack: error.stack }
+        : { reason: String(error) };
 
-    process.exit(1);
+    // Wait for the logger to flush before exiting so the error is written to disk.
+    logger.error(label, logArgs, () => process.exit(1));
 }
 
 async function bootstrap() {
