@@ -1,3 +1,4 @@
+const http = require('http');
 const loadEnvironment = require('./src/config/loadEnv');
 const { logger } = require('./src/utils/logger');
 
@@ -5,6 +6,7 @@ loadEnvironment();
 
 const { sequelize } = require('./src/config/db');
 const { app, PORT } = require('./src/app');
+const { initWebSocket } = require('./src/config/websocket');
 
 async function verifyDatabaseConnection() {
     await sequelize.authenticate();
@@ -12,7 +14,11 @@ async function verifyDatabaseConnection() {
 }
 
 function startHttpServer() {
-    app.listen(PORT, () => {
+    // Wrap Express in a raw HTTP server so socket.io can share the same port.
+    const server = http.createServer(app);
+    initWebSocket(server);
+
+    server.listen(PORT, () => {
         logger.info('Server started', {
             port: PORT,
             url: `http://localhost:${PORT}`
