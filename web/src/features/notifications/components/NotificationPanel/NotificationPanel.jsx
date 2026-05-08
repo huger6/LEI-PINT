@@ -20,13 +20,17 @@ export default function NotificationPanel({ open, onClose }) {
 	}, [open, fetchNotifications]);
 
 	const handleLoadMore = useCallback(() => {
-		if (!pagination || pagination.page >= pagination.totalPages) return;
-		fetchNotifications({ page: pagination.page + 1, limit: 20, append: true });
+		const currentPage = pagination?.currentPage ?? pagination?.page ?? 1;
+		const totalPages = pagination?.totalPages ?? 1;
+		if (!pagination || currentPage >= totalPages) return;
+		fetchNotifications({ page: currentPage + 1, limit: 20, append: true });
 	}, [pagination, fetchNotifications]);
 
 	if (!open) return null;
 
-	const hasMore = pagination && pagination.page < pagination.totalPages;
+	const currentPage = pagination?.currentPage ?? pagination?.page ?? 1;
+	const totalPages = pagination?.totalPages ?? 1;
+	const hasMore = Boolean(pagination) && currentPage < totalPages;
 
 	return (
 		<>
