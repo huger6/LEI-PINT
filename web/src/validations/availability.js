@@ -12,5 +12,5 @@ export const fetchEmailAvailability = async (value) => {
 
 export const fetchBiographyValidity = async (value) => {
 	const { data } = await api.post('/utils/check/biography', { biography: value });
-	return data?.data ?? { available: false, errors: [] };
+	return data?.data ?? { available: false, code: null };
 };

@@ -26,6 +26,7 @@ import {
 	validateBiography,
 	hasErrors,
 	resolveErrorMessage,
+	resolveApiCodeMessage,
 	extractFieldErrors,
 	isCode,
 	useFormValidation,
@@ -151,7 +152,7 @@ export default function RegisterPage() {
 			: null;
 	const biographyAsyncError =
 		biographyCheck.status === AVAILABILITY_STATUS.UNAVAILABLE
-			? biographyCheck.result?.errors?.[0] || t('register.biographyNotAllowed')
+			? resolveApiCodeMessage(biographyCheck.result?.code, t('register.biographyNotAllowed'))
 			: null;
 
 	const fieldError = useCallback(
