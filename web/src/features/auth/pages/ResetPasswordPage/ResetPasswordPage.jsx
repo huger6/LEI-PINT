@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
 
 				{tokenStatus === 'invalid' && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.errorIcon}><Icon name="close" size={24} color="currentColor" /></div>
+						<div className={styles.errorIcon}><Icon name="close" size={24} color="currentColor" fill="currentColor" stroke="none" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.invalidOrExpired')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
