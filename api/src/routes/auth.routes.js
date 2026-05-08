@@ -62,20 +62,6 @@ router.post('/refresh', authController.refresh);
 router.post('/logout', loginRequired, authController.logout);
 
 /**
- * @route   GET /api/auth/me
- * @desc    Return the authenticated user's profile
- * @access  Authenticated
- */
-router.get('/me', loginRequired, authController.me);
-
-/**
- * @route   PUT /api/auth/me
- * @desc    Update the authenticated user's profile
- * @access  Authenticated
- */
-router.put('/me', loginRequired, authController.updateProfile);
-
-/**
  * @route   GET /api/auth/verify-session
  * @desc    Check whether the current session token is still valid
  * @access  Authenticated
@@ -129,6 +115,5 @@ router.post('/reset-password', annonymousUsersOnly, authController.resetPassword
  * @access  Authenticated
  */
 router.post('/change-password', loginRequired, authController.changePassword);
-
 
 module.exports = router;
