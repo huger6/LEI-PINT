@@ -13,7 +13,7 @@ export const refreshToken = () =>
 	api.post('/auth/refresh');
 
 export const getMe = () =>
-	api.get('/auth/me');
+	api.get('/me');
 
 export const verifySession = () =>
 	api.get('/auth/verify-session');

@@ -8,7 +8,7 @@ import Icon from '../Icons/Icons';
 
 export default function Sidebar() {
     const { t } = useTranslation();
-    const { unreadByType } = useUser();
+    const { notifications } = useUser();
     const [collapsed, setCollapsed] = useState(false);
 
     const menuItems = [
@@ -49,7 +49,7 @@ export default function Sidebar() {
                                 icon={item.icon}
                                 label={item.label}
                                 active={isActive}
-                                news={Boolean(item.notificationType && unreadByType?.[item.notificationType] > 0)}
+                                news={Boolean(item.notificationType && notifications?.unreadByType?.[item.notificationType] > 0)}
                                 collapsed={collapsed}
                             />
                         )}

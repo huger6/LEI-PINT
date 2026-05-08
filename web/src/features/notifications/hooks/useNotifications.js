@@ -7,11 +7,12 @@ export function useNotifications() {
 	if (!ctx) throw new Error('useNotifications must be used inside UserProvider');
 
 	return {
-		notifications: ctx.notifications,
-		pagination: ctx.notificationsPagination,
-		unreadCount: ctx.unreadCount,
-		markAsRead: ctx.markAsRead,
-		markAllAsRead: ctx.markAllAsRead,
-		fetchNotifications: ctx.fetchNotifications,
+		notifications: ctx.notifications.list,
+		pagination: ctx.notifications.pagination,
+		unreadCount: ctx.notifications.unreadCount,
+		unreadByType: ctx.notifications.unreadByType,
+		markAsRead: ctx.notifications.markAsRead,
+		markAllAsRead: ctx.notifications.markAllAsRead,
+		fetchNotifications: ctx.notifications.fetch,
 	};
 }
