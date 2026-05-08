@@ -646,7 +646,8 @@ const refresh = async (req, res) => {
             success: true,
             code: "AUTH_TOKEN_REFRESHED",
             data: {
-                token: accessToken
+                token: accessToken,
+                fpc: user.force_password_change
             }
         });
     } catch (error) {
