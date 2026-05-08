@@ -19,7 +19,9 @@
 }
 
 .header {
-    padding: 8px 16px;
+    height: 57px;
+    min-height: 57px;
+    padding: 0 16px;
     border-bottom: 1px solid #DEE3E6;
     display: flex;
     align-items: center;

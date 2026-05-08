@@ -5,7 +5,7 @@ const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/pub
 export default function Logo() {
 	const { t } = useTranslation();
 	return (
-		<div className="d-flex justify-content-center mb-1">
+		<div className="d-flex justify-content-center">
 			<img
 				src={LOGO_SRC}
 				alt={t('logoAlt')}
