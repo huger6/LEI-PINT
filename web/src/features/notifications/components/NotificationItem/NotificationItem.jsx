@@ -1,16 +1,17 @@
 import { useTranslation } from 'react-i18next';
+import Icon from '../../../../components/Icons/Icons';
 import styles from './NotificationItem.module.css';
 
 const ICONS = {
-	HOME: 'bi-house',
-	BADGES: 'bi-award',
-	APPLICATIONS: 'bi-file-earmark-text',
-	ACHIEVEMENTS: 'bi-trophy',
-	POINTS: 'bi-star',
-	OBJECTIVES: 'bi-bullseye',
-	EVOLUTION: 'bi-graph-up-arrow',
-	ANNOUNCEMENTS: 'bi-megaphone',
-	SYSTEM: 'bi-gear',
+	HOME: 'home',
+	BADGES: 'badge',
+	APPLICATIONS: 'paper',
+	ACHIEVEMENTS: 'trophy',
+	POINTS: 'star',
+	OBJECTIVES: 'target',
+	EVOLUTION: 'evolution',
+	ANNOUNCEMENTS: 'megaphone',
+	SYSTEM: 'settings',
 };
 
 function timeAgo(dateString, t) {
@@ -43,7 +44,7 @@ export default function NotificationItem({ notification, onRead }) {
 	const { t } = useTranslation();
 	const payload = parseNotificationPayload(notification?.notification_payload);
 	const notificationType = String(notification?.notification_type || 'SYSTEM').toUpperCase();
-	const iconClass = ICONS[notificationType] || ICONS.SYSTEM;
+	const iconName = ICONS[notificationType] || ICONS.SYSTEM;
 	const message = payload.title || payload.body || notification?.definition?.name || notificationType;
 	const sentAt = notification?.sent_at || notification?.created_at;
 
@@ -60,7 +61,7 @@ export default function NotificationItem({ notification, onRead }) {
 			type="button"
 		>
 			<span className={styles.iconWrapper}>
-				<i className={`bi ${iconClass} ${styles.icon}`} />
+				<Icon name={iconName} className={styles.icon} size={16} color="currentColor" label={notificationType} />
 			</span>
 			<div className={styles.content}>
 				<p className={styles.message}>{message}</p>

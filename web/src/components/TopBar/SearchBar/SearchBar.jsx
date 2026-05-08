@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styles from './SearchBar.module.css';
+import Icon from '../../Icons/Icons';
 
 export default function SearchBar({
     id = 'topbar-search',
@@ -34,14 +35,15 @@ export default function SearchBar({
             onSubmit={handleSubmit}
         >
             <span className={`input-group-text ${styles.iconWrapper}`}>
-                <svg
+                <Icon
+                    name="searchsvg"
                     className={styles.searchIcon}
-                    viewBox="0 0 16 16"
-                    aria-hidden="true"
+                    size={15}
+                    color="currentColor"
+                    label={ariaLabel}
                     fill="currentColor"
-                >
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.414-1.415l-3.85-3.85h-.016Zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
-                </svg>
+                    stroke="none"
+                />
             </span>
             <input
                 id={id}

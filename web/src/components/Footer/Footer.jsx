@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useUser } from '../../hooks/userContext';
 import { useLanguages } from '../../hooks/useLanguages';
 import styles from './Footer.module.css';
+import Icon from '../Icons/Icons';
 
 const Footer = () => {
     const { t, i18n } = useTranslation();
@@ -69,14 +70,32 @@ const Footer = () => {
                             {t('footer.connectivityDescription')}
                         </p>
                         <ul className="list-inline mt-3 mb-0">
-                            <li className="list-inline-item mr-2">
-                                <a href="#" className={styles.socialIcon}><i className="fab fa-linkedin"></i></a>
-                            </li>
-                            <li className="list-inline-item mr-2">
-                                <a href="#" className={styles.socialIcon}><i className="fab fa-microsoft"></i></a>
-                            </li>
                             <li className="list-inline-item">
-                                <a href="#" className={styles.socialIcon}><i className="fab fa-slack"></i></a>
+                                <a href="#" className={styles.socialIcon}>
+                                    <Icon
+                                        name="language"
+                                        size={16}
+                                        color="currentColor"
+                                        aria-label="Website"
+                                        fill="currentColor"
+                                        stroke="none"
+                                    />
+                                </a>
+                            </li>
+                            <li className="list-inline-item mr-2">
+                                <a href="#" className={styles.socialIcon} aria-label="LinkedIn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-linkedin" viewBox="0 0 16 16" aria-hidden="true">
+                                        <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z" />
+                                    </svg>
+                                </a>
+                            </li>
+                            <li className="list-inline-item mr-2">
+                                <a href="#" className={styles.socialIcon} aria-label="Microsoft Teams">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-microsoft-teams" viewBox="0 0 16 16" aria-hidden="true">
+                                        <path d="M9.186 4.797a2.42 2.42 0 1 0-2.86-2.448h1.178c.929 0 1.682.753 1.682 1.682zm-4.295 7.738h2.613c.929 0 1.682-.753 1.682-1.682V5.58h2.783a.7.7 0 0 1 .682.716v4.294a4.197 4.197 0 0 1-4.093 4.293c-1.618-.04-3-.99-3.667-2.35Zm10.737-9.372a1.674 1.674 0 1 1-3.349 0 1.674 1.674 0 0 1 3.349 0m-2.238 9.488-.12-.002a5.2 5.2 0 0 0 .381-2.07V6.306a1.7 1.7 0 0 0-.15-.725h1.792c.39 0 .707.317.707.707v3.765a2.6 2.6 0 0 1-2.598 2.598z" />
+                                        <path d="M.682 3.349h6.822c.377 0 .682.305.682.682v6.822a.68.68 0 0 1-.682.682H.682A.68.68 0 0 1 0 10.853V4.03c0-.377.305-.682.682-.682Zm5.206 2.596v-.72h-3.59v.72h1.357V9.66h.87V5.945z" />
+                                    </svg>
+                                </a>
                             </li>
                         </ul>
                     </div>
