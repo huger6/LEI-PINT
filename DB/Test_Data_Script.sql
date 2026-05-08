@@ -4,9 +4,9 @@
 
 INSERT INTO languages (language_iso, language_name)
 VALUES
-('pt-PT', 'Portuguese (Portugal)'),
-('en-GB', 'English (United Kingdom)'),
-('es-ES', 'Spanish (Spain)')
+('pt-PT', 'Português'),
+('en-GB', 'English'),
+('es-ES', 'Español')
 ON CONFLICT (language_iso) DO NOTHING;
 
 INSERT INTO locations (location_name)
