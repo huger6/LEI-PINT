@@ -36,7 +36,7 @@ export default function Avatar({
                 />
             ) : (
                 <div className={styles.fallback} role="img" aria-label={fallbackLabel || 'User avatar'}>
-                    <Icon name="user-circle" size={size * 0.64} />
+                    <Icon name="user" />
                 </div>
             )}
         </div>
