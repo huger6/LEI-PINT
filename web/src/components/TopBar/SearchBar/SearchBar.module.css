@@ -8,16 +8,22 @@
 }
 
 .iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     background: transparent;
     color: var(--color-outline);
+    padding-top: 0;
+    padding-bottom: 0;
     padding-left: 0.85rem;
     padding-right: 0.5rem;
+    line-height: 0;
 }
 
 .searchIcon {
-    width: 15px;
-    height: 15px;
+    display: block;
+    flex: 0 0 auto;
 }
 
 .searchInput {
