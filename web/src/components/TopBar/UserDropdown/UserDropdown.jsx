@@ -99,6 +99,12 @@ export default function UserDropdown() {
                             role="menuitem"
                         />
                         <DropdownOption
+                            bootstrapIcon="bi-circle-half"
+                            label="userDropdown.colorMode"
+                            onClick={() => handleOptionClick('/settings')}
+                            role="menuitem"
+                        />
+                        <DropdownOption
                             bootstrapIcon="bi-shield"
                             label="userDropdown.privacy"
                             onClick={() => handleOptionClick('/privacy')}
