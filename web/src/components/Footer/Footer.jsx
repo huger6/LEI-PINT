@@ -1,9 +1,27 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '../../hooks/userContext';
+import { useLanguages } from '../../hooks/useLanguages';
 import styles from './Footer.module.css';
 
 const Footer = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { lang, handleLanguageChange } = useUser();
+    const { languages } = useLanguages();
     const currentYear = new Date().getFullYear();
+
+    // activeLang seeds from lang.iso (same DB value as language_iso) so the
+    // comparison is exact; updated optimistically on click for instant feedback.
+    const [activeLang, setActiveLang] = useState(lang?.iso ?? null);
+
+    useEffect(() => {
+        if (lang?.iso) setActiveLang(lang.iso);
+    }, [lang?.iso]);
+
+    // Sync i18n with the user's stored preferred language on login/load
+    useEffect(() => {
+        if (lang?.iso) i18n.changeLanguage(lang.iso);
+    }, [lang?.iso, i18n]);
 
     return (
         <footer className={`${styles.footerContainer} container-fluid`}>
@@ -15,9 +33,15 @@ const Footer = () => {
                             {t('footer.brandDescription')}
                         </p>
                         <div className={styles.languageSwitcher}>
-                            <span className={styles.languageBadge}>{t('footer.languagePt')}</span>
-                            <span className={styles.languageBadge}>{t('footer.languageEn')}</span>
-                            <span className={styles.languageBadge}>{t('footer.languageEs')}</span>
+                            {languages.map(({ language_id, language_iso }) => (
+                                <span
+                                    key={language_id}
+                                    className={`${styles.languageBadge} ${activeLang === language_iso ? styles.languageBadgeActive : ''}`}
+                                    onClick={() => { setActiveLang(language_iso); handleLanguageChange(language_id, language_iso); }}
+                                >
+                                    {language_iso.toUpperCase()}
+                                </span>
+                            ))}
                         </div>
                     </div>
 

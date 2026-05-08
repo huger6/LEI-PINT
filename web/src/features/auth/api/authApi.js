@@ -35,3 +35,6 @@ export const resetPassword = (token, newPassword) =>
 
 export const changePassword = (currentPassword, newPassword) =>
 	api.post('/auth/change-password', { currentPassword, newPassword });
+
+export const updateUserLanguage = (languageId) =>
+	api.patch(`/me/language/${languageId}`);
