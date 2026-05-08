@@ -7,6 +7,18 @@ export function capitalizeName(name) {
         .join(' ');
 }
 
+export function firstAndLastName(name) {
+    const parts = String(name ?? '')
+        .trim()
+        .split(/\s+/g)
+        .filter(Boolean);
+
+    if (parts.length === 0) return '';
+    if (parts.length === 1) return parts[0];
+
+    return `${parts[0]} ${parts[parts.length - 1]}`;
+}
+
 export default function hideEmail(email) {
     const [user, domain] = email.split("@");
 

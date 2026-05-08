@@ -2,14 +2,19 @@ import { useTranslation } from 'react-i18next';
 import styles from './NotificationItem.module.css';
 
 const ICONS = {
-	badge: 'bi-award',
-	achievement: 'bi-trophy',
-	points: 'bi-star',
-	announcement: 'bi-megaphone',
-	system: 'bi-gear',
+	HOME: 'bi-house',
+	BADGES: 'bi-award',
+	APPLICATIONS: 'bi-file-earmark-text',
+	ACHIEVEMENTS: 'bi-trophy',
+	POINTS: 'bi-star',
+	OBJECTIVES: 'bi-bullseye',
+	EVOLUTION: 'bi-graph-up-arrow',
+	ANNOUNCEMENTS: 'bi-megaphone',
+	SYSTEM: 'bi-gear',
 };
 
 function timeAgo(dateString, t) {
+	if (!dateString) return t('notifications.timeAgo.now');
 	const seconds = Math.floor((Date.now() - new Date(dateString)) / 1000);
 
 	if (seconds < 60) return t('notifications.timeAgo.now');
@@ -22,9 +27,25 @@ function timeAgo(dateString, t) {
 	return new Date(dateString).toLocaleDateString();
 }
 
+function parseNotificationPayload(payload) {
+	if (!payload) return {};
+	if (typeof payload === 'object') return payload;
+	if (typeof payload !== 'string') return {};
+
+	try {
+		return JSON.parse(payload);
+	} catch {
+		return {};
+	}
+}
+
 export default function NotificationItem({ notification, onRead }) {
 	const { t } = useTranslation();
-	const iconClass = ICONS[notification.type] || ICONS.system;
+	const payload = parseNotificationPayload(notification?.notification_payload);
+	const notificationType = String(notification?.notification_type || 'SYSTEM').toUpperCase();
+	const iconClass = ICONS[notificationType] || ICONS.SYSTEM;
+	const message = payload.title || payload.body || notification?.definition?.name || notificationType;
+	const sentAt = notification?.sent_at || notification?.created_at;
 
 	const handleClick = () => {
 		if (!notification.is_read) {
@@ -42,8 +63,8 @@ export default function NotificationItem({ notification, onRead }) {
 				<i className={`bi ${iconClass} ${styles.icon}`} />
 			</span>
 			<div className={styles.content}>
-				<p className={styles.message}>{notification.message}</p>
-				<span className={styles.time}>{timeAgo(notification.created_at, t)}</span>
+				<p className={styles.message}>{message}</p>
+				<span className={styles.time}>{timeAgo(sentAt, t)}</span>
 			</div>
 			{!notification.is_read && <span className={styles.dot} />}
 		</button>

@@ -5,8 +5,7 @@ import { NotificationBell } from '../../features/notifications';
 import { useUser } from '../../hooks/userContext';
 
 export default function TopBar() {
-    const { user } = useUser();
-    const displayName = user?.fullName || user?.username || 'User';
+    const { user, displayName } = useUser();
 
     return (
         <header className={styles.topBar}>
@@ -15,7 +14,7 @@ export default function TopBar() {
             </div>
             <div className={styles.rightSection}>
                 <NotificationBell />
-                <div className={styles.userBlock}>
+                <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{displayName}</span>
                         {user?.role && <span className={styles.role}>{user.role}</span>}

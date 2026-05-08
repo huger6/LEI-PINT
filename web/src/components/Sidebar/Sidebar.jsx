@@ -2,27 +2,31 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import { useUser } from '../../hooks/userContext';
 import styles from './Sidebar.module.css';
 import SidebarOption from './SidebarOption/SidebarOption';
 import ConfirmToast from '../ConfirmToast/ConfirmToast';
 import Icon from '../Icons/Icons';
+import Avatar from '../Avatar/Avatar';
 
 export default function Sidebar() {
     const { t } = useTranslation();
     const { logout } = useAuth();
+    const { user, displayName, unreadByType, isUserLoading } = useUser();
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const displayRole = user?.role || '';
 
     const menuItems = [
-        { to: '/', icon: 'home', label: 'sidebar.home' },
-        { to: '/badges', icon: 'badge', label: 'sidebar.badges' },
-        { to: '/applications', icon: 'paper', label: 'sidebar.applications' },
-        { to: '/achievements', icon: 'trophy', label: 'sidebar.achievements' },
-        { to: '/points', icon: 'star-points', label: 'sidebar.points', news: true },
-        { to: '/objectives', icon: 'target', label: 'sidebar.objectives' },
-        { to: '/evolution', icon: 'evolution', label: 'sidebar.evolution' },
-        { to: '/announcements', icon: 'megaphone', label: 'sidebar.announcements', news: true },
+        { to: '/', icon: 'home', label: 'sidebar.home', notificationType: 'HOME' },
+        { to: '/badges', icon: 'badge', label: 'sidebar.badges', notificationType: 'BADGES' },
+        { to: '/applications', icon: 'paper', label: 'sidebar.applications', notificationType: 'APPLICATIONS' },
+        { to: '/achievements', icon: 'trophy', label: 'sidebar.achievements', notificationType: 'ACHIEVEMENTS' },
+        { to: '/points', icon: 'star-points', label: 'sidebar.points', notificationType: 'POINTS' },
+        { to: '/objectives', icon: 'target', label: 'sidebar.objectives', notificationType: 'OBJECTIVES' },
+        { to: '/evolution', icon: 'evolution', label: 'sidebar.evolution', notificationType: 'EVOLUTION' },
+        { to: '/announcements', icon: 'megaphone', label: 'sidebar.announcements', notificationType: 'ANNOUNCEMENTS' },
     ];
 
     const handleLogout = async () => {
@@ -58,7 +62,7 @@ export default function Sidebar() {
                                 icon={item.icon}
                                 label={item.label}
                                 active={isActive}
-                                news={item.news}
+                                news={Boolean(item.notificationType && unreadByType?.[item.notificationType] > 0)}
                                 collapsed={collapsed}
                             />
                         )}
