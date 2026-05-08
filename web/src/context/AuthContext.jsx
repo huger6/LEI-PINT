@@ -4,6 +4,8 @@ import { setApiToken, clearApiToken } from '../services/api.js';
 
 export const AuthContext = createContext(null);
 
+const SESSION_FLAG = 'hasSession';
+
 export function AuthProvider({ children }) {
 	const [user, setUser] = useState(null);
 	const [token, setToken] = useState(null);
@@ -13,6 +15,7 @@ export function AuthProvider({ children }) {
 
 	const clearAuth = useCallback(() => {
 		clearApiToken();
+		localStorage.removeItem(SESSION_FLAG);
 		setUser(null);
 		setToken(null);
 		setFpc(false);
@@ -26,6 +29,11 @@ export function AuthProvider({ children }) {
 	}, [clearAuth]);
 
 	useEffect(() => {
+		if (!localStorage.getItem(SESSION_FLAG)) {
+			setIsLoading(false);
+			return;
+		}
+
 		authApi
 			.refreshToken()
 			.then(({ data }) => {
@@ -35,7 +43,7 @@ export function AuthProvider({ children }) {
 				setIsAuthenticated(true);
 			})
 			.catch(() => {
-				// No valid session — refresh token cookie absent or expired
+				localStorage.removeItem(SESSION_FLAG);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -45,6 +53,7 @@ export function AuthProvider({ children }) {
 	const login = useCallback(async (identifier, password, remember) => {
 		const { data } = await authApi.login(identifier, password, remember);
 		const { token: newToken, fpc: forcePwChange, user: userData } = data.data;
+		localStorage.setItem(SESSION_FLAG, 'true');
 		setApiToken(newToken);
 		setToken(newToken);
 		setUser(userData);

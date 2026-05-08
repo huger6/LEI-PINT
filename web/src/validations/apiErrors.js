@@ -28,7 +28,7 @@ const CODE_FIELDS = {
 	AUTH_CURRENT_PASSWORD_WRONG: 'currentPassword',
 	AUTH_PASSWORD_SAME_AS_CURRENT: 'newPassword',
 	AUTH_INVALID_LOCATION: 'location_id',
-	AUTH_INVALID_LANGUAGE: 'preferred_lang_id',
+	AUTH_INVALID_LANGUAGE: 'language_id',
 	AUTH_INVALID_PROFILE_IMAGE: 'profile_img_url',
 };
 
@@ -43,7 +43,8 @@ export const FIELD_FROM_BACKEND = {
 	phone_number: 'phone_number',
 	birthdate: 'birthdate',
 	biography: 'biography',
-	preferred_lang_id: 'preferred_lang_id',
+	language_id: 'language_id',
+	preferred_lang_id: 'language_id',
 	location_id: 'location_id',
 	service_line_id: 'service_line_id',
 	areas: 'areas',

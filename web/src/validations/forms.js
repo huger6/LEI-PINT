@@ -44,7 +44,7 @@ export const validateRegisterStep3 = (form, role, { phoneMetadata } = {}) => {
 		['phone_number', validatePhoneNumber(form.phone_number, phoneMetadata)],
 		['birthdate', validateBirthdate(form.birthdate)],
 		['biography', validateBiography(form.biography)],
-		['preferred_lang_id', validatePositiveIntId(form.preferred_lang_id, tl('preferred_lang_id'))],
+		['language_id', validatePositiveIntId(form.language_id, tl('language_id'))],
 		['location_id', validatePositiveIntId(form.location_id, tl('location_id'))],
 	];
 	if (role === 'Consultant') {
