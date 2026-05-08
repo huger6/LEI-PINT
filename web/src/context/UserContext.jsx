@@ -1,9 +1,10 @@
 import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../features/auth';
-import { getMe } from '../features/auth/api/authApi';
+import { getMe, updateUserLanguage } from '../features/auth/api/authApi';
 import { connectSocket, disconnectSocket } from '../services/socket';
 import * as notificationsApi from '../features/notifications/api/notificationsApi';
 import { firstAndLastName } from '../utils/utils';
+import i18next from 'i18next';
 
 export const UserContext = createContext(null);
 const NOTIFICATION_TYPES = ['HOME', 'BADGES', 'APPLICATIONS', 'ACHIEVEMENTS', 'POINTS', 'OBJECTIVES', 'EVOLUTION', 'ANNOUNCEMENTS', 'SYSTEM'];
@@ -99,9 +100,19 @@ export function UserProvider({ children }) {
 				setUser(userProfile);
 				setLang(langData ?? null);
 			})
-			.catch(() => {})
+			.catch(() => { })
 			.finally(() => setIsUserLoading(false));
 	}, [isAuthenticated]);
+
+	const handleLanguageChange = useCallback(async (languageId, languageIso) => {
+		i18next.changeLanguage(languageIso);
+		try {
+			await updateUserLanguage(languageId);
+			setLang((prev) => ({ ...prev, id: languageId, iso: languageIso }));
+		} catch {
+			// language UI already updated; API failure is non-blocking
+		}
+	}, []);
 
 	// ── Unread count ──────────────────────────────────────────────
 	useEffect(() => {
@@ -166,7 +177,7 @@ export function UserProvider({ children }) {
 			setUnreadCount((prev) => Math.max(0, prev - 1));
 			fetchUnreadByTypeSummary()
 				.then(setUnreadByType)
-				.catch(() => {});
+				.catch(() => { });
 		});
 
 		socket.on('notification:all-read', () => {
@@ -207,6 +218,7 @@ export function UserProvider({ children }) {
 				lang,
 				displayName,
 				isUserLoading,
+				handleLanguageChange,
 				notifications: {
 					list: notificationsList,
 					pagination: notificationsPagination,
