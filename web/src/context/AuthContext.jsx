@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import * as authApi from '../features/auth/api/authApi.js';
 import { setApiToken, clearApiToken } from '../services/api.js';
 
@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
 	const [fpc, setFpc] = useState(false);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const refreshAttempted = useRef(false);
 
 	const clearAuth = useCallback(() => {
 		clearApiToken();
@@ -33,6 +34,9 @@ export function AuthProvider({ children }) {
 			setIsLoading(false);
 			return;
 		}
+
+		if (refreshAttempted.current) return;
+		refreshAttempted.current = true;
 
 		authApi
 			.refreshToken()
