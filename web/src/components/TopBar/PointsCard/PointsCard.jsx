@@ -1,5 +1,5 @@
 import styles from './PointsCard.module.css';
-import Icon from '../Icons/Icons';
+import Icon from '../../Icons/Icons';
 
 export default function PointsCard({ points }) {
     return (

@@ -1,32 +1,28 @@
+import { Link } from 'react-router-dom';
 import styles from './TopBar.module.css';
 import Logo from '../Logo/Logo';
-import Avatar from '../Avatar/Avatar';
 import { NotificationBell } from '../../features/notifications';
 import { useUser } from '../../hooks/userContext';
+import UserDropdown from './UserDropdown/UserDropdown';
+import PointsCard from './PointsCard/PointsCard';
 
 export default function TopBar() {
-    const { user, displayName } = useUser();
+    const { user, displayName, points } = useUser();
 
     return (
         <header className={styles.topBar}>
-            <Link to="/">
-                <div className={styles.logoSection}>
-                    <Logo />
-                </div>
+            <Link to="/" className={styles.logoSection}>
+                <Logo />
             </Link>
             <div className={styles.rightSection}>
+                <PointsCard points={points} />
                 <NotificationBell />
                 <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{displayName}</span>
                         {user?.role && <span className={styles.role}>{user.role}</span>}
                     </div>
-                    <Avatar
-                        src={user?.profileImg}
-                        name={displayName}
-                        size={36}
-                        fallbackLabel={`${displayName} avatar`}
-                    />
+                    <UserDropdown />
                 </div>
             </div>
         </header>
