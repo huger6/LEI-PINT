@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
@@ -50,7 +50,7 @@ const INITIAL_FORM = {
 	phone_number: '',
 	birthdate: '',
 	biography: '',
-	preferred_lang_id: '',
+	language_id: '',
 	location_id: '',
 	areas: [],
 	service_line_id: '',
@@ -91,6 +91,9 @@ export default function RegisterPage() {
 	const [profileUploadStatus, setProfileUploadStatus] = useState(PROFILE_UPLOAD_STATUS.IDLE);
 	const [profileUploadError, setProfileUploadError] = useState('');
 	const [profileUploadFileName, setProfileUploadFileName] = useState('');
+	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	const [profilePreviewObjectUrl, setProfilePreviewObjectUrl] = useState('');
+	const profileFileInputRef = useRef(null);
 
 	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
 	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
@@ -189,10 +192,42 @@ export default function RegisterPage() {
 		}
 	}, [t]);
 
+	useEffect(() => () => {
+		if (profilePreviewObjectUrl) {
+			URL.revokeObjectURL(profilePreviewObjectUrl);
+		}
+	}, [profilePreviewObjectUrl]);
+
+	const clearProfileImage = useCallback(() => {
+		if (profilePreviewObjectUrl) {
+			URL.revokeObjectURL(profilePreviewObjectUrl);
+		}
+		setProfilePreviewObjectUrl('');
+		setProfilePreviewUrl('');
+		setProfileUploadError('');
+		setProfileUploadFileName('');
+		setProfileUploadStatus(PROFILE_UPLOAD_STATUS.IDLE);
+		setFieldTouched('profile_img_url', true);
+		setFieldValue('profile_img_url', '');
+		clearFeedbackFor('profile_img_url');
+		if (profileFileInputRef.current) profileFileInputRef.current.value = '';
+	}, [clearFeedbackFor, profilePreviewObjectUrl, setFieldTouched, setFieldValue]);
+
+	const openProfileImagePicker = useCallback(() => {
+		profileFileInputRef.current?.click();
+	}, []);
+
 	const onProfileImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
 		if (!file) return;
+
+		if (profilePreviewObjectUrl) {
+			URL.revokeObjectURL(profilePreviewObjectUrl);
+		}
+		const localPreviewUrl = URL.createObjectURL(file);
+		setProfilePreviewObjectUrl(localPreviewUrl);
+		setProfilePreviewUrl(localPreviewUrl);
 
 		clearFeedbackFor('profile_img_url');
 		setFieldTouched('profile_img_url', true);
@@ -204,12 +239,15 @@ export default function RegisterPage() {
 		try {
 			const { publicUrl } = await uploadProfileImageToTemp(file);
 			setFieldValue('profile_img_url', publicUrl);
+			setProfilePreviewUrl(publicUrl);
+			URL.revokeObjectURL(localPreviewUrl);
+			setProfilePreviewObjectUrl('');
 			setProfileUploadStatus(PROFILE_UPLOAD_STATUS.UPLOADED);
 		} catch (error) {
 			setProfileUploadStatus(PROFILE_UPLOAD_STATUS.FAILED);
 			setProfileUploadError(resolveProfileUploadError(error));
 		}
-	}, [clearFeedbackFor, resolveProfileUploadError, setFieldTouched, setFieldValue]);
+	}, [clearFeedbackFor, profilePreviewObjectUrl, resolveProfileUploadError, setFieldTouched, setFieldValue]);
 
 	const applyPhoneValue = useCallback((prefix, rawLocalValue) => {
 		const prefixDigitsCount = normalizePhoneDigits(prefix).length;
@@ -253,8 +291,8 @@ export default function RegisterPage() {
 	const languageOptions = useMemo(
 		() => languages
 			.map((language) => {
-				const id = Number(language.preferred_lang_id ?? language.id);
-				const name = language.preferred_lang ?? language.name ?? language.label;
+				const id = Number(language.language_id ?? language.preferred_lang_id ?? language.id);
+				const name = language.language_name ?? language.preferred_lang ?? language.name ?? language.label;
 				return Number.isInteger(id) && id > 0 && name
 					? { id, name: String(name) }
 					: null;
@@ -383,7 +421,7 @@ export default function RegisterPage() {
 			if (values.phone_number) payload.phone_number = values.phone_number.replace(/\s+/g, '');
 			if (values.birthdate) payload.birthdate = values.birthdate;
 			if (values.biography) payload.biography = values.biography.trim();
-			if (values.preferred_lang_id) payload.preferred_lang_id = Number(values.preferred_lang_id);
+			if (values.language_id) payload.language_id = Number(values.language_id);
 			if (values.location_id) payload.location_id = Number(values.location_id);
 			if (values.profile_img_url) payload.profile_img_url = values.profile_img_url;
 			if (role === 'Consultant') payload.areas = values.areas;
@@ -441,6 +479,7 @@ export default function RegisterPage() {
 	const phoneError = fieldError('phone_number');
 	const birthdateError = fieldError('birthdate');
 	const profileImageError = fieldError('profile_img_url') || profileUploadError;
+	const isProfileUploading = profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING;
 	const withMandatoryIcon = (label) => (
 		<span className={styles.mandatoryLabel}>
 			{label}
@@ -603,16 +642,68 @@ export default function RegisterPage() {
 							) : (
 								<>
 									<div>
-										<FormInput
+										<label htmlFor="profile_img_upload" className={`form-label ${styles.selectLabel}`}>{t('register.profilePicture')}</label>
+										<input
+											ref={profileFileInputRef}
 											id="profile_img_upload"
 											name="profile_img_upload"
-											label={t('register.profilePicture')}
 											type="file"
+											className={styles.hiddenFileInput}
 											accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/svg+xml,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif"
 											onChange={onProfileImageChange}
 											onBlur={() => setFieldTouched('profile_img_url', true)}
-											error={profileImageError}
 										/>
+										<div
+											role="button"
+											tabIndex={0}
+											aria-disabled={isProfileUploading}
+											className={`${styles.profileImagePicker} ${profileImageError ? styles.profileImagePickerError : ''} ${isProfileUploading ? styles.profileImagePickerDisabled : ''}`}
+											onClick={() => {
+												if (!isProfileUploading) openProfileImagePicker();
+											}}
+											onKeyDown={(event) => {
+												if (isProfileUploading) return;
+												if (event.key === 'Enter' || event.key === ' ') {
+													event.preventDefault();
+													openProfileImagePicker();
+												}
+											}}
+										>
+											{profilePreviewUrl ? (
+												<img src={profilePreviewUrl} alt={t('register.profilePicturePreviewAlt')} className={styles.profileImagePreview} />
+											) : (
+												<div className={styles.profileImagePlaceholder}>
+													<i className="bi bi-image" aria-hidden="true" />
+													<span>{t('register.profilePictureChoose')}</span>
+												</div>
+											)}
+										</div>
+										{profileImageError && (
+											<div className="invalid-feedback d-block">{profileImageError}</div>
+										)}
+										{(profilePreviewUrl || values.profile_img_url) && (
+											<div className={styles.profileImageActions}>
+												<FormButton
+													type="button"
+													variant="secondary"
+													onClick={openProfileImagePicker}
+													disabled={isProfileUploading}
+													className={styles.profileImageActionButton}
+												>
+													{t('register.profilePictureChange')}
+												</FormButton>
+												<FormButton
+													type="button"
+													variant="secondary"
+													onClick={clearProfileImage}
+													disabled={isProfileUploading}
+													className={styles.profileImageActionButton}
+												>
+													<i className="bi bi-trash me-1" aria-hidden="true" />
+													{t('register.profilePictureRemove')}
+												</FormButton>
+											</div>
+										)}
 										<p className={`small mt-1 mb-0 ${styles.fileHint}`}>
 											{t('register.profilePictureHint', { sizeMb: PROFILE_IMAGE_MAX_FILE_SIZE_BYTES / (1024 * 1024) })}
 										</p>
@@ -678,20 +769,20 @@ export default function RegisterPage() {
 									</div>
 
 									<div>
-										<label htmlFor="preferred_lang_id" className={`form-label ${styles.selectLabel}`}>{t('register.preferredLanguage')}</label>
+										<label htmlFor="language_id" className={`form-label ${styles.selectLabel}`}>{t('register.preferredLanguage')}</label>
 										<CustomSelect
-											id="preferred_lang_id"
-											name="preferred_lang_id"
-											value={form.values.preferred_lang_id}
+											id="language_id"
+											name="language_id"
+											value={form.values.language_id}
 											onChange={onChange}
 											onBlur={handleBlur}
 											options={languageOptions.map((l) => ({ value: l.id, label: l.name }))}
 											placeholder={languageOptions.length === 0 ? t('register.noLanguagesAvailable') : t('register.selectLanguage')}
 											disabled={languageOptions.length === 0}
-											error={!!fieldError('preferred_lang_id')}
+											error={!!fieldError('language_id')}
 										/>
-										{fieldError('preferred_lang_id') && (
-											<div className="invalid-feedback d-block">{fieldError('preferred_lang_id')}</div>
+										{fieldError('language_id') && (
+											<div className="invalid-feedback d-block">{fieldError('language_id')}</div>
 										)}
 									</div>
 

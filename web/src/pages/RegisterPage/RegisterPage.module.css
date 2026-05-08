@@ -98,6 +98,84 @@
 	color: var(--color-outline);
 }
 
+.hiddenFileInput {
+	display: none;
+}
+
+.profileImagePicker {
+	border: 1.5px dashed var(--color-outline);
+	border-radius: 12px;
+	background: var(--gradient-surface-field);
+	min-height: 180px;
+	cursor: pointer;
+	overflow: hidden;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.profileImagePicker:hover,
+.profileImagePicker:focus-visible {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+	transform: translateY(-1px);
+}
+
+.profileImagePickerError {
+	border-color: var(--color-error);
+}
+
+.profileImagePickerDisabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.profileImagePlaceholder {
+	height: 100%;
+	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+.profileImagePlaceholder i {
+	font-size: 1.8rem;
+}
+
+.profileImagePreview {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 180px;
+	max-height: 320px;
+	object-fit: cover;
+}
+
+.profileImageActions {
+	margin-top: 0.75rem;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+
+.profileImageActionButton {
+	padding: 0.45rem 0.7rem !important;
+	font-size: 0.8rem !important;
+	font-weight: 500 !important;
+	background: var(--color-surface-overlay-62) !important;
+	color: var(--color-outline) !important;
+	border: 1px solid var(--color-outline) !important;
+	border-radius: 8px !important;
+}
+
+.profileImageActionButton:hover:not(:disabled) {
+	background: var(--color-surface-overlay-84) !important;
+	color: var(--color-on-surface) !important;
+}
+
 .phoneInput,
 .textarea {
 	border: 1.5px solid var(--color-outline);
@@ -199,6 +277,10 @@
 }
 
 @media (max-width: 576px) {
+	.profileImageActions {
+		grid-template-columns: 1fr;
+	}
+
 	.phoneRow {
 		grid-template-columns: 1fr;
 	}
