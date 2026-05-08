@@ -2,6 +2,12 @@ import i18n from '../i18n';
 
 const ta = (key, opts) => i18n.t(key, { ns: 'api', ...opts });
 
+export const resolveApiCodeMessage = (code, fallback = '') => {
+	if (!code) return fallback;
+	const translated = ta(code, { defaultValue: '' });
+	return translated || fallback;
+};
+
 const formatRetryAfter = (seconds) => {
 	if (!seconds || Number.isNaN(Number(seconds))) return null;
 	const s = Number(seconds);
