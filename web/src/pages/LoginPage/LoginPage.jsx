@@ -111,19 +111,17 @@ export default function LoginPage() {
 								autoFocus
 							/>
 
-							<div className="position-relative">
-								<FormInput
-									name="password"
-									value={form.password}
-									onChange={handleChange}
-									id="password"
-									label={t('login.password')}
-									type={showPassword ? 'text' : 'password'}
-									placeholder={t('passwordPlaceholder')}
-									autoComplete="current-password"
-								/>
-								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
-							</div>
+							<FormInput
+								name="password"
+								value={form.password}
+								onChange={handleChange}
+								id="password"
+								label={t('login.password')}
+								type={showPassword ? 'text' : 'password'}
+								placeholder={t('passwordPlaceholder')}
+								autoComplete="current-password"
+								trailing={<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
+							/>
 
 							<div className="d-flex align-items-center justify-content-between gap-2">
 								<div className="d-flex align-items-center form-check mb-0 gap-2">

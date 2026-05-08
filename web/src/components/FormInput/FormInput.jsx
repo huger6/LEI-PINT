@@ -1,6 +1,16 @@
 import styles from './FormInput.module.css';
 
-export default function FormInput({ id, label, error, className, ...inputProps }) {
+export default function FormInput({
+	id,
+	label,
+	error,
+	className,
+	inputClassName,
+	trailing,
+	...inputProps
+}) {
+	const inputClassNames = `form-control ${styles.input} ${trailing ? styles.inputWithTrailing : ''} ${error ? `is-invalid ${styles.inputError}` : ''} ${inputClassName ?? ''}`.trim();
+
 	return (
 		<div className={className ?? ''}>
 			{label && (
@@ -8,11 +18,14 @@ export default function FormInput({ id, label, error, className, ...inputProps }
 					{label}
 				</label>
 			)}
-			<input
-				id={id}
-				className={`form-control ${styles.input} ${error ? `is-invalid ${styles.inputError}` : ''}`}
-				{...inputProps}
-			/>
+			<div className={styles.inputWrapper}>
+				<input
+					id={id}
+					className={inputClassNames}
+					{...inputProps}
+				/>
+				{trailing && <div className={styles.trailing}>{trailing}</div>}
+			</div>
 			{error && (
 				<div className={`invalid-feedback ${styles.errorText}`} role="alert">
 					{error}

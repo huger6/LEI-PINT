@@ -606,19 +606,17 @@ export default function RegisterPage() {
 								/>
 								{renderEmailHint()}
 							</div>
-							<div className="position-relative">
-								<FormInput
-									{...form.getFieldProps('password')}
-									onChange={onChange}
-									onBlur={handleBlur}
-									id="password"
-									label={withMandatoryIcon(t('register.password'))}
-									type={showPassword ? 'text' : 'password'}
-									placeholder={t('register.enterPasswordPlaceholder')}
-									error={fieldError('password')}
-								/>
-								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
-							</div>
+							<FormInput
+								{...form.getFieldProps('password')}
+								onChange={onChange}
+								onBlur={handleBlur}
+								id="password"
+								label={withMandatoryIcon(t('register.password'))}
+								type={showPassword ? 'text' : 'password'}
+								placeholder={t('register.enterPasswordPlaceholder')}
+								error={fieldError('password')}
+								trailing={<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
+							/>
 
 							<PasswordRules password={values.password} />
 

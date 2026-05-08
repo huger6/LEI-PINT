@@ -3,12 +3,20 @@
 	color: var(--color-on-primary-container);
 }
 
+.inputWrapper {
+	position: relative;
+}
+
 .input {
 	border: 1.5px solid var(--color-outline);
 	border-radius: 10px;
 	background: var(--color-surface-overlay-60);
 	color: var(--color-on-surface);
 	transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.inputWithTrailing {
+	padding-right: 2.5rem;
 }
 
 .input::placeholder {
@@ -30,4 +38,13 @@
 .inputError:focus {
 	border-color: var(--color-error);
 	box-shadow: 0 0 0 3px var(--color-error-focus-ring);
+}
+
+.trailing {
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
 }
