@@ -104,11 +104,12 @@ const checkBiography = async (req, res) => {
     try {
         const parsed = biographyBodySchema.safeParse(req.body);
         if (!parsed.success) {
+            const firstIssue = parsed.error.issues[0];
             return res.status(200).json({
                 success: true,
                 data: {
                     available: false,
-                    errors: parsed.error.issues.map(e => e.message)
+                    code: firstIssue?.message || 'VALIDATION_INVALID_DATA'
                 }
             });
         }
