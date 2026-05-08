@@ -43,6 +43,7 @@
         opacity: 0;
         transform: translateY(-4px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -62,6 +63,7 @@
 
 .profileHeader:hover {
     background: var(--color-primary-hover-bg-soft);
+    text-decoration: none;
 }
 
 .profileHeader:focus-visible {
@@ -121,6 +123,7 @@
             opacity: 0;
             transform: translateY(100%);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
