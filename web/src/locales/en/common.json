@@ -273,5 +273,17 @@
 			"areas": "Areas of expertise",
 			"profile_img_url": "Profile picture"
 		}
+	},
+	"notifications": {
+		"title": "Notifications",
+		"empty": "No notifications yet",
+		"markAllRead": "Mark all as read",
+		"loadMore": "Load more",
+		"timeAgo": {
+			"now": "Just now",
+			"minutes": "{{count}}m ago",
+			"hours": "{{count}}h ago",
+			"days": "{{count}}d ago"
+		}
 	}
 }

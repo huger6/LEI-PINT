@@ -8,6 +8,7 @@ const api = axios.create({
 
 let _token = null;
 
+export const getApiToken = () => _token;
 export const setApiToken = (token) => { _token = token; };
 export const clearApiToken = () => { _token = null; };
 

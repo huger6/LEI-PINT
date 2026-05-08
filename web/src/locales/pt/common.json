@@ -273,5 +273,17 @@
 			"areas": "Áreas de especialização",
 			"profile_img_url": "Foto de perfil"
 		}
+	},
+	"notifications": {
+		"title": "Notificações",
+		"empty": "Sem notificações",
+		"markAllRead": "Marcar todas como lidas",
+		"loadMore": "Carregar mais",
+		"timeAgo": {
+			"now": "Agora mesmo",
+			"minutes": "{{count}}min atrás",
+			"hours": "{{count}}h atrás",
+			"days": "{{count}}d atrás"
+		}
 	}
 }

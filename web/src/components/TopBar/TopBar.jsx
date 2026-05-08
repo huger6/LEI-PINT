@@ -1,17 +1,23 @@
 import styles from './TopBar.module.css';
-import NotificationIcon from '../NotificationIcon/NotificationIcon';
 import Logo from '../Logo/Logo';
+import { NotificationBell } from '../../features/notifications';
+import { useUser } from '../../hooks/userContext';
 
-export default function TopBar({ role = "Consultant" }) {
+export default function TopBar() {
+    const { user } = useUser();
+
     return (
-        <div className={styles.topBar}>
-            <Logo />
+        <header className={styles.topBar}>
+            <div className={styles.logoSection}>
+                <Logo />
+            </div>
             <div className={styles.rightSection}>
-                <NotificationIcon count={3} />
+                <NotificationBell />
                 <div className={styles.userInfo}>
-                    <span className={styles.role}>{role}</span>
+                    <span className={styles.userName}>{user?.full_name}</span>
+                    <span className={styles.role}>{user?.user_role}</span>
                 </div>
             </div>
-        </div>
+        </header>
     );
 }
