@@ -36,9 +36,9 @@ export default function SearchBar({
         >
             <span className={`input-group-text ${styles.iconWrapper}`}>
                 <Icon
-                    name="searchsvg"
+                    name="search"
                     className={styles.searchIcon}
-                    size={15}
+                    size={24}
                     color="currentColor"
                     label={ariaLabel}
                     fill="currentColor"
