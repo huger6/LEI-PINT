@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from './TopBar.module.css';
 import Logo from '../Logo/Logo';
 import { NotificationBell } from '../../features/notifications';
@@ -9,6 +10,7 @@ import SearchBar from './SearchBar/SearchBar';
 
 export default function TopBar() {
     const { user, displayName, points } = useUser();
+    const { t } = useTranslation();
 
     return (
         <header className={styles.topBar}>
@@ -24,7 +26,7 @@ export default function TopBar() {
                 <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{displayName}</span>
-                        {user?.role && <span className={styles.role}>{user.role}</span>}
+                        {user?.role && <span className={styles.role}>{t(`roles.${user.role}`, user.role)}</span>}
                     </div>
                     <UserDropdown />
                 </div>
