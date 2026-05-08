@@ -19,6 +19,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(180deg, var(--Schemes-Primary, #00B8E0) 0%, var(--Schemes-Secondary, #39639C) 100%);
+    background: linear-gradient(180deg, var(--color-primary, #00B8E0) 0%, var(--color-secondary, #39639C) 100%);
     color: var(--color-on-background);
 }
