@@ -9,9 +9,11 @@ export default function TopBar() {
 
     return (
         <header className={styles.topBar}>
-            <div className={styles.logoSection}>
-                <Logo />
-            </div>
+            <Link to="/">
+                <div className={styles.logoSection}>
+                    <Logo />
+                </div>
+            </Link>
             <div className={styles.rightSection}>
                 <NotificationBell />
                 <div className="d-flex align-items-center gap-2 gap-md-3">

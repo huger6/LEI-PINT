@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, validateResetToken, resetPassword } from '../../features/auth';
-import FormInput from '../../components/FormInput/FormInput';
-import FormButton from '../../components/FormButton/FormButton';
-import PasswordRules from '../../components/PasswordRules/PasswordRules';
-import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
-import FormAlert from '../../components/FormAlert/FormAlert';
-import { useFormWithServerErrors } from '../../hooks/useFormWithServerErrors';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, validateResetToken, resetPassword } from '../..';
+import FormInput from '../../../../components/FormInput/FormInput';
+import FormButton from '../../../../components/FormButton/FormButton';
+import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../../../components/FormAlert/FormAlert';
+import { useFormWithServerErrors } from '../../../../hooks/useFormWithServerErrors';
 import styles from './ResetPasswordPage.module.css';
 import {
 	validateResetPasswordForm,
@@ -18,7 +18,7 @@ import {
 	resolveErrorField,
 	extractFieldErrors,
 	isCode,
-} from '../../validations';
+} from '../../../../validations';
 
 export default function ResetPasswordPage() {
 	const { t } = useTranslation();

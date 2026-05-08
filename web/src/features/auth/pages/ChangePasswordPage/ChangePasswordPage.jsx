@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, useAuth, changePassword } from '../../features/auth';
-import FormInput from '../../components/FormInput/FormInput';
-import FormButton from '../../components/FormButton/FormButton';
-import PasswordRules from '../../components/PasswordRules/PasswordRules';
-import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
-import FormAlert from '../../components/FormAlert/FormAlert';
-import { useFormWithServerErrors } from '../../hooks/useFormWithServerErrors';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, useAuth, changePassword } from '../..';
+import FormInput from '../../../../components/FormInput/FormInput';
+import FormButton from '../../../../components/FormButton/FormButton';
+import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../../../components/FormAlert/FormAlert';
+import { useFormWithServerErrors } from '../../../../hooks/useFormWithServerErrors';
 import styles from './ChangePasswordPage.module.css';
 import {
 	validateChangePasswordForm,
@@ -17,7 +17,7 @@ import {
 	resolveErrorMessage,
 	resolveErrorField,
 	extractFieldErrors,
-} from '../../validations';
+} from '../../../../validations';
 
 export default function ChangePasswordPage() {
 	const { t } = useTranslation();

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, forgotPassword } from '../../features/auth';
-import FormInput from '../../components/FormInput/FormInput';
-import FormButton from '../../components/FormButton/FormButton';
-import FormAlert from '../../components/FormAlert/FormAlert';
-import hideEmail from '../../utils/utils';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, forgotPassword } from '../..';
+import FormInput from '../../../../components/FormInput/FormInput';
+import FormButton from '../../../../components/FormButton/FormButton';
+import FormAlert from '../../../../components/FormAlert/FormAlert';
+import hideEmail from '../../../../utils/utils';
 import styles from './ForgotPasswordPage.module.css';
 import {
 	validateForgotPasswordForm,
@@ -15,7 +15,7 @@ import {
 	resolveErrorMessage,
 	resolveErrorField,
 	extractFieldErrors,
-} from '../../validations';
+} from '../../../../validations';
 
 export default function ForgotPasswordPage() {
 	const { t } = useTranslation();

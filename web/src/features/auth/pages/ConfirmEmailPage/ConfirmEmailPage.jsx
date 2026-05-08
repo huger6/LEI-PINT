@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, confirmEmail } from '../../features/auth';
-import FormButton from '../../components/FormButton/FormButton';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, confirmEmail } from '../..';
+import FormButton from '../../../../components/FormButton/FormButton';
 import styles from './ConfirmEmailPage.module.css';
-import { resolveErrorMessage } from '../../validations';
+import { resolveErrorMessage } from '../../../../validations';
 
 export default function ConfirmEmailPage() {
 	const { t } = useTranslation();
