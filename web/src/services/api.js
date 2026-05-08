@@ -6,6 +6,7 @@ const api = axios.create({
 	headers: { 'Content-Type': 'application/json' },
 });
 
+// Store token in memory
 let _token = null;
 
 export const getApiToken = () => _token;

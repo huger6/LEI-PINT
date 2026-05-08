@@ -2,21 +2,21 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, register } from '../../features/auth';
-import api from '../../services/api.js';
-import FormInput from '../../components/FormInput/FormInput';
-import FormButton from '../../components/FormButton/FormButton';
-import CustomSelect from '../../components/CustomSelect/CustomSelect';
-import DatePicker from '../../components/DatePicker/DatePicker';
-import PasswordRules from '../../components/PasswordRules/PasswordRules';
-import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
-import FormAlert from '../../components/FormAlert/FormAlert';
-import { capitalizeName } from '../../utils/utils';
-import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../utils/phone';
-import { getMinBirthdate } from '../../utils/date';
-import { extractCollection } from '../../utils/collections';
-import { uploadProfileImageToTemp, PROFILE_IMAGE_MAX_FILE_SIZE_BYTES } from '../../services/storage';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, register } from '../..';
+import api from '../../../../services/api.js';
+import FormInput from '../../../../components/FormInput/FormInput';
+import FormButton from '../../../../components/FormButton/FormButton';
+import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../../../components/DatePicker/DatePicker';
+import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
+import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../../../components/FormAlert/FormAlert';
+import { capitalizeName } from '../../../../utils/utils';
+import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../../../utils/phone';
+import { getMinBirthdate } from '../../../../utils/date';
+import { extractCollection } from '../../../../utils/collections';
+import { uploadProfileImageToTemp, PROFILE_IMAGE_MAX_FILE_SIZE_BYTES } from '../../../../services/storage';
 import styles from './RegisterPage.module.css';
 import {
 	validateRegisterStep2,
@@ -38,8 +38,8 @@ import {
 	fetchEmailAvailability,
 	fetchBiographyValidity,
 	mergeError,
-} from '../../validations';
-import { usePhoneMetadata } from '../../services/libphonenumber';
+} from '../../../../validations';
+import { usePhoneMetadata } from '../../../../services/libphonenumber';
 
 const ROLE_KEYS = ['Consultant', 'Talent Manager', 'Service Line Leader'];
 

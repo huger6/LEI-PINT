@@ -1,10 +1,10 @@
-import LoginPage from '../../pages/LoginPage/LoginPage';
-import RegisterPage from '../../pages/RegisterPage/RegisterPage';
-import ForgotPasswordPage from '../../pages/ForgotPasswordPage/ForgotPasswordPage';
-import ResetPasswordPage from '../../pages/ResetPasswordPage/ResetPasswordPage';
-import ConfirmEmailPage from '../../pages/ConfirmEmailPage/ConfirmEmailPage';
-import ResendConfirmationPage from '../../pages/ResendConfirmationPage/ResendConfirmationPage';
-import ChangePasswordPage from '../../pages/ChangePasswordPage/ChangePasswordPage';
+import LoginPage from './pages/LoginPage/LoginPage';
+import RegisterPage from './pages/RegisterPage/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage';
+import ConfirmEmailPage from './pages/ConfirmEmailPage/ConfirmEmailPage';
+import ResendConfirmationPage from './pages/ResendConfirmationPage/ResendConfirmationPage';
+import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage';
 
 export const authPublicRoutes = [
 	{ path: '/login', element: <LoginPage /> },

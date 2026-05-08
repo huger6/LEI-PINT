@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
-import { AuthCard, useAuth } from '../../features/auth';
-import FormInput from '../../components/FormInput/FormInput';
-import FormButton from '../../components/FormButton/FormButton';
-import PasswordToggle from '../../components/PasswordToggle/PasswordToggle';
-import FormAlert from '../../components/FormAlert/FormAlert';
-import Logo from '../../components/Logo/Logo';
+import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import { AuthCard, useAuth } from '../..';
+import FormInput from '../../../../components/FormInput/FormInput';
+import FormButton from '../../../../components/FormButton/FormButton';
+import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
+import FormAlert from '../../../../components/FormAlert/FormAlert';
+import Logo from '../../../../components/Logo/Logo';
 import styles from './LoginPage.module.css';
-import { resolveErrorMessage, isCode } from '../../validations';
+import { resolveErrorMessage, isCode } from '../../../../validations';
 
 export default function LoginPage() {
 	const { t } = useTranslation();
