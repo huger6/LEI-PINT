@@ -9,6 +9,7 @@ import FormButton from '../../../../components/FormButton/FormButton';
 import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
+import Icon from '../../../../components/Icons/Icons';
 import { useFormWithServerErrors } from '../../../../hooks/useFormWithServerErrors';
 import styles from './ResetPasswordPage.module.css';
 import {
@@ -100,7 +101,7 @@ export default function ResetPasswordPage() {
 
 				{tokenStatus === 'invalid' && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.errorIcon}><i className="bi bi-x-lg" aria-hidden="true" /></div>
+						<div className={styles.errorIcon}><Icon name="close" size={24} color="currentColor" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.invalidOrExpired')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
@@ -148,7 +149,7 @@ export default function ResetPasswordPage() {
 
 				{success && (
 					<div className="d-flex flex-column align-items-center gap-3 py-3 text-center">
-						<div className={styles.successIcon}><i className="bi bi-check-lg" aria-hidden="true" /></div>
+						<div className={styles.successIcon}><Icon name="check" size={24} color="currentColor" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('resetPassword.successDesc')}</p>
 						<Link to="/login">

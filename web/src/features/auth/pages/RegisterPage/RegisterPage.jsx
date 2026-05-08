@@ -12,6 +12,7 @@ import DatePicker from '../../../../components/DatePicker/DatePicker';
 import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
+import Icon from '../../../../components/Icons/Icons';
 import { capitalizeName } from '../../../../utils/utils';
 import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../../../utils/phone';
 import { getMinBirthdate } from '../../../../utils/date';
@@ -460,7 +461,7 @@ export default function RegisterPage() {
 				</Helmet>
 				<AuthCard>
 					<div className="d-flex flex-column align-items-center gap-3 py-2">
-						<div className={styles.successIcon}><i className="bi bi-check-lg" aria-hidden="true" /></div>
+						<div className={styles.successIcon}><Icon name="check" size={22} color="currentColor" /></div>
 						<h2 className={`text-center mb-0 ${styles.title}`}>{t('register.accountCreated')}</h2>
 						<p className="text-center mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{apiInfo || t('register.checkEmailConfirmation')}
@@ -484,7 +485,7 @@ export default function RegisterPage() {
 	const withMandatoryIcon = (label) => (
 		<span className={styles.mandatoryLabel}>
 			{label}
-			<i className={`bi bi-asterisk ${styles.mandatoryIcon}`} aria-hidden="true" />
+			<Icon name="asterisk" size={6} className={styles.mandatoryIcon} color="var(--color-error)" />
 		</span>
 	);
 
