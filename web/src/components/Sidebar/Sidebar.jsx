@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../../hooks/userContext';
@@ -9,7 +9,14 @@ import Icon from '../Icons/Icons';
 export default function Sidebar() {
     const { t } = useTranslation();
     const { notifications } = useUser();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => window.matchMedia('(max-width: 991px)').matches);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 991px)');
+        const handler = (e) => { if (e.matches) setCollapsed(true); };
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     const menuItems = [
         { to: '/', icon: 'home', label: 'sidebar.home', notificationType: 'HOME' },

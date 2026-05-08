@@ -21,7 +21,7 @@ const BOOTSTRAP_ICON_MAP = {
     'bi-check-lg': 'check',
     'bi-asterisk': 'asterisk',
 };
-const FILLED_BOOTSTRAP_ICONS = new Set(['bi-circle-half', 'bi-shield', 'bi-lock']);
+const FILLED_BOOTSTRAP_ICONS = new Set(['bi-circle-half', 'bi-shield', 'bi-lock', 'bi-x-lg', 'bi-asterisk']);
 
 export default function DropdownOption({
     as = 'button',

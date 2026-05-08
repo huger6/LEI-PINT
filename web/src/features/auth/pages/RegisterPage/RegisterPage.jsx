@@ -485,7 +485,7 @@ export default function RegisterPage() {
 	const withMandatoryIcon = (label) => (
 		<span className={styles.mandatoryLabel}>
 			{label}
-			<Icon name="asterisk" size={6} className={styles.mandatoryIcon} color="var(--color-error)" />
+			<Icon name="asterisk" size={6} className={styles.mandatoryIcon} color="var(--color-error)" fill="currentColor" stroke="none" />
 		</span>
 	);
 

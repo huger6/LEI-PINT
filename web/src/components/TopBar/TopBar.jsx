@@ -21,7 +21,9 @@ export default function TopBar() {
                 <SearchBar />
             </div>
             <div className={styles.rightSection}>
-                <PointsCard points={points ? points : 0} />
+                <div className={styles.pointsCardWrap}>
+                    <PointsCard points={points ? points : 0} />
+                </div>
                 <NotificationBell />
                 <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
