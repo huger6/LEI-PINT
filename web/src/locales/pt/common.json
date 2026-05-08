@@ -3,7 +3,7 @@
 		"Consultant": "Consultor",
 		"Talent Manager": "Gestor de Talento",
 		"Service Line Leader": "Líder de Linha de Serviço",
-		"Administrator": "Administrator"
+		"Administrator": "Administrador"
 	},
 	"backToLogin": "Voltar ao login",
 	"backToLoginArrow": "Voltar ao login",
@@ -48,7 +48,7 @@
 		"fullName": "Nome Completo",
 		"fullNamePlaceholder": "João Silva",
 		"username": "Nome de utilizador",
-		"usernamePlaceholder": "joao.silva",
+		"usernamePlaceholder": "joão.silva",
 		"email": "Email",
 		"password": "Palavra-passe",
 		"enterPasswordPlaceholder": "Introduza a palavra-passe",
@@ -176,21 +176,21 @@
 	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
-		"brandDescription": "Lider em consultoria tecnologica, focada na valorizacao e certificacao continua de competencias atraves de Learning Paths inovadores.",
+		"brandDescription": "Líder em consultoria tecnológica, focada na valorização e certificação contínua de competências através de Learning Paths inovadores.",
 		"languagePt": "PT",
 		"languageEn": "EN",
 		"languageEs": "ES",
 		"platformTitle": "Plataforma",
-		"platformCatalog": "Catalogo de Badges",
+		"platformCatalog": "Catálogo de Badges",
 		"platformPaths": "Learning Paths",
 		"platformRanking": "Ranking de Pontos",
 		"supportTitle": "Suporte",
 		"supportHelp": "Centro de Ajuda",
-		"supportPrivacy": "Politicas RGPD",
+		"supportPrivacy": "Políticas RGPD",
 		"supportTerms": "Termos de Uso",
 		"connectivityTitle": "Conectividade",
-		"connectivityDescription": "Partilhe as suas conquistas no LinkedIn e mantenha-se conectado via Teams.",
-		"copyright": "© {{year}} Softinsa - Plataforma de Gestao de Credenciais Verificadas. Todos os direitos reservados."
+		"connectivityDescription": "Partilhe as suas conquistas no LinkedIn e mantenha-se ligado via Teams.",
+		"copyright": "© {{year}} Softinsa - Plataforma de Gestão de Credenciais Verificadas. Todos os direitos reservados."
 	},
 	"userDropdown": {
 		"openMenu": "Abrir menu do utilizador",
@@ -224,18 +224,18 @@
 		"collapse": "Recolher menu"
 	},
 	"icons": {
-		"home": "Inicio",
-		"badge": "Insignia",
-		"evolution": "Evolucao",
+		"home": "Início",
+		"badge": "Insígnia",
+		"evolution": "Evolução",
 		"exit-door": "Sair",
 		"hamburger": "Menu",
 		"image": "Imagem",
 		"megaphone": "Megafone",
 		"paper": "Documento",
-		"settings": "Definicoes",
+		"settings": "Definições",
 		"star-points": "Pontos estrela",
 		"target": "Alvo",
-		"trophy": "Trofeu"
+		"trophy": "Troféu"
 	},
 	"passwordRules": {
 		"minLength": "Pelo menos 8 caracteres",
