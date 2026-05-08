@@ -186,6 +186,16 @@
 		"connectivityDescription": "Share your achievements on LinkedIn and stay connected via Teams.",
 		"copyright": "© {{year}} Softinsa - Verified Credentials Management Platform. All rights reserved."
 	},
+	"userDropdown": {
+		"openMenu": "Open user menu",
+		"seeProfile": "See profile",
+		"mailSignature": "Mail signature",
+		"publicProfile": "My public profile",
+		"privacy": "Privacy (GDPR)",
+		"security": "Security",
+		"settings": "Settings",
+		"exit": "Exit"
+	},
 	"confirmToast": {
 		"logoutMessage": "Are you sure you want to logout?",
 		"yes": "Yes",

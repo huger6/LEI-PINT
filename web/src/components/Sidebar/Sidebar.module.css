@@ -93,19 +93,6 @@
     padding: 24px 8px;
 }
 
-.bottomSection {
-    padding: 17px 16px 16px;
-    border-top: 1px solid #E5E7EB;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    transition: padding 250ms ease;
-}
-
-.collapsed .bottomSection {
-    padding: 17px 8px 16px;
-}
-
 .navLink {
     text-decoration: none;
     border-radius: 10px;
