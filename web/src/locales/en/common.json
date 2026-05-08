@@ -1,4 +1,10 @@
 {
+	"roles": {
+		"Consultant": "Consultant",
+		"Talent Manager": "Talent Manager",
+		"Service Line Leader": "Service Line Leader",
+		"Administrator": "Administrator"
+	},
 	"backToLogin": "Back to login",
 	"backToLoginArrow": "Back to login",
 	"goToLogin": "Go to login",

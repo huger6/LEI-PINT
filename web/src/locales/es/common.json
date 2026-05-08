@@ -1,4 +1,10 @@
 {
+	"roles": {
+		"Consultant": "Consultor",
+		"Talent Manager": "Gestor de Talento",
+		"Service Line Leader": "Líder de Línea de Servicio",
+		"Administrator": "Administrador"
+	},
 	"backToLogin": "Volver al inicio de sesión",
 	"backToLoginArrow": "Volver al inicio de sesión",
 	"goToLogin": "Ir al inicio de sesión",
