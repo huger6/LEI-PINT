@@ -23,6 +23,12 @@
     gap: 16px;
 }
 
+.userBlock {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .userInfo {
     display: flex;
     flex-direction: column;
