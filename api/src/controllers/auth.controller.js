@@ -1106,9 +1106,10 @@ const me = async (req, res) => {
                     raw: true
                 })
                 : null,
+            // Fetch all language fields
             user.language_id
                 ? models.languages.findByPk(user.language_id, {
-                    attributes: ['language_iso'],
+                    attributes: ['language_id', 'language_iso', 'language_name'],
                     raw: true
                 })
                 : null,
@@ -1138,13 +1139,22 @@ const me = async (req, res) => {
 
         if (consultantAreas.length > 0) {
             const areaIds = consultantAreas.map((area) => area.area_id);
+
+            // Fetch full area info; area_id is kept only for the map lookup and never exposed
             const areaRecords = await models.areas.findAll({
                 where: {
                     area_id: {
                         [Op.in]: areaIds
                     }
                 },
-                attributes: ['area_id', 'area_name', 'service_line_id'],
+                attributes: [
+                    'area_id',
+                    'area_name',
+                    'area_slug',
+                    'area_code',
+                    'area_description',
+                    'img_url'
+                ],
                 raw: true
             });
 
@@ -1158,9 +1168,13 @@ const me = async (req, res) => {
                         return null;
                     }
 
+                    // Integer area_id is intentionally omitted; slug acts as the public identifier
                     return {
-                        id: currentArea.area_id,
                         name: currentArea.area_name,
+                        slug: currentArea.area_slug,
+                        code: currentArea.area_code,
+                        description: currentArea.area_description,
+                        imgUrl: currentArea.img_url,
                         isPrimary: consultantArea.is_primary
                     };
                 })
@@ -1171,16 +1185,24 @@ const me = async (req, res) => {
             }
         }
 
-        let serviceLineName = null;
-        let learningPathTitle = null;
+        // Full objects for service line and learning path (IDs excluded from the response)
+        let serviceLineData = null;
+        let learningPathData = null;
 
         const resolveServiceLineData = async (serviceLineId) => {
             if (!serviceLineId) {
                 return;
             }
 
+            // learning_path_id is fetched only to resolve the LP; it is not exposed
             const serviceLine = await models.service_lines.findByPk(serviceLineId, {
-                attributes: ['service_line_name', 'learning_path_id'],
+                attributes: [
+                    'service_line_name',
+                    'sl_slug',
+                    'service_line_description',
+                    'img_url',
+                    'learning_path_id'
+                ],
                 raw: true
             });
 
@@ -1188,15 +1210,34 @@ const me = async (req, res) => {
                 return;
             }
 
-            serviceLineName = serviceLine.service_line_name;
+            // Build service line payload without any integer ID
+            serviceLineData = {
+                name: serviceLine.service_line_name,
+                slug: serviceLine.sl_slug,
+                description: serviceLine.service_line_description,
+                imgUrl: serviceLine.img_url
+            };
 
             if (serviceLine.learning_path_id) {
                 const learningPath = await models.learning_paths.findByPk(serviceLine.learning_path_id, {
-                    attributes: ['path_title'],
+                    attributes: [
+                        'path_title',
+                        'path_slug',
+                        'path_description',
+                        'img_url'
+                    ],
                     raw: true
                 });
 
-                learningPathTitle = learningPath?.path_title || null;
+                if (learningPath) {
+                    // Build learning path payload without any integer ID
+                    learningPathData = {
+                        title: learningPath.path_title,
+                        slug: learningPath.path_slug,
+                        description: learningPath.path_description,
+                        imgUrl: learningPath.img_url
+                    };
+                }
             }
         };
 
@@ -1215,6 +1256,15 @@ const me = async (req, res) => {
             }
         }
 
+        // Language object with all fields
+        const langPayload = languageRecord
+            ? {
+                id: languageRecord.language_id,
+                iso: languageRecord.language_iso,
+                name: languageRecord.language_name
+            }
+            : null;
+
         const profile = stripNullishFields({
             guid: user.user_guid,
             fullName: user.full_name,
@@ -1222,11 +1272,11 @@ const me = async (req, res) => {
             email: user.email_address,
             role: user.user_role,
             profileImg: user.profile_img_url,
-            lang: languageRecord?.language_iso || null,
+            lang: langPayload,
             location: location?.location_name || null,
             biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
-            serviceLine: serviceLineName,
-            learningPath: learningPathTitle,
+            serviceLine: serviceLineData,
+            learningPath: learningPathData,
             areas: areasPayload
         });
 
