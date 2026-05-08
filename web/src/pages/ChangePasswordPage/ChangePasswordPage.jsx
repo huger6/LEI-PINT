@@ -83,34 +83,30 @@ export default function ChangePasswordPage() {
 							{t('changePassword.subtitle')}
 						</p>
 						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
-							<div className="position-relative">
-								<FormInput
-									{...form.getFieldProps('currentPassword')}
-									onChange={form.onChange}
-									id="currentPassword"
-									label={t('changePassword.currentPassword')}
-									type={showCurrent ? 'text' : 'password'}
-									placeholder={t('passwordPlaceholder')}
-									error={form.fieldError('currentPassword')}
-									autoFocus
-									autoComplete="current-password"
-								/>
-								<PasswordToggle show={showCurrent} onToggle={() => setShowCurrent((v) => !v)} />
-							</div>
+							<FormInput
+								{...form.getFieldProps('currentPassword')}
+								onChange={form.onChange}
+								id="currentPassword"
+								label={t('changePassword.currentPassword')}
+								type={showCurrent ? 'text' : 'password'}
+								placeholder={t('passwordPlaceholder')}
+								error={form.fieldError('currentPassword')}
+								autoFocus
+								autoComplete="current-password"
+								trailing={<PasswordToggle show={showCurrent} onToggle={() => setShowCurrent((v) => !v)} />}
+							/>
 
-							<div className="position-relative">
-								<FormInput
-									{...form.getFieldProps('newPassword')}
-									onChange={form.onChange}
-									id="newPassword"
-									label={t('changePassword.newPassword')}
-									type={showNew ? 'text' : 'password'}
-									placeholder={t('passwordPlaceholder')}
-									error={form.fieldError('newPassword')}
-									autoComplete="new-password"
-								/>
-								<PasswordToggle show={showNew} onToggle={() => setShowNew((v) => !v)} />
-							</div>
+							<FormInput
+								{...form.getFieldProps('newPassword')}
+								onChange={form.onChange}
+								id="newPassword"
+								label={t('changePassword.newPassword')}
+								type={showNew ? 'text' : 'password'}
+								placeholder={t('passwordPlaceholder')}
+								error={form.fieldError('newPassword')}
+								autoComplete="new-password"
+								trailing={<PasswordToggle show={showNew} onToggle={() => setShowNew((v) => !v)} />}
+							/>
 
 							<PasswordRules password={form.values.newPassword} />
 

@@ -37,9 +37,10 @@ export function AuthProvider({ children }) {
 		authApi
 			.refreshToken()
 			.then(({ data }) => {
-				const newToken = data.data.token;
+				const { token: newToken, fpc: forcePwChange } = data.data;
 				setApiToken(newToken);
 				setToken(newToken);
+				setFpc(forcePwChange);
 				setIsAuthenticated(true);
 			})
 			.catch(() => {

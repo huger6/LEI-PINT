@@ -116,19 +116,17 @@ export default function ResetPasswordPage() {
 						<h2 className={`text-center mb-1 ${styles.title}`}>{t('resetPassword.heading')}</h2>
 						<p className="text-center mb-4 small" style={{ color: 'var(--color-outline)' }}>{t('resetPassword.subtitle')}</p>
 						<form onSubmit={handleSubmit} className="vstack gap-3" noValidate>
-							<div className="position-relative">
-								<FormInput
-									{...form.getFieldProps('newPassword')}
-									onChange={form.onChange}
-									id="newPassword"
-									label={t('resetPassword.newPassword')}
-									type={showPassword ? 'text' : 'password'}
-									placeholder={t('passwordPlaceholder')}
-									error={form.fieldError('newPassword')}
-									autoFocus
-								/>
-								<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
-							</div>
+							<FormInput
+								{...form.getFieldProps('newPassword')}
+								onChange={form.onChange}
+								id="newPassword"
+								label={t('resetPassword.newPassword')}
+								type={showPassword ? 'text' : 'password'}
+								placeholder={t('passwordPlaceholder')}
+								error={form.fieldError('newPassword')}
+								autoFocus
+								trailing={<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
+							/>
 
 							<PasswordRules password={form.values.newPassword} />
 
