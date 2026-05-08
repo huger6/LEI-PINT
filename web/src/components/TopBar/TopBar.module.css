@@ -17,6 +17,12 @@
     align-items: center;
 }
 
+.searchSection {
+    flex: 1;
+    max-width: 520px;
+    margin: 0 20px;
+}
+
 .rightSection {
     display: flex;
     align-items: center;
@@ -46,4 +52,32 @@
     font-size: 12px;
     color: var(--color-outline);
     text-transform: capitalize;
+}
+
+@media (max-width: 992px) {
+    .topBar {
+        padding: 0 16px;
+    }
+
+    .searchSection {
+        margin: 0 12px;
+    }
+
+    .rightSection {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .searchSection {
+        display: none;
+    }
+
+    .topBar {
+        padding: 0 14px;
+    }
+
+    .rightSection {
+        gap: 10px;
+    }
 }

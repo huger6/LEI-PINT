@@ -5,6 +5,7 @@ import { NotificationBell } from '../../features/notifications';
 import { useUser } from '../../hooks/userContext';
 import UserDropdown from './UserDropdown/UserDropdown';
 import PointsCard from './PointsCard/PointsCard';
+import SearchBar from './SearchBar/SearchBar';
 
 export default function TopBar() {
     const { user, displayName, points } = useUser();
@@ -14,8 +15,11 @@ export default function TopBar() {
             <Link to="/" className={styles.logoSection}>
                 <Logo />
             </Link>
+            <div className={styles.searchSection}>
+                <SearchBar />
+            </div>
             <div className={styles.rightSection}>
-                <PointsCard points={points} />
+                <PointsCard points={points ? points : 0} />
                 <NotificationBell />
                 <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
