@@ -226,18 +226,51 @@
 	},
 	"sidebar": {
 		"menu": "Menu",
-		"home": "Início",
-		"badges": "Catálogo de Badges",
-		"applications": "Candidaturas",
-		"achievements": "Conquistas",
-		"points": "Pontos",
-		"objectives": "Objetivos",
-		"evolution": "Evolução",
-		"announcements": "Comunicados",
-		"settings": "Definições",
 		"logout": "Sair",
+		"settings": "Definições",
 		"expand": "Expandir menu",
-		"collapse": "Recolher menu"
+		"collapse": "Recolher menu",
+		"consultant": {
+			"home": "Início",
+			"badges": "Catálogo de Badges",
+			"applications": "Candidaturas",
+			"achievements": "Conquistas",
+			"points": "Pontos",
+			"objectives": "Objetivos",
+			"evolution": "Evolução",
+			"announcements": "Comunicados"
+		},
+		"tm": {
+			"dashboard": "Dashboard",
+			"validations": "Validações",
+			"consultants": "Consultores",
+			"badges": "Catálogo de Badges",
+			"stats": "Estatísticas/Relatórios",
+			"ranking": "Ranking/Talentos",
+			"announcements": "Comunicados"
+		},
+		"sll": {
+			"dashboard": "Dashboard",
+			"validations": "Validações",
+			"team": "A minha equipa",
+			"badges": "Catálogo de Badges",
+			"badgeHistory": "Histórico de Badges",
+			"stats": "Estatísticas/Relatórios",
+			"ranking": "Ranking/Talentos",
+			"announcements": "Comunicados"
+		},
+		"admin": {
+			"dashboard": "Dashboard",
+			"users": "Gerir Utilizadores",
+			"structure": "Gerir Estrutura",
+			"badges": "Gerir Badges",
+			"applications": "Gerir Candidaturas",
+			"slas": "Gerir SLA's",
+			"warnings": "Gerir Avisos",
+			"notifications": "Gerir Notificações",
+			"stats": "Estatísticas/Relatórios",
+			"rgpd": "Configurações RGPD"
+		}
 	},
 	"icons": {
 		"home": "Início",

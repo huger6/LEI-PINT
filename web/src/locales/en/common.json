@@ -226,18 +226,51 @@
 	},
 	"sidebar": {
 		"menu": "Menu",
-		"home": "Home",
-		"badges": "Badge Catalog",
-		"applications": "Applications",
-		"achievements": "Achievements",
-		"points": "Points",
-		"objectives": "Objectives",
-		"evolution": "Evolution",
-		"announcements": "Announcements",
-		"settings": "Settings",
 		"logout": "Logout",
+		"settings": "Settings",
 		"expand": "Expand menu",
-		"collapse": "Collapse menu"
+		"collapse": "Collapse menu",
+		"consultant": {
+			"home": "Home",
+			"badges": "Badge Catalog",
+			"applications": "Applications",
+			"achievements": "Achievements",
+			"points": "Points",
+			"objectives": "Objectives",
+			"evolution": "Evolution",
+			"announcements": "Announcements"
+		},
+		"tm": {
+			"dashboard": "Dashboard",
+			"validations": "Validations",
+			"consultants": "Consultants",
+			"badges": "Badge Catalog",
+			"stats": "Statistics/Reports",
+			"ranking": "Ranking/Talents",
+			"announcements": "Announcements"
+		},
+		"sll": {
+			"dashboard": "Dashboard",
+			"validations": "Validations",
+			"team": "My Team",
+			"badges": "Badge Catalog",
+			"badgeHistory": "Badge History",
+			"stats": "Statistics/Reports",
+			"ranking": "Ranking/Talents",
+			"announcements": "Announcements"
+		},
+		"admin": {
+			"dashboard": "Dashboard",
+			"users": "Manage Users",
+			"structure": "Manage Structure",
+			"badges": "Manage Badges",
+			"applications": "Manage Applications",
+			"slas": "Manage SLAs",
+			"warnings": "Manage Warnings",
+			"notifications": "Manage Notifications",
+			"stats": "Statistics/Reports",
+			"rgpd": "GDPR Settings"
+		}
 	},
 	"icons": {
 		"home": "Home",
