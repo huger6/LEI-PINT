@@ -12,6 +12,18 @@ const { logger } = require('../utils/logger');
 
 loadEnvironment();
 
+function getUpdatedStreak(lastOnline, currentStreak) {
+    if (!lastOnline) return 1;
+    const msPerDay = 86400000;
+    const now = new Date();
+    const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const lastUTC = Date.UTC(lastOnline.getUTCFullYear(), lastOnline.getUTCMonth(), lastOnline.getUTCDate());
+    const diffDays = (todayUTC - lastUTC) / msPerDay;
+    if (diffDays === 0) return currentStreak;
+    if (diffDays === 1) return currentStreak + 1;
+    return 1;
+}
+
 const register = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const t = await sequelize.transaction();
@@ -495,13 +507,19 @@ const login = async (req, res) => {
             expires_at: expiresAt
         }, { transaction: t });
 
-        // Update last login date
+        // Save data first to handle fist login specific logic
+        const last_login_at = user.last_login_at;
+        const last_online = user.last_online;
+        const current_streak_days = getUpdatedStreak(last_online, user.current_streak_days);
+        // Update last login date and streak
         await user.update({
             last_login_at: new Date(),
-            last_online: new Date()
+            last_online: new Date(),
+            current_streak_days: current_streak_days
         }, { transaction: t });
 
         await t.commit();
+
 
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
@@ -522,10 +540,14 @@ const login = async (req, res) => {
                     full_name: user.full_name,
                     username: user.username,
                     role: user.user_role,
-                    profile_img_url: user.profile_img_url
+                    profile_img_url: user.profile_img_url,
+                    first_login: last_login_at === null ? true : false,
+                    last_login_at: last_login_at,
+                    last_online: last_online,
+                    current_streak_days: current_streak_days
                 }
             }
-        })
+        });
 
     } catch (error) {
         if (t) await t.rollback();
@@ -628,7 +650,10 @@ const refresh = async (req, res) => {
             token_value: newRefreshTokenValue
         });
 
-        await user.update({ last_online: new Date() });
+        await user.update({
+            last_online: new Date(),
+            current_streak_days: getUpdatedStreak(user.last_online, user.current_streak_days)
+        });
 
         const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
