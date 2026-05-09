@@ -1,6 +1,7 @@
 export { AuthProvider, AuthContext } from '../../context/AuthContext';
 export { useAuth } from './hooks/useAuth';
 export { default as AuthCard } from './components/AuthCard/AuthCard';
+export { default as StatusPanel } from './components/StatusPanel/StatusPanel';
 export {
 	login,
 	register,

@@ -141,7 +141,7 @@
 		"metaDescription": "Confirmando tu dirección de email Plataforma de Badges Softinsa.",
 		"confirming": "Confirmando tu dirección de email…",
 		"successHeading": "¡Email confirmado!",
-		"successDesc": "Tu cuenta está activa. Puedes iniciar sesión.",
+		"successDesc": "Tu cuenta está activa. Puedes iniciar sesión o cerrar esta pestaña con seguridad.",
 		"failedHeading": "Confirmación fallida",
 		"noTokenFound": "No se encontró un token de confirmación en el enlace.",
 		"resendBtn": "Reenviar email de confirmación"
