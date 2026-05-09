@@ -748,7 +748,7 @@ const changePassword = async (req, res) => {
 
         // Get user
         const user = await models.users.findByPk(user_id, {
-            attributes: ['password_hash'],
+            attributes: ['user_id', 'user_guid', 'user_role', 'username', 'password_hash'],
             transaction: t
         });
         // Compare current pw
@@ -785,7 +785,7 @@ const changePassword = async (req, res) => {
             }
         );
 
-        // Delete refresh tokens
+        // Revoke all existing refresh tokens
         await models.user_refresh_tokens.destroy({
             where: {
                 user_id: user_id
@@ -793,16 +793,44 @@ const changePassword = async (req, res) => {
             transaction: t
         });
 
+        // Issue new access token (fpc is now false)
+        const accessToken = jwt.sign(
+            {
+                sub: user.user_id,
+                guid: user.user_guid,
+                role: user.user_role,
+                username: user.username,
+                fpc: false
+            },
+            process.env.JWT_SECRET_KEY,
+            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+        );
+
+        // Issue new refresh token to re-establish the session
+        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
+        const refreshTokenDurationDays = 1;
+        const expiresAt = new Date(Date.now() + refreshTokenDurationDays * 24 * 60 * 60 * 1000);
+
+        await models.user_refresh_tokens.create({
+            user_id: user.user_id,
+            token_value: refreshTokenValue,
+            expires_at: expiresAt
+        }, { transaction: t });
+
         await t.commit();
 
-        // Delete cookie
-        res.clearCookie('refreshToken', {
-            path: '/api/auth'
+        res.cookie('refreshToken', refreshTokenValue, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            path: '/api/auth',
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
         return res.status(200).json({
             success: true,
-            code: "AUTH_PASSWORD_CHANGED"
+            code: "AUTH_PASSWORD_CHANGED",
+            data: { token: accessToken }
         });
     } catch (error) {
         if (t) await t.rollback();
