@@ -141,7 +141,7 @@
 		"metaDescription": "Confirming your Softinsa Badges Platform email address.",
 		"confirming": "Confirming your email address…",
 		"successHeading": "Email confirmed!",
-		"successDesc": "Your account is now active. You can sign in.",
+		"successDesc": "Your account is now active. You can sign in or safely close this tab.",
 		"failedHeading": "Confirmation failed",
 		"noTokenFound": "No confirmation token found in the link.",
 		"resendBtn": "Resend confirmation email"
