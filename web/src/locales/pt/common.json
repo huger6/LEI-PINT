@@ -160,7 +160,7 @@
 		"title": "Alterar Palavra-passe — Plataforma de Badges da Softinsa",
 		"metaDescription": "Defina uma nova palavra-passe para a sua conta na Plataforma de Badges da Softinsa antes de continuar.",
 		"successHeading": "Palavra-passe alterada!",
-		"redirecting": "A redirecionar para o login…",
+		"redirecting": "A redirecionar…",
 		"heading": "Alterar a sua palavra-passe",
 		"subtitle": "É necessário definir uma nova palavra-passe antes de continuar.",
 		"currentPassword": "Palavra-passe Atual",
@@ -169,6 +169,19 @@
 		"changeBtn": "Alterar palavra-passe",
 		"pwRulePass": "OK",
 		"pwRuleFail": "-"
+	},
+	"welcomeCard": {
+		"welcomeFirstLogin": "Bem-vindo!",
+		"welcomeBack": "Seja bem-vindo novamente",
+		"goodMorning": "Bom dia!",
+		"goodAfternoon": "Boa tarde!",
+		"goodEvening": "Boa noite!",
+		"badgesEarned": "Badges Obtidos",
+		"activeBadges": "Badges Ativos",
+		"streak": "Streak",
+		"days": "dias",
+		"serviceLine": "Service Line",
+		"area": "Área"
 	},
 	"home": {
 		"placeholder": "Placeholder da aplicação — página principal protegida",

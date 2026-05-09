@@ -38,7 +38,7 @@ export default function Sidebar() {
                     aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
                 >
                     <Icon
-                        name="hamburger"
+                        name="sidebar-close"
                         size={24}
                         color="var(--color-on-background)"
                         className={`${styles.toggleIcon} ${collapsed ? styles.toggleIconCollapsed : ''}`}

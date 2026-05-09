@@ -12,14 +12,13 @@ export default function Icon({
     ...rest
 }) {
     const { t } = useTranslation();
-    const iconPathData = PATHS[name];
+    const paths = PATHS[name];
 
-    if (!iconPathData) {
-        console.warn(`Icon "${name}" not found.`);
+    if (!paths || !Array.isArray(paths)) {
+        console.warn(`Icon "${name}" not found or invalid format.`);
         return null;
     }
 
-    const paths = Array.isArray(iconPathData) ? iconPathData : [iconPathData];
     const fallbackLabel = typeof name === 'string' ? name.replace(/[-_]/g, ' ') : '';
     const translatedLabel = t(`icons.${name}`, { defaultValue: fallbackLabel });
     const ariaLabel = typeof label === 'string' ? label : translatedLabel;
@@ -29,23 +28,26 @@ export default function Icon({
             width={size}
             height={size}
             viewBox="0 0 24 24"
-            fill="none"
             role="img"
             aria-label={ariaLabel}
-            stroke={color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeLinejoin="round"
             className={className}
             xmlns="http://www.w3.org/2000/svg"
+            style={{ color: color, ...(rest.style || {}) }}
             {...rest}
         >
             {ariaLabel && <title>{ariaLabel}</title>}
 
-            {paths.filter(Boolean).map((path, index) => (
+            {paths.filter(Boolean).map((pathProps, index) => (
                 <path
                     key={`${name}-${index}`}
-                    d={path}
+                    // We assume icons are stroke-based by default, but if the pathProps includes fill="currentColor", it will override the default fill="none"
+                    fill="none"
+                    stroke={color} // Color is by default relative to the strokez
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+
+                    {...pathProps}
                 />
             ))}
         </svg>

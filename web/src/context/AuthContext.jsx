@@ -67,6 +67,14 @@ export function AuthProvider({ children }) {
 		return forcePwChange;
 	}, []);
 
+	const completeFpc = useCallback((newToken) => {
+		if (newToken) {
+			setApiToken(newToken);
+			setToken(newToken);
+		}
+		setFpc(false);
+	}, []);
+
 	const logout = useCallback(async () => {
 		try {
 			await authApi.logout();
@@ -79,7 +87,7 @@ export function AuthProvider({ children }) {
 
 	return (
 		<AuthContext.Provider
-			value={{ user, token, fpc, isAuthenticated, isLoading, login, logout, clearAuth }}
+			value={{ user, token, fpc, isAuthenticated, isLoading, login, logout, clearAuth, completeFpc }}
 		>
 			{children}
 		</AuthContext.Provider>
