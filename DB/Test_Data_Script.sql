@@ -54,8 +54,8 @@ SELECT
 FROM (
       VALUES
       -- Administrador
-      ('Admin Softinsa', 'admin', 'admin@softinsa.pt',
-       'hash_admin', 'Administrator', 'pt-PT', 'Porto'),
+      ('Admin Softinsa', 'admin', 'badgessoftinsa@gmail.com',
+       '$2b$10$L6QmIrDgM989wmXkwykz6e7VAbxnJgGvAUeGEaSjqkQHo3y0v/h.G', 'Administrator', 'pt-PT', 'Porto'),
 
       -- Consultores
       ('Joao Ferreira', 'jferreira', 'joao.ferreira@softinsa.pt',
