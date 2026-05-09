@@ -706,7 +706,7 @@ export default function RegisterPage() {
 													disabled={isProfileUploading}
 													className={styles.profileImageActionButton}
 												>
-													<i className="bi bi-trash me-1" aria-hidden="true" />
+													<Icon name="trash" size={14} className="me-1" aria-hidden="true" />
 													{t('register.profilePictureRemove')}
 												</FormButton>
 											</div>
