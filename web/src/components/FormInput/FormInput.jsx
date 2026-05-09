@@ -27,7 +27,7 @@ export default function FormInput({
 				{trailing && <div className={styles.trailing}>{trailing}</div>}
 			</div>
 			{error && (
-				<div className={`invalid-feedback ${styles.errorText}`} role="alert">
+				<div className={`invalid-feedback d-block ${styles.errorText ?? ''}`} role="alert">
 					{error}
 				</div>
 			)}
