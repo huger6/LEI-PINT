@@ -510,14 +510,16 @@ const login = async (req, res) => {
         // Save data first to handle fist login specific logic
         const last_login_at = user.last_login_at;
         const last_online = user.last_online;
+        const current_streak_days = getUpdatedStreak(last_online, user.current_streak_days);
         // Update last login date and streak
         await user.update({
             last_login_at: new Date(),
             last_online: new Date(),
-            current_streak_days: getUpdatedStreak(last_online, user.current_streak_days)
+            current_streak_days: current_streak_days
         }, { transaction: t });
 
         await t.commit();
+
 
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
@@ -541,7 +543,8 @@ const login = async (req, res) => {
                     profile_img_url: user.profile_img_url,
                     first_login: last_login_at === null ? true : false,
                     last_login_at: last_login_at,
-                    last_online: last_online
+                    last_online: last_online,
+                    current_streak_days: current_streak_days
                 }
             }
         });
