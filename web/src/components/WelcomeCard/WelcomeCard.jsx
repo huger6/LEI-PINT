@@ -53,9 +53,9 @@ export default function WelcomeCard() {
     const primaryAreaPath = buildPath('/areas', primaryArea);
 
     const stats = [
-        { label: t('welcomeCard.badgesEarned'), value: '-', variant: 'accent' },
-        { label: t('welcomeCard.activeBadges'), value: '-' },
-        { label: t('welcomeCard.streak'), value: `${streakDays} ${t('welcomeCard.days')}`, variant: 'success' },
+        { label: t('welcomeCard.badgesEarned'), value: '-', variant: 'accent', icon: 'badge' },
+        { label: t('welcomeCard.activeApplications'), value: '-', icon: 'paper' },
+        { label: t('welcomeCard.streak'), value: `${streakDays} ${t('welcomeCard.days')}`, variant: 'success', icon: 'fire' },
     ];
 
     return (
