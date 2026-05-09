@@ -87,31 +87,36 @@ export default function UserDropdown() {
 
                     <div className={styles.menuSection}>
                         <DropdownOption
-                            bootstrapIcon="bi-envelope"
+                            icon="email"
+                            iconSize={18}
                             label="userDropdown.mailSignature"
                             onClick={() => handleOptionClick('/mail-signature')}
                             role="menuitem"
                         />
                         <DropdownOption
-                            bootstrapIcon="bi-person"
+                            icon="user"
+                            iconSize={18}
                             label="userDropdown.publicProfile"
                             onClick={() => handleOptionClick('/public-profile')}
                             role="menuitem"
                         />
                         <DropdownOption
-                            bootstrapIcon="bi-circle-half"
+                            icon="moon"
+                            iconSize={18}
                             label="userDropdown.colorMode"
                             onClick={() => handleOptionClick('/settings')}
                             role="menuitem"
                         />
                         <DropdownOption
-                            bootstrapIcon="bi-shield"
+                            icon="privacy"
+                            iconSize={18}
                             label="userDropdown.privacy"
                             onClick={() => handleOptionClick('/privacy')}
                             role="menuitem"
                         />
                         <DropdownOption
-                            bootstrapIcon="bi-lock"
+                            icon="security"
+                            iconSize={18}
                             label="userDropdown.security"
                             onClick={() => handleOptionClick('/security')}
                             role="menuitem"

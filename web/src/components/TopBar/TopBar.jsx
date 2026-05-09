@@ -18,7 +18,7 @@ export default function TopBar() {
                 <Logo />
             </Link>
             <div className={styles.searchSection}>
-                <SearchBar />
+                <SearchBar placeholder={t('topBar.searchPlaceholder')} />
             </div>
             <div className={styles.rightSection}>
                 <div className={styles.pointsCardWrap}>

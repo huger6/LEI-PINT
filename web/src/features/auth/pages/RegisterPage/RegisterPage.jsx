@@ -673,7 +673,14 @@ export default function RegisterPage() {
 												<img src={profilePreviewUrl} alt={t('register.profilePicturePreviewAlt')} className={styles.profileImagePreview} />
 											) : (
 												<div className={styles.profileImagePlaceholder}>
-													<i className="bi bi-image" aria-hidden="true" />
+													<Icon
+														name="photo"
+														className={styles.profileImagePlaceholderIcon}
+														color="currentColor"
+														fill="currentColor"
+														stroke="none"
+														label={t('register.profilePictureChoose')}
+													/>
 													<span>{t('register.profilePictureChoose')}</span>
 												</div>
 											)}
@@ -851,14 +858,14 @@ export default function RegisterPage() {
 																			onClick={(event) => { event.stopPropagation(); setPrimary(area.id); }}
 																			title={t('register.setAsPrimary')}
 																		>
-																			<i className="bi bi-star" aria-hidden="true" />
+																			<Icon name="star" size={14} className={styles.primaryBadgeIcon} color="currentColor" label={t('register.setAsPrimary')} />
 																		</span>
 																	)}
 																</button>
 															);
 														})}
 													</div>
-													<p className="small mb-0" style={{ color: 'var(--color-outline)' }}><Trans i18nKey="register.primaryAreaHint" components={{ icon: <i className="bi bi-star" /> }} /></p>
+													<p className="small mb-0" style={{ color: 'var(--color-outline)' }}><Trans i18nKey="register.primaryAreaHint" components={{ icon: <Icon name="star" size={14} className={styles.primaryAreaHintIcon} color="currentColor" /> }} /></p>
 												</>
 											)}
 										</div>

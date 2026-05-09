@@ -141,8 +141,9 @@
 	font-size: 0.9rem;
 }
 
-.profileImagePlaceholder i {
-	font-size: 1.8rem;
+.profileImagePlaceholderIcon {
+	width: 1.8rem;
+	height: 1.8rem;
 }
 
 .profileImagePreview {
@@ -259,8 +260,17 @@
 	transition: color 0.15s;
 }
 
+.primaryBadgeIcon {
+	display: block;
+}
+
 .primaryBadgeOn {
 	color: var(--color-warning);
+}
+
+.primaryAreaHintIcon {
+	display: inline-block;
+	vertical-align: text-bottom;
 }
 
 .successIcon {
