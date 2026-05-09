@@ -33,7 +33,8 @@ const me = async (req, res) => {
                 'user_role',
                 'profile_img_url',
                 'language_id',
-                'location_id'
+                'location_id',
+                'current_streak_days'
             ],
             raw: true
         });
@@ -223,7 +224,8 @@ const me = async (req, res) => {
             biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
             serviceLine: serviceLineData,
             learningPath: learningPathData,
-            areas: areasPayload
+            areas: areasPayload,
+            currentStreakDays: user.current_streak_days
         });
 
         // Store in cache
