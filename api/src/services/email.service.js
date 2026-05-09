@@ -2,6 +2,8 @@ const nodemailer = require('nodemailer');
 const loadEnvironment = require('../config/loadEnv');
 const { logger } = require('../utils/logger');
 
+const logoUrl = process.env.LOGO_URL;
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -18,7 +20,7 @@ const escapeHtml = (value) => String(value || '')
     .replace(/'/g, '&#39;');
 
 const sendConfirmationEmail = async (email, name, token, lang) => {
-    const confirmationUrl = `${process.env.APP_URL}/api/auth/confirm-email?token=${token}`; // CHANGE TO FRONTEND LINK
+    const confirmationUrl = `${process.env.FRONTEND_EMAIL_CONFIRMATION_URL}?token=${token}`; // CHANGE TO FRONTEND LINK
 
     const templates = {
         'pt-PT': {
@@ -71,7 +73,7 @@ const sendConfirmationEmail = async (email, name, token, lang) => {
                 <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 4px; overflow: hidden; border-collapse: collapse;">
                     <tr>
                         <td style="padding: 40px 40px 20px 40px; text-align: left;">
-                            <img src="https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa.svg" alt="Softinsa" width="150" style="display: block; border: 0;">
+                            <img src="${logoUrl}" alt="Softinsa" width="150" style="display: block; border: 0;">
                         </td>
                     </tr>
                     
@@ -137,7 +139,7 @@ const sendConfirmationEmail = async (email, name, token, lang) => {
 };
 
 const sendResetPasswordEmail = async (email, name, token, lang) => {
-    const resetUrl = `${process.env.APP_URL}/api/auth/reset-password?token=${token}`; // CHANGE TO FRONTEND LINK
+    const resetUrl = `${process.env.FRONTEND_RESET_PASSWORD_URL}?token=${token}`; // CHANGE TO FRONTEND LINK
 
     const templates = {
         'pt-PT': {
@@ -186,7 +188,7 @@ const sendResetPasswordEmail = async (email, name, token, lang) => {
                 <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 4px; overflow: hidden; border-collapse: collapse;">
                     <tr>
                         <td style="padding: 40px 40px 20px 40px; text-align: left;">
-                            <img src="https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa.svg" alt="Softinsa" width="150" style="display: block; border: 0;">
+                            <img src="${logoUrl}" alt="Softinsa" width="150" style="display: block; border: 0;">
                         </td>
                     </tr>
                     
