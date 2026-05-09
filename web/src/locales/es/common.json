@@ -160,7 +160,7 @@
 		"title": "Cambiar Contraseña — Plataforma de Badges Softinsa",
 		"metaDescription": "Establece una nueva contraseña para tu cuenta Plataforma de Badges Softinsa antes de continuar.",
 		"successHeading": "¡Contraseña cambiada!",
-		"redirecting": "Redirigiendo al inicio de sesión…",
+		"redirecting": "Redirigiendo…",
 		"heading": "Cambiar tu contraseña",
 		"subtitle": "Debes establecer una nueva contraseña antes de continuar.",
 		"currentPassword": "Contraseña Actual",
@@ -169,6 +169,19 @@
 		"changeBtn": "Cambiar contraseña",
 		"pwRulePass": "OK",
 		"pwRuleFail": "-"
+	},
+	"welcomeCard": {
+		"welcomeFirstLogin": "¡Bienvenido!",
+		"welcomeBack": "Bienvenido de nuevo",
+		"goodMorning": "¡Buenos días!",
+		"goodAfternoon": "¡Buenas tardes!",
+		"goodEvening": "¡Buenas noches!",
+		"badgesEarned": "Badges Obtenidos",
+		"activeBadges": "Badges Activos",
+		"streak": "Racha",
+		"days": "días",
+		"serviceLine": "Línea de Servicio",
+		"area": "Área"
 	},
 	"home": {
 		"placeholder": "Placeholder de la aplicación — página principal protegida",

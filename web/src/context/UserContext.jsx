@@ -102,7 +102,7 @@ export function UserProvider({ children }) {
 			})
 			.catch(() => { })
 			.finally(() => setIsUserLoading(false));
-	}, [isAuthenticated]);
+	}, [isAuthenticated, token]);
 
 	const handleLanguageChange = useCallback(async (languageId, languageIso) => {
 		i18next.changeLanguage(languageIso);

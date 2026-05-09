@@ -160,7 +160,7 @@
 		"title": "Change Password — Softinsa Badges Platform",
 		"metaDescription": "Set a new password for your Softinsa Badges Platform account before continuing.",
 		"successHeading": "Password changed!",
-		"redirecting": "Redirecting you to login…",
+		"redirecting": "Redirecting…",
 		"heading": "Change your password",
 		"subtitle": "You are required to set a new password before continuing.",
 		"currentPassword": "Current Password",
@@ -169,6 +169,19 @@
 		"changeBtn": "Change password",
 		"pwRulePass": "OK",
 		"pwRuleFail": "-"
+	},
+	"welcomeCard": {
+		"welcomeFirstLogin": "Welcome!",
+		"welcomeBack": "Welcome back",
+		"goodMorning": "Good morning!",
+		"goodAfternoon": "Good afternoon!",
+		"goodEvening": "Good evening!",
+		"badgesEarned": "Badges Earned",
+		"activeBadges": "Active Badges",
+		"streak": "Streak",
+		"days": "days",
+		"serviceLine": "Service Line",
+		"area": "Area"
 	},
 	"home": {
 		"placeholder": "App placeholder — protected home",

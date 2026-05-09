@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ import {
 
 export default function ChangePasswordPage() {
 	const { t } = useTranslation();
-	const { logout } = useAuth();
+	const { completeFpc } = useAuth();
 	const navigate = useNavigate();
 
 	const form = useFormWithServerErrors({
@@ -34,6 +34,12 @@ export default function ChangePasswordPage() {
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 
+	useEffect(() => {
+		if (!success) return;
+		const timer = setTimeout(() => navigate('/', { replace: true }), 2000);
+		return () => clearTimeout(timer);
+	}, [success, navigate]);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		form.markAllTouched();
@@ -42,12 +48,10 @@ export default function ChangePasswordPage() {
 		setLoading(true);
 		form.clearServerErrors();
 		try {
-			await changePassword(form.values.currentPassword, form.values.newPassword);
+			const result = await changePassword(form.values.currentPassword, form.values.newPassword);
+			const newToken = result?.data?.data?.token;
+			completeFpc(newToken);
 			setSuccess(true);
-			setTimeout(async () => {
-				await logout();
-				navigate('/login', { replace: true });
-			}, 2000);
 		} catch (err) {
 			const backendFields = extractFieldErrors(err);
 			if (Object.keys(backendFields).length) {
