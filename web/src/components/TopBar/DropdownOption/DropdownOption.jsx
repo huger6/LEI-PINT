@@ -2,31 +2,12 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../../Icons/Icons';
 import styles from './DropdownOption.module.css';
 
-const BOOTSTRAP_ICON_MAP = {
-    'bi-envelope': 'email',
-    'bi-person': 'user',
-    'bi-circle-half': 'moon',
-    'bi-shield': 'privacy',
-    'bi-lock': 'security',
-    'bi-house': 'home',
-    'bi-award': 'badge',
-    'bi-file-earmark-text': 'paper',
-    'bi-trophy': 'trophy',
-    'bi-star': 'star',
-    'bi-bullseye': 'target',
-    'bi-graph-up-arrow': 'evolution',
-    'bi-megaphone': 'megaphone',
-    'bi-gear': 'settings',
-    'bi-x-lg': 'close',
-    'bi-check-lg': 'check',
-    'bi-asterisk': 'asterisk',
-};
-const FILLED_BOOTSTRAP_ICONS = new Set(['bi-circle-half', 'bi-shield', 'bi-lock', 'bi-x-lg', 'bi-asterisk']);
+const FILLED_ICONS = new Set(['moon', 'privacy', 'security', 'close', 'asterisk']);
 
 export default function DropdownOption({
     as = 'button',
     icon,
-    bootstrapIcon,
+    iconSize = 20,
     label,
     onClick,
     className = '',
@@ -38,10 +19,7 @@ export default function DropdownOption({
     const translatedLabel = label
         ? (isTranslationKey ? t(label, { defaultValue: label }) : label)
         : '';
-    const mappedBootstrapIcon = bootstrapIcon ? BOOTSTRAP_ICON_MAP[bootstrapIcon] : null;
-    const resolvedIconName = mappedBootstrapIcon || icon;
-    const iconSize = mappedBootstrapIcon ? 18 : 20;
-    const shouldRenderFilled = bootstrapIcon ? FILLED_BOOTSTRAP_ICONS.has(bootstrapIcon) : false;
+    const shouldRenderFilled = typeof icon === 'string' && FILLED_ICONS.has(icon);
 
     return (
         <Component
@@ -52,9 +30,9 @@ export default function DropdownOption({
             {...rest}
         >
             <span className={styles.icon}>
-                {resolvedIconName ? (
+                {icon ? (
                     <Icon
-                        name={resolvedIconName}
+                        name={icon}
                         size={iconSize}
                         color="var(--color-on-background)"
                         label={translatedLabel}

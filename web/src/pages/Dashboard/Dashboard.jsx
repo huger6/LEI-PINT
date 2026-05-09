@@ -3,7 +3,8 @@ import styles from '../../assets/styles/componentes/App.module.css';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../features/auth/hooks/useAuth';
-import SidebarOption from "../../components/Sidebar/SidebarOption/SidebarOption";
+import { useUser } from '../../hooks/userContext';
+import WelcomeCard from "../../components/WelcomeCard/WelcomeCard";
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -17,7 +18,9 @@ export default function Dashboard() {
 
     return (
         <AppLayout>
+            <WelcomeCard>
 
+            </WelcomeCard>
         </AppLayout>
     );
 }

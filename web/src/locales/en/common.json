@@ -174,6 +174,9 @@
 		"placeholder": "App placeholder — protected home",
 		"logout": "Log out"
 	},
+	"topBar": {
+		"searchPlaceholder": "Search badges, skills, areas..."
+	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
 		"brandDescription": "Technology consulting leader, focused on continuous skills recognition and certification through innovative Learning Paths.",
