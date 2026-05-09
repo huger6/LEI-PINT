@@ -6,7 +6,7 @@ import styles from './Sidebar.module.css';
 import SidebarOption from './SidebarOption/SidebarOption';
 import Icon from '../Icons/Icons';
 
-export default function Sidebar() {
+export default function Sidebar({ menuItems }) {
     const { t } = useTranslation();
     const { notifications } = useUser();
     const [collapsed, setCollapsed] = useState(() => window.matchMedia('(max-width: 991px)').matches);
@@ -17,17 +17,6 @@ export default function Sidebar() {
         mq.addEventListener('change', handler);
         return () => mq.removeEventListener('change', handler);
     }, []);
-
-    const menuItems = [
-        { to: '/', icon: 'home', label: 'sidebar.home', notificationType: 'HOME' },
-        { to: '/badges', icon: 'badge', label: 'sidebar.badges', notificationType: 'BADGES' },
-        { to: '/applications', icon: 'paper', label: 'sidebar.applications', notificationType: 'APPLICATIONS' },
-        { to: '/achievements', icon: 'trophy', label: 'sidebar.achievements', notificationType: 'ACHIEVEMENTS' },
-        { to: '/points', icon: 'star-points', label: 'sidebar.points', notificationType: 'POINTS' },
-        { to: '/objectives', icon: 'target', label: 'sidebar.objectives', notificationType: 'OBJECTIVES' },
-        { to: '/evolution', icon: 'evolution', label: 'sidebar.evolution', notificationType: 'EVOLUTION' },
-        { to: '/announcements', icon: 'megaphone', label: 'sidebar.announcements', notificationType: 'ANNOUNCEMENTS' },
-    ];
 
     return (
         <aside className={`${styles.sidebarShell} ${collapsed ? styles.collapsed : ''}`}>

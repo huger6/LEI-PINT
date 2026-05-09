@@ -1,26 +1,22 @@
-import AppLayout from "../../layouts/AppLayout/AppLayout";
-import styles from '../../assets/styles/componentes/App.module.css';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../features/auth/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 import { useUser } from '../../hooks/userContext';
-import WelcomeCard from "../../components/WelcomeCard/WelcomeCard";
+import ConsultantDashboard from './ConsultantDashboard';
+import AdminDashboard from './AdminDashboard';
+import TmDashboard from './TmDashboard';
+import SllDashboard from './SllDashboard';
+
+const DASHBOARDS = {
+    'Consultant': ConsultantDashboard,
+    'Administrator': AdminDashboard,
+    'Talent Manager': TmDashboard,
+    'Service Line Leader': SllDashboard,
+};
 
 export default function Dashboard() {
-    const { t } = useTranslation();
-    const { logout } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useUser();
+    const DashboardComponent = DASHBOARDS[user?.role];
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login', { replace: true });
-    };
+    if (!DashboardComponent) return <Navigate to="/unauthorized" replace />;
 
-    return (
-        <AppLayout>
-            <WelcomeCard>
-
-            </WelcomeCard>
-        </AppLayout>
-    );
+    return <DashboardComponent />;
 }

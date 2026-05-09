@@ -443,6 +443,7 @@ export default function RegisterPage() {
 			if (Object.keys(backendFields).length) {
 				setServerFieldErrors((prev) => ({ ...prev, ...backendFields }));
 				if (step2Fields.some((f) => backendFields[f])) setStep(2);
+				setApiError(resolveErrorMessage(err));
 				return;
 			}
 
@@ -620,6 +621,8 @@ export default function RegisterPage() {
 							/>
 
 							<PasswordRules password={values.password} />
+
+							<FormAlert message={apiError} />
 
 							<div className="row g-2 mt-1">
 								<div className="col">

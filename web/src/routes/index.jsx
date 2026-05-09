@@ -1,14 +1,12 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
-import { useAuth } from '../features/auth';
 import {
 	authPublicRoutes,
 	authOpenRoutes,
 	authFpcRoutes,
 } from '../features/auth/routes';
-import SidebarOption from '../components/Sidebar/SidebarOption/SidebarOption';
+import RoleLayout from '../layouts/RoleLayout/RoleLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
 
 export default function AppRoutes() {
@@ -31,7 +29,9 @@ export default function AppRoutes() {
 			</Route>
 
 			<Route element={<ProtectedRoute />}>
-				<Route path="/" element={<Dashboard />} />
+				<Route element={<RoleLayout />}>
+					<Route path="/" element={<Dashboard />} />
+				</Route>
 			</Route>
 
 			<Route path="*" element={<Navigate to="/login" replace />} />
