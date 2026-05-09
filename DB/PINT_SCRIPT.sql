@@ -932,7 +932,7 @@ CREATE TABLE IF NOT EXISTS users (
    phone_number         VARCHAR(20)          NULL,
    birthdate            DATE                 NULL,
    profile_img_url      VARCHAR(512)         NULL,
-   language_id    INTEGER              NOT NULL DEFAULT 1, -- FK -> languages(language_id); DEFAULT is 'pt-PT' (ID=1)
+   language_id          INTEGER              NOT NULL DEFAULT 1, -- FK -> languages(language_id); DEFAULT is 'pt-PT' (ID=1)
    location_id          INTEGER              NULL, -- FK -> locations(location_id)
    approved_by          INTEGER              NULL, -- FK -> administrators(user_id)
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
@@ -940,7 +940,10 @@ CREATE TABLE IF NOT EXISTS users (
    force_password_change BOOLEAN             NOT NULL DEFAULT TRUE,
    last_login_at        TIMESTAMPTZ          NULL,
    last_online          TIMESTAMPTZ          NULL,
+   current_streak_days  INTEGER              NOT NULL DEFAULT 0,
+
    created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
+   updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_users PRIMARY KEY (user_id)
 );
