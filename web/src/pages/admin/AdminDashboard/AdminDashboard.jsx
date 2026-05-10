@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
-import { getUsers } from '../../../services/adminService';
-import { getBadges } from '../../../services/badgeService';
-import { getLearningPaths } from '../../../services/hierarchyService';
+import { getUsers } from '../../../features/users/api/usersApi';
+import { getBadges } from '../../../features/badges/api/badgesApi';
+import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import Icon from '../../../components/Icons/Icons';
 

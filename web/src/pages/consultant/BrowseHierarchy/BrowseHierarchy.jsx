@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../services/hierarchyService';
-import { getBadges } from '../../../services/badgeService';
+import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../features/badges/api/hierarchyApi';
+import { getBadges } from '../../../features/badges/api/badgesApi';
 import Icon from '../../../components/Icons/Icons';
 
 const STEP_ICON_MAP = {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getBadges } from '../../../services/badgeService';
+import { getBadges } from '../../../features/badges/api/badgesApi';
 
 export default function AdminRequirements() {
 	const { t } = useTranslation();

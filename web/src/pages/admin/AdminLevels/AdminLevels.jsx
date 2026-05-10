@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getLevels, createLevel, updateLevel, deleteLevel, getAreas } from '../../../services/hierarchyService';
+import { getLevels, createLevel, updateLevel, deleteLevel, getAreas } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';

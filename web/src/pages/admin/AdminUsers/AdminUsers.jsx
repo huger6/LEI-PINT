@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsers, createUser, updateUser, deactivateUser } from '../../../services/adminService';
+import { getUsers, createUser, updateUser, deactivateUser } from '../../../features/users/api/usersApi';
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';
