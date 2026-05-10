@@ -183,14 +183,14 @@ export default function RegisterPage() {
 	const resolveProfileUploadError = useCallback((error) => {
 		const sizeMb = PROFILE_IMAGE_MAX_FILE_SIZE_BYTES / (1024 * 1024);
 		switch (error?.code) {
-		case 'PROFILE_IMAGE_INVALID_FORMAT':
-			return t('validation.profileImageInvalidFormat');
-		case 'PROFILE_IMAGE_TOO_LARGE':
-			return t('validation.profileImageTooLarge', { sizeMb });
-		case 'SUPABASE_UPLOAD_FAILED':
-		case 'SUPABASE_CONFIG_MISSING':
-		default:
-			return t('register.profilePictureUploadFailed');
+			case 'PROFILE_IMAGE_INVALID_FORMAT':
+				return t('validation.profileImageInvalidFormat');
+			case 'PROFILE_IMAGE_TOO_LARGE':
+				return t('validation.profileImageTooLarge', { sizeMb });
+			case 'SUPABASE_UPLOAD_FAILED':
+			case 'SUPABASE_CONFIG_MISSING':
+			default:
+				return t('register.profilePictureUploadFailed');
 		}
 	}, [t]);
 
@@ -779,7 +779,7 @@ export default function RegisterPage() {
 									</div>
 
 									<div>
-										<label htmlFor="language_id" className={`form-label ${styles.selectLabel}`}>{t('register.preferredLanguage')}</label>
+										<label htmlFor="language_id" className={`form-label ${styles.selectLabel}`}>{withMandatoryIcon(t('register.preferredLanguage'))}</label>
 										<CustomSelect
 											id="language_id"
 											name="language_id"
