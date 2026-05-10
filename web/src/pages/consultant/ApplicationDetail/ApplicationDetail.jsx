@@ -8,11 +8,11 @@ import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import FormButton from '../../../components/FormButton/FormButton';
 import styles from './ApplicationDetail.module.css';
 
-const STATE_BADGE_CLASS = {
-	Open: 'bg-secondary',
-	Submitted: 'bg-primary',
-	'In validation': 'bg-warning text-dark',
-	Closed: 'bg-success',
+const STATE_BADGE_MAP = {
+	Open: 'badge-open',
+	Submitted: 'badge-submitted',
+	'In validation': 'badge-validation',
+	Closed: 'badge-closed',
 };
 
 export default function ApplicationDetail() {
@@ -27,7 +27,9 @@ export default function ApplicationDetail() {
 	const [uploading, setUploading] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		let ignore = false;
@@ -117,6 +119,18 @@ export default function ApplicationDetail() {
 		}
 	}
 
+	async function handleDelete() {
+		if (!window.confirm("Tem a certeza que pretende remover esta candidatura? Esta ação é irreversível.")) return;
+		setDeleting(true);
+		try {
+			await deleteApplication(id);
+			navigate('/applications');
+		} catch (err) {
+			setError(err.message);
+			setDeleting(false);
+		}
+	}
+
 	function getEvidenceForRequirement(reqId) {
 		return evidences.find(
 			(ev) => String(ev.requirement_id || ev.requirementId) === String(reqId)
@@ -145,9 +159,15 @@ export default function ApplicationDetail() {
 	const appState = application.application_state || application.state;
 	const isOpen = appState === 'Open';
 	const badgeName = badge?.badge_title || badge?.badgeTitle || `Badge #${application.badge_id || application.badgeId}`;
+	const completedCount = requirements.filter((req) => {
+		const reqId = req.requirement_id || req.requirementId;
+		return !!getEvidenceForRequirement(reqId);
+	}).length;
+	const progressPct = requirements.length > 0 ? Math.round((completedCount / requirements.length) * 100) : 0;
 
 	return (
 		<>
+			{/* Breadcrumb */}
 			<nav aria-label="breadcrumb" className="mb-3">
 				<ol className="breadcrumb">
 					<li className="breadcrumb-item"><Link to="/applications">{t('applicationDetail.applications')}</Link></li>
@@ -155,15 +175,20 @@ export default function ApplicationDetail() {
 				</ol>
 			</nav>
 
-			<div className="d-flex align-items-center gap-3 mb-4">
-				<h1 className="h3 mb-0">{badgeName}</h1>
-				<span className={`badge ${STATE_BADGE_CLASS[appState] || 'bg-secondary'}`}>
+			{/* Page Header */}
+			<div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
+				<h1 className="page-title mb-0">{badgeName}</h1>
+				<span
+					className={`badge ${STATE_BADGE_MAP[appState] || 'badge-open'}`}
+					style={{ fontSize: '0.75rem', fontWeight: 600, padding: '5px 14px', borderRadius: 20 }}
+				>
 					{appState}
 				</span>
 			</div>
 
+			{/* Badge Info + Progress Card */}
 			{badge && (
-				<div className="card border-0 shadow-sm mb-4">
+				<div className="card border-0 shadow-sm brand-card mb-4" style={{ borderRadius: 14 }}>
 					<div className="card-body">
 						<h5 className="fw-semibold mb-2">{t('applicationDetail.badgeInfo')}</h5>
 						<p className="text-muted mb-3">
@@ -175,11 +200,34 @@ export default function ApplicationDetail() {
 								<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} {t('badgeDetail.pointsLabel')}</span>
 							)}
 						</div>
+
+						{/* Progress Bar */}
+						<div className="d-flex align-items-center gap-3">
+							<div className="flex-grow-1">
+								<div style={{ background: '#f0f2f4', borderRadius: 6, height: 8, overflow: 'hidden' }}>
+									<div
+										style={{
+											width: `${progressPct}%`,
+											height: '100%',
+											borderRadius: 6,
+											background: progressPct === 100
+												? 'var(--color-success)'
+												: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary))',
+											transition: 'width 400ms ease',
+										}}
+									/>
+								</div>
+							</div>
+							<span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-outline)', whiteSpace: 'nowrap' }}>
+								{completedCount}/{requirements.length} requisitos
+							</span>
+						</div>
 					</div>
 				</div>
 			)}
 
-			<div className="card border-0 shadow-sm">
+			{/* Requirements & Evidences */}
+			<div className="card border-0 shadow-sm brand-card" style={{ borderRadius: 14 }}>
 				<div className="card-body">
 					<h5 className="fw-semibold mb-3">{t('applicationDetail.requirementsAndEvidences')}</h5>
 
@@ -212,7 +260,7 @@ export default function ApplicationDetail() {
 										</div>
 
 										{isOpen ? (
-											<div className="d-flex flex-column gap-2 mt-2">
+											<div className="d-flex flex-column gap-2 mt-2 ms-5">
 												<div className="d-flex gap-2">
 													<input
 														type="url"
@@ -220,11 +268,13 @@ export default function ApplicationDetail() {
 														placeholder={t('applicationDetail.evidenceUrlPlaceholder')}
 														value={evidenceUrls[reqId] || ''}
 														onChange={(e) => handleUrlChange(reqId, e.target.value)}
+														style={{ borderRadius: 8, fontSize: '0.8125rem' }}
 													/>
 													<button
 														className="btn btn-outline-primary btn-sm text-nowrap"
 														onClick={() => handleSaveEvidence(reqId)}
 														disabled={!evidenceUrls[reqId]?.trim() || uploading[reqId]}
+														style={{ borderRadius: 8, fontWeight: 600, fontSize: '0.8125rem' }}
 													>
 														{uploading[reqId] ? t('applicationDetail.saving') : t('shared.save')}
 													</button>
@@ -234,6 +284,7 @@ export default function ApplicationDetail() {
 														type="file"
 														className="form-control form-control-sm"
 														onChange={(e) => handleFileUpload(reqId, e.target.files[0])}
+														style={{ borderRadius: 8, fontSize: '0.8125rem' }}
 													/>
 													{uploading[reqId] && (
 														<span className="spinner-border spinner-border-sm text-primary" />
@@ -241,13 +292,15 @@ export default function ApplicationDetail() {
 												</div>
 											</div>
 										) : hasEvidence ? (
-											<div className="mt-2">
+											<div className="mt-2 ms-5">
 												<a
 													href={evidence.evidence_file_url || evidence.evidenceFileUrl || evidence.url}
 													target="_blank"
 													rel="noopener noreferrer"
 													className="small"
+													style={{ fontWeight: 500 }}
 												>
+													<i className="bi bi-link-45deg me-1" />
 													{evidence.evidence_file_url || evidence.evidenceFileUrl || evidence.url}
 												</a>
 											</div>

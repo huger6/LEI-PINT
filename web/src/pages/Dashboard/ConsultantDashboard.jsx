@@ -5,156 +5,170 @@ import WelcomeCard from '../../components/WelcomeCard/WelcomeCard';
 import { getApplications } from '../../services/applicationService';
 import styles from './ConsultantDashboard.module.css';
 
-const STATE_BADGE_CLASS = {
-  Open: 'bg-secondary',
-  Submitted: 'bg-primary',
-  'In validation': 'bg-warning text-dark',
-  Closed: 'bg-success',
+const STATE_BADGE_MAP = {
+	Open: 'badge-open',
+	Submitted: 'badge-submitted',
+	'In validation': 'badge-validation',
+	Closed: 'badge-closed',
 };
 
 export default function ConsultantDashboard() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, closed: 0 });
-  const [recentApps, setRecentApps] = useState([]);
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, closed: 0 });
+	const [recentApps, setRecentApps] = useState([]);
 
-  useEffect(() => {
-    let ignore = false;
+	useEffect(() => {
+		let ignore = false;
 
-    async function load() {
-      try {
-        const appData = await getApplications();
-        const apps = appData.data || appData || [];
-        if (ignore) return;
+		async function load() {
+			try {
+				setLoading(true);
+				const [appData, badgesData] = await Promise.all([
+					getApplications().catch(() => []),
+					getBadges().catch(() => [])
+				]);
 
-        const total = apps.length;
-        const open = apps.filter((a) => (a.application_state || a.state) === 'Open').length;
-        const submitted = apps.filter((a) => (a.application_state || a.state) === 'Submitted').length;
-        const closed = apps.filter((a) => (a.application_state || a.state) === 'Closed').length;
+				if (ignore) return;
 
-        setStats({ total, open, submitted, closed });
-        setRecentApps(apps.slice(0, 5));
-      } catch (err) {
-        console.error(err);
-      }
-    }
+				const apps = appData.data || appData || [];
+				const badges = badgesData.data || badgesData || [];
 
-    load();
-    return () => { ignore = true; };
-  }, []);
+				const total = apps.length;
+				const open = apps.filter((a) => (a.application_state || a.state) === 'Open').length;
+				const submitted = apps.filter((a) => (a.application_state || a.state) === 'Submitted').length;
+				const closed = apps.filter((a) => (a.application_state || a.state) === 'Closed').length;
 
-  return (
-    <div>
-      <WelcomeCard />
+				setStats({ total, open, submitted, closed });
+				setRecentApps(apps.slice(0, 5));
+			} catch (err) {
+				console.error(err);
+			}
+		}
 
-      <div className="row g-4 mb-4 mt-2">
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-2">{t('consultantDashboard.totalApplications')}</h6>
-              <h3 className="mb-0">{stats.total}</h3>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-2">{t('consultantDashboard.open')}</h6>
-              <h3 className="mb-0 text-secondary">{stats.open}</h3>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-2">{t('consultantDashboard.submitted')}</h6>
-              <h3 className="mb-0 text-primary">{stats.submitted}</h3>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-2">{t('consultantDashboard.completed')}</h6>
-              <h3 className="mb-0 text-success">{stats.closed}</h3>
-            </div>
-          </div>
-        </div>
-      </div>
+		load();
+		return () => { ignore = true; };
+	}, []);
 
-      <div className="row g-4">
-        <div className="col-lg-8">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-semibold mb-0">{t('consultantDashboard.recentApplications')}</h5>
-                <Link to="/applications" className="small">{t('shared.viewAll')}</Link>
-              </div>
+	const statCards = [
+		{ label: 'Candidaturas', value: stats.total, icon: 'bi-layers', color: 'var(--color-on-surface)' },
+		{ label: 'Em Aberto', value: stats.open, icon: 'bi-hourglass-split', color: 'var(--color-primary)' },
+		{ label: 'Submetidas', value: stats.submitted, icon: 'bi-send-check', color: 'var(--color-secondary)' },
+		{ label: 'Concluídas', value: stats.closed, icon: 'bi-check-circle', color: 'var(--color-success)' },
+	];
 
-              {recentApps.length === 0 ? (
-                <p className="text-muted small mb-0">{t('consultantDashboard.noApplications')}</p>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-sm align-middle mb-0">
-                    <thead className="table-light">
-                      <tr>
-                        <th>{t('shared.badge')}</th>
-                        <th>{t('shared.state')}</th>
-                        <th>{t('shared.date')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentApps.map((app) => {
-                        const state = app.application_state || app.state;
-                        return (
-                          <tr
-                            key={app.application_guid || app.applicationGuid}
-                            className={styles.clickableRow}
-                            onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
-                          >
-                            <td className="fw-medium">
-                              {app.badge?.badge_title || app.badge?.badgeTitle || '—'}
-                            </td>
-                            <td>
-                              <span className={`badge ${STATE_BADGE_CLASS[state] || 'bg-secondary'}`}>
-                                {state}
-                              </span>
-                            </td>
-                            <td className="text-muted small">
-                              {(() => {
-                                const dateStr = app.submitted_at || app.submittedAt || app.opened_at || app.createdAt;
-                                return dateStr ? new Date(dateStr).toLocaleDateString('pt-PT') : '—';
-                              })()}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+	return (
+		<div>
+			<WelcomeCard />
 
-        <div className="col-lg-4">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
-              <div className="d-flex flex-column gap-2">
-                <Link to="/catalog" className="btn btn-outline-primary text-start">
-                  <i className="bi bi-search me-2" />
-                  {t('consultantDashboard.exploreCatalog')}
-                </Link>
-                <Link to="/applications" className="btn btn-outline-primary text-start">
-                  <i className="bi bi-file-text me-2" />
-                  {t('consultantDashboard.myApplications')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+			<div className="row g-4 mb-4 mt-2">
+				<div className="col-md-3">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<h6 className="text-muted mb-2">{t('consultantDashboard.totalApplications')}</h6>
+							<h3 className="mb-0">{stats.total}</h3>
+						</div>
+					</div>
+				</div>
+				<div className="col-md-3">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<h6 className="text-muted mb-2">{t('consultantDashboard.open')}</h6>
+							<h3 className="mb-0 text-secondary">{stats.open}</h3>
+						</div>
+					</div>
+				</div>
+				<div className="col-md-3">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<h6 className="text-muted mb-2">{t('consultantDashboard.submitted')}</h6>
+							<h3 className="mb-0 text-primary">{stats.submitted}</h3>
+						</div>
+					</div>
+				</div>
+				<div className="col-md-3">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<h6 className="text-muted mb-2">{t('consultantDashboard.completed')}</h6>
+							<h3 className="mb-0 text-success">{stats.closed}</h3>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className="row g-4">
+				<div className="col-lg-8">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<div className="d-flex justify-content-between align-items-center mb-3">
+								<h5 className="fw-semibold mb-0">{t('consultantDashboard.recentApplications')}</h5>
+								<Link to="/applications" className="small">{t('shared.viewAll')}</Link>
+							</div>
+
+							{recentApps.length === 0 ? (
+								<p className="text-muted small mb-0">{t('consultantDashboard.noApplications')}</p>
+							) : (
+								<div className="table-responsive">
+									<table className="table table-sm align-middle mb-0">
+										<thead className="table-light">
+											<tr>
+												<th>{t('shared.badge')}</th>
+												<th>{t('shared.state')}</th>
+												<th>{t('shared.date')}</th>
+											</tr>
+										</thead>
+										<tbody>
+											{recentApps.map((app) => {
+												const state = app.application_state || app.state;
+												return (
+													<tr
+														key={app.application_guid || app.applicationGuid}
+														className={styles.clickableRow}
+														onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
+													>
+														<td className="fw-medium">
+															{app.badge?.badge_title || app.badge?.badgeTitle || '—'}
+														</td>
+														<td>
+															<span className={`badge ${STATE_BADGE_CLASS[state] || 'bg-secondary'}`}>
+																{state}
+															</span>
+														</td>
+														<td className="text-muted small">
+															{(() => {
+																const dateStr = app.submitted_at || app.submittedAt || app.opened_at || app.createdAt;
+																return dateStr ? new Date(dateStr).toLocaleDateString('pt-PT') : '—';
+															})()}
+														</td>
+													</tr>
+												);
+											})}
+										</tbody>
+									</table>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+
+				<div className="col-lg-4">
+					<div className="card border-0 shadow-sm">
+						<div className="card-body">
+							<h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
+							<div className="d-flex flex-column gap-2">
+								<Link to="/catalog" className="btn btn-outline-primary text-start">
+									<i className="bi bi-search me-2" />
+									{t('consultantDashboard.exploreCatalog')}
+								</Link>
+								<Link to="/applications" className="btn btn-outline-primary text-start">
+									<i className="bi bi-file-text me-2" />
+									{t('consultantDashboard.myApplications')}
+								</Link>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
