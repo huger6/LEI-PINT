@@ -291,7 +291,10 @@
 	"pagination": {
 		"previous": "Anterior",
 		"next": "Seguinte",
-		"navigation": "Navegação de páginas"
+		"first": "Primeira página",
+		"last": "Última página",
+		"navigation": "Navegação de páginas",
+		"showing": "A mostrar {{current}}-{{total}} de {{items}}"
 	},
 	"passwordRules": {
 		"minLength": "Pelo menos 8 caracteres",

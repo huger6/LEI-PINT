@@ -290,7 +290,10 @@
 	"pagination": {
 		"previous": "Anterior",
 		"next": "Siguiente",
-		"navigation": "Navegación de páginas"
+		"first": "Primera página",
+		"last": "Última página",
+		"navigation": "Navegación de páginas",
+		"showing": "Mostrando {{current}}-{{total}} de {{items}}"
 	},
 	"passwordRules": {
 		"minLength": "Al menos 8 caracteres",
