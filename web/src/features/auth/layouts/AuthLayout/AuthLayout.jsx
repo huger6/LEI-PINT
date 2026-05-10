@@ -1,5 +1,5 @@
-import ParticlesBackground from '../../features/auth/components/ParticlesBackground/ParticlesBackground';
-import Logo from '../../components/Logo/Logo';
+import ParticlesBackground from '../../../../components/ParticlesBackground/ParticlesBackground';
+import Logo from '../../../../components/Logo/Logo';
 import styles from './AuthLayout.module.css';
 
 export default function AuthLayout({ children }) {
@@ -12,3 +12,4 @@ export default function AuthLayout({ children }) {
 		</div>
 	);
 }
+

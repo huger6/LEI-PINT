@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, StatusPanel, validateResetToken } from '../..';
 import FormButton from '../../../../components/FormButton/FormButton';
 import { isCode, resolveErrorMessage } from '../../../../validations';
@@ -75,3 +75,4 @@ export default function ResetPasswordConfirmPage() {
         </AuthLayout>
     );
 }
+

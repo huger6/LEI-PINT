@@ -229,7 +229,6 @@ export default function BadgeCatalog() {
 					</div>
 				)}
 			</div>
-		</div >
 		</>
 	);
 }
