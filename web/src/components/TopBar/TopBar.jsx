@@ -21,9 +21,13 @@ export default function TopBar() {
                 <SearchBar placeholder={t('topBar.searchPlaceholder')} />
             </div>
             <div className={styles.rightSection}>
-                <div className={styles.pointsCardWrap}>
-                    <PointsCard points={points ? points : 0} />
-                </div>
+                {
+                    user.role === 'Consultant' && (
+                        <div className={styles.pointsCardWrap}>
+                            <PointsCard points={points ? points : 0} />
+                        </div>
+                    )
+                }
                 <NotificationBell />
                 <div className="d-flex align-items-center gap-2 gap-md-3">
                     <div className={styles.userInfo}>
