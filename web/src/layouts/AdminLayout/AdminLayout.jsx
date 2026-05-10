@@ -4,6 +4,7 @@ const MENU_ITEMS = [
     { to: '/', icon: 'home', label: 'sidebar.admin.dashboard' },
     { to: '/users', icon: 'user', label: 'sidebar.admin.users' },
     { to: '/structure', icon: 'service-line', label: 'sidebar.admin.structure' },
+    { to: '/levels', icon: 'progress', label: 'sidebar.admin.levels' },
     { to: '/badges', icon: 'badge', label: 'sidebar.admin.badges' },
     { to: '/applications', icon: 'paper', label: 'sidebar.admin.applications' },
     { to: '/slas', icon: 'time', label: 'sidebar.admin.slas' },

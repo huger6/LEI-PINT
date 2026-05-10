@@ -152,3 +152,50 @@ export const uploadProfileImageToTemp = async (file, options = {}) => {
 };
 
 export const PROFILE_IMAGE_MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_BYTES;
+
+const MAX_GENERIC_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+export const validateEvidenceFile = (file) => {
+	if (!file) {
+		throw createUploadError('No file was selected.', 'EVIDENCE_FILE_MISSING');
+	}
+	if (file.size > MAX_GENERIC_FILE_SIZE_BYTES) {
+		throw createUploadError('File size exceeds the 10 MB limit.', 'EVIDENCE_FILE_TOO_LARGE');
+	}
+};
+
+export const uploadFileToTemp = async (file, options = {}) => {
+	const { baseUrl, apiKey } = getStorageConfig();
+	const fileName = buildTempFileName(file.name || 'file');
+	const objectPath = `${TEMP_FOLDER}/${fileName}`;
+	const uploadUrl = `${baseUrl}/storage/v1/object/${BUCKET_NAME}/${encodePath(objectPath)}`;
+
+	try {
+		await axios.post(uploadUrl, file, {
+			headers: {
+				apikey: apiKey,
+				Authorization: `Bearer ${apiKey}`,
+				'Content-Type': file.type || 'application/octet-stream',
+				'cache-control': '3600',
+				'x-upsert': 'false',
+			},
+		});
+	} catch (error) {
+		const details = error?.response?.data ?? error;
+		throw createUploadError(
+			error?.response
+				? 'Supabase rejected the upload.'
+				: 'Could not connect to Supabase storage.',
+			'SUPABASE_UPLOAD_FAILED',
+			details
+		);
+	}
+
+	const publicUrl = `${baseUrl}/storage/v1/object/public/${BUCKET_NAME}/${encodePath(objectPath)}`;
+
+	return {
+		fileName,
+		objectPath,
+		publicUrl,
+	};
+};
