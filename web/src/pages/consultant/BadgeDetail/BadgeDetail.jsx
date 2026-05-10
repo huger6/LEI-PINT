@@ -74,8 +74,15 @@ export default function BadgeDetail() {
 		);
 	}
 
+	const title = badge.badge_title || badge.badgeTitle;
+	const description = badge.badge_description || badge.badgeDescription;
+	const areaName = badge.area?.area_name;
+	const points = badge.badge_points || badge.badgePoints;
+	const imgUrl = badge.badge_img_url || badge.badgeImgUrl;
+
 	return (
 		<>
+			{/* Breadcrumb */}
 			<nav aria-label="breadcrumb" className="mb-3">
 				<ol className="breadcrumb">
 					<li className="breadcrumb-item"><Link to="/badges">{t('badgeDetail.catalog')}</Link></li>
@@ -83,17 +90,36 @@ export default function BadgeDetail() {
 				</ol>
 			</nav>
 
-			<div className="row">
+			<div className="row g-4">
+				{/* Main Content */}
 				<div className="col-lg-8">
-					<div className="card border-0 shadow-sm mb-4">
+					{/* Badge Info Card */}
+					<div className="card border-0 shadow-sm brand-card mb-4" style={{ borderRadius: 14, overflow: 'hidden' }}>
+						{/* Header Area */}
+						<div
+							className="d-flex align-items-center justify-content-center"
+							style={{
+								height: 160,
+								background: 'linear-gradient(135deg, rgba(0,184,224,0.08) 0%, rgba(57,99,156,0.08) 100%)',
+							}}
+						>
+							{imgUrl ? (
+								<img src={imgUrl} alt={title} style={{ maxHeight: 110, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.08))' }} />
+							) : (
+								<i className="bi bi-award" style={{ fontSize: '3.5rem', color: 'var(--color-primary)', opacity: 0.45 }} />
+							)}
+						</div>
+
 						<div className="card-body">
 							<h1 className="h3 mb-2">{badge.badge_title || badge.badgeTitle}</h1>
 							<p className="text-muted mb-3">
 								{badge.badge_description || badge.badgeDescription || t('badgeDetail.noDescription')}
 							</p>
 							<div className="d-flex flex-wrap gap-2">
-								{badge.area?.area_name && (
-									<span className="badge bg-info">{badge.area.area_name}</span>
+								{areaName && (
+									<span className="badge badge-area" style={{ fontSize: '0.75rem', fontWeight: 600, padding: '4px 12px', borderRadius: 8 }}>
+										{areaName}
+									</span>
 								)}
 								{(badge.badge_points || badge.badgePoints) != null && (
 									<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} {t('badgeDetail.pointsLabel')}</span>
@@ -102,7 +128,8 @@ export default function BadgeDetail() {
 						</div>
 					</div>
 
-					<div className="card border-0 shadow-sm">
+					{/* Requirements Card */}
+					<div className="card border-0 shadow-sm brand-card" style={{ borderRadius: 14 }}>
 						<div className="card-body">
 							<h5 className="fw-semibold mb-3">{t('badgeDetail.requirements')}</h5>
 							{requirements.length === 0 ? (
@@ -128,6 +155,7 @@ export default function BadgeDetail() {
 					</div>
 				</div>
 
+				{/* Sidebar */}
 				<div className="col-lg-4">
 					<div className={`card border-0 shadow-sm sticky-top ${styles.stickyCard}`}>
 						<div className="card-body">
