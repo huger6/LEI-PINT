@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBadgeBySlug } from '../../../services/badgeService';
-import { startApplication, getApplications } from '../../../services/applicationService';
+import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
+import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import FormButton from '../../../components/FormButton/FormButton';
 import Icon from '../../../components/Icons/Icons';

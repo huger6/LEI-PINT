@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getAreas, createArea, updateArea, deleteArea, getServiceLines } from '../../../services/hierarchyService';
+import { getAreas, createArea, updateArea, deleteArea, getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';

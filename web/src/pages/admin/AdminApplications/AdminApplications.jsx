@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getApplications } from '../../../services/applicationService';
+import { getApplications } from '../../../features/applications/api/applicationsApi';
 
 const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',

@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBadges } from '../../../services/badgeService';
-import { getAreas } from '../../../services/hierarchyService';
+import { getBadges } from '../../../features/badges/api/badgesApi';
+import { getAreas } from '../../../features/badges/api/hierarchyApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import Icon from '../../../components/Icons/Icons';
 import styles from './BadgeCatalog.module.css';

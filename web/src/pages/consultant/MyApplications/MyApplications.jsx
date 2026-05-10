@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getApplications } from '../../../services/applicationService';
+import { getApplications } from '../../../features/applications/api/applicationsApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';

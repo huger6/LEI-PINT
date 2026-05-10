@@ -27,7 +27,7 @@ import ApplicationDetail from '../pages/consultant/ApplicationDetail/Application
 
 // Shared role-based pages
 import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
-import NotFound from '../pages/NotFound/NotFound';
+import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 
 export default function AppRoutes() {
 	return (
@@ -73,7 +73,7 @@ export default function AppRoutes() {
 				</Route>
 			</Route>
 
-			<Route path="*" element={<NotFound />} />
+			<Route path="*" element={<ErrorCodePage code={404} />} />
 		</Routes>
 	);
 }
