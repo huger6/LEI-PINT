@@ -286,6 +286,11 @@
 		"target": "Alvo",
 		"trophy": "Troféu"
 	},
+	"pagination": {
+		"previous": "Anterior",
+		"next": "Seguinte",
+		"navigation": "Navegação de páginas"
+	},
 	"passwordRules": {
 		"minLength": "Pelo menos 8 caracteres",
 		"uppercase": "Uma letra maiúscula",
