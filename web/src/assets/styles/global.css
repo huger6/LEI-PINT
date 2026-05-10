@@ -66,9 +66,13 @@ h5,
 h6 {
 	font-family: var(--font-heading);
 	color: var(--color-on-surface);
-	font-weight: 600;
+	font-weight: 700;
 	line-height: 1.25;
+	letter-spacing: -0.01em;
 }
+
+h1, .h1 { font-weight: 800; letter-spacing: -0.02em; }
+h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 
 /* Bootstrap overrides — align with brand colours */
 .form-control:focus,
@@ -103,4 +107,156 @@ h6 {
 	--bs-alert-color: #7a5e00;
 	--bs-alert-bg: var(--color-warning-container-soft);
 	--bs-alert-border-color: transparent;
+}
+
+/* ── Brand card — use on any .card for consistent elevation ── */
+.card.brand-card {
+	border: 1px solid #e8ecef;
+	border-radius: 14px;
+	transition: box-shadow 250ms ease, transform 250ms ease, border-color 200ms ease;
+}
+
+.card.brand-card:hover {
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+	border-color: var(--color-primary-border-soft);
+}
+
+/* ── Brand badges — semantic status pills ────────────────── */
+.badge.badge-open {
+	background: var(--color-primary-container);
+	color: var(--color-on-primary-container);
+}
+
+.badge.badge-submitted {
+	background: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+}
+
+.badge.badge-validation {
+	background: var(--color-warning-container-soft);
+	color: #7a5e00;
+}
+
+.badge.badge-closed {
+	background: var(--color-success-container);
+	color: #0a6e08;
+}
+
+.badge.badge-area {
+	background: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+}
+
+.badge.badge-points {
+	background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+	color: #7a5e00;
+}
+
+/* ── Breadcrumb polish ───────────────────────────────────── */
+.breadcrumb {
+	font-size: 0.8125rem;
+	margin-bottom: 0;
+}
+
+.breadcrumb-item a {
+	color: var(--color-primary);
+	font-weight: 500;
+}
+
+.breadcrumb-item.active {
+	color: var(--color-outline);
+}
+
+/* ── Page title utility ──────────────────────────────────── */
+.page-title {
+	font-size: 1.5rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+/* ── Section title ───────────────────────────────────────── */
+.section-title {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--color-outline);
+	margin-bottom: 12px;
+}
+
+/* ── Bootstrap Button Overrides ──────────────────────────── */
+.btn {
+	font-family: var(--font-body);
+	font-weight: 600;
+	border-radius: 10px;
+	transition: all 200ms ease;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.97);
+}
+
+.btn-primary {
+	--bs-btn-bg: var(--color-primary);
+	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-hover-bg: var(--color-primary-hover-solid);
+	--bs-btn-hover-border-color: var(--color-primary-hover-solid);
+	--bs-btn-active-bg: var(--color-primary-hover-solid);
+	--bs-btn-active-border-color: var(--color-primary-hover-solid);
+	--bs-btn-disabled-bg: var(--color-primary);
+	--bs-btn-disabled-border-color: var(--color-primary);
+}
+
+.btn-outline-primary {
+	--bs-btn-color: var(--color-primary);
+	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-hover-bg: var(--color-primary);
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-border-color: var(--color-primary);
+	--bs-btn-active-bg: var(--color-primary-hover-solid);
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-border-color: var(--color-primary-hover-solid);
+}
+
+/* ── Table polish ────────────────────────────────────────── */
+.table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--color-primary-hover-bg-soft);
+	font-size: 0.875rem;
+}
+
+.table th {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-outline);
+	border-bottom-width: 2px;
+	border-color: #f0f2f4;
+}
+
+.table td {
+	padding: 10px 12px;
+	vertical-align: middle;
+	border-color: #f4f5f6;
+}
+
+/* ── Custom scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #d0d5dd;
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #b0b7bf;
 }
