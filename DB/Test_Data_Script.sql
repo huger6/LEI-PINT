@@ -332,13 +332,15 @@ WITH admin_ref AS (
       WHERE u.username = 'admin'
 )
 INSERT INTO badges
-(progression_stage_id, area_id,
+(progression_stage_id, area_id, service_line_id, learning_path_id,
  badge_title, badge_slug, badge_type,
  badge_points, badge_description,
  expiration_duration_days, created_by)
 SELECT
       ps.progression_stage_id,
       a.area_id,
+      a.service_line_id,
+      sl.learning_path_id,
       a.area_name || ' - ' || ps.stage_title,
       a.area_slug || '-' || LOWER(REPLACE(ps.stage_title, ' ', '-')),
       'Standard',
@@ -349,6 +351,8 @@ SELECT
 FROM progression_stages ps
 JOIN areas a
    ON a.area_id = ps.area_id
+JOIN service_lines sl
+   ON sl.service_line_id = a.service_line_id
 LEFT JOIN badges b
    ON b.progression_stage_id = ps.progression_stage_id
 CROSS JOIN admin_ref ar
@@ -654,3 +658,126 @@ WHERE NOT EXISTS (
          AND ph.justification = 'Atribuicao do badge ' || ar.badge_title
 );
 
+/* ============================================================
+    18. OUTRAS ENTIDADES (COBERTURA DE TODAS AS TABELAS)
+    ============================================================ */
+
+-- GDPR Policies
+INSERT INTO gdpr_policies (policy_type, version, policy_text, is_mandatory, is_active, created_by)
+SELECT 'Privacy', '1.0', 'Política de Privacidade Base', TRUE, TRUE, a.user_id
+FROM administrators a
+WHERE NOT EXISTS (SELECT 1 FROM gdpr_policies LIMIT 1)
+LIMIT 1;
+
+-- Certificates
+INSERT INTO certificates (application_id, certificate_title, issuing_entity, issue_date)
+SELECT ba.application_id, 'Certificado ' || ba.application_id, 'Softinsa', CURRENT_DATE
+FROM badge_applications ba
+WHERE NOT EXISTS (SELECT 1 FROM certificates c WHERE c.application_id = ba.application_id)
+LIMIT 1;
+
+-- Goals
+INSERT INTO goals (user_id, badge_id, event_title, event_start_date)
+SELECT c.user_id, b.badge_id, 'Objetivo de Certificação', now()
+FROM consultants c
+CROSS JOIN badges b
+WHERE NOT EXISTS (SELECT 1 FROM goals LIMIT 1)
+LIMIT 1;
+
+-- Skills
+INSERT INTO skills (badge_id, skill_name, skill_description, created_by)
+SELECT b.badge_id, 'Skill ' || b.badge_id, 'Descrição da skill', a.user_id
+FROM badges b
+CROSS JOIN administrators a
+WHERE NOT EXISTS (SELECT 1 FROM skills WHERE skill_name = 'Skill ' || b.badge_id)
+LIMIT 1;
+
+-- Consultants Selected Skills
+INSERT INTO consultants_selected_skills (user_id, skills_id)
+SELECT c.user_id, s.skills_id
+FROM consultants c
+CROSS JOIN skills s
+WHERE NOT EXISTS (SELECT 1 FROM consultants_selected_skills css WHERE css.user_id = c.user_id AND css.skills_id = s.skills_id)
+LIMIT 1;
+
+-- Rewards
+INSERT INTO rewards (badge_id, special_title)
+SELECT b.badge_id, 'Recompensa Especial'
+FROM badges b
+WHERE NOT EXISTS (SELECT 1 FROM rewards r WHERE r.badge_id = b.badge_id)
+LIMIT 1;
+
+-- Notification Definitions
+INSERT INTO notification_definitions (code, name, description, user_id)
+SELECT 'SYS_001', 'Notificação de Sistema', 'Notificações gerais', a.user_id
+FROM administrators a
+WHERE NOT EXISTS (SELECT 1 FROM notification_definitions WHERE code = 'SYS_001')
+LIMIT 1;
+
+-- Notifications
+INSERT INTO notifications (user_id, definition_id, notification_type, notification_payload)
+SELECT u.user_id, nd.definition_id, 'SYSTEM', 'Bem-vindo!'
+FROM users u
+CROSS JOIN notification_definitions nd
+WHERE NOT EXISTS (SELECT 1 FROM notifications n WHERE n.user_id = u.user_id AND n.definition_id = nd.definition_id)
+LIMIT 1;
+
+-- SLAs
+INSERT INTO slas (sla_name, response_time_hours, start_date, end_date, target_profile, created_by)
+SELECT 'SLA Padrão', 48, now(), now() + interval '1 year', 'Consultant', a.user_id
+FROM administrators a
+WHERE NOT EXISTS (SELECT 1 FROM slas WHERE sla_name = 'SLA Padrão')
+LIMIT 1;
+
+-- SL SLAs
+INSERT INTO sl_slas (service_line_id, sla_id)
+SELECT sl.service_line_id, s.sla_id
+FROM service_lines sl
+CROSS JOIN slas s
+WHERE NOT EXISTS (SELECT 1 FROM sl_slas ss WHERE ss.service_line_id = sl.service_line_id AND ss.sla_id = s.sla_id)
+LIMIT 1;
+
+-- System Announcements
+INSERT INTO system_announcements (announcement_title, announcement_message, announcement_type, is_active, created_by)
+SELECT 'Manutenção', 'O sistema estará em manutenção.', 'Warning', TRUE, a.user_id
+FROM administrators a
+WHERE NOT EXISTS (SELECT 1 FROM system_announcements WHERE announcement_title = 'Manutenção')
+LIMIT 1;
+
+-- Announc SL
+INSERT INTO announc_sl (announcement_id, service_line_id)
+SELECT sa.announcement_id, sl.service_line_id
+FROM system_announcements sa
+CROSS JOIN service_lines sl
+WHERE NOT EXISTS (SELECT 1 FROM announc_sl a_sl WHERE a_sl.announcement_id = sa.announcement_id AND a_sl.service_line_id = sl.service_line_id)
+LIMIT 1;
+
+-- Notification Preferences
+INSERT INTO notification_preferences (announcement_id, send_email, send_push, is_enabled, created_by)
+SELECT sa.announcement_id, TRUE, TRUE, TRUE, a.user_id
+FROM system_announcements sa
+CROSS JOIN administrators a
+WHERE NOT EXISTS (SELECT 1 FROM notification_preferences np WHERE np.announcement_id = sa.announcement_id)
+LIMIT 1;
+
+-- User Account Tokens
+INSERT INTO user_account_tokens (user_id, token_value, token_type, expires_at)
+SELECT u.user_id, 'token_xyz_123', 'CONFIRMATION', now() + interval '1 day'
+FROM users u
+WHERE NOT EXISTS (SELECT 1 FROM user_account_tokens t WHERE t.user_id = u.user_id)
+LIMIT 1;
+
+-- User Refresh Tokens
+INSERT INTO user_refresh_tokens (user_id, token_value, expires_at)
+SELECT u.user_id, 'refresh_xyz_123', now() + interval '7 days'
+FROM users u
+WHERE NOT EXISTS (SELECT 1 FROM user_refresh_tokens t WHERE t.user_id = u.user_id)
+LIMIT 1;
+
+-- User Badges Interactions
+INSERT INTO user_badges_interactions (user_id, badge_id, interaction_type)
+SELECT u.user_id, b.badge_id, 'VIEW'
+FROM users u
+CROSS JOIN badges b
+WHERE NOT EXISTS (SELECT 1 FROM user_badges_interactions i WHERE i.user_id = u.user_id AND i.badge_id = b.badge_id AND i.interaction_type = 'VIEW')
+LIMIT 1;

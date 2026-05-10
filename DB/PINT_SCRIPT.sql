@@ -675,8 +675,8 @@ CREATE TABLE IF NOT EXISTS requirements_evidences (
    evidence_title       VARCHAR(150)         NULL,
    evidence_description TEXT                 NULL,
    evidence_file_type   VARCHAR(100)         NULL,
-   tm_reviewed          BOOLEAN                 NULL,
-   sll_reviewed         BOOLEAN                 NULL,
+   tm_reviewed          BOOLEAN              NOT NULL DEFAULT FALSE,
+   sll_reviewed         BOOLEAN              NOT NULL DEFAULT FALSE,
    uploaded_at          TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_requirements_evidences PRIMARY KEY (evidence_id),
