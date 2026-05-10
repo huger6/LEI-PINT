@@ -1,0 +1,83 @@
+import { useState, useEffect } from 'react';
+import { getApplications } from '../../services/applicationService';
+
+const STATE_BADGE_CLASS = {
+	Open: 'bg-secondary',
+	Submitted: 'bg-primary',
+	'In validation': 'bg-warning text-dark',
+	Closed: 'bg-success',
+};
+
+export default function AdminApplications() {
+	const [applications, setApplications] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		loadApplications();
+	}, []);
+
+	async function loadApplications() {
+		try {
+			const data = await getApplications();
+			setApplications(data.data || data || []);
+		} catch (err) {
+			console.error('Erro ao carregar candidaturas:', err);
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	return (
+		<div>
+			<h1 className="h3 mb-4">Candidaturas</h1>
+			<div className="card border-0 shadow-sm">
+				<div className="card-body">
+					{loading ? (
+						<div className="text-center py-5">
+							<div className="spinner-border text-primary" role="status" />
+						</div>
+					) : applications.length === 0 ? (
+						<div className="text-center py-5">
+							<h5 className="text-muted">Sem candidaturas</h5>
+							<p className="text-muted small">Nenhuma candidatura encontrada.</p>
+						</div>
+					) : (
+						<div className="table-responsive">
+							<table className="table table-hover align-middle mb-0">
+								<thead className="table-light">
+									<tr>
+										<th>Badge</th>
+										<th>Utilizador</th>
+										<th>Estado</th>
+										<th>Data Submissão</th>
+									</tr>
+								</thead>
+								<tbody>
+									{applications.map((app) => {
+										const state = app.application_state || app.state;
+										return (
+											<tr key={app.application_guid || app.applicationGuid}>
+												<td>{app.badge?.badge_title || app.badge?.badgeTitle || '—'}</td>
+												<td>{app.user?.user?.full_name || app.user?.fullName || '—'}</td>
+												<td>
+													<span className={`badge ${STATE_BADGE_CLASS[state] || 'bg-secondary'}`}>
+														{state}
+													</span>
+												</td>
+												<td className="text-muted">
+													{app.submitted_at || app.submittedAt
+														? new Date(app.submitted_at || app.submittedAt).toLocaleDateString('pt-PT')
+														: '—'}
+												</td>
+											</tr>
+										);
+										})}
+									</tbody>
+							</table>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+}
