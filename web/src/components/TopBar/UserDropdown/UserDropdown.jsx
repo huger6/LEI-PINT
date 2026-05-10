@@ -86,20 +86,28 @@ export default function UserDropdown() {
                     </Link>
 
                     <div className={styles.menuSection}>
-                        <DropdownOption
-                            icon="email"
-                            iconSize={18}
-                            label="userDropdown.mailSignature"
-                            onClick={() => handleOptionClick('/mail-signature')}
-                            role="menuitem"
-                        />
-                        <DropdownOption
-                            icon="user"
-                            iconSize={18}
-                            label="userDropdown.publicProfile"
-                            onClick={() => handleOptionClick('/public-profile')}
-                            role="menuitem"
-                        />
+                        {
+                            user.role !== 'Administrator' && (
+                                <DropdownOption
+                                    icon="email"
+                                    iconSize={18}
+                                    label="userDropdown.mailSignature"
+                                    onClick={() => handleOptionClick('/mail-signature')}
+                                    role="menuitem"
+                                />
+                            )
+                        }
+                        {
+                            user.role !== 'Administrator' && (
+                                <DropdownOption
+                                    icon="user"
+                                    iconSize={18}
+                                    label="userDropdown.publicProfile"
+                                    onClick={() => handleOptionClick('/public-profile')}
+                                    role="menuitem"
+                                />
+                            )
+                        }
                         <DropdownOption
                             icon="moon"
                             iconSize={18}
