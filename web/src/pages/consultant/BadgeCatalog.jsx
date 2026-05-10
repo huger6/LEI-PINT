@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import { getBadges } from '../../services/badgeService';
 import { getAreas } from '../../services/hierarchyService';
 import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
+import styles from './BadgeCatalog.module.css';
 
 const SORT_OPTIONS = [
 	{ value: 'recent', label: 'Mais recente' },
 	{ value: 'az', label: 'A-Z' },
 	{ value: 'za', label: 'Z-A' },
+	{ value: 'points-desc', label: 'Mais pontos' },
+	{ value: 'points-asc', label: 'Menos pontos' },
 ];
 
 export default function BadgeCatalog() {
@@ -41,6 +44,25 @@ export default function BadgeCatalog() {
 		);
 	}
 
+	function removeAreaFilter(areaId) {
+		setSelectedAreas((prev) => prev.filter((id) => id !== areaId));
+	}
+
+	function clearFilters() {
+		setSelectedAreas([]);
+		setSearch('');
+	}
+
+	// Count badges per area for filter sidebar
+	const badgeCountByArea = useMemo(() => {
+		const counts = {};
+		badges.forEach((b) => {
+			const aId = b.area_id || b.areaId;
+			if (aId) counts[aId] = (counts[aId] || 0) + 1;
+		});
+		return counts;
+	}, [badges]);
+
 	const filtered = useMemo(() => {
 		let result = [...badges];
 
@@ -61,12 +83,22 @@ export default function BadgeCatalog() {
 			result.sort((a, b) => (a.badge_title || a.badgeTitle || '').localeCompare(b.badge_title || b.badgeTitle || ''));
 		} else if (sortBy === 'za') {
 			result.sort((a, b) => (b.badge_title || b.badgeTitle || '').localeCompare(a.badge_title || a.badgeTitle || ''));
+		} else if (sortBy === 'points-desc') {
+			result.sort((a, b) => (b.badge_points || b.badgePoints || 0) - (a.badge_points || a.badgePoints || 0));
+		} else if (sortBy === 'points-asc') {
+			result.sort((a, b) => (a.badge_points || a.badgePoints || 0) - (b.badge_points || b.badgePoints || 0));
 		} else {
 			result.sort((a, b) => (b.badge_id || b.badgeId || 0) - (a.badge_id || a.badgeId || 0));
 		}
 
 		return result;
 	}, [badges, search, selectedAreas, sortBy]);
+
+	// Get area name by id for active filter chips
+	function getAreaName(areaId) {
+		const area = areas.find((a) => (a.area_id || a.areaId) === areaId);
+		return area ? (area.area_name || area.areaName) : areaId;
+	}
 
 	if (loading) return <LoadingScreen />;
 
@@ -78,114 +110,183 @@ export default function BadgeCatalog() {
 		);
 	}
 
+	const hasActiveFilters = selectedAreas.length > 0 || search.trim();
+
 	return (
 		<>
-			<div className="d-flex align-items-center justify-content-between mb-4">
-				<h1 className="h3 mb-0">Catálogo de Badges</h1>
+			{/* Page Header */}
+			<div className={styles.pageHeader}>
+				<h1 className={styles.pageTitle}>Catálogo de Badges</h1>
+				<span className={styles.badgeCount}>
+					<i className="bi bi-award" />
+					{badges.length} badges
+				</span>
 			</div>
 
-			<div className="mb-4">
+			{/* Search Bar */}
+			<div className={styles.searchWrapper}>
+				<i className={`bi bi-search ${styles.searchIcon}`} />
 				<input
 					type="text"
-					className="form-control"
-					placeholder="Pesquisar badges..."
+					className={styles.searchInput}
+					placeholder="Pesquisar por nome, descrição ou competência..."
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
 			</div>
 
-			<div className="row">
-				<div className="col-md-3">
-					<div className="card border-0 shadow-sm mb-3">
-						<div className="card-body">
-							<h6 className="fw-semibold mb-3">Área</h6>
+			{/* Active Filter Chips */}
+			{hasActiveFilters && (
+				<div className={styles.activeFilters}>
+					{selectedAreas.map((areaId) => (
+						<button
+							key={areaId}
+							className={styles.filterChip}
+							onClick={() => removeAreaFilter(areaId)}
+						>
+							{getAreaName(areaId)}
+							<span className={styles.filterChipClose}>×</span>
+						</button>
+					))}
+					{(selectedAreas.length > 1 || (selectedAreas.length >= 1 && search.trim())) && (
+						<button className={styles.clearAll} onClick={clearFilters}>
+							<i className="bi bi-x-circle me-1" style={{ fontSize: '0.7rem' }} />
+							Limpar tudo
+						</button>
+					)}
+				</div>
+			)}
+
+			{/* Main Layout */}
+			<div className={styles.catalogLayout}>
+				{/* Filter Sidebar */}
+				<div className={styles.filterPanel}>
+					{/* Area Filters */}
+					<div className={styles.filterCard}>
+						<div className={styles.filterTitle}>
+							<i className="bi bi-funnel me-1" />
+							Área
+						</div>
+						<div className={styles.filterList}>
 							{areas.map((area) => {
 								const areaId = area.area_id || area.areaId;
+								const areaName = area.area_name || area.areaName;
+								const count = badgeCountByArea[areaId] || 0;
 								return (
-									<div className="form-check mb-2" key={areaId}>
+									<label className={styles.filterItem} key={areaId}>
 										<input
-											className="form-check-input"
+											className={styles.filterCheckbox}
 											type="checkbox"
-											id={`area-${areaId}`}
 											checked={selectedAreas.includes(areaId)}
 											onChange={() => toggleArea(areaId)}
 										/>
-										<label className="form-check-label small" htmlFor={`area-${areaId}`}>
-											{area.area_name || area.areaName}
-										</label>
-									</div>
+										<span className={styles.filterLabel}>{areaName}</span>
+										<span className={styles.filterCount}>{count}</span>
+									</label>
 								);
 							})}
 						</div>
 					</div>
 
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h6 className="fw-semibold mb-3">Ordenar</h6>
-							<select
-								className="form-select"
-								value={sortBy}
-								onChange={(e) => setSortBy(e.target.value)}
-							>
-								{SORT_OPTIONS.map((opt) => (
-									<option key={opt.value} value={opt.value}>{opt.label}</option>
-								))}
-							</select>
+					{/* Sort */}
+					<div className={styles.filterCard}>
+						<div className={styles.filterTitle}>
+							<i className="bi bi-sort-down me-1" />
+							Ordenar
 						</div>
+						<select
+							className={styles.filterSelect}
+							value={sortBy}
+							onChange={(e) => setSortBy(e.target.value)}
+						>
+							{SORT_OPTIONS.map((opt) => (
+								<option key={opt.value} value={opt.value}>{opt.label}</option>
+							))}
+						</select>
 					</div>
 				</div>
 
-				<div className="col-md-9">
+				{/* Badge Grid */}
+				<div>
+					{/* Results bar */}
+					<div className={styles.resultsBar}>
+						<span className={styles.resultsCount}>
+							{filtered.length === badges.length ? (
+								<>A mostrar <strong>todos os {badges.length}</strong> badges</>
+							) : (
+								<><strong>{filtered.length}</strong> de {badges.length} badges</>
+							)}
+						</span>
+					</div>
+
 					{filtered.length === 0 ? (
-						<div className="text-center py-5">
-							<h5 className="text-muted">Nenhum badge encontrado</h5>
-							<p className="text-muted small">Tente ajustar os filtros ou a pesquisa.</p>
+						<div className={styles.emptyState}>
+							<div className={styles.emptyIcon}>
+								<i className="bi bi-search" />
+							</div>
+							<h5 className={styles.emptyTitle}>Nenhum badge encontrado</h5>
+							<p className={styles.emptySubtitle}>
+								Tente ajustar os filtros ou a pesquisa.
+							</p>
 						</div>
 					) : (
-						<div className="row g-3">
-							{filtered.map((badge) => (
-								<div className="col-md-6 col-lg-4" key={badge.badge_slug || badge.badgeSlug}>
+						<div className={styles.badgeGrid}>
+							{filtered.map((badge, index) => {
+								const title = badge.badge_title || badge.badgeTitle;
+								const description = badge.badge_description || badge.badgeDescription || 'Sem descrição';
+								const imgUrl = badge.badge_img_url || badge.badgeImgUrl;
+								const points = badge.badge_points || badge.badgePoints;
+								const areaName = badge.area?.area_name || badge.area?.areaName;
+								const slug = badge.badge_slug || badge.badgeSlug;
+
+								return (
 									<Link
-										to={`/badges/${badge.badge_slug || badge.badgeSlug}`}
+										to={`/badges/${slug}`}
+										key={slug}
 										className="text-decoration-none"
 										style={{ color: 'inherit' }}
 									>
-										<div className="card h-100 border-0 shadow-sm" style={{ transition: 'transform 0.2s' }}>
-											<div className="card-body">
-												<div
-													className="d-flex align-items-center justify-content-center rounded mb-3"
-													style={{
-														height: 120,
-														background: 'var(--color-surface-variant)',
-													}}
-												>
-													{badge.badge_img_url || badge.badgeImgUrl ? (
-														<img
-															src={badge.badge_img_url || badge.badgeImgUrl}
-															alt={badge.badge_title || badge.badgeTitle}
-															style={{ maxHeight: 100, objectFit: 'contain' }}
-														/>
-													) : (
-														<i className="bi bi-award fs-1 text-muted" />
+										<div
+											className={styles.badgeCard}
+											style={{ animationDelay: `${Math.min(index * 50, 450)}ms` }}
+										>
+											{/* Image / Icon Area */}
+											<div className={styles.cardImageArea}>
+												{imgUrl ? (
+													<img
+														src={imgUrl}
+														alt={title}
+														className={styles.badgeImage}
+													/>
+												) : (
+													<i className={`bi bi-award ${styles.badgePlaceholderIcon}`} />
+												)}
+											</div>
+
+											{/* Card Body */}
+											<div className={styles.cardBody}>
+												<h6 className={styles.cardTitle}>{title}</h6>
+												<p className={styles.cardDescription}>{description}</p>
+
+												{/* Tags */}
+												<div className={styles.cardTags}>
+													{areaName && (
+														<span className={styles.tagArea}>
+															{areaName}
+														</span>
 													)}
-												</div>
-												<h6 className="fw-semibold mb-2">{badge.badge_title || badge.badgeTitle}</h6>
-												<p className="text-muted small mb-3" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-													{badge.badge_description || badge.badgeDescription || 'Sem descrição'}
-												</p>
-												<div className="d-flex flex-wrap gap-1">
-													{badge.area?.area_name && (
-														<span className="badge bg-info">{badge.area.area_name}</span>
-													)}
-													{(badge.badge_points || badge.badgePoints) != null && (
-														<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} pts</span>
+													{points != null && (
+														<span className={styles.tagPoints}>
+															<i className="bi bi-star-fill" />
+															{points} pts
+														</span>
 													)}
 												</div>
 											</div>
 										</div>
 									</Link>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					)}
 				</div>

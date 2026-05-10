@@ -1,6 +1,6 @@
 :root {
 	--font-body: 'Inter', 'Roboto', system-ui, sans-serif;
-	--font-heading: 'Playfair Display', 'Inter', system-ui, serif;
+	--font-heading: 'Inter', 'Roboto', system-ui, sans-serif;
 
 	--color-primary: #00B8E0;
 	--color-on-primary: #FFFFFF;
@@ -26,6 +26,7 @@
 	--color-success: #04CE00;
 	--color-warning: #CFA600;
 	--color-badge-premium: #FFCC00;
+	--color-success-container: rgba(4, 206, 0, 0.10);
 
 	--color-primary-hover-solid: #009fc4;
 	--color-secondary-container-hover: #bcd8e8;
