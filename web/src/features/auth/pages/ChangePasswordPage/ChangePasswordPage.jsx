@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth, changePassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
@@ -134,3 +134,4 @@ export default function ChangePasswordPage() {
 		</AuthLayout>
 	);
 }
+

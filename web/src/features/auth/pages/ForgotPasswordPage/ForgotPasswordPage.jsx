@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
@@ -99,3 +99,4 @@ export default function ForgotPasswordPage() {
 		</AuthLayout>
 	);
 }
+

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, register } from '../..';
 import api from '../../../../services/api.js';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -912,3 +912,4 @@ export default function RegisterPage() {
 		</AuthLayout>
 	);
 }
+

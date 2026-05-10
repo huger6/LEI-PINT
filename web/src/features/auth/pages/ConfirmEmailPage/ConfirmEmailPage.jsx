@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, confirmEmail, StatusPanel } from '../..';
 import FormButton from '../../../../components/FormButton/FormButton';
 import { resolveErrorMessage } from '../../../../validations';
@@ -76,3 +76,4 @@ export default function ConfirmEmailPage() {
 		</AuthLayout>
 	);
 }
+

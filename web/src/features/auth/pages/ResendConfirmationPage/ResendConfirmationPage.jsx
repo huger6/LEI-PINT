@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
@@ -111,3 +111,4 @@ export default function ResendConfirmationPage() {
 		</AuthLayout>
 	);
 }
+

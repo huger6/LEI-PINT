@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '../../../../layouts/AuthLayout/AuthLayout';
+import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
@@ -161,3 +161,4 @@ export default function ResetPasswordPage() {
 		</AuthLayout>
 	);
 }
+
