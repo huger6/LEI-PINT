@@ -366,5 +366,205 @@
 			"hours": "{{count}}h ago",
 			"days": "{{count}}d ago"
 		}
+	},
+	"shared": {
+		"yes": "Yes",
+		"no": "No",
+		"active": "Active",
+		"inactive": "Inactive",
+		"actions": "Actions",
+		"cancel": "Cancel",
+		"save": "Save",
+		"create": "Create",
+		"edit": "Edit",
+		"delete": "Delete",
+		"select": "Select...",
+		"name": "Name",
+		"title": "Title",
+		"description": "Description",
+		"slug": "Slug",
+		"type": "Type",
+		"points": "Points",
+		"area": "Area",
+		"code": "Code",
+		"sequence": "Sequence",
+		"email": "Email",
+		"username": "Username",
+		"password": "Password",
+		"role": "Role",
+		"search": "Search",
+		"sort": "Sort",
+		"back": "Back",
+		"all": "All",
+		"error": "Error",
+		"noDescription": "No description.",
+		"loading": "Loading",
+		"viewAll": "View all",
+		"viewDetails": "View Details",
+		"quickActions": "Quick Actions",
+		"confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
+		"confirmDeactivate": "Are you sure you want to deactivate \"{{name}}\"?",
+		"noResults": "No results found.",
+		"badge": "Badge",
+		"state": "State",
+		"submissionDate": "Submission Date",
+		"date": "Date",
+		"user": "User"
+	},
+	"adminDashboard": {
+		"title": "Administration Panel",
+		"welcome": "Welcome, <strong>{{name}}</strong>",
+		"totalUsers": "Total Users",
+		"totalBadges": "Total Badges",
+		"totalApplications": "Total Applications",
+		"learningPaths": "Learning Paths",
+		"users": "Users",
+		"badges": "Badges",
+		"serviceLines": "Service Lines",
+		"areas": "Areas"
+	},
+	"adminUsers": {
+		"title": "Users",
+		"newUser": "New User",
+		"editUser": "Edit User",
+		"filterByRole": "Filter by role:",
+		"noUsers": "No users",
+		"noUsersDesc": "No users found.",
+		"fullName": "Full Name"
+	},
+	"adminBadges": {
+		"title": "Badges",
+		"newBadge": "New Badge",
+		"editBadge": "Edit Badge",
+		"noBadges": "No badges",
+		"noBadgesDesc": "No badges found.",
+		"progressionStageId": "Progression Stage (ID)"
+	},
+	"adminAreas": {
+		"title": "Areas",
+		"newArea": "New Area",
+		"editArea": "Edit Area",
+		"noAreas": "No areas",
+		"noAreasDesc": "No areas found.",
+		"serviceLine": "Service Line"
+	},
+	"adminServiceLines": {
+		"title": "Service Lines",
+		"newServiceLine": "New Service Line",
+		"editServiceLine": "Edit Service Line",
+		"noServiceLines": "No service lines",
+		"noServiceLinesDesc": "No service lines found.",
+		"learningPath": "Learning Path"
+	},
+	"adminLearningPaths": {
+		"title": "Learning Paths",
+		"newLearningPath": "New Learning Path",
+		"editLearningPath": "Edit Learning Path",
+		"noLearningPaths": "No learning paths",
+		"noLearningPathsDesc": "No learning paths found."
+	},
+	"adminLevels": {
+		"title": "Progression Levels",
+		"newLevel": "New Level",
+		"editLevel": "Edit Level",
+		"noLevels": "No levels",
+		"noLevelsDesc": "No progression levels found.",
+		"levelCode": "Level Code"
+	},
+	"adminRequirements": {
+		"title": "Badge Requirements",
+		"selectBadge": "Select Badge",
+		"chooseBadge": "Choose badge...",
+		"requirements": "Requirements: {{name}}",
+		"noRequirements": "This badge has no defined requirements."
+	},
+	"adminStructure": {
+		"title": "Manage Structure",
+		"learningPathsDesc": "Professional progression paths",
+		"serviceLinesDesc": "Organization service lines",
+		"areasDesc": "Specialization areas",
+		"levelsDesc": "Professional progression stages"
+	},
+	"adminApplications": {
+		"title": "Applications",
+		"noApplications": "No applications",
+		"noApplicationsDesc": "No applications found."
+	},
+	"consultantDashboard": {
+		"totalApplications": "Total Applications",
+		"open": "Open",
+		"submitted": "Submitted",
+		"completed": "Completed",
+		"recentApplications": "Recent Applications",
+		"noApplications": "You have no applications yet.",
+		"exploreCatalog": "Explore Catalog",
+		"myApplications": "My Applications"
+	},
+	"badgeCatalog": {
+		"title": "Badge Catalog",
+		"searchPlaceholder": "Search badges...",
+		"noBadges": "No badges found",
+		"noBadgesDesc": "Try adjusting the filters or search.",
+		"noDescription": "No description",
+		"sortRecent": "Most recent",
+		"sortAZ": "A-Z",
+		"sortZA": "Z-A",
+		"errorLoading": "Error loading badges: {{error}}"
+	},
+	"badgeDetail": {
+		"notFound": "Badge not found",
+		"backToCatalog": "Back to catalog",
+		"catalog": "Catalog",
+		"noDescription": "No description available.",
+		"pointsLabel": "points",
+		"requirements": "Requirements",
+		"noRequirements": "No requirements defined for this badge.",
+		"requirementN": "Requirement {{n}}",
+		"application": "Application",
+		"alreadyApplied": "Already applied",
+		"applyNow": "Apply now",
+		"backToCatalogBtn": "Back to Catalog"
+	},
+	"browseHierarchy": {
+		"learningPaths": "Learning Paths",
+		"serviceLines": "Service Lines",
+		"areas": "Areas",
+		"levels": "Levels",
+		"badges": "Badges",
+		"details": "Details",
+		"noItems": "No items",
+		"noItemsDesc": "No {{step}} found."
+	},
+	"myApplications": {
+		"title": "My Applications",
+		"noApplications": "No applications",
+		"noApplicationsDesc": "You haven't applied to any badge yet.",
+		"viewDetails": "View details",
+		"errorLoading": "Error loading applications: {{error}}"
+	},
+	"applicationDetail": {
+		"applications": "Applications",
+		"notFound": "Application not found",
+		"backToApplications": "Back to applications",
+		"badgeInfo": "Badge Information",
+		"requirementsAndEvidences": "Requirements and Evidences",
+		"noRequirements": "No requirements defined.",
+		"requirementN": "Requirement {{n}}",
+		"submitted": "Submitted",
+		"pending": "Pending",
+		"evidenceUrlPlaceholder": "Evidence file URL",
+		"saving": "Saving...",
+		"submitApplication": "Submit Application"
+	},
+	"notFound": {
+		"title": "Page not found",
+		"description": "The page you are looking for does not exist or has been moved.",
+		"backHome": "Back to Home"
+	},
+	"errorBoundary": {
+		"title": "Oops!",
+		"subtitle": "Something went wrong",
+		"description": "An unexpected error occurred. Please try reloading the page.",
+		"reload": "Reload Page"
 	}
 }

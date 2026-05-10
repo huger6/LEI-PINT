@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../services/hierarchyService';
-import { getBadges } from '../../services/badgeService';
+import { useTranslation } from 'react-i18next';
+import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../services/hierarchyService';
+import { getBadges } from '../../../services/badgeService';
 
 export default function BrowseHierarchy() {
+	const { t } = useTranslation();
 	const [step, setStep] = useState('lp');
 	const [selection, setSelection] = useState({});
 	const [items, setItems] = useState([]);
@@ -38,7 +40,7 @@ export default function BrowseHierarchy() {
 			}
 			setItems(data || []);
 		} catch (err) {
-			console.error('Erro ao carregar:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -110,12 +112,12 @@ export default function BrowseHierarchy() {
 	}
 
 	const stepLabels = {
-		lp: 'Learning Paths',
-		sl: 'Service Lines',
-		area: 'Áreas',
-		level: 'Níveis',
-		badge: 'Badges',
-		detail: 'Detalhes',
+		lp: t('browseHierarchy.learningPaths'),
+		sl: t('browseHierarchy.serviceLines'),
+		area: t('browseHierarchy.areas'),
+		level: t('browseHierarchy.levels'),
+		badge: t('browseHierarchy.badges'),
+		detail: t('browseHierarchy.details'),
 	};
 
 	if (step === 'detail' && selection.badgeSlug) {
@@ -123,7 +125,7 @@ export default function BrowseHierarchy() {
 			<div>
 				<nav aria-label="breadcrumb" className="mb-3">
 					<ol className="breadcrumb">
-						<li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>Learning Paths</button></li>
+						<li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>{t('browseHierarchy.learningPaths')}</button></li>
 						{selection.learningPathName && <li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('sl')}>{selection.learningPathName}</button></li>}
 						{selection.serviceLineName && <li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('area')}>{selection.serviceLineName}</button></li>}
 						{selection.areaName && <li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('level')}>{selection.areaName}</button></li>}
@@ -134,7 +136,7 @@ export default function BrowseHierarchy() {
 				<div className="d-flex align-items-center gap-3 mb-4">
 					<h1 className="h3 mb-0">{selection.badgeName}</h1>
 					<Link to={`/badges/${selection.badgeSlug}`} className="btn btn-primary btn-sm">
-						Ver Detalhes
+						{t('shared.viewDetails')}
 					</Link>
 				</div>
 			</div>
@@ -146,7 +148,7 @@ export default function BrowseHierarchy() {
 			<nav aria-label="breadcrumb" className="mb-3">
 				<ol className="breadcrumb">
 					<li className={`breadcrumb-item ${step === 'lp' ? 'active' : ''}`}>
-						{step === 'lp' ? 'Learning Paths' : <button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>Learning Paths</button>}
+						{step === 'lp' ? t('browseHierarchy.learningPaths') : <button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>{t('browseHierarchy.learningPaths')}</button>}
 					</li>
 					{selection.learningPathName && (
 						<li className={`breadcrumb-item ${step === 'sl' ? 'active' : ''}`}>
@@ -177,13 +179,13 @@ export default function BrowseHierarchy() {
 				<div className="card-body">
 					{loading && (
 						<div className="text-center py-5">
-							<div className="spinner-border text-primary" aria-label="A carregar" />
+							<div className="spinner-border text-primary" aria-label={t('shared.loading')} />
 						</div>
 					)}
 					{!loading && items.length === 0 && (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem itens</h5>
-							<p className="text-muted small">Nenhum {stepLabels[step].toLowerCase()} encontrado.</p>
+							<h5 className="text-muted">{t('browseHierarchy.noItems')}</h5>
+							<p className="text-muted small">{t('browseHierarchy.noItemsDesc', { step: stepLabels[step].toLowerCase() })}</p>
 						</div>
 					)}
 					{!loading && items.length > 0 && (

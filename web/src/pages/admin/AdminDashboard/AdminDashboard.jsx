@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useUser } from '../../hooks/userContext';
-import { getUsers } from '../../services/adminService';
-import { getBadges } from '../../services/badgeService';
-import { getLearningPaths } from '../../services/hierarchyService';
-import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
+import { useTranslation } from 'react-i18next';
+import { useUser } from '../../../hooks/userContext';
+import { getUsers } from '../../../services/adminService';
+import { getBadges } from '../../../services/badgeService';
+import { getLearningPaths } from '../../../services/hierarchyService';
+import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 
 export default function AdminDashboard() {
+	const { t } = useTranslation();
 	const { user } = useUser();
 	const [stats, setStats] = useState({ users: 0, badges: 0, applications: 0, learningPaths: 0 });
 	const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ export default function AdminDashboard() {
 					learningPaths: paths.pagination?.total || paths.length || 0,
 				});
 			} catch (err) {
-				console.error('Erro ao carregar estatísticas:', err);
+				console.error(err);
 			} finally {
 				setLoading(false);
 			}
@@ -35,26 +37,26 @@ export default function AdminDashboard() {
 	}, []);
 
 	const cards = [
-		{ label: 'Total Utilizadores', value: stats.users, icon: 'people', link: '/users' },
-		{ label: 'Total Badges', value: stats.badges, icon: 'award', link: '/badges' },
-		{ label: 'Total Candidaturas', value: stats.applications, icon: 'file-earmark-text', link: '/applications' },
-		{ label: 'Learning Paths', value: stats.learningPaths, icon: 'signpost', link: '/structure' },
+		{ label: t('adminDashboard.totalUsers'), value: stats.users, icon: 'people', link: '/users' },
+		{ label: t('adminDashboard.totalBadges'), value: stats.badges, icon: 'award', link: '/badges' },
+		{ label: t('adminDashboard.totalApplications'), value: stats.applications, icon: 'file-earmark-text', link: '/applications' },
+		{ label: t('adminDashboard.learningPaths'), value: stats.learningPaths, icon: 'signpost', link: '/structure' },
 	];
 
 	const quickLinks = [
-		{ label: 'Utilizadores', path: '/users' },
-		{ label: 'Badges', path: '/badges' },
-		{ label: 'Service Lines', path: '/structure' },
-		{ label: 'Áreas', path: '/structure' },
+		{ label: t('adminDashboard.users'), path: '/users' },
+		{ label: t('adminDashboard.badges'), path: '/badges' },
+		{ label: t('adminDashboard.serviceLines'), path: '/structure' },
+		{ label: t('adminDashboard.areas'), path: '/structure' },
 	];
 
 	if (loading) return <LoadingScreen />;
 
 	return (
 		<div>
-			<h1 className="h3 mb-2">Painel de Administração</h1>
+			<h1 className="h3 mb-2">{t('adminDashboard.title')}</h1>
 			<p className="text-muted mb-4">
-				Bem-vindo, <strong>{user?.fullName}</strong>
+				{t('adminDashboard.welcome', { name: user?.fullName })}
 			</p>
 
 			<div className="row g-3 mb-4">
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
 
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
-					<h5 className="card-title fw-semibold mb-3">Ações Rápidas</h5>
+					<h5 className="card-title fw-semibold mb-3">{t('shared.quickActions')}</h5>
 					<div className="d-flex flex-wrap gap-2">
 						{quickLinks.map((link) => (
 							<Link key={link.path} to={link.path} className="btn btn-outline-primary">

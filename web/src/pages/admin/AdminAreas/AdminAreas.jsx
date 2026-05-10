@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getAreas, createArea, updateArea, deleteArea, getServiceLines } from '../../services/hierarchyService';
-import Modal from '../../components/Modal/Modal';
-import FormButton from '../../components/FormButton/FormButton';
-import FormInput from '../../components/FormInput/FormInput';
+import { useTranslation } from 'react-i18next';
+import { getAreas, createArea, updateArea, deleteArea, getServiceLines } from '../../../services/hierarchyService';
+import Modal from '../../../components/Modal/Modal';
+import FormButton from '../../../components/FormButton/FormButton';
+import FormInput from '../../../components/FormInput/FormInput';
 
 const emptyForm = {
 	areaName: '',
@@ -12,6 +13,7 @@ const emptyForm = {
 };
 
 export default function AdminAreas() {
+	const { t } = useTranslation();
 	const [areas, setAreas] = useState([]);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function AdminAreas() {
 			setAreas(areaData.data || areaData || []);
 			setServiceLines(slData.data || slData || []);
 		} catch (err) {
-			console.error('Erro ao carregar áreas:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -60,12 +62,12 @@ export default function AdminAreas() {
 	}
 
 	async function handleDelete(item) {
-		if (!window.confirm(`Tem certeza que deseja eliminar "${item.area_name || item.areaName}"?`)) return;
+		if (!window.confirm(t('shared.confirmDelete', { name: item.area_name || item.areaName }))) return;
 		try {
 			await deleteArea(item.area_slug || item.areaSlug);
 			setAreas((prev) => prev.filter((a) => a.area_slug !== item.area_slug));
 		} catch (err) {
-			console.error('Erro ao eliminar área:', err);
+			console.error(err);
 		}
 	}
 
@@ -82,7 +84,7 @@ export default function AdminAreas() {
 			}
 			setShowModal(false);
 		} catch (err) {
-			console.error('Erro ao guardar área:', err);
+			console.error(err);
 		} finally {
 			setSaving(false);
 		}
@@ -96,9 +98,9 @@ export default function AdminAreas() {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">Áreas</h1>
+				<h1 className="h3 mb-0">{t('adminAreas.title')}</h1>
 				<FormButton variant="primary" onClick={openCreate} className="w-auto">
-					Nova Área
+					{t('adminAreas.newArea')}
 				</FormButton>
 			</div>
 
@@ -110,19 +112,19 @@ export default function AdminAreas() {
 						</div>
 					) : areas.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem áreas</h5>
-							<p className="text-muted small">Nenhuma área encontrada.</p>
+							<h5 className="text-muted">{t('adminAreas.noAreas')}</h5>
+							<p className="text-muted small">{t('adminAreas.noAreasDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Nome</th>
-										<th>Service Line</th>
-										<th>Slug</th>
-										<th>Ativo</th>
-										<th className="text-end">Ações</th>
+										<th>{t('shared.name')}</th>
+										<th>{t('adminAreas.serviceLine')}</th>
+										<th>{t('shared.slug')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -133,7 +135,7 @@ export default function AdminAreas() {
 											<td className="text-muted">{a.area_slug || a.areaSlug || '—'}</td>
 											<td>
 												<span className={`badge ${a.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{a.is_active ? 'Sim' : 'Não'}
+													{a.is_active ? t('shared.yes') : t('shared.no')}
 												</span>
 											</td>
 											<td className="text-end">
@@ -155,29 +157,29 @@ export default function AdminAreas() {
 
 			{showModal && (
 				<Modal
-					title={editItem ? 'Editar Área' : 'Nova Área'}
+					title={editItem ? t('adminAreas.editArea') : t('adminAreas.newArea')}
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
 							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
-								Cancelar
+								{t('shared.cancel')}
 							</FormButton>
 							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
-								{editItem ? 'Guardar' : 'Criar'}
+								{editItem ? t('shared.save') : t('shared.create')}
 							</FormButton>
 						</>
 					}
 				>
 					<form id="area-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
 						<FormInput
-							label="Nome"
+							label={t('shared.name')}
 							name="areaName"
 							value={form.areaName}
 							onChange={handleChange}
 							required
 						/>
 						<div>
-							<label htmlFor="area_sl" className="form-label">Service Line</label>
+							<label htmlFor="area_sl" className="form-label">{t('adminAreas.serviceLine')}</label>
 							<select
 								id="area_sl"
 								className="form-select"
@@ -186,7 +188,7 @@ export default function AdminAreas() {
 								onChange={handleChange}
 								required
 							>
-								<option value="">Selecionar...</option>
+								<option value="">{t('shared.select')}</option>
 								{serviceLines.map((sl) => (
 									<option key={sl.sl_slug || sl.slSlug} value={sl.service_line_id || sl.serviceLineId}>
 										{sl.service_line_name || sl.serviceLineName}
@@ -195,7 +197,7 @@ export default function AdminAreas() {
 							</select>
 						</div>
 						<div>
-							<label htmlFor="area_desc" className="form-label">Descrição</label>
+							<label htmlFor="area_desc" className="form-label">{t('shared.description')}</label>
 							<textarea
 								id="area_desc"
 								className="form-control"
@@ -214,7 +216,7 @@ export default function AdminAreas() {
 								checked={form.isActive}
 								onChange={handleChange}
 							/>
-							<label className="form-check-label" htmlFor="area_active">Ativo</label>
+							<label className="form-check-label" htmlFor="area_active">{t('shared.active')}</label>
 						</div>
 					</form>
 				</Modal>

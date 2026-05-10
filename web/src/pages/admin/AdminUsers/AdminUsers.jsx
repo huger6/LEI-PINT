@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getUsers, createUser, updateUser, deactivateUser } from '../../services/adminService';
-import Modal from '../../components/Modal/Modal';
-import FormButton from '../../components/FormButton/FormButton';
-import FormInput from '../../components/FormInput/FormInput';
+import { useTranslation } from 'react-i18next';
+import { getUsers, createUser, updateUser, deactivateUser } from '../../../services/adminService';
+import Modal from '../../../components/Modal/Modal';
+import FormButton from '../../../components/FormButton/FormButton';
+import FormInput from '../../../components/FormInput/FormInput';
+import styles from './AdminUsers.module.css';
 
 const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
 
@@ -16,6 +18,7 @@ const emptyForm = {
 };
 
 export default function AdminUsers() {
+	const { t } = useTranslation();
 	const [users, setUsers] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [roleFilter, setRoleFilter] = useState('');
@@ -34,7 +37,7 @@ export default function AdminUsers() {
 			const data = await getUsers();
 			setUsers(data.data || data || []);
 		} catch (err) {
-			console.error('Erro ao carregar utilizadores:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -59,12 +62,12 @@ export default function AdminUsers() {
 	}
 
 	async function handleDelete(user) {
-		if (!window.confirm(`Tem certeza que deseja desativar "${user.full_name || user.fullName}"?`)) return;
+		if (!window.confirm(t('shared.confirmDeactivate', { name: user.full_name || user.fullName }))) return;
 		try {
 			await deactivateUser(user.user_guid || user.userGuid);
 			setUsers((prev) => prev.filter((u) => u.user_guid !== user.user_guid));
 		} catch (err) {
-			console.error('Erro ao desativar utilizador:', err);
+			console.error(err);
 		}
 	}
 
@@ -81,7 +84,7 @@ export default function AdminUsers() {
 			}
 			setShowModal(false);
 		} catch (err) {
-			console.error('Erro ao guardar utilizador:', err);
+			console.error(err);
 		} finally {
 			setSaving(false);
 		}
@@ -97,23 +100,22 @@ export default function AdminUsers() {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">Utilizadores</h1>
+				<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
 				<FormButton variant="primary" onClick={openCreate} className="w-auto">
-					Novo Utilizador
+					{t('adminUsers.newUser')}
 				</FormButton>
 			</div>
 
 			<div className="card border-0 shadow-sm mb-3">
 				<div className="card-body d-flex align-items-center gap-3">
-					<label htmlFor="role_filter" className="form-label mb-0 text-nowrap small">Filtrar por role:</label>
+					<label htmlFor="role_filter" className="form-label mb-0 text-nowrap small">{t('adminUsers.filterByRole')}</label>
 					<select
 						id="role_filter"
-						className="form-select form-select-sm"
-						style={{ maxWidth: 220 }}
+						className={`form-select form-select-sm ${styles.roleFilter}`}
 						value={roleFilter}
 						onChange={(e) => setRoleFilter(e.target.value)}
 					>
-						<option value="">Todos</option>
+						<option value="">{t('shared.all')}</option>
 						{ROLES.map((r) => (
 							<option key={r} value={r}>{r}</option>
 						))}
@@ -129,20 +131,20 @@ export default function AdminUsers() {
 						</div>
 					) : filtered.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem utilizadores</h5>
-							<p className="text-muted small">Nenhum utilizador encontrado.</p>
+							<h5 className="text-muted">{t('adminUsers.noUsers')}</h5>
+							<p className="text-muted small">{t('adminUsers.noUsersDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Nome</th>
-										<th>Username</th>
-										<th>Email</th>
-										<th>Role</th>
-										<th>Ativo</th>
-										<th className="text-end">Ações</th>
+										<th>{t('shared.name')}</th>
+										<th>{t('shared.username')}</th>
+										<th>{t('shared.email')}</th>
+										<th>{t('shared.role')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -156,7 +158,7 @@ export default function AdminUsers() {
 											</td>
 											<td>
 												<span className={`badge ${u.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{u.is_active ? 'Sim' : 'Não'}
+													{u.is_active ? t('shared.yes') : t('shared.no')}
 												</span>
 											</td>
 											<td className="text-end">
@@ -178,36 +180,36 @@ export default function AdminUsers() {
 
 			{showModal && (
 				<Modal
-					title={editItem ? 'Editar Utilizador' : 'Novo Utilizador'}
+					title={editItem ? t('adminUsers.editUser') : t('adminUsers.newUser')}
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
 							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
-								Cancelar
+								{t('shared.cancel')}
 							</FormButton>
 							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
-								{editItem ? 'Guardar' : 'Criar'}
+								{editItem ? t('shared.save') : t('shared.create')}
 							</FormButton>
 						</>
 					}
 				>
 					<form id="user-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
 						<FormInput
-							label="Nome Completo"
+							label={t('adminUsers.fullName')}
 							name="fullName"
 							value={form.fullName}
 							onChange={handleChange}
 							required
 						/>
 						<FormInput
-							label="Username"
+							label={t('shared.username')}
 							name="username"
 							value={form.username}
 							onChange={handleChange}
 							required
 						/>
 						<FormInput
-							label="Email"
+							label={t('shared.email')}
 							name="emailAddress"
 							type="email"
 							value={form.emailAddress}
@@ -216,7 +218,7 @@ export default function AdminUsers() {
 						/>
 						{!editItem && (
 							<FormInput
-								label="Password"
+								label={t('shared.password')}
 								name="password"
 								type="password"
 								value={form.password}
@@ -225,7 +227,7 @@ export default function AdminUsers() {
 							/>
 						)}
 						<div>
-							<label htmlFor="user_role" className="form-label">Role</label>
+							<label htmlFor="user_role" className="form-label">{t('shared.role')}</label>
 							<select
 								id="user_role"
 								className="form-select"
@@ -247,7 +249,7 @@ export default function AdminUsers() {
 								checked={form.isActive}
 								onChange={handleChange}
 							/>
-							<label className="form-check-label" htmlFor="isactive">Ativo</label>
+							<label className="form-check-label" htmlFor="isactive">{t('shared.active')}</label>
 						</div>
 					</form>
 				</Modal>

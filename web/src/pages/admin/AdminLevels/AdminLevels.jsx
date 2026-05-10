@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getLevels, createLevel, updateLevel, deleteLevel, getAreas } from '../../services/hierarchyService';
-import Modal from '../../components/Modal/Modal';
-import FormButton from '../../components/FormButton/FormButton';
-import FormInput from '../../components/FormInput/FormInput';
+import { useTranslation } from 'react-i18next';
+import { getLevels, createLevel, updateLevel, deleteLevel, getAreas } from '../../../services/hierarchyService';
+import Modal from '../../../components/Modal/Modal';
+import FormButton from '../../../components/FormButton/FormButton';
+import FormInput from '../../../components/FormInput/FormInput';
 
 const emptyForm = {
 	stageCode: '',
@@ -14,6 +15,7 @@ const emptyForm = {
 };
 
 export default function AdminLevels() {
+	const { t } = useTranslation();
 	const [levels, setLevels] = useState([]);
 	const [areas, setAreas] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function AdminLevels() {
 			setLevels(levelData.data || levelData || []);
 			setAreas(areaData.data || areaData || []);
 		} catch (err) {
-			console.error('Erro ao carregar níveis:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -65,12 +67,12 @@ export default function AdminLevels() {
 
 	async function handleDelete(item) {
 		const code = item.stage_code?.stage_code || item.stageCode;
-		if (!window.confirm(`Tem certeza que deseja eliminar o nível "${code}"?`)) return;
+		if (!window.confirm(t('shared.confirmDelete', { name: code }))) return;
 		try {
 			await deleteLevel(code);
 			setLevels((prev) => prev.filter((l) => (l.stage_code?.stage_code || l.stageCode) !== code));
 		} catch (err) {
-			console.error('Erro ao eliminar nível:', err);
+			console.error(err);
 		}
 	}
 
@@ -93,7 +95,7 @@ export default function AdminLevels() {
 			}
 			setShowModal(false);
 		} catch (err) {
-			console.error('Erro ao guardar nível:', err);
+			console.error(err);
 		} finally {
 			setSaving(false);
 		}
@@ -107,9 +109,9 @@ export default function AdminLevels() {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">Níveis de Progressão</h1>
+				<h1 className="h3 mb-0">{t('adminLevels.title')}</h1>
 				<FormButton variant="primary" onClick={openCreate} className="w-auto">
-					Novo Nível
+					{t('adminLevels.newLevel')}
 				</FormButton>
 			</div>
 
@@ -121,20 +123,20 @@ export default function AdminLevels() {
 						</div>
 					) : levels.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem níveis</h5>
-							<p className="text-muted small">Nenhum nível de progressão encontrado.</p>
+							<h5 className="text-muted">{t('adminLevels.noLevels')}</h5>
+							<p className="text-muted small">{t('adminLevels.noLevelsDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Código</th>
-										<th>Título</th>
-										<th>Área</th>
-										<th>Sequência</th>
-										<th>Ativo</th>
-										<th className="text-end">Ações</th>
+										<th>{t('shared.code')}</th>
+										<th>{t('shared.title')}</th>
+										<th>{t('shared.area')}</th>
+										<th>{t('shared.sequence')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -146,7 +148,7 @@ export default function AdminLevels() {
 											<td>{l.stage_sequence ?? l.stageSequence ?? '—'}</td>
 											<td>
 												<span className={`badge ${l.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{l.is_active ? 'Sim' : 'Não'}
+													{l.is_active ? t('shared.yes') : t('shared.no')}
 												</span>
 											</td>
 											<td className="text-end">
@@ -168,22 +170,22 @@ export default function AdminLevels() {
 
 			{showModal && (
 				<Modal
-					title={editItem ? 'Editar Nível' : 'Novo Nível'}
+					title={editItem ? t('adminLevels.editLevel') : t('adminLevels.newLevel')}
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
 							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
-								Cancelar
+								{t('shared.cancel')}
 							</FormButton>
 							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
-								{editItem ? 'Guardar' : 'Criar'}
+								{editItem ? t('shared.save') : t('shared.create')}
 							</FormButton>
 						</>
 					}
 				>
 					<form id="level-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
 						<FormInput
-							label="Código do Nível"
+							label={t('adminLevels.levelCode')}
 							name="stageCode"
 							value={form.stageCode}
 							onChange={handleChange}
@@ -191,14 +193,14 @@ export default function AdminLevels() {
 							disabled={!!editItem}
 						/>
 						<FormInput
-							label="Título"
+							label={t('shared.title')}
 							name="stageTitle"
 							value={form.stageTitle}
 							onChange={handleChange}
 							required
 						/>
 						<div>
-							<label htmlFor="level_area" className="form-label">Área</label>
+							<label htmlFor="level_area" className="form-label">{t('shared.area')}</label>
 							<select
 								id="level_area"
 								className="form-select"
@@ -207,7 +209,7 @@ export default function AdminLevels() {
 								onChange={handleChange}
 								required
 							>
-								<option value="">Selecionar...</option>
+								<option value="">{t('shared.select')}</option>
 								{areas.map((a) => (
 									<option key={a.area_slug || a.areaSlug} value={a.area_id || a.areaId}>
 										{a.area_name || a.areaName}
@@ -216,7 +218,7 @@ export default function AdminLevels() {
 							</select>
 						</div>
 						<FormInput
-							label="Sequência"
+							label={t('shared.sequence')}
 							name="stageSequence"
 							type="number"
 							value={form.stageSequence}
@@ -224,7 +226,7 @@ export default function AdminLevels() {
 							min={0}
 						/>
 						<div>
-							<label htmlFor="level_desc" className="form-label">Descrição</label>
+							<label htmlFor="level_desc" className="form-label">{t('shared.description')}</label>
 							<textarea
 								id="level_desc"
 								className="form-control"
@@ -243,7 +245,7 @@ export default function AdminLevels() {
 								checked={form.isActive}
 								onChange={handleChange}
 							/>
-							<label className="form-check-label" htmlFor="level_active">Ativo</label>
+							<label className="form-check-label" htmlFor="level_active">{t('shared.active')}</label>
 						</div>
 					</form>
 				</Modal>

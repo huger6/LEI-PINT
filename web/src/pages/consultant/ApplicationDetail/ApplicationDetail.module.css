@@ -1,0 +1,7 @@
+.evidenceBlock {
+	background: var(--color-background);
+}
+
+.evidenceBlockSubmitted {
+	background: var(--color-success-container);
+}

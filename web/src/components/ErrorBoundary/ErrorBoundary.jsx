@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import i18n from '../../i18n';
 
 export default class ErrorBoundary extends Component {
 	constructor(props) {
@@ -17,18 +18,20 @@ export default class ErrorBoundary extends Component {
 
 	render() {
 		if (this.state.hasError) {
+			const t = i18n.t.bind(i18n);
+
 			return (
 				<div className="d-flex flex-column align-items-center justify-content-center min-vh-100 text-center px-3">
-					<h1 className="display-1 fw-bold text-danger">Oops!</h1>
-					<h2 className="h4 mb-3">Algo correu mal</h2>
+					<h1 className="display-1 fw-bold text-danger">{t('errorBoundary.title')}</h1>
+					<h2 className="h4 mb-3">{t('errorBoundary.subtitle')}</h2>
 					<p className="text-muted mb-4">
-						Ocorreu um erro inesperado. Por favor, tente recarregar a página.
+						{t('errorBoundary.description')}
 					</p>
 					<button
 						className="btn btn-primary"
 						onClick={() => globalThis.location.reload()}
 					>
-						Recarregar Página
+						{t('errorBoundary.reload')}
 					</button>
 				</div>
 			);
