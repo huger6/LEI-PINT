@@ -287,6 +287,11 @@
 		"target": "Objetivo",
 		"trophy": "Trofeo"
 	},
+	"pagination": {
+		"previous": "Anterior",
+		"next": "Siguiente",
+		"navigation": "Navegación de páginas"
+	},
 	"passwordRules": {
 		"minLength": "Al menos 8 caracteres",
 		"uppercase": "Una letra mayúscula",
