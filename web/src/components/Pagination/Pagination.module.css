@@ -1,0 +1,27 @@
+.customPagination .page-link {
+    color: #4f46e5;
+    border: none;
+    margin: 0 4px;
+    border-radius: 8px !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    background-color: #f3f4f6;
+}
+
+.customPagination .page-link:hover:not([disabled]) {
+    background-color: #e0e7ff;
+    color: #3730a3;
+    transform: translateY(-2px);
+}
+
+.customPagination .page-item.active .page-link {
+    background-color: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+}
+
+.customPagination .page-item.disabled .page-link {
+    background-color: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
