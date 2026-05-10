@@ -237,7 +237,8 @@
 			"points": "Puntos",
 			"objectives": "Objetivos",
 			"evolution": "Evolución",
-			"announcements": "Comunicados"
+			"announcements": "Comunicados",
+			"browse": "Estructura"
 		},
 		"tm": {
 			"dashboard": "Dashboard",
@@ -262,6 +263,7 @@
 			"dashboard": "Dashboard",
 			"users": "Gestionar Usuarios",
 			"structure": "Gestionar Estructura",
+			"levels": "Niveles",
 			"badges": "Gestionar Badges",
 			"applications": "Gestionar Candidaturas",
 			"slas": "Gestionar SLAs",

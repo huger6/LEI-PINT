@@ -238,7 +238,8 @@
 			"points": "Points",
 			"objectives": "Objectives",
 			"evolution": "Evolution",
-			"announcements": "Announcements"
+			"announcements": "Announcements",
+			"browse": "Structure"
 		},
 		"tm": {
 			"dashboard": "Dashboard",
@@ -263,6 +264,7 @@
 			"dashboard": "Dashboard",
 			"users": "Manage Users",
 			"structure": "Manage Structure",
+			"levels": "Levels",
 			"badges": "Manage Badges",
 			"applications": "Manage Applications",
 			"slas": "Manage SLAs",
