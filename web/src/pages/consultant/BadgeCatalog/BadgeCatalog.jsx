@@ -1,16 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getBadges } from '../../services/badgeService';
-import { getAreas } from '../../services/hierarchyService';
-import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
-
-const SORT_OPTIONS = [
-	{ value: 'recent', label: 'Mais recente' },
-	{ value: 'az', label: 'A-Z' },
-	{ value: 'za', label: 'Z-A' },
-];
+import { useTranslation } from 'react-i18next';
+import { getBadges } from '../../../services/badgeService';
+import { getAreas } from '../../../services/hierarchyService';
+import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import styles from './BadgeCatalog.module.css';
 
 export default function BadgeCatalog() {
+	const { t } = useTranslation();
 	const [badges, setBadges] = useState([]);
 	const [areas, setAreas] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -18,6 +15,12 @@ export default function BadgeCatalog() {
 	const [search, setSearch] = useState('');
 	const [selectedAreas, setSelectedAreas] = useState([]);
 	const [sortBy, setSortBy] = useState('recent');
+
+	const SORT_OPTIONS = [
+		{ value: 'recent', label: t('badgeCatalog.sortRecent') },
+		{ value: 'az', label: t('badgeCatalog.sortAZ') },
+		{ value: 'za', label: t('badgeCatalog.sortZA') },
+	];
 
 	useEffect(() => {
 		loadData();
@@ -73,7 +76,7 @@ export default function BadgeCatalog() {
 	if (error) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				Erro ao carregar badges: {error}
+				{t('badgeCatalog.errorLoading', { error })}
 			</div>
 		);
 	}
@@ -81,14 +84,14 @@ export default function BadgeCatalog() {
 	return (
 		<>
 			<div className="d-flex align-items-center justify-content-between mb-4">
-				<h1 className="h3 mb-0">Catálogo de Badges</h1>
+				<h1 className="h3 mb-0">{t('badgeCatalog.title')}</h1>
 			</div>
 
 			<div className="mb-4">
 				<input
 					type="text"
 					className="form-control"
-					placeholder="Pesquisar badges..."
+					placeholder={t('badgeCatalog.searchPlaceholder')}
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
@@ -98,7 +101,7 @@ export default function BadgeCatalog() {
 				<div className="col-md-3">
 					<div className="card border-0 shadow-sm mb-3">
 						<div className="card-body">
-							<h6 className="fw-semibold mb-3">Área</h6>
+							<h6 className="fw-semibold mb-3">{t('shared.area')}</h6>
 							{areas.map((area) => {
 								const areaId = area.area_id || area.areaId;
 								return (
@@ -121,7 +124,7 @@ export default function BadgeCatalog() {
 
 					<div className="card border-0 shadow-sm">
 						<div className="card-body">
-							<h6 className="fw-semibold mb-3">Ordenar</h6>
+							<h6 className="fw-semibold mb-3">{t('shared.sort')}</h6>
 							<select
 								className="form-select"
 								value={sortBy}
@@ -138,8 +141,8 @@ export default function BadgeCatalog() {
 				<div className="col-md-9">
 					{filtered.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Nenhum badge encontrado</h5>
-							<p className="text-muted small">Tente ajustar os filtros ou a pesquisa.</p>
+							<h5 className="text-muted">{t('badgeCatalog.noBadges')}</h5>
+							<p className="text-muted small">{t('badgeCatalog.noBadgesDesc')}</p>
 						</div>
 					) : (
 						<div className="row g-3">
@@ -147,31 +150,26 @@ export default function BadgeCatalog() {
 								<div className="col-md-6 col-lg-4" key={badge.badge_slug || badge.badgeSlug}>
 									<Link
 										to={`/badges/${badge.badge_slug || badge.badgeSlug}`}
-										className="text-decoration-none"
-										style={{ color: 'inherit' }}
+										className={`text-decoration-none ${styles.badgeLink}`}
 									>
-										<div className="card h-100 border-0 shadow-sm" style={{ transition: 'transform 0.2s' }}>
+										<div className={`card h-100 border-0 shadow-sm ${styles.badgeCard}`}>
 											<div className="card-body">
 												<div
-													className="d-flex align-items-center justify-content-center rounded mb-3"
-													style={{
-														height: 120,
-														background: 'var(--color-surface-variant)',
-													}}
+													className={`d-flex align-items-center justify-content-center rounded mb-3 ${styles.badgeImageContainer}`}
 												>
 													{badge.badge_img_url || badge.badgeImgUrl ? (
 														<img
 															src={badge.badge_img_url || badge.badgeImgUrl}
 															alt={badge.badge_title || badge.badgeTitle}
-															style={{ maxHeight: 100, objectFit: 'contain' }}
+															className={styles.badgeImage}
 														/>
 													) : (
 														<i className="bi bi-award fs-1 text-muted" />
 													)}
 												</div>
 												<h6 className="fw-semibold mb-2">{badge.badge_title || badge.badgeTitle}</h6>
-												<p className="text-muted small mb-3" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-													{badge.badge_description || badge.badgeDescription || 'Sem descrição'}
+												<p className={`text-muted small mb-3 ${styles.badgeDescription}`}>
+													{badge.badge_description || badge.badgeDescription || t('badgeCatalog.noDescription')}
 												</p>
 												<div className="d-flex flex-wrap gap-1">
 													{badge.area?.area_name && (

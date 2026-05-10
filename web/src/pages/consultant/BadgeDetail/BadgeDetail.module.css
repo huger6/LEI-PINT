@@ -1,0 +1,7 @@
+.requirementBlock {
+	background: var(--color-background);
+}
+
+.stickyCard {
+	top: calc(var(--topbar-height, 64px) + 24px);
+}

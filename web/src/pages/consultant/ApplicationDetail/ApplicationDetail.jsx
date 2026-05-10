@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getApplicationById, submitApplication, upsertEvidence } from '../../services/applicationService';
-import { getBadgeBySlug } from '../../services/badgeService';
-import { uploadFileToTemp } from '../../services/storage';
-import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
-import FormButton from '../../components/FormButton/FormButton';
+import { useTranslation } from 'react-i18next';
+import { getApplicationById, submitApplication, upsertEvidence } from '../../../services/applicationService';
+import { getBadgeBySlug } from '../../../services/badgeService';
+import { uploadFileToTemp } from '../../../services/storage';
+import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import FormButton from '../../../components/FormButton/FormButton';
+import styles from './ApplicationDetail.module.css';
 
 const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',
@@ -14,6 +16,7 @@ const STATE_BADGE_CLASS = {
 };
 
 export default function ApplicationDetail() {
+	const { t } = useTranslation();
 	const { id } = useParams();
 
 	const [application, setApplication] = useState(null);
@@ -125,7 +128,7 @@ export default function ApplicationDetail() {
 	if (error) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				Erro: {error}
+				{t('shared.error')}: {error}
 			</div>
 		);
 	}
@@ -133,8 +136,8 @@ export default function ApplicationDetail() {
 	if (!application) {
 		return (
 			<div className="text-center py-5">
-				<h5 className="text-muted">Candidatura não encontrada</h5>
-				<Link to="/applications">Voltar às candidaturas</Link>
+				<h5 className="text-muted">{t('applicationDetail.notFound')}</h5>
+				<Link to="/applications">{t('applicationDetail.backToApplications')}</Link>
 			</div>
 		);
 	}
@@ -147,7 +150,7 @@ export default function ApplicationDetail() {
 		<>
 			<nav aria-label="breadcrumb" className="mb-3">
 				<ol className="breadcrumb">
-					<li className="breadcrumb-item"><Link to="/applications">Candidaturas</Link></li>
+					<li className="breadcrumb-item"><Link to="/applications">{t('applicationDetail.applications')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badgeName}</li>
 				</ol>
 			</nav>
@@ -162,14 +165,14 @@ export default function ApplicationDetail() {
 			{badge && (
 				<div className="card border-0 shadow-sm mb-4">
 					<div className="card-body">
-						<h5 className="fw-semibold mb-2">Informação do Badge</h5>
+						<h5 className="fw-semibold mb-2">{t('applicationDetail.badgeInfo')}</h5>
 						<p className="text-muted mb-3">
-							{badge.badge_description || badge.badgeDescription || 'Sem descrição.'}
+							{badge.badge_description || badge.badgeDescription || t('shared.noDescription')}
 						</p>
 						<div className="d-flex flex-wrap gap-2">
 							{badge.area?.area_name && <span className="badge bg-info">{badge.area.area_name}</span>}
 							{(badge.badge_points || badge.badgePoints) != null && (
-								<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} pontos</span>
+								<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} {t('badgeDetail.pointsLabel')}</span>
 							)}
 						</div>
 					</div>
@@ -178,10 +181,10 @@ export default function ApplicationDetail() {
 
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
-					<h5 className="fw-semibold mb-3">Requisitos e Evidências</h5>
+					<h5 className="fw-semibold mb-3">{t('applicationDetail.requirementsAndEvidences')}</h5>
 
 					{requirements.length === 0 ? (
-						<p className="text-muted small">Nenhum requisito definido.</p>
+						<p className="text-muted small">{t('applicationDetail.noRequirements')}</p>
 					) : (
 						<div className="d-flex flex-column gap-3">
 							{requirements.map((req, idx) => {
@@ -192,20 +195,19 @@ export default function ApplicationDetail() {
 								return (
 									<div
 										key={reqId}
-										className="p-3 rounded border"
-										style={{ background: hasEvidence ? 'var(--color-success-container)' : 'var(--color-background)' }}
+										className={`p-3 rounded border ${hasEvidence ? styles.evidenceBlockSubmitted : styles.evidenceBlock}`}
 									>
 										<div className="d-flex align-items-start justify-content-between mb-2">
 											<div>
 												<h6 className="fw-semibold mb-1">
-													{req.requirement_title || req.requirementTitle || `Requisito ${idx + 1}`}
+													{req.requirement_title || req.requirementTitle || t('applicationDetail.requirementN', { n: idx + 1 })}
 												</h6>
 												<p className="text-muted small mb-0">
-													{req.requirement_description || req.requirementDescription || 'Sem descrição.'}
+													{req.requirement_description || req.requirementDescription || t('shared.noDescription')}
 												</p>
 											</div>
 											<span className={`small fw-medium ${hasEvidence ? 'text-success' : 'text-muted'}`}>
-												{hasEvidence ? 'Submetido' : 'Pendente'}
+												{hasEvidence ? t('applicationDetail.submitted') : t('applicationDetail.pending')}
 											</span>
 										</div>
 
@@ -215,7 +217,7 @@ export default function ApplicationDetail() {
 													<input
 														type="url"
 														className="form-control form-control-sm"
-														placeholder="URL do ficheiro de evidência"
+														placeholder={t('applicationDetail.evidenceUrlPlaceholder')}
 														value={evidenceUrls[reqId] || ''}
 														onChange={(e) => handleUrlChange(reqId, e.target.value)}
 													/>
@@ -224,7 +226,7 @@ export default function ApplicationDetail() {
 														onClick={() => handleSaveEvidence(reqId)}
 														disabled={!evidenceUrls[reqId]?.trim() || uploading[reqId]}
 													>
-														{uploading[reqId] ? 'A guardar...' : 'Guardar'}
+														{uploading[reqId] ? t('applicationDetail.saving') : t('shared.save')}
 													</button>
 												</div>
 												<div className="d-flex align-items-center gap-2">
@@ -258,7 +260,7 @@ export default function ApplicationDetail() {
 
 					{isOpen && (
 						<FormButton variant="primary" className="mt-4" onClick={handleSubmit} loading={submitting}>
-							Submeter Candidatura
+							{t('applicationDetail.submitApplication')}
 						</FormButton>
 					)}
 				</div>

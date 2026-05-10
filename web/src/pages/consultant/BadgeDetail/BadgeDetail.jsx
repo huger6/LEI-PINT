@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getBadgeBySlug } from '../../services/badgeService';
-import { startApplication, getApplications } from '../../services/applicationService';
-import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
-import FormButton from '../../components/FormButton/FormButton';
+import { useTranslation } from 'react-i18next';
+import { getBadgeBySlug } from '../../../services/badgeService';
+import { startApplication, getApplications } from '../../../services/applicationService';
+import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import FormButton from '../../../components/FormButton/FormButton';
+import styles from './BadgeDetail.module.css';
 
 export default function BadgeDetail() {
+	const { t } = useTranslation();
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const [badge, setBadge] = useState(null);
@@ -57,7 +60,7 @@ export default function BadgeDetail() {
 	if (error) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				Erro: {error}
+				{t('shared.error')}: {error}
 			</div>
 		);
 	}
@@ -65,8 +68,8 @@ export default function BadgeDetail() {
 	if (!badge) {
 		return (
 			<div className="text-center py-5">
-				<h5 className="text-muted">Badge não encontrado</h5>
-				<Link to="/badges">Voltar ao catálogo</Link>
+				<h5 className="text-muted">{t('badgeDetail.notFound')}</h5>
+				<Link to="/badges">{t('badgeDetail.backToCatalog')}</Link>
 			</div>
 		);
 	}
@@ -75,7 +78,7 @@ export default function BadgeDetail() {
 		<>
 			<nav aria-label="breadcrumb" className="mb-3">
 				<ol className="breadcrumb">
-					<li className="breadcrumb-item"><Link to="/badges">Catálogo</Link></li>
+					<li className="breadcrumb-item"><Link to="/badges">{t('badgeDetail.catalog')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badge.badge_title || badge.badgeTitle}</li>
 				</ol>
 			</nav>
@@ -86,14 +89,14 @@ export default function BadgeDetail() {
 						<div className="card-body">
 							<h1 className="h3 mb-2">{badge.badge_title || badge.badgeTitle}</h1>
 							<p className="text-muted mb-3">
-								{badge.badge_description || badge.badgeDescription || 'Sem descrição disponível.'}
+								{badge.badge_description || badge.badgeDescription || t('badgeDetail.noDescription')}
 							</p>
 							<div className="d-flex flex-wrap gap-2">
 								{badge.area?.area_name && (
 									<span className="badge bg-info">{badge.area.area_name}</span>
 								)}
 								{(badge.badge_points || badge.badgePoints) != null && (
-									<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} pontos</span>
+									<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} {t('badgeDetail.pointsLabel')}</span>
 								)}
 							</div>
 						</div>
@@ -101,22 +104,21 @@ export default function BadgeDetail() {
 
 					<div className="card border-0 shadow-sm">
 						<div className="card-body">
-							<h5 className="fw-semibold mb-3">Requisitos</h5>
+							<h5 className="fw-semibold mb-3">{t('badgeDetail.requirements')}</h5>
 							{requirements.length === 0 ? (
-								<p className="text-muted small">Nenhum requisito definido para este badge.</p>
+								<p className="text-muted small">{t('badgeDetail.noRequirements')}</p>
 							) : (
 								<div className="d-flex flex-column gap-3">
 									{requirements.map((req, idx) => (
 										<div
 											key={req.requirement_id || req.requirementId || idx}
-											className="p-3 rounded border"
-											style={{ background: 'var(--color-background)' }}
+											className={`p-3 rounded border ${styles.requirementBlock}`}
 										>
 											<h6 className="fw-semibold mb-1">
-												{req.requirement_title || req.requirementTitle || `Requisito ${idx + 1}`}
+												{req.requirement_title || req.requirementTitle || t('badgeDetail.requirementN', { n: idx + 1 })}
 											</h6>
 											<p className="text-muted small mb-0">
-												{req.requirement_description || req.requirementDescription || 'Sem descrição.'}
+												{req.requirement_description || req.requirementDescription || t('shared.noDescription')}
 											</p>
 										</div>
 									))}
@@ -127,20 +129,20 @@ export default function BadgeDetail() {
 				</div>
 
 				<div className="col-lg-4">
-					<div className="card border-0 shadow-sm sticky-top" style={{ top: 'calc(var(--topbar-height, 64px) + 24px)' }}>
+					<div className={`card border-0 shadow-sm sticky-top ${styles.stickyCard}`}>
 						<div className="card-body">
-							<h5 className="fw-semibold mb-3">Candidatura</h5>
+							<h5 className="fw-semibold mb-3">{t('badgeDetail.application')}</h5>
 							{alreadyApplied ? (
 								<FormButton variant="primary" disabled className="w-100">
-									Já se candidatou
+									{t('badgeDetail.alreadyApplied')}
 								</FormButton>
 							) : (
 								<FormButton variant="primary" onClick={handleApply} loading={applying} className="w-100">
-									Candidatar-me
+									{t('badgeDetail.applyNow')}
 								</FormButton>
 							)}
 							<Link to="/badges" className="btn btn-outline-primary w-100 mt-2">
-								Voltar ao Catálogo
+								{t('badgeDetail.backToCatalogBtn')}
 							</Link>
 						</div>
 					</div>

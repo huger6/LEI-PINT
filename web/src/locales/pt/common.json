@@ -366,5 +366,205 @@
 			"hours": "{{count}}h atrás",
 			"days": "{{count}}d atrás"
 		}
+	},
+	"shared": {
+		"yes": "Sim",
+		"no": "Não",
+		"active": "Ativo",
+		"inactive": "Inativo",
+		"actions": "Ações",
+		"cancel": "Cancelar",
+		"save": "Guardar",
+		"create": "Criar",
+		"edit": "Editar",
+		"delete": "Eliminar",
+		"select": "Selecionar...",
+		"name": "Nome",
+		"title": "Título",
+		"description": "Descrição",
+		"slug": "Slug",
+		"type": "Tipo",
+		"points": "Pontos",
+		"area": "Área",
+		"code": "Código",
+		"sequence": "Sequência",
+		"email": "Email",
+		"username": "Username",
+		"password": "Password",
+		"role": "Role",
+		"search": "Pesquisar",
+		"sort": "Ordenar",
+		"back": "Voltar",
+		"all": "Todos",
+		"error": "Erro",
+		"noDescription": "Sem descrição.",
+		"loading": "A carregar",
+		"viewAll": "Ver todas",
+		"viewDetails": "Ver Detalhes",
+		"quickActions": "Ações Rápidas",
+		"confirmDelete": "Tem certeza que deseja eliminar \"{{name}}\"?",
+		"confirmDeactivate": "Tem certeza que deseja desativar \"{{name}}\"?",
+		"noResults": "Nenhum resultado encontrado.",
+		"badge": "Badge",
+		"state": "Estado",
+		"submissionDate": "Data Submissão",
+		"date": "Data",
+		"user": "Utilizador"
+	},
+	"adminDashboard": {
+		"title": "Painel de Administração",
+		"welcome": "Bem-vindo, <strong>{{name}}</strong>",
+		"totalUsers": "Total Utilizadores",
+		"totalBadges": "Total Badges",
+		"totalApplications": "Total Candidaturas",
+		"learningPaths": "Learning Paths",
+		"users": "Utilizadores",
+		"badges": "Badges",
+		"serviceLines": "Service Lines",
+		"areas": "Áreas"
+	},
+	"adminUsers": {
+		"title": "Utilizadores",
+		"newUser": "Novo Utilizador",
+		"editUser": "Editar Utilizador",
+		"filterByRole": "Filtrar por role:",
+		"noUsers": "Sem utilizadores",
+		"noUsersDesc": "Nenhum utilizador encontrado.",
+		"fullName": "Nome Completo"
+	},
+	"adminBadges": {
+		"title": "Badges",
+		"newBadge": "Novo Badge",
+		"editBadge": "Editar Badge",
+		"noBadges": "Sem badges",
+		"noBadgesDesc": "Nenhum badge encontrado.",
+		"progressionStageId": "Nível de Progressão (ID)"
+	},
+	"adminAreas": {
+		"title": "Áreas",
+		"newArea": "Nova Área",
+		"editArea": "Editar Área",
+		"noAreas": "Sem áreas",
+		"noAreasDesc": "Nenhuma área encontrada.",
+		"serviceLine": "Service Line"
+	},
+	"adminServiceLines": {
+		"title": "Service Lines",
+		"newServiceLine": "Nova Service Line",
+		"editServiceLine": "Editar Service Line",
+		"noServiceLines": "Sem service lines",
+		"noServiceLinesDesc": "Nenhuma service line encontrada.",
+		"learningPath": "Learning Path"
+	},
+	"adminLearningPaths": {
+		"title": "Learning Paths",
+		"newLearningPath": "Novo Learning Path",
+		"editLearningPath": "Editar Learning Path",
+		"noLearningPaths": "Sem learning paths",
+		"noLearningPathsDesc": "Nenhum learning path encontrado."
+	},
+	"adminLevels": {
+		"title": "Níveis de Progressão",
+		"newLevel": "Novo Nível",
+		"editLevel": "Editar Nível",
+		"noLevels": "Sem níveis",
+		"noLevelsDesc": "Nenhum nível de progressão encontrado.",
+		"levelCode": "Código do Nível"
+	},
+	"adminRequirements": {
+		"title": "Requisitos de Badges",
+		"selectBadge": "Selecionar Badge",
+		"chooseBadge": "Escolher badge...",
+		"requirements": "Requisitos: {{name}}",
+		"noRequirements": "Este badge não tem requisitos definidos."
+	},
+	"adminStructure": {
+		"title": "Gerir Estrutura",
+		"learningPathsDesc": "Percursos de progressão profissional",
+		"serviceLinesDesc": "Linhas de serviço da organização",
+		"areasDesc": "Áreas de especialização",
+		"levelsDesc": "Etapas do percurso profissional"
+	},
+	"adminApplications": {
+		"title": "Candidaturas",
+		"noApplications": "Sem candidaturas",
+		"noApplicationsDesc": "Nenhuma candidatura encontrada."
+	},
+	"consultantDashboard": {
+		"totalApplications": "Total Candidaturas",
+		"open": "Em Aberto",
+		"submitted": "Submetidas",
+		"completed": "Concluídas",
+		"recentApplications": "Candidaturas Recentes",
+		"noApplications": "Ainda não tem candidaturas.",
+		"exploreCatalog": "Explorar Catálogo",
+		"myApplications": "Minhas Candidaturas"
+	},
+	"badgeCatalog": {
+		"title": "Catálogo de Badges",
+		"searchPlaceholder": "Pesquisar badges...",
+		"noBadges": "Nenhum badge encontrado",
+		"noBadgesDesc": "Tente ajustar os filtros ou a pesquisa.",
+		"noDescription": "Sem descrição",
+		"sortRecent": "Mais recente",
+		"sortAZ": "A-Z",
+		"sortZA": "Z-A",
+		"errorLoading": "Erro ao carregar badges: {{error}}"
+	},
+	"badgeDetail": {
+		"notFound": "Badge não encontrado",
+		"backToCatalog": "Voltar ao catálogo",
+		"catalog": "Catálogo",
+		"noDescription": "Sem descrição disponível.",
+		"pointsLabel": "pontos",
+		"requirements": "Requisitos",
+		"noRequirements": "Nenhum requisito definido para este badge.",
+		"requirementN": "Requisito {{n}}",
+		"application": "Candidatura",
+		"alreadyApplied": "Já se candidatou",
+		"applyNow": "Candidatar-me",
+		"backToCatalogBtn": "Voltar ao Catálogo"
+	},
+	"browseHierarchy": {
+		"learningPaths": "Learning Paths",
+		"serviceLines": "Service Lines",
+		"areas": "Áreas",
+		"levels": "Níveis",
+		"badges": "Badges",
+		"details": "Detalhes",
+		"noItems": "Sem itens",
+		"noItemsDesc": "Nenhum {{step}} encontrado."
+	},
+	"myApplications": {
+		"title": "As Minhas Candidaturas",
+		"noApplications": "Sem candidaturas",
+		"noApplicationsDesc": "Ainda não se candidatou a nenhum badge.",
+		"viewDetails": "Ver detalhes",
+		"errorLoading": "Erro ao carregar candidaturas: {{error}}"
+	},
+	"applicationDetail": {
+		"applications": "Candidaturas",
+		"notFound": "Candidatura não encontrada",
+		"backToApplications": "Voltar às candidaturas",
+		"badgeInfo": "Informação do Badge",
+		"requirementsAndEvidences": "Requisitos e Evidências",
+		"noRequirements": "Nenhum requisito definido.",
+		"requirementN": "Requisito {{n}}",
+		"submitted": "Submetido",
+		"pending": "Pendente",
+		"evidenceUrlPlaceholder": "URL do ficheiro de evidência",
+		"saving": "A guardar...",
+		"submitApplication": "Submeter Candidatura"
+	},
+	"notFound": {
+		"title": "Página não encontrada",
+		"description": "A página que procura não existe ou foi movida.",
+		"backHome": "Voltar ao Início"
+	},
+	"errorBoundary": {
+		"title": "Oops!",
+		"subtitle": "Algo correu mal",
+		"description": "Ocorreu um erro inesperado. Por favor, tente recarregar a página.",
+		"reload": "Recarregar Página"
 	}
 }

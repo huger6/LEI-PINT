@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getServiceLines, createServiceLine, updateServiceLine, deleteServiceLine, getLearningPaths } from '../../services/hierarchyService';
-import Modal from '../../components/Modal/Modal';
-import FormButton from '../../components/FormButton/FormButton';
-import FormInput from '../../components/FormInput/FormInput';
+import { useTranslation } from 'react-i18next';
+import { getServiceLines, createServiceLine, updateServiceLine, deleteServiceLine, getLearningPaths } from '../../../services/hierarchyService';
+import Modal from '../../../components/Modal/Modal';
+import FormButton from '../../../components/FormButton/FormButton';
+import FormInput from '../../../components/FormInput/FormInput';
 
 const emptyForm = {
 	serviceLineName: '',
@@ -12,6 +13,7 @@ const emptyForm = {
 };
 
 export default function AdminServiceLines() {
+	const { t } = useTranslation();
 	const [serviceLines, setServiceLines] = useState([]);
 	const [learningPaths, setLearningPaths] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function AdminServiceLines() {
 			setServiceLines(slData.data || slData || []);
 			setLearningPaths(lpData.data || lpData || []);
 		} catch (err) {
-			console.error('Erro ao carregar service lines:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -60,12 +62,12 @@ export default function AdminServiceLines() {
 	}
 
 	async function handleDelete(item) {
-		if (!window.confirm(`Tem certeza que deseja eliminar "${item.service_line_name || item.serviceLineName}"?`)) return;
+		if (!window.confirm(t('shared.confirmDelete', { name: item.service_line_name || item.serviceLineName }))) return;
 		try {
 			await deleteServiceLine(item.sl_slug || item.slSlug);
 			setServiceLines((prev) => prev.filter((s) => s.sl_slug !== item.sl_slug));
 		} catch (err) {
-			console.error('Erro ao eliminar service line:', err);
+			console.error(err);
 		}
 	}
 
@@ -82,7 +84,7 @@ export default function AdminServiceLines() {
 			}
 			setShowModal(false);
 		} catch (err) {
-			console.error('Erro ao guardar service line:', err);
+			console.error(err);
 		} finally {
 			setSaving(false);
 		}
@@ -96,9 +98,9 @@ export default function AdminServiceLines() {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">Service Lines</h1>
+				<h1 className="h3 mb-0">{t('adminServiceLines.title')}</h1>
 				<FormButton variant="primary" onClick={openCreate} className="w-auto">
-					Nova Service Line
+					{t('adminServiceLines.newServiceLine')}
 				</FormButton>
 			</div>
 
@@ -110,19 +112,19 @@ export default function AdminServiceLines() {
 						</div>
 					) : serviceLines.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem service lines</h5>
-							<p className="text-muted small">Nenhuma service line encontrada.</p>
+							<h5 className="text-muted">{t('adminServiceLines.noServiceLines')}</h5>
+							<p className="text-muted small">{t('adminServiceLines.noServiceLinesDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Nome</th>
-										<th>Learning Path</th>
-										<th>Slug</th>
-										<th>Ativo</th>
-										<th className="text-end">Ações</th>
+										<th>{t('shared.name')}</th>
+										<th>{t('adminServiceLines.learningPath')}</th>
+										<th>{t('shared.slug')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -133,7 +135,7 @@ export default function AdminServiceLines() {
 											<td className="text-muted">{s.sl_slug || s.slSlug || '—'}</td>
 											<td>
 												<span className={`badge ${s.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{s.is_active ? 'Sim' : 'Não'}
+													{s.is_active ? t('shared.yes') : t('shared.no')}
 												</span>
 											</td>
 											<td className="text-end">
@@ -155,29 +157,29 @@ export default function AdminServiceLines() {
 
 			{showModal && (
 				<Modal
-					title={editItem ? 'Editar Service Line' : 'Nova Service Line'}
+					title={editItem ? t('adminServiceLines.editServiceLine') : t('adminServiceLines.newServiceLine')}
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
 							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
-								Cancelar
+								{t('shared.cancel')}
 							</FormButton>
 							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
-								{editItem ? 'Guardar' : 'Criar'}
+								{editItem ? t('shared.save') : t('shared.create')}
 							</FormButton>
 						</>
 					}
 				>
 					<form id="sl-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
 						<FormInput
-							label="Nome"
+							label={t('shared.name')}
 							name="serviceLineName"
 							value={form.serviceLineName}
 							onChange={handleChange}
 							required
 						/>
 						<div>
-							<label className="form-label">Learning Path</label>
+							<label className="form-label">{t('adminServiceLines.learningPath')}</label>
 							<select
 								className="form-select"
 								name="learningPathId"
@@ -185,7 +187,7 @@ export default function AdminServiceLines() {
 								onChange={handleChange}
 								required
 							>
-								<option value="">Selecionar...</option>
+								<option value="">{t('shared.select')}</option>
 								{learningPaths.map((lp) => (
 									<option key={lp.learning_path_id || lp.learningPathId} value={lp.learning_path_id || lp.learningPathId}>
 										{lp.path_title || lp.pathTitle}
@@ -194,7 +196,7 @@ export default function AdminServiceLines() {
 							</select>
 						</div>
 						<div>
-							<label className="form-label">Descrição</label>
+							<label className="form-label">{t('shared.description')}</label>
 							<textarea
 								className="form-control"
 								name="serviceLineDescription"
@@ -212,7 +214,7 @@ export default function AdminServiceLines() {
 								checked={form.isActive}
 								onChange={handleChange}
 							/>
-							<label className="form-check-label" htmlFor="sl_active">Ativo</label>
+							<label className="form-check-label" htmlFor="sl_active">{t('shared.active')}</label>
 						</div>
 					</form>
 				</Modal>

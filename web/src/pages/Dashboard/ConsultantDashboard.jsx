@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import WelcomeCard from '../../components/WelcomeCard/WelcomeCard';
 import { getApplications } from '../../services/applicationService';
+import styles from './ConsultantDashboard.module.css';
 
 const STATE_BADGE_CLASS = {
   Open: 'bg-secondary',
@@ -11,6 +13,7 @@ const STATE_BADGE_CLASS = {
 };
 
 export default function ConsultantDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, closed: 0 });
   const [recentApps, setRecentApps] = useState([]);
@@ -32,7 +35,7 @@ export default function ConsultantDashboard() {
         setStats({ total, open, submitted, closed });
         setRecentApps(apps.slice(0, 5));
       } catch (err) {
-        console.error('Erro ao carregar dashboard:', err);
+        console.error(err);
       }
     }
 
@@ -48,7 +51,7 @@ export default function ConsultantDashboard() {
         <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="text-muted mb-2">Total Candidaturas</h6>
+              <h6 className="text-muted mb-2">{t('consultantDashboard.totalApplications')}</h6>
               <h3 className="mb-0">{stats.total}</h3>
             </div>
           </div>
@@ -56,7 +59,7 @@ export default function ConsultantDashboard() {
         <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="text-muted mb-2">Em Aberto</h6>
+              <h6 className="text-muted mb-2">{t('consultantDashboard.open')}</h6>
               <h3 className="mb-0 text-secondary">{stats.open}</h3>
             </div>
           </div>
@@ -64,7 +67,7 @@ export default function ConsultantDashboard() {
         <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="text-muted mb-2">Submetidas</h6>
+              <h6 className="text-muted mb-2">{t('consultantDashboard.submitted')}</h6>
               <h3 className="mb-0 text-primary">{stats.submitted}</h3>
             </div>
           </div>
@@ -72,7 +75,7 @@ export default function ConsultantDashboard() {
         <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="text-muted mb-2">Concluídas</h6>
+              <h6 className="text-muted mb-2">{t('consultantDashboard.completed')}</h6>
               <h3 className="mb-0 text-success">{stats.closed}</h3>
             </div>
           </div>
@@ -84,20 +87,20 @@ export default function ConsultantDashboard() {
           <div className="card border-0 shadow-sm">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-semibold mb-0">Candidaturas Recentes</h5>
-                <Link to="/applications" className="small">Ver todas</Link>
+                <h5 className="fw-semibold mb-0">{t('consultantDashboard.recentApplications')}</h5>
+                <Link to="/applications" className="small">{t('shared.viewAll')}</Link>
               </div>
 
               {recentApps.length === 0 ? (
-                <p className="text-muted small mb-0">Ainda não tem candidaturas.</p>
+                <p className="text-muted small mb-0">{t('consultantDashboard.noApplications')}</p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-sm align-middle mb-0">
                     <thead className="table-light">
                       <tr>
-                        <th>Badge</th>
-                        <th>Estado</th>
-                        <th>Data</th>
+                        <th>{t('shared.badge')}</th>
+                        <th>{t('shared.state')}</th>
+                        <th>{t('shared.date')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -106,7 +109,7 @@ export default function ConsultantDashboard() {
                         return (
                           <tr
                             key={app.application_guid || app.applicationGuid}
-                            style={{ cursor: 'pointer' }}
+                            className={styles.clickableRow}
                             onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
                           >
                             <td className="fw-medium">
@@ -137,15 +140,15 @@ export default function ConsultantDashboard() {
         <div className="col-lg-4">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h5 className="fw-semibold mb-3">Ações Rápidas</h5>
+              <h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
               <div className="d-flex flex-column gap-2">
                 <Link to="/catalog" className="btn btn-outline-primary text-start">
                   <i className="bi bi-search me-2" />
-                  Explorar Catálogo
+                  {t('consultantDashboard.exploreCatalog')}
                 </Link>
                 <Link to="/applications" className="btn btn-outline-primary text-start">
                   <i className="bi bi-file-text me-2" />
-                  Minhas Candidaturas
+                  {t('consultantDashboard.myApplications')}
                 </Link>
               </div>
             </div>

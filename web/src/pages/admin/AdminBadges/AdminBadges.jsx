@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getBadges, createBadge, updateBadge, deleteBadge } from '../../services/badgeService';
-import { getAreas } from '../../services/hierarchyService';
-import Modal from '../../components/Modal/Modal';
-import FormButton from '../../components/FormButton/FormButton';
-import FormInput from '../../components/FormInput/FormInput';
+import { useTranslation } from 'react-i18next';
+import { getBadges, createBadge, updateBadge, deleteBadge } from '../../../services/badgeService';
+import { getAreas } from '../../../services/hierarchyService';
+import Modal from '../../../components/Modal/Modal';
+import FormButton from '../../../components/FormButton/FormButton';
+import FormInput from '../../../components/FormInput/FormInput';
 
 const BADGE_TYPES = ['Standard', 'Special'];
 
@@ -18,6 +19,7 @@ const emptyForm = {
 };
 
 export default function AdminBadges() {
+	const { t } = useTranslation();
 	const [badges, setBadges] = useState([]);
 	const [areas, setAreas] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function AdminBadges() {
 			setBadges(badgeData.data || badgeData || []);
 			setAreas(areaData.data || areaData || []);
 		} catch (err) {
-			console.error('Erro ao carregar badges:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -69,12 +71,12 @@ export default function AdminBadges() {
 	}
 
 	async function handleDelete(item) {
-		if (!window.confirm(`Tem certeza que deseja eliminar "${item.badge_title || item.badgeTitle}"?`)) return;
+		if (!window.confirm(t('shared.confirmDelete', { name: item.badge_title || item.badgeTitle }))) return;
 		try {
 			await deleteBadge(item.badge_slug || item.badgeSlug);
 			setBadges((prev) => prev.filter((b) => b.badge_slug !== item.badge_slug));
 		} catch (err) {
-			console.error('Erro ao eliminar badge:', err);
+			console.error(err);
 		}
 	}
 
@@ -97,7 +99,7 @@ export default function AdminBadges() {
 			}
 			setShowModal(false);
 		} catch (err) {
-			console.error('Erro ao guardar badge:', err);
+			console.error(err);
 		} finally {
 			setSaving(false);
 		}
@@ -111,9 +113,9 @@ export default function AdminBadges() {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">Badges</h1>
+				<h1 className="h3 mb-0">{t('adminBadges.title')}</h1>
 				<FormButton variant="primary" onClick={openCreate} className="w-auto">
-					Novo Badge
+					{t('adminBadges.newBadge')}
 				</FormButton>
 			</div>
 
@@ -121,24 +123,24 @@ export default function AdminBadges() {
 				<div className="card-body">
 					{loading ? (
 						<div className="text-center py-5">
-							<div className="spinner-border text-primary" aria-label="A carregar" />
+							<div className="spinner-border text-primary" aria-label={t('shared.loading')} />
 						</div>
 					) : badges.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem badges</h5>
-							<p className="text-muted small">Nenhum badge encontrado.</p>
+							<h5 className="text-muted">{t('adminBadges.noBadges')}</h5>
+							<p className="text-muted small">{t('adminBadges.noBadgesDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Título</th>
-										<th>Área</th>
-										<th>Tipo</th>
-										<th>Pontos</th>
-										<th>Ativo</th>
-										<th className="text-end">Ações</th>
+										<th>{t('shared.title')}</th>
+										<th>{t('shared.area')}</th>
+										<th>{t('shared.type')}</th>
+										<th>{t('shared.points')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -154,7 +156,7 @@ export default function AdminBadges() {
 											</td>
 											<td>
 												<span className={`badge ${b.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{b.is_active ? 'Sim' : 'Não'}
+													{b.is_active ? t('shared.yes') : t('shared.no')}
 												</span>
 											</td>
 											<td className="text-end">
@@ -176,29 +178,29 @@ export default function AdminBadges() {
 
 			{showModal && (
 				<Modal
-					title={editItem ? 'Editar Badge' : 'Novo Badge'}
+					title={editItem ? t('adminBadges.editBadge') : t('adminBadges.newBadge')}
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
 							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
-								Cancelar
+								{t('shared.cancel')}
 							</FormButton>
 							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
-								{editItem ? 'Guardar' : 'Criar'}
+								{editItem ? t('shared.save') : t('shared.create')}
 							</FormButton>
 						</>
 					}
 				>
 					<form id="badge-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
 						<FormInput
-							label="Título"
+							label={t('shared.title')}
 							name="badgeTitle"
 							value={form.badgeTitle}
 							onChange={handleChange}
 							required
 						/>
 						<div>
-							<label htmlFor="badge_area" className="form-label">Área</label>
+							<label htmlFor="badge_area" className="form-label">{t('shared.area')}</label>
 							<select
 								id="badge_area"
 								className="form-select"
@@ -207,7 +209,7 @@ export default function AdminBadges() {
 								onChange={handleChange}
 								required
 							>
-								<option value="">Selecionar...</option>
+								<option value="">{t('shared.select')}</option>
 								{areas.map((a) => (
 									<option key={a.area_slug || a.areaSlug} value={a.area_id || a.areaId}>
 										{a.area_name || a.areaName}
@@ -216,13 +218,13 @@ export default function AdminBadges() {
 							</select>
 						</div>
 						<FormInput
-							label="Nível de Progressão (ID)"
+							label={t('adminBadges.progressionStageId')}
 							name="progressionStageId"
 							value={form.progressionStageId}
 							onChange={handleChange}
 						/>
 						<div>
-							<label htmlFor="badge_type" className="form-label">Tipo</label>
+							<label htmlFor="badge_type" className="form-label">{t('shared.type')}</label>
 							<select
 								id="badge_type"
 								className="form-select"
@@ -230,13 +232,13 @@ export default function AdminBadges() {
 								value={form.badgeType}
 								onChange={handleChange}
 							>
-								{BADGE_TYPES.map((t) => (
-									<option key={t} value={t}>{t}</option>
+								{BADGE_TYPES.map((tp) => (
+									<option key={tp} value={tp}>{tp}</option>
 								))}
 							</select>
 						</div>
 						<FormInput
-							label="Pontos"
+							label={t('shared.points')}
 							name="badgePoints"
 							type="number"
 							value={form.badgePoints}
@@ -244,7 +246,7 @@ export default function AdminBadges() {
 							min={0}
 						/>
 						<div>
-							<label htmlFor="badge_desc" className="form-label">Descrição</label>
+							<label htmlFor="badge_desc" className="form-label">{t('shared.description')}</label>
 							<textarea
 								id="badge_desc"
 								className="form-control"
@@ -263,7 +265,7 @@ export default function AdminBadges() {
 								checked={form.isActive}
 								onChange={handleChange}
 							/>
-							<label className="form-check-label" htmlFor="badge_active">Ativo</label>
+							<label className="form-check-label" htmlFor="badge_active">{t('shared.active')}</label>
 						</div>
 					</form>
 				</Modal>

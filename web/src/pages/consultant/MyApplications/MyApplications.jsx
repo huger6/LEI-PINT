@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getApplications } from '../../services/applicationService';
-import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
+import { useTranslation } from 'react-i18next';
+import { getApplications } from '../../../services/applicationService';
+import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import styles from './MyApplications.module.css';
 
 const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',
@@ -11,6 +13,7 @@ const STATE_BADGE_CLASS = {
 };
 
 export default function MyApplications() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [applications, setApplications] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -36,20 +39,20 @@ export default function MyApplications() {
 	if (error) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				Erro ao carregar candidaturas: {error}
+				{t('myApplications.errorLoading', { error })}
 			</div>
 		);
 	}
 
 	return (
 		<>
-			<h1 className="h3 mb-4">As Minhas Candidaturas</h1>
+			<h1 className="h3 mb-4">{t('myApplications.title')}</h1>
 
 			{applications.length === 0 ? (
 				<div className="card border-0 shadow-sm">
 					<div className="card-body text-center py-5">
-						<h5 className="text-muted">Sem candidaturas</h5>
-						<p className="text-muted small">Ainda não se candidatou a nenhum badge.</p>
+						<h5 className="text-muted">{t('myApplications.noApplications')}</h5>
+						<p className="text-muted small">{t('myApplications.noApplicationsDesc')}</p>
 					</div>
 				</div>
 			) : (
@@ -58,10 +61,10 @@ export default function MyApplications() {
 						<table className="table table-hover align-middle mb-0">
 							<thead className="table-light">
 								<tr>
-									<th>Badge</th>
-									<th>Estado</th>
-									<th>Data Submissão</th>
-									<th className="text-end">Ações</th>
+									<th>{t('shared.badge')}</th>
+									<th>{t('shared.state')}</th>
+									<th>{t('shared.submissionDate')}</th>
+									<th className="text-end">{t('shared.actions')}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -70,7 +73,7 @@ export default function MyApplications() {
 									return (
 										<tr
 											key={app.application_guid || app.applicationGuid}
-											style={{ cursor: 'pointer' }}
+											className={styles.clickableRow}
 											onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
 										>
 											<td className="fw-medium">
@@ -91,7 +94,7 @@ export default function MyApplications() {
 											<td className="text-end">
 												<button
 													className="btn btn-sm btn-outline-primary"
-													title="Ver detalhes"
+													title={t('myApplications.viewDetails')}
 													onClick={(e) => {
 														e.stopPropagation();
 														navigate(`/applications/${app.application_guid || app.applicationGuid}`);

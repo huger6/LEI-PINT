@@ -1,0 +1,24 @@
+.badgeLink {
+	color: inherit;
+}
+
+.badgeCard {
+	transition: transform 0.2s;
+}
+
+.badgeImageContainer {
+	height: 120px;
+	background: var(--color-surface-variant);
+}
+
+.badgeImage {
+	max-height: 100px;
+	object-fit: contain;
+}
+
+.badgeDescription {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}

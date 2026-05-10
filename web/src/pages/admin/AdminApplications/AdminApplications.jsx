@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getApplications } from '../../services/applicationService';
+import { useTranslation } from 'react-i18next';
+import { getApplications } from '../../../services/applicationService';
 
 const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',
@@ -9,6 +10,7 @@ const STATE_BADGE_CLASS = {
 };
 
 export default function AdminApplications() {
+	const { t } = useTranslation();
 	const [applications, setApplications] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -21,7 +23,7 @@ export default function AdminApplications() {
 			const data = await getApplications();
 			setApplications(data.data || data || []);
 		} catch (err) {
-			console.error('Erro ao carregar candidaturas:', err);
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -29,7 +31,7 @@ export default function AdminApplications() {
 
 	return (
 		<div>
-			<h1 className="h3 mb-4">Candidaturas</h1>
+			<h1 className="h3 mb-4">{t('adminApplications.title')}</h1>
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
 					{loading ? (
@@ -38,18 +40,18 @@ export default function AdminApplications() {
 						</div>
 					) : applications.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">Sem candidaturas</h5>
-							<p className="text-muted small">Nenhuma candidatura encontrada.</p>
+							<h5 className="text-muted">{t('adminApplications.noApplications')}</h5>
+							<p className="text-muted small">{t('adminApplications.noApplicationsDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>Badge</th>
-										<th>Utilizador</th>
-										<th>Estado</th>
-										<th>Data Submissão</th>
+										<th>{t('shared.badge')}</th>
+										<th>{t('shared.user')}</th>
+										<th>{t('shared.state')}</th>
+										<th>{t('shared.submissionDate')}</th>
 									</tr>
 								</thead>
 								<tbody>

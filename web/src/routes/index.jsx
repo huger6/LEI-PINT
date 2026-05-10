@@ -10,23 +10,23 @@ import RoleLayout from '../layouts/RoleLayout/RoleLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
 
 // Admin pages
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import AdminUsers from '../pages/admin/AdminUsers';
-import AdminBadges from '../pages/admin/AdminBadges';
-import AdminAreas from '../pages/admin/AdminAreas';
-import AdminServiceLines from '../pages/admin/AdminServiceLines';
-import AdminLearningPaths from '../pages/admin/AdminLearningPaths';
-import AdminLevels from '../pages/admin/AdminLevels';
-import AdminRequirements from '../pages/admin/AdminRequirements';
-import AdminStructure from '../pages/admin/AdminStructure';
+import AdminDashboard from '../pages/admin/AdminDashboard/AdminDashboard';
+import AdminUsers from '../pages/admin/AdminUsers/AdminUsers';
+import AdminBadges from '../pages/admin/AdminBadges/AdminBadges';
+import AdminAreas from '../pages/admin/AdminAreas/AdminAreas';
+import AdminServiceLines from '../pages/admin/AdminServiceLines/AdminServiceLines';
+import AdminLearningPaths from '../pages/admin/AdminLearningPaths/AdminLearningPaths';
+import AdminLevels from '../pages/admin/AdminLevels/AdminLevels';
+import AdminRequirements from '../pages/admin/AdminRequirements/AdminRequirements';
+import AdminStructure from '../pages/admin/AdminStructure/AdminStructure';
 
 // Consultant pages
-import BadgeCatalog from '../pages/consultant/BadgeCatalog';
-import BadgeDetail from '../pages/consultant/BadgeDetail';
-import ApplicationDetail from '../pages/consultant/ApplicationDetail';
+import BadgeCatalog from '../pages/consultant/BadgeCatalog/BadgeCatalog';
+import BadgeDetail from '../pages/consultant/BadgeDetail/BadgeDetail';
+import ApplicationDetail from '../pages/consultant/ApplicationDetail/ApplicationDetail';
 
 // Shared role-based pages
-import ApplicationsPage from '../pages/ApplicationsPage';
+import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
 import NotFound from '../pages/NotFound/NotFound';
 
 export default function AppRoutes() {
