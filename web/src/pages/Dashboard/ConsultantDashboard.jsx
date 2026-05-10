@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import WelcomeCard from '../../components/WelcomeCard/WelcomeCard';
+import Icon from '../../components/Icons/Icons';
 import { getApplications } from '../../services/applicationService';
 import styles from './ConsultantDashboard.module.css';
 
@@ -157,11 +158,11 @@ export default function ConsultantDashboard() {
 							<h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
 							<div className="d-flex flex-column gap-2">
 								<Link to="/catalog" className="btn btn-outline-primary text-start">
-									<i className="bi bi-search me-2" />
+									<Icon name="search" size={16} className="me-2" aria-hidden="true" />
 									{t('consultantDashboard.exploreCatalog')}
 								</Link>
 								<Link to="/applications" className="btn btn-outline-primary text-start">
-									<i className="bi bi-file-text me-2" />
+									<Icon name="paper" size={16} className="me-2" aria-hidden="true" />
 									{t('consultantDashboard.myApplications')}
 								</Link>
 							</div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import Icon from '../Icons/Icons';
 import styles from './CustomSelect.module.css';
 
 export default function CustomSelect({
@@ -229,7 +230,7 @@ export default function CustomSelect({
 								{opt.label}
 								{isSelected && (
 									<span className={styles.checkmark} aria-hidden="true">
-										<i className="bi bi-check-lg" />
+										<Icon name="check" size={14} aria-hidden="true" />
 									</span>
 								)}
 							</button>

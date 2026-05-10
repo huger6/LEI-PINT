@@ -4,6 +4,7 @@ import { getLevels, createLevel, updateLevel, deleteLevel, getAreas } from '../.
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';
+import Icon from '../../../components/Icons/Icons';
 
 const emptyForm = {
 	stageCode: '',
@@ -153,10 +154,10 @@ export default function AdminLevels() {
 											</td>
 											<td className="text-end">
 												<button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEdit(l)}>
-													<i className="bi bi-pencil" />
+													<Icon name="pencil" size={14} aria-hidden="true" />
 												</button>
 												<button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(l)}>
-													<i className="bi bi-trash" />
+													<Icon name="trash" size={14} aria-hidden="true" />
 												</button>
 											</td>
 										</tr>
