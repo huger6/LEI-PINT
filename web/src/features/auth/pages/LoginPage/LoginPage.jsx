@@ -9,6 +9,7 @@ import FormButton from '../../../../components/FormButton/FormButton';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
 import Logo from '../../../../components/Logo/Logo';
+import Icon from '../../../../components/Icons/Icons';
 import styles from './LoginPage.module.css';
 import { resolveErrorMessage, isCode } from '../../../../validations';
 
@@ -69,7 +70,7 @@ export default function LoginPage() {
 			<AuthCard>
 				{emailNotConfirmed ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
-						<div className={styles.warningIcon}><i className="bi bi-exclamation-triangle" aria-hidden="true" /></div>
+						<div className={styles.warningIcon}><Icon name="danger" size={24} aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('login.emailNotConfirmed')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							{t('login.emailNotConfirmedDesc')}
@@ -87,7 +88,7 @@ export default function LoginPage() {
 							</Link>
 							<Link to="/login" className={styles.emailActionLink}>
 								<FormButton variant="ghost" type="button">
-									<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
+									<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 								</FormButton>
 							</Link>
 						</div>

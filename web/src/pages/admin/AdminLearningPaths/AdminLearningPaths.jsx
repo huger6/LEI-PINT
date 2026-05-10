@@ -4,6 +4,7 @@ import { getLearningPaths, createLearningPath, updateLearningPath, deleteLearnin
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';
+import Icon from '../../../components/Icons/Icons';
 
 const emptyForm = {
 	pathTitle: '',
@@ -129,10 +130,10 @@ export default function AdminLearningPaths() {
 											</td>
 											<td className="text-end">
 												<button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEdit(p)}>
-													<i className="bi bi-pencil" />
+													<Icon name="pencil" size={14} aria-hidden="true" />
 												</button>
 												<button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p)}>
-													<i className="bi bi-trash" />
+													<Icon name="trash" size={14} aria-hidden="true" />
 												</button>
 											</td>
 										</tr>

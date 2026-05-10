@@ -7,6 +7,7 @@ import { AuthCard, forgotPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
+import Icon from '../../../../components/Icons/Icons';
 import hideEmail from '../../../../utils/utils';
 import styles from './ForgotPasswordPage.module.css';
 import {
@@ -61,7 +62,7 @@ export default function ForgotPasswordPage() {
 			<AuthCard>
 				{sent ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
-						<div className={styles.sentIcon}><i className="bi bi-envelope" aria-hidden="true" /></div>
+						<div className={styles.sentIcon}><Icon name="email" size={24} aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('forgotPassword.checkInbox')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="forgotPassword.checkInboxDesc" values={{ email: hideEmail(email) }} components={{ strong: <strong /> }} />
@@ -90,7 +91,7 @@ export default function ForgotPasswordPage() {
 						</form>
 						<Link to="/login">
 							<FormButton variant="ghost" type="button" className="mt-1">
-								<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
+								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 							</FormButton>
 						</Link>
 					</>

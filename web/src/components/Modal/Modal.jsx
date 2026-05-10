@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import Icon from '../Icons/Icons';
 import styles from './Modal.module.css';
 
 export default function Modal({ title, children, onClose, footer }) {
@@ -37,7 +38,7 @@ export default function Modal({ title, children, onClose, footer }) {
 			<div className={styles.header}>
 				<h5 id="modal-title" className={styles.title}>{title}</h5>
 				<button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Fechar">
-					<i className="bi bi-x-lg" />
+					<Icon name="close" size={16} aria-hidden="true" />
 				</button>
 			</div>
 			<div className={styles.body}>{children}</div>

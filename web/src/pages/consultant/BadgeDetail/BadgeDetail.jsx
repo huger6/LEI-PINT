@@ -5,6 +5,7 @@ import { getBadgeBySlug } from '../../../services/badgeService';
 import { startApplication, getApplications } from '../../../services/applicationService';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import FormButton from '../../../components/FormButton/FormButton';
+import Icon from '../../../components/Icons/Icons';
 import styles from './BadgeDetail.module.css';
 
 export default function BadgeDetail() {
@@ -106,7 +107,12 @@ export default function BadgeDetail() {
 							{imgUrl ? (
 								<img src={imgUrl} alt={title} style={{ maxHeight: 110, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.08))' }} />
 							) : (
-								<i className="bi bi-award" style={{ fontSize: '3.5rem', color: 'var(--color-primary)', opacity: 0.45 }} />
+								<Icon
+									name="badge"
+									size={56}
+									aria-hidden="true"
+									style={{ color: 'var(--color-primary)', opacity: 0.45 }}
+								/>
 							)}
 						</div>
 

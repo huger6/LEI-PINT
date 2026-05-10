@@ -7,6 +7,7 @@ import { AuthCard, resendConfirmation } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
 import FormButton from '../../../../components/FormButton/FormButton';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
+import Icon from '../../../../components/Icons/Icons';
 import styles from './ResendConfirmationPage.module.css';
 import {
 	validateResendConfirmationForm,
@@ -66,14 +67,14 @@ export default function ResendConfirmationPage() {
 			<AuthCard>
 				{sent ? (
 					<div className="d-flex flex-column align-items-center gap-3 py-2 text-center">
-						<div className={styles.sentIcon}><i className="bi bi-envelope" aria-hidden="true" /></div>
+						<div className={styles.sentIcon}><Icon name="email" size={24} aria-hidden="true" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resendConfirmation.emailSent')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="resendConfirmation.emailSentDesc" values={{ email }} components={{ strong: <strong /> }} />
 						</p>
 						<Link to="/login" className={styles.emailActionLink}>
 							<FormButton variant="ghost" type="button">
-								<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
+								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 							</FormButton>
 						</Link>
 					</div>
@@ -101,7 +102,7 @@ export default function ResendConfirmationPage() {
 						<p className="text-center mt-1 mb-0 small">
 							<Link to="/login" className={styles.emailActionLink}>
 								<FormButton variant="ghost" type="button">
-									<i className="bi bi-arrow-left me-2" />{t('backToLogin')}
+									<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 								</FormButton>
 							</Link>
 						</p>

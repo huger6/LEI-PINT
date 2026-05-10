@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../services/hierarchyService';
 import { getBadges } from '../../../services/badgeService';
+import Icon from '../../../components/Icons/Icons';
+
+const STEP_ICON_MAP = {
+	lp: 'learning-path',
+	sl: 'service-line',
+	area: 'area',
+	level: 'evolution',
+	badge: 'badge',
+	detail: 'paper',
+};
 
 export default function BrowseHierarchy() {
 	const { t } = useTranslation();
@@ -176,7 +186,12 @@ export default function BrowseHierarchy() {
 
 			{/* Page Title */}
 			<div className="d-flex align-items-center gap-2 mb-4">
-				<i className={`bi ${STEP_ICONS[step] || 'bi-folder'}`} style={{ fontSize: '1.25rem', color: 'var(--color-primary)' }} />
+				<Icon
+					name={STEP_ICON_MAP[step] || 'paper'}
+					size={20}
+					aria-hidden="true"
+					style={{ color: 'var(--color-primary)' }}
+				/>
 				<h1 className="page-title mb-0">{stepLabels[step]}</h1>
 			</div>
 
@@ -220,7 +235,13 @@ export default function BrowseHierarchy() {
 											<h6 className="fw-bold mb-1" style={{ fontSize: '0.9375rem' }}>{name}</h6>
 											{description && <p className="text-muted mb-0" style={{ fontSize: '0.8125rem' }}>{description}</p>}
 										</div>
-										<i className="bi bi-chevron-right text-muted flex-shrink-0" style={{ fontSize: '0.875rem' }} />
+										<Icon
+											name="keyboard_arrow_down"
+											size={14}
+											className="text-muted flex-shrink-0"
+											aria-hidden="true"
+											style={{ transform: 'rotate(-90deg)' }}
+										/>
 									</button>
 								);
 							})}

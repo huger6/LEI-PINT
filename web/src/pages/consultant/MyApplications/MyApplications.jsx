@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../services/applicationService';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';
 
 const STATE_BADGE_MAP = {
@@ -156,7 +157,12 @@ export default function MyApplications() {
 														navigate(`/applications/${app.application_guid || app.applicationGuid}`);
 													}}
 												>
-													<i className="bi bi-arrow-right" />
+													<Icon
+														name="keyboard_arrow_down"
+														size={16}
+														aria-hidden="true"
+														style={{ transform: 'rotate(-90deg)' }}
+													/>
 												</button>
 											</td>
 										</tr>

@@ -4,6 +4,7 @@ import { getUsers, createUser, updateUser, deactivateUser } from '../../../servi
 import Modal from '../../../components/Modal/Modal';
 import FormButton from '../../../components/FormButton/FormButton';
 import FormInput from '../../../components/FormInput/FormInput';
+import Icon from '../../../components/Icons/Icons';
 import styles from './AdminUsers.module.css';
 
 const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
@@ -163,10 +164,10 @@ export default function AdminUsers() {
 											</td>
 											<td className="text-end">
 												<button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEdit(u)}>
-													<i className="bi bi-pencil" />
+													<Icon name="pencil" size={14} aria-hidden="true" />
 												</button>
 												<button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(u)}>
-													<i className="bi bi-trash" />
+													<Icon name="trash" size={14} aria-hidden="true" />
 												</button>
 											</td>
 										</tr>

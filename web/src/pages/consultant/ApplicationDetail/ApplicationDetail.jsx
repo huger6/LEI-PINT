@@ -6,6 +6,7 @@ import { getBadgeBySlug } from '../../../services/badgeService';
 import { uploadFileToTemp } from '../../../services/storage';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import FormButton from '../../../components/FormButton/FormButton';
+import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationDetail.module.css';
 
 const STATE_BADGE_MAP = {
@@ -300,7 +301,7 @@ export default function ApplicationDetail() {
 													className="small"
 													style={{ fontWeight: 500 }}
 												>
-													<i className="bi bi-link-45deg me-1" />
+													<Icon name="link" size={14} className="me-1" aria-hidden="true" />
 													{evidence.evidence_file_url || evidence.evidenceFileUrl || evidence.url}
 												</a>
 											</div>

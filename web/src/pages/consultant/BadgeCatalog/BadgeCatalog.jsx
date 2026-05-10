@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getBadges } from '../../../services/badgeService';
 import { getAreas } from '../../../services/hierarchyService';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import Icon from '../../../components/Icons/Icons';
 import styles from './BadgeCatalog.module.css';
 
 export default function BadgeCatalog() {
@@ -120,7 +121,7 @@ export default function BadgeCatalog() {
 
 			{/* Search Bar */}
 			<div className={styles.searchWrapper}>
-				<i className={`bi bi-search ${styles.searchIcon}`} />
+				<Icon name="search" size={16} className={styles.searchIcon} aria-hidden="true" />
 				<input
 					type="text"
 					className="form-control"
@@ -203,7 +204,7 @@ export default function BadgeCatalog() {
 														className={styles.badgeImage}
 													/>
 												) : (
-													<i className="bi bi-award fs-1 text-muted" />
+													<Icon name="badge" size={48} className="text-muted" aria-hidden="true" />
 												)}
 											</div>
 											<h6 className="fw-semibold mb-2">{badge.badge_title || badge.badgeTitle}</h6>
@@ -216,7 +217,7 @@ export default function BadgeCatalog() {
 												)}
 												{points != null && (
 													<span className={styles.tagPoints}>
-														<i className="bi bi-star-fill" />
+														<Icon name="star" size={14} aria-hidden="true" />
 														{points} pts
 													</span>
 												)}

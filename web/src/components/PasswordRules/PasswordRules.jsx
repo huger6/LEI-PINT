@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PASSWORD_RULES } from '../../validations';
+import Icon from '../Icons/Icons';
 import styles from './PasswordRules.module.css';
 
 export default function PasswordRules({ password }) {
@@ -12,7 +13,7 @@ export default function PasswordRules({ password }) {
 				const passed = rule.test(password);
 				return (
 					<li key={rule.key} className={`${styles.pwRule} ${passed ? styles.pwRuleOk : ''}`}>
-						<i className={`bi ${passed ? 'bi-check2' : 'bi-circle'}`} aria-hidden="true" />{' '}
+						<Icon name={passed ? 'check2' : 'circle'} size={14} aria-hidden="true" />{' '}
 						{t(`passwordRules.${rule.key}`)}
 					</li>
 				);

@@ -6,6 +6,14 @@ import { getUsers } from '../../../services/adminService';
 import { getBadges } from '../../../services/badgeService';
 import { getLearningPaths } from '../../../services/hierarchyService';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import Icon from '../../../components/Icons/Icons';
+
+const CARD_ICON_MAP = {
+	people: 'tabler_users',
+	award: 'badge',
+	'file-earmark-text': 'paper',
+	signpost: 'learning-path',
+};
 
 export default function AdminDashboard() {
 	const { t } = useTranslation();
@@ -65,7 +73,7 @@ export default function AdminDashboard() {
 						<Link to={card.link} className="text-decoration-none">
 							<div className="card h-100 border-0 shadow-sm">
 								<div className="card-body d-flex align-items-center gap-3">
-									<i className={`bi bi-${card.icon} fs-2 text-primary`} />
+									<Icon name={CARD_ICON_MAP[card.icon] || 'paper'} size={32} className="text-primary" aria-hidden="true" />
 									<div>
 										<div className="text-muted small">{card.label}</div>
 										<div className="h4 mb-0 fw-bold">{card.value}</div>

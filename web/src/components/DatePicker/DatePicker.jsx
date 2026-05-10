@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomSelect from '../CustomSelect/CustomSelect';
+import Icon from '../Icons/Icons';
 import styles from './DatePicker.module.css';
 
 const DEFAULT_YEAR_START = 1900;
@@ -249,7 +250,12 @@ export default function DatePicker({
 				disabled={disabled}
 			>
 				<span className={styles.triggerText}>{displayValue}</span>
-				<i className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-down'} ${styles.triggerIcon}`} aria-hidden="true" />
+				<Icon
+					name={open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+					size={16}
+					className={styles.triggerIcon}
+					aria-hidden="true"
+				/>
 			</button>
 
 			{open && (
@@ -270,7 +276,12 @@ export default function DatePicker({
 							disabled={!canGoPrev}
 							aria-label="Previous month"
 						>
-							<i className="bi bi-chevron-left" />
+							<Icon
+								name="keyboard_arrow_down"
+								size={16}
+								aria-hidden="true"
+								style={{ transform: 'rotate(90deg)' }}
+							/>
 						</button>
 
 						<div className={styles.selectRow}>
@@ -307,7 +318,12 @@ export default function DatePicker({
 							disabled={!canGoNext}
 							aria-label="Next month"
 						>
-							<i className="bi bi-chevron-right" />
+							<Icon
+								name="keyboard_arrow_down"
+								size={16}
+								aria-hidden="true"
+								style={{ transform: 'rotate(-90deg)' }}
+							/>
 						</button>
 					</div>
 

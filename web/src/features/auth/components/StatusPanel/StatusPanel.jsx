@@ -1,8 +1,9 @@
+import Icon from '../../../../components/Icons/Icons';
 import styles from './StatusPanel.module.css';
 
 const ICONS = {
-    success: 'bi bi-check-lg',
-    error: 'bi bi-x-lg',
+    success: 'check',
+    error: 'close',
 };
 
 export default function StatusPanel({
@@ -13,7 +14,7 @@ export default function StatusPanel({
     loadingLabel,
 }) {
     const isLoading = variant === 'loading';
-    const iconClass = ICONS[variant];
+    const iconName = ICONS[variant];
     const ariaLabel = loadingLabel || message || title || 'Loading';
 
     return (
@@ -22,7 +23,7 @@ export default function StatusPanel({
                 <div className={styles.spinner} role="status" aria-label={ariaLabel} />
             ) : (
                 <div className={styles.icon} aria-hidden="true">
-                    <i className={iconClass} />
+                    <Icon name={iconName} size={20} aria-hidden="true" />
                 </div>
             )}
             {title && <h2 className={`mb-0 ${styles.title}`}>{title}</h2>}
