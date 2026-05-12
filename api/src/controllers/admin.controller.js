@@ -38,7 +38,7 @@ const ensureReferenceDataExists = async ({
     }
 
     if (areas?.length) {
-        const areaIds = areas.map((area) => area.area_id);
+        const areaIds = [...new Set(areas.map((area) => area.area_id))];
         const availableAreas = await models.areas.findAll({
             attributes: ['area_id'],
             where: {
@@ -457,15 +457,6 @@ const updateUser = async (req, res) => {
         }
 
         const targetRole = payload.user_role || user.user_role;
-
-        // Prevent promoting any user to Administrator via this endpoint
-        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
-            });
-        }
 
         if (user.user_role === 'Administrator' && payload.user_role && payload.user_role !== 'Administrator') {
             await t.rollback();
