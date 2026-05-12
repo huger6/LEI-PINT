@@ -59,8 +59,11 @@
 	position: absolute;
 	top: calc(100% + 0.45rem);
 	left: 0;
-	z-index: 15;
-	width: min(100%, 22rem);
+	/* Fixed width so narrow parent containers don't squish the calendar grid.
+	   max-width keeps it within the viewport on small screens. */
+	width: 22rem;
+	max-width: calc(100vw - 2rem);
+	z-index: 1050;
 	padding: 0.75rem;
 	border-radius: 16px;
 	border: 1px solid var(--color-primary-border-soft);

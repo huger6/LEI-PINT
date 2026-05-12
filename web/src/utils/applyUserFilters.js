@@ -58,14 +58,6 @@ export default function applyUserFilters(users, filters) {
 			if (createdAt < from) return false;
 		}
 
-		// ── Registration date — to (inclusive of the full selected day) ───────
-		if (filters.dateTo) {
-			const createdAt = new Date(u.created_at || u.createdAt || 0);
-			const to = new Date(filters.dateTo);
-			to.setHours(23, 59, 59, 999);
-			if (createdAt > to) return false;
-		}
-
 		// ── Points range (total gamification points) ──────────────────────────
 		if (filters.pointsMin !== '') {
 			const pts = Number(u.total_points || u.totalPoints || 0);

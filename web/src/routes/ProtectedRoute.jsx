@@ -4,8 +4,8 @@ import { useUser } from '../hooks/userContext';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
 
 export default function ProtectedRoute({ requireFpc = false, allowedRoles }) {
-    const { isAuthenticated, fpc, isLoading } = useAuth();
-    const { user, isUserLoading } = useUser();
+    const { isAuthenticated, fpc, isLoading, user } = useAuth();
+    const { isUserLoading } = useUser();
 
     if (isLoading || (!requireFpc && isUserLoading)) return <LoadingScreen />;
     if (!isAuthenticated) return <Navigate to="/login" replace />;

@@ -42,6 +42,7 @@ export function AuthProvider({ children }) {
 			.refreshToken()
 			.then(({ data }) => {
 				const { token: newToken, fpc: forcePwChange } = data.data;
+				setUser(data.data.user);
 				setApiToken(newToken);
 				setToken(newToken);
 				setFpc(forcePwChange);
