@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../features/badges/api/hierarchyApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
@@ -145,9 +146,9 @@ export default function BrowseHierarchy() {
 				</nav>
 				<div className="d-flex align-items-center gap-3 mb-4">
 					<h1 className="h3 mb-0">{selection.badgeName}</h1>
-					<Link to={`/badges/${selection.badgeSlug}`} className="btn btn-primary btn-sm">
+					<Button as={Link} to={`/badges/${selection.badgeSlug}`} size="sm">
 						{t('shared.viewDetails')}
-					</Link>
+					</Button>
 				</div>
 			</div>
 		);

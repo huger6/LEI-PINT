@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, confirmEmail, StatusPanel } from '../..';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import { resolveErrorMessage } from '../../../../validations';
 
 export default function ConfirmEmailPage() {
@@ -52,9 +52,9 @@ export default function ConfirmEmailPage() {
 						title={t('confirmEmail.successHeading')}
 						message={t('confirmEmail.successDesc')}
 					>
-						<Link to="/login">
-							<FormButton type="button">{t('goToLogin')}</FormButton>
-						</Link>
+						<Button as={Link} to="/login" fullWidth>
+						{t('goToLogin')}
+					</Button>
 					</StatusPanel>
 				)}
 
@@ -64,12 +64,12 @@ export default function ConfirmEmailPage() {
 						title={t('confirmEmail.failedHeading')}
 						message={errorMsg}
 					>
-						<Link to="/resend-confirmation">
-							<FormButton type="button">{t('confirmEmail.resendBtn')}</FormButton>
-						</Link>
-						<Link to="/login">
-							<FormButton variant="ghost" type="button">{t('backToLogin')}</FormButton>
-						</Link>
+						<Button as={Link} to="/resend-confirmation" fullWidth>
+							{t('confirmEmail.resendBtn')}
+						</Button>
+						<Button as={Link} to="/login" variant="outlined" fullWidth>
+							{t('backToLogin')}
+						</Button>
 					</StatusPanel>
 				)}
 			</div>

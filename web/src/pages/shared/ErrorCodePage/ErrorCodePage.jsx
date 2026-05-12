@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../../features/auth/layouts/AuthLayout/AuthLayout';
 import AuthCard from '../../../features/auth/components/AuthCard/AuthCard';
+import Button from '../../../components/Button/Button';
 import styles from './ErrorCodePage.module.css';
 
 export default function ErrorCodePage({ code = 404 }) {
@@ -24,9 +25,9 @@ export default function ErrorCodePage({ code = 404 }) {
 					<p className={styles.description}>
 						{description}
 					</p>
-					<Link to="/" className="btn btn-primary">
+					<Button as={Link} to="/">
 						{t('errorCodePage.backHome')}
-					</Link>
+					</Button>
 				</div>
 			</AuthCard>
 		</AuthLayout>

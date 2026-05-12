@@ -5,7 +5,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
 import Icon from '../../../../components/Icons/Icons';
 import hideEmail from '../../../../utils/utils';
@@ -87,13 +87,11 @@ export default function ForgotPasswordPage() {
 								autoFocus
 							/>
 							<FormAlert message={error} />
-							<FormButton type="submit" loading={loading}>{t('forgotPassword.sendResetLink')}</FormButton>
+							<Button type="submit" loading={loading} fullWidth>{t('forgotPassword.sendResetLink')}</Button>
 						</form>
-						<Link to="/login">
-							<FormButton variant="ghost" type="button" className="mt-1">
-								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
-							</FormButton>
-						</Link>
+						<Button as={Link} to="/login" variant="outlined" className="mt-1" fullWidth>
+							<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
+						</Button>
 					</>
 				)}
 			</AuthCard>

@@ -5,7 +5,7 @@ import { getApplicationById, submitApplication, upsertEvidence } from '../../../
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { uploadFileToTemp } from '../../../services/storage';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
-import FormButton from '../../../components/FormButton/FormButton';
+import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationDetail.module.css';
 
@@ -271,14 +271,15 @@ export default function ApplicationDetail() {
 														onChange={(e) => handleUrlChange(reqId, e.target.value)}
 														style={{ borderRadius: 8, fontSize: '0.8125rem' }}
 													/>
-													<button
-														className="btn btn-outline-primary btn-sm text-nowrap"
+													<Button
+														size="sm"
+														variant="outlined"
+														className="text-nowrap"
 														onClick={() => handleSaveEvidence(reqId)}
 														disabled={!evidenceUrls[reqId]?.trim() || uploading[reqId]}
-														style={{ borderRadius: 8, fontWeight: 600, fontSize: '0.8125rem' }}
 													>
 														{uploading[reqId] ? t('applicationDetail.saving') : t('shared.save')}
-													</button>
+													</Button>
 												</div>
 												<div className="d-flex align-items-center gap-2">
 													<input
@@ -313,9 +314,9 @@ export default function ApplicationDetail() {
 					)}
 
 					{isOpen && (
-						<FormButton variant="primary" className="mt-4" onClick={handleSubmit} loading={submitting}>
+						<Button fullWidth className="mt-4" onClick={handleSubmit} loading={submitting}>
 							{t('applicationDetail.submitApplication')}
-						</FormButton>
+						</Button>
 					)}
 				</div>
 			</div>

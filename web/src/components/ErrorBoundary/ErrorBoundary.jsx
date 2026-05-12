@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import i18n from '../../i18n';
+import Button from '../Button/Button';
 
 export default class ErrorBoundary extends Component {
 	constructor(props) {
@@ -27,12 +28,9 @@ export default class ErrorBoundary extends Component {
 					<p className="text-muted mb-4">
 						{t('errorBoundary.description')}
 					</p>
-					<button
-						className="btn btn-primary"
-						onClick={() => globalThis.location.reload()}
-					>
+					<Button onClick={() => globalThis.location.reload()}>
 						{t('errorBoundary.reload')}
-					</button>
+					</Button>
 				</div>
 			);
 		}

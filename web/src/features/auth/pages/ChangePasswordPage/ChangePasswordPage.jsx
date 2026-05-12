@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth, changePassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
@@ -127,7 +127,7 @@ export default function ChangePasswordPage() {
 							/>
 
 							<FormAlert message={form.error} />
-							<FormButton type="submit" loading={loading}>{t('changePassword.changeBtn')}</FormButton>
+							<Button type="submit" loading={loading} fullWidth>{t('changePassword.changeBtn')}</Button>
 						</form>
 					</>
 				)}

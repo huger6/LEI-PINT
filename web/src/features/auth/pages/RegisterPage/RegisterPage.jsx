@@ -6,7 +6,7 @@ import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, register } from '../..';
 import api from '../../../../services/api.js';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import DatePicker from '../../../../components/DatePicker/DatePicker';
 import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
@@ -467,9 +467,9 @@ export default function RegisterPage() {
 						<p className="text-center mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{apiInfo || t('register.checkEmailConfirmation')}
 						</p>
-						<Link to="/login">
-							<FormButton type="button">{t('goToLogin')}</FormButton>
-						</Link>
+						<Button as={Link} to="/login" fullWidth>
+							{t('goToLogin')}
+						</Button>
 					</div>
 				</AuthCard>
 			</AuthLayout>
@@ -626,10 +626,10 @@ export default function RegisterPage() {
 
 							<div className="row g-2 mt-1">
 								<div className="col">
-									<FormButton type="button" variant="secondary" onClick={() => setStep(1)}>{t('register.back')}</FormButton>
+									<Button type="button" variant="outlined" onClick={() => setStep(1)} fullWidth>{t('register.back')}</Button>
 								</div>
 								<div className="col">
-									<FormButton type="submit" loading={continueDisabled}>{t('register.continue')}</FormButton>
+									<Button type="submit" loading={continueDisabled} fullWidth>{t('register.continue')}</Button>
 								</div>
 							</div>
 						</div>
@@ -693,25 +693,25 @@ export default function RegisterPage() {
 										)}
 										{(profilePreviewUrl || values.profile_img_url) && (
 											<div className={styles.profileImageActions}>
-												<FormButton
+												<Button
 													type="button"
-													variant="secondary"
+													variant="outlined"
 													onClick={openProfileImagePicker}
 													disabled={isProfileUploading}
 													className={styles.profileImageActionButton}
 												>
 													{t('register.profilePictureChange')}
-												</FormButton>
-												<FormButton
+												</Button>
+												<Button
 													type="button"
-													variant="secondary"
+													variant="outlined"
 													onClick={clearProfileImage}
 													disabled={isProfileUploading}
 													className={styles.profileImageActionButton}
 												>
 													<Icon name="trash" size={14} className="me-1" aria-hidden="true" />
 													{t('register.profilePictureRemove')}
-												</FormButton>
+												</Button>
 											</div>
 										)}
 										<p className={`small mt-1 mb-0 ${styles.fileHint}`}>
@@ -893,16 +893,17 @@ export default function RegisterPage() {
 
 							<div className="row g-2 mt-1">
 								<div className="col">
-									<FormButton type="button" variant="secondary" onClick={handleBack}>{t('register.back')}</FormButton>
+									<Button type="button" variant="outlined" onClick={handleBack} fullWidth>{t('register.back')}</Button>
 								</div>
 								<div className="col">
-									<FormButton
+									<Button
 										type="submit"
 										loading={loading}
 										disabled={profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING}
+										fullWidth
 									>
 										{t('register.createAccountBtn')}
-									</FormButton>
+									</Button>
 								</div>
 							</div>
 						</div>
