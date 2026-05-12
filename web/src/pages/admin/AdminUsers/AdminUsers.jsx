@@ -1,13 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getUsers, createUser, updateUser, deactivateUser } from '../../../features/users/api/usersApi';
+import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
+import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
+import applyUserFilters from '../../../utils/applyUserFilters';
 import styles from './AdminUsers.module.css';
 
 const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
+
+// Maps each role value to a CSS module class for the coloured pill badge.
+const ROLE_CLASS = {
+	Administrator: styles.roleAdministrator,
+	Consultant: styles.roleConsultant,
+	'Talent Manager': styles.roleTalentManager,
+	'Service Line Leader': styles.roleServiceLineLeader,
+};
 
 const emptyForm = {
 	fullName: '',
@@ -18,11 +29,23 @@ const emptyForm = {
 	isActive: true,
 };
 
+/** Returns up to two uppercase initials from a full name string. */
+function getInitials(name = '') {
+	const parts = name.trim().split(/\s+/);
+	if (parts.length === 0 || !parts[0]) return '?';
+	if (parts.length === 1) return parts[0][0].toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function AdminUsers() {
 	const { t } = useTranslation();
+
 	const [users, setUsers] = useState([]);
 	const [loading, setLoading] = useState(true);
-	const [roleFilter, setRoleFilter] = useState('');
+	const [serviceLines, setServiceLines] = useState([]);
+	const [areas, setAreas] = useState([]);
+	const [filters, setFilters] = useState(EMPTY_FILTERS);
+
 	const [showModal, setShowModal] = useState(false);
 	const [editItem, setEditItem] = useState(null);
 	const [form, setForm] = useState(emptyForm);
@@ -30,17 +53,30 @@ export default function AdminUsers() {
 
 	useEffect(() => {
 		loadUsers();
+		loadHierarchy();
 	}, []);
 
 	async function loadUsers() {
 		try {
 			setLoading(true);
 			const data = await getUsers();
-			setUsers(data.data || data || []);
+			setUsers(data || []);
 		} catch (err) {
 			console.error(err);
 		} finally {
 			setLoading(false);
+		}
+	}
+
+	// Service lines and areas are fetched in parallel so the filter dropdowns
+	// are populated without a sequential waterfall.
+	async function loadHierarchy() {
+		try {
+			const [sl, ar] = await Promise.all([getServiceLines(), getAreas()]);
+			setServiceLines(sl || []);
+			setAreas(ar || []);
+		} catch (err) {
+			console.error(err);
 		}
 	}
 
@@ -96,82 +132,119 @@ export default function AdminUsers() {
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
 	}
 
-	const filtered = roleFilter ? users.filter((u) => (u.user_role || u.userRole) === roleFilter) : users;
+	// applyUserFilters is a pure function; memoising prevents re-running it on
+	// unrelated state changes (e.g. modal open/close).
+	const filtered = useMemo(() => applyUserFilters(users, filters), [users, filters]);
 
 	return (
 		<div>
-			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
-				<Button onClick={openCreate}>
-					{t('adminUsers.newUser')}
-				</Button>
-			</div>
-
-			<div className="card border-0 shadow-sm mb-3">
-				<div className="card-body d-flex align-items-center gap-3">
-					<label htmlFor="role_filter" className="form-label mb-0 text-nowrap small">{t('adminUsers.filterByRole')}</label>
-					<select
-						id="role_filter"
-						className={`form-select form-select-sm ${styles.roleFilter}`}
-						value={roleFilter}
-						onChange={(e) => setRoleFilter(e.target.value)}
-					>
-						<option value="">{t('shared.all')}</option>
-						{ROLES.map((r) => (
-							<option key={r} value={r}>{r}</option>
-						))}
-					</select>
+			{/* ── Page header ─────────────────────────────────────────────── */}
+			<div className="d-flex justify-content-between align-items-start mb-4">
+				<div>
+					<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
+					<p className={styles.headerSubtitle}>{t('adminUsers.subtitle')}</p>
 				</div>
+				<Button onClick={openCreate}>{t('adminUsers.newUser')}</Button>
 			</div>
 
-			<div className="card border-0 shadow-sm">
-				<div className="card-body">
+			{/* ── Filter bar ──────────────────────────────────────────────── */}
+			<UserFilters
+				filters={filters}
+				onChange={setFilters}
+				onClear={() => setFilters(EMPTY_FILTERS)}
+				serviceLines={serviceLines}
+				areas={areas}
+			/>
+
+			{/* ── Results count ────────────────────────────────────────────── */}
+			{!loading && (
+				<div className={styles.resultsBar}>
+					<span className={styles.resultsCount}>
+						{t('adminUsers.resultsCount', { count: filtered.length })}
+					</span>
+				</div>
+			)}
+
+			{/* ── Users table ──────────────────────────────────────────────── */}
+			<div className={`card border-0 shadow-sm ${styles.tableCard}`}>
+				<div className="card-body p-0">
 					{loading ? (
 						<div className="text-center py-5">
 							<div className="spinner-border text-primary" role="status" />
 						</div>
 					) : filtered.length === 0 ? (
-						<div className="text-center py-5">
-							<h5 className="text-muted">{t('adminUsers.noUsers')}</h5>
-							<p className="text-muted small">{t('adminUsers.noUsersDesc')}</p>
+						<div className={styles.emptyState}>
+							<div className={styles.emptyIcon}>
+								<Icon name="search" size={22} aria-hidden="true" />
+							</div>
+							<p className={styles.emptyTitle}>{t('adminUsers.noUsers')}</p>
+							<p className={styles.emptyDesc}>{t('adminUsers.noUsersDesc')}</p>
 						</div>
 					) : (
 						<div className="table-responsive">
 							<table className="table table-hover align-middle mb-0">
 								<thead className="table-light">
 									<tr>
-										<th>{t('shared.name')}</th>
+										<th style={{ paddingLeft: '1.25rem' }}>{t('shared.name')}</th>
 										<th>{t('shared.username')}</th>
-										<th>{t('shared.email')}</th>
 										<th>{t('shared.role')}</th>
 										<th>{t('shared.active')}</th>
-										<th className="text-end">{t('shared.actions')}</th>
+										<th className="text-end" style={{ paddingRight: '1.25rem' }}>{t('shared.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
-									{filtered.map((u) => (
-										<tr key={u.user_guid || u.userGuid}>
-											<td>{u.full_name || u.fullName}</td>
-											<td>{u.username}</td>
-											<td>{u.email_address || u.emailAddress}</td>
-											<td>
-												<span className="badge bg-primary">{u.user_role || u.userRole}</span>
-											</td>
-											<td>
-												<span className={`badge ${u.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{u.is_active ? t('shared.yes') : t('shared.no')}
-												</span>
-											</td>
-											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(u)}>
-													<Icon name="pencil" size={14} aria-hidden="true" />
-												</Button>
-												<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(u)}>
-													<Icon name="trash" size={14} aria-hidden="true" />
-												</Button>
-											</td>
-										</tr>
-									))}
+									{filtered.map((u) => {
+										const fullName = u.full_name || u.fullName || '';
+										const role = u.user_role || u.userRole || '';
+										const isActive = u.is_active ?? u.isActive;
+
+										return (
+											<tr key={u.user_guid || u.userGuid}>
+												{/* Name + email combined in one cell with avatar */}
+												<td style={{ paddingLeft: '1.25rem' }}>
+													<div className={styles.userCell}>
+														<div className={styles.avatar} aria-hidden="true">
+															{getInitials(fullName)}
+														</div>
+														<div>
+															<div className={styles.userName}>{fullName}</div>
+															<div className={styles.userEmail}>
+																{u.email_address || u.emailAddress}
+															</div>
+														</div>
+													</div>
+												</td>
+
+												<td className="text-muted" style={{ fontSize: '0.875rem' }}>
+													{u.username}
+												</td>
+
+												{/* Coloured role pill */}
+												<td>
+													<span className={`${styles.roleBadge} ${ROLE_CLASS[role] ?? ''}`}>
+														{role}
+													</span>
+												</td>
+
+												{/* Status dot + label */}
+												<td>
+													<span className={`${styles.statusBadge} ${isActive ? styles.statusActive : styles.statusInactive}`}>
+														<span className={styles.statusDot} aria-hidden="true" />
+														{isActive ? t('shared.active') : t('shared.inactive')}
+													</span>
+												</td>
+
+												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
+													<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(u)}>
+														<Icon name="pencil" size={14} aria-hidden="true" />
+													</Button>
+													<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(u)}>
+														<Icon name="trash" size={14} aria-hidden="true" />
+													</Button>
+												</td>
+											</tr>
+										);
+									})}
 								</tbody>
 							</table>
 						</div>
@@ -179,6 +252,7 @@ export default function AdminUsers() {
 				</div>
 			</div>
 
+			{/* ── Create / Edit modal ──────────────────────────────────────── */}
 			{showModal && (
 				<Modal
 					title={editItem ? t('adminUsers.editUser') : t('adminUsers.newUser')}
