@@ -4,6 +4,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../models/badge_model.dart';
 import '../../../ui/widgets/badges/badge_catalog.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/email_signature/email_signature_widgets.dart';
 
 class EmailSignatureScreen extends StatefulWidget {
   const EmailSignatureScreen({super.key});
@@ -232,7 +233,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _BadgeMedalIcon(
+                              EmailSignatureBadgeMedalIcon(
                                 medalColor: badge.medalColor,
                                 ribbonColor: badge.ribbonColor,
                               ),
@@ -426,7 +427,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                             final badgeIndex = _selectedBadges.toList()[index];
                             final badge = BadgeCatalog.all[badgeIndex];
 
-                            return _BadgeMedalIcon(
+                            return EmailSignatureBadgeMedalIcon(
                               medalColor: badge.medalColor,
                               ribbonColor: badge.ribbonColor,
                               size: 40,

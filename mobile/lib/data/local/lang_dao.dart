@@ -1,5 +1,7 @@
-import '../../models/lang_model.dart';
+import 'package:sqflite/sqflite.dart';
+
 import '../../core/database/database_helper.dart';
+import '../../models/lang_model.dart';
 
 class LanguageDao {
   final LocalDatabase _database;
@@ -46,16 +48,19 @@ class LanguageDao {
     final db = await _database.database;
     final batch = db.batch();
     final now = DateTime.now().millisecondsSinceEpoch;
+    final uniqueLanguages = {
+      for (final language in languages) language.id: language,
+    };
 
     batch.delete(LocalDatabase.languagesTable);
 
-    for (final language in languages) {
+    for (final language in uniqueLanguages.values) {
       batch.insert(LocalDatabase.languagesTable, {
         'id': language.id,
         'code': language.code,
         'name': language.name,
         'synced_at': now,
-      });
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
     await batch.commit(noResult: true);
