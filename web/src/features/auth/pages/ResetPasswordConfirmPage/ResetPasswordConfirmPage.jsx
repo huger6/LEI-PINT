@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, StatusPanel, validateResetToken } from '../..';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import { isCode, resolveErrorMessage } from '../../../../validations';
 
 export default function ResetPasswordConfirmPage() {
@@ -63,12 +63,12 @@ export default function ResetPasswordConfirmPage() {
                         title={t('resetPassword.invalidOrExpired')}
                         message={errorMsg || t('resetPassword.invalidOrExpiredDesc')}
                     >
-                        <Link to="/forgot-password">
-                            <FormButton type="button">{t('resetPassword.requestNewLink')}</FormButton>
-                        </Link>
-                        <Link to="/login">
-                            <FormButton variant="ghost" type="button">{t('backToLogin')}</FormButton>
-                        </Link>
+                        <Button as={Link} to="/forgot-password" fullWidth>
+                            {t('resetPassword.requestNewLink')}
+                        </Button>
+                        <Button as={Link} to="/login" variant="outlined" fullWidth>
+                            {t('backToLogin')}
+                        </Button>
                     </StatusPanel>
                 )}
             </AuthCard>

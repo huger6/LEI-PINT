@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getServiceLines, createServiceLine, updateServiceLine, deleteServiceLine, getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
-import FormButton from '../../../components/FormButton/FormButton';
+import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
 
@@ -100,9 +100,9 @@ export default function AdminServiceLines() {
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-4">
 				<h1 className="h3 mb-0">{t('adminServiceLines.title')}</h1>
-				<FormButton variant="primary" onClick={openCreate} className="w-auto">
+				<Button onClick={openCreate}>
 					{t('adminServiceLines.newServiceLine')}
-				</FormButton>
+				</Button>
 			</div>
 
 			<div className="card border-0 shadow-sm">
@@ -140,12 +140,12 @@ export default function AdminServiceLines() {
 												</span>
 											</td>
 											<td className="text-end">
-												<button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEdit(s)}>
+												<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(s)}>
 													<Icon name="pencil" size={14} aria-hidden="true" />
-												</button>
-												<button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(s)}>
+												</Button>
+												<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(s)}>
 													<Icon name="trash" size={14} aria-hidden="true" />
-												</button>
+												</Button>
 											</td>
 										</tr>
 									))}
@@ -162,12 +162,12 @@ export default function AdminServiceLines() {
 					onClose={() => setShowModal(false)}
 					footer={
 						<>
-							<FormButton variant="ghost" onClick={() => setShowModal(false)} className="w-auto">
+							<Button variant="outlined" onClick={() => setShowModal(false)}>
 								{t('shared.cancel')}
-							</FormButton>
-							<FormButton variant="primary" loading={saving} onClick={handleSubmit} className="w-auto">
+							</Button>
+							<Button loading={saving} onClick={handleSubmit}>
 								{editItem ? t('shared.save') : t('shared.create')}
-							</FormButton>
+							</Button>
 						</>
 					}
 				>

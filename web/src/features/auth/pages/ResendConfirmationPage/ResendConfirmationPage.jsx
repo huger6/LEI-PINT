@@ -5,7 +5,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './ResendConfirmationPage.module.css';
@@ -72,11 +72,9 @@ export default function ResendConfirmationPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="resendConfirmation.emailSentDesc" values={{ email }} components={{ strong: <strong /> }} />
 						</p>
-						<Link to="/login" className={styles.emailActionLink}>
-							<FormButton variant="ghost" type="button">
-								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
-							</FormButton>
-						</Link>
+						<Button as={Link} to="/login" variant="outlined" className={styles.emailActionLink} fullWidth>
+							<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
+						</Button>
 					</div>
 				) : (
 					<>
@@ -97,14 +95,12 @@ export default function ResendConfirmationPage() {
 								autoFocus
 							/>
 							<FormAlert message={error} />
-							<FormButton type="submit" loading={loading}>{t('resendConfirmation.resendBtn')}</FormButton>
+							<Button type="submit" loading={loading} fullWidth>{t('resendConfirmation.resendBtn')}</Button>
 						</form>
 						<p className="text-center mt-1 mb-0 small">
-							<Link to="/login" className={styles.emailActionLink}>
-								<FormButton variant="ghost" type="button">
-									<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
-								</FormButton>
-							</Link>
+							<Button as={Link} to="/login" variant="outlined" className={styles.emailActionLink} fullWidth>
+								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
+							</Button>
 						</p>
 					</>
 				)}

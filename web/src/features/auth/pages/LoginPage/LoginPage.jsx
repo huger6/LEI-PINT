@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
 import Logo from '../../../../components/Logo/Logo';
@@ -76,21 +76,24 @@ export default function LoginPage() {
 							{t('login.emailNotConfirmedDesc')}
 						</p>
 						<div className={styles.emailActions}>
-							<Link
+							<Button
+								as={Link}
 								to={loginEmail ? `/resend-confirmation?email=${encodeURIComponent(loginEmail)}` : '/resend-confirmation'}
 								state={{ email: loginEmail }}
 								className={styles.emailActionLink}
-								style={{ color: 'var(--color-primary)' }}
+								fullWidth
 							>
-								<FormButton type="button">
-									{t('login.resendConfirmation')}
-								</FormButton>
-							</Link>
-							<Link to="/login" className={styles.emailActionLink}>
-								<FormButton variant="ghost" type="button">
-									<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
-								</FormButton>
-							</Link>
+								{t('login.resendConfirmation')}
+							</Button>
+							<Button
+								as={Link}
+								to="/login"
+								variant="outlined"
+								className={styles.emailActionLink}
+								fullWidth
+							>
+								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
+							</Button>
 						</div>
 					</div>
 				) : (
@@ -145,9 +148,9 @@ export default function LoginPage() {
 
 							<FormAlert message={error} />
 
-							<FormButton type="submit" loading={loading}>
+							<Button type="submit" loading={loading} fullWidth>
 								{t('login.signIn')}
-							</FormButton>
+							</Button>
 						</form>
 
 						<p className="text-center mt-4 small mb-0" style={{ color: 'var(--color-outline)' }}>

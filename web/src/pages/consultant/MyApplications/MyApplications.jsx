@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
@@ -149,8 +150,9 @@ export default function MyApplications() {
 														: '—'}
 											</td>
 											<td className="text-end">
-												<button
-													className="btn btn-sm btn-outline-primary"
+												<Button
+													size="sm"
+													variant="outlined"
 													title={t('myApplications.viewDetails')}
 													onClick={(e) => {
 														e.stopPropagation();
@@ -163,7 +165,7 @@ export default function MyApplications() {
 														aria-hidden="true"
 														style={{ transform: 'rotate(-90deg)' }}
 													/>
-												</button>
+												</Button>
 											</td>
 										</tr>
 									);

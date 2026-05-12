@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
 import { getUsers } from '../../../features/users/api/usersApi';
@@ -90,9 +91,9 @@ export default function AdminDashboard() {
 					<h5 className="card-title fw-semibold mb-3">{t('shared.quickActions')}</h5>
 					<div className="d-flex flex-wrap gap-2">
 						{quickLinks.map((link) => (
-							<Link key={link.path} to={link.path} className="btn btn-outline-primary">
+							<Button key={link.path} as={Link} to={link.path} variant="outlined">
 								{link.label}
-							</Link>
+							</Button>
 						))}
 					</div>
 				</div>

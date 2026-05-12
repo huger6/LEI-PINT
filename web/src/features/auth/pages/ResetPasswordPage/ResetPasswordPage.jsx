@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
-import FormButton from '../../../../components/FormButton/FormButton';
+import Button from '../../../../components/Button/Button';
 import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
@@ -106,9 +106,9 @@ export default function ResetPasswordPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
 						</p>
-						<Link to="/forgot-password">
-							<FormButton type="button">{t('resetPassword.requestNewLink')}</FormButton>
-						</Link>
+						<Button as={Link} to="/forgot-password" fullWidth>
+							{t('resetPassword.requestNewLink')}
+						</Button>
 					</div>
 				)}
 
@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
 							/>
 
 							<FormAlert message={form.error} />
-							<FormButton type="submit" loading={loading}>{t('resetPassword.resetBtn')}</FormButton>
+							<Button type="submit" loading={loading} fullWidth>{t('resetPassword.resetBtn')}</Button>
 						</form>
 					</>
 				)}
@@ -152,9 +152,9 @@ export default function ResetPasswordPage() {
 						<div className={styles.successIcon}><Icon name="check" size={24} color="currentColor" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('resetPassword.successDesc')}</p>
-						<Link to="/login">
-							<FormButton type="button">{t('goToLogin')}</FormButton>
-						</Link>
+						<Button as={Link} to="/login" fullWidth>
+							{t('goToLogin')}
+						</Button>
 					</div>
 				)}
 			</AuthCard>

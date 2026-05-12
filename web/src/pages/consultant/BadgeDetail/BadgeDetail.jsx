@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
-import FormButton from '../../../components/FormButton/FormButton';
+import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './BadgeDetail.module.css';
 
@@ -167,17 +167,17 @@ export default function BadgeDetail() {
 						<div className="card-body">
 							<h5 className="fw-semibold mb-3">{t('badgeDetail.application')}</h5>
 							{alreadyApplied ? (
-								<FormButton variant="primary" disabled className="w-100">
+								<Button disabled fullWidth>
 									{t('badgeDetail.alreadyApplied')}
-								</FormButton>
+								</Button>
 							) : (
-								<FormButton variant="primary" onClick={handleApply} loading={applying} className="w-100">
+								<Button onClick={handleApply} loading={applying} fullWidth>
 									{t('badgeDetail.applyNow')}
-								</FormButton>
+								</Button>
 							)}
-							<Link to="/badges" className="btn btn-outline-primary w-100 mt-2">
+							<Button as={Link} to="/badges" variant="outlined" fullWidth className="mt-2">
 								{t('badgeDetail.backToCatalogBtn')}
-							</Link>
+							</Button>
 						</div>
 					</div>
 				</div>
