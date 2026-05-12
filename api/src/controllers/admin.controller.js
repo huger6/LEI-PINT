@@ -384,7 +384,7 @@ const createUser = async (req, res) => {
             }
         });
     } catch (error) {
-        if (t) await t.rollback();
+        if (t && !t.finished) await t.rollback();
 
         if (error.name === 'ZodError') {
             return res.status(400).json({
@@ -600,7 +600,7 @@ const updateUser = async (req, res) => {
             code: 'ADMIN_USER_UPDATED'
         });
     } catch (error) {
-        if (t) await t.rollback();
+        if (t && !t.finished) await t.rollback();
 
         if (error.name === 'ZodError') {
             return res.status(400).json({
@@ -777,7 +777,7 @@ const resetUserPassword = async (req, res) => {
             code: 'ADMIN_PASSWORD_RESET_EMAIL_SENT'
         });
     } catch (error) {
-        if (t) await t.rollback();
+        if (t && !t.finished) await t.rollback();
 
         if (error.name === 'ZodError') {
             return res.status(400).json({
