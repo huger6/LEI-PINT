@@ -37,7 +37,7 @@ export default function ConfirmEmailPage() {
 				<title>{t('confirmEmail.title')}</title>
 				<meta name="description" content={t('confirmEmail.metaDescription')} />
 			</Helmet>
-			<AuthCard>
+			<div>
 				{status === 'loading' && (
 					<StatusPanel
 						variant="loading"
@@ -72,7 +72,7 @@ export default function ConfirmEmailPage() {
 						</Link>
 					</StatusPanel>
 				)}
-			</AuthCard>
+			</div>
 		</AuthLayout>
 	);
 }
