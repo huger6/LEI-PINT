@@ -38,7 +38,7 @@ const ensureReferenceDataExists = async ({
     }
 
     if (areas?.length) {
-        const areaIds = areas.map((area) => area.area_id);
+        const areaIds = [...new Set(areas.map((area) => area.area_id))];
         const availableAreas = await models.areas.findAll({
             attributes: ['area_id'],
             where: {
@@ -362,9 +362,20 @@ const createUser = async (req, res) => {
                 emailError: emailResult?.error
             });
 
-            return res.status(502).json({
-                success: false,
-                code: 'ADMIN_USER_CREATE_EMAIL_FAILED'
+            return res.status(201).json({
+                success: true,
+                code: 'ADMIN_USER_CREATE_EMAIL_FAILED',
+                data: {
+                    user_guid: newUser.user_guid,
+                    full_name: newUser.full_name,
+                    username: newUser.username,
+                    email_address: newUser.email_address,
+                    user_role: newUser.user_role,
+                    location_id: newUser.location_id,
+                    language_id: newUser.language_id,
+                    is_active: newUser.is_active,
+                    email_confirmed: newUser.email_confirmed
+                }
             });
         }
 
@@ -447,15 +458,6 @@ const updateUser = async (req, res) => {
 
         const targetRole = payload.user_role || user.user_role;
 
-        // Prevent promoting any user to Administrator via this endpoint
-        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
-            });
-        }
-
         if (user.user_role === 'Administrator' && payload.user_role && payload.user_role !== 'Administrator') {
             await t.rollback();
             return res.status(400).json({
@@ -480,21 +482,7 @@ const updateUser = async (req, res) => {
             });
         }
 
-        if (payload.user_role === 'Consultant' && !payload.areas) {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CONSULTANT_NEEDS_AREAS'
-            });
-        }
 
-        if (payload.user_role === 'Service Line Leader' && !payload.service_line_id) {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_SLL_NEEDS_SERVICE_LINE'
-            });
-        }
 
         const shouldCheckUniqueFields = payload.username || payload.email_address;
         if (shouldCheckUniqueFields) {
@@ -766,8 +754,8 @@ const resetUserPassword = async (req, res) => {
                 emailError: emailResult?.error
             });
 
-            return res.status(502).json({
-                success: false,
+            return res.status(200).json({
+                success: true,
                 code: 'ADMIN_PASSWORD_RESET_EMAIL_FAILED'
             });
         }
