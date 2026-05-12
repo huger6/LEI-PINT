@@ -13,7 +13,7 @@ const getAvailableLocations = async (req, res) => {
         if (cachedData) {
             return res.status(200).json({
                 success: true,
-                message: "Locations acquired successfully.",
+                code: "LOCATION_LIST_SUCCESS",
                 data: JSON.parse(cachedData)
             });
         }
@@ -26,7 +26,7 @@ const getAvailableLocations = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Locations acquired successfully.",
+            code: "LOCATION_LIST_SUCCESS",
             data: locations
         });
     } catch (error) {
@@ -37,7 +37,7 @@ const getAvailableLocations = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing available locations.",
+            code: "LOCATION_LIST_FAILED",
             requestId
         });
     }

@@ -13,12 +13,12 @@ const getAvailableLanguages = async (req, res) => {
         if (cachedData) {
             return res.status(200).json({
                 success: true,
-                message: "Languages acquired successfully.",
+                code: "LANGUAGE_LIST_SUCCESS",
                 data: JSON.parse(cachedData)
             });
         }
 
-        const languages = await models.preferred_lang.findAll({
+        const languages = await models.languages.findAll({
             raw: true
         });
 
@@ -26,7 +26,7 @@ const getAvailableLanguages = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Languages acquired successfully.",
+            code: "LANGUAGE_LIST_SUCCESS",
             data: languages
         });
     } catch (error) {
@@ -37,7 +37,7 @@ const getAvailableLanguages = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Error processing available languages.",
+            code: "LANGUAGE_LIST_FAILED",
             requestId
         });
     }
@@ -47,3 +47,4 @@ const getAvailableLanguages = async (req, res) => {
 module.exports = {
     getAvailableLanguages
 };
+
