@@ -17,7 +17,7 @@ router.get('/', loginRequired, applicationController.getApplications);
  * @route   GET /api/applications/:applicationGuid
  * @desc    Application details
  */
-router.get('/:applicationId', loginRequired, applicationController.getApplicationById);
+router.get('/:applicationGuid', loginRequired, applicationController.getApplicationById);
 
 /**
  * @route   POST /api/applications/start
@@ -28,24 +28,32 @@ router.post('/start', loginRequired, applicationController.startApplication);
 /**
  * @route   POST /api/applications/:applicationGuid/upload-url
  */
-router.post('/:applicationId/upload-url', loginRequired, applicationController.getUploadUrl);
+router.post('/:applicationGuid/upload-url', loginRequired, applicationController.getUploadUrl);
 
 /**
  * @route   POST /api/applications/:applicationGuid/evidences
  * @desc    Uploads or updates an evidence for a given requirement
  */
-router.post('/:applicationId/evidences', loginRequired, applicationController.upsertEvidence);
+router.post('/:applicationGuid/evidences', loginRequired, applicationController.upsertEvidence);
 
 /**
  * @route   POST /api/applications/:applicationGuid/submit
  * @desc    Submits application (state -> Submitted)
  */
-router.post('/:applicationId/submit', loginRequired, applicationController.submitApplication);
+router.post('/:applicationGuid/submit', loginRequired, applicationController.submitApplication);
 
 /**
- * @route   POST /api/applications/:applicationGuid/validate
- * @desc    Aprove, reject or send back
+ * @route   PUT /api/applications/:applicationGuid/validate
+ * @desc    Accept, reject or move to 'In validation'
+ * @access  Talent Manager, Service Line Leader, Administrator
  */
-//router.post('/:applicationId/validate', loginRequired, applicationController.validateApplication);
+router.put('/:applicationGuid/validate', loginRequired, applicationController.validateApplication);
+
+/**
+ * @route   PUT /api/applications/:applicationGuid/evidences/:evidenceId/review
+ * @desc    Approve or reject a single evidence; awards requirement points when approved
+ * @access  Talent Manager, Service Line Leader
+ */
+router.put('/:applicationGuid/evidences/:evidenceId/review', loginRequired, applicationController.reviewEvidence);
 
 module.exports = router;

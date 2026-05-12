@@ -1,21 +1,17 @@
 const { z } = require('zod');
+require('./error-map');
 const { positiveIntIdRule, imgUrlRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
-const optionalSearchRule = z.preprocess(
-	(value) => {
-		if (typeof value !== 'string') {
-			return value;
-		}
-
+const optionalSearchRule = z
+	.string()
+	.max(255, 'VALIDATION_SEARCH_QUERY_MAX_LENGTH')
+	.optional()
+	.transform((value) => {
+		if (value === undefined) return undefined;
 		const trimmed = value.trim();
-		return trimmed === '' ? undefined : trimmed;
-	},
-	z.string()
-		.max(255, 'Search query is too long.')
-		.transform(sanitizeText)
-		.optional()
-);
+		return trimmed === '' ? undefined : sanitizeText(trimmed);
+	});
 
 const booleanQueryRule = z.preprocess(
 	(value) => {
@@ -32,8 +28,8 @@ const booleanQueryRule = z.preprocess(
 const getAvailableLearningPathsQuerySchema = z.object({
 	search: optionalSearchRule,
 	serviceLineId: positiveIntIdRule.optional(),
-	page: z.coerce.number().int().positive('Page must be a positive integer.').default(1),
-	limit: z.coerce.number().int().positive('Limit must be a positive integer.').max(100, 'Limit cannot exceed 100.').default(12)
+	page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
+	limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(12)
 });
 
 const getServiceLinesQuerySchema = z.object({
@@ -67,11 +63,11 @@ const getBadgesQuerySchema = z.object({
 
 // Path parameter schemas
 const pathSlugParamSchema = z.object({
-	pathSlug: z.string().trim().min(1, "Learning Path slug is required.").max(500, "Slug's maximum length is 500.")
+	pathSlug: z.string().trim().min(1, 'VALIDATION_LEARNING_PATH_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 const slSlugParamSchema = z.object({
-	slSlug: z.string().trim().min(1, "Service Line slug is required.").max(500, "Slug's maximum length is 500.")
+	slSlug: z.string().trim().min(1, 'VALIDATION_SERVICE_LINE_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
 // Request body schemas
@@ -80,7 +76,7 @@ const createLearningPathBodySchema = z.object({
 
 	pathSlug: z.string().trim()
 		.max(150)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -93,11 +89,13 @@ const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
 }).partial();
 
 const createServiceLineBodySchema = z.object({
+	learningPathId: positiveIntIdRule.optional(),
+
 	serviceLineName: z.string().trim().min(2).max(100),
 
 	slSlug: z.string().trim()
 		.max(150)
-		.regex(/^[a-z0-9\-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens.")
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
 		.optional()
 		.nullable(),
 
@@ -110,6 +108,95 @@ const updateServiceLineBodySchema = createServiceLineBodySchema.extend({
 	isActive: z.boolean().optional()
 }).partial();
 
+// --- Areas ---
+const areaSlugParamSchema = z.object({
+	areaSlug: z.string().trim().min(1, 'VALIDATION_AREA_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
+});
+
+const createAreaBodySchema = z.object({
+	serviceLineId: positiveIntIdRule.optional(),
+
+	areaName: z.string().trim().min(2).max(100),
+
+	areaSlug: z.string().trim()
+		.max(150)
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
+		.optional()
+		.nullable(),
+
+	areaCode: z.string().trim().max(20).optional().nullable(),
+
+	areaDescription: z.string().trim().max(5000).optional().nullable(),
+
+	imgUrl: imgUrlRule.optional().nullable()
+});
+
+const updateAreaBodySchema = createAreaBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
+// --- Levels (Progression Stages) ---
+const stageCodeParamSchema = z.object({
+	stageCode: z.string().trim().min(1, 'VALIDATION_STAGE_CODE_REQUIRED').max(20, 'VALIDATION_STAGE_CODE_MAX_LENGTH')
+});
+
+const createLevelBodySchema = z.object({
+	areaId: positiveIntIdRule.optional(),
+
+	stageCode: z.string().trim().min(1).max(20),
+
+	stageTitle: z.string().trim().min(2).max(100),
+
+	stageSequence: z.coerce.number().int().positive().optional().nullable(),
+
+	stageDescription: z.string().trim().max(5000).optional().nullable()
+});
+
+const updateLevelBodySchema = createLevelBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
+// --- Badges ---
+const badgeSlugParamSchema = z.object({
+	badgeSlug: z.string().trim().min(1, 'VALIDATION_BADGE_SLUG_REQUIRED').max(100, 'VALIDATION_BADGE_SLUG_MAX_100')
+});
+
+const createBadgeBodySchema = z.object({
+	progressionStageId: positiveIntIdRule.optional(),
+	goalId: positiveIntIdRule.optional().nullable(),
+
+	badgeTitle: z.string().trim().min(2).max(100),
+
+	badgeSlug: z.string().trim()
+		.max(100)
+		.regex(/^[a-z0-9\-]+$/, 'VALIDATION_SLUG_INVALID_FORMAT')
+		.optional()
+		.nullable(),
+
+	badgeType: z.string().trim().min(1).max(128),
+
+	badgePoints: z.coerce.number().int().min(0).default(0),
+
+	expirationDurationDays: z.coerce.number().int().positive().optional().nullable(),
+
+	estimatedTimeToAcquire: z.string().trim()
+		.regex(/^\d{2}:\d{2}(:\d{2})?$/, 'VALIDATION_ESTIMATED_TIME_INVALID_FORMAT')
+		.optional()
+		.nullable(),
+
+	badgeDescription: z.string().trim().max(5000).optional().nullable(),
+
+	badgeImgUrl: imgUrlRule.optional().nullable()
+});
+
+const updateBadgeBodySchema = createBadgeBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
+const slugQuerySchema = z.object({
+	slug: z.string().trim().min(1, 'VALIDATION_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
+});
+
 module.exports = {
 	// Query schemas
 	getAvailableLearningPathsQuerySchema,
@@ -117,14 +204,24 @@ module.exports = {
 	getAreasQuerySchema,
 	getLevelsQuerySchema,
 	getBadgesQuerySchema,
+	slugQuerySchema,
 
 	// Path parameter schemas
 	pathSlugParamSchema,
 	slSlugParamSchema,
+	areaSlugParamSchema,
+	stageCodeParamSchema,
+	badgeSlugParamSchema,
 
 	// Request body schemas
 	createLearningPathBodySchema,
 	updateLearningPathBodySchema,
 	createServiceLineBodySchema,
-	updateServiceLineBodySchema
+	updateServiceLineBodySchema,
+	createAreaBodySchema,
+	updateAreaBodySchema,
+	createLevelBodySchema,
+	updateLevelBodySchema,
+	createBadgeBodySchema,
+	updateBadgeBodySchema
 };
