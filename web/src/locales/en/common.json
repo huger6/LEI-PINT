@@ -408,7 +408,18 @@
 		"state": "State",
 		"submissionDate": "Submission Date",
 		"date": "Date",
-		"user": "User"
+		"user": "User",
+		"allRoles": "All Roles",
+		"allStatuses": "All Statuses",
+		"moreFilters": "More Filters",
+		"clearAll": "Clear All",
+		"serviceLine": "Service Line",
+		"emailConfirmed": "Email Confirmed",
+		"gdpr": "GDPR Accepted",
+		"registeredFrom": "Registered From",
+		"registeredTo": "Registered To",
+		"pointsMin": "Min Points",
+		"pointsMax": "Max Points"
 	},
 	"adminDashboard": {
 		"title": "Administration Panel",
@@ -426,10 +437,15 @@
 		"title": "Users",
 		"newUser": "New User",
 		"editUser": "Edit User",
-		"filterByRole": "Filter by role:",
-		"noUsers": "No users",
-		"noUsersDesc": "No users found.",
-		"fullName": "Full Name"
+		"subtitle": "Manage platform users, roles and permissions.",
+		"filterByRole": "Filter by role",
+		"filterByStatus": "Filter by status",
+		"searchPlaceholder": "Search by name or email…",
+		"noUsers": "No users found",
+		"noUsersDesc": "Try adjusting the filters or create a new user.",
+		"fullName": "Full Name",
+		"resultsCount": "Showing {{count}} user",
+		"resultsCount_other": "Showing {{count}} users"
 	},
 	"adminBadges": {
 		"title": "Badges",

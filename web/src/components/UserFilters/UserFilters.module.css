@@ -1,0 +1,172 @@
+/* ── Primary row: search + quick-select filters + action buttons ─────────── */
+.primaryRow {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	flex-wrap: wrap;
+}
+
+/* ── Global search input ─────────────────────────────────────────────────── */
+.searchWrapper {
+	position: relative;
+	flex: 1 1 220px;
+	min-width: 0;
+}
+
+.searchIcon {
+	position: absolute;
+	left: 0.7rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--color-outline);
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Matches the height / border-radius of CustomSelect for visual alignment */
+.searchInput {
+	padding-left: 2.1rem !important;
+	border-radius: 12px !important;
+	border: 1.5px solid var(--color-outline) !important;
+	background: var(--gradient-surface-field) !important;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	font-size: 0.9375rem !important;
+}
+
+.searchInput:focus {
+	border-color: var(--color-primary) !important;
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring) !important;
+	outline: none;
+}
+
+/* ── Quick-filter select wrapper ─────────────────────────────────────────── */
+.selectWrapper {
+	flex: 0 0 175px;
+	min-width: 0;
+}
+
+/* ── "More Filters" toggle ───────────────────────────────────────────────── */
+.advancedToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0 0.8rem;
+	height: calc(1.5em + 0.75rem + 3px); /* matches form-control height */
+	border: 1.5px solid var(--color-primary-border-soft);
+	border-radius: 10px;
+	background: transparent;
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 600;
+	font-family: inherit;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.advancedToggle:hover {
+	border-color: var(--color-primary-border-medium);
+	color: var(--color-primary);
+	background: var(--color-primary-hover-bg-soft);
+}
+
+.advancedToggleActive {
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+	background: var(--color-primary-hover-bg-soft);
+}
+
+/* Badge showing how many advanced filters are active */
+.activeBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	border-radius: 9px;
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* ── Advanced filters panel ──────────────────────────────────────────────── */
+.advancedRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	align-items: flex-end;
+	padding-top: 1rem;
+	margin-top: 0.875rem;
+	border-top: 1px solid #f0f2f4;
+}
+
+/* Advanced filter: selects reuse the same width class */
+/* (already defined above; keep selectWrapper for advanced too) */
+
+/* Date picker column */
+.dateWrapper {
+	flex: 0 0 155px;
+	min-width: 0;
+}
+
+/* Numeric range inputs (points min / max) */
+.numberWrapper {
+	flex: 0 0 108px;
+	min-width: 0;
+}
+
+.numberInput {
+	border-radius: 10px !important;
+}
+
+/* Uppercase section label rendered above each advanced filter */
+.filterLabel {
+	display: block;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-outline);
+	margin-bottom: 5px;
+}
+
+/* ── Responsive breakpoints ──────────────────────────────────────────────── */
+
+/* Tablet: allow selects to grow a bit */
+@media (max-width: 768px) {
+	.selectWrapper {
+		flex: 1 1 140px;
+	}
+}
+
+/* Mobile: stack everything full-width */
+@media (max-width: 576px) {
+	.primaryRow {
+		gap: 0.5rem;
+	}
+
+	.searchWrapper {
+		flex: 1 1 100%;
+	}
+
+	.selectWrapper {
+		flex: 1 1 100%;
+	}
+
+	.advancedToggle {
+		flex: 1;
+		justify-content: center;
+	}
+
+	/* Date pickers and number inputs sit side-by-side on mobile */
+	.dateWrapper {
+		flex: 1 1 calc(50% - 0.5rem);
+	}
+
+	.numberWrapper {
+		flex: 1 1 calc(50% - 0.5rem);
+	}
+}

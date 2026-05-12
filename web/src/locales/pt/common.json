@@ -408,7 +408,18 @@
 		"state": "Estado",
 		"submissionDate": "Data Submissão",
 		"date": "Data",
-		"user": "Utilizador"
+		"user": "Utilizador",
+		"allRoles": "Todas as Funções",
+		"allStatuses": "Todos os Estados",
+		"moreFilters": "Mais Filtros",
+		"clearAll": "Limpar Tudo",
+		"serviceLine": "Linha de Serviço",
+		"emailConfirmed": "Email Confirmado",
+		"gdpr": "RGPD Aceite",
+		"registeredFrom": "Registado Desde",
+		"registeredTo": "Registado Até",
+		"pointsMin": "Pontos Mínimos",
+		"pointsMax": "Pontos Máximos"
 	},
 	"adminDashboard": {
 		"title": "Painel de Administração",
@@ -426,10 +437,15 @@
 		"title": "Utilizadores",
 		"newUser": "Novo Utilizador",
 		"editUser": "Editar Utilizador",
-		"filterByRole": "Filtrar por role:",
-		"noUsers": "Sem utilizadores",
-		"noUsersDesc": "Nenhum utilizador encontrado.",
-		"fullName": "Nome Completo"
+		"subtitle": "Gerir utilizadores, funções e permissões da plataforma.",
+		"filterByRole": "Filtrar por função",
+		"filterByStatus": "Filtrar por estado",
+		"searchPlaceholder": "Pesquisar por nome ou email…",
+		"noUsers": "Nenhum utilizador encontrado",
+		"noUsersDesc": "Tente ajustar os filtros ou crie um novo utilizador.",
+		"fullName": "Nome Completo",
+		"resultsCount": "A mostrar {{count}} utilizador",
+		"resultsCount_other": "A mostrar {{count}} utilizadores"
 	},
 	"adminBadges": {
 		"title": "Badges",
