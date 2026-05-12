@@ -38,7 +38,7 @@ const getUnreadByTypeFromNotifications = (notificationsList = []) => {
 };
 
 export function UserProvider({ children }) {
-	const { token, isAuthenticated } = useAuth();
+	const { token, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
 	// ── User & language state ─────────────────────────────────────
 	const [user, setUser] = useState(null);
@@ -86,6 +86,11 @@ export function UserProvider({ children }) {
 
 	// ── User profile ──────────────────────────────────────────────
 	useEffect(() => {
+		if (isAuthLoading) {
+			setIsUserLoading(true);
+			return;
+		}
+
 		if (!isAuthenticated) {
 			setUser(null);
 			setLang(null);
@@ -102,7 +107,7 @@ export function UserProvider({ children }) {
 			})
 			.catch(() => { })
 			.finally(() => setIsUserLoading(false));
-	}, [isAuthenticated, token]);
+	}, [isAuthLoading, isAuthenticated, token]);
 
 	const handleLanguageChange = useCallback(async (languageId, languageIso) => {
 		i18next.changeLanguage(languageIso);

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth } from '../..';
@@ -17,12 +17,21 @@ export default function LoginPage() {
 	const { t } = useTranslation();
 	const { login } = useAuth();
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [form, setForm] = useState({ identifier: '', password: '', remember: false });
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
 	const [loading, setLoading] = useState(false);
+
+	const from = location.state?.from?.pathname || '/';
+
+	useEffect(() => {
+		if (isAuthenticated) {
+			navigate(from, { replace: true });
+		}
+	}, [isAuthenticated, navigate, from]);
 
 	const loginEmail = form.identifier.trim().includes('@') ? form.identifier.trim() : '';
 

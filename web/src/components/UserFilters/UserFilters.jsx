@@ -16,7 +16,6 @@ const ADVANCED_KEYS = [
 	'serviceLine',
 	'area',
 	'dateFrom',
-	'dateTo',
 	'pointsMin',
 	'pointsMax',
 ];
@@ -32,7 +31,6 @@ export const EMPTY_FILTERS = {
 	serviceLine: '',
 	area: '',
 	dateFrom: '',
-	dateTo: '',
 	pointsMin: '',
 	pointsMax: '',
 };
@@ -130,10 +128,8 @@ export default function UserFilters({
 		<div className="card border-0 shadow-sm mb-3">
 			<div className="card-body">
 
-				{/* ── Primary filter row ─────────────────────────────────────────── */}
-				<div className={styles.primaryRow}>
-
-					{/* Global text search (full_name or email_address) */}
+				{/* ── Row 1: full-width search input ────────────────────────────── */}
+				<div className={styles.searchRow}>
 					<div className={styles.searchWrapper}>
 						<Icon
 							name="search"
@@ -151,6 +147,10 @@ export default function UserFilters({
 							aria-label={t('adminUsers.searchPlaceholder')}
 						/>
 					</div>
+				</div>
+
+				{/* ── Row 2: quick-select filters + toggle + clear ──────────────── */}
+				<div className={styles.filtersRow}>
 
 					{/* Role quick-filter */}
 					<div className={styles.selectWrapper}>
@@ -292,31 +292,12 @@ export default function UserFilters({
 							<label className={styles.filterLabel}>
 								{t('shared.registeredFrom')}
 							</label>
-							{/* Cap the "from" picker at the current "to" value so the range stays valid */}
 							<DatePicker
 								id="filter_date_from"
 								name="dateFrom"
 								value={filters.dateFrom}
 								onChange={handleChange}
-								max={filters.dateTo || undefined}
 								ariaLabel={t('shared.registeredFrom')}
-								placeholder="DD-MM-YYYY"
-							/>
-						</div>
-
-						{/* Registration date range — To */}
-						<div className={styles.dateWrapper}>
-							<label className={styles.filterLabel}>
-								{t('shared.registeredTo')}
-							</label>
-							{/* The "to" picker cannot go before the "from" value */}
-							<DatePicker
-								id="filter_date_to"
-								name="dateTo"
-								value={filters.dateTo}
-								onChange={handleChange}
-								min={filters.dateFrom || undefined}
-								ariaLabel={t('shared.registeredTo')}
 								placeholder="DD-MM-YYYY"
 							/>
 						</div>
