@@ -560,6 +560,53 @@
 		"description": "A página que procura não existe ou foi movida.",
 		"backHome": "Voltar ao Início"
 	},
+	"errorCodePage": {
+		"backHome": "Voltar ao Início",
+		"defaultTitle": "Erro inesperado",
+		"defaultDescription": "Ocorreu um erro inesperado. Por favor tente novamente mais tarde.",
+		"codes": {
+			"400": {
+				"title": "Pedido inválido",
+				"description": "O pedido não pôde ser compreendido pelo servidor."
+			},
+			"401": {
+				"title": "Não autorizado",
+				"description": "Tem de iniciar sessão para aceder a esta página."
+			},
+			"403": {
+				"title": "Proibido",
+				"description": "Não tem permissão para ver esta página."
+			},
+			"404": {
+				"title": "Página não encontrada",
+				"description": "A página que procura não existe ou foi movida."
+			},
+			"408": {
+				"title": "Tempo de pedido esgotado",
+				"description": "O servidor excedeu o tempo de espera pelo seu pedido."
+			},
+			"429": {
+				"title": "Demasiados pedidos",
+				"description": "Fez demasiados pedidos. Por favor aguarde um momento e tente novamente."
+			},
+			"500": {
+				"title": "Erro interno do servidor",
+				"description": "Algo correu mal do nosso lado. Por favor tente novamente mais tarde."
+			},
+			"502": {
+				"title": "Gateway inválido",
+				"description": "O servidor recebeu uma resposta inválida. Por favor tente novamente mais tarde."
+			},
+			"503": {
+				"title": "Serviço indisponível",
+				"description": "O serviço está temporariamente indisponível. Por favor tente novamente mais tarde."
+			},
+			"504": {
+				"title": "Tempo limite do gateway",
+				"description": "O servidor não respondeu a tempo. Por favor tente novamente mais tarde."
+			}
+		}
+	},
 	"errorBoundary": {
 		"title": "Oops!",
 		"subtitle": "Algo correu mal",

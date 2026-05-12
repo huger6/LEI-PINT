@@ -559,6 +559,53 @@
 		"description": "La página que buscas no existe o ha sido movida.",
 		"backHome": "Volver al Inicio"
 	},
+	"errorCodePage": {
+		"backHome": "Volver al Inicio",
+		"defaultTitle": "Error inesperado",
+		"defaultDescription": "Ocurrió un error inesperado. Por favor inténtalo de nuevo más tarde.",
+		"codes": {
+			"400": {
+				"title": "Solicitud incorrecta",
+				"description": "La solicitud no pudo ser comprendida por el servidor."
+			},
+			"401": {
+				"title": "No autorizado",
+				"description": "Necesitas iniciar sesión para acceder a esta página."
+			},
+			"403": {
+				"title": "Prohibido",
+				"description": "No tienes permiso para ver esta página."
+			},
+			"404": {
+				"title": "Página no encontrada",
+				"description": "La página que buscas no existe o ha sido movida."
+			},
+			"408": {
+				"title": "Tiempo de espera agotado",
+				"description": "El servidor agotó el tiempo de espera de tu solicitud."
+			},
+			"429": {
+				"title": "Demasiadas solicitudes",
+				"description": "Has hecho demasiadas solicitudes. Por favor espera un momento e inténtalo de nuevo."
+			},
+			"500": {
+				"title": "Error interno del servidor",
+				"description": "Algo salió mal de nuestro lado. Por favor inténtalo de nuevo más tarde."
+			},
+			"502": {
+				"title": "Puerta de enlace incorrecta",
+				"description": "El servidor recibió una respuesta inválida. Por favor inténtalo de nuevo más tarde."
+			},
+			"503": {
+				"title": "Servicio no disponible",
+				"description": "El servicio está temporalmente no disponible. Por favor inténtalo de nuevo más tarde."
+			},
+			"504": {
+				"title": "Tiempo de espera de la puerta de enlace",
+				"description": "El servidor no respondió a tiempo. Por favor inténtalo de nuevo más tarde."
+			}
+		}
+	},
 	"errorBoundary": {
 		"title": "¡Ups!",
 		"subtitle": "Algo salió mal",

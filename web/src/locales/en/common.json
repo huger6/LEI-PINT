@@ -560,6 +560,53 @@
 		"description": "The page you are looking for does not exist or has been moved.",
 		"backHome": "Back to Home"
 	},
+	"errorCodePage": {
+		"backHome": "Back to Home",
+		"defaultTitle": "Unexpected Error",
+		"defaultDescription": "An unexpected error occurred. Please try again later.",
+		"codes": {
+			"400": {
+				"title": "Bad Request",
+				"description": "The request could not be understood by the server."
+			},
+			"401": {
+				"title": "Unauthorized",
+				"description": "You need to log in to access this page."
+			},
+			"403": {
+				"title": "Forbidden",
+				"description": "You do not have permission to view this page."
+			},
+			"404": {
+				"title": "Page Not Found",
+				"description": "The page you are looking for does not exist or has been moved."
+			},
+			"408": {
+				"title": "Request Timeout",
+				"description": "The server timed out waiting for your request."
+			},
+			"429": {
+				"title": "Too Many Requests",
+				"description": "You have made too many requests. Please wait a moment and try again."
+			},
+			"500": {
+				"title": "Internal Server Error",
+				"description": "Something went wrong on our end. Please try again later."
+			},
+			"502": {
+				"title": "Bad Gateway",
+				"description": "The server received an invalid response. Please try again later."
+			},
+			"503": {
+				"title": "Service Unavailable",
+				"description": "The service is temporarily unavailable. Please try again later."
+			},
+			"504": {
+				"title": "Gateway Timeout",
+				"description": "The server did not respond in time. Please try again later."
+			}
+		}
+	},
 	"errorBoundary": {
 		"title": "Oops!",
 		"subtitle": "Something went wrong",
