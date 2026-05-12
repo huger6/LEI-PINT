@@ -1,10 +1,10 @@
 const { models } = require('../config/db');
-const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const { handleListRequest } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 
 // GET /api/levels
-// OR
+// OR 
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
 const getLevels = async (req, res) => {
     try {
@@ -43,7 +43,7 @@ const getLevels = async (req, res) => {
             if (!area) {
                 return res.status(404).json({
                     success: false,
-                    code: "LEVEL_PARENT_AREA_NOT_FOUND"
+                    message: "Parent Area not found."
                 });
             }
 
@@ -63,7 +63,7 @@ const getLevels = async (req, res) => {
         logger.error('Error listing Levels', { error });
         return res.status(500).json({
             success: false,
-            code: "LEVEL_LIST_FAILED"
+            message: "Error listing Levels."
         });
     }
 };
@@ -135,7 +135,7 @@ const getLevelByCode = async (req, res) => {
         if (!level) {
             return res.status(404).json({
                 success: false,
-                code: "LEVEL_NOT_FOUND"
+                message: "Level not found or does not belong to this hierarchy."
             });
         }
 
@@ -148,296 +148,12 @@ const getLevelByCode = async (req, res) => {
         logger.error('Error fetching Level', { error });
         return res.status(500).json({
             success: false,
-            code: "LEVEL_FETCH_FAILED"
-        });
-    }
-};
-
-// Helper: resolve area context from nested route slugs
-const resolveAreaFromHierarchy = async ({ areaSlug, slSlug, pathSlug }) => {
-    const includeBlock = [];
-
-    if (slSlug) {
-        const slInclude = {
-            model: models.service_lines,
-            as: 'service_line',
-            where: { sl_slug: slSlug },
-            attributes: []
-        };
-
-        if (pathSlug) {
-            slInclude.include = [{
-                model: models.learning_paths,
-                as: 'learning_path',
-                where: { path_slug: pathSlug },
-                attributes: []
-            }];
-        }
-        includeBlock.push(slInclude);
-    }
-
-    return models.areas.findOne({
-        where: { area_slug: areaSlug },
-        include: includeBlock,
-        attributes: ['area_id']
-    });
-};
-
-// Helper: find or create stage_code by string
-const getOrCreateStageCode = async (stageCode, userId) => {
-    let row = await models.stage_codes.findOne({ where: { stage_code: stageCode } });
-    if (row) return row;
-
-    return models.stage_codes.create({
-        stage_code: stageCode,
-        created_by: userId,
-        updated_by: userId
-    });
-};
-
-// POST /api/levels
-// OR
-// POST /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels
-const createLevel = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { pathSlug, slSlug, areaSlug } = req.params;
-
-        const {
-            areaId: bodyAreaId,
-            stageCode,
-            stageTitle,
-            stageSequence,
-            stageDescription
-        } = validations.createLevelBodySchema.parse(req.body);
-
-        // Resolve parent area: prefer nested route, fall back to body
-        let areaId = bodyAreaId;
-
-        if (areaSlug) {
-            const area = await resolveAreaFromHierarchy({ areaSlug, slSlug, pathSlug });
-            if (!area) {
-                return res.status(404).json({
-                    success: false,
-                    code: "LEVEL_PARENT_AREA_NOT_FOUND"
-                });
-            }
-            areaId = area.area_id;
-        }
-
-        if (!areaId) {
-            return res.status(400).json({
-                success: false,
-                code: "LEVEL_AREA_ID_REQUIRED"
-            });
-        }
-
-        const stageCodeRow = await getOrCreateStageCode(stageCode, userId);
-
-        const newLevel = await models.progression_stages.create({
-            area_id: areaId,
-            stage_code_id: stageCodeRow.stage_code_id,
-            stage_title: stageTitle,
-            stage_sequence: stageSequence ?? null,
-            stage_description: stageDescription || null,
-            created_by: userId,
-            updated_by: userId
-        });
-
-        await invalidateCacheByPrefix('levels:list');
-
-        return res.status(201).json({
-            success: true,
-            code: "LEVEL_CREATED",
-            data: newLevel
-        });
-
-    } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
-
-        logger.error('Error creating Level', { error });
-        return res.status(500).json({
-            success: false,
-            code: "LEVEL_CREATE_FAILED"
-        });
-    }
-};
-
-// Helper: locate a progression_stage by stage_code (and optional hierarchy)
-const findLevelInHierarchy = async ({ stageCode, areaSlug, slSlug, pathSlug }) => {
-    const includeBlock = [
-        {
-            model: models.stage_codes,
-            as: 'stage_code',
-            where: { stage_code: stageCode }
-        }
-    ];
-
-    if (areaSlug) {
-        const areaInclude = {
-            model: models.areas,
-            as: 'area',
-            where: { area_slug: areaSlug },
-            attributes: []
-        };
-
-        if (slSlug) {
-            const slInclude = {
-                model: models.service_lines,
-                as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
-            }
-            areaInclude.include = [slInclude];
-        }
-        includeBlock.push(areaInclude);
-    }
-
-    return models.progression_stages.findOne({ include: includeBlock });
-};
-
-// PUT /api/levels/:stageCode
-// OR
-// PUT /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
-const updateLevel = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { pathSlug, slSlug, areaSlug } = req.params;
-
-        const { stageCode } = validations.stageCodeParamSchema.parse(req.params);
-
-        const {
-            areaId,
-            stageCode: newStageCode,
-            stageTitle,
-            stageSequence,
-            stageDescription,
-            isActive
-        } = validations.updateLevelBodySchema.parse(req.body);
-
-        const level = await findLevelInHierarchy({ stageCode, areaSlug, slSlug, pathSlug });
-
-        if (!level) {
-            return res.status(404).json({
-                success: false,
-                code: "LEVEL_NOT_FOUND"
-            });
-        }
-
-        let stageCodeId = level.stage_code_id;
-        if (newStageCode && newStageCode !== stageCode) {
-            const stageCodeRow = await getOrCreateStageCode(newStageCode, userId);
-            stageCodeId = stageCodeRow.stage_code_id;
-        }
-
-        await level.update({
-            area_id: areaId !== undefined ? areaId : level.area_id,
-            stage_code_id: stageCodeId,
-            stage_title: stageTitle !== undefined ? stageTitle : level.stage_title,
-            stage_sequence: stageSequence !== undefined ? stageSequence : level.stage_sequence,
-            stage_description: stageDescription !== undefined ? stageDescription : level.stage_description,
-            is_active: isActive !== undefined ? isActive : level.is_active,
-            updated_by: userId
-        });
-
-        await invalidateCacheByPrefix('levels:list');
-
-        return res.status(200).json({
-            success: true,
-            code: "LEVEL_UPDATED",
-            data: level
-        });
-
-    } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
-
-        logger.error('Error updating Level', { error });
-        return res.status(500).json({
-            success: false,
-            code: "LEVEL_UPDATE_FAILED"
-        });
-    }
-};
-
-// DELETE /api/levels/:stageCode
-// OR
-// DELETE /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
-const deleteLevel = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { pathSlug, slSlug, areaSlug } = req.params;
-
-        const { stageCode } = validations.stageCodeParamSchema.parse(req.params);
-
-        const level = await findLevelInHierarchy({ stageCode, areaSlug, slSlug, pathSlug });
-
-        if (!level) {
-            return res.status(404).json({
-                success: false,
-                code: "LEVEL_NOT_FOUND"
-            });
-        }
-
-        if (!level.is_active) {
-            return res.status(400).json({
-                success: false,
-                code: "LEVEL_ALREADY_INACTIVE"
-            });
-        }
-
-        await level.update({
-            is_active: false,
-            updated_by: userId
-        });
-
-        await invalidateCacheByPrefix('levels:list');
-
-        return res.status(200).json({
-            success: true,
-            code: "LEVEL_DEACTIVATED"
-        });
-
-    } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
-        }
-
-        logger.error('Error deleting Level', { error });
-        return res.status(500).json({
-            success: false,
-            code: "LEVEL_DELETE_FAILED"
+            message: "Error fetching Level."
         });
     }
 };
 
 module.exports = {
     getLevels,
-    getLevelByCode,
-    createLevel,
-    updateLevel,
-    deleteLevel
-};
+    getLevelByCode
+}

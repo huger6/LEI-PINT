@@ -6,47 +6,23 @@ const lpController = require('../controllers/learningPaths.controller');
 
 const slRoutes = require('./serviceLines.routes');
 
-/**
- * @route   GET /api/learning-paths
- * @desc    List all learning paths
- * @access  Public
- */
-router.get('/', lpController.getAllLearningPaths);
+// GET /api/learning-paths
+router.get('/', loginRequired, lpController.getAllLearningPaths);
 
-/**
- * @route   GET /api/learning-paths/check-slug?slug=mySlug
- * @desc    Check whether a given learning path slug is available
- * @access  Administrator
- */
-router.get('/check-slug', loginRequired, isAdmin, lpController.checkSlugAvailability);
-
-/**
- * @route   GET /api/learning-paths/:pathSlug
- * @desc    Get a single learning path by slug
- * @access  Authenticated
- */
+// GET /api/learning-paths/:pathSlug
 router.get('/:pathSlug', loginRequired, lpController.getLearningPathBySlug);
 
-/**
- * @route   POST /api/learning-paths
- * @desc    Create a new learning path
- * @access  Administrator
- */
+// GET /api/learning-paths/check-slug?slug=mySlug
+router.get('/check-slug', loginRequired, isAdmin, lpController.checkSlugAvailability);
+
+// POST /api/learning-paths
 router.post('/', loginRequired, isAdmin, lpController.createLearningPath);
 
-/**
- * @route   PUT /api/learning-paths/:pathSlug
- * @desc    Update an existing learning path
- * @access  Administrator
- */
+// PUT /api/learning-paths/:pathSlug
 router.put('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
 
-/**
- * @route   DELETE /api/learning-paths/:pathSlug
- * @desc    Delete a learning path
- * @access  Administrator
- */
-router.delete('/:pathSlug', loginRequired, isAdmin, lpController.deleteLearningPath);
+// DELETE /api/learning-paths/:pathSlug
+router.delete('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath);
 
 router.use('/:pathSlug/service-lines', slRoutes);
 

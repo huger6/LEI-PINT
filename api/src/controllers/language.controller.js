@@ -13,7 +13,7 @@ const getAvailableLanguages = async (req, res) => {
         if (cachedData) {
             return res.status(200).json({
                 success: true,
-                code: "LANGUAGE_LIST_SUCCESS",
+                message: "Languages acquired successfully.",
                 data: JSON.parse(cachedData)
             });
         }
@@ -26,7 +26,7 @@ const getAvailableLanguages = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            code: "LANGUAGE_LIST_SUCCESS",
+            message: "Languages acquired successfully.",
             data: languages
         });
     } catch (error) {
@@ -37,7 +37,7 @@ const getAvailableLanguages = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            code: "LANGUAGE_LIST_FAILED",
+            message: "Error processing available languages.",
             requestId
         });
     }

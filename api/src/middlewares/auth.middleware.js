@@ -6,21 +6,19 @@ const loginRequired = (req, res, next) => {
 
     if (!token) return res.status(401).json({
         success: false,
-        code: "AUTH_TOKEN_NOT_PROVIDED"
+        message: "Token wasn't provided."
     });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY, { algorithms: ['HS256'] });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
         // If fpc and route isn't change-password we block the request
-        // Strip query string before checking to prevent bypass via ?q=change-password
-        const pathWithoutQuery = req.originalUrl.split('?')[0];
-        const isChangePasswordRoute = pathWithoutQuery.endsWith('/change-password');
+        const isChangePasswordRoute = req.originalUrl.includes('change-password');
 
         if (decoded.fpc && !isChangePasswordRoute) {
             return res.status(403).json({
                 success: false,
-                code: "AUTH_FPC_REQUIRED",
+                message: "Password change required before accessing this resource.",
                 data: {
                     force_password_change: true
                 }
@@ -33,7 +31,7 @@ const loginRequired = (req, res, next) => {
         logger.error("Invalid Token", e);
         return res.status(401).json({
             success: false,
-            code: "AUTH_TOKEN_INVALID"
+            message: "Session expired or token is invalid."
         });
     }
 }
@@ -43,11 +41,11 @@ const annonymousUsersOnly = (req, res, next) => {
 
     if (token) {
         try {
-            jwt.verify(token, process.env.JWT_SECRET_KEY, { algorithms: ['HS256'] });
+            jwt.verify(token, process.env.JWT_SECRET_KEY);
 
             return res.status(400).json({
                 success: false,
-                code: "AUTH_ALREADY_LOGGED_IN"
+                message: "You are already logged in. Logout to access this route."
             });
         } catch (e) {
             // Token is invalid, so the user is not authed
@@ -62,13 +60,13 @@ const checkRole = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) return res.status(401).json({
             success: false,
-            code: "AUTH_USER_NOT_AUTHENTICATED"
+            message: "User not authenticated."
         });
 
         if (!allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                code: "AUTH_ROLE_ACCESS_DENIED"
+                message: `Access denied. Authorized roles: ${allowedRoles.join(', ')}.`
             });
         }
         next();
@@ -77,12 +75,9 @@ const checkRole = (...allowedRoles) => {
 
 const isAdmin = checkRole('Administrator');
 
-const leadership = checkRole('Service Line Leader', 'Talent Manager', 'Administrator');
-
 module.exports = {
     loginRequired,
     annonymousUsersOnly,
     checkRole,
-    isAdmin,
-    leadership
+    isAdmin
 }
