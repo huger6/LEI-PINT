@@ -7,6 +7,7 @@ import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
+import '../../widgets/applications/application_page_widgets.dart';
 import 'success_submission_screen.dart';
 
 class ApplicationScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class ApplicationScreen extends StatefulWidget {
   @override
   State<ApplicationScreen> createState() => _ApplicationScreenState();
 }
-
+ 
 class _ApplicationScreenState extends State<ApplicationScreen> {
   bool isTermsAccepted = false;
   final List<AttachedDocument> attachedFiles = [];
@@ -75,24 +76,29 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     final canSubmit = isTermsAccepted && attachedFiles.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: _ApplicationColors.pageBackground,
+      backgroundColor: ApplicationColors.pageBackground,
       appBar: AppBar(
         title: Text(tr.tr('applicationTitle')),
         elevation: 0,
-        backgroundColor: _ApplicationColors.pageBackground,
-        foregroundColor: _ApplicationColors.primaryText,
+        backgroundColor: ApplicationColors.pageBackground,
+        foregroundColor: ApplicationColors.primaryText,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(number: 1, title: tr.tr('applicationSectionBadge')),
+            ApplicationSectionTitle(
+              number: 1,
+              title: tr.tr('applicationSectionBadge'),
+            ),
             const SizedBox(height: 10),
-            _CardContainer(child: _SelectedBadgeCard(badge: widget.badge)),
+            ApplicationCardContainer(
+              child: SelectedBadgeCard(badge: widget.badge),
+            ),
 
             const SizedBox(height: 18),
-            _SectionTitle(
+            ApplicationSectionTitle(
               number: 2,
               title: tr.tr('applicationSectionEvidence'),
             ),
@@ -106,16 +112,16 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                   setState(() => attachedFiles.removeAt(index));
                 },
               ),
-            _CardContainer(
+            ApplicationCardContainer(
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                collapsedIconColor: _ApplicationColors.secondaryText,
-                iconColor: _ApplicationColors.secondaryText,
+                collapsedIconColor: ApplicationColors.secondaryText,
+                iconColor: ApplicationColors.secondaryText,
                 title: Text(
                   tr.tr('requirements'),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: _ApplicationColors.primaryText,
+                    color: ApplicationColors.primaryText,
                   ),
                 ),
                 children:
@@ -128,13 +134,13 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             contentPadding: EdgeInsets.zero,
                             leading: const Icon(
                               Icons.check_circle_outline_rounded,
-                              color: _ApplicationColors.primaryAction,
+                              color: ApplicationColors.primaryAction,
                               size: 20,
                             ),
                             title: Text(
                               item,
                               style: const TextStyle(
-                                color: _ApplicationColors.primaryText,
+                                color: ApplicationColors.primaryText,
                               ),
                             ),
                           ),
@@ -144,26 +150,29 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             ),
 
             const SizedBox(height: 18),
-            _SectionTitle(number: 3, title: tr.tr('applicationSectionTerms')),
+            ApplicationSectionTitle(
+              number: 3,
+              title: tr.tr('applicationSectionTerms'),
+            ),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
-                color: _ApplicationColors.cardBackground,
+                color: ApplicationColors.cardBackground,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _ApplicationColors.cardBorder),
+                border: Border.all(color: ApplicationColors.cardBorder),
               ),
               child: Column(
                 children: [
                   CheckboxListTile(
                     value: isTermsAccepted,
-                    activeColor: _ApplicationColors.primaryAction,
+                    activeColor: ApplicationColors.primaryAction,
                     onChanged: (value) {
                       setState(() => isTermsAccepted = value ?? false);
                     },
                     title: RichText(
                       text: TextSpan(
                         style: const TextStyle(
-                          color: _ApplicationColors.secondaryText,
+                          color: ApplicationColors.secondaryText,
                           fontSize: 14,
                         ),
                         children: [
@@ -171,7 +180,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                           TextSpan(
                             text: tr.tr('termsAndConditions'),
                             style: const TextStyle(
-                              color: _ApplicationColors.primaryAction,
+                              color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -179,7 +188,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                           TextSpan(
                             text: tr.tr('privacyPolicy'),
                             style: const TextStyle(
-                              color: _ApplicationColors.primaryAction,
+                              color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -197,7 +206,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         height: 1.35,
-                        color: _ApplicationColors.mutedText,
+                        color: ApplicationColors.mutedText,
                       ),
                     ),
                   ),
@@ -206,7 +215,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             ),
 
             const SizedBox(height: 18),
-            _SectionTitle(
+            ApplicationSectionTitle(
               number: 4,
               title: tr.tr('applicationSectionSubmission'),
             ),
@@ -235,8 +244,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                 label: Text(tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  backgroundColor: _ApplicationColors.primaryAction,
-                  disabledBackgroundColor: _ApplicationColors.buttonDisabled,
+                  backgroundColor: ApplicationColors.primaryAction,
+                  disabledBackgroundColor: ApplicationColors.buttonDisabled,
                   foregroundColor: Colors.white,
                   disabledForegroundColor: Colors.white70,
                   shape: RoundedRectangleBorder(
@@ -258,7 +267,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
   Widget _buildAttachBox(LanguageController tr) {
     return DottedBorder(
       options: RoundedRectDottedBorderOptions(
-        color: _ApplicationColors.dashedBorder,
+        color: ApplicationColors.dashedBorder,
         radius: const Radius.circular(14),
         dashPattern: const [7, 4],
       ),
@@ -269,28 +278,28 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           decoration: BoxDecoration(
-            color: _ApplicationColors.cardBackground,
+            color: ApplicationColors.cardBackground,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             children: [
               const Icon(
                 Icons.attach_file_rounded,
-                color: _ApplicationColors.iconMuted,
+                color: ApplicationColors.iconMuted,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   tr.tr('applicationAttachFile'),
                   style: const TextStyle(
-                    color: _ApplicationColors.secondaryText,
+                    color: ApplicationColors.secondaryText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               const Icon(
                 Icons.upload_file_rounded,
-                color: _ApplicationColors.iconMuted,
+                color: ApplicationColors.iconMuted,
               ),
             ],
           ),
@@ -298,169 +307,4 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       ),
     );
   }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.number, required this.title});
-
-  final int number;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 13,
-          backgroundColor: _ApplicationColors.primaryAction,
-          child: Text(
-            number.toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: _ApplicationColors.primaryText,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SelectedBadgeCard extends StatelessWidget {
-  const _SelectedBadgeCard({required this.badge});
-
-  final BadgeModel badge;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _SelectedBadgeMedal(
-          medalColor: badge.medalColor,
-          ribbonColor: badge.ribbonColor,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                badge.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: _ApplicationColors.primaryText,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${badge.category} • ${badge.level}',
-                style: const TextStyle(
-                  color: _ApplicationColors.mutedText,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Icon(
-          Icons.lock_outline_rounded,
-          color: _ApplicationColors.iconMuted,
-          size: 16,
-        ),
-      ],
-    );
-  }
-}
-
-class _SelectedBadgeMedal extends StatelessWidget {
-  const _SelectedBadgeMedal({
-    required this.medalColor,
-    required this.ribbonColor,
-  });
-
-  final Color medalColor;
-  final Color ribbonColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 46,
-      height: 58,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: 27,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 15),
-                const SizedBox(width: 2),
-                Icon(Icons.bookmark, color: ribbonColor, size: 15),
-              ],
-            ),
-          ),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: 1.2),
-            ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Color(0xFFFFF6C7),
-              size: 20,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CardContainer extends StatelessWidget {
-  const _CardContainer({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: _ApplicationColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _ApplicationColors.cardBorder),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _ApplicationColors {
-  static const Color pageBackground = Color(0xFFE8EEF3);
-  static const Color cardBackground = Colors.white;
-  static const Color cardBorder = Color(0xFFD2DCE6);
-  static const Color dashedBorder = Color(0xFF9DB3C6);
-  static const Color primaryAction = Color(0xFF5EAEDC);
-  static const Color buttonDisabled = Color(0xFFAFC4D3);
-  static const Color primaryText = Color(0xFF1D2A35);
-  static const Color secondaryText = Color(0xFF394B59);
-  static const Color mutedText = Color(0xFF61717F);
-  static const Color iconMuted = Color(0xFF556571);
 }

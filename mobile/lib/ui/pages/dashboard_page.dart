@@ -7,6 +7,7 @@ import '../widgets/badges/badge_catalog.dart';
 import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
+import '../widgets/dashboard/dashboard_widgets.dart';
 import 'badges/badges_page.dart';
 import 'notifications/notifications_screen.dart';
 import 'evolution/points_detail_screen.dart';
@@ -20,8 +21,8 @@ class DashboardScreen extends StatelessWidget {
     const pageBackground = Color(0xFFE2E6EB);
     const totalPoints = 1259;
 
-    final submissions = <_SubmissionData>[
-      _SubmissionData(
+    final submissions = <DashboardSubmissionData>[
+      DashboardSubmissionData(
         title: 'Master of sprints',
         status: tr.tr('submissionStatusInReview'),
         statusColor: const Color(0xFFC7A11D),
@@ -29,7 +30,7 @@ class DashboardScreen extends StatelessWidget {
         medalColor: const Color(0xFFD2D5DA),
         ribbonColor: const Color(0xFFAF5353),
       ),
-      _SubmissionData(
+      DashboardSubmissionData(
         title: 'Master of DevOps',
         status: tr.tr('submissionStatusRejected'),
         statusColor: const Color(0xFFD63D2B),
@@ -37,7 +38,7 @@ class DashboardScreen extends StatelessWidget {
         medalColor: const Color(0xFFDFC24C),
         ribbonColor: const Color(0xFFAF5353),
       ),
-      _SubmissionData(
+      DashboardSubmissionData(
         title: 'IBM Front-End Dev',
         status: tr.tr('submissionStatusApproved'),
         statusColor: const Color(0xFF56C640),
@@ -87,7 +88,7 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _DashboardTopBar(
+                DashboardTopBar(
                   totalPoints: totalPoints,
                   onPointsTap: () {
                     Navigator.push(
@@ -227,121 +228,4 @@ class DashboardScreen extends StatelessWidget {
       bottomNavigationBar: const AppBottomNavBar(currentTab: AppTab.home),
     );
   }
-}
-
-class _DashboardTopBar extends StatelessWidget {
-  const _DashboardTopBar({
-    required this.totalPoints,
-    required this.onPointsTap,
-    required this.onNotificationsTap,
-  });
-
-  final int totalPoints;
-  final VoidCallback onPointsTap;
-  final VoidCallback onNotificationsTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: onPointsTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6DC1E3), Color(0xFF658CC9)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '$totalPoints',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const Spacer(),
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: Color(0xFFD2DAE2),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.campaign_outlined, color: Color(0xFF20252B)),
-        ),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: onNotificationsTap,
-          child: Stack(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFD2DAE2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.notifications_none,
-                  color: Color(0xFF20252B),
-                ),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDE5A6A),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        const CircleAvatar(
-          radius: 21,
-          backgroundColor: Color(0xFFC9D6E2),
-          child: Icon(Icons.person, color: Color(0xFF1F242A), size: 24),
-        ),
-      ],
-    );
-  }
-}
-
-class _SubmissionData {
-  const _SubmissionData({
-    required this.title,
-    required this.status,
-    required this.statusColor,
-    required this.timestamp,
-    required this.medalColor,
-    required this.ribbonColor,
-  });
-
-  final String title;
-  final String status;
-  final Color statusColor;
-  final String timestamp;
-  final Color medalColor;
-  final Color ribbonColor;
 }
