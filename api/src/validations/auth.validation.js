@@ -62,21 +62,10 @@ const loginSchema = z.object({
     remember: z.boolean().default(false)
 });
 
-const updateProfileSchema = z.object({
-    full_name: fullNameRule.optional(),
-    phone_number: phoneNumberRule.optional(),
-    birthdate: birthdateRule.optional(),
-    profile_img_url: imgUrlRule.optional(),
-    preferred_lang_id: positiveIntIdRule.optional(),
-    location_id: positiveIntIdRule.optional(),
-    biography: biographyRule.optional()
-});
-
 module.exports = {
     emailRule,
     passwordRule,
     baseUserSchema,
     registerSchema,
     loginSchema,
-    updateProfileSchema,
 };

@@ -17,7 +17,7 @@ router.get('/', loginRequired, applicationController.getApplications);
  * @route   GET /api/applications/:applicationGuid
  * @desc    Application details
  */
-router.get('/:applicationGuid', loginRequired, applicationController.getApplicationById);
+router.get('/:applicationId', loginRequired, applicationController.getApplicationById);
 
 /**
  * @route   POST /api/applications/start
@@ -28,32 +28,24 @@ router.post('/start', loginRequired, applicationController.startApplication);
 /**
  * @route   POST /api/applications/:applicationGuid/upload-url
  */
-router.post('/:applicationGuid/upload-url', loginRequired, applicationController.getUploadUrl);
+router.post('/:applicationId/upload-url', loginRequired, applicationController.getUploadUrl);
 
 /**
  * @route   POST /api/applications/:applicationGuid/evidences
  * @desc    Uploads or updates an evidence for a given requirement
  */
-router.post('/:applicationGuid/evidences', loginRequired, applicationController.upsertEvidence);
+router.post('/:applicationId/evidences', loginRequired, applicationController.upsertEvidence);
 
 /**
  * @route   POST /api/applications/:applicationGuid/submit
  * @desc    Submits application (state -> Submitted)
  */
-router.post('/:applicationGuid/submit', loginRequired, applicationController.submitApplication);
+router.post('/:applicationId/submit', loginRequired, applicationController.submitApplication);
 
 /**
- * @route   PUT /api/applications/:applicationGuid/validate
- * @desc    Accept, reject or move to 'In validation'
- * @access  Talent Manager, Service Line Leader, Administrator
+ * @route   POST /api/applications/:applicationGuid/validate
+ * @desc    Aprove, reject or send back
  */
-router.put('/:applicationGuid/validate', loginRequired, applicationController.validateApplication);
-
-/**
- * @route   PUT /api/applications/:applicationGuid/evidences/:evidenceId/review
- * @desc    Approve or reject a single evidence; awards requirement points when approved
- * @access  Talent Manager, Service Line Leader
- */
-router.put('/:applicationGuid/evidences/:evidenceId/review', loginRequired, applicationController.reviewEvidence);
+//router.post('/:applicationId/validate', loginRequired, applicationController.validateApplication);
 
 module.exports = router;

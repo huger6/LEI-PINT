@@ -39,11 +39,6 @@ module.exports = function (sequelize, DataTypes) {
     justification: {
       type: DataTypes.TEXT,
       allowNull: true
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,
@@ -89,13 +84,6 @@ module.exports = function (sequelize, DataTypes) {
         fields: [
           { name: "user_id" },
           { name: "points_delta" },
-        ]
-      },
-      {
-        name: "idx_points_history_user_created",
-        fields: [
-          { name: "user_id" },
-          { name: "created_at", order: "DESC" },
         ]
       },
     ]
