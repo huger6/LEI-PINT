@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
+import 'dart:io';
 import '../../../data/repositories/location_repo.dart';
+import '../../../data/repositories/validation_repo.dart';
 import '../../widgets/shared/auth_header.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/auth_content_card.dart';
@@ -9,7 +12,6 @@ import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/shared/nav_link.dart';
-import '../../../core/sync_manager.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/lang_model.dart';
@@ -17,7 +19,6 @@ import '../../../models/location_model.dart';
 import '../../../models/dtos/registration_data.dart';
 import '../../../data/repositories/lang_repo.dart';
 import '../../../injection_container.dart';
-import 'dart:io';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -38,10 +39,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late final TextEditingController _profileImgUrlController;
   late final TextEditingController _bioController;
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _isLoadingData = true;
   bool _agreedToTerms = false;
   String _phonePrefix = '+351';
+
+  // Validation state tracking
+  final Map<String, bool?> _validationState = {
+    'email': null,
+    'username': null,
+    'name': null,
+    'bio': null,
+  };
+  final Map<String, bool> _isValidating = {
+    'email': false,
+    'username': false,
+    'name': false,
+    'bio': false,
+  };
+  final Map<String, String> _validationMessages = {};
 
   LanguageModel? _preferredLanguage;
   List<LanguageModel> _availableLanguages = [];
@@ -51,9 +67,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final ImagePicker _imagePicker = ImagePicker();
 
+  // Debounce timers for validation
+  late Map<String, Timer?> _debounceTimers;
+
   @override
   void initState() {
     super.initState();
+    _debounceTimers = {
+      'email': null,
+      'username': null,
+      'name': null,
+      'bio': null,
+    };
     _nameController = TextEditingController();
     _usernameController = TextEditingController();
     _emailController = TextEditingController();
@@ -63,6 +88,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _birthdateController = TextEditingController();
     _profileImgUrlController = TextEditingController();
     _bioController = TextEditingController();
+
+    // Add listeners for validation on blur (onChanged with debounce)
+    _emailController.addListener(() => _debounceValidation('email'));
+    _usernameController.addListener(() => _debounceValidation('username'));
+    _nameController.addListener(() => _debounceValidation('name'));
+    _bioController.addListener(() => _debounceValidation('bio'));
     _resetForm();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDropdownData();
@@ -161,6 +192,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    // Cancel all pending debounce timers
+    _debounceTimers.forEach((key, timer) {
+      timer?.cancel();
+    });
+
     _nameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
@@ -228,6 +264,104 @@ class _RegisterScreenState extends State<RegisterScreen> {
     navigator.pushReplacementNamed(AppRouter.login);
   }
 
+  void _debounceValidation(String field) {
+    _debounceTimers[field]?.cancel();
+    _debounceTimers[field] = Timer(const Duration(milliseconds: 800), () {
+      _validateField(field);
+    });
+  }
+
+  Future<void> _validateField(String field) async {
+    if (!mounted) return;
+
+    final validationRepo = context.read<ValidationRepository>();
+    final fieldValue = switch (field) {
+      'email' => _emailController.text.trim(),
+      'username' => _usernameController.text.trim(),
+      'name' => _nameController.text.trim(),
+      'bio' => _bioController.text.trim(),
+      _ => '',
+    };
+
+    if (fieldValue.isEmpty) {
+      setState(() {
+        _validationState[field] = null;
+        _validationMessages.remove(field);
+      });
+      return;
+    }
+
+    setState(() => _isValidating[field] = true);
+
+    try {
+      Map<String, dynamic> result;
+
+      if (field == 'email') {
+        result = await validationRepo.checkEmailAvailability(fieldValue);
+        if (result['success'] == true) {
+          setState(() {
+            _validationState[field] = result['available'] ?? false;
+            if (!result['available']!) {
+              _validationMessages[field] =
+                  result['message'] ?? 'Email já registado.';
+            } else {
+              _validationMessages.remove(field);
+            }
+          });
+        }
+      } else if (field == 'username') {
+        result = await validationRepo.checkUsernameAvailability(fieldValue);
+        if (result['success'] == true) {
+          setState(() {
+            _validationState[field] = result['available'] ?? false;
+            if (!result['available']!) {
+              _validationMessages[field] =
+                  result['message'] ?? 'Username já registado.';
+            } else {
+              _validationMessages.remove(field);
+            }
+          });
+        }
+      } else if (field == 'name' || field == 'bio') {
+        result = await validationRepo.validateContent(
+          fullName: field == 'name' ? fieldValue : null,
+          bio: field == 'bio' ? fieldValue : null,
+        );
+        if (result['success'] == true) {
+          setState(() {
+            _validationState[field] = result['valid'] ?? true;
+            if (!result['valid']!) {
+              _validationMessages[field] =
+                  result['message'] ?? 'Conteúdo inválido.';
+            } else {
+              _validationMessages.remove(field);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Validation error for $field: $e');
+      setState(() {
+        _validationState[field] = null;
+        _validationMessages.remove(field);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isValidating[field] = false);
+      }
+    }
+  }
+
+  bool _allValidationsPass() {
+    // Check that all required validations either passed or haven't been validated yet
+    final emailValid = _validationState['email'] != false;
+    final usernameValid = _validationState['username'] != false;
+    final nameValid = _validationState['name'] != false;
+    final bioValid = _validationState['bio'] != false;
+
+    return emailValid && usernameValid && nameValid && bioValid;
+  }
+
   void _handleRegister() {
     final tr = LanguageScope.of(context);
     _normalizeFields();
@@ -236,6 +370,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(tr.tr('passwordsDoNotMatch')),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (!_allValidationsPass()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Por favor, corrija os erros de validação.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -257,6 +401,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
     }
+  }
+
+  Widget _buildValidationFeedback(String field) {
+    if (_isValidating[field] == true) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: SizedBox(
+          height: 16,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Verificando...',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_validationMessages.containsKey(field)) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 12,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                _validationMessages[field] ?? '',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_validationState[field] == true) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 12,
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Validado',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   @override
@@ -313,6 +539,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _nameController,
                             validator: FormValidators.validateName,
                           ),
+                          _buildValidationFeedback('name'),
+                          const SizedBox(height: 8),
 
                           // Username field
                           CustomTextField(
@@ -324,6 +552,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _usernameController,
                             validator: FormValidators.validateUsername,
                           ),
+                          _buildValidationFeedback('username'),
+                          const SizedBox(height: 8),
 
                           // Email field
                           CustomTextField(
@@ -335,6 +565,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _emailController,
                             validator: FormValidators.validateEmail,
                           ),
+                          _buildValidationFeedback('email'),
+                          const SizedBox(height: 8),
 
                           // Password field
                           CustomTextField(
@@ -619,7 +851,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                     ),
-                                            child: _isLoadingData
+                                    child: _isLoadingData
                                         ? const SizedBox(
                                             height: 48,
                                             child: Center(
@@ -683,6 +915,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                               ),
+                              _buildValidationFeedback('bio'),
+                              const SizedBox(height: 8),
                             ],
                           ),
 

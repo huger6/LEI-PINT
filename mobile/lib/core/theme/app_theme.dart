@@ -9,7 +9,8 @@ class AppTheme {
   );
 
   static ThemeData get lightTheme {
-    const colorScheme = ColorScheme(
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
       brightness: Brightness.light,
       primary: AppColors.primary,
       onPrimary: AppColors.onPrimary,
@@ -23,8 +24,6 @@ class AppTheme {
       onError: AppColors.onError,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.onErrorContainer,
-      background: AppColors.background,
-      onBackground: AppColors.onBackground,
       surface: AppColors.surface,
       onSurface: AppColors.onSurface,
       outline: AppColors.outline,

@@ -57,7 +57,10 @@ class ApplicationsRepository {
   }) async {
     final payload = await _apiClient.post(
       ApiEndpoints.startApplication,
-      data: {'badgeId': badgeId, if (goalId != null) 'goalId': goalId},
+      data: {
+        'badgeId': badgeId,
+        ...?(goalId == null ? null : {'goalId': goalId}),
+      },
     );
 
     return _extractMap(payload);

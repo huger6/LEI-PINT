@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
-import '../../../core/sync_manager.dart';
 import '../../../injection_container.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 
