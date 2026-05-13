@@ -2,7 +2,6 @@ const { models, sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/applications.validation');
-const gamificationValidations = require('../validations/gamification.validation');
 const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
@@ -436,34 +435,36 @@ const submitApplication = async (req, res) => {
 
         // Create notifications: applicant confirmation, SLLs and Talent Managers
         try {
-            // Notify applicant
+            const badgeMeta = { badgeTitle: application.badge.badge_title };
+
             await notificationsService.createNotification({
                 userId: application.user_id,
-                title: 'Candidatura submetida',
-                body: `A sua candidatura ao badge "${application.badge.badge_title}" foi submetida.`,
+                title: 'NOTIF_APP_SUBMITTED_TITLE',
+                body: 'NOTIF_APP_SUBMITTED_BODY',
+                meta: badgeMeta,
                 url: `/applications/${application.application_guid}`
             });
 
-            // Notify Service Line Leaders for this badge (if any)
             if (application.badge && application.badge.service_line_id) {
                 const slls = await models.service_line_leaders.findAll({ where: { service_line_id: application.badge.service_line_id } });
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
-                        title: 'Nova candidatura',
-                        body: `Foi submetida uma nova candidatura ao badge "${application.badge.badge_title}".`,
+                        title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
+                        body: 'NOTIF_APP_NEW_APPLICATION_BODY',
+                        meta: badgeMeta,
                         url: `/admin/applications/${application.application_guid}`
                     });
                 }
             }
 
-            // Notify Talent Managers
             const tms = await models.talent_managers.findAll();
             for (const tm of tms) {
                 await notificationsService.createNotification({
                     userId: tm.user_id,
-                    title: 'Nova candidatura submetida',
-                    body: `Nova candidatura ao badge "${application.badge.badge_title}" disponível para revisão.`,
+                    title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
+                    body: 'NOTIF_APP_NEW_APPLICATION_BODY',
+                    meta: badgeMeta,
                     url: `/admin/applications/${application.application_guid}`
                 });
             }
@@ -500,14 +501,17 @@ const submitApplication = async (req, res) => {
 
 /*──────────────────────────────────────────────────────────────
   PUT /api/applications/:applicationGuid/validate
-  Moves an application through the review state machine:
-    review  → Submitted      → In validation
-    accept  → Submitted|InV  → Accepted  (creates awarded_badge,
-                                           awards all points)
-    reject  → Submitted|InV  → Rejected
+  Sequential two-stage review: TM reviews first, then SLL.
 
-  Roles: Talent Manager, Service Line Leader, Administrator.
-  SLL can only act on badges within their own Service Line.
+  Talent Manager (acts on Submitted):
+    review → In validation   (approves, forwards to SLL)
+    reject → Rejected
+
+  Service Line Leader (acts on In validation):
+    accept → Accepted        (final approval, awards badge)
+    reject → Rejected
+
+  Administrator: full flexibility across all valid states.
 ──────────────────────────────────────────────────────────────*/
 const validateApplication = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -520,8 +524,8 @@ const validateApplication = async (req, res) => {
             return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
-        const { applicationGuid } = gamificationValidations.applicationGuidParamSchema.parse(req.params);
-        const { action, reviewerNotes } = gamificationValidations.reviewApplicationSchema.parse(req.body);
+        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
+        const { action, reviewerNotes } = validations.reviewApplicationSchema.parse(req.body);
 
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
@@ -533,48 +537,62 @@ const validateApplication = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
+        const state = application.application_state;
+
         // SLL may only review applications within their own Service Line
         if (role === 'Service Line Leader') {
             const sllInfo = await models.service_line_leaders.findByPk(reviewerId);
             if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
                 await transaction.rollback();
-                return res.status(403).json({
-                    success: false,
-                    code: 'APP_ACCESS_DENIED_SL'
-                });
+                return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_SL' });
             }
         }
 
-        // Validate state machine transitions
-        const state = application.application_state;
-        if (action === 'review' && state !== 'Submitted') {
-            await transaction.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'APP_REVIEW_INVALID_STATE',
-                data: { currentState: state }
-            });
-        }
-        if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
-            await transaction.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'APP_ACTION_INVALID_STATE',
-                data: { currentState: state }
-            });
-        }
-
+        // Enforce sequential review state machine
         let newState;
-        let awardedBadge = null;
 
-        if (action === 'review') {
-            newState = 'In validation';
-        } else if (action === 'reject') {
-            newState = 'Rejected';
+        if (role === 'Talent Manager') {
+            // TM only acts on Submitted applications
+            if (state !== 'Submitted') {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
+            }
+            // TM cannot directly accept (must forward to SLL via 'review')
+            if (action === 'accept') {
+                await transaction.rollback();
+                return res.status(403).json({ success: false, code: 'APP_TM_CANNOT_ACCEPT' });
+            }
+            newState = action === 'review' ? 'In validation' : 'Rejected';
+
+        } else if (role === 'Service Line Leader') {
+            // SLL only acts on In validation applications (after TM approval)
+            if (state !== 'In validation') {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
+            }
+            // SLL cannot use the 'review' action (no third stage)
+            if (action === 'review') {
+                await transaction.rollback();
+                return res.status(403).json({ success: false, code: 'APP_SLL_CANNOT_REVIEW' });
+            }
+            newState = action === 'accept' ? 'Accepted' : 'Rejected';
+
         } else {
-            // accept
-            newState = 'Accepted';
+            // Administrator: full flexibility
+            if (action === 'review' && state !== 'Submitted') {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, code: 'APP_REVIEW_INVALID_STATE', data: { currentState: state } });
+            }
+            if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
+            }
+            newState = action === 'review' ? 'In validation' : (action === 'accept' ? 'Accepted' : 'Rejected');
+        }
 
+        // Create awarded_badge record when application is accepted
+        let awardedBadge = null;
+        if (newState === 'Accepted') {
             const badge = application.badge;
             const expirationAt = badge.expiration_duration_days
                 ? new Date(Date.now() + badge.expiration_duration_days * 24 * 60 * 60 * 1000)
@@ -595,9 +613,7 @@ const validateApplication = async (req, res) => {
         await application.update({
             application_state: newState,
             reviewer_notes: reviewerNotes ?? application.reviewer_notes,
-            ...(newState === 'Accepted' || newState === 'Rejected'
-                ? { closed_at: new Date() }
-                : {}),
+            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {}),
             ...(awardedBadge ? { awarded_badges_id: awardedBadge.awarded_badges_id } : {})
         }, { transaction });
 
@@ -611,13 +627,8 @@ const validateApplication = async (req, res) => {
             validations_comments: reviewerNotes ?? null
         }, { transaction });
 
-        // Award points on acceptance
         if (newState === 'Accepted') {
-            await gamificationService.awardBadgeCompletionPoints(
-                application.user_id,
-                application.badge_id,
-                transaction
-            );
+            await gamificationService.awardBadgeCompletionPoints(application.user_id, application.badge_id, transaction);
         }
 
         await transaction.commit();
@@ -625,31 +636,40 @@ const validateApplication = async (req, res) => {
         await sendTopicUpdate("new_data", 18);
         if (newState === 'Accepted') await sendTopicUpdate("new_data", 17);
 
-        // Notifications after successful state change
+        // Post-commit notifications
         try {
-            // Notify applicant about state change
-            if (['In validation', 'Accepted', 'Rejected'].includes(newState)) {
-                let title;
-                let body;
-                if (newState === 'In validation') {
-                    title = 'Candidatura em validação';
-                    body = `A sua candidatura ao badge "${application.badge.badge_title}" está a ser validada.`;
-                } else if (newState === 'Accepted') {
-                    title = 'Candidatura aceite';
-                    body = `A sua candidatura ao badge "${application.badge.badge_title}" foi aceite.`;
-                } else {
-                    title = 'Candidatura rejeitada';
-                    body = `A sua candidatura ao badge "${application.badge.badge_title}" foi rejeitada.`;
-                }
+            const badgeMeta = { badgeTitle: application.badge.badge_title };
 
+            const notifCodeMap = {
+                'In validation': { title: 'NOTIF_APP_IN_VALIDATION_TITLE', body: 'NOTIF_APP_IN_VALIDATION_BODY' },
+                'Accepted':      { title: 'NOTIF_APP_ACCEPTED_TITLE',      body: 'NOTIF_APP_ACCEPTED_BODY' },
+                'Rejected':      { title: 'NOTIF_APP_REJECTED_TITLE',      body: 'NOTIF_APP_REJECTED_BODY' }
+            };
+
+            if (notifCodeMap[newState]) {
                 await notificationsService.createNotification({
                     userId: application.user_id,
-                    title,
-                    body,
+                    ...notifCodeMap[newState],
+                    meta: badgeMeta,
                     url: `/applications/${application.application_guid}`
                 });
             }
 
+            // When TM forwards to SLL, notify all SLLs for this badge's service line
+            if (newState === 'In validation' && application.badge.service_line_id) {
+                const slls = await models.service_line_leaders.findAll({
+                    where: { service_line_id: application.badge.service_line_id }
+                });
+                for (const sll of slls) {
+                    await notificationsService.createNotification({
+                        userId: sll.user_id,
+                        title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
+                        body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
+                        meta: badgeMeta,
+                        url: `/admin/applications/${application.application_guid}`
+                    });
+                }
+            }
         } catch (notifErr) {
             logger.error('Failed to create notifications on validateApplication', { error: notifErr });
         }
@@ -670,11 +690,7 @@ const validateApplication = async (req, res) => {
     } catch (error) {
         await transaction.rollback();
         if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_DATA', errors: error.errors });
         }
         logger.error('Error validating application', { error });
         return res.status(500).json({ success: false, code: 'APP_VALIDATE_FAILED' });
@@ -701,8 +717,8 @@ const reviewEvidence = async (req, res) => {
             return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
-        const { applicationGuid, evidenceId } = gamificationValidations.evidenceIdParamSchema.parse(req.params);
-        const { approved, reviewNotes } = gamificationValidations.reviewEvidenceSchema.parse(req.body);
+        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
+        const { approved, reviewNotes } = validations.reviewEvidenceSchema.parse(req.body);
 
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
@@ -714,11 +730,14 @@ const reviewEvidence = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
-        if (!['Submitted', 'In validation'].includes(application.application_state)) {
+        // TM reviews evidences while application is Submitted; SLL while In validation
+        const allowedStateForRole = role === 'Talent Manager' ? 'Submitted' : 'In validation';
+        if (application.application_state !== allowedStateForRole) {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                code: 'APP_EVIDENCE_REVIEW_INVALID_STATE'
+                code: 'APP_EVIDENCE_REVIEW_INVALID_STATE',
+                data: { currentState: application.application_state }
             });
         }
 
