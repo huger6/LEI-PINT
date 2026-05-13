@@ -6,7 +6,27 @@ const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const {
+    sendApplicationSubmittedEmail,
+    sendApplicationApprovedEmail,
+    sendApplicationRejectedEmail
+} = require('../services/email.service');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || '';
+
+// Resolves a consultant's email address, display name, and language ISO code.
+const getConsultantEmailData = async (userId) => {
+    const user = await models.users.findByPk(userId, {
+        attributes: ['email_address', 'full_name'],
+        include: [{ model: models.languages, as: 'language', attributes: ['language_iso'] }]
+    });
+    if (!user) return null;
+    return {
+        email: user.email_address,
+        name: user.full_name,
+        lang: user.language?.language_iso || 'en-GB'
+    };
+};
 
 const getApplications = async (req, res) => {
     try {
@@ -433,23 +453,37 @@ const submitApplication = async (req, res) => {
 
         await sendTopicUpdate("new_data", 15);
 
-        // Create notifications: applicant confirmation, SLLs and Talent Managers
+        // Create notifications and send email to consultant
         try {
             const badgeMeta = { badgeTitle: application.badge.badge_title };
+            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
 
             await notificationsService.createNotification({
                 userId: application.user_id,
+                notificationType: 'APPLICATIONS',
                 title: 'NOTIF_APP_SUBMITTED_TITLE',
                 body: 'NOTIF_APP_SUBMITTED_BODY',
                 meta: badgeMeta,
                 url: `/applications/${application.application_guid}`
             });
 
+            const consultantData = await getConsultantEmailData(application.user_id);
+            if (consultantData) {
+                await sendApplicationSubmittedEmail(
+                    consultantData.email,
+                    consultantData.name,
+                    application.badge.badge_title,
+                    appUrl,
+                    consultantData.lang
+                );
+            }
+
             if (application.badge && application.badge.service_line_id) {
                 const slls = await models.service_line_leaders.findAll({ where: { service_line_id: application.badge.service_line_id } });
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
+                        notificationType: 'APPLICATIONS',
                         title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                         body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                         meta: badgeMeta,
@@ -462,6 +496,7 @@ const submitApplication = async (req, res) => {
             for (const tm of tms) {
                 await notificationsService.createNotification({
                     userId: tm.user_id,
+                    notificationType: 'APPLICATIONS',
                     title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                     body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                     meta: badgeMeta,
@@ -636,9 +671,10 @@ const validateApplication = async (req, res) => {
         await sendTopicUpdate("new_data", 18);
         if (newState === 'Accepted') await sendTopicUpdate("new_data", 17);
 
-        // Post-commit notifications
+        // Post-commit notifications and emails
         try {
             const badgeMeta = { badgeTitle: application.badge.badge_title };
+            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
 
             const notifCodeMap = {
                 'In validation': { title: 'NOTIF_APP_IN_VALIDATION_TITLE', body: 'NOTIF_APP_IN_VALIDATION_BODY' },
@@ -649,10 +685,36 @@ const validateApplication = async (req, res) => {
             if (notifCodeMap[newState]) {
                 await notificationsService.createNotification({
                     userId: application.user_id,
+                    notificationType: 'APPLICATIONS',
                     ...notifCodeMap[newState],
                     meta: badgeMeta,
                     url: `/applications/${application.application_guid}`
                 });
+            }
+
+            // Email the consultant on terminal state changes
+            if (newState === 'Accepted' || newState === 'Rejected') {
+                const consultantData = await getConsultantEmailData(application.user_id);
+                if (consultantData) {
+                    if (newState === 'Accepted') {
+                        await sendApplicationApprovedEmail(
+                            consultantData.email,
+                            consultantData.name,
+                            application.badge.badge_title,
+                            appUrl,
+                            consultantData.lang
+                        );
+                    } else {
+                        await sendApplicationRejectedEmail(
+                            consultantData.email,
+                            consultantData.name,
+                            application.badge.badge_title,
+                            reviewerNotes || null,
+                            appUrl,
+                            consultantData.lang
+                        );
+                    }
+                }
             }
 
             // When TM forwards to SLL, notify all SLLs for this badge's service line
@@ -663,6 +725,7 @@ const validateApplication = async (req, res) => {
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
+                        notificationType: 'APPLICATIONS',
                         title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
                         body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
                         meta: badgeMeta,
