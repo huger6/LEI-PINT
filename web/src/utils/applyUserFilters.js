@@ -1,73 +1,69 @@
-/**
- * applyUserFilters — pure function that filters a user list client-side.
- *
- * Exported separately from the UI so the same logic can power both the
- * live table view and the Excel / PDF export feature without duplication.
- *
- * @param {Object[]} users   Full list of user objects from the API.
- * @param {Object}   filters Current filter state (see EMPTY_FILTERS in UserFilters.jsx).
- * @returns {Object[]}       Subset of users that match every active filter.
- */
-export default function applyUserFilters(users, filters) {
-	return users.filter((u) => {
-		// ── Global search: matches full_name OR email_address ──────────────────
-		if (filters.search) {
-			const q = filters.search.toLowerCase();
-			const name = (u.full_name || u.fullName || '').toLowerCase();
-			const email = (u.email_address || u.emailAddress || '').toLowerCase();
-			if (!name.includes(q) && !email.includes(q)) return false;
+const toBool = (v) => v === true || v === 'true';
+
+const parseDate = (ddMmYyyy) => {
+	if (!ddMmYyyy) return null;
+	const [dd, mm, yyyy] = ddMmYyyy.split('-');
+	return new Date(`${yyyy}-${mm}-${dd}T00:00:00.000Z`);
+};
+
+const applyUserFilters = (users, filters = {}) => {
+	const {
+		search,
+		role,
+		isActive,
+		emailConfirmed,
+		gdprAccepted,
+		serviceLine,
+		area,
+		dateFrom,
+		pointsMin,
+		pointsMax,
+	} = filters;
+
+	const fromDate = parseDate(dateFrom);
+
+	return users.filter((user) => {
+		if (search) {
+			const q = search.toLowerCase();
+			const nameMatch = user.full_name?.toLowerCase().includes(q);
+			const emailMatch = user.email_address?.toLowerCase().includes(q);
+			if (!nameMatch && !emailMatch) return false;
 		}
 
-		// ── Role (exact match against user_role) ───────────────────────────────
-		if (filters.role && (u.user_role || u.userRole) !== filters.role) return false;
-
-		// ── Active status (is_active boolean) ─────────────────────────────────
-		if (filters.isActive !== '') {
-			const expected = filters.isActive === 'true';
-			if (Boolean(u.is_active ?? u.isActive) !== expected) return false;
+		if (role !== undefined && role !== '') {
+			if (user.user_role !== role) return false;
 		}
 
-		// ── Email confirmation status ──────────────────────────────────────────
-		if (filters.emailConfirmed !== '') {
-			const expected = filters.emailConfirmed === 'true';
-			if (Boolean(u.email_confirmed ?? u.emailConfirmed) !== expected) return false;
+		if (isActive !== undefined) {
+			if (user.is_active !== toBool(isActive)) return false;
 		}
 
-		// ── GDPR accepted (public-profile sharing consent) ────────────────────
-		if (filters.gdprAccepted !== '') {
-			const expected = filters.gdprAccepted === 'true';
-			if (Boolean(u.gdpr_accepted ?? u.gdprAccepted) !== expected) return false;
+		if (emailConfirmed !== undefined) {
+			if (user.email_confirmed !== toBool(emailConfirmed)) return false;
 		}
 
-		// ── Service Line (organisational hierarchy) ───────────────────────────
-		if (filters.serviceLine) {
-			const id = String(u.service_line_id || u.serviceLineId || '');
-			if (id !== String(filters.serviceLine)) return false;
+		if (gdprAccepted !== undefined) {
+			if (user.consultant?.gdpr_accepted !== toBool(gdprAccepted)) return false;
 		}
 
-		// ── Area (narrowed from the selected service line) ────────────────────
-		if (filters.area) {
-			const id = String(u.area_id || u.areaId || '');
-			if (id !== String(filters.area)) return false;
+		if (serviceLine !== undefined && serviceLine !== '') {
+			if (user.service_line_leader?.service_line_id !== Number(serviceLine)) return false;
 		}
 
-		// ── Registration date — from (inclusive) ──────────────────────────────
-		if (filters.dateFrom) {
-			const createdAt = new Date(u.created_at || u.createdAt || 0);
-			const from = new Date(filters.dateFrom);
-			if (createdAt < from) return false;
+		if (area !== undefined && area !== '') {
+			const hasArea = user.consultant?.consultant_areas?.some(
+				(ca) => ca.area_id === Number(area)
+			);
+			if (!hasArea) return false;
 		}
 
-		// ── Points range (total gamification points) ──────────────────────────
-		if (filters.pointsMin !== '') {
-			const pts = Number(u.total_points || u.totalPoints || 0);
-			if (pts < Number(filters.pointsMin)) return false;
-		}
-		if (filters.pointsMax !== '') {
-			const pts = Number(u.total_points || u.totalPoints || 0);
-			if (pts > Number(filters.pointsMax)) return false;
-		}
+		if (fromDate && new Date(user.created_at) < fromDate) return false;
+
+		if (pointsMin !== undefined && (user.total_points ?? 0) < Number(pointsMin)) return false;
+		if (pointsMax !== undefined && (user.total_points ?? 0) > Number(pointsMax)) return false;
 
 		return true;
 	});
-}
+};
+
+export default applyUserFilters;
