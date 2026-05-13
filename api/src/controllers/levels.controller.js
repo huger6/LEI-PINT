@@ -2,6 +2,7 @@ const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/levels
 // OR
@@ -245,6 +246,8 @@ const createLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await sendTopicUpdate("new_data", 12);
+        await sendTopicUpdate("new_data", 13);
 
         return res.status(201).json({
             success: true,
@@ -356,6 +359,8 @@ const updateLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await sendTopicUpdate("new_data", 12);
+        await sendTopicUpdate("new_data", 13);
 
         return res.status(200).json({
             success: true,
@@ -412,6 +417,7 @@ const deleteLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await sendTopicUpdate("new_data", 12);
 
         return res.status(200).json({
             success: true,

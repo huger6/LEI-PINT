@@ -6,6 +6,7 @@ const gamificationValidations = require('../validations/gamification.validation'
 const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 
 const getApplications = async (req, res) => {
@@ -220,6 +221,8 @@ const startApplication = async (req, res) => {
             goal_id: goalId || null
         });
 
+        await sendTopicUpdate("new_data", 15);
+
         return res.status(201).json({
             success: true,
             code: "APP_STARTED",
@@ -343,6 +346,8 @@ const upsertEvidence = async (req, res) => {
             conflictFields: ['application_id', 'requirement_id']
         });
 
+        await sendTopicUpdate("new_data", 16);
+
         return res.status(200).json({
             success: true,
             code: created ? "APP_EVIDENCE_ADDED" : "APP_EVIDENCE_UPDATED",
@@ -426,6 +431,8 @@ const submitApplication = async (req, res) => {
             application_state: 'Submitted',
             submitted_at: new Date()
         });
+
+        await sendTopicUpdate("new_data", 15);
 
         // Create notifications: applicant confirmation, SLLs and Talent Managers
         try {
@@ -614,6 +621,9 @@ const validateApplication = async (req, res) => {
         }
 
         await transaction.commit();
+        await sendTopicUpdate("new_data", 15);
+        await sendTopicUpdate("new_data", 18);
+        if (newState === 'Accepted') await sendTopicUpdate("new_data", 17);
 
         // Notifications after successful state change
         try {
@@ -755,6 +765,8 @@ const reviewEvidence = async (req, res) => {
         }
 
         await transaction.commit();
+        await sendTopicUpdate("new_data", 16);
+        await sendTopicUpdate("new_data", 18);
 
         return res.status(200).json({
             success: true,

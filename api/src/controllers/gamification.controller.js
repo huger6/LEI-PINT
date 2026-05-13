@@ -5,6 +5,7 @@ const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
 const { uuidRule } = require('../validations/shared-rules');
 const gamificationService = require('../services/gamification.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 /*──────────────────────────────────────────────────────────────
   POST /api/gamification/interactions
@@ -27,6 +28,8 @@ const trackInteraction = async (req, res) => {
         }
 
         const interaction = await gamificationService.trackInteraction(userId, badgeId, interactionType);
+
+        await sendTopicUpdate("new_data", 19);
 
         return res.status(201).json({
             success: true,
