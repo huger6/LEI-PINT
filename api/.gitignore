@@ -1,3 +1,4 @@
 keys.env
+firebase.json
 /node_modules
 /logs/*.log
