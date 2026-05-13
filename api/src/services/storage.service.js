@@ -110,8 +110,42 @@ const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePat
     }
 };
 
+/**
+ * Uploads a Buffer directly to a Supabase storage bucket and returns the public URL.
+ * Used for server-generated files (e.g., PDF certificates).
+ *
+ * @param {string} bucketName - 'public-assets' or 'private-assets'
+ * @param {string} storagePath - Path within the bucket (e.g., 'certificates/guid/cert.pdf')
+ * @param {Buffer} buffer - File content
+ * @param {string} [contentType='application/pdf']
+ * @returns {Promise<string>} Public URL of the uploaded file
+ */
+const uploadBuffer = async (bucketName, storagePath, buffer, contentType = 'application/pdf') => {
+    if (!supabase) {
+        const base = process.env.SUPABASE_STORAGE_URL || 'http://localhost';
+        return `${base}/storage/v1/object/public/${bucketName}/${storagePath}`;
+    }
+
+    const { error } = await supabase.storage
+        .from(bucketName)
+        .upload(storagePath, buffer, { contentType, upsert: true });
+
+    if (error) {
+        const storageError = new Error(error.message);
+        storageError.name = 'StorageUploadError';
+        throw storageError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(storagePath);
+
+    return publicUrl;
+};
+
 module.exports = {
     moveImageToPermanent,
     moveStructureImageToPermanent,
-    generateSignedUploadUrl
+    generateSignedUploadUrl,
+    uploadBuffer
 };

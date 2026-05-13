@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { loginRequired } = require('../middlewares/auth.middleware');
 const applicationController = require('../controllers/applications.controller');
+const certificatesController = require('../controllers/certificates.controller');
 
 
 /**
@@ -55,5 +56,13 @@ router.put('/:applicationGuid/validate', loginRequired, applicationController.va
  * @access  Talent Manager, Service Line Leader
  */
 router.put('/:applicationGuid/evidences/:evidenceId/review', loginRequired, applicationController.reviewEvidence);
+
+/**
+ * @route   POST /api/applications/:applicationGuid/certificate
+ * @desc    Generate (or retrieve existing) PDF certificate for an Accepted application.
+ *          Body: { lang: 'pt' | 'en' | 'es' }
+ * @access  Consultant (own), Talent Manager, Service Line Leader, Administrator
+ */
+router.post('/:applicationGuid/certificate', loginRequired, certificatesController.generateCertificate);
 
 module.exports = router;
