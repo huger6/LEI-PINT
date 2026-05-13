@@ -4,6 +4,7 @@ const redis = require('../config/redis');
 const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const stripNullishFields = require('../utils/stripNullishFields');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 const me = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
@@ -381,6 +382,12 @@ const updateProfile = async (req, res) => {
         // Invalidate cache
         const cacheKey = `user:profile:${userId}`;
         await redis.del(cacheKey);
+        await sendTopicUpdate("new_data", 1);
+        if (updates.biography) {
+            if (user.user_role === 'Consultant') await sendTopicUpdate("new_data", 2);
+            else if (user.user_role === 'Talent Manager') await sendTopicUpdate("new_data", 4);
+            else if (user.user_role === 'Service Line Leader') await sendTopicUpdate("new_data", 5);
+        }
 
         logger.info('Profile update completed successfully', {
             requestId,
@@ -468,6 +475,7 @@ const changeLanguage = async (req, res) => {
 
         const cacheKey = `user:profile:${userId}`;
         await redis.del(cacheKey);
+        await sendTopicUpdate("new_data", 1);
 
         logger.info('Language changed successfully', { requestId, userId, languageId });
 

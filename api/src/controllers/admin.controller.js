@@ -8,6 +8,7 @@ const { moveImageToPermanent } = require('../services/storage.service');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 const throwRequestError = (status, code) => {
     const error = new Error(code);
@@ -346,6 +347,18 @@ const createUser = async (req, res) => {
         await t.commit();
 
         await invalidateCacheByPrefix('admin:users:list');
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        if (user_role === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (user_role === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (user_role === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        } else if (user_role === 'Administrator') {
+            await sendTopicUpdate("new_data", 6);
+        }
 
         const emailResult = await sendConfirmationEmail(
             newUser.email_address,
@@ -582,6 +595,17 @@ const updateUser = async (req, res) => {
             invalidateCacheByPrefix('admin:users:list'),
             redis.del(`user:profile:${user.user_id}`)
         ]);
+        await sendTopicUpdate("new_data", 1);
+        if (targetRole === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (targetRole === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (targetRole === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        } else if (targetRole === 'Administrator') {
+            await sendTopicUpdate("new_data", 6);
+        }
 
         return res.status(200).json({
             success: true,
@@ -659,6 +683,8 @@ const deactivateUser = async (req, res) => {
             redis.del(`user:profile:${user.user_id}`),
             invalidateCacheByPrefix('admin:users:list')
         ]);
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         return res.status(200).json({
             success: true,
@@ -738,6 +764,8 @@ const resetUserPassword = async (req, res) => {
         );
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
 
         const emailResult = await sendResetPasswordEmail(
             user.email_address,
