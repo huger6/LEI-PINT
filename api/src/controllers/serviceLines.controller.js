@@ -5,6 +5,7 @@ const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/service-lines
 // OR
@@ -186,6 +187,7 @@ const createServiceLine = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('sl:list');
+        await sendTopicUpdate("new_data", 10);
 
         return res.status(201).json({
             success: true,
@@ -271,6 +273,7 @@ const updateServiceLine = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('sl:list');
+        await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
             success: true,
@@ -324,6 +327,7 @@ const deleteServiceLine = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('sl:list');
+        await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
             success: true,

@@ -4,6 +4,7 @@ const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/learning-paths
 const getAllLearningPaths = (req, res) => {
@@ -114,6 +115,7 @@ const createLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await sendTopicUpdate("new_data", 9);
 
         return res.status(201).json({
             success: true,
@@ -187,6 +189,7 @@ const updateLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
             success: true,
@@ -239,6 +242,7 @@ const deleteLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
             success: true,

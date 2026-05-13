@@ -253,7 +253,264 @@ const sendResetPasswordEmail = async (email, name, token, lang) => {
     }
 };
 
+// ─── Shared helpers ──────────────────────────────────────────────────────────
+
+const buildEmailWrapper = (bodyRows, uniqueId) => `
+    <div style="background-color:#f9f9f9;padding:40px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#333333;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"
+               style="background-color:#ffffff;border-radius:4px;overflow:hidden;border-collapse:collapse;">
+            <tr>
+                <td style="padding:40px 40px 20px 40px;text-align:left;">
+                    <img src="${logoUrl}" alt="Softinsa" width="150" style="display:block;border:0;">
+                </td>
+            </tr>
+            ${bodyRows}
+        </table>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+            <tr>
+                <td style="padding:20px 0;text-align:center;font-size:12px;color:#999999;line-height:18px;">
+                    &copy; ${new Date().getFullYear()} Softinsa.<br>
+                    Edifício Office Oriente, Rua do Mar da China nº3 - B6, Parque das Nações, 1990-138 Lisboa
+                </td>
+            </tr>
+        </table>
+        <div style="display:none;max-height:0px;overflow:hidden;">ID:${uniqueId}</div>
+    </div>`;
+
+const ctaButton = (label, url) => `
+    <div style="text-align:center;padding:20px 0;">
+        <a href="${url}"
+           style="background:linear-gradient(90deg,#39639C 0%,#00B8E0 100%);color:#ffffff;padding:15px 40px;
+                  text-decoration:none;font-size:16px;font-weight:bold;border-radius:50px;display:inline-block;">
+            ${label}
+        </a>
+    </div>`;
+
+// ─── Application emails ───────────────────────────────────────────────────────
+
+const APPLICATION_EMAIL_TEMPLATES = {
+    submitted: {
+        'pt-PT': {
+            subject: 'Candidatura submetida',
+            greeting: 'Olá, {name}',
+            intro: 'A tua candidatura ao badge <strong>{badgeTitle}</strong> foi submetida com sucesso.',
+            body: 'Iremos notificar-te assim que a candidatura for analisada pelo Talent Manager. Podes acompanhar o estado a qualquer momento através da plataforma.',
+            cta: 'Ver Candidatura',
+            team: 'A Equipa Softinsa'
+        },
+        'en-GB': {
+            subject: 'Application submitted',
+            greeting: 'Hello, {name}',
+            intro: 'Your application for the badge <strong>{badgeTitle}</strong> has been successfully submitted.',
+            body: 'We will notify you once your application has been reviewed by the Talent Manager. You can track its status at any time on the platform.',
+            cta: 'View Application',
+            team: 'The Softinsa Team'
+        },
+        'es-ES': {
+            subject: 'Candidatura enviada',
+            greeting: 'Hola, {name}',
+            intro: 'Tu candidatura al badge <strong>{badgeTitle}</strong> ha sido enviada con éxito.',
+            body: 'Te notificaremos cuando el Talent Manager la haya revisado. Puedes seguir su estado en cualquier momento desde la plataforma.',
+            cta: 'Ver Candidatura',
+            team: 'El Equipo de Softinsa'
+        }
+    },
+    approved: {
+        'pt-PT': {
+            subject: 'Candidatura aprovada',
+            greeting: 'Parabéns, {name}!',
+            intro: 'A tua candidatura ao badge <strong>{badgeTitle}</strong> foi aprovada!',
+            body: 'O teu badge foi atribuído e já está disponível no teu perfil. Parabéns pela conquista!',
+            cta: 'Ver Candidatura',
+            team: 'A Equipa Softinsa'
+        },
+        'en-GB': {
+            subject: 'Application approved',
+            greeting: 'Congratulations, {name}!',
+            intro: 'Your application for the badge <strong>{badgeTitle}</strong> has been approved!',
+            body: 'Your badge has been awarded and is now available on your profile. Well done on this achievement!',
+            cta: 'View Application',
+            team: 'The Softinsa Team'
+        },
+        'es-ES': {
+            subject: 'Candidatura aprobada',
+            greeting: '¡Enhorabuena, {name}!',
+            intro: '¡Tu candidatura al badge <strong>{badgeTitle}</strong> ha sido aprobada!',
+            body: 'Tu badge ha sido concedido y ya está disponible en tu perfil. ¡Felicidades por este logro!',
+            cta: 'Ver Candidatura',
+            team: 'El Equipo de Softinsa'
+        }
+    },
+    rejected: {
+        'pt-PT': {
+            subject: 'Candidatura rejeitada',
+            greeting: 'Olá, {name}',
+            intro: 'A tua candidatura ao badge <strong>{badgeTitle}</strong> foi rejeitada.',
+            reasonLabel: 'Motivo indicado pelo avaliador:',
+            body: 'Podes rever as evidências submetidas e, se necessário, iniciar uma nova candidatura.',
+            cta: 'Ver Candidatura',
+            team: 'A Equipa Softinsa'
+        },
+        'en-GB': {
+            subject: 'Application rejected',
+            greeting: 'Hello, {name}',
+            intro: 'Your application for the badge <strong>{badgeTitle}</strong> has been rejected.',
+            reasonLabel: 'Reason provided by the reviewer:',
+            body: 'You may review the submitted evidence and, if appropriate, start a new application.',
+            cta: 'View Application',
+            team: 'The Softinsa Team'
+        },
+        'es-ES': {
+            subject: 'Candidatura rechazada',
+            greeting: 'Hola, {name}',
+            intro: 'Tu candidatura al badge <strong>{badgeTitle}</strong> ha sido rechazada.',
+            reasonLabel: 'Motivo indicado por el evaluador:',
+            body: 'Puedes revisar las evidencias enviadas y, si lo consideras oportuno, iniciar una nueva candidatura.',
+            cta: 'Ver Candidatura',
+            team: 'El Equipo de Softinsa'
+        }
+    }
+};
+
+const resolveApplicationTemplate = (type, lang) =>
+    APPLICATION_EMAIL_TEMPLATES[type][lang] || APPLICATION_EMAIL_TEMPLATES[type]['en-GB'];
+
+/**
+ * @param {string} email
+ * @param {string} name
+ * @param {string} badgeTitle
+ * @param {string} applicationUrl  Full URL to the application page
+ * @param {string} lang            language_iso (e.g. 'pt-PT')
+ */
+const sendApplicationSubmittedEmail = async (email, name, badgeTitle, applicationUrl, lang) => {
+    const t = resolveApplicationTemplate('submitted', lang);
+    const safeName = escapeHtml(name);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{badgeTitle}', safeBadge)}</p>
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, applicationUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending application submitted email', { error });
+        return { success: false, error };
+    }
+};
+
+/**
+ * @param {string} email
+ * @param {string} name
+ * @param {string} badgeTitle
+ * @param {string} applicationUrl
+ * @param {string} lang
+ */
+const sendApplicationApprovedEmail = async (email, name, badgeTitle, applicationUrl, lang) => {
+    const t = resolveApplicationTemplate('approved', lang);
+    const safeName = escapeHtml(name);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{badgeTitle}', safeBadge)}</p>
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, applicationUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending application approved email', { error });
+        return { success: false, error };
+    }
+};
+
+/**
+ * @param {string} email
+ * @param {string} name
+ * @param {string} badgeTitle
+ * @param {string|null} reviewerNotes
+ * @param {string} applicationUrl
+ * @param {string} lang
+ */
+const sendApplicationRejectedEmail = async (email, name, badgeTitle, reviewerNotes, applicationUrl, lang) => {
+    const t = resolveApplicationTemplate('rejected', lang);
+    const safeName = escapeHtml(name);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const reasonBlock = reviewerNotes
+        ? `<div style="background-color:#fff3f3;border-left:4px solid #e74c3c;padding:16px 20px;
+                       border-radius:0 4px 4px 0;margin:16px 0;">
+               <p style="font-size:13px;font-weight:600;color:#c0392b;margin:0 0 8px 0;">
+                   ${t.reasonLabel}
+               </p>
+               <p style="font-size:14px;color:#555555;margin:0;">${escapeHtml(reviewerNotes)}</p>
+           </div>`
+        : '';
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{badgeTitle}', safeBadge)}</p>
+                ${reasonBlock}
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, applicationUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending application rejected email', { error });
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
-    sendResetPasswordEmail
+    sendResetPasswordEmail,
+    sendApplicationSubmittedEmail,
+    sendApplicationApprovedEmail,
+    sendApplicationRejectedEmail
 };

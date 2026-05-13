@@ -4,6 +4,7 @@ const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/badges
 // OR
@@ -421,6 +422,7 @@ const createBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await sendTopicUpdate("new_data", 14);
 
         return res.status(201).json({
             success: true,
@@ -648,6 +650,7 @@ const updateBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
             success: true,
@@ -705,6 +708,7 @@ const deleteBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
             success: true,
