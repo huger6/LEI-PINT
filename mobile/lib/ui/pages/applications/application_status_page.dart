@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
-import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/badge_catalog.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/badges/recommended_badge_card.dart';

@@ -16,6 +16,7 @@ import '../data/repositories/badge_repo.dart';
 import '../data/repositories/lang_repo.dart';
 import '../data/repositories/location_repo.dart';
 import '../data/repositories/ranking_repo.dart';
+import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -147,6 +148,12 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<RankingRepository>()) {
     getIt.registerLazySingleton<RankingRepository>(
       () => RankingRepository(getIt<ApiClient>()),
+    );
+  }
+
+  if (!getIt.isRegistered<ValidationRepository>()) {
+    getIt.registerLazySingleton<ValidationRepository>(
+      () => ValidationRepository(getIt<ApiClient>()),
     );
   }
 

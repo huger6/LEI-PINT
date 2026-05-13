@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/routes/app_router.dart';
 import '../../../models/badge_model.dart';
 import '../../../ui/widgets/badges/badge_catalog.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
@@ -303,7 +302,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                       Switch(
                         value: _showPreview,
                         onChanged: (v) => setState(() => _showPreview = v),
-                        activeColor: const Color(0xFF5D9FD1),
+                        activeThumbColor: const Color(0xFF5D9FD1),
                       ),
                       const Text(
                         'Depois',
@@ -422,7 +421,8 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: _selectedBadges.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(width: 8),
                           itemBuilder: (_, index) {
                             final badgeIndex = _selectedBadges.toList()[index];
                             final badge = BadgeCatalog.all[badgeIndex];
