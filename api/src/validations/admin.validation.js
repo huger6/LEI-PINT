@@ -44,6 +44,11 @@ const userIdParamSchema = z.object({
     userGuid: z.string().min(1)
 });
 
+const optionalBoolQuery = z.preprocess(
+    (v) => (v === '' || v === undefined ? undefined : (typeof v === 'string' ? v.trim().toLowerCase() : v)),
+    z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
+).transform((v) => (v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true')));
+
 const listUsersQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(20),
@@ -52,13 +57,33 @@ const listUsersQuerySchema = z.object({
     location_id: positiveIntIdRule.optional(),
     locationId: positiveIntIdRule.optional(),
     is_active: booleanQueryRule.optional(),
-    isActive: booleanQueryRule.optional()
+    isActive: booleanQueryRule.optional(),
+    search: z.string().trim().optional(),
+    emailConfirmed: optionalBoolQuery,
+    email_confirmed: optionalBoolQuery,
+    gdprAccepted: optionalBoolQuery,
+    serviceLine: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()),
+    area: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()),
+    dateFrom: z.preprocess(
+        (v) => (v === '' || v === undefined ? undefined : v),
+        z.string().regex(/^\d{2}-\d{2}-\d{4}$/, 'VALIDATION_DATE_FORMAT_INVALID').optional()
+    ),
+    pointsMin: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()),
+    pointsMax: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional())
 }).transform((data) => ({
     page: data.page,
     limit: data.limit,
-    user_role: data.user_role ?? data.role,
+    role: data.user_role ?? data.role,
     location_id: data.location_id ?? data.locationId,
-    is_active: data.is_active ?? data.isActive
+    isActive: data.is_active ?? data.isActive,
+    search: data.search || undefined,
+    emailConfirmed: data.emailConfirmed ?? data.email_confirmed,
+    gdprAccepted: data.gdprAccepted,
+    serviceLine: data.serviceLine,
+    area: data.area,
+    dateFrom: data.dateFrom,
+    pointsMin: data.pointsMin,
+    pointsMax: data.pointsMax
 }));
 
 const baseUserDataSchema = z.object({
