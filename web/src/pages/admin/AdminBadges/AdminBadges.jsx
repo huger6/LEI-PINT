@@ -161,10 +161,10 @@ export default function AdminBadges() {
 												</span>
 											</td>
 											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(b)}>
+												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(b)}>
 													<Icon name="pencil" size={14} aria-hidden="true" />
 												</Button>
-												<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(b)}>
+												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(b)}>
 													<Icon name="trash" size={14} aria-hidden="true" />
 												</Button>
 											</td>

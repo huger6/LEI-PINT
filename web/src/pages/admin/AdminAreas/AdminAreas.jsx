@@ -140,10 +140,10 @@ export default function AdminAreas() {
 												</span>
 											</td>
 											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(a)}>
+												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(a)}>
 													<Icon name="pencil" size={14} aria-hidden="true" />
 												</Button>
-												<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(a)}>
+												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(a)}>
 													<Icon name="trash" size={14} aria-hidden="true" />
 												</Button>
 											</td>
