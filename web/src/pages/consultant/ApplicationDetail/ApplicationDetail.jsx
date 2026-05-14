@@ -169,7 +169,7 @@ export default function ApplicationDetail() {
 	return (
 		<>
 			{/* Breadcrumb */}
-			<nav aria-label="breadcrumb" className="mb-3">
+			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 				<ol className="breadcrumb">
 					<li className="breadcrumb-item"><Link to="/applications">{t('applicationDetail.applications')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badgeName}</li>

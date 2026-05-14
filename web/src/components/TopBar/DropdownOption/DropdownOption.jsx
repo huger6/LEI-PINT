@@ -35,7 +35,7 @@ export default function DropdownOption({
                         name={icon}
                         size={iconSize}
                         color="var(--color-on-background)"
-                        label={translatedLabel}
+                        aria-label={translatedLabel}
                         {...(shouldRenderFilled ? { fill: 'currentColor', stroke: 'none' } : {})}
                     />
                 ) : null}

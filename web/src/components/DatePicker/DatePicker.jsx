@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CustomSelect from '../CustomSelect/CustomSelect';
 import Icon from '../Icons/Icons';
 import styles from './DatePicker.module.css';
@@ -97,6 +98,7 @@ export default function DatePicker({
 	locale = 'en-US',
 	yearStart = DEFAULT_YEAR_START,
 }) {
+	const { t } = useTranslation();
 	const wrapperRef = useRef(null);
 	const [open, setOpen] = useState(false);
 	const selectedDate = useMemo(() => normalizeDate(value), [value]);
@@ -274,7 +276,7 @@ export default function DatePicker({
 								)
 							}
 							disabled={!canGoPrev}
-							aria-label="Previous month"
+							aria-label={t('datePicker.previousMonth')}
 						>
 							<Icon
 								name="keyboard_arrow_down"
@@ -290,7 +292,7 @@ export default function DatePicker({
 								value={activeMonth.getMonth()}
 								onChange={handleMonthChange}
 								options={monthOptions}
-								ariaLabel="Select month"
+								ariaLabel={t('datePicker.selectMonth')}
 								compact
 							/>
 							<CustomSelect
@@ -298,7 +300,7 @@ export default function DatePicker({
 								value={activeMonth.getFullYear()}
 								onChange={handleYearChange}
 								options={yearOptions}
-								ariaLabel="Select year"
+								ariaLabel={t('datePicker.selectYear')}
 								compact
 							/>
 						</div>
@@ -316,7 +318,7 @@ export default function DatePicker({
 								)
 							}
 							disabled={!canGoNext}
-							aria-label="Next month"
+							aria-label={t('datePicker.nextMonth')}
 						>
 							<Icon
 								name="keyboard_arrow_down"

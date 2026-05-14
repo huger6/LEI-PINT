@@ -134,7 +134,7 @@ export default function BrowseHierarchy() {
 	if (step === 'detail' && selection.badgeSlug) {
 		return (
 			<div>
-				<nav aria-label="breadcrumb" className="mb-3">
+				<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 					<ol className="breadcrumb">
 						<li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>{t('browseHierarchy.learningPaths')}</button></li>
 						{selection.learningPathName && <li className="breadcrumb-item"><button className="btn btn-link p-0" onClick={() => handleBreadcrumb('sl')}>{selection.learningPathName}</button></li>}
@@ -157,7 +157,7 @@ export default function BrowseHierarchy() {
 	return (
 		<div>
 			{/* Breadcrumb */}
-			<nav aria-label="breadcrumb" className="mb-3">
+			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 				<ol className="breadcrumb">
 					<li className={`breadcrumb-item ${step === 'lp' ? 'active' : ''}`}>
 						{step === 'lp' ? t('browseHierarchy.learningPaths') : <button className="btn btn-link p-0" onClick={() => handleBreadcrumb('lp')}>{t('browseHierarchy.learningPaths')}</button>}

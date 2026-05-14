@@ -84,7 +84,7 @@ export default function BadgeDetail() {
 	return (
 		<>
 			{/* Breadcrumb */}
-			<nav aria-label="breadcrumb" className="mb-3">
+			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 				<ol className="breadcrumb">
 					<li className="breadcrumb-item"><Link to="/badges">{t('badgeDetail.catalog')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badge.badge_title || badge.badgeTitle}</li>

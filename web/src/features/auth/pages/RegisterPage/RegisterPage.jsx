@@ -860,8 +860,11 @@ export default function RegisterPage() {
 																			className={`${styles.primaryBadge} ${selected.is_primary ? styles.primaryBadgeOn : ''}`}
 																			onClick={(event) => { event.stopPropagation(); setPrimary(area.id); }}
 																			title={t('register.setAsPrimary')}
+																			aria-label={t('register.setAsPrimary')}
+																			role="button"
+																			tabIndex={0}
 																		>
-																			<Icon name="star" size={14} className={styles.primaryBadgeIcon} color="currentColor" label={t('register.setAsPrimary')} />
+																			<Icon name="star" size={14} className={styles.primaryBadgeIcon} color="currentColor" aria-hidden="true" />
 																		</span>
 																	)}
 																</button>

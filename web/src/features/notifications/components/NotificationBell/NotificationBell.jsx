@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks/useNotifications';
 import NotificationPanel from '../NotificationPanel/NotificationPanel';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './NotificationBell.module.css';
 
 export default function NotificationBell() {
+	const { t } = useTranslation();
 	const { unreadCount } = useNotifications();
 	const [open, setOpen] = useState(false);
 	const wrapperRef = useRef(null);
@@ -22,7 +24,7 @@ export default function NotificationBell() {
 			<button
 				className={`${styles.bellButton} ${open ? styles.bellButtonActive : ''}`}
 				onClick={() => setOpen((prev) => !prev)}
-				aria-label="Notifications"
+				aria-label={t('notifications.bell')}
 				aria-expanded={open}
 				type="button"
 			>

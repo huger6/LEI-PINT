@@ -206,7 +206,8 @@
 		"supportTerms": "Términos de Uso",
 		"connectivityTitle": "Conectividad",
 		"connectivityDescription": "Comparte tus logros en LinkedIn y mantente conectado mediante Teams.",
-		"copyright": "© {{year}} Softinsa - Plataforma de Gestión de Credenciales Verificadas. Todos los derechos reservados."
+		"copyright": "© {{year}} Softinsa - Plataforma de Gestión de Credenciales Verificadas. Todos los derechos reservados.",
+		"website": "Sitio web"
 	},
 	"userDropdown": {
 		"openMenu": "Abrir menú de usuario",
@@ -286,6 +287,12 @@
 		"target": "Objetivo",
 		"trophy": "Trofeo"
 	},
+	"datePicker": {
+		"previousMonth": "Mes anterior",
+		"nextMonth": "Mes siguiente",
+		"selectMonth": "Seleccionar mes",
+		"selectYear": "Seleccionar año"
+	},
 	"pagination": {
 		"previous": "Anterior",
 		"next": "Siguiente",
@@ -355,6 +362,7 @@
 	},
 	"notifications": {
 		"title": "Notificaciones",
+		"bell": "Notificaciones",
 		"empty": "Sin notificaciones",
 		"markAllRead": "Marcar todas como leídas",
 		"loadMore": "Cargar más",
@@ -420,7 +428,8 @@
 		"registeredTo": "Registrado Hasta",
 		"pointsMin": "Puntos Mínimos",
 		"pointsMax": "Puntos Máximos",
-		"confirmDiscardChanges": "Tienes cambios sin guardar. ¿Estás seguro de que deseas descartarlos?"
+		"confirmDiscardChanges": "Tienes cambios sin guardar. ¿Estás seguro de que deseas descartarlos?",
+		"breadcrumb": "Ruta de navegación"
 	},
 	"adminDashboard": {
 		"title": "Panel de Administración",
@@ -453,7 +462,8 @@
 		"searchAreas": "Buscar áreas...",
 		"noAreasFound": "Ninguna área coincide con la búsqueda.",
 		"selectedCount": "{{count}} / {{max}} seleccionadas",
-		"setPrimary": "Establecer como principal"
+		"setPrimary": "Establecer como principal",
+		"autoConfirmEmail": "Confirmar email automáticamente"
 	},
 	"adminBadges": {
 		"title": "Badges",
