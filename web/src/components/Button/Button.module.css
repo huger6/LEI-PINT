@@ -17,6 +17,10 @@
 	user-select: none;
 }
 
+.btn:hover {
+	text-decoration: none;
+}
+
 .btn:focus {
 	outline: none;
 }
