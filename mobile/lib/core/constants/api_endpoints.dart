@@ -21,6 +21,16 @@ class ApiEndpoints {
   // === Security ===
   static const String changePassword = '/api/auth/change-password';
 
+  // === Validation ===
+  // POST /auth/validate-email - check email availability
+  static const String validateEmail = '/api/auth/validate-email';
+
+  // POST /auth/validate-username - check username availability
+  static const String validateUsername = '/api/auth/validate-username';
+
+  // POST /auth/validate-content - check for prohibited/profane content
+  static const String validateContent = '/api/auth/validate-content';
+
   // === Locations ===
   // GET /locations
   static const String getLocations = '/api/locations';

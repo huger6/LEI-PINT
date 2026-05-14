@@ -38,14 +38,20 @@ class RegistrationData {
       'email_address': email,
       'password': password,
       'user_role': 'Consultant',
-      if (normalizedPhone != null) 'phone_number': normalizedPhone,
-      if (birthDate != null && birthDate!.trim().isNotEmpty)
-        'birthdate': _toApiDate(birthDate!),
-      if (bio != null && bio!.trim().isNotEmpty) 'biography': bio,
-      if (profileImageUrl != null && profileImageUrl.isNotEmpty)
-        'profile_img_url': profileImageUrl,
-      if (location != null) 'location_id': location!.id,
-      if (preferredLanguage != null) 'preferred_lang_id': preferredLanguage!.id,
+      ...?(normalizedPhone == null
+          ? null
+          : {'phone_number': normalizedPhone}),
+      ...?(birthDate != null && birthDate!.trim().isNotEmpty
+          ? {'birthdate': _toApiDate(birthDate!)}
+          : null),
+      ...?(bio != null && bio!.trim().isNotEmpty ? {'biography': bio} : null),
+      ...?(profileImageUrl != null && profileImageUrl.isNotEmpty
+          ? {'profile_img_url': profileImageUrl}
+          : null),
+      ...?(location == null ? null : {'location_id': location!.id}),
+      ...?(preferredLanguage == null
+          ? null
+          : {'preferred_lang_id': preferredLanguage!.id}),
       'areas': selectedAreasPayload,
     };
   }

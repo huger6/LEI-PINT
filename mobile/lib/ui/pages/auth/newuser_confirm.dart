@@ -28,7 +28,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
   Future<void> _handleRegister() async {
     final tr = LanguageScope.of(context);
     final authStore = context.read<AuthStore>();
-    final pendingUsername = authStore.draftRegistration.username ?? '';
+    final pendingUsername = authStore.draftRegistration.username;
 
     setState(() => _isLoading = true);
 
@@ -132,17 +132,17 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                       // Agora lemos tudo diretamente do 'draft'
                       _buildInfoField(
                         tr.tr('name'),
-                        draft.fullName ?? '-',
+                        draft.fullName,
                         theme,
                       ),
                       _buildInfoField(
                         tr.tr('username'),
-                        draft.username ?? '-',
+                        draft.username,
                         theme,
                       ),
                       _buildInfoField(
                         tr.tr('email'),
-                        draft.email ?? '-',
+                        draft.email,
                         theme,
                       ),
                       _buildInfoField(tr.tr('phone'), phoneDisplay, theme),
