@@ -4,6 +4,7 @@ const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/areas
 // OR
@@ -243,6 +244,7 @@ const createArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
             success: true,
@@ -355,6 +357,7 @@ const updateArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
             success: true,
@@ -434,6 +437,7 @@ const deleteArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
             success: true,

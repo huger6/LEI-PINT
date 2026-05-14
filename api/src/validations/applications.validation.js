@@ -1,7 +1,7 @@
 const { z } = require('zod');
 require('./error-map');
 const sanitizeText = require('../utils/sanitizeText');
-const { positiveIntIdRule } = require('./shared-rules');
+const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const startApplicationSchema = z.object({
     badgeId: positiveIntIdRule,
@@ -61,10 +61,38 @@ const getUploadUrlBodySchema = z.object({
         .regex(/\.[0-9a-z]+$/i, 'VALIDATION_UPLOAD_FILE_EXTENSION_INVALID')
 });
 
+const reviewApplicationSchema = z.object({
+    action: z.enum(['accept', 'reject', 'review'], {
+        errorMap: () => ({ message: 'VALIDATION_REVIEW_ACTION_INVALID' })
+    }),
+    reviewerNotes: z.string().trim()
+        .max(2000, 'VALIDATION_REVIEWER_NOTES_MAX_LENGTH')
+        .transform(sanitizeText)
+        .optional()
+        .nullable()
+});
+
+const reviewEvidenceSchema = z.object({
+    approved: z.boolean({ required_error: 'VALIDATION_EVIDENCE_APPROVED_REQUIRED' }),
+    reviewNotes: z.string().trim()
+        .max(1000, 'VALIDATION_EVIDENCE_REVIEW_NOTES_MAX_LENGTH')
+        .transform(sanitizeText)
+        .optional()
+        .nullable()
+});
+
+const evidenceIdParamSchema = z.object({
+    applicationGuid: uuidRule,
+    evidenceId: positiveIntIdRule
+});
+
 module.exports = {
     startApplicationSchema,
     applicationGuidParamSchema,
     upsertEvidenceBodySchema,
     getApplicationsQuerySchema,
-    getUploadUrlBodySchema
+    getUploadUrlBodySchema,
+    reviewApplicationSchema,
+    reviewEvidenceSchema,
+    evidenceIdParamSchema
 };

@@ -17,6 +17,8 @@ const admin = require('./admin.routes');
 const gamification = require('./gamification.routes');
 const notifications = require('./notifications.routes');
 const statistics = require('./statistics.routes');
+const slas = require('./slas.routes');
+const announcements = require('./announcements.routes');
 
 // --- Auth & user session ---
 router.use('/auth', auth);
@@ -41,6 +43,10 @@ router.use('/ranking', ranking);
 router.use('/gamification', gamification);
 router.use('/notifications', notifications);
 router.use('/statistics', statistics);
+
+// --- SLAs & Announcements ---
+router.use('/slas', slas);
+router.use('/announcements', announcements);
 
 // --- Utilities & admin ---
 router.use('/utils', utils);

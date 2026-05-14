@@ -8,6 +8,7 @@ const { moveImageToPermanent } = require('../services/storage.service');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 const throwRequestError = (status, code) => {
     const error = new Error(code);
@@ -172,60 +173,50 @@ const syncRoleAssignments = async ({
 };
 
 const getUsers = async (req, res) => {
-    return handleListRequest({
-        req,
-        res,
-        schema: validations.listUsersQuerySchema,
-        modelName: 'users',
-        cachePrefix: 'admin:users:list',
-        include: [
-            {
-                model: models.locations,
-                as: 'location',
-                attributes: ['location_id', 'location_name']
-            },
-            {
-                model: models.consultants,
-                as: 'consultant',
-                attributes: ['biography'],
-                include: [
-                    {
-                        model: models.consultant_areas,
-                        as: 'consultant_areas',
-                        attributes: ['area_id', 'is_primary'],
-                        include: [
-                            {
-                                model: models.areas,
-                                as: 'area',
-                                attributes: ['area_id', 'area_name']
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                model: models.talent_managers,
-                as: 'talent_manager',
-                attributes: ['biography']
-            },
-            {
-                model: models.service_line_leaders,
-                as: 'service_line_leader',
-                attributes: ['service_line_id', 'biography'],
-                include: [
-                    {
-                        model: models.service_lines,
-                        as: 'service_line',
-                        attributes: ['service_line_id', 'service_line_name']
-                    }
-                ]
-            }
-        ],
-        order: [['created_at', 'DESC']],
-        attributes: {
-            exclude: ['password_hash']
-        }
+    const requestId = req.headers['x-request-id'] || null;
+
+    const queryValidation = validations.listUsersQuerySchema.safeParse(req.query);
+    if (!queryValidation.success) return res.status(400).json({
+        success: false,
+        errors: queryValidation.error.issues
     });
+
+    const { page, limit, ...filterParams } = queryValidation.data;
+    const offset = (page - 1) * limit;
+    const cacheKey = `admin:users:list:${Buffer.from(JSON.stringify({ ...filterParams, page, limit })).toString('base64')}`;
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, ...JSON.parse(cached) });
+
+        const { where, include } = models.users.buildUserFilter(filterParams, models);
+
+        const { rows, count } = await models.users.findAndCountAll({
+            where,
+            include,
+            limit,
+            offset,
+            order: [['created_at', 'DESC']],
+            distinct: true,
+            attributes: { exclude: ['password_hash'] }
+        });
+
+        const totalPages = Math.ceil(count / limit);
+        if (page > totalPages && count > 0) {
+            return res.status(404).json({ success: false, code: 'PAGINATION_PAGE_NOT_FOUND' });
+        }
+
+        const responseData = {
+            data: rows,
+            pagination: { totalItems: count, totalPages, currentPage: page }
+        };
+
+        await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
+        return res.status(200).json({ success: true, ...responseData });
+    } catch (error) {
+        logger.error('Error in admin:users:list', { requestId, error });
+        return res.status(500).json({ success: false, code: 'LIST_FETCH_FAILED' });
+    }
 };
 
 const resolveUserParam = async (param, transaction) => {
@@ -346,6 +337,18 @@ const createUser = async (req, res) => {
         await t.commit();
 
         await invalidateCacheByPrefix('admin:users:list');
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        if (user_role === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (user_role === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (user_role === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        } else if (user_role === 'Administrator') {
+            await sendTopicUpdate("new_data", 6);
+        }
 
         const emailResult = await sendConfirmationEmail(
             newUser.email_address,
@@ -582,6 +585,17 @@ const updateUser = async (req, res) => {
             invalidateCacheByPrefix('admin:users:list'),
             redis.del(`user:profile:${user.user_id}`)
         ]);
+        await sendTopicUpdate("new_data", 1);
+        if (targetRole === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (targetRole === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (targetRole === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        } else if (targetRole === 'Administrator') {
+            await sendTopicUpdate("new_data", 6);
+        }
 
         return res.status(200).json({
             success: true,
@@ -659,6 +673,8 @@ const deactivateUser = async (req, res) => {
             redis.del(`user:profile:${user.user_id}`),
             invalidateCacheByPrefix('admin:users:list')
         ]);
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         return res.status(200).json({
             success: true,
@@ -738,6 +754,8 @@ const resetUserPassword = async (req, res) => {
         );
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
 
         const emailResult = await sendResetPasswordEmail(
             user.email_address,
