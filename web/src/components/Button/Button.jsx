@@ -33,7 +33,7 @@ export default function Button({
 			{...rest}
 		>
 			{loading && <span className={styles.spinner} aria-hidden="true" />}
-			<span className={loading ? styles.hidden : undefined}>{children}</span>
+			<span className={`${styles.content}${loading ? ` ${styles.hidden}` : ''}`}>{children}</span>
 		</Tag>
 	);
 }

@@ -50,6 +50,14 @@
 	background: var(--color-surface-variant);
 }
 
+.sm {
+	max-width: 420px;
+}
+
+.lg {
+	max-width: 720px;
+}
+
 .body {
 	padding: 1.25rem;
 	overflow-y: auto;

@@ -1,32 +1,20 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchUsers as getUsers, createUser, updateUser, deactivateUser } from '../../../features/users/api/usersApi';
+import { fetchUsers as getUsers, deactivateUser } from '../../../features/users/api/usersApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
-import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
-import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
+import CreateUserModal from '../../../components/CreateUserModal/CreateUserModal';
 import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
 import Pagination from '../../../components/Pagination/Pagination';
 import styles from './AdminUsers.module.css';
 
-const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
-
-// Maps each role value to a CSS module class for the coloured pill badge.
 const ROLE_CLASS = {
 	Administrator: styles.roleAdministrator,
 	Consultant: styles.roleConsultant,
 	'Talent Manager': styles.roleTalentManager,
 	'Service Line Leader': styles.roleServiceLineLeader,
-};
-
-const emptyForm = {
-	fullName: '',
-	username: '',
-	emailAddress: '',
-	password: '',
-	userRole: 'Consultant',
-	isActive: true,
 };
 
 /** Returns up to two uppercase initials from a full name string. */
@@ -49,9 +37,6 @@ export default function AdminUsers() {
 	const [pagination, setPagination] = useState(null);
 
 	const [showModal, setShowModal] = useState(false);
-	const [editItem, setEditItem] = useState(null);
-	const [form, setForm] = useState(emptyForm);
-	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
 		loadHierarchy();
@@ -97,21 +82,11 @@ export default function AdminUsers() {
 	}
 
 	function openCreate() {
-		setEditItem(null);
-		setForm(emptyForm);
 		setShowModal(true);
 	}
 
-	function openEdit(user) {
-		setEditItem(user);
-		setForm({
-			fullName: user.full_name || user.fullName || '',
-			username: user.username || '',
-			emailAddress: user.email_address || user.emailAddress || '',
-			userRole: user.user_role || user.userRole || 'Consultant',
-			isActive: user.is_active ?? true,
-		});
-		setShowModal(true);
+	function handleUserCreated(created) {
+		setUsers((prev) => [...prev, created]);
 	}
 
 	async function handleDelete(user) {
@@ -124,30 +99,6 @@ export default function AdminUsers() {
 		}
 	}
 
-	async function handleSubmit(e) {
-		e.preventDefault();
-		setSaving(true);
-		try {
-			if (editItem) {
-				const updated = await updateUser(editItem.user_guid || editItem.userGuid, form);
-				setUsers((prev) => prev.map((u) => (u.user_guid === editItem.user_guid ? updated : u)));
-			} else {
-				const created = await createUser(form);
-				setUsers((prev) => [...prev, created]);
-			}
-			setShowModal(false);
-		} catch (err) {
-			console.error(err);
-		} finally {
-			setSaving(false);
-		}
-	}
-
-	function handleChange(e) {
-		const { name, value, type, checked } = e.target;
-		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-	}
-
 	return (
 		<div>
 			{/* ── Page header ─────────────────────────────────────────────── */}
@@ -156,7 +107,10 @@ export default function AdminUsers() {
 					<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
 					<p className={styles.headerSubtitle}>{t('adminUsers.subtitle')}</p>
 				</div>
-				<Button onClick={openCreate}>{t('adminUsers.newUser')}</Button>
+				<Button onClick={openCreate} title={t('adminUsers.newUser')} label={t('adminUsers.newUser')}>
+					<Icon name="add" size={14} aria-hidden="true" className="me-1" color="var(--color-on-primary)" label={t('adminUsers.newUser')} />
+					{t('adminUsers.newUser')}
+				</Button>
 			</div>
 
 			{/* ── Filter bar ──────────────────────────────────────────────── */}
@@ -249,7 +203,7 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(u)}>
+													<Button as={Link} to="#" size="sm" variant="outlined" className="me-2" title={t('shared.edit')}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
 													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(u)}>
@@ -277,82 +231,14 @@ export default function AdminUsers() {
 				/>
 			)}
 
-			{/* ── Create / Edit modal ──────────────────────────────────────── */}
+			{/* ── Create modal ─────────────────────────────────────────────── */}
 			{showModal && (
-				<Modal
-					title={editItem ? t('adminUsers.editUser') : t('adminUsers.newUser')}
+				<CreateUserModal
 					onClose={() => setShowModal(false)}
-					footer={
-						<>
-							<Button variant="outlined" onClick={() => setShowModal(false)}>
-								{t('shared.cancel')}
-							</Button>
-							<Button loading={saving} onClick={handleSubmit}>
-								{editItem ? t('shared.save') : t('shared.create')}
-							</Button>
-						</>
-					}
-				>
-					<form id="user-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
-						<FormInput
-							label={t('adminUsers.fullName')}
-							name="fullName"
-							value={form.fullName}
-							onChange={handleChange}
-							required
-						/>
-						<FormInput
-							label={t('shared.username')}
-							name="username"
-							value={form.username}
-							onChange={handleChange}
-							required
-						/>
-						<FormInput
-							label={t('shared.email')}
-							name="emailAddress"
-							type="email"
-							value={form.emailAddress}
-							onChange={handleChange}
-							required
-						/>
-						{!editItem && (
-							<FormInput
-								label={t('shared.password')}
-								name="password"
-								type="password"
-								value={form.password}
-								onChange={handleChange}
-								required={!editItem}
-							/>
-						)}
-						<div>
-							<label htmlFor="user_role" className="form-label">{t('shared.role')}</label>
-							<select
-								id="user_role"
-								className="form-select"
-								name="userRole"
-								value={form.userRole}
-								onChange={handleChange}
-							>
-								{ROLES.map((r) => (
-									<option key={r} value={r}>{r}</option>
-								))}
-							</select>
-						</div>
-						<div className="form-check">
-							<input
-								className="form-check-input"
-								type="checkbox"
-								name="isActive"
-								id="isactive"
-								checked={form.isActive}
-								onChange={handleChange}
-							/>
-							<label className="form-check-label" htmlFor="isactive">{t('shared.active')}</label>
-						</div>
-					</form>
-				</Modal>
+					onCreated={handleUserCreated}
+					serviceLines={serviceLines}
+					allAreas={areas}
+				/>
 			)}
 		</div>
 	);

@@ -420,7 +420,8 @@
 		"registeredFrom": "Registered From",
 		"registeredTo": "Registered To",
 		"pointsMin": "Min Points",
-		"pointsMax": "Max Points"
+		"pointsMax": "Max Points",
+		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?"
 	},
 	"adminDashboard": {
 		"title": "Administration Panel",
@@ -438,6 +439,7 @@
 		"title": "Users",
 		"newUser": "New User",
 		"editUser": "Edit User",
+		"createUser": "Create new user",
 		"subtitle": "Manage platform users, roles and permissions.",
 		"filterByRole": "Filter by role",
 		"filterByStatus": "Filter by status",
@@ -446,7 +448,13 @@
 		"noUsersDesc": "Try adjusting the filters or create a new user.",
 		"fullName": "Full Name",
 		"resultsCount": "Showing {{count}} user",
-		"resultsCount_other": "Showing {{count}} users"
+		"resultsCount_other": "Showing {{count}} users",
+		"advancedConfig": "Advanced configurations",
+		"selectServiceLine": "Select service line",
+		"searchAreas": "Search areas...",
+		"noAreasFound": "No areas match your search.",
+		"selectedCount": "{{count}} / {{max}} selected",
+		"setPrimary": "Set as primary"
 	},
 	"adminBadges": {
 		"title": "Badges",
