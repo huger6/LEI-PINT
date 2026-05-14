@@ -7,7 +7,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../injection_container.dart';
-import '../../../core/sync_manager.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 
 class SelectAreaScreen extends StatefulWidget {

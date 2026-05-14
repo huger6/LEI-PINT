@@ -119,10 +119,15 @@ class MyApplicationDao {
       LocalDatabase.myApplicationsTable,
       {
         'state': state,
-        if (reviewerNotes != null) 'reviewer_notes': reviewerNotes,
-        if (submittedAt != null)
-          'submitted_at': submittedAt.millisecondsSinceEpoch,
-        if (closedAt != null) 'closed_at': closedAt.millisecondsSinceEpoch,
+        ...?(reviewerNotes == null
+            ? null
+            : {'reviewer_notes': reviewerNotes}),
+        ...?(submittedAt == null
+            ? null
+            : {'submitted_at': submittedAt.millisecondsSinceEpoch}),
+        ...?(closedAt == null
+            ? null
+            : {'closed_at': closedAt.millisecondsSinceEpoch}),
         'pending_sync': 0,
         'synced_at': DateTime.now().millisecondsSinceEpoch,
       },
