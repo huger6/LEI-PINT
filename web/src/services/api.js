@@ -13,7 +13,23 @@ export const getApiToken = () => _token;
 export const setApiToken = (token) => { _token = token; };
 export const clearApiToken = () => { _token = null; };
 
+const getCaller = () => {
+	const stack = new Error().stack || '';
+	const lines = stack.split('\n').slice(1);
+	const callers = [];
+	for (const line of lines) {
+		if (line.includes('/services/api') || line.includes('node_modules')) continue;
+		const match = line.match(/(?:at\s+)?(\S+?)\s+\(?.*?([^/\\]+\.[jt]sx?):(\d+)/);
+		if (match) callers.push(`${match[2]}:${match[3]} (${match[1]})`);
+		if (callers.length >= 3) break;
+	}
+	return callers.length ? callers.join(' ← ') : 'unknown';
+};
+
 api.interceptors.request.use((config) => {
+	if (import.meta.env.DEV) {
+		config.metadata = { startedAt: Date.now(), caller: getCaller() };
+	}
 	if (_token) {
 		config.headers.Authorization = `Bearer ${_token}`;
 	}
@@ -34,23 +50,29 @@ const processQueue = (error, token = null) => {
 api.interceptors.response.use(
 	(response) => {
 		if (import.meta.env.DEV) {
-			console.log('[API RESPONSE]', {
-				method: response.config?.method?.toUpperCase(),
-				url: response.config?.url,
-				status: response.status,
-				data: response.data,
-			});
+			const meta = response.config?.metadata;
+			const duration = meta?.startedAt ? `${Date.now() - meta.startedAt}ms` : '?';
+			console.log(
+				`[API %c${response.config?.method?.toUpperCase()}%c ${response.config?.url}] %c${response.status} %c${duration}`,
+				'font-weight:bold', '', 'color:green', 'color:gray',
+			);
+			console.log('  ├─ caller:', meta?.caller ?? 'unknown');
+			console.log('  ├─ timestamp:', new Date().toISOString());
+			console.log('  └─ data:', response.data);
 		}
 		return response;
 	},
 	async (error) => {
 		if (import.meta.env.DEV && error.response) {
-			console.log('[API RESPONSE ERROR]', {
-				method: error.config?.method?.toUpperCase(),
-				url: error.config?.url,
-				status: error.response.status,
-				data: error.response.data,
-			});
+			const meta = error.config?.metadata;
+			const duration = meta?.startedAt ? `${Date.now() - meta.startedAt}ms` : '?';
+			console.log(
+				`[API %c${error.config?.method?.toUpperCase()}%c ${error.config?.url}] %c${error.response.status} %c${duration}`,
+				'font-weight:bold', '', 'color:red', 'color:gray',
+			);
+			console.log('  ├─ caller:', meta?.caller ?? 'unknown');
+			console.log('  ├─ timestamp:', new Date().toISOString());
+			console.log('  └─ data:', error.response.data);
 		}
 
 		const original = error.config;

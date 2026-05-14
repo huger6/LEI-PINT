@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../hooks/userContext';
-import { useLanguages } from '../../hooks/useLanguages';
+import { useLanguageContext } from '../../context/LanguageContext';
 import styles from './Footer.module.css';
 import Icon from '../Icons/Icons';
 
 const Footer = () => {
     const { t, i18n } = useTranslation();
     const { lang, handleLanguageChange } = useUser();
-    const { languages } = useLanguages();
+    const { languages } = useLanguageContext();
     const currentYear = new Date().getFullYear();
 
     // activeLang seeds from lang.iso (same DB value as language_iso) so the
