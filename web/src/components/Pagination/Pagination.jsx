@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Icon from '../Icons/Icons';
 import styles from './Pagination.module.css';
 
-const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
+const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChange }) => {
     const { t } = useTranslation();
     const [maxVisible, setMaxVisible] = useState(8);
 
@@ -61,7 +62,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
     return (
         <nav className={styles.wrapper} aria-label={t('pagination.navigation')}>
             <span className={styles.showingText}>
-                {t('pagination.showing', { current: currentPage, total: totalPages, items: totalItems ?? '-' })}
+                {t('pagination.showing', { itemCount: itemCount ?? '-', totalItems: totalItems ?? '-' })}
             </span>
 
             <div className={styles.controls}>
@@ -71,7 +72,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
                     disabled={currentPage === 1}
                     aria-label={t('pagination.first')}
                 >
-                    «
+                    <Icon name="chevron_backward" size={16} aria-hidden="true" label={t('pagination.first')} />
                 </button>
 
                 <button
@@ -80,7 +81,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
                     disabled={currentPage === 1}
                     aria-label={t('pagination.previous')}
                 >
-                    ‹
+                    <Icon name="chevron_backward" size={16} aria-hidden="true" label={t('pagination.previous')} />
                 </button>
 
                 {pageNumbers.map((page) => {
@@ -106,7 +107,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
                     disabled={currentPage === totalPages}
                     aria-label={t('pagination.next')}
                 >
-                    ›
+                    <Icon name="chevron_forward" size={16} aria-hidden="true" label={t('pagination.next')} />
                 </button>
 
                 <button
@@ -115,7 +116,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange }) => {
                     disabled={currentPage === totalPages}
                     aria-label={t('pagination.last')}
                 >
-                    »
+                    <Icon name="chevron_forward" size={16} aria-hidden="true" label={t('pagination.last')} />
                 </button>
             </div>
         </nav>

@@ -78,6 +78,20 @@ export const PATHS = {
             strokeLinejoin: "round",
         },
     ],
+    'chevron_backward': [
+        {
+            d: "M14 18L8 12L14 6L15.4 7.4L10.8 12L15.4 16.6L14 18Z",
+            fill: "currentColor",
+            stroke: "none",
+        },
+    ],
+    'chevron_forward': [
+        {
+            d: "M12.6 12L8 7.4L9.4 6L15.4 12L9.4 18L8 16.6L12.6 12Z",
+            fill: "currentColor",
+            stroke: "none",
+        },
+    ],
     'circle': [
         {
             d: "M12 22C6.486 22 2 17.514 2 12S6.486 2 12 2s10 4.486 10 10-4.486 10-10 10m0 2C18.627 24 24 18.627 24 12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12",

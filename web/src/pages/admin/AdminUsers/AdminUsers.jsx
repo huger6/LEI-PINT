@@ -7,6 +7,7 @@ import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
 import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
+import Pagination from '../../../components/Pagination/Pagination';
 import styles from './AdminUsers.module.css';
 
 const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
@@ -167,13 +168,15 @@ export default function AdminUsers() {
 				areas={areas}
 			/>
 
-			{/* ── Results count ────────────────────────────────────────────── */}
-			{!loading && (
-				<div className={styles.resultsBar}>
-					<span className={styles.resultsCount}>
-						{t('adminUsers.resultsCount', { count: pagination?.totalItems ?? users.length })}
-					</span>
-				</div>
+			{/* ── Top pagination ───────────────────────────────────────────── */}
+			{!loading && pagination && pagination.totalPages > 1 && (
+				<Pagination
+					currentPage={page}
+					totalPages={pagination.totalPages}
+					totalItems={pagination.totalItems}
+					itemCount={users.length}
+					onPageChange={setPage}
+				/>
 			)}
 
 			{/* ── Users table ──────────────────────────────────────────────── */}
@@ -263,29 +266,15 @@ export default function AdminUsers() {
 				</div>
 			</div>
 
-			{/* ── Pagination ───────────────────────────────────────────────── */}
+			{/* ── Bottom pagination ────────────────────────────────────────── */}
 			{pagination && pagination.totalPages > 1 && (
-				<div className="d-flex justify-content-center align-items-center gap-3 mt-3">
-					<Button
-						variant="outlined"
-						size="sm"
-						disabled={page <= 1}
-						onClick={() => setPage((p) => p - 1)}
-					>
-						{t('shared.previous')}
-					</Button>
-					<span className="text-muted" style={{ fontSize: '0.875rem' }}>
-						{t('shared.pageOf', { current: page, total: pagination.totalPages })}
-					</span>
-					<Button
-						variant="outlined"
-						size="sm"
-						disabled={page >= pagination.totalPages}
-						onClick={() => setPage((p) => p + 1)}
-					>
-						{t('shared.next')}
-					</Button>
-				</div>
+				<Pagination
+					currentPage={page}
+					totalPages={pagination.totalPages}
+					totalItems={pagination.totalItems}
+					itemCount={users.length}
+					onPageChange={setPage}
+				/>
 			)}
 
 			{/* ── Create / Edit modal ──────────────────────────────────────── */}
