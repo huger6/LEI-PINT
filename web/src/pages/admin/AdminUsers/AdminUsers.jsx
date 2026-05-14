@@ -1,13 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsers, createUser, updateUser, deactivateUser } from '../../../features/users/api/usersApi';
+import { fetchUsers as getUsers, createUser, updateUser, deactivateUser } from '../../../features/users/api/usersApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
 import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
-import applyUserFilters from '../../../utils/applyUserFilters';
 import styles from './AdminUsers.module.css';
 
 const ROLES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
@@ -45,6 +44,8 @@ export default function AdminUsers() {
 	const [serviceLines, setServiceLines] = useState([]);
 	const [areas, setAreas] = useState([]);
 	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	const [page, setPage] = useState(1);
+	const [pagination, setPagination] = useState(null);
 
 	const [showModal, setShowModal] = useState(false);
 	const [editItem, setEditItem] = useState(null);
@@ -52,20 +53,34 @@ export default function AdminUsers() {
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
-		loadUsers();
 		loadHierarchy();
 	}, []);
 
-	async function loadUsers() {
+	useEffect(() => {
+		loadUsers(filters, page);
+	}, [filters, page]);
+
+	async function loadUsers(activeFilters, activePage) {
 		try {
 			setLoading(true);
-			const data = await getUsers();
-			setUsers(data || []);
+			const result = await getUsers({ filters: activeFilters, page: activePage });
+			setUsers(result.data || []);
+			setPagination(result.pagination || null);
 		} catch (err) {
 			console.error(err);
 		} finally {
 			setLoading(false);
 		}
+	}
+
+	function handleFiltersChange(newFilters) {
+		setFilters(newFilters);
+		setPage(1);
+	}
+
+	function handleFiltersClear() {
+		setFilters(EMPTY_FILTERS);
+		setPage(1);
 	}
 
 	// Service lines and areas are fetched in parallel so the filter dropdowns
@@ -132,10 +147,6 @@ export default function AdminUsers() {
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
 	}
 
-	// applyUserFilters is a pure function; memoising prevents re-running it on
-	// unrelated state changes (e.g. modal open/close).
-	const filtered = useMemo(() => applyUserFilters(users, filters), [users, filters]);
-
 	return (
 		<div>
 			{/* ── Page header ─────────────────────────────────────────────── */}
@@ -150,8 +161,8 @@ export default function AdminUsers() {
 			{/* ── Filter bar ──────────────────────────────────────────────── */}
 			<UserFilters
 				filters={filters}
-				onChange={setFilters}
-				onClear={() => setFilters(EMPTY_FILTERS)}
+				onChange={handleFiltersChange}
+				onClear={handleFiltersClear}
 				serviceLines={serviceLines}
 				areas={areas}
 			/>
@@ -160,7 +171,7 @@ export default function AdminUsers() {
 			{!loading && (
 				<div className={styles.resultsBar}>
 					<span className={styles.resultsCount}>
-						{t('adminUsers.resultsCount', { count: filtered.length })}
+						{t('adminUsers.resultsCount', { count: pagination?.totalItems ?? users.length })}
 					</span>
 				</div>
 			)}
@@ -172,7 +183,7 @@ export default function AdminUsers() {
 						<div className="text-center py-5">
 							<div className="spinner-border text-primary" role="status" />
 						</div>
-					) : filtered.length === 0 ? (
+					) : users.length === 0 ? (
 						<div className={styles.emptyState}>
 							<div className={styles.emptyIcon}>
 								<Icon name="search" size={22} aria-hidden="true" />
@@ -193,7 +204,7 @@ export default function AdminUsers() {
 									</tr>
 								</thead>
 								<tbody>
-									{filtered.map((u) => {
+									{users.map((u) => {
 										const fullName = u.full_name || u.fullName || '';
 										const role = u.user_role || u.userRole || '';
 										const isActive = u.is_active ?? u.isActive;
@@ -251,6 +262,31 @@ export default function AdminUsers() {
 					)}
 				</div>
 			</div>
+
+			{/* ── Pagination ───────────────────────────────────────────────── */}
+			{pagination && pagination.totalPages > 1 && (
+				<div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+					<Button
+						variant="outlined"
+						size="sm"
+						disabled={page <= 1}
+						onClick={() => setPage((p) => p - 1)}
+					>
+						{t('shared.previous')}
+					</Button>
+					<span className="text-muted" style={{ fontSize: '0.875rem' }}>
+						{t('shared.pageOf', { current: page, total: pagination.totalPages })}
+					</span>
+					<Button
+						variant="outlined"
+						size="sm"
+						disabled={page >= pagination.totalPages}
+						onClick={() => setPage((p) => p + 1)}
+					>
+						{t('shared.next')}
+					</Button>
+				</div>
+			)}
 
 			{/* ── Create / Edit modal ──────────────────────────────────────── */}
 			{showModal && (

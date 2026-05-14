@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import api from '../../../services/api';
 
 export const fetchUsers = async ({ filters = {}, page = 1, limit = 20 } = {}) => {
     const params = new URLSearchParams();
@@ -19,6 +17,20 @@ export const fetchUsers = async ({ filters = {}, page = 1, limit = 20 } = {}) =>
         }
     }
 
-    const response = await axios.get(`${API_URL}/api/admin/users`, { params });
-    return response.data;
+    const { data } = await api.get('/admin/users', { params });
+    return data;
+};
+
+export const createUser = async (payload) => {
+    const { data } = await api.post('/admin/users', payload);
+    return data?.data;
+};
+
+export const updateUser = async (userGuid, payload) => {
+    const { data } = await api.put(`/admin/users/${userGuid}`, payload);
+    return data?.data;
+};
+
+export const deactivateUser = async (userGuid) => {
+    await api.delete(`/admin/users/${userGuid}`);
 };
