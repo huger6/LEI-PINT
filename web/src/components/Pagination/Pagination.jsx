@@ -72,7 +72,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChan
                     disabled={currentPage === 1}
                     aria-label={t('pagination.first')}
                 >
-                    <Icon name="chevron_backward" size={16} aria-hidden="true" label={t('pagination.first')} />
+                    <Icon name="double_chevron_backward" size={16} aria-hidden="true" label={t('pagination.first')} />
                 </button>
 
                 <button
@@ -116,7 +116,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChan
                     disabled={currentPage === totalPages}
                     aria-label={t('pagination.last')}
                 >
-                    <Icon name="chevron_forward" size={16} aria-hidden="true" label={t('pagination.last')} />
+                    <Icon name="double_chevron_forward" size={16} aria-hidden="true" label={t('pagination.last')} />
                 </button>
             </div>
         </nav>

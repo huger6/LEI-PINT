@@ -420,7 +420,8 @@
 		"registeredFrom": "Registado Desde",
 		"registeredTo": "Registado Até",
 		"pointsMin": "Pontos Mínimos",
-		"pointsMax": "Pontos Máximos"
+		"pointsMax": "Pontos Máximos",
+		"confirmDiscardChanges": "Tem alterações por guardar. Tem a certeza que deseja descartá-las?"
 	},
 	"adminDashboard": {
 		"title": "Painel de Administração",
@@ -438,6 +439,7 @@
 		"title": "Utilizadores",
 		"newUser": "Novo Utilizador",
 		"editUser": "Editar Utilizador",
+		"createUser": "Criar novo utilizador",
 		"subtitle": "Gerir utilizadores, funções e permissões da plataforma.",
 		"filterByRole": "Filtrar por função",
 		"filterByStatus": "Filtrar por estado",
@@ -446,7 +448,13 @@
 		"noUsersDesc": "Tente ajustar os filtros ou crie um novo utilizador.",
 		"fullName": "Nome Completo",
 		"resultsCount": "A mostrar {{count}} utilizador",
-		"resultsCount_other": "A mostrar {{count}} utilizadores"
+		"resultsCount_other": "A mostrar {{count}} utilizadores",
+		"advancedConfig": "Configurações avançadas",
+		"selectServiceLine": "Selecionar service line",
+		"searchAreas": "Pesquisar áreas...",
+		"noAreasFound": "Nenhuma área corresponde à pesquisa.",
+		"selectedCount": "{{count}} / {{max}} selecionadas",
+		"setPrimary": "Definir como principal"
 	},
 	"adminBadges": {
 		"title": "Badges",
