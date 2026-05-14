@@ -9,6 +9,7 @@ const { emailRule, passwordRule, registerSchema, loginSchema } = require('../val
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
 const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 loadEnvironment();
 
@@ -191,6 +192,16 @@ const register = async (req, res) => {
 
         // Commit changes
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        if (userData.user_role === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (userData.user_role === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (userData.user_role === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        }
 
         logger.info('Register transaction committed successfully', {
             requestId,
@@ -362,6 +373,9 @@ const confirmEmail = async (req, res) => {
             );
         });
 
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+
         logger.info('Email confirmation completed successfully', {
             requestId,
             user_id: tokenRecord.user_id,
@@ -519,7 +533,8 @@ const login = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
-
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
@@ -654,6 +669,8 @@ const refresh = async (req, res) => {
             last_online: new Date(),
             current_streak_days: getUpdatedStreak(user.last_online, user.current_streak_days)
         });
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
@@ -705,6 +722,7 @@ const logout = async (req, res) => {
                     token_value: refreshToken
                 }
             });
+            await sendTopicUpdate("new_data", 8);
         }
 
         // Clear cookie
@@ -818,6 +836,8 @@ const changePassword = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
@@ -903,6 +923,7 @@ const forgotPassword = async (req, res) => {
             }
 
             await t.commit();
+            await sendTopicUpdate("new_data", 7);
 
             // Send email
             const emailResult = await sendResetPasswordEmail(
@@ -1076,6 +1097,9 @@ const resetPassword = async (req, res) => {
         });
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        await sendTopicUpdate("new_data", 8);
 
         // Delete cookie
         res.clearCookie('refreshToken', {
@@ -1182,6 +1206,7 @@ const resendConfirmation = async (req, res) => {
                 is_used: false
             });
         }
+        await sendTopicUpdate("new_data", 7);
 
         // Send confirmation email and validate service outcome
         const emailResult = await sendConfirmationEmail(

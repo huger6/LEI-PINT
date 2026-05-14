@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const requestLogger = require('./middlewares/logger.middleware');
 require('./validations/error-map'); // Necessary for validation codes to run
+require('./config/firebase'); // Necessary for firebase to initialize
 
 
 const apiRoutes = require('./routes/apiRoutes');
