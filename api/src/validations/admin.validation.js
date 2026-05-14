@@ -47,7 +47,8 @@ const userIdParamSchema = z.object({
 const optionalBoolQuery = z.preprocess(
     (v) => (v === '' || v === undefined ? undefined : (typeof v === 'string' ? v.trim().toLowerCase() : v)),
     z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
-).transform((v) => (v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true')));
+).optional()
+.transform((v) => (v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true')));
 
 const listUsersQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
@@ -62,14 +63,14 @@ const listUsersQuerySchema = z.object({
     emailConfirmed: optionalBoolQuery,
     email_confirmed: optionalBoolQuery,
     gdprAccepted: optionalBoolQuery,
-    serviceLine: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()),
-    area: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()),
+    serviceLine: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()).optional(),
+    area: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()).optional(),
     dateFrom: z.preprocess(
         (v) => (v === '' || v === undefined ? undefined : v),
         z.string().regex(/^\d{2}-\d{2}-\d{4}$/, 'VALIDATION_DATE_FORMAT_INVALID').optional()
-    ),
-    pointsMin: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()),
-    pointsMax: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional())
+    ).optional(),
+    pointsMin: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()).optional(),
+    pointsMax: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()).optional()
 }).transform((data) => ({
     page: data.page,
     limit: data.limit,
