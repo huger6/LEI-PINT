@@ -15,7 +15,7 @@ import { resolveErrorMessage, isCode } from '../../../../validations';
 
 export default function LoginPage() {
 	const { t } = useTranslation();
-	const { login } = useAuth();
+	const { login, isAuthenticated } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 

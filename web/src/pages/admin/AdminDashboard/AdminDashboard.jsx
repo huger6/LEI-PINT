@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
-import { getUsers } from '../../../features/users/api/usersApi';
+import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
 import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 					getLearningPaths({ limit: 1 }),
 				]);
 				setStats({
-					users: users.pagination?.total || users.length || 0,
+					users: users.pagination?.totalItems || users.data?.length || 0,
 					badges: badges.pagination?.total || badges.length || 0,
 					applications: 0,
 					learningPaths: paths.pagination?.total || paths.length || 0,
