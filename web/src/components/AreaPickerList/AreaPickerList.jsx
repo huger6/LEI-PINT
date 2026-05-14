@@ -115,8 +115,9 @@ export default function AreaPickerList({
 										className={`${styles.starBtn} ${pri ? styles.starBtnActive : ''}`}
 										onClick={(e) => { e.stopPropagation(); setPrimary(areaId); }}
 										title={t('adminUsers.setPrimary')}
+										aria-label={t('adminUsers.setPrimary')}
 									>
-										<Icon name="star" size={14} color="currentColor" fill={pri ? 'currentColor' : 'none'} label={t('adminUsers.setPrimary')} />
+										<Icon name="star" size={14} color="currentColor" fill={pri ? 'currentColor' : 'none'} aria-hidden="true" />
 									</button>
 								)}
 							</div>

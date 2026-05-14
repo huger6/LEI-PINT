@@ -7,7 +7,6 @@ export default function Icon({
     size = 24,
     color = 'currentColor',
     className = "",
-    label,
     strokeWidth = 2,
     ...rest
 }) {
@@ -21,7 +20,8 @@ export default function Icon({
 
     const fallbackLabel = typeof name === 'string' ? name.replace(/[-_]/g, ' ') : '';
     const translatedLabel = t(`icons.${name}`, { defaultValue: fallbackLabel });
-    const ariaLabel = typeof label === 'string' ? label : translatedLabel;
+    const ariaLabel = typeof rest['aria-label'] === 'string' ? rest['aria-label'] : translatedLabel;
+    const { 'aria-label': _, style, ...svgRest } = rest;
 
     return (
         <svg
@@ -32,8 +32,8 @@ export default function Icon({
             aria-label={ariaLabel}
             className={className}
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: color, ...(rest.style || {}) }}
-            {...rest}
+            style={{ color: color, ...(style || {}) }}
+            {...svgRest}
         >
             {ariaLabel && <title>{ariaLabel}</title>}
 

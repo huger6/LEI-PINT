@@ -107,8 +107,8 @@ export default function AdminUsers() {
 					<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
 					<p className={styles.headerSubtitle}>{t('adminUsers.subtitle')}</p>
 				</div>
-				<Button onClick={openCreate} title={t('adminUsers.newUser')} label={t('adminUsers.newUser')}>
-					<Icon name="add" size={14} aria-hidden="true" className="me-1" color="var(--color-on-primary)" label={t('adminUsers.newUser')} />
+				<Button onClick={openCreate} title={t('adminUsers.newUser')} aria-label={t('adminUsers.newUser')}>
+					<Icon name="add" size={14} aria-hidden="true" className="me-1" color="var(--color-on-primary)" aria-label={t('adminUsers.newUser')} />
 					{t('adminUsers.newUser')}
 				</Button>
 			</div>
@@ -203,10 +203,10 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button as={Link} to="#" size="sm" variant="outlined" className="me-2" title={t('shared.edit')}>
+													<Button as={Link} to="#" size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
-													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(u)}>
+													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => handleDelete(u)}>
 														<Icon name="trash" size={14} aria-hidden="true" />
 													</Button>
 												</td>

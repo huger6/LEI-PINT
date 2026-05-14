@@ -206,7 +206,8 @@
 		"supportTerms": "Terms of Use",
 		"connectivityTitle": "Connectivity",
 		"connectivityDescription": "Share your achievements on LinkedIn and stay connected via Teams.",
-		"copyright": "© {{year}} Softinsa - Verified Credentials Management Platform. All rights reserved."
+		"copyright": "© {{year}} Softinsa - Verified Credentials Management Platform. All rights reserved.",
+		"website": "Website"
 	},
 	"userDropdown": {
 		"openMenu": "Open user menu",
@@ -287,6 +288,12 @@
 		"target": "Target",
 		"trophy": "Trophy"
 	},
+	"datePicker": {
+		"previousMonth": "Previous month",
+		"nextMonth": "Next month",
+		"selectMonth": "Select month",
+		"selectYear": "Select year"
+	},
 	"pagination": {
 		"previous": "Previous",
 		"next": "Next",
@@ -356,6 +363,7 @@
 	},
 	"notifications": {
 		"title": "Notifications",
+		"bell": "Notifications",
 		"empty": "No notifications yet",
 		"markAllRead": "Mark all as read",
 		"loadMore": "Load more",
@@ -421,7 +429,8 @@
 		"registeredTo": "Registered To",
 		"pointsMin": "Min Points",
 		"pointsMax": "Max Points",
-		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?"
+		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?",
+		"breadcrumb": "Breadcrumb"
 	},
 	"adminDashboard": {
 		"title": "Administration Panel",
@@ -454,7 +463,8 @@
 		"searchAreas": "Search areas...",
 		"noAreasFound": "No areas match your search.",
 		"selectedCount": "{{count}} / {{max}} selected",
-		"setPrimary": "Set as primary"
+		"setPrimary": "Set as primary",
+		"autoConfirmEmail": "Auto-confirm email"
 	},
 	"adminBadges": {
 		"title": "Badges",

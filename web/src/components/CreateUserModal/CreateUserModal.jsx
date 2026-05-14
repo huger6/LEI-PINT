@@ -26,6 +26,7 @@ const EMPTY_FORM = {
 	password: '',
 	userRole: 'Consultant',
 	isActive: true,
+	emailConfirmed: false,
 	languageId: '',
 	serviceLine: '',
 	areas: [],
@@ -180,6 +181,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 				password: form.password,
 				userRole: form.userRole,
 				isActive: form.isActive,
+				emailConfirmed: form.emailConfirmed,
 			};
 
 			if (form.languageId) payload.languageId = Number(form.languageId);
@@ -357,6 +359,25 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 
 				{showAdvanced && (
 					<div className={styles.advancedSection}>
+						<div className={styles.toggleRow}>
+							<label className={styles.toggleLabel} htmlFor="cu_email_confirmed">
+								{t('adminUsers.autoConfirmEmail')}
+							</label>
+							<button
+								type="button"
+								id="cu_email_confirmed"
+								role="switch"
+								aria-checked={form.emailConfirmed}
+								className={`${styles.toggle} ${form.emailConfirmed ? styles.toggleOn : ''}`}
+								onClick={() => { isDirty.current = true; setForm((prev) => ({ ...prev, emailConfirmed: !prev.emailConfirmed })); }}
+							>
+								<span className={styles.toggleKnob} />
+							</button>
+							<span className={styles.toggleState}>
+								{form.emailConfirmed ? t('shared.yes') : t('shared.no')}
+							</span>
+						</div>
+
 						<div>
 							<label htmlFor="cu_phone_local" className={styles.fieldLabel}>{t('register.phoneNumber')}</label>
 							<div className={styles.phoneRow}>

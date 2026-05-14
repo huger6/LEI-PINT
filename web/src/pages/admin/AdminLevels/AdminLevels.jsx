@@ -153,10 +153,10 @@ export default function AdminLevels() {
 												</span>
 											</td>
 											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(l)}>
+												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')} onClick={() => openEdit(l)}>
 													<Icon name="pencil" size={14} aria-hidden="true" />
 												</Button>
-												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(l)}>
+												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => handleDelete(l)}>
 													<Icon name="trash" size={14} aria-hidden="true" />
 												</Button>
 											</td>

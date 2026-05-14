@@ -42,7 +42,7 @@ export default function SidebarOption({
                         name={icon}
                         size={24}
                         color="var(--color-on-background)"
-                        label={translatedLabel}
+                        aria-label={translatedLabel}
                     />
                 </span>
                 <span className={styles.label}>{translatedLabel}</span>

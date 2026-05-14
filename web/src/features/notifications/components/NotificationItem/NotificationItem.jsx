@@ -61,7 +61,7 @@ export default function NotificationItem({ notification, onRead }) {
 			type="button"
 		>
 			<span className={styles.iconWrapper}>
-				<Icon name={iconName} className={styles.icon} size={16} color="currentColor" label={notificationType} />
+				<Icon name={iconName} className={styles.icon} size={16} color="currentColor" aria-label={notificationType} />
 			</span>
 			<div className={styles.content}>
 				<p className={styles.message}>{message}</p>

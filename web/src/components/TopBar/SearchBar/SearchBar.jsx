@@ -84,7 +84,7 @@ export default function SearchBar({
                                 className={styles.searchIcon}
                                 size={20}
                                 color="currentColor"
-                                label={ariaLabel}
+                                aria-label={ariaLabel}
                                 fill="currentColor"
                                 stroke="none"
                             />
@@ -118,7 +118,7 @@ export default function SearchBar({
                     className={styles.searchIcon}
                     size={24}
                     color="currentColor"
-                    label={ariaLabel}
+                    aria-label={ariaLabel}
                     fill="currentColor"
                     stroke="none"
                 />

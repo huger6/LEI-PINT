@@ -76,7 +76,7 @@ const Footer = () => {
                                         name="language"
                                         size={16}
                                         color="currentColor"
-                                        aria-label="Website"
+                                        aria-label={t('footer.website')}
                                         fill="currentColor"
                                         stroke="none"
                                     />
