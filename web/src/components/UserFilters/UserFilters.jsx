@@ -4,6 +4,7 @@ import CustomSelect from '../CustomSelect/CustomSelect';
 import DatePicker from '../DatePicker/DatePicker';
 import Button from '../Button/Button';
 import Icon from '../Icons/Icons';
+import FilterSearchInput from '../FilterSearchInput/FilterSearchInput';
 import styles from './UserFilters.module.css';
 
 // Role values must match the strings stored in the database / returned by the API.
@@ -91,7 +92,7 @@ export default function UserFilters({
 		{ value: '', label: t('shared.all') },
 		...serviceLines.map((sl) => ({
 			value: String(sl.service_line_id || sl.id || ''),
-			label: sl.name,
+			label: sl.service_line_name || sl.name,
 		})),
 	], [serviceLines, t]);
 
@@ -108,17 +109,33 @@ export default function UserFilters({
 			{ value: '', label: t('shared.all') },
 			...pool.map((a) => ({
 				value: String(a.area_id || a.id || ''),
-				label: a.name,
+				label: a.area_name || a.name,
 			})),
 		];
 	}, [areas, filters.serviceLine, t]);
 
-	// Centralised change handler — also resets area when service line changes
-	// to prevent orphan selections (e.g. an area that doesn't belong to the new line).
+	// Talent Manager has no service line or area scope.
+	// Service Line Leader is scoped to a line but not an area.
+	const isServiceLineDisabled = filters.role === 'Talent Manager';
+	const isAreaDisabled =
+		!filters.serviceLine ||
+		filters.role === 'Service Line Leader' ||
+		filters.role === 'Talent Manager';
+
+	// Centralised change handler — resets downstream fields when a parent changes.
 	function handleChange(e) {
 		const { name, value } = e.target;
 		if (name === 'serviceLine') {
 			onChange({ ...filters, serviceLine: value, area: '' });
+		} else if (name === 'role') {
+			const next = { ...filters, role: value };
+			if (value === 'Talent Manager') {
+				next.serviceLine = '';
+				next.area = '';
+			} else if (value === 'Service Line Leader') {
+				next.area = '';
+			}
+			onChange(next);
 		} else {
 			onChange({ ...filters, [name]: value });
 		}
@@ -130,23 +147,13 @@ export default function UserFilters({
 
 				{/* ── Row 1: full-width search input ────────────────────────────── */}
 				<div className={styles.searchRow}>
-					<div className={styles.searchWrapper}>
-						<Icon
-							name="search"
-							size={16}
-							className={styles.searchIcon}
-							aria-hidden="true"
-						/>
-						<input
-							type="text"
-							className={`form-control ${styles.searchInput}`}
-							name="search"
-							value={filters.search}
-							onChange={handleChange}
-							placeholder={t('adminUsers.searchPlaceholder')}
-							aria-label={t('adminUsers.searchPlaceholder')}
-						/>
-					</div>
+					<FilterSearchInput
+						name="search"
+						value={filters.search}
+						onChange={handleChange}
+						placeholder={t('adminUsers.searchPlaceholder')}
+						ariaLabel={t('adminUsers.searchPlaceholder')}
+					/>
 				</div>
 
 				{/* ── Row 2: quick-select filters + toggle + clear ──────────────── */}
@@ -210,10 +217,10 @@ export default function UserFilters({
 					{/* Reset all active filters */}
 					<Button
 						variant="outlined"
-						size="sm"
 						onClick={onClear}
 						disabled={!hasAnyFilter}
 						aria-label={t('shared.clearAll')}
+						className={styles.clearBtn}
 					>
 						{t('shared.clearAll')}
 					</Button>
@@ -236,6 +243,7 @@ export default function UserFilters({
 								options={serviceLineOptions}
 								placeholder={t('shared.all')}
 								ariaLabel={t('shared.serviceLine')}
+								disabled={isServiceLineDisabled}
 							/>
 						</div>
 
@@ -252,6 +260,7 @@ export default function UserFilters({
 								options={areaOptions}
 								placeholder={t('shared.all')}
 								ariaLabel={t('shared.area')}
+								disabled={isAreaDisabled}
 							/>
 						</div>
 
@@ -317,6 +326,7 @@ export default function UserFilters({
 								min={0}
 								placeholder="0"
 								aria-label={t('shared.pointsMin')}
+								disabled={filters.role !== '' && filters.role !== 'Consultant'}
 							/>
 						</div>
 
@@ -335,6 +345,7 @@ export default function UserFilters({
 								min={0}
 								placeholder="∞"
 								aria-label={t('shared.pointsMax')}
+								disabled={filters.role !== '' && filters.role !== 'Consultant'}
 							/>
 						</div>
 					</div>
