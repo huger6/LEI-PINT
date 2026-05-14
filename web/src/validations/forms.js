@@ -93,5 +93,19 @@ export const validateChangePasswordForm = (form) => {
 	return errors;
 };
 
+export const validateCreateUserForm = (form, role, { phoneMetadata } = {}) =>
+	collect([
+		['fullName', validateFullName(form.fullName)],
+		['username', validateUsername(form.username)],
+		['emailAddress', validateEmail(form.emailAddress)],
+		['password', validatePassword(form.password)],
+		['phone_number', validatePhoneNumber(form.phoneNumber, phoneMetadata)],
+		['birthdate', validateBirthdate(form.birthdate)],
+		['biography', validateBiography(form.biography)],
+		...(role === 'Consultant'
+			? [['areas', validateConsultantAreas(form.areas)]]
+			: []),
+	]);
+
 export const hasErrors = (errors) =>
 	errors && Object.values(errors).some((v) => Boolean(v));

@@ -1,16 +1,36 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
+import { useLanguageContext } from '../../context/LanguageContext';
 import { createUser } from '../../features/users/api/usersApi';
 import { extractCollection } from '../../utils/collections';
 import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../utils/phone';
 import { getMinBirthdate } from '../../utils/date';
 import { usePhoneMetadata } from '../../services/libphonenumber';
 import { uploadProfileImageToTemp, PROFILE_IMAGE_MAX_FILE_SIZE_BYTES } from '../../services/storage';
+import {
+	validateCreateUserForm,
+	validateUsername,
+	validateEmail,
+	hasErrors,
+	resolveErrorMessage,
+	extractFieldErrors,
+	useFormValidation,
+	useAvailability,
+	AVAILABILITY_STATUS,
+	isCheckPending,
+	isCheckBlocking,
+	fetchUsernameAvailability,
+	fetchEmailAvailability,
+	mergeError,
+} from '../../validations';
 import Modal from '../Modal/Modal';
 import ConfirmToast from '../ConfirmToast/ConfirmToast';
 import Button from '../Button/Button';
 import FormInput from '../FormInput/FormInput';
+import FormAlert from '../FormAlert/FormAlert';
+import PasswordRules from '../PasswordRules/PasswordRules';
+import PasswordToggle from '../PasswordToggle/PasswordToggle';
 import CustomSelect from '../CustomSelect/CustomSelect';
 import DatePicker from '../DatePicker/DatePicker';
 import AreaPickerList from '../AreaPickerList/AreaPickerList';
@@ -37,22 +57,29 @@ const EMPTY_FORM = {
 	profileImgUrl: '',
 };
 
+const STATUS_HINT_CLASS = 'small mt-1 mb-0';
+const HINT_COLORS = {
+	ok: { color: 'var(--color-success)' },
+	muted: { color: 'var(--color-outline)' },
+};
+
 export default function CreateUserModal({ onClose, onCreated, serviceLines = [], allAreas = [] }) {
 	const { t, i18n } = useTranslation();
+	const { languages } = useLanguageContext();
 
-	const [form, setForm] = useState(EMPTY_FORM);
 	const [saving, setSaving] = useState(false);
-	const [error, setError] = useState('');
+	const [apiError, setApiError] = useState('');
+	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	const [showPassword, setShowPassword] = useState(false);
 	const [showAdvanced, setShowAdvanced] = useState(false);
 	const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 	const isDirty = useRef(false);
 
-	const [languages, setLanguages] = useState([]);
 	const [locations, setLocations] = useState([]);
 
 	const [phonePrefix, setPhonePrefix] = useState('+351');
 	const [phoneLocalDisplay, setPhoneLocalDisplay] = useState('');
-	const { prefixOptions: phonePrefixOptions } = usePhoneMetadata();
+	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
 	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
 
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
@@ -60,27 +87,81 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 	const [profileError, setProfileError] = useState('');
 	const profileFileRef = useRef(null);
 
-	useEffect(() => {
-		Promise.all([
-			api.get('/languages').catch(() => ({ data: { data: [] } })),
-			api.get('/locations').catch(() => ({ data: { data: [] } })),
-		]).then(([langRes, locRes]) => {
-			const langs = extractCollection(langRes);
-			setLanguages(langs);
-			setLocations(extractCollection(locRes));
+	const validate = useCallback(
+		(vals) => validateCreateUserForm(vals, vals.userRole, { phoneMetadata }),
+		[phoneMetadata],
+	);
 
-			if (!form.languageId && langs.length > 0) {
-				const ptLang = langs.find((l) => {
-					const name = (l.language_name ?? l.preferred_lang ?? l.name ?? '').toLowerCase();
-					return name.includes('portugu') || name === 'pt';
-				});
-				if (ptLang) {
-					const id = ptLang.language_id ?? ptLang.preferred_lang_id ?? ptLang.id;
-					setForm((prev) => ({ ...prev, languageId: String(id) }));
-				}
-			}
-		});
+	const form = useFormValidation({ initialValues: EMPTY_FORM, validate });
+	const {
+		values,
+		setFieldValue,
+		setFieldTouched,
+		handleBlur,
+		errors: liveErrors,
+		isErrorVisible,
+		markAllTouched,
+		touched,
+	} = form;
+
+	const usernameSyncValid = !validateUsername(values.username);
+	const emailSyncValid = !validateEmail(values.emailAddress);
+
+	const usernameCheck = useAvailability({
+		value: values.username.trim(),
+		isValid: usernameSyncValid,
+		fetcher: fetchUsernameAvailability,
+	});
+	const emailCheck = useAvailability({
+		value: values.emailAddress.trim(),
+		isValid: emailSyncValid,
+		fetcher: fetchEmailAvailability,
+	});
+
+	const usernameAsyncError =
+		usernameCheck.status === AVAILABILITY_STATUS.UNAVAILABLE
+			? t('register.usernameInUse')
+			: null;
+	const emailAsyncError =
+		emailCheck.status === AVAILABILITY_STATUS.UNAVAILABLE
+			? t('register.emailInUse')
+			: null;
+
+	const fieldError = useCallback(
+		(name, asyncError) => {
+			if (serverFieldErrors[name]) return serverFieldErrors[name];
+			const visible = isErrorVisible(name);
+			const sync = visible ? liveErrors[name] : undefined;
+			const async_ = (visible || touched[name]) ? asyncError : undefined;
+			return mergeError(sync, async_);
+		},
+		[serverFieldErrors, isErrorVisible, liveErrors, touched],
+	);
+
+	const onChange = (e) => {
+		form.handleChange(e);
+		isDirty.current = true;
+		setServerFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
+		setApiError('');
+	};
+
+	useEffect(() => {
+		api.get('/locations')
+			.then((res) => setLocations(extractCollection(res)))
+			.catch(() => setLocations([]));
 	}, []);
+
+	useEffect(() => {
+		if (languages.length === 0 || values.languageId) return;
+		const ptLang = languages.find((l) => {
+			const name = (l.language_name ?? l.preferred_lang ?? l.name ?? '').toLowerCase();
+			return name.includes('portugu') || name === 'pt';
+		});
+		if (ptLang) {
+			const id = ptLang.language_id ?? ptLang.preferred_lang_id ?? ptLang.id;
+			setFieldValue('languageId', String(id));
+		}
+	}, [languages]);
 
 	const languageOptions = useMemo(
 		() => languages
@@ -121,21 +202,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[allAreas],
 	);
 
-	const handleChange = (e) => {
-		const { name, value, type, checked } = e.target;
-		isDirty.current = true;
-		setError('');
-		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-	};
-
 	const applyPhoneValue = useCallback((prefix, rawLocalValue) => {
 		const prefixDigitsCount = normalizePhoneDigits(prefix).length;
 		const maxLocalDigits = Math.max(0, 15 - prefixDigitsCount);
 		const localDigits = normalizePhoneDigits(rawLocalValue).slice(0, maxLocalDigits);
 		setPhoneLocalDisplay(groupByThree(localDigits));
 		isDirty.current = true;
-		setForm((prev) => ({ ...prev, phoneNumber: localDigits ? `${prefix}${localDigits}` : '' }));
-	}, []);
+		setFieldValue('phoneNumber', localDigits ? `${prefix}${localDigits}` : '');
+	}, [setFieldValue]);
 
 	const onProfileImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
@@ -153,54 +227,70 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 			const { publicUrl } = await uploadProfileImageToTemp(file);
 			URL.revokeObjectURL(localUrl);
 			setProfilePreviewUrl(publicUrl);
-			setForm((prev) => ({ ...prev, profileImgUrl: publicUrl }));
+			setFieldValue('profileImgUrl', publicUrl);
 		} catch {
 			setProfileError(t('register.profilePictureUploadFailed'));
 		} finally {
 			setProfileUploading(false);
 		}
-	}, [t]);
+	}, [t, setFieldValue]);
 
 	const clearProfileImage = () => {
 		setProfilePreviewUrl('');
 		setProfileError('');
-		setForm((prev) => ({ ...prev, profileImgUrl: '' }));
+		setFieldValue('profileImgUrl', '');
 		if (profileFileRef.current) profileFileRef.current.value = '';
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setError('');
+		markAllTouched();
+
+		if (hasErrors(liveErrors)) return;
+		if (usernameAsyncError || emailAsyncError) return;
+		if (
+			isCheckBlocking(usernameCheck.status) ||
+			isCheckBlocking(emailCheck.status)
+		) return;
+		if (profileUploading) {
+			setApiError(t('register.profilePictureUploadInProgress'));
+			return;
+		}
+
+		setApiError('');
 		setSaving(true);
 
 		try {
 			const payload = {
-				fullName: form.fullName,
-				username: form.username,
-				emailAddress: form.emailAddress,
-				password: form.password,
-				userRole: form.userRole,
-				isActive: form.isActive,
-				emailConfirmed: form.emailConfirmed,
+				fullName: values.fullName,
+				username: values.username.trim(),
+				emailAddress: values.emailAddress.trim(),
+				password: values.password,
+				userRole: values.userRole,
+				isActive: values.isActive,
+				emailConfirmed: values.emailConfirmed,
 			};
 
-			if (form.languageId) payload.languageId = Number(form.languageId);
-			if (form.userRole === 'Service Line Leader' && form.serviceLine)
-				payload.serviceLineId = Number(form.serviceLine);
-			if (form.userRole === 'Consultant' && form.areas.length > 0)
-				payload.areas = form.areas;
-			if (form.phoneNumber) payload.phoneNumber = form.phoneNumber.replace(/\s+/g, '');
-			if (form.birthdate) payload.birthdate = form.birthdate;
-			if (form.biography) payload.biography = form.biography.trim();
-			if (form.locationId) payload.locationId = Number(form.locationId);
-			if (form.profileImgUrl) payload.profileImgUrl = form.profileImgUrl;
+			if (values.languageId) payload.languageId = Number(values.languageId);
+			if (values.userRole === 'Service Line Leader' && values.serviceLine)
+				payload.serviceLineId = Number(values.serviceLine);
+			if (values.userRole === 'Consultant' && values.areas.length > 0)
+				payload.areas = values.areas;
+			if (values.phoneNumber) payload.phoneNumber = values.phoneNumber.replace(/\s+/g, '');
+			if (values.birthdate) payload.birthdate = values.birthdate;
+			if (values.biography) payload.biography = values.biography.trim();
+			if (values.locationId) payload.locationId = Number(values.locationId);
+			if (values.profileImgUrl) payload.profileImgUrl = values.profileImgUrl;
 
 			const created = await createUser(payload);
 			onCreated(created);
 			onClose();
 		} catch (err) {
-			const msg = err?.response?.data?.message || err?.message || t('shared.error');
-			setError(msg);
+			const backendFields = extractFieldErrors(err);
+			if (Object.keys(backendFields).length) {
+				setServerFieldErrors((prev) => ({ ...prev, ...backendFields }));
+			}
+			setApiError(resolveErrorMessage(err));
 		} finally {
 			setSaving(false);
 		}
@@ -214,6 +304,36 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		}
 	};
 
+	const usernameError = fieldError('username', usernameAsyncError);
+	const emailError = fieldError('emailAddress', emailAsyncError);
+	const phoneError = fieldError('phone_number');
+	const birthdateError = fieldError('birthdate');
+
+	const renderUsernameHint = () => {
+		if (usernameError) return null;
+		if (!values.username || !usernameSyncValid) return null;
+		if (usernameCheck.status === AVAILABILITY_STATUS.CHECKING)
+			return <p className={STATUS_HINT_CLASS} style={HINT_COLORS.muted}>{t('register.checkingAvailability')}</p>;
+		if (usernameCheck.status === AVAILABILITY_STATUS.AVAILABLE)
+			return <p className={STATUS_HINT_CLASS} style={HINT_COLORS.ok}>{t('register.usernameAvailable')}</p>;
+		return null;
+	};
+
+	const renderEmailHint = () => {
+		if (emailError) return null;
+		if (!values.emailAddress || !emailSyncValid) return null;
+		if (emailCheck.status === AVAILABILITY_STATUS.CHECKING)
+			return <p className={STATUS_HINT_CLASS} style={HINT_COLORS.muted}>{t('register.checkingAvailability')}</p>;
+		if (emailCheck.status === AVAILABILITY_STATUS.AVAILABLE)
+			return <p className={STATUS_HINT_CLASS} style={HINT_COLORS.ok}>{t('register.emailAvailable')}</p>;
+		return null;
+	};
+
+	const submitDisabled = saving ||
+		isCheckPending(usernameCheck.status) ||
+		isCheckPending(emailCheck.status) ||
+		profileUploading;
+
 	return (
 		<Modal
 			title={t('adminUsers.createUser')}
@@ -224,49 +344,66 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 					<Button variant="outlined" onClick={handleClose}>
 						{t('shared.cancel')}
 					</Button>
-					<Button loading={saving} onClick={handleSubmit}>
+					<Button loading={saving} disabled={submitDisabled} onClick={handleSubmit}>
 						{t('shared.create')}
 					</Button>
 				</>
 			}
 		>
-			<form id="create-user-form" onSubmit={handleSubmit} className={styles.form}>
+			<form id="create-user-form" onSubmit={handleSubmit} className={styles.form} noValidate>
 				{/* ── Primary fields ──────────────────────────────────────── */}
 				<div className={styles.grid}>
 					<FormInput
 						label={t('adminUsers.fullName')}
 						name="fullName"
-						value={form.fullName}
-						onChange={handleChange}
+						value={values.fullName}
+						onChange={onChange}
+						onBlur={handleBlur}
+						error={fieldError('fullName')}
 						required
 					/>
-					<FormInput
-						label={t('shared.username')}
-						name="username"
-						value={form.username}
-						onChange={handleChange}
-						required
-					/>
+					<div>
+						<FormInput
+							label={t('shared.username')}
+							name="username"
+							value={values.username}
+							onChange={onChange}
+							onBlur={handleBlur}
+							error={usernameError}
+							required
+						/>
+						{renderUsernameHint()}
+					</div>
 				</div>
 
 				<div className={styles.grid}>
-					<FormInput
-						label={t('shared.email')}
-						name="emailAddress"
-						type="email"
-						value={form.emailAddress}
-						onChange={handleChange}
-						required
-					/>
+					<div>
+						<FormInput
+							label={t('shared.email')}
+							name="emailAddress"
+							type="email"
+							value={values.emailAddress}
+							onChange={onChange}
+							onBlur={handleBlur}
+							error={emailError}
+							required
+						/>
+						{renderEmailHint()}
+					</div>
 					<FormInput
 						label={t('shared.password')}
 						name="password"
-						type="password"
-						value={form.password}
-						onChange={handleChange}
+						type={showPassword ? 'text' : 'password'}
+						value={values.password}
+						onChange={onChange}
+						onBlur={handleBlur}
+						error={fieldError('password')}
 						required
+						trailing={<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
 					/>
 				</div>
+
+				<PasswordRules password={values.password} />
 
 				<div className={styles.grid}>
 					<div>
@@ -274,8 +411,8 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 						<CustomSelect
 							id="cu_role"
 							name="userRole"
-							value={form.userRole}
-							onChange={handleChange}
+							value={values.userRole}
+							onChange={onChange}
 							options={ROLES.map((r) => ({ value: r, label: t(`roles.${r}`) }))}
 						/>
 					</div>
@@ -285,8 +422,8 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 						<CustomSelect
 							id="cu_lang"
 							name="languageId"
-							value={form.languageId}
-							onChange={handleChange}
+							value={values.languageId}
+							onChange={onChange}
 							options={languageOptions}
 							placeholder={languageOptions.length === 0 ? t('register.noLanguagesAvailable') : t('register.selectLanguage')}
 							disabled={languageOptions.length === 0}
@@ -295,27 +432,32 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 				</div>
 
 				{/* ── Role-specific fields ────────────────────────────────── */}
-				{form.userRole === 'Service Line Leader' && (
+				{values.userRole === 'Service Line Leader' && (
 					<div>
 						<label htmlFor="cu_sl" className={styles.fieldLabel}>{t('shared.serviceLine')}</label>
 						<CustomSelect
 							id="cu_sl"
 							name="serviceLine"
-							value={form.serviceLine}
-							onChange={handleChange}
+							value={values.serviceLine}
+							onChange={onChange}
 							options={serviceLineOptions}
 							placeholder={t('adminUsers.selectServiceLine')}
 						/>
 					</div>
 				)}
 
-				{form.userRole === 'Consultant' && (
+				{values.userRole === 'Consultant' && (
 					<div>
 						<label className={styles.fieldLabel}>{t('register.areasOfExpertise')}</label>
 						<AreaPickerList
 							areas={areaOptions}
-							selected={form.areas}
-							onChange={(areas) => { isDirty.current = true; setForm((prev) => ({ ...prev, areas })); }}
+							selected={values.areas}
+							onChange={(areas) => {
+								isDirty.current = true;
+								setFieldTouched('areas', true);
+								setFieldValue('areas', areas);
+							}}
+							error={fieldError('areas')}
 						/>
 					</div>
 				)}
@@ -329,14 +471,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 						type="button"
 						id="cu_active"
 						role="switch"
-						aria-checked={form.isActive}
-						className={`${styles.toggle} ${form.isActive ? styles.toggleOn : ''}`}
-						onClick={() => { isDirty.current = true; setForm((prev) => ({ ...prev, isActive: !prev.isActive })); }}
+						aria-checked={values.isActive}
+						className={`${styles.toggle} ${values.isActive ? styles.toggleOn : ''}`}
+						onClick={() => { isDirty.current = true; setFieldValue('isActive', !values.isActive); }}
 					>
 						<span className={styles.toggleKnob} />
 					</button>
 					<span className={styles.toggleState}>
-						{form.isActive ? t('shared.active') : t('shared.inactive')}
+						{values.isActive ? t('shared.active') : t('shared.inactive')}
 					</span>
 				</div>
 
@@ -367,14 +509,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 								type="button"
 								id="cu_email_confirmed"
 								role="switch"
-								aria-checked={form.emailConfirmed}
-								className={`${styles.toggle} ${form.emailConfirmed ? styles.toggleOn : ''}`}
-								onClick={() => { isDirty.current = true; setForm((prev) => ({ ...prev, emailConfirmed: !prev.emailConfirmed })); }}
+								aria-checked={values.emailConfirmed}
+								className={`${styles.toggle} ${values.emailConfirmed ? styles.toggleOn : ''}`}
+								onClick={() => { isDirty.current = true; setFieldValue('emailConfirmed', !values.emailConfirmed); }}
 							>
 								<span className={styles.toggleKnob} />
 							</button>
 							<span className={styles.toggleState}>
-								{form.emailConfirmed ? t('shared.yes') : t('shared.no')}
+								{values.emailConfirmed ? t('shared.yes') : t('shared.no')}
 							</span>
 						</div>
 
@@ -384,8 +526,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 								<CustomSelect
 									id="cu_phone_prefix"
 									value={phonePrefix}
-									onChange={(e) => { setPhonePrefix(e.target.value); applyPhoneValue(e.target.value, phoneLocalDisplay); }}
+									onChange={(e) => {
+										const nextPrefix = e.target.value;
+										setPhonePrefix(nextPrefix);
+										applyPhoneValue(nextPrefix, phoneLocalDisplay);
+									}}
+									onBlur={() => setFieldTouched('phone_number', true)}
 									options={phonePrefixes}
+									error={!!phoneError}
 									ariaLabel={t('register.countryPhonePrefix')}
 								/>
 								<input
@@ -394,10 +542,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 									inputMode="numeric"
 									value={phoneLocalDisplay}
 									onChange={(e) => applyPhoneValue(phonePrefix, e.target.value)}
-									className={`form-control ${styles.phoneInput}`}
+									onBlur={() => setFieldTouched('phone_number', true)}
+									className={`form-control ${styles.phoneInput} ${phoneError ? 'is-invalid' : ''}`}
 									placeholder={t('register.phoneNumberPlaceholder')}
 								/>
 							</div>
+							{phoneError && (
+								<div className="invalid-feedback d-block">{phoneError}</div>
+							)}
 						</div>
 
 						<div>
@@ -405,13 +557,18 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 							<DatePicker
 								id="cu_birthdate"
 								name="birthdate"
-								value={form.birthdate}
-								onChange={handleChange}
+								value={values.birthdate}
+								onChange={onChange}
+								onBlur={handleBlur}
 								max={getMinBirthdate()}
+								error={!!birthdateError}
 								ariaLabel={t('register.dateOfBirth')}
 								locale={i18n.language}
 								placeholder="DD-MM-YYYY"
 							/>
+							{birthdateError && (
+								<div className="invalid-feedback d-block">{birthdateError}</div>
+							)}
 						</div>
 
 						<div>
@@ -419,8 +576,8 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 							<CustomSelect
 								id="cu_location"
 								name="locationId"
-								value={form.locationId}
-								onChange={handleChange}
+								value={values.locationId}
+								onChange={onChange}
 								options={locationOptions}
 								placeholder={locationOptions.length === 0 ? t('register.noLocationsAvailable') : t('register.selectLocation')}
 								disabled={locationOptions.length === 0}
@@ -432,13 +589,17 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 							<textarea
 								id="cu_biography"
 								name="biography"
-								value={form.biography}
-								onChange={handleChange}
+								value={values.biography}
+								onChange={onChange}
+								onBlur={handleBlur}
 								rows={3}
 								placeholder={t('register.biographyPlaceholder')}
-								className={`form-control ${styles.textarea}`}
+								className={`form-control ${styles.textarea} ${fieldError('biography') ? 'is-invalid' : ''}`}
 								maxLength={5000}
 							/>
+							{fieldError('biography') && (
+								<div className="invalid-feedback d-block">{fieldError('biography')}</div>
+							)}
 						</div>
 
 						<div>
@@ -484,7 +645,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 					</div>
 				)}
 
-				{error && <div className={styles.formError}>{error}</div>}
+				<FormAlert message={apiError} />
 			</form>
 
 			<ConfirmToast
