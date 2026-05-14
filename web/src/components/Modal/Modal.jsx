@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './Modal.module.css';
 
 export default function Modal({ title, children, onClose, footer }) {
+	const { t } = useTranslation();
 	const dialogRef = useRef(null);
 	const onCloseRef = useRef(onClose);
 
@@ -37,7 +39,7 @@ export default function Modal({ title, children, onClose, footer }) {
 		>
 			<div className={styles.header}>
 				<h5 id="modal-title" className={styles.title}>{title}</h5>
-				<button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Fechar">
+				<button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t('shared.close')}>
 					<Icon name="close" size={16} aria-hidden="true" />
 				</button>
 			</div>

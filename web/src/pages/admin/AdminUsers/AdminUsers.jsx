@@ -249,10 +249,10 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(u)}>
+													<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(u)}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
-													<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(u)}>
+													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(u)}>
 														<Icon name="trash" size={14} aria-hidden="true" />
 													</Button>
 												</td>

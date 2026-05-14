@@ -129,10 +129,10 @@ export default function AdminLearningPaths() {
 												</span>
 											</td>
 											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" onClick={() => openEdit(p)}>
+												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} onClick={() => openEdit(p)}>
 													<Icon name="pencil" size={14} aria-hidden="true" />
 												</Button>
-												<Button size="sm" variant="outlined" color="danger" onClick={() => handleDelete(p)}>
+												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} onClick={() => handleDelete(p)}>
 													<Icon name="trash" size={14} aria-hidden="true" />
 												</Button>
 											</td>
