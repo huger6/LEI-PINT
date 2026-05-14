@@ -293,7 +293,7 @@
 		"first": "First page",
 		"last": "Last page",
 		"navigation": "Page navigation",
-		"showing": "Showing {{current}}-{{total}} of {{items}}"
+		"showing": "Showing {{itemCount}} of {{totalItems}}"
 	},
 	"passwordRules": {
 		"minLength": "At least 8 characters",

@@ -1,8 +1,8 @@
 {
 	"roles": {
 		"Consultant": "Consultor",
-		"Talent Manager": "Gestor de Talento",
-		"Service Line Leader": "Líder de Línea de Servicio",
+		"Talent Manager": "Talent Manager",
+		"Service Line Leader": "Service Line Leader",
 		"Administrator": "Administrador"
 	},
 	"backToLogin": "Volver al inicio de sesión",
@@ -83,7 +83,7 @@
 		"noAreasAvailable": "No hay áreas disponibles en este momento.",
 		"primaryAreaHint": "Haz clic en <icon/> para establecer tu área principal.",
 		"setAsPrimary": "Establecer como principal",
-		"serviceLineId": "ID de Línea de Servicio",
+		"serviceLineId": "Service Line ID",
 		"serviceLineIdPlaceholder": "ej. 1",
 		"createAccountBtn": "Crear cuenta",
 		"usernameAvailable": "Nombre de usuario disponible.",
@@ -98,13 +98,13 @@
 		"pwRuleFail": "-",
 		"roles": {
 			"Consultant": "Consultor",
-			"Talent Manager": "Gestor de Talento",
-			"Service Line Leader": "Líder de Línea de Servicio"
+			"Talent Manager": "Talent Manager",
+			"Service Line Leader": "Service Line Leader"
 		},
 		"roleDescriptions": {
 			"Consultant": "Únete como consultor y gestiona tus áreas de especialización.",
 			"Talent Manager": "Apoya y desarrolla el talento en toda la organización.",
-			"Service Line Leader": "Lidera una línea de servicio e impulsa resultados estratégicos."
+			"Service Line Leader": "Lead a Service Line and drive strategic outcomes."
 		}
 	},
 	"forgotPassword": {
@@ -180,7 +180,7 @@
 		"activeApplications": "Candidaturas Activas",
 		"streak": "Racha",
 		"days": "días",
-		"serviceLine": "Línea de Servicio",
+		"serviceLine": "Service Line",
 		"area": "Área"
 	},
 	"home": {
@@ -274,7 +274,7 @@
 	},
 	"icons": {
 		"home": "Inicio",
-		"badge": "Insignia",
+		"badge": "Badge",
 		"evolution": "Evolución",
 		"exit-door": "Salir",
 		"hamburger": "Menú",
@@ -292,7 +292,7 @@
 		"first": "Primera página",
 		"last": "Última página",
 		"navigation": "Navegación de páginas",
-		"showing": "Mostrando {{current}}-{{total}} de {{items}}"
+		"showing": "Mostrando {{itemCount}} de {{totalItems}}"
 	},
 	"passwordRules": {
 		"minLength": "Al menos 8 caracteres",
@@ -348,7 +348,7 @@
 			"language_id": "Idioma preferido",
 			"preferred_lang_id": "Idioma preferido",
 			"location_id": "Ubicación",
-			"service_line_id": "Línea de servicio",
+			"service_line_id": "Service Line",
 			"areas": "Áreas de especialización",
 			"profile_img_url": "Foto de perfil"
 		}
@@ -412,7 +412,7 @@
 		"allStatuses": "Todos los Estados",
 		"moreFilters": "Más Filtros",
 		"clearAll": "Limpiar Todo",
-		"serviceLine": "Línea de Servicio",
+		"serviceLine": "Service Line",
 		"emailConfirmed": "Email Confirmado",
 		"gdpr": "RGPD Aceptado",
 		"registeredFrom": "Registrado Desde",
@@ -495,7 +495,7 @@
 	"adminStructure": {
 		"title": "Gestionar Estructura",
 		"learningPathsDesc": "Itinerarios de progresión profesional",
-		"serviceLinesDesc": "Líneas de servicio de la organización",
+		"serviceLinesDesc": "Organization Service Lines",
 		"areasDesc": "Áreas de especialización",
 		"levelsDesc": "Etapas del itinerario profesional"
 	},
