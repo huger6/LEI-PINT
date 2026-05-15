@@ -1,3 +1,4 @@
+import { AUTH } from '../../routes/paths';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage';
@@ -8,18 +9,18 @@ import ResendConfirmationPage from './pages/ResendConfirmationPage/ResendConfirm
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage';
 
 export const authPublicRoutes = [
-	{ path: '/login', element: <LoginPage /> },
-	{ path: '/register', element: <RegisterPage /> },
+	{ path: AUTH.LOGIN, element: <LoginPage /> },
+	{ path: AUTH.REGISTER, element: <RegisterPage /> },
 ];
 
 export const authOpenRoutes = [
-	{ path: '/forgot-password', element: <ForgotPasswordPage /> },
-	{ path: '/reset-password/confirm', element: <ResetPasswordConfirmPage /> },
-	{ path: '/reset-password', element: <ResetPasswordPage /> },
-	{ path: '/confirm-email', element: <ConfirmEmailPage /> },
-	{ path: '/resend-confirmation', element: <ResendConfirmationPage /> },
+	{ path: AUTH.FORGOT_PASSWORD, element: <ForgotPasswordPage /> },
+	{ path: AUTH.RESET_PASSWORD_CONFIRM, element: <ResetPasswordConfirmPage /> },
+	{ path: AUTH.RESET_PASSWORD, element: <ResetPasswordPage /> },
+	{ path: AUTH.CONFIRM_EMAIL, element: <ConfirmEmailPage /> },
+	{ path: AUTH.RESEND_CONFIRMATION, element: <ResendConfirmationPage /> },
 ];
 
 export const authFpcRoutes = [
-	{ path: '/change-password', element: <ChangePasswordPage /> },
+	{ path: AUTH.CHANGE_PASSWORD, element: <ChangePasswordPage /> },
 ];

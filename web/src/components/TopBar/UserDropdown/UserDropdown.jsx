@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { AUTH, SHARED } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import Avatar from '../../Avatar/Avatar';
@@ -39,7 +40,7 @@ export default function UserDropdown() {
         setShowLogoutConfirm(false);
         setOpen(false);
         await logout();
-        navigate('/login');
+        navigate(AUTH.LOGIN);
     };
 
     const handleOptionClick = (path) => {
@@ -68,7 +69,7 @@ export default function UserDropdown() {
             {open && (
                 <div className={styles.menu} role="menu">
                     <Link
-                        to="/profile"
+                        to={SHARED.PROFILE}
                         className={styles.profileHeader}
                         onClick={() => setOpen(false)}
                         role="menuitem"
@@ -92,7 +93,7 @@ export default function UserDropdown() {
                                     icon="email"
                                     iconSize={18}
                                     label="userDropdown.mailSignature"
-                                    onClick={() => handleOptionClick('/mail-signature')}
+                                    onClick={() => handleOptionClick(SHARED.MAIL_SIGNATURE)}
                                     role="menuitem"
                                 />
                             )
@@ -103,7 +104,7 @@ export default function UserDropdown() {
                                     icon="user"
                                     iconSize={18}
                                     label="userDropdown.publicProfile"
-                                    onClick={() => handleOptionClick('/public-profile')}
+                                    onClick={() => handleOptionClick(SHARED.PUBLIC_PROFILE)}
                                     role="menuitem"
                                 />
                             )
@@ -112,21 +113,21 @@ export default function UserDropdown() {
                             icon="moon"
                             iconSize={18}
                             label="userDropdown.colorMode"
-                            onClick={() => handleOptionClick('/settings')}
+                            onClick={() => handleOptionClick(SHARED.SETTINGS)}
                             role="menuitem"
                         />
                         <DropdownOption
                             icon="privacy"
                             iconSize={18}
                             label="userDropdown.privacy"
-                            onClick={() => handleOptionClick('/privacy')}
+                            onClick={() => handleOptionClick(SHARED.PRIVACY)}
                             role="menuitem"
                         />
                         <DropdownOption
                             icon="security"
                             iconSize={18}
                             label="userDropdown.security"
-                            onClick={() => handleOptionClick('/security')}
+                            onClick={() => handleOptionClick(SHARED.SECURITY)}
                             role="menuitem"
                         />
                     </div>
@@ -137,7 +138,7 @@ export default function UserDropdown() {
                         <DropdownOption
                             icon="settings"
                             label="userDropdown.settings"
-                            onClick={() => handleOptionClick('/settings')}
+                            onClick={() => handleOptionClick(SHARED.SETTINGS)}
                             role="menuitem"
                         />
                         <DropdownOption

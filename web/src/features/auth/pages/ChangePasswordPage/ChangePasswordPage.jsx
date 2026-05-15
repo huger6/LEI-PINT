@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SHARED } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth, changePassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -37,7 +38,7 @@ export default function ChangePasswordPage() {
 
 	useEffect(() => {
 		if (!success) return;
-		const timer = setTimeout(() => navigate('/', { replace: true }), 2000);
+		const timer = setTimeout(() => navigate(SHARED.HOME, { replace: true }), 2000);
 		return () => clearTimeout(timer);
 	}, [success, navigate]);
 

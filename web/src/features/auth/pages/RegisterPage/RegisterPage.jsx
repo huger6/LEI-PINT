@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
+import { AUTH } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, register } from '../..';
 import api from '../../../../services/api.js';
@@ -441,7 +442,7 @@ export default function RegisterPage() {
 						<p className="text-center mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{apiInfo || t('register.checkEmailConfirmation')}
 						</p>
-						<Button as={Link} to="/login" fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} fullWidth>
 							{t('goToLogin')}
 						</Button>
 					</div>
@@ -533,7 +534,7 @@ export default function RegisterPage() {
 							))}
 						</div>
 						<p className="text-center mt-3 mb-0 small" style={{ color: 'var(--color-outline)' }}>
-							{t('register.alreadyHaveAccount')} <Link to="/login">{t('register.signIn')}</Link>
+							{t('register.alreadyHaveAccount')} <Link to={AUTH.LOGIN}>{t('register.signIn')}</Link>
 						</p>
 					</div>
 				)}

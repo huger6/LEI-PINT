@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
+import { CONSULTANT, SHARED } from '../../routes/paths';
 import WelcomeCard from '../../components/WelcomeCard/WelcomeCard';
 import Icon from '../../components/Icons/Icons';
 import { getApplications } from '../../services/applicationService';
@@ -104,7 +105,7 @@ export default function ConsultantDashboard() {
 						<div className="card-body">
 							<div className="d-flex justify-content-between align-items-center mb-3">
 								<h5 className="fw-semibold mb-0">{t('consultantDashboard.recentApplications')}</h5>
-								<Link to="/applications" className="small">{t('shared.viewAll')}</Link>
+								<Link to={SHARED.APPLICATIONS} className="small">{t('shared.viewAll')}</Link>
 							</div>
 
 							{recentApps.length === 0 ? (
@@ -126,7 +127,7 @@ export default function ConsultantDashboard() {
 													<tr
 														key={app.application_guid || app.applicationGuid}
 														className={styles.clickableRow}
-														onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
+														onClick={() => navigate(`${SHARED.APPLICATIONS}/${app.application_guid || app.applicationGuid}`)}
 													>
 														<td className="fw-medium">
 															{app.badge?.badge_title || app.badge?.badgeTitle || '—'}
@@ -158,11 +159,11 @@ export default function ConsultantDashboard() {
 						<div className="card-body">
 							<h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
 							<div className="d-flex flex-column gap-2">
-								<Button as={Link} to="/catalog" variant="outlined" className="text-start">
+								<Button as={Link} to={CONSULTANT.CATALOG} variant="outlined" className="text-start">
 									<Icon name="search" size={16} className="me-2" aria-hidden="true" />
 									{t('consultantDashboard.exploreCatalog')}
 								</Button>
-								<Button as={Link} to="/applications" variant="outlined" className="text-start">
+								<Button as={Link} to={SHARED.APPLICATIONS} variant="outlined" className="text-start">
 									<Icon name="paper" size={16} className="me-2" aria-hidden="true" />
 									{t('consultantDashboard.myApplications')}
 								</Button>

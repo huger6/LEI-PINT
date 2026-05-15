@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AUTH, SHARED } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, useAuth } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -58,7 +59,7 @@ export default function LoginPage() {
 				form.password,
 				form.remember
 			);
-			navigate(fpc ? '/change-password' : '/', { replace: true });
+			navigate(fpc ? AUTH.CHANGE_PASSWORD : SHARED.HOME, { replace: true });
 		} catch (err) {
 			if (isCode(err, 'AUTH_EMAIL_NOT_CONFIRMED')) {
 				setEmailNotConfirmed(true);
@@ -87,7 +88,7 @@ export default function LoginPage() {
 						<div className={styles.emailActions}>
 							<Button
 								as={Link}
-								to={loginEmail ? `/resend-confirmation?email=${encodeURIComponent(loginEmail)}` : '/resend-confirmation'}
+								to={loginEmail ? `${AUTH.RESEND_CONFIRMATION}?email=${encodeURIComponent(loginEmail)}` : AUTH.RESEND_CONFIRMATION}
 								state={{ email: loginEmail }}
 								className={styles.emailActionLink}
 								fullWidth
@@ -96,7 +97,7 @@ export default function LoginPage() {
 							</Button>
 							<Button
 								as={Link}
-								to="/login"
+								to={AUTH.LOGIN}
 								variant="outlined"
 								className={styles.emailActionLink}
 								fullWidth
@@ -150,7 +151,7 @@ export default function LoginPage() {
 										{t('login.rememberMe')}
 									</label>
 								</div>
-								<Link to="/forgot-password" className="small text-nowrap" style={{ color: 'var(--color-primary)' }}>
+								<Link to={AUTH.FORGOT_PASSWORD} className="small text-nowrap" style={{ color: 'var(--color-primary)' }}>
 									{t('login.forgotPassword')}
 								</Link>
 							</div>
@@ -164,7 +165,7 @@ export default function LoginPage() {
 
 						<p className="text-center mt-4 small mb-0" style={{ color: 'var(--color-outline)' }}>
 							{t('login.noAccount')}{' '}
-							<Link to="/register">{t('login.createOne')}</Link>
+							<Link to={AUTH.REGISTER}>{t('login.createOne')}</Link>
 						</p>
 					</>
 				)}

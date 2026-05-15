@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AUTH } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, validateResetToken, resetPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -106,7 +107,7 @@ export default function ResetPasswordPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>
 							{tokenErrorMsg || t('resetPassword.invalidOrExpiredDesc')}
 						</p>
-						<Button as={Link} to="/forgot-password" fullWidth>
+						<Button as={Link} to={AUTH.FORGOT_PASSWORD} fullWidth>
 							{t('resetPassword.requestNewLink')}
 						</Button>
 					</div>
@@ -152,7 +153,7 @@ export default function ResetPasswordPage() {
 						<div className={styles.successIcon}><Icon name="check" size={24} color="currentColor" /></div>
 						<h2 className={`mb-0 ${styles.title}`}>{t('resetPassword.successHeading')}</h2>
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.5 }}>{t('resetPassword.successDesc')}</p>
-						<Button as={Link} to="/login" fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} fullWidth>
 							{t('goToLogin')}
 						</Button>
 					</div>

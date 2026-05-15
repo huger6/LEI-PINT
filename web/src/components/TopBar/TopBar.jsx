@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SHARED } from '../../routes/paths';
 import styles from './TopBar.module.css';
 import Logo from '../Logo/Logo';
 import { NotificationBell } from '../../features/notifications';
@@ -14,7 +15,7 @@ export default function TopBar() {
 
     return (
         <header className={styles.topBar}>
-            <Link to="/" className={styles.logoSection}>
+            <Link to={SHARED.HOME} className={styles.logoSection}>
                 <Logo />
             </Link>
             <div className={styles.searchSection}>

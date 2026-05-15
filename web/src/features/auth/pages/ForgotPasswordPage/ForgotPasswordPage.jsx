@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
+import { AUTH } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, forgotPassword } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -67,7 +68,7 @@ export default function ForgotPasswordPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="forgotPassword.checkInboxDesc" values={{ email: hideEmail(email) }} components={{ strong: <strong /> }} />
 						</p>
-						<Link to="/login" className="small" style={{ color: 'var(--color-primary)' }}>{t('backToLogin')}</Link>
+						<Link to={AUTH.LOGIN} className="small" style={{ color: 'var(--color-primary)' }}>{t('backToLogin')}</Link>
 					</div>
 				) : (
 					<>
@@ -89,7 +90,7 @@ export default function ForgotPasswordPage() {
 							<FormAlert message={error} />
 							<Button type="submit" loading={loading} fullWidth>{t('forgotPassword.sendResetLink')}</Button>
 						</form>
-						<Button as={Link} to="/login" variant="outlined" className="mt-1" fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} variant="outlined" className="mt-1" fullWidth>
 							<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 						</Button>
 					</>

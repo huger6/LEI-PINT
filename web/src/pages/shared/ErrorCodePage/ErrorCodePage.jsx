@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SHARED } from '../../../routes/paths';
 import AuthLayout from '../../../features/auth/layouts/AuthLayout/AuthLayout';
 import AuthCard from '../../../features/auth/components/AuthCard/AuthCard';
 import Button from '../../../components/Button/Button';
@@ -25,7 +26,7 @@ export default function ErrorCodePage({ code = 404 }) {
 					<p className={styles.description}>
 						{description}
 					</p>
-					<Button as={Link} to="/">
+					<Button as={Link} to={SHARED.HOME}>
 						{t('errorCodePage.backHome')}
 					</Button>
 				</div>

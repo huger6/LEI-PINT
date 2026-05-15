@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SHARED } from '../../../routes/paths';
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
@@ -49,7 +50,7 @@ export default function BadgeDetail() {
 		try {
 			const newApp = await startApplication(badge.badge_id || badge.badgeId);
 			const appGuid = newApp.application_guid || newApp.applicationGuid;
-			navigate(`/applications/${appGuid}`);
+			navigate(`${SHARED.APPLICATIONS}/${appGuid}`);
 		} catch (err) {
 			setError(err.message);
 			setApplying(false);
@@ -70,7 +71,7 @@ export default function BadgeDetail() {
 		return (
 			<div className="text-center py-5">
 				<h5 className="text-muted">{t('badgeDetail.notFound')}</h5>
-				<Link to="/badges">{t('badgeDetail.backToCatalog')}</Link>
+				<Link to={SHARED.BADGES}>{t('badgeDetail.backToCatalog')}</Link>
 			</div>
 		);
 	}
@@ -86,7 +87,7 @@ export default function BadgeDetail() {
 			{/* Breadcrumb */}
 			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 				<ol className="breadcrumb">
-					<li className="breadcrumb-item"><Link to="/badges">{t('badgeDetail.catalog')}</Link></li>
+					<li className="breadcrumb-item"><Link to={SHARED.BADGES}>{t('badgeDetail.catalog')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badge.badge_title || badge.badgeTitle}</li>
 				</ol>
 			</nav>
@@ -175,7 +176,7 @@ export default function BadgeDetail() {
 									{t('badgeDetail.applyNow')}
 								</Button>
 							)}
-							<Button as={Link} to="/badges" variant="outlined" fullWidth className="mt-2">
+							<Button as={Link} to={SHARED.BADGES} variant="outlined" fullWidth className="mt-2">
 								{t('badgeDetail.backToCatalogBtn')}
 							</Button>
 						</div>
