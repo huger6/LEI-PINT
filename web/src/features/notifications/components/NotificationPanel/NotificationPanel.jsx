@@ -1,8 +1,12 @@
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks/useNotifications';
+import Tabs from '../../../../components/Tabs';
 import NotificationItem from '../NotificationItem/NotificationItem';
 import styles from './NotificationPanel.module.css';
+
+const TAB_RECENT = 'recent';
+const TAB_ALL = 'all';
 
 export default function NotificationPanel({ open, onClose }) {
 	const { t } = useTranslation();
@@ -15,9 +19,19 @@ export default function NotificationPanel({ open, onClose }) {
 		fetchNotifications,
 	} = useNotifications();
 
+	const [activeTab, setActiveTab] = useState(TAB_RECENT);
+
 	useEffect(() => {
 		if (open) fetchNotifications({ page: 1, limit: 20 });
 	}, [open, fetchNotifications]);
+
+	const visibleNotifications = useMemo(
+		() =>
+			activeTab === TAB_RECENT
+				? notifications.filter((n) => !n.is_read)
+				: notifications,
+		[activeTab, notifications],
+	);
 
 	const handleLoadMore = useCallback(() => {
 		const currentPage = pagination?.currentPage ?? pagination?.page ?? 1;
@@ -31,6 +45,11 @@ export default function NotificationPanel({ open, onClose }) {
 	const currentPage = pagination?.currentPage ?? pagination?.page ?? 1;
 	const totalPages = pagination?.totalPages ?? 1;
 	const hasMore = Boolean(pagination) && currentPage < totalPages;
+
+	const tabs = [
+		{ key: TAB_RECENT, label: t('notifications.tabs.recent'), badge: unreadCount },
+		{ key: TAB_ALL, label: t('notifications.tabs.all') },
+	];
 
 	return (
 		<>
@@ -49,12 +68,18 @@ export default function NotificationPanel({ open, onClose }) {
 					)}
 				</div>
 
+				<Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
 				<div className={styles.list}>
-					{notifications.length === 0 ? (
-						<p className={styles.empty}>{t('notifications.empty')}</p>
+					{visibleNotifications.length === 0 ? (
+						<p className={styles.empty}>
+							{activeTab === TAB_RECENT
+								? t('notifications.emptyRecent')
+								: t('notifications.empty')}
+						</p>
 					) : (
 						<>
-							{notifications.map((n) => (
+							{visibleNotifications.map((n) => (
 								<NotificationItem
 									key={n.notification_id}
 									notification={n}
