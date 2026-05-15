@@ -651,7 +651,7 @@
 		"title": "Oops!",
 		"subtitle": "Something went wrong",
 		"description": "An unexpected error occurred. Please try reloading the page.",
-		"reload": "Reload Page"
+		"reload": "Back to home"
 	},
 	"profile": {
 		"myProfile": "My profile",

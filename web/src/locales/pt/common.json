@@ -651,7 +651,7 @@
 		"title": "Oops!",
 		"subtitle": "Algo correu mal",
 		"description": "Ocorreu um erro inesperado. Por favor, tente recarregar a página.",
-		"reload": "Recarregar Página"
+		"reload": "Voltar ao início"
 	},
 	"profile": {
 		"myProfile": "O meu perfil",

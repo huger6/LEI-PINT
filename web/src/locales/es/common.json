@@ -650,7 +650,7 @@
 		"title": "¡Ups!",
 		"subtitle": "Algo salió mal",
 		"description": "Ocurrió un error inesperado. Por favor, intenta recargar la página.",
-		"reload": "Recargar Página"
+		"reload": "Volver al inicio"
 	},
 	"profile": {
 		"myProfile": "Mi perfil",
