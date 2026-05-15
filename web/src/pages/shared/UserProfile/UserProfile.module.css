@@ -1,0 +1,474 @@
+/* ─── Page layout ────────────────────────────── */
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 24px 0;
+}
+
+.pageTitle {
+	color: var(--color-on-background);
+	font-size: 1.5rem;
+	font-weight: 500;
+	line-height: 1.5rem;
+	margin: 0;
+}
+
+/* ─── Info card ──────────────────────────────── */
+.infoCard {
+	width: 100%;
+}
+
+.infoCardInner {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.infoLeft {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	flex: 1;
+	min-width: 0;
+}
+
+.avatar {
+	width: 128px;
+	height: 128px;
+	border-radius: 50%;
+	background: linear-gradient(180deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+	box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+	outline: 4px white solid;
+	outline-offset: -4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.avatarImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 50%;
+}
+
+.avatarFallback {
+	color: white;
+	font-size: 2.5rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	user-select: none;
+}
+
+.infoDetails {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 4px;
+}
+
+.userName {
+	color: var(--color-on-background);
+	font-size: 1.75rem;
+	font-weight: 500;
+	line-height: 1.875rem;
+	margin: 0;
+}
+
+.userTitle {
+	color: var(--color-secondary);
+	font-size: 1.125rem;
+	font-weight: 400;
+	line-height: 1.5rem;
+	margin: 0;
+}
+
+.infoRows {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	margin-top: 2px;
+}
+
+.infoRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 28px;
+}
+
+.infoText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.infoActions {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.editBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 8px;
+	transition: background 0.15s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.editBtn:hover {
+	background: var(--color-primary-hover-bg-soft);
+}
+
+.drawerBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 8px;
+	transition: background 0.15s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.drawerBtn:hover {
+	background: var(--color-primary-hover-bg-soft);
+}
+
+/* ─── Section body (below card headers) ──────── */
+.sectionBody {
+	margin-top: 12px;
+}
+
+/* ─── About text ─────────────────────────────── */
+.aboutText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.375rem;
+	text-align: justify;
+	margin: 0;
+}
+
+.textarea {
+	border: 1px solid var(--color-outline);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.375rem;
+	color: var(--color-on-background);
+	resize: vertical;
+}
+
+.textarea:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+}
+
+/* ─── Chips / Tags ───────────────────────────── */
+.chipList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px;
+	background: var(--color-blue-soft);
+	border-radius: 999px;
+}
+
+.chipLabel {
+	color: var(--color-blue-on-soft);
+	font-size: 0.8125rem;
+	font-weight: 400;
+	line-height: 1.21875rem;
+}
+
+.chipRemove {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	transition: background 0.15s;
+}
+
+.chipRemove:hover {
+	background: rgba(30, 58, 95, 0.12);
+}
+
+/* ─── Add row (interests / goals) ────────────── */
+.addRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.addInput {
+	flex: 1;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	border: 1px solid var(--color-outline);
+}
+
+.addInput:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+}
+
+/* ─── Bullet list (goals) ────────────────────── */
+.goalsList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.bulletItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.bullet {
+	font-size: 0.875rem;
+	line-height: 1.3125rem;
+	flex-shrink: 0;
+	width: 8px;
+}
+
+.bulletText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+}
+
+.goalEditRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+.goalText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	line-height: 1.3125rem;
+	flex: 1;
+}
+
+.removeBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s;
+}
+
+.removeBtn:hover {
+	background: var(--color-error-container);
+}
+
+/* ─── Check list (achievements) ──────────────── */
+.achievementsList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.checkItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.checkText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+	flex: 1;
+}
+
+/* ─── Empty state text ───────────────────────── */
+.emptyText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-style: italic;
+	margin: 0;
+}
+
+/* ─── Stats card ─────────────────────────────── */
+.statsCard {
+	position: sticky;
+	top: 24px;
+}
+
+.statsHeader {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 24px;
+}
+
+.statsIconBox {
+	width: 160px;
+	height: 160px;
+	background: var(--color-primary-soft);
+	border-radius: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.statsGrid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 12px;
+}
+
+.statItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 24px 16px;
+	background: #fff;
+	border-radius: 16px;
+	border: 1.5px solid var(--color-outline);
+	text-align: center;
+}
+
+.statValue {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+	line-height: 1.1;
+}
+
+.statLabel {
+	font-size: 0.8125rem;
+	font-weight: 400;
+	color: var(--color-outline);
+	line-height: 1.3;
+}
+
+/* ─── Action bar (edit mode) ─────────────────── */
+.actionBar {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	padding-top: 8px;
+}
+
+/* ─── Success toast ──────────────────────────── */
+.successToast {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 20px;
+	background: var(--color-green-soft);
+	border: 1px solid var(--color-green-on-soft);
+	border-radius: 10px;
+	box-shadow: var(--shadow-card);
+	color: var(--color-green-on-soft);
+	font-size: 0.875rem;
+	font-weight: 500;
+	z-index: 1000;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Responsive ─────────────────────────────── */
+@media (max-width: 991px) {
+	.statsCard {
+		position: static;
+	}
+
+	.statsGrid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 767px) {
+	.infoCardInner {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.infoLeft {
+		flex-direction: column;
+		text-align: center;
+		align-items: center;
+	}
+
+	.infoDetails {
+		align-items: center;
+	}
+
+	.infoRows {
+		align-items: center;
+	}
+
+	.infoActions {
+		flex-direction: row;
+		align-self: flex-end;
+	}
+
+	.avatar {
+		width: 96px;
+		height: 96px;
+	}
+
+	.avatarFallback {
+		font-size: 2rem;
+	}
+
+	.userName {
+		font-size: 1.5rem;
+	}
+
+	.statsGrid {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.page {
+		padding: 16px 0;
+	}
+}

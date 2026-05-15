@@ -74,4 +74,18 @@
 			rgba(241, 251, 255, 0.96) 100%);
 
 	--color-primary-outline-30: rgba(0, 184, 224, 0.3);
+
+	/* Soft accent colors (for profile cards, badges, section icons) */
+	--color-blue-soft: #EFF6FF;
+	--color-blue-on-soft: #1E3A5F;
+	--color-orange-soft: #FEF5E7;
+	--color-orange-on-soft: #F39C12;
+	--color-green-soft: #ECFDF5;
+	--color-green-on-soft: #007A55;
+	--color-red-soft: #FEF2F2;
+	--color-red-on-soft: #DC2626;
+	--color-primary-soft: #E8F8FC;
+
+	/* Card shadows */
+	--shadow-card: 0px 2px 4px -2px rgba(0, 0, 0, 0.10), 0px 4px 6px -1px rgba(0, 0, 0, 0.10);
 }
