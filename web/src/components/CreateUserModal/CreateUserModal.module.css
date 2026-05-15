@@ -18,6 +18,11 @@
 	margin-bottom: 0.35rem;
 }
 
+.required {
+	color: var(--color-error);
+	font-weight: 600;
+}
+
 /* ── Active / Inactive toggle ─────────────────────────────────────────── */
 .toggleRow {
 	display: flex;

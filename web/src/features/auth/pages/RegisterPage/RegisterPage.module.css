@@ -225,54 +225,6 @@
 	font-size: 0.85rem;
 }
 
-.areaChips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-}
-
-.areaChip {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.3rem;
-	padding: 0.35rem 0.75rem;
-	border: 1.5px solid var(--color-outline);
-	border-radius: 20px;
-	background: var(--color-surface-overlay-50);
-	font-size: 0.8125rem;
-	cursor: pointer;
-	transition: border-color 0.18s, background 0.18s;
-}
-
-.areaChip:hover {
-	border-color: var(--color-primary);
-}
-
-.areaChipActive {
-	border-color: var(--color-primary);
-	background: var(--color-primary-container-hover-medium);
-	color: var(--color-on-primary-container);
-}
-
-.primaryBadge {
-	color: var(--color-outline);
-	font-size: 0.875rem;
-	transition: color 0.15s;
-}
-
-.primaryBadgeIcon {
-	display: block;
-}
-
-.primaryBadgeOn {
-	color: var(--color-warning);
-}
-
-.primaryAreaHintIcon {
-	display: inline-block;
-	vertical-align: text-bottom;
-}
-
 .successIcon {
 	width: 56px;
 	height: 56px;
