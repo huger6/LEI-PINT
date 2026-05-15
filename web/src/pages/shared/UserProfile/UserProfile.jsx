@@ -87,7 +87,7 @@ export default function UserProfile() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const { user: authUser } = useAuth();
-	const { user: contextUser } = useUser();
+	const { user: contextUser, refreshUser } = useUser();
 
 	const isEditMode = location.pathname.endsWith('/edit');
 	const isAdmin = authUser?.role_name === 'Administrator' || authUser?.role === 'Administrator';
@@ -248,6 +248,16 @@ export default function UserProfile() {
 		return Object.keys(errs).length === 0;
 	};
 
+	// ── Reload profile from server ───────────────────────────────
+	const reloadProfile = useCallback(async () => {
+		if (isOwnProfile) {
+			await refreshUser();
+		} else {
+			const data = await getUserPublicProfile(guid);
+			setProfile(data);
+		}
+	}, [isOwnProfile, guid, refreshUser]);
+
 	// ── Save ─────────────────────────────────────────────────────
 	const handleSave = async () => {
 		if (!validate()) return;
@@ -271,6 +281,7 @@ export default function UserProfile() {
 			}
 			setIsDirty(false);
 			setSaveSuccess(true);
+			await reloadProfile();
 			const basePath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}/profile`;
 			navigate(basePath, { replace: true });
 		} catch (err) {
@@ -714,6 +725,7 @@ export default function UserProfile() {
 				<AdminUserDrawer
 					open={drawerOpen}
 					onClose={() => setDrawerOpen(false)}
+					onSaved={reloadProfile}
 					profile={profile}
 					guid={guid}
 				/>

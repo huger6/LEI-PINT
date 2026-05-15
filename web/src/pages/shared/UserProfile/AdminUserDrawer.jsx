@@ -15,7 +15,7 @@ function DetailRow({ label, children }) {
 	);
 }
 
-export default function AdminUserDrawer({ open, onClose, profile, guid }) {
+export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid }) {
 	const { t } = useTranslation();
 	const panelRef = useRef(null);
 
@@ -78,6 +78,7 @@ export default function AdminUserDrawer({ open, onClose, profile, guid }) {
 		try {
 			await updateUser(guid, form);
 			setIsDirty(false);
+			if (onSaved) await onSaved();
 			onClose();
 		} catch (err) {
 			const serverErrors = err.response?.data?.errors;
