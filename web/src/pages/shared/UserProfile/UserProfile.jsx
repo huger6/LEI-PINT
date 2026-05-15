@@ -11,6 +11,11 @@ import Icon from '../../../components/Icons/Icons';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
+import InfoRow from '../../../components/InfoRow/InfoRow';
+import Chip from '../../../components/Chip/Chip';
+import BulletItem from '../../../components/BulletItem/BulletItem';
+import CheckItem from '../../../components/CheckItem/CheckItem';
+import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
@@ -29,56 +34,6 @@ function getInitials(name = '') {
 	if (parts.length === 0 || !parts[0]) return '?';
 	if (parts.length === 1) return parts[0][0].toUpperCase();
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function InfoRow({ icon, children }) {
-	return (
-		<div className={styles.infoRow}>
-			<Icon name={icon} size={20} color="var(--color-outline)" />
-			<span className={styles.infoText}>{children}</span>
-		</div>
-	);
-}
-
-function Chip({ label, onRemove }) {
-	return (
-		<span className={styles.chip}>
-			<span className={styles.chipLabel}>{label}</span>
-			{onRemove && (
-				<button type="button" className={styles.chipRemove} onClick={onRemove} aria-label={`Remove ${label}`}>
-					<Icon name="close" size={14} color="var(--color-blue-on-soft)" />
-				</button>
-			)}
-		</span>
-	);
-}
-
-function BulletItem({ children, color = 'var(--color-green-on-soft)' }) {
-	return (
-		<div className={styles.bulletItem}>
-			<span className={styles.bullet} style={{ color }}>•</span>
-			<span className={styles.bulletText}>{children}</span>
-		</div>
-	);
-}
-
-function CheckItem({ children, color = 'var(--color-red-on-soft)' }) {
-	return (
-		<div className={styles.checkItem}>
-			<Icon name="check" size={16} color={color} />
-			<span className={styles.checkText}>{children}</span>
-		</div>
-	);
-}
-
-function ProfileStatItem({ icon, iconColor, value, label }) {
-	return (
-		<div className={styles.statItem}>
-			<Icon name={icon} size={24} color={iconColor} />
-			<span className={styles.statValue}>{value ?? '—'}</span>
-			<span className={styles.statLabel}>{label}</span>
-		</div>
-	);
 }
 
 export default function UserProfile() {
@@ -125,6 +80,7 @@ export default function UserProfile() {
 	const userRole = profile?.role?.role_name || profile?.role_name || profile?.role || '';
 	const isConsultant = userRole === 'Consultant';
 	const isTm = userRole === 'Talent Manager';
+	const isAdminRole = userRole === 'Administrator';
 
 	// ── Load profile ─────────────────────────────────────────────
 	useEffect(() => {
@@ -167,7 +123,7 @@ export default function UserProfile() {
 				username: profile.username || '',
 				email: profile.email || '',
 				locationId: locId ? String(locId) : '',
-				about: profile.about || profile.bio || '',
+				about: profile.biography || profile.about || profile.bio || '',
 				interests: [...(profile.interests || [])],
 				goals: [...(profile.goals || [])],
 			};
@@ -348,42 +304,47 @@ export default function UserProfile() {
 	const displayName = profile?.fullName || profile?.full_name || profile?.username || '';
 	const displayEmail = profile?.email || '';
 	const displayLocation = profile?.location?.location_name || profile?.location?.name || profile?.location || '';
+	const displayLanguage = profile?.lang?.name || '';
 	const displayServiceLine = profile?.serviceLine?.name || profile?.service_line?.name || '';
-	const displayAbout = profile?.about || profile?.bio || '';
+	const displayAreas = isConsultant
+		? (profile?.areas || []).map((a) => a.name || a.area_name).filter(Boolean)
+		: [];
+	const displayAbout = profile?.biography || profile?.about || profile?.bio || '';
 	const displayInterests = profile?.interests || [];
 	const displayGoals = profile?.goals || [];
 	const displayAchievements = profile?.achievements || [];
 	const memberSince = profile?.createdAt || profile?.created_at || '';
 	const photoUrl = profile?.photoUrl || profile?.photo_url || profile?.avatar || null;
+	const showServiceLine = !isTm && !isAdminRole && !!displayServiceLine;
 
 	// ── Stats by role ────────────────────────────────────────────
 	const getStats = () => {
 		const base = [
-			{ icon: 'badge', iconColor: 'var(--color-blue-on-soft)', value: profile?.badgesCount ?? profile?.badges_count ?? 0, label: t('profile.badgesEarned') },
+			{ icon: 'badge', accentColor: 'var(--color-blue-on-soft)', accentBg: 'var(--color-blue-soft)', value: profile?.badgesCount ?? profile?.badges_count ?? 0, label: t('profile.badgesEarned'), footer: t('profile.statFooterBadges') },
 		];
 
 		if (isConsultant) {
 			return [
 				...base,
-				{ icon: 'paper', iconColor: 'var(--color-orange-on-soft)', value: profile?.applicationsCount ?? profile?.applications_count ?? 0, label: t('profile.applicationsCompleted') },
-				{ icon: 'star-points', iconColor: 'var(--color-green-on-soft)', value: profile?.totalPoints ?? profile?.total_points ?? 0, label: t('profile.totalPoints') },
-				{ icon: 'fire', iconColor: 'var(--color-red-on-soft)', value: profile?.currentStreakDays ?? profile?.current_streak_days ?? 0, label: t('profile.currentStreak') },
+				{ icon: 'paper', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.applicationsCount ?? profile?.applications_count ?? 0, label: t('profile.applicationsCompleted'), footer: t('profile.statFooterApplications') },
+				{ icon: 'star-points', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.totalPoints ?? profile?.total_points ?? 0, label: t('profile.totalPoints'), footer: t('profile.statFooterPoints') },
+				{ icon: 'fire', accentColor: 'var(--color-red-on-soft)', accentBg: 'var(--color-red-soft)', value: profile?.currentStreakDays ?? profile?.current_streak_days ?? 0, label: t('profile.currentStreak'), footer: t('profile.statFooterStreak') },
 			];
 		}
 
 		if (isTm) {
 			return [
 				...base,
-				{ icon: 'tabler_users', iconColor: 'var(--color-orange-on-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers') },
-				{ icon: 'check2', iconColor: 'var(--color-green-on-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone') },
+				{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
+				{ icon: 'check2', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
 			];
 		}
 
 		// SLL
 		return [
 			...base,
-			{ icon: 'tabler_users', iconColor: 'var(--color-orange-on-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers') },
-			{ icon: 'check2', iconColor: 'var(--color-green-on-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone') },
+			{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
+			{ icon: 'check2', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
 		];
 	};
 
@@ -492,13 +453,14 @@ export default function UserProfile() {
 									<h2 className={styles.userName}>{displayName}</h2>
 									<div className={styles.infoRows}>
 										{displayEmail && <InfoRow icon="email">{displayEmail}</InfoRow>}
-										{displayLocation && <InfoRow icon="location_on">{displayLocation}</InfoRow>}
-										{!isTm && displayServiceLine && (
-											<InfoRow icon="service-line">{displayServiceLine}</InfoRow>
+										{(displayLocation || displayLanguage) && (
+											<InfoRow icon="location_on">
+												{[displayLocation, displayLanguage].filter(Boolean).join(' · ')}
+											</InfoRow>
 										)}
-										{memberSince && (
-											<InfoRow icon="today">
-												{t('profile.memberSince', { date: formatDate(memberSince) })}
+										{(showServiceLine || displayAreas.length > 0) && (
+											<InfoRow icon="service-line">
+												{[showServiceLine ? displayServiceLine : null, ...displayAreas].filter(Boolean).join(' · ')}
 											</InfoRow>
 										)}
 									</div>
@@ -547,12 +509,32 @@ export default function UserProfile() {
 				</div>
 			</ContentCard>
 
-			{/* ── Content sections ───────────────────────────── */}
+			{/* ── Content sections (2-column grid) ───────────── */}
 			<div className="row g-4">
-				{/* Left column */}
-				<div className="col-lg-7 d-flex flex-column gap-4">
-					{/* Key Interests (consultant & SLL) */}
-					{(isConsultant || !isTm) && (
+				<div className="col-md-6">
+					<ContentCard>
+						<CardHeader
+							icon="trophy"
+							iconBg="var(--color-red-soft)"
+							iconColor="var(--color-red-on-soft)"
+							title={t('profile.recentAchievements')}
+						/>
+						<div className={styles.sectionBody}>
+							{displayAchievements.length > 0 ? (
+								<div className={styles.achievementsList}>
+									{displayAchievements.map((item, idx) => (
+										<CheckItem key={idx}>{item.description || item.title || item}</CheckItem>
+									))}
+								</div>
+							) : (
+								<p className={styles.emptyText}>{t('profile.noAchievements')}</p>
+							)}
+						</div>
+					</ContentCard>
+				</div>
+
+				{(isConsultant || !isTm) && (
+					<div className="col-md-6">
 						<ContentCard>
 							<CardHeader
 								icon="skills"
@@ -593,9 +575,10 @@ export default function UserProfile() {
 								)}
 							</div>
 						</ContentCard>
-					)}
+					</div>
+				)}
 
-					{/* Current Goals */}
+				<div className="col-md-6">
 					<ContentCard>
 						<CardHeader
 							icon="target"
@@ -641,39 +624,15 @@ export default function UserProfile() {
 							)}
 						</div>
 					</ContentCard>
-
-					{/* Recent Achievements (always read-only) */}
-					<ContentCard>
-						<CardHeader
-							icon="trophy"
-							iconBg="var(--color-red-soft)"
-							iconColor="var(--color-red-on-soft)"
-							title={t('profile.recentAchievements')}
-						/>
-						<div className={styles.sectionBody}>
-							{displayAchievements.length > 0 ? (
-								<div className={styles.achievementsList}>
-									{displayAchievements.map((item, idx) => (
-										<CheckItem key={idx}>{item.description || item.title || item}</CheckItem>
-									))}
-								</div>
-							) : (
-								<p className={styles.emptyText}>{t('profile.noAchievements')}</p>
-							)}
-						</div>
-					</ContentCard>
 				</div>
+			</div>
 
-				{/* Right column - Stats */}
-				<div className="col-lg-5">
-					<ContentCard className={styles.statsCard} padding={32}>
-						<div className={styles.statsGrid}>
-							{stats.map((stat, idx) => (
-								<ProfileStatItem key={idx} {...stat} />
-							))}
-						</div>
-					</ContentCard>
-				</div>
+			{/* ── Statistics section ─────────────────────────── */}
+			<h2 className={styles.sectionTitle}>{t('profile.statistics')}</h2>
+			<div className={styles.statsGrid}>
+				{stats.map((stat, idx) => (
+					<ProfileStatItem key={idx} {...stat} />
+				))}
 			</div>
 
 			{/* ── Badge gallery link ──────────────────────────── */}

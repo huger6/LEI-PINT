@@ -1,0 +1,16 @@
+.infoRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 28px;
+}
+
+.infoText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
