@@ -1,0 +1,13 @@
+.checkItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.checkText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+	flex: 1;
+}
