@@ -35,21 +35,24 @@ export default function AppRoutes() {
 			</Route>
 
 			<Route element={<ProtectedRoute />}>
-				<Route element={<RoleLayout />}>
-					<Route path="/" element={<Dashboard />} />
-
-					<Route element={<RoleRoute allowedRoles={['Administrator']} />}>
+				<Route element={<RoleRoute allowedRoles={['Administrator']} />}>
+					<Route element={<RoleLayout />}>
 						{adminRoutes.map(({ path, element }) => (
 							<Route key={path} path={path} element={element} />
 						))}
 					</Route>
+				</Route>
 
-					<Route element={<RoleRoute allowedRoles={['Consultant']} />}>
+				<Route element={<RoleRoute allowedRoles={['Consultant']} />}>
+					<Route element={<RoleLayout />}>
 						{consultantRoutes.map(({ path, element }) => (
 							<Route key={path} path={path} element={element} />
 						))}
 					</Route>
+				</Route>
 
+				<Route element={<RoleLayout />}>
+					<Route path="/" element={<Dashboard />} />
 					{sharedRoutes.map(({ path, element }) => (
 						<Route key={path} path={path} element={element} />
 					))}
