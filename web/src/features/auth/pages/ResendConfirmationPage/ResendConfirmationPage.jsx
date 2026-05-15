@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
+import { AUTH } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, resendConfirmation } from '../..';
 import FormInput from '../../../../components/FormInput/FormInput';
@@ -72,7 +73,7 @@ export default function ResendConfirmationPage() {
 						<p className="mb-0 small" style={{ color: 'var(--color-outline)', lineHeight: 1.55 }}>
 							<Trans i18nKey="resendConfirmation.emailSentDesc" values={{ email }} components={{ strong: <strong /> }} />
 						</p>
-						<Button as={Link} to="/login" variant="outlined" className={styles.emailActionLink} fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} variant="outlined" className={styles.emailActionLink} fullWidth>
 							<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 						</Button>
 					</div>
@@ -98,7 +99,7 @@ export default function ResendConfirmationPage() {
 							<Button type="submit" loading={loading} fullWidth>{t('resendConfirmation.resendBtn')}</Button>
 						</form>
 						<p className="text-center mt-1 mb-0 small">
-							<Button as={Link} to="/login" variant="outlined" className={styles.emailActionLink} fullWidth>
+							<Button as={Link} to={AUTH.LOGIN} variant="outlined" className={styles.emailActionLink} fullWidth>
 								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 							</Button>
 						</p>

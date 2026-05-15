@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SHARED } from '../../../routes/paths';
 import { getApplicationById, submitApplication, upsertEvidence } from '../../../features/applications/api/applicationsApi';
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { uploadFileToTemp } from '../../../services/storage';
@@ -125,7 +126,7 @@ export default function ApplicationDetail() {
 		setDeleting(true);
 		try {
 			await deleteApplication(id);
-			navigate('/applications');
+			navigate(SHARED.APPLICATIONS);
 		} catch (err) {
 			setError(err.message);
 			setDeleting(false);
@@ -152,7 +153,7 @@ export default function ApplicationDetail() {
 		return (
 			<div className="text-center py-5">
 				<h5 className="text-muted">{t('applicationDetail.notFound')}</h5>
-				<Link to="/applications">{t('applicationDetail.backToApplications')}</Link>
+				<Link to={SHARED.APPLICATIONS}>{t('applicationDetail.backToApplications')}</Link>
 			</div>
 		);
 	}
@@ -171,7 +172,7 @@ export default function ApplicationDetail() {
 			{/* Breadcrumb */}
 			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
 				<ol className="breadcrumb">
-					<li className="breadcrumb-item"><Link to="/applications">{t('applicationDetail.applications')}</Link></li>
+					<li className="breadcrumb-item"><Link to={SHARED.APPLICATIONS}>{t('applicationDetail.applications')}</Link></li>
 					<li className="breadcrumb-item active" aria-current="page">{badgeName}</li>
 				</ol>
 			</nav>

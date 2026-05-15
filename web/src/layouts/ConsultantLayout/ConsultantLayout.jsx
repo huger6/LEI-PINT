@@ -1,14 +1,15 @@
+import { CONSULTANT } from '../../routes/paths';
 import AppLayout from '../AppLayout/AppLayout';
 
 const MENU_ITEMS = [
-    { to: '/', icon: 'home', label: 'sidebar.consultant.home', notificationType: 'HOME' },
-    { to: '/catalog', icon: 'badge', label: 'sidebar.consultant.badges', notificationType: 'BADGES' },
-    { to: '/applications', icon: 'paper', label: 'sidebar.consultant.applications', notificationType: 'APPLICATIONS' },
-    { to: '/achievements', icon: 'trophy', label: 'sidebar.consultant.achievements', notificationType: 'ACHIEVEMENTS' },
-    { to: '/points', icon: 'star-points', label: 'sidebar.consultant.points', notificationType: 'POINTS' },
-    { to: '/objectives', icon: 'target', label: 'sidebar.consultant.objectives', notificationType: 'OBJECTIVES' },
-    { to: '/evolution', icon: 'evolution', label: 'sidebar.consultant.evolution', notificationType: 'EVOLUTION' },
-    { to: '/announcements', icon: 'megaphone', label: 'sidebar.consultant.announcements', notificationType: 'ANNOUNCEMENTS' },
+    { to: CONSULTANT.HOME, icon: 'home', label: 'sidebar.consultant.home', notificationType: 'HOME' },
+    { to: CONSULTANT.CATALOG, icon: 'badge', label: 'sidebar.consultant.badges', notificationType: 'BADGES' },
+    { to: CONSULTANT.APPLICATIONS, icon: 'paper', label: 'sidebar.consultant.applications', notificationType: 'APPLICATIONS' },
+    { to: CONSULTANT.ACHIEVEMENTS, icon: 'trophy', label: 'sidebar.consultant.achievements', notificationType: 'ACHIEVEMENTS' },
+    { to: CONSULTANT.POINTS, icon: 'star-points', label: 'sidebar.consultant.points', notificationType: 'POINTS' },
+    { to: CONSULTANT.OBJECTIVES, icon: 'target', label: 'sidebar.consultant.objectives', notificationType: 'OBJECTIVES' },
+    { to: CONSULTANT.EVOLUTION, icon: 'evolution', label: 'sidebar.consultant.evolution', notificationType: 'EVOLUTION' },
+    { to: CONSULTANT.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.consultant.announcements', notificationType: 'ANNOUNCEMENTS' },
 ];
 
 export default function ConsultantLayout() {

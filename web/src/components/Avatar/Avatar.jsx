@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import Icon from '../Icons/Icons';
 import styles from './Avatar.module.css';
+
+function getInitials(name = '') {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 0 || !parts[0]) return '?';
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export default function Avatar({
     src,
@@ -17,7 +23,7 @@ export default function Avatar({
     }, [src]);
 
     const avatarSize = useMemo(
-        () => ({ width: `${size}px`, height: `${size}px` }),
+        () => ({ width: `${size}px`, height: `${size}px`, fontSize: `${size * 0.38}px` }),
         [size]
     );
 
@@ -36,7 +42,7 @@ export default function Avatar({
                 />
             ) : (
                 <div className={styles.fallback} role="img" aria-label={fallbackLabel || 'User avatar'}>
-                    <Icon name="user" />
+                    {getInitials(name)}
                 </div>
             )}
         </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AUTH } from '../../../../routes/paths';
 import AuthLayout from '../../layouts/AuthLayout/AuthLayout';
 import { AuthCard, confirmEmail, StatusPanel } from '../..';
 import Button from '../../../../components/Button/Button';
@@ -52,7 +53,7 @@ export default function ConfirmEmailPage() {
 						title={t('confirmEmail.successHeading')}
 						message={t('confirmEmail.successDesc')}
 					>
-						<Button as={Link} to="/login" fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} fullWidth>
 						{t('goToLogin')}
 					</Button>
 					</StatusPanel>
@@ -64,10 +65,10 @@ export default function ConfirmEmailPage() {
 						title={t('confirmEmail.failedHeading')}
 						message={errorMsg}
 					>
-						<Button as={Link} to="/resend-confirmation" fullWidth>
+						<Button as={Link} to={AUTH.RESEND_CONFIRMATION} fullWidth>
 							{t('confirmEmail.resendBtn')}
 						</Button>
-						<Button as={Link} to="/login" variant="outlined" fullWidth>
+						<Button as={Link} to={AUTH.LOGIN} variant="outlined" fullWidth>
 							{t('backToLogin')}
 						</Button>
 					</StatusPanel>
