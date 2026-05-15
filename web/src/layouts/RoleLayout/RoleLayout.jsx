@@ -1,6 +1,6 @@
-import { Navigate } from 'react-router-dom';
 import { useUser } from '../../hooks/userContext';
 import LoadingScreen from '../../components/LoadingScreen/LoadingScreen';
+import ErrorCodePage from '../../pages/shared/ErrorCodePage/ErrorCodePage';
 import ConsultantLayout from '../ConsultantLayout/ConsultantLayout';
 import TmLayout from '../TmLayout/TmLayout';
 import SllLayout from '../SllLayout/SllLayout';
@@ -20,7 +20,7 @@ export default function RoleLayout() {
 
     const Layout = LAYOUT_BY_ROLE[user?.role];
 
-    if (!Layout) return <Navigate to="/login" replace />;
+    if (!Layout) return <ErrorCodePage code={403} />;
 
     return <Layout />;
 }
