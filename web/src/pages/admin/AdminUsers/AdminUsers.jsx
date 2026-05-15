@@ -86,15 +86,15 @@ export default function AdminUsers() {
 		setShowModal(true);
 	}
 
-	function handleUserCreated(created) {
-		setUsers((prev) => [...prev, created]);
+	function handleUserCreated() {
+		loadUsers(filters, page);
 	}
 
 	async function handleDelete(user) {
 		if (!window.confirm(t('shared.confirmDeactivate', { name: user.full_name || user.fullName }))) return;
 		try {
 			await deactivateUser(user.user_guid || user.userGuid);
-			setUsers((prev) => prev.filter((u) => u.user_guid !== user.user_guid));
+			await loadUsers(filters, page);
 		} catch (err) {
 			console.error(err);
 		}

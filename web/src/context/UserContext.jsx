@@ -85,6 +85,13 @@ export function UserProvider({ children }) {
 	}, []);
 
 	// ── User profile ──────────────────────────────────────────────
+	const refreshUser = useCallback(async () => {
+		const { data } = await getMe();
+		const { lang: langData, ...userProfile } = data.data;
+		setUser(userProfile);
+		setLang(langData ?? null);
+	}, []);
+
 	useEffect(() => {
 		if (isAuthLoading) {
 			setIsUserLoading(true);
@@ -99,15 +106,10 @@ export function UserProvider({ children }) {
 		}
 
 		setIsUserLoading(true);
-		getMe()
-			.then(({ data }) => {
-				const { lang: langData, ...userProfile } = data.data;
-				setUser(userProfile);
-				setLang(langData ?? null);
-			})
+		refreshUser()
 			.catch(() => { })
 			.finally(() => setIsUserLoading(false));
-	}, [isAuthLoading, isAuthenticated, token]);
+	}, [isAuthLoading, isAuthenticated, token, refreshUser]);
 
 	const handleLanguageChange = useCallback(async (languageId, languageIso) => {
 		i18next.changeLanguage(languageIso);
@@ -220,6 +222,7 @@ export function UserProvider({ children }) {
 		<UserContext.Provider
 			value={{
 				user,
+				refreshUser,
 				lang,
 				displayName,
 				isUserLoading,
