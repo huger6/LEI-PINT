@@ -696,6 +696,10 @@
 		"gdprAccepted": "RGPD aceptado",
 		"joinedAt": "Fecha de registro",
 		"lastLogin": "Último acceso",
+		"selectLocation": "Seleccionar ubicación",
+		"noLocationsAvailable": "No hay ubicaciones disponibles",
+		"viewBadgeGallery": "Galería de Badges",
+		"viewBadgeGalleryDesc": "Explora todos los badges disponibles y tu progreso",
 		"errors": {
 			"nameRequired": "El nombre es obligatorio.",
 			"usernameRequired": "El nombre de usuario es obligatorio.",

@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useBlocker } from 'react-router';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
-import { updateProfile, getUserPublicProfile } from '../../../features/users/api/profileApi';
+import { updateProfile, getUserPublicProfile, getLocations } from '../../../features/users/api/profileApi';
 import { updateUser } from '../../../features/users/api/usersApi';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
@@ -93,21 +93,34 @@ export default function UserProfile() {
 	const isAdmin = authUser?.role_name === 'Administrator' || authUser?.role === 'Administrator';
 	const isOwnProfile = !guid;
 	const canEditEmail = isAdmin && !isOwnProfile;
+	const canEditUsername = isAdmin && !isOwnProfile;
 
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [locations, setLocations] = useState([]);
 
 	const [form, setForm] = useState({});
 	const [formErrors, setFormErrors] = useState({});
 	const [isDirty, setIsDirty] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [saveSuccess, setSaveSuccess] = useState(false);
+	const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+	const pendingNavRef = useRef(null);
 
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [interestInput, setInterestInput] = useState('');
 	const [goalInput, setGoalInput] = useState('');
 
 	const initialFormRef = useRef({});
+
+	const locationOptions = useMemo(
+		() => locations.map((l) => {
+			const id = Number(l.location_id ?? l.id);
+			const name = l.location_name ?? l.name ?? l.label;
+			return Number.isInteger(id) && id > 0 && name ? { value: id, label: String(name) } : null;
+		}).filter(Boolean),
+		[locations],
+	);
 
 	const userRole = profile?.role?.role_name || profile?.role_name || profile?.role || '';
 	const isConsultant = userRole === 'Consultant';
@@ -137,16 +150,24 @@ export default function UserProfile() {
 		return () => { ignore = true; };
 	}, [guid, contextUser, isOwnProfile]);
 
+	useEffect(() => {
+		let ignore = false;
+		getLocations()
+			.then((data) => { if (!ignore) setLocations(data); })
+			.catch(() => { if (!ignore) setLocations([]); });
+		return () => { ignore = true; };
+	}, []);
+
 	// ── Init form in edit mode ───────────────────────────────────
 	useEffect(() => {
 		if (isEditMode && profile) {
+			const locId = profile.location_id ?? profile.locationId ?? '';
 			const initial = {
 				fullName: profile.fullName || profile.full_name || '',
 				username: profile.username || '',
 				email: profile.email || '',
-				location: profile.location || '',
+				locationId: locId ? String(locId) : '',
 				about: profile.about || profile.bio || '',
-				title: profile.title || profile.job_title || '',
 				interests: [...(profile.interests || [])],
 				goals: [...(profile.goals || [])],
 			};
@@ -232,10 +253,20 @@ export default function UserProfile() {
 		if (!validate()) return;
 		setSaving(true);
 		try {
+			const payload = {
+				fullName: form.fullName?.trim(),
+				about: form.about?.trim() || '',
+				interests: form.interests || [],
+				goals: form.goals || [],
+			};
+			if (form.locationId) payload.locationId = Number(form.locationId);
+			if (canEditUsername) payload.username = form.username?.trim();
+			if (canEditEmail) payload.email = form.email?.trim();
+
 			if (isOwnProfile) {
-				await updateProfile(form);
+				await updateProfile(payload);
 			} else {
-				await updateUser(guid, form);
+				await updateUser(guid, payload);
 			}
 			setIsDirty(false);
 			setSaveSuccess(true);
@@ -263,14 +294,27 @@ export default function UserProfile() {
 
 	const handleCancel = () => {
 		const viewPath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}/profile`;
-		navigate(viewPath);
+		if (isDirty) {
+			pendingNavRef.current = viewPath;
+			setShowLeaveConfirm(true);
+		} else {
+			navigate(viewPath);
+		}
 	};
 
-	// ── Unsaved changes blocker ──────────────────────────────────
-	const blocker = useBlocker(
-		({ currentLocation, nextLocation }) =>
-			isDirty && isEditMode && currentLocation.pathname !== nextLocation.pathname,
-	);
+	const confirmLeave = () => {
+		setIsDirty(false);
+		setShowLeaveConfirm(false);
+		if (pendingNavRef.current) {
+			navigate(pendingNavRef.current);
+			pendingNavRef.current = null;
+		}
+	};
+
+	const cancelLeave = () => {
+		setShowLeaveConfirm(false);
+		pendingNavRef.current = null;
+	};
 
 	useEffect(() => {
 		if (!isDirty || !isEditMode) return;
@@ -290,9 +334,8 @@ export default function UserProfile() {
 
 	// ── Derived display values ───────────────────────────────────
 	const displayName = profile?.fullName || profile?.full_name || profile?.username || '';
-	const displayTitle = profile?.title || profile?.job_title || '';
 	const displayEmail = profile?.email || '';
-	const displayLocation = profile?.location || '';
+	const displayLocation = profile?.location?.location_name || profile?.location?.name || profile?.location || '';
 	const displayServiceLine = profile?.serviceLine?.name || profile?.service_line?.name || '';
 	const displayAbout = profile?.about || profile?.bio || '';
 	const displayInterests = profile?.interests || [];
@@ -352,16 +395,17 @@ export default function UserProfile() {
 	const pageTitle = isOwnProfile ? t('profile.myProfile') : t('profile.profileOf', { name: displayName });
 	const stats = getStats();
 
+	const badgesPath = isOwnProfile ? SHARED.BADGES : SHARED.BADGES;
+
 	return (
 		<div className={styles.page}>
 			{/* ── Page title ─────────────────────────────────── */}
 			<h1 className={styles.pageTitle}>{pageTitle}</h1>
 
-			{/* ── Info card ──────────────────────────────────── */}
+			{/* ── Info card (avatar + details + about me) ────── */}
 			<ContentCard className={styles.infoCard} padding={32}>
 				<div className={styles.infoCardInner}>
 					<div className={styles.infoLeft}>
-						{/* Avatar */}
 						<div className={styles.avatar}>
 							{photoUrl ? (
 								<img src={photoUrl} alt={displayName} className={styles.avatarImg} />
@@ -370,7 +414,6 @@ export default function UserProfile() {
 							)}
 						</div>
 
-						{/* User details */}
 						<div className={styles.infoDetails}>
 							{isEditMode ? (
 								<>
@@ -390,13 +433,14 @@ export default function UserProfile() {
 												id="username"
 												label={t('profile.username')}
 												value={form.username || ''}
-												onChange={handleChange('username')}
+												onChange={canEditUsername ? handleChange('username') : undefined}
 												error={formErrors.username}
+												disabled={!canEditUsername}
 												required
 											/>
 										</div>
 									</div>
-									<div className="row g-3 mb-2">
+									<div className="row g-3">
 										<div className="col-sm-6">
 											<FormInput
 												id="email"
@@ -409,23 +453,24 @@ export default function UserProfile() {
 											/>
 										</div>
 										<div className="col-sm-6">
-											<FormInput
-												id="location"
-												label={t('profile.location')}
-												value={form.location || ''}
-												onChange={handleChange('location')}
-												placeholder={t('profile.locationPlaceholder')}
-											/>
-										</div>
-									</div>
-									<div className="row g-3">
-										<div className="col-sm-6">
-											<FormInput
-												id="title"
-												label={t('profile.jobTitle')}
-												value={form.title || ''}
-												onChange={handleChange('title')}
-												placeholder={t('profile.jobTitlePlaceholder')}
+											<label htmlFor="profileLocation" className={`form-label ${styles.fieldLabel}`}>
+												{t('profile.location')}
+											</label>
+											<CustomSelect
+												id="profileLocation"
+												name="locationId"
+												value={form.locationId || ''}
+												onChange={(e) => {
+													const val = e.target.value;
+													setForm((prev) => {
+														const next = { ...prev, locationId: String(val) };
+														checkDirty(next);
+														return next;
+													});
+												}}
+												options={locationOptions}
+												placeholder={locationOptions.length === 0 ? t('profile.noLocationsAvailable') : t('profile.selectLocation')}
+												disabled={locationOptions.length === 0}
 											/>
 										</div>
 									</div>
@@ -433,15 +478,14 @@ export default function UserProfile() {
 							) : (
 								<>
 									<h2 className={styles.userName}>{displayName}</h2>
-									{displayTitle && <p className={styles.userTitle}>{displayTitle}</p>}
 									<div className={styles.infoRows}>
 										{displayEmail && <InfoRow icon="email">{displayEmail}</InfoRow>}
-										{displayLocation && <InfoRow icon="home">{displayLocation}</InfoRow>}
+										{displayLocation && <InfoRow icon="location_on">{displayLocation}</InfoRow>}
 										{!isTm && displayServiceLine && (
 											<InfoRow icon="service-line">{displayServiceLine}</InfoRow>
 										)}
 										{memberSince && (
-											<InfoRow icon="time">
+											<InfoRow icon="today">
 												{t('profile.memberSince', { date: formatDate(memberSince) })}
 											</InfoRow>
 										)}
@@ -451,17 +495,41 @@ export default function UserProfile() {
 						</div>
 					</div>
 
-					{/* Edit / admin actions */}
 					<div className={styles.infoActions}>
 						{!isEditMode && (isOwnProfile || isAdmin) && (
 							<button type="button" className={styles.editBtn} onClick={handleEdit} aria-label={t('profile.editProfile')}>
-								<Icon name="pencil" size={28} color="var(--color-on-background)" />
+								<Icon name="pencil" size={20} color="var(--color-on-background)" />
 							</button>
 						)}
 						{!isEditMode && isAdmin && !isOwnProfile && (
 							<button type="button" className={styles.drawerBtn} onClick={() => setDrawerOpen(true)} aria-label={t('profile.adminDetails')}>
-								<Icon name="settings" size={24} color="var(--color-outline)" />
+								<Icon name="settings" size={20} color="var(--color-outline)" />
 							</button>
+						)}
+					</div>
+				</div>
+
+				{/* About Me — inside the info card */}
+				<div className={styles.aboutSection}>
+					<CardHeader
+						icon="user"
+						iconBg="var(--color-blue-soft)"
+						iconColor="var(--color-blue-on-soft)"
+						title={t('profile.aboutMe')}
+					/>
+					<div className={styles.sectionBody}>
+						{isEditMode ? (
+							<textarea
+								className={`form-control ${styles.textarea}`}
+								rows={4}
+								value={form.about || ''}
+								onChange={handleChange('about')}
+								placeholder={t('profile.aboutMePlaceholder')}
+							/>
+						) : (
+							<p className={styles.aboutText}>
+								{displayAbout || t('profile.noAboutMe')}
+							</p>
 						)}
 					</div>
 				</div>
@@ -471,31 +539,6 @@ export default function UserProfile() {
 			<div className="row g-4">
 				{/* Left column */}
 				<div className="col-lg-7 d-flex flex-column gap-4">
-					{/* About Me */}
-					<ContentCard>
-						<CardHeader
-							icon="user"
-							iconBg="var(--color-blue-soft)"
-							iconColor="var(--color-blue-on-soft)"
-							title={t('profile.aboutMe')}
-						/>
-						<div className={styles.sectionBody}>
-							{isEditMode ? (
-								<textarea
-									className={`form-control ${styles.textarea}`}
-									rows={4}
-									value={form.about || ''}
-									onChange={handleChange('about')}
-									placeholder={t('profile.aboutMePlaceholder')}
-								/>
-							) : (
-								<p className={styles.aboutText}>
-									{displayAbout || t('profile.noAboutMe')}
-								</p>
-							)}
-						</div>
-					</ContentCard>
-
 					{/* Key Interests (consultant & SLL) */}
 					{(isConsultant || !isTm) && (
 						<ContentCard>
@@ -612,11 +655,6 @@ export default function UserProfile() {
 				{/* Right column - Stats */}
 				<div className="col-lg-5">
 					<ContentCard className={styles.statsCard} padding={32}>
-						<div className={styles.statsHeader}>
-							<div className={styles.statsIconBox}>
-								<Icon name="badge" size={64} color="var(--color-primary)" />
-							</div>
-						</div>
 						<div className={styles.statsGrid}>
 							{stats.map((stat, idx) => (
 								<ProfileStatItem key={idx} {...stat} />
@@ -625,6 +663,20 @@ export default function UserProfile() {
 					</ContentCard>
 				</div>
 			</div>
+
+			{/* ── Badge gallery link ──────────────────────────── */}
+			<ContentCard className={styles.badgeGalleryCard}>
+				<Link to={badgesPath} className={styles.badgeGalleryLink}>
+					<div className={styles.badgeGalleryIcon}>
+						<Icon name="badge" size={32} color="var(--color-primary)" />
+					</div>
+					<div className={styles.badgeGalleryText}>
+						<span className={styles.badgeGalleryTitle}>{t('profile.viewBadgeGallery')}</span>
+						<span className={styles.badgeGalleryDesc}>{t('profile.viewBadgeGalleryDesc')}</span>
+					</div>
+					<Icon name="chevron_forward" size={20} color="var(--color-outline)" />
+				</Link>
+			</ContentCard>
 
 			{/* ── Save / Cancel buttons (edit mode) ──────────── */}
 			{isEditMode && (
@@ -648,12 +700,12 @@ export default function UserProfile() {
 
 			{/* ── Unsaved changes confirm ─────────────────────── */}
 			<ConfirmToast
-				open={blocker.state === 'blocked'}
+				open={showLeaveConfirm}
 				message={t('profile.unsavedChanges')}
 				confirmLabel={t('profile.leave')}
 				cancelLabel={t('profile.stay')}
-				onConfirm={() => blocker.proceed()}
-				onCancel={() => blocker.reset()}
+				onConfirm={confirmLeave}
+				onCancel={cancelLeave}
 			/>
 
 			{/* ── Admin drawer ────────────────────────────────── */}

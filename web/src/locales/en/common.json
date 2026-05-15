@@ -697,6 +697,10 @@
 		"gdprAccepted": "GDPR accepted",
 		"joinedAt": "Join date",
 		"lastLogin": "Last login",
+		"selectLocation": "Select location",
+		"noLocationsAvailable": "No locations available",
+		"viewBadgeGallery": "Badge Gallery",
+		"viewBadgeGalleryDesc": "Explore all available badges and your progress",
 		"errors": {
 			"nameRequired": "Name is required.",
 			"usernameRequired": "Username is required.",

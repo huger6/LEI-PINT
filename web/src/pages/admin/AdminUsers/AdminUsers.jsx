@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchUsers as getUsers, deactivateUser } from '../../../features/users/api/usersApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { ADMIN } from '../../../routes/paths';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CreateUserModal from '../../../components/CreateUserModal/CreateUserModal';
@@ -165,12 +166,15 @@ export default function AdminUsers() {
 										const fullName = u.full_name || u.fullName || '';
 										const role = u.user_role || u.userRole || '';
 										const isActive = u.is_active ?? u.isActive;
+										const userGuid = u.user_guid || u.userGuid;
+										const profilePath = ADMIN.USER_PROFILE.replace(':guid', userGuid);
+										const editPath = ADMIN.USER_PROFILE_EDIT.replace(':guid', userGuid);
 
 										return (
-											<tr key={u.user_guid || u.userGuid}>
+											<tr key={userGuid}>
 												{/* Name + email combined in one cell with avatar */}
 												<td style={{ paddingLeft: '1.25rem' }}>
-													<div className={styles.userCell}>
+													<Link to={profilePath} className={`${styles.userCell} text-decoration-none`}>
 														<div className={styles.avatar} aria-hidden="true">
 															{getInitials(fullName)}
 														</div>
@@ -180,7 +184,7 @@ export default function AdminUsers() {
 																{u.email_address || u.emailAddress}
 															</div>
 														</div>
-													</div>
+													</Link>
 												</td>
 
 												<td className="text-muted" style={{ fontSize: '0.875rem' }}>
@@ -203,7 +207,7 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button as={Link} to="#" size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
+													<Button as={Link} to={editPath} size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
 													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => handleDelete(u)}>
