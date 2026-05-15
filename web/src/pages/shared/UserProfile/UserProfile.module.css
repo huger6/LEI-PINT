@@ -123,32 +123,52 @@
 	background: none;
 	border: none;
 	cursor: pointer;
-	padding: 4px;
-	border-radius: 8px;
-	transition: background 0.15s;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	transition: background 0.2s ease, transform 0.15s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .editBtn:hover {
-	background: var(--color-primary-hover-bg-soft);
+	background: var(--color-primary-soft);
+	transform: scale(1.08);
+}
+
+.editBtn:active {
+	transform: scale(0.95);
 }
 
 .drawerBtn {
 	background: none;
 	border: none;
 	cursor: pointer;
-	padding: 4px;
-	border-radius: 8px;
-	transition: background 0.15s;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	transition: background 0.2s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .drawerBtn:hover {
-	background: var(--color-primary-hover-bg-soft);
+	background: var(--color-primary-soft);
+}
+
+.fieldLabel {
+	font-weight: 500;
+	color: var(--color-on-primary-container);
+	margin-bottom: 0.25rem;
+}
+
+/* ─── About section (inside info card) ──────────  */
+.aboutSection {
+	margin-top: 24px;
+	padding-top: 24px;
+	border-top: 1px solid var(--color-outline-variant, #e0e0e0);
 }
 
 /* ─── Section body (below card headers) ──────── */
@@ -333,22 +353,6 @@
 	top: 24px;
 }
 
-.statsHeader {
-	display: flex;
-	justify-content: center;
-	margin-bottom: 24px;
-}
-
-.statsIconBox {
-	width: 160px;
-	height: 160px;
-	background: var(--color-primary-soft);
-	border-radius: 28px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .statsGrid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -379,6 +383,56 @@
 	font-size: 0.8125rem;
 	font-weight: 400;
 	color: var(--color-outline);
+	line-height: 1.3;
+}
+
+/* ─── Badge gallery link card ────────────────── */
+.badgeGalleryCard {
+	margin-top: 0;
+}
+
+.badgeGalleryLink {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 8px 0;
+	text-decoration: none;
+	color: inherit;
+	transition: opacity 0.15s;
+}
+
+.badgeGalleryLink:hover {
+	opacity: 0.85;
+}
+
+.badgeGalleryIcon {
+	width: 56px;
+	height: 56px;
+	background: var(--color-primary-soft);
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.badgeGalleryText {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.badgeGalleryTitle {
+	color: var(--color-on-background);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.badgeGalleryDesc {
+	color: var(--color-outline);
+	font-size: 0.8125rem;
 	line-height: 1.3;
 }
 

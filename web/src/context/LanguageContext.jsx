@@ -4,15 +4,29 @@ import { extractCollection } from '../utils/collections';
 
 const LanguageContext = createContext(null);
 
+let languagePromise = null;
+
 export function LanguageProvider({ children }) {
 	const [languages, setLanguages] = useState([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		api.get('/languages')
-			.then((res) => setLanguages(extractCollection(res)))
-			.catch(() => setLanguages([]))
-			.finally(() => setLoading(false));
+		let ignore = false;
+		if (!languagePromise) {
+			languagePromise = api.get('/languages')
+				.then((res) => extractCollection(res))
+				.catch(() => {
+					languagePromise = null;
+					return [];
+				});
+		}
+		languagePromise.then((data) => {
+			if (!ignore) {
+				setLanguages(data);
+				setLoading(false);
+			}
+		});
+		return () => { ignore = true; };
 	}, []);
 
 	return (
