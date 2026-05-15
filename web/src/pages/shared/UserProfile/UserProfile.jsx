@@ -254,14 +254,15 @@ export default function UserProfile() {
 		setSaving(true);
 		try {
 			const payload = {
-				fullName: form.fullName?.trim(),
-				about: form.about?.trim() || '',
-				interests: form.interests || [],
-				goals: form.goals || [],
+				full_name: form.fullName?.trim(),
 			};
-			if (form.locationId) payload.locationId = Number(form.locationId);
-			if (canEditUsername) payload.username = form.username?.trim();
-			if (canEditEmail) payload.email = form.email?.trim();
+			if (form.about?.trim()) payload.biography = form.about.trim();
+			if (form.locationId) payload.location_id = Number(form.locationId);
+
+			if (!isOwnProfile) {
+				if (canEditUsername) payload.username = form.username?.trim();
+				if (canEditEmail) payload.email_address = form.email?.trim();
+			}
 
 			if (isOwnProfile) {
 				await updateProfile(payload);
