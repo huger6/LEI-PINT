@@ -3,6 +3,11 @@
 	color: var(--color-on-primary-container);
 }
 
+.required {
+	color: var(--color-error);
+	font-weight: 600;
+}
+
 .inputWrapper {
 	position: relative;
 }

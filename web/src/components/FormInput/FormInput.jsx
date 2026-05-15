@@ -7,6 +7,7 @@ export default function FormInput({
 	className,
 	inputClassName,
 	trailing,
+	required,
 	...inputProps
 }) {
 	const inputClassNames = `form-control ${styles.input} ${trailing ? styles.inputWithTrailing : ''} ${error ? `is-invalid ${styles.inputError}` : ''} ${inputClassName ?? ''}`.trim();
@@ -16,12 +17,14 @@ export default function FormInput({
 			{label && (
 				<label htmlFor={id} className={`form-label ${styles.label}`}>
 					{label}
+					{required && <span className={styles.required}> *</span>}
 				</label>
 			)}
 			<div className={styles.inputWrapper}>
 				<input
 					id={id}
 					className={inputClassNames}
+					required={required}
 					{...inputProps}
 				/>
 				{trailing && <div className={styles.trailing}>{trailing}</div>}

@@ -407,7 +407,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 
 				<div className={styles.grid}>
 					<div>
-						<label htmlFor="cu_role" className={styles.fieldLabel}>{t('shared.role')}</label>
+						<label htmlFor="cu_role" className={styles.fieldLabel}>{t('shared.role')}<span className={styles.required}> *</span></label>
 						<CustomSelect
 							id="cu_role"
 							name="userRole"

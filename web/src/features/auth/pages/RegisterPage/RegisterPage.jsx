@@ -13,6 +13,7 @@ import PasswordRules from '../../../../components/PasswordRules/PasswordRules';
 import PasswordToggle from '../../../../components/PasswordToggle/PasswordToggle';
 import FormAlert from '../../../../components/FormAlert/FormAlert';
 import Icon from '../../../../components/Icons/Icons';
+import AreaPickerList from '../../../../components/AreaPickerList/AreaPickerList';
 import { capitalizeName } from '../../../../utils/utils';
 import { FALLBACK_PHONE_PREFIXES, normalizePhoneDigits, groupByThree } from '../../../../utils/phone';
 import { getMinBirthdate } from '../../../../utils/date';
@@ -116,7 +117,6 @@ export default function RegisterPage() {
 		handleBlur,
 		handleChange,
 		touched,
-		submitAttempted,
 		errors: liveErrors,
 		isErrorVisible,
 		markAllTouched,
@@ -322,7 +322,7 @@ export default function RegisterPage() {
 				const id = Number(area.area_id ?? area.id);
 				const name = area.area_name ?? area.name ?? area.label;
 				return Number.isInteger(id) && id > 0 && name
-					? { id, name: String(name) }
+					? { area_id: id, area_name: String(name) }
 					: null;
 			})
 			.filter(Boolean),
@@ -354,32 +354,6 @@ export default function RegisterPage() {
 		setApiError('');
 		setApiInfo('');
 		setStep((s) => s - 1);
-	};
-
-	const toggleArea = (areaId) => {
-		setFieldTouched('areas', true);
-		setFieldValue('areas', (() => {
-			const exists = values.areas.find((a) => a.area_id === areaId);
-			if (exists) {
-				const next = values.areas.filter((a) => a.area_id !== areaId);
-				if (next.length > 0 && !next.some((a) => a.is_primary)) {
-					next[0] = { ...next[0], is_primary: true };
-				}
-				return next;
-			}
-			if (values.areas.length >= 5) return values.areas;
-			return [
-				...values.areas,
-				{ area_id: areaId, is_primary: values.areas.length === 0 },
-			];
-		})());
-	};
-
-	const setPrimary = (areaId) => {
-		setFieldValue(
-			'areas',
-			values.areas.map((a) => ({ ...a, is_primary: a.area_id === areaId }))
-		);
 	};
 
 	const handleSubmit = async (e) => {
@@ -835,44 +809,18 @@ export default function RegisterPage() {
 									{role === 'Consultant' && (
 										<div className={styles.areasSection}>
 											<span className={styles.selectLabel}>{withMandatoryIcon(t('register.areasOfExpertise'))}</span>
-											{(touched.areas || submitAttempted) && liveErrors.areas && (
-												<span className="small" style={{ color: 'var(--color-on-error-container)' }}>
-													{t('register.warning', { error: liveErrors.areas })}
-												</span>
-											)}
 											{areaOptions.length === 0 ? (
 												<p className={`${styles.noDataMessage} mb-0`}>{t('register.noAreasAvailable')}</p>
 											) : (
-												<>
-													<div className={styles.areaChips}>
-														{areaOptions.map((area) => {
-															const selected = values.areas.find((selectedArea) => selectedArea.area_id === area.id);
-															return (
-																<button
-																	key={area.id}
-																	type="button"
-																	onClick={() => toggleArea(area.id)}
-																	className={`${styles.areaChip} ${selected ? styles.areaChipActive : ''}`}
-																>
-																	{area.name}
-																	{selected && (
-																		<span
-																			className={`${styles.primaryBadge} ${selected.is_primary ? styles.primaryBadgeOn : ''}`}
-																			onClick={(event) => { event.stopPropagation(); setPrimary(area.id); }}
-																			title={t('register.setAsPrimary')}
-																			aria-label={t('register.setAsPrimary')}
-																			role="button"
-																			tabIndex={0}
-																		>
-																			<Icon name="star" size={14} className={styles.primaryBadgeIcon} color="currentColor" aria-hidden="true" />
-																		</span>
-																	)}
-																</button>
-															);
-														})}
-													</div>
-													<p className="small mb-0" style={{ color: 'var(--color-outline)' }}><Trans i18nKey="register.primaryAreaHint" components={{ icon: <Icon name="star" size={14} className={styles.primaryAreaHintIcon} color="currentColor" /> }} /></p>
-												</>
+												<AreaPickerList
+													areas={areaOptions}
+													selected={values.areas}
+													onChange={(areas) => {
+														setFieldTouched('areas', true);
+														setFieldValue('areas', areas);
+													}}
+													error={fieldError('areas')}
+												/>
 											)}
 										</div>
 									)}
