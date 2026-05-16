@@ -21,7 +21,7 @@ const getAllLearningPaths = (req, res) => {
 // GET /api/learning-paths/count
 const getLearningPathsCount = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'lp:count:active';
+    const cacheKey = 'lp:count:all';
 
     try {
         const cached = await redis.get(cacheKey);
@@ -32,11 +32,12 @@ const getLearningPathsCount = async (req, res) => {
             });
         }
 
-        const count = await models.learning_paths.count({
-            where: { is_active: true }
-        });
+        const [active, inactive] = await Promise.all([
+            models.learning_paths.count({ where: { is_active: true } }),
+            models.learning_paths.count({ where: { is_active: false } })
+        ]);
 
-        const payload = { count };
+        const payload = { count: active + inactive, active, inactive };
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
 
         return res.status(200).json({
