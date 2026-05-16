@@ -17,6 +17,7 @@ import BulletItem from '../../../components/BulletItem/BulletItem';
 import CheckItem from '../../../components/CheckItem/CheckItem';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
+import { uploadProfileImageToTemp } from '../../../services/storage';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
 
@@ -65,6 +66,11 @@ export default function UserProfile() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [interestInput, setInterestInput] = useState('');
 	const [goalInput, setGoalInput] = useState('');
+
+	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	const [profileUploading, setProfileUploading] = useState(false);
+	const [profileUploadError, setProfileUploadError] = useState('');
+	const profileFileRef = useRef(null);
 
 	const initialFormRef = useRef({});
 
@@ -126,9 +132,12 @@ export default function UserProfile() {
 				about: profile.biography || profile.about || profile.bio || '',
 				interests: [...(profile.interests || [])],
 				goals: [...(profile.goals || [])],
+				profileImgUrl: profile.profileImg || profile.profile_img_url || '',
 			};
 			setForm(initial);
 			initialFormRef.current = JSON.parse(JSON.stringify(initial));
+			setProfilePreviewUrl(initial.profileImgUrl || '');
+			setProfileUploadError('');
 			setIsDirty(false);
 			setFormErrors({});
 			setSaveSuccess(false);
@@ -190,6 +199,45 @@ export default function UserProfile() {
 		});
 	};
 
+	// ── Profile image ────────────────────────────────────────────
+	const onProfileImageChange = useCallback(async (e) => {
+		const file = e.target.files?.[0];
+		e.target.value = '';
+		if (!file) return;
+
+		setProfileUploadError('');
+		setProfileUploading(true);
+
+		const localUrl = URL.createObjectURL(file);
+		setProfilePreviewUrl(localUrl);
+
+		try {
+			const { publicUrl } = await uploadProfileImageToTemp(file);
+			URL.revokeObjectURL(localUrl);
+			setProfilePreviewUrl(publicUrl);
+			setForm((prev) => {
+				const next = { ...prev, profileImgUrl: publicUrl };
+				checkDirty(next);
+				return next;
+			});
+		} catch {
+			setProfileUploadError(t('register.profilePictureUploadFailed'));
+		} finally {
+			setProfileUploading(false);
+		}
+	}, [t, checkDirty]);
+
+	const clearProfileImage = useCallback(() => {
+		setProfilePreviewUrl('');
+		setProfileUploadError('');
+		setForm((prev) => {
+			const next = { ...prev, profileImgUrl: null };
+			checkDirty(next);
+			return next;
+		});
+		if (profileFileRef.current) profileFileRef.current.value = '';
+	}, [checkDirty]);
+
 	// ── Validation ───────────────────────────────────────────────
 	const validate = () => {
 		const errs = {};
@@ -224,6 +272,12 @@ export default function UserProfile() {
 			};
 			if (form.about?.trim()) payload.biography = form.about.trim();
 			if (form.locationId) payload.location_id = Number(form.locationId);
+
+			if (form.profileImgUrl === null) {
+				payload.profile_img_url = null;
+			} else if (form.profileImgUrl && form.profileImgUrl !== initialFormRef.current.profileImgUrl) {
+				payload.profile_img_url = form.profileImgUrl;
+			}
 
 			if (!isOwnProfile) {
 				if (canEditUsername) payload.username = form.username?.trim();
@@ -314,7 +368,7 @@ export default function UserProfile() {
 	const displayGoals = profile?.goals || [];
 	const displayAchievements = profile?.achievements || [];
 	const memberSince = profile?.createdAt || profile?.created_at || '';
-	const photoUrl = profile?.photoUrl || profile?.photo_url || profile?.avatar || null;
+	const photoUrl = profile?.profileImg || profile?.profile_img_url || profile?.photoUrl || profile?.photo_url || null;
 	const showServiceLine = !isTm && !isAdminRole && !!displayServiceLine;
 
 	// ── Stats by role ────────────────────────────────────────────
@@ -379,11 +433,44 @@ export default function UserProfile() {
 			<ContentCard className={styles.infoCard} padding={32}>
 				<div className={styles.infoCardInner}>
 					<div className={styles.infoLeft}>
-						<div className={styles.avatar}>
-							{photoUrl ? (
-								<img src={photoUrl} alt={displayName} className={styles.avatarImg} />
-							) : (
-								<span className={styles.avatarFallback}>{getInitials(displayName)}</span>
+						<div className={styles.avatarWrapper}>
+							<div className={styles.avatar}>
+								{(isEditMode ? profilePreviewUrl : photoUrl) ? (
+									<img src={isEditMode ? profilePreviewUrl : photoUrl} alt={displayName} className={styles.avatarImg} />
+								) : (
+									<span className={styles.avatarFallback}>{getInitials(displayName)}</span>
+								)}
+								{isEditMode && (
+									<button
+										type="button"
+										className={styles.avatarOverlay}
+										onClick={() => profileFileRef.current?.click()}
+										disabled={profileUploading}
+									>
+										<Icon name="photo" size={24} color="white" />
+									</button>
+								)}
+							</div>
+							{isEditMode && (profilePreviewUrl || form.profileImgUrl) && (
+								<button
+									type="button"
+									className={styles.avatarRemoveBtn}
+									onClick={clearProfileImage}
+									disabled={profileUploading}
+									aria-label={t('register.profilePictureRemove')}
+								>
+									<Icon name="trash" size={14} color="var(--color-error)" />
+								</button>
+							)}
+							<input
+								ref={profileFileRef}
+								type="file"
+								className="d-none"
+								accept="image/jpeg,image/png,image/webp,image/gif"
+								onChange={onProfileImageChange}
+							/>
+							{profileUploadError && (
+								<span className={styles.avatarError}>{profileUploadError}</span>
 							)}
 						</div>
 
@@ -458,9 +545,14 @@ export default function UserProfile() {
 												{[displayLocation, displayLanguage].filter(Boolean).join(' · ')}
 											</InfoRow>
 										)}
-										{(showServiceLine || displayAreas.length > 0) && (
+										{showServiceLine && (
 											<InfoRow icon="service-line">
-												{[showServiceLine ? displayServiceLine : null, ...displayAreas].filter(Boolean).join(' · ')}
+												{displayServiceLine}
+											</InfoRow>
+										)}
+										{displayAreas.length > 0 && (
+											<InfoRow icon="area">
+												{displayAreas.join(' · ')}
 											</InfoRow>
 										)}
 									</div>
@@ -645,7 +737,9 @@ export default function UserProfile() {
 						<span className={styles.badgeGalleryTitle}>{t('profile.viewBadgeGallery')}</span>
 						<span className={styles.badgeGalleryDesc}>{t('profile.viewBadgeGalleryDesc')}</span>
 					</div>
-					<Icon name="chevron_forward" size={20} color="var(--color-outline)" />
+					<div className={styles.badgeGalleryArrow}>
+						<Icon name="chevron_forward" size={20} color="var(--color-outline)" />
+					</div>
 				</Link>
 			</ContentCard>
 
