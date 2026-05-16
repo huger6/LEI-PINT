@@ -1,10 +1,10 @@
 import api from '../../../services/api';
 
 export const EMPTY_STRUCTURE_COUNTS = {
-	learningPaths: 0,
-	serviceLines: 0,
-	areas: 0,
-	stages: 0,
+	learningPaths: { active: 0, inactive: 0 },
+	serviceLines: { active: 0, inactive: 0 },
+	areas: { active: 0, inactive: 0 },
+	stages: { active: 0, inactive: 0 },
 };
 
 const STRUCTURE_COUNT_ENDPOINTS = {
@@ -14,31 +14,35 @@ const STRUCTURE_COUNT_ENDPOINTS = {
 	stages: '/levels/count',
 };
 
-async function getCount(endpoint) {
+async function getCountData(endpoint) {
 	const { data } = await api.get(endpoint);
-	const rawCount = data?.data?.count;
-	return Number.isFinite(rawCount) ? rawCount : Number(rawCount) || 0;
+	const rawActive = data?.data?.active;
+	const rawInactive = data?.data?.inactive;
+	return {
+		active: Number.isFinite(rawActive) ? rawActive : Number(rawActive) || 0,
+		inactive: Number.isFinite(rawInactive) ? rawInactive : Number(rawInactive) || 0,
+	};
 }
 
 export async function getLearningPathsCount() {
-	return getCount(STRUCTURE_COUNT_ENDPOINTS.learningPaths);
+	return getCountData(STRUCTURE_COUNT_ENDPOINTS.learningPaths);
 }
 
 export async function getServiceLinesCount() {
-	return getCount(STRUCTURE_COUNT_ENDPOINTS.serviceLines);
+	return getCountData(STRUCTURE_COUNT_ENDPOINTS.serviceLines);
 }
 
 export async function getAreasCount() {
-	return getCount(STRUCTURE_COUNT_ENDPOINTS.areas);
+	return getCountData(STRUCTURE_COUNT_ENDPOINTS.areas);
 }
 
 export async function getStagesCount() {
-	return getCount(STRUCTURE_COUNT_ENDPOINTS.stages);
+	return getCountData(STRUCTURE_COUNT_ENDPOINTS.stages);
 }
 
 export async function getAllStructureCounts() {
 	const keys = Object.keys(STRUCTURE_COUNT_ENDPOINTS);
-	const values = await Promise.all(keys.map((key) => getCount(STRUCTURE_COUNT_ENDPOINTS[key])));
+	const values = await Promise.all(keys.map((key) => getCountData(STRUCTURE_COUNT_ENDPOINTS[key])));
 
 	return keys.reduce((acc, key, index) => {
 		acc[key] = values[index];

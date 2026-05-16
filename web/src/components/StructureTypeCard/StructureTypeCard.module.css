@@ -71,6 +71,30 @@
 	color: var(--tone-fg, var(--color-primary));
 }
 
+.countGroup {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.countBadge {
+	font-size: 0.82rem;
+	font-weight: 600;
+	line-height: 1;
+	padding: 0.24rem 0.55rem;
+	border-radius: 999px;
+}
+
+.activeBadge {
+	background: rgba(34, 197, 94, 0.14);
+	color: #15803d;
+}
+
+.inactiveBadge {
+	background: rgba(239, 68, 68, 0.12);
+	color: #b91c1c;
+}
+
 .trailing {
 	flex-shrink: 0;
 	display: inline-flex;
@@ -130,5 +154,9 @@
 
 	.trailing {
 		align-self: flex-end;
+	}
+
+	.countGroup {
+		flex-wrap: wrap;
 	}
 }

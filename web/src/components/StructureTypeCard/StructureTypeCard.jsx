@@ -6,6 +6,23 @@ import styles from './StructureTypeCard.module.css';
 export default function StructureTypeCard({ to, icon, title, description, count, tone }) {
 	const { t } = useTranslation();
 
+	const renderCount = () => {
+		if (typeof count === 'string') return <span className={styles.count}>{count}</span>;
+		if (count && typeof count === 'object') {
+			return (
+				<div className={styles.countGroup}>
+					<span className={`${styles.countBadge} ${styles.activeBadge}`}>
+						{count.active} {t('shared.active', { defaultValue: 'Active' })}
+					</span>
+					<span className={`${styles.countBadge} ${styles.inactiveBadge}`}>
+						{count.inactive} {t('shared.inactive', { defaultValue: 'Inactive' })}
+					</span>
+				</div>
+			);
+		}
+		return <span className={styles.count}>{count}</span>;
+	};
+
 	return (
 		<Link to={to} className={styles.cardLink}>
 			<article className={`${styles.card} ${styles[tone]}`}>
@@ -16,7 +33,7 @@ export default function StructureTypeCard({ to, icon, title, description, count,
 				<div className={styles.mainInfo}>
 					<div className={styles.titleRow}>
 						<h2 className={styles.title}>{title}</h2>
-						<span className={styles.count}>{count}</span>
+						{renderCount()}
 					</div>
 					<p className={styles.description}>{description}</p>
 				</div>
