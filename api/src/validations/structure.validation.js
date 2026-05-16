@@ -48,8 +48,9 @@ const getAreasQuerySchema = z.object({
 
 const getLevelsQuerySchema = z.object({
 	areaId: positiveIntIdRule.optional(),
+	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(20)
+	limit: z.coerce.number().int().positive().max(100).default(12)
 });
 
 const getBadgesQuerySchema = z.object({
