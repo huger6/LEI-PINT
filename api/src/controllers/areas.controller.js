@@ -67,7 +67,7 @@ const getAreas = async (req, res) => {
 // GET /api/areas/count
 const getAreasCount = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'areas:count:active';
+    const cacheKey = 'areas:count:all';
 
     try {
         const cached = await redis.get(cacheKey);
@@ -78,11 +78,12 @@ const getAreasCount = async (req, res) => {
             });
         }
 
-        const count = await models.areas.count({
-            where: { is_active: true }
-        });
+        const [active, inactive] = await Promise.all([
+            models.areas.count({ where: { is_active: true } }),
+            models.areas.count({ where: { is_active: false } })
+        ]);
 
-        const payload = { count };
+        const payload = { count: active + inactive, active, inactive };
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
 
         return res.status(200).json({

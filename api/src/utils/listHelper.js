@@ -44,6 +44,7 @@ const handleListRequest = async ({
         Object.keys(filters).forEach(key => {
             const value = filters[key];
             if (value !== undefined && value !== null && value !== '') {
+                if (key === 'is_active' && !isAdmin) return;
                 where[key] = value;
             }
         });

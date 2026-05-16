@@ -57,7 +57,7 @@ const getServiceLines = async (req, res) => {
 // GET /api/service-lines/count
 const getServiceLinesCount = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'sl:count:active';
+    const cacheKey = 'sl:count:all';
 
     try {
         const cached = await redis.get(cacheKey);
@@ -68,11 +68,12 @@ const getServiceLinesCount = async (req, res) => {
             });
         }
 
-        const count = await models.service_lines.count({
-            where: { is_active: true }
-        });
+        const [active, inactive] = await Promise.all([
+            models.service_lines.count({ where: { is_active: true } }),
+            models.service_lines.count({ where: { is_active: false } })
+        ]);
 
-        const payload = { count };
+        const payload = { count: active + inactive, active, inactive };
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
 
         return res.status(200).json({
