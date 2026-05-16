@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import StructureTypeCard from '../../../components/StructureTypeCard/StructureTypeCard';
+import { useStructureCounts } from '../../../features/structure';
 import styles from './AdminStructure.module.css';
 
 export default function AdminStructure() {
 	const { t } = useTranslation();
+	const { counts, loading } = useStructureCounts();
 
 	const SECTIONS = [
 		{
@@ -11,7 +13,7 @@ export default function AdminStructure() {
 			title: t('shared.structureLabels.learningPaths'),
 			description: t('shared.structureDescriptions.learningPaths'),
 			icon: 'learning-path',
-			count: 0,
+			countKey: 'learningPaths',
 			tone: 'learningPaths',
 		},
 		{
@@ -19,7 +21,7 @@ export default function AdminStructure() {
 			title: t('shared.structureLabels.serviceLines'),
 			description: t('shared.structureDescriptions.serviceLines'),
 			icon: 'service-line',
-			count: 0,
+			countKey: 'serviceLines',
 			tone: 'serviceLines',
 		},
 		{
@@ -27,7 +29,7 @@ export default function AdminStructure() {
 			title: t('shared.structureLabels.areas'),
 			description: t('shared.structureDescriptions.areas'),
 			icon: 'area',
-			count: 0,
+			countKey: 'areas',
 			tone: 'areas',
 		},
 		{
@@ -35,7 +37,7 @@ export default function AdminStructure() {
 			title: t('shared.structureLabels.stages'),
 			description: t('shared.structureDescriptions.stages'),
 			icon: 'evolution',
-			count: 0,
+			countKey: 'stages',
 			tone: 'levels',
 		},
 	];
@@ -46,14 +48,18 @@ export default function AdminStructure() {
 				<h1 className={styles.title}>{t('adminStructure.title')}</h1>
 				<p className={styles.subtitle}>
 					{t('adminStructure.countsPlaceholder', {
-						defaultValue: 'Structure counts are placeholders for now and will be connected to API data later.',
+						defaultValue: 'Counts are fetched from live structure data.',
 					})}
 				</p>
 			</header>
 
 			<div className={styles.cardList}>
 				{SECTIONS.map((section) => (
-					<StructureTypeCard key={section.to} {...section} />
+					<StructureTypeCard
+						key={section.to}
+						{...section}
+						count={loading ? '...' : counts[section.countKey]}
+					/>
 				))}
 			</div>
 		</div>
