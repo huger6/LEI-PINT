@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import StructureTypeCard from '../../../components/StructureTypeCard/StructureTypeCard';
 import { useStructureCounts } from '../../../features/structure';
+import { ADMIN } from '../../../routes/paths';
 import styles from './AdminStructure.module.css';
 
 export default function AdminStructure() {
@@ -9,7 +10,7 @@ export default function AdminStructure() {
 
 	const SECTIONS = [
 		{
-			to: '/learning-paths',
+			to: ADMIN.LEARNING_PATHS,
 			title: t('shared.structureLabels.learningPaths'),
 			description: t('shared.structureDescriptions.learningPaths'),
 			icon: 'learning-path',
@@ -17,7 +18,7 @@ export default function AdminStructure() {
 			tone: 'learningPaths',
 		},
 		{
-			to: '/service-lines',
+			to: ADMIN.SERVICE_LINES,
 			title: t('shared.structureLabels.serviceLines'),
 			description: t('shared.structureDescriptions.serviceLines'),
 			icon: 'service-line',
@@ -25,7 +26,7 @@ export default function AdminStructure() {
 			tone: 'serviceLines',
 		},
 		{
-			to: '/areas',
+			to: ADMIN.AREAS,
 			title: t('shared.structureLabels.areas'),
 			description: t('shared.structureDescriptions.areas'),
 			icon: 'area',
@@ -33,7 +34,7 @@ export default function AdminStructure() {
 			tone: 'areas',
 		},
 		{
-			to: '/levels',
+			to: ADMIN.LEVELS,
 			title: t('shared.structureLabels.stages'),
 			description: t('shared.structureDescriptions.stages'),
 			icon: 'evolution',

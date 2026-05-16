@@ -8,6 +8,7 @@ import { getBadges } from '../../../features/badges/api/badgesApi';
 import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
 import Icon from '../../../components/Icons/Icons';
+import { ADMIN } from '../../../routes/paths';
 
 const CARD_ICON_MAP = {
 	people: 'tabler_users',
@@ -46,17 +47,17 @@ export default function AdminDashboard() {
 	}, []);
 
 	const cards = [
-		{ label: t('adminDashboard.totalUsers'), value: stats.users, icon: 'people', link: '/users' },
-		{ label: t('adminDashboard.totalBadges'), value: stats.badges, icon: 'award', link: '/badges' },
-		{ label: t('adminDashboard.totalApplications'), value: stats.applications, icon: 'file-earmark-text', link: '/applications' },
-		{ label: t('adminDashboard.learningPaths'), value: stats.learningPaths, icon: 'signpost', link: '/structure' },
+		{ label: t('adminDashboard.totalUsers'), value: stats.users, icon: 'people', link: ADMIN.USERS },
+		{ label: t('adminDashboard.totalBadges'), value: stats.badges, icon: 'award', link: ADMIN.BADGES },
+		{ label: t('adminDashboard.totalApplications'), value: stats.applications, icon: 'file-earmark-text', link: ADMIN.APPLICATIONS },
+		{ label: t('adminDashboard.learningPaths'), value: stats.learningPaths, icon: 'signpost', link: ADMIN.STRUCTURE },
 	];
 
 	const quickLinks = [
-		{ label: t('adminDashboard.users'), path: '/users' },
-		{ label: t('adminDashboard.badges'), path: '/badges' },
-		{ label: t('adminDashboard.serviceLines'), path: '/structure' },
-		{ label: t('adminDashboard.areas'), path: '/structure' },
+		{ label: t('adminDashboard.users'), path: ADMIN.USERS },
+		{ label: t('adminDashboard.badges'), path: ADMIN.BADGES },
+		{ label: t('adminDashboard.serviceLines'), path: ADMIN.STRUCTURE },
+		{ label: t('adminDashboard.areas'), path: ADMIN.STRUCTURE },
 	];
 
 	if (loading) return <LoadingScreen />;

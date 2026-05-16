@@ -16,10 +16,10 @@ export const ADMIN = {
 	USER_PROFILE: '/admin/users/:guid',
 	USER_PROFILE_EDIT: '/admin/users/:guid/edit',
 	BADGES: '/admin/badges',
-	AREAS: '/admin/areas',
-	SERVICE_LINES: '/admin/service-lines',
-	LEARNING_PATHS: '/admin/learning-paths',
-	LEVELS: '/admin/levels',
+	AREAS: '/admin/structure/areas',
+	SERVICE_LINES: '/admin/structure/service-lines',
+	LEARNING_PATHS: '/admin/structure/learning-paths',
+	LEVELS: '/admin/structure/levels',
 	REQUIREMENTS: '/admin/requirements',
 	APPLICATIONS: '/admin/applications',
 	SLAS: '/admin/slas',
@@ -27,6 +27,10 @@ export const ADMIN = {
 	NOTIFICATIONS: '/admin/notifications',
 	STATS: '/admin/stats',
 	RGPD: '/admin/rgpd',
+	LEARNING_PATH_DETAIL: '/admin/structure/learning-paths/:slug',
+	SERVICE_LINE_DETAIL: '/admin/structure/service-lines/:slug',
+	AREA_DETAIL: '/admin/structure/areas/:slug',
+	LEVEL_DETAIL: '/admin/structure/levels/:slug',
 };
 
 export const CONSULTANT = {
