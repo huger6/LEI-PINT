@@ -1,5 +1,12 @@
 /* ─── Page layout ────────────────────────────── */
+.pageLayout {
+	display: flex;
+	gap: 24px;
+}
+
 .page {
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 24px;

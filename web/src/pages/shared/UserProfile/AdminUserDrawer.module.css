@@ -1,18 +1,35 @@
-/* ─── Drawer panel ───────────────────────────── */
+/* ─── Drawer panel (in-flow aside) ───────────── */
 .drawer {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	width: 40%;
-	min-width: 360px;
-	max-width: 560px;
+	position: sticky;
+	top: 57px;
+	align-self: flex-start;
+	flex-shrink: 0;
+	width: 0;
+	min-width: 0;
+	height: calc(100vh - 57px);
+	overflow: hidden;
 	background: var(--color-surface);
-	box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
-	z-index: 1050;
 	display: flex;
 	flex-direction: column;
-	animation: slideIn 0.25s ease;
+	transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+				min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+				box-shadow 0.3s ease;
+	margin: -24px -28px -24px 0;
+}
+
+.drawerOpen {
+	width: 380px;
+	min-width: 340px;
+	border-left: 1px solid rgba(0, 0, 0, 0.08);
+	box-shadow: -2px 0 12px rgba(0, 0, 0, 0.06);
+}
+
+.drawerInner {
+	width: 380px;
+	min-width: 380px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 .drawerHeader {
@@ -21,6 +38,7 @@
 	justify-content: space-between;
 	padding: 1.25rem 1.5rem;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	flex-shrink: 0;
 }
 
 .drawerTitle {
@@ -128,25 +146,101 @@
 	gap: 0.75rem;
 	padding: 1rem 1.5rem;
 	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	flex-shrink: 0;
 }
 
-/* ─── Animations ─────────────────────────────── */
-@keyframes slideIn {
-	from { transform: translateX(100%); }
-	to { transform: translateX(0); }
-}
-
-/* ─── Responsive ─────────────────────────────── */
+/* ─── Responsive: overlay on smaller screens ─── */
 @media (max-width: 900px) {
 	.drawer {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: auto;
 		width: 50%;
 		min-width: 320px;
+		height: 100%;
+		margin: 0;
+		z-index: 1050;
+		border-radius: 0;
+		transform: translateX(100%);
+		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+					box-shadow 0.3s ease;
+		pointer-events: none;
+	}
+
+	.drawerOpen {
+		transform: translateX(0);
+		width: 50%;
+		min-width: 320px;
+		box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+		pointer-events: auto;
+	}
+
+	.drawerInner {
+		width: 100%;
+		min-width: 0;
 	}
 }
 
 @media (max-width: 600px) {
 	.drawer {
-		width: 85%;
+		width: 100%;
 		min-width: unset;
+	}
+
+	.drawerOpen {
+		width: 100%;
+		min-width: unset;
+	}
+
+	.drawerHeader {
+		padding: 1rem;
+	}
+
+	.drawerBody {
+		padding: 1rem;
+		gap: 1rem;
+	}
+
+	.drawerFooter {
+		padding: 0.75rem 1rem;
+	}
+}
+
+@media (max-width: 400px) {
+	.drawerHeader {
+		padding: 0.75rem;
+	}
+
+	.drawerTitle {
+		font-size: 1rem;
+	}
+
+	.drawerBody {
+		padding: 0.75rem;
+		gap: 0.75rem;
+	}
+
+	.detailRow {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+	}
+
+	.drawerFooter {
+		flex-direction: column-reverse;
+		padding: 0.75rem;
+		gap: 0.5rem;
+	}
+
+	.toggleRow {
+		font-size: 0.8125rem;
+		padding: 8px 0;
+	}
+
+	.editProfileLink {
+		font-size: 0.8125rem;
+		padding: 8px 10px;
 	}
 }
