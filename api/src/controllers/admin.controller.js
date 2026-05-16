@@ -60,6 +60,7 @@ const syncRoleAssignments = async ({
     userId,
     targetRole,
     biography,
+    gdprAccepted,
     areas,
     serviceLineId,
     locationId,
@@ -96,13 +97,17 @@ const syncRoleAssignments = async ({
         const consultant = await models.consultants.findByPk(userId, { transaction });
 
         if (consultant) {
-            if (biography !== undefined) {
-                await consultant.update({ biography }, { transaction });
+            const updateFields = {};
+            if (biography !== undefined) updateFields.biography = biography;
+            if (gdprAccepted !== undefined) updateFields.gdpr_accepted = gdprAccepted;
+            if (Object.keys(updateFields).length > 0) {
+                await consultant.update(updateFields, { transaction });
             }
         } else {
             await models.consultants.create({
                 user_id: userId,
-                biography: biography || null
+                biography: biography || null,
+                gdpr_accepted: gdprAccepted !== undefined ? gdprAccepted : false
             }, { transaction });
         }
 
@@ -691,13 +696,16 @@ const updateUser = async (req, res) => {
             language_id: payload.language_id !== undefined ? payload.language_id : user.language_id,
             location_id: payload.location_id !== undefined ? payload.location_id : user.location_id,
             user_role: targetRole,
-            approved_by: payload.approve_member ? adminUserId : user.approved_by
+            email_confirmed: payload.email_confirmed !== undefined ? payload.email_confirmed : user.email_confirmed,
+            is_active: payload.approve_member !== undefined ? payload.approve_member : user.is_active,
+            approved_by: payload.approve_member === true ? adminUserId : user.approved_by
         }, { transaction: t });
 
         await syncRoleAssignments({
             userId: user.user_id,
             targetRole,
             biography: payload.biography,
+            gdprAccepted: payload.gdpr_accepted,
             areas: payload.areas,
             serviceLineId: effectiveServiceLineId,
             locationId: payload.location_id,
