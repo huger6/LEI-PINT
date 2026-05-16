@@ -412,6 +412,7 @@ export default function UserProfile() {
 	const badgesPath = isOwnProfile ? SHARED.BADGES : SHARED.BADGES;
 
 	return (
+		<div className={styles.pageLayout}>
 		<div className={styles.page}>
 			{/* ── Page title ─────────────────────────────────── */}
 			<h1 className={styles.pageTitle}>{pageTitle}</h1>
@@ -755,17 +756,18 @@ export default function UserProfile() {
 				onConfirm={confirmLeave}
 				onCancel={cancelLeave}
 			/>
+		</div>
 
-			{/* ── Admin drawer ────────────────────────────────── */}
-			{isAdmin && !isOwnProfile && (
-				<AdminUserDrawer
-					open={drawerOpen}
-					onClose={() => setDrawerOpen(false)}
-					onSaved={reloadProfile}
-					profile={profile}
-					guid={guid}
-				/>
-			)}
+		{/* ── Admin drawer (aside) ────────────────────────── */}
+		{isAdmin && !isOwnProfile && (
+			<AdminUserDrawer
+				open={drawerOpen}
+				onClose={() => setDrawerOpen(false)}
+				onSaved={reloadProfile}
+				profile={profile}
+				guid={guid}
+			/>
+		)}
 		</div>
 	);
 }

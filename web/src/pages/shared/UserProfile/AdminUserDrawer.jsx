@@ -71,14 +71,14 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	const usernameCheck = useAvailability({
 		value: trimmedUsername,
 		isValid: trimmedUsername.length >= 3,
-		enabled: usernameChanged,
+		enabled: open && usernameChanged,
 		fetcher: fetchUsernameAvailability,
 	});
 
 	const emailCheck = useAvailability({
 		value: trimmedEmail,
 		isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail),
-		enabled: emailChanged,
+		enabled: open && emailChanged,
 		fetcher: fetchEmailAvailability,
 	});
 
@@ -165,10 +165,9 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		});
 	};
 
-	if (!open) return null;
-
 	return (
-		<aside ref={panelRef} className={styles.drawer} role="dialog" aria-label={t('profile.adminDetails')}>
+		<aside ref={panelRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ''}`} role="complementary" aria-label={t('profile.adminDetails')}>
+			<div className={styles.drawerInner}>
 			<div className={styles.drawerHeader}>
 				<h3 className={styles.drawerTitle}>{t('profile.adminDetails')}</h3>
 				<button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t('shared.close')}>
@@ -264,6 +263,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 				>
 					{t('profile.saveChanges')}
 				</Button>
+			</div>
 			</div>
 		</aside>
 	);
