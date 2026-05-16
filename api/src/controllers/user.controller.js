@@ -266,7 +266,9 @@ const updateProfile = async (req, res) => {
 
         // Validate request data
         const validatedData = updateProfileSchema.parse(req.body);
+        const profileImgExplicitNull = validatedData.profile_img_url === null;
         const updates = stripNullishFields(validatedData);
+        if (profileImgExplicitNull) updates.profile_img_url = null;
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({
@@ -317,11 +319,23 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        // Handle profile image if provided
-        if (updates.profile_img_url) {
+        // Update user record
+        const user = await models.users.findByPk(userId, {
+            transaction: t
+        });
+
+        if (!user) {
+            await t.rollback();
+            return res.status(404).json({
+                success: false,
+                code: 'AUTH_USER_NOT_FOUND'
+            });
+        }
+
+        // Handle profile image
+        if (updates.profile_img_url && updates.profile_img_url.includes('/temp/')) {
             try {
-                const movedImage = await moveImageToPermanent(updates.profile_img_url);
-                updates.profile_img_url = movedImage;
+                updates.profile_img_url = await moveImageToPermanent('profiles', updates.profile_img_url, user.user_guid);
             } catch (error) {
                 await t.rollback();
                 logger.warn('Profile image move failed', {
@@ -334,19 +348,8 @@ const updateProfile = async (req, res) => {
                     code: 'AUTH_INVALID_PROFILE_IMAGE'
                 });
             }
-        }
-
-        // Update user record
-        const user = await models.users.findByPk(userId, {
-            transaction: t
-        });
-
-        if (!user) {
-            await t.rollback();
-            return res.status(404).json({
-                success: false,
-                code: 'AUTH_USER_NOT_FOUND'
-            });
+        } else if (updates.profile_img_url === null) {
+            updates.profile_img_url = null;
         }
 
         await user.update(updates, { transaction: t });
