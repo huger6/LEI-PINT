@@ -435,7 +435,19 @@
 		"pointsMin": "Pontos Mínimos",
 		"pointsMax": "Pontos Máximos",
 		"confirmDiscardChanges": "Tem alterações por guardar. Tem a certeza que deseja descartá-las?",
-		"breadcrumb": "Navegação estrutural"
+		"breadcrumb": "Navegação estrutural",
+		"structureLabels": {
+			"learningPaths": "Learning Paths",
+			"serviceLines": "Service Lines",
+			"areas": "Áreas",
+			"stages": "Etapas"
+		},
+		"structureDescriptions": {
+			"learningPaths": "Gira frameworks de formação de topo e percursos de carreira (e.g., Jornada Técnica, Power Skills). Use esta secção para criar e estruturar as jornadas educativas globais que contêm Service Lines corporativas.",
+			"serviceLines": "Segmente os seus Learning Paths em divisões operacionais principais e pilares tecnológicos (e.g., Hybrid Cloud, Application Operations). Use isto para organizar e agrupar unidades de negócio especializadas.",
+			"areas": "Defina frameworks tecnológicas específicas, plataformas e áreas de especialização (e.g., LowCode OutSystems, DevOps). Cada Área deve conter os seus próprios marcos obrigatórios de progressão de carreira.",
+			"stages": "Configure os níveis sequenciais de progressão (Junior a Knowledge Leader) dentro de cada Área. Use este cartão para associar badges digitais únicos e configurar os requisitos de formação externa."
+		}
 	},
 	"adminDashboard": {
 		"title": "Painel de Administração",
