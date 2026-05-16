@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getLearningPaths, getServiceLines, getAreas, getLevels } from '../../../features/badges/api/hierarchyApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
 import Icon from '../../../components/Icons/Icons';
+import Spinner from '../../../components/Spinner/Spinner';
 
 const STEP_ICON_MAP = {
 	lp: 'learning-path',
@@ -200,9 +201,7 @@ export default function BrowseHierarchy() {
 			<div className="card border-0 shadow-sm brand-card" style={{ borderRadius: 14 }}>
 				<div className="card-body p-0">
 					{loading && (
-						<div className="text-center py-5">
-							<div className="spinner-border text-primary" aria-label={t('shared.loading')} />
-						</div>
+						<Spinner />
 					)}
 					{!loading && items.length === 0 && (
 						<div className="text-center py-5">

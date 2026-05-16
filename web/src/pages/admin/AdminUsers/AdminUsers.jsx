@@ -9,6 +9,7 @@ import Icon from '../../../components/Icons/Icons';
 import CreateUserModal from '../../../components/CreateUserModal/CreateUserModal';
 import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
 import Pagination from '../../../components/Pagination/Pagination';
+import Spinner from '../../../components/Spinner/Spinner';
 import styles from './AdminUsers.module.css';
 
 const ROLE_CLASS = {
@@ -138,9 +139,7 @@ export default function AdminUsers() {
 			<div className={`card border-0 shadow-sm ${styles.tableCard}`}>
 				<div className="card-body p-0">
 					{loading ? (
-						<div className="text-center py-5">
-							<div className="spinner-border text-primary" role="status" />
-						</div>
+						<Spinner />
 					) : users.length === 0 ? (
 						<div className={styles.emptyState}>
 							<div className={styles.emptyIcon}>

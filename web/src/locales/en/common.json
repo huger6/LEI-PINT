@@ -708,12 +708,15 @@
 		"statistics": "Statistics",
 		"viewBadgeGallery": "Badge Gallery",
 		"viewBadgeGalleryDesc": "Explore all available badges and your progress",
+		"editProfileDetails": "Edit profile details",
 		"errors": {
 			"nameRequired": "Name is required.",
 			"usernameRequired": "Username is required.",
 			"usernameTooShort": "Username must be at least 3 characters.",
+			"usernameTaken": "This username is already taken.",
 			"emailRequired": "Email is required.",
-			"emailInvalid": "Invalid email format."
+			"emailInvalid": "Invalid email format.",
+			"emailTaken": "This email is already in use."
 		}
 	}
 }

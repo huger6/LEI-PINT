@@ -5,6 +5,7 @@ import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
+import Spinner from '../../../components/Spinner/Spinner';
 
 const emptyForm = {
 	stageCode: '',
@@ -119,9 +120,7 @@ export default function AdminLevels() {
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
 					{loading ? (
-						<div className="text-center py-5">
-							<div className="spinner-border text-primary" role="status" />
-						</div>
+						<Spinner />
 					) : levels.length === 0 ? (
 						<div className="text-center py-5">
 							<h5 className="text-muted">{t('adminLevels.noLevels')}</h5>

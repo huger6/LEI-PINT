@@ -17,6 +17,7 @@ import BulletItem from '../../../components/BulletItem/BulletItem';
 import CheckItem from '../../../components/CheckItem/CheckItem';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
+import Spinner from '../../../components/Spinner/Spinner';
 import { uploadProfileImageToTemp } from '../../../services/storage';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
@@ -46,11 +47,8 @@ export default function UserProfile() {
 	const { user: contextUser, refreshUser } = useUser();
 
 	const isEditMode = location.pathname.endsWith('/edit');
-	const isAdmin = authUser?.role_name === 'Administrator' || authUser?.role === 'Administrator';
 	const isOwnProfile = !guid;
-	const canEditEmail = isAdmin && !isOwnProfile;
-	const canEditUsername = isAdmin && !isOwnProfile;
-
+	const isAdmin = contextUser?.role === 'Administrator' || authUser?.role === 'Administrator';
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [locations, setLocations] = useState([]);
@@ -242,12 +240,6 @@ export default function UserProfile() {
 	const validate = () => {
 		const errs = {};
 		if (!form.fullName?.trim()) errs.fullName = t('profile.errors.nameRequired');
-		if (!form.username?.trim()) errs.username = t('profile.errors.usernameRequired');
-		else if (form.username.trim().length < 3) errs.username = t('profile.errors.usernameTooShort');
-		if (canEditEmail) {
-			if (!form.email?.trim()) errs.email = t('profile.errors.emailRequired');
-			else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t('profile.errors.emailInvalid');
-		}
 		setFormErrors(errs);
 		return Object.keys(errs).length === 0;
 	};
@@ -277,11 +269,6 @@ export default function UserProfile() {
 				payload.profile_img_url = null;
 			} else if (form.profileImgUrl && form.profileImgUrl !== initialFormRef.current.profileImgUrl) {
 				payload.profile_img_url = form.profileImgUrl;
-			}
-
-			if (!isOwnProfile) {
-				if (canEditUsername) payload.username = form.username?.trim();
-				if (canEditEmail) payload.email_address = form.email?.trim();
 			}
 
 			if (isOwnProfile) {
@@ -406,7 +393,7 @@ export default function UserProfile() {
 	if (loading) {
 		return (
 			<div className={styles.page}>
-				<p className="text-muted">{t('loading')}</p>
+				<Spinner />
 			</div>
 		);
 	}
@@ -478,7 +465,7 @@ export default function UserProfile() {
 							{isEditMode ? (
 								<>
 									<div className="row g-3 mb-2">
-										<div className="col-sm-6">
+										<div className={isOwnProfile ? 'col-sm-6' : 'col-sm-12'}>
 											<FormInput
 												id="fullName"
 												label={t('profile.fullName')}
@@ -488,31 +475,30 @@ export default function UserProfile() {
 												required
 											/>
 										</div>
-										<div className="col-sm-6">
-											<FormInput
-												id="username"
-												label={t('profile.username')}
-												value={form.username || ''}
-												onChange={canEditUsername ? handleChange('username') : undefined}
-												error={formErrors.username}
-												disabled={!canEditUsername}
-												required
-											/>
-										</div>
+										{isOwnProfile && (
+											<div className="col-sm-6">
+												<FormInput
+													id="username"
+													label={t('profile.username')}
+													value={form.username || ''}
+													disabled
+													required
+												/>
+											</div>
+										)}
 									</div>
 									<div className="row g-3">
-										<div className="col-sm-6">
-											<FormInput
-												id="email"
-												label={t('profile.email')}
-												value={canEditEmail ? (form.email || '') : displayEmail}
-												onChange={canEditEmail ? handleChange('email') : undefined}
-												error={formErrors.email}
-												disabled={!canEditEmail}
-												required={canEditEmail}
-											/>
-										</div>
-										<div className="col-sm-6">
+										{isOwnProfile && (
+											<div className="col-sm-6">
+												<FormInput
+													id="email"
+													label={t('profile.email')}
+													value={displayEmail}
+													disabled
+												/>
+											</div>
+										)}
+										<div className={isOwnProfile ? 'col-sm-6' : 'col-sm-12'}>
 											<label htmlFor="profileLocation" className={`form-label ${styles.fieldLabel}`}>
 												{t('profile.location')}
 											</label>
@@ -541,19 +527,16 @@ export default function UserProfile() {
 									<div className={styles.infoRows}>
 										{displayEmail && <InfoRow icon="email">{displayEmail}</InfoRow>}
 										{(displayLocation || displayLanguage) && (
-											<InfoRow icon="location_on">
-												{[displayLocation, displayLanguage].filter(Boolean).join(' · ')}
-											</InfoRow>
+											<div className={styles.pairedRow}>
+												{displayLocation && <InfoRow icon="location_on">{displayLocation}</InfoRow>}
+												{displayLanguage && <InfoRow icon="language">{displayLanguage}</InfoRow>}
+											</div>
 										)}
-										{showServiceLine && (
-											<InfoRow icon="service-line">
-												{displayServiceLine}
-											</InfoRow>
-										)}
-										{displayAreas.length > 0 && (
-											<InfoRow icon="area">
-												{displayAreas.join(' · ')}
-											</InfoRow>
+										{(showServiceLine || displayAreas.length > 0) && (
+											<div className={styles.pairedRow}>
+												{showServiceLine && <InfoRow icon="service-line">{displayServiceLine}</InfoRow>}
+												{displayAreas.length > 0 && <InfoRow icon="area">{displayAreas.join(' · ')}</InfoRow>}
+											</div>
 										)}
 									</div>
 								</>
@@ -563,13 +546,13 @@ export default function UserProfile() {
 
 					<div className={styles.infoActions}>
 						{!isEditMode && (isOwnProfile || isAdmin) && (
-							<button type="button" className={styles.editBtn} onClick={handleEdit} aria-label={t('profile.editProfile')}>
+							<button
+								type="button"
+								className={styles.editBtn}
+								onClick={isAdmin && !isOwnProfile ? () => setDrawerOpen(true) : handleEdit}
+								aria-label={t('profile.editProfile')}
+							>
 								<Icon name="pencil" size={20} color="var(--color-on-background)" />
-							</button>
-						)}
-						{!isEditMode && isAdmin && !isOwnProfile && (
-							<button type="button" className={styles.drawerBtn} onClick={() => setDrawerOpen(true)} aria-label={t('profile.adminDetails')}>
-								<Icon name="settings" size={20} color="var(--color-outline)" />
 							</button>
 						)}
 					</div>

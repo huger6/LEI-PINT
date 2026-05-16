@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
+import Spinner from '../../../components/Spinner/Spinner';
 
 const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',
@@ -35,9 +36,7 @@ export default function AdminApplications() {
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
 					{loading ? (
-						<div className="text-center py-5">
-							<div className="spinner-border text-primary" role="status" />
-						</div>
+						<Spinner />
 					) : applications.length === 0 ? (
 						<div className="text-center py-5">
 							<h5 className="text-muted">{t('adminApplications.noApplications')}</h5>
