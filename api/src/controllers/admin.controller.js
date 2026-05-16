@@ -219,6 +219,131 @@ const getUsers = async (req, res) => {
     }
 };
 
+const getUser = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+
+    const paramValidation = validations.userIdParamSchema.safeParse(req.params);
+    if (!paramValidation.success) {
+        return res.status(400).json({ success: false, errors: paramValidation.error.issues });
+    }
+
+    const { userGuid } = paramValidation.data;
+
+    try {
+        const user = await models.users.findOne({
+            where: /^\d+$/.test(userGuid)
+                ? { user_id: Number(userGuid) }
+                : { user_guid: userGuid },
+            attributes: [
+                'user_id', 'user_guid', 'full_name', 'username',
+                'email_address', 'user_role', 'profile_img_url',
+                'language_id', 'location_id', 'current_streak_days',
+                'is_active', 'email_confirmed', 'last_login_at',
+                'last_online', 'created_at'
+            ],
+            raw: true
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, code: 'ADMIN_USER_NOT_FOUND' });
+        }
+
+        const [location, languageRecord, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
+            user.location_id
+                ? models.locations.findByPk(user.location_id, { attributes: ['location_id', 'location_name'], raw: true })
+                : null,
+            user.language_id
+                ? models.languages.findByPk(user.language_id, { attributes: ['language_id', 'language_iso', 'language_name'], raw: true })
+                : null,
+            models.consultants.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'gdpr_accepted'], raw: true }),
+            models.talent_managers.findOne({ where: { user_id: user.user_id }, attributes: ['biography'], raw: true }),
+            models.service_line_leaders.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'service_line_id'], raw: true }),
+            models.consultant_areas.findAll({ where: { user_id: user.user_id }, attributes: ['area_id', 'is_primary'], raw: true })
+        ]);
+
+        let areasPayload = null;
+        if (consultantAreas.length > 0) {
+            const areaIds = consultantAreas.map((a) => a.area_id);
+            const areaRecords = await models.areas.findAll({
+                where: { area_id: { [Op.in]: areaIds } },
+                attributes: ['area_id', 'area_name', 'area_slug', 'area_code', 'area_description', 'img_url'],
+                raw: true
+            });
+            const areaById = new Map(areaRecords.map((a) => [a.area_id, a]));
+            areasPayload = consultantAreas
+                .map((ca) => {
+                    const area = areaById.get(ca.area_id);
+                    if (!area) return null;
+                    return { name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                })
+                .filter(Boolean);
+            if (areasPayload.length === 0) areasPayload = null;
+        }
+
+        let serviceLineData = null;
+        let learningPathData = null;
+
+        const resolveServiceLine = async (serviceLineId) => {
+            if (!serviceLineId) return;
+            const sl = await models.service_lines.findByPk(serviceLineId, {
+                attributes: ['service_line_name', 'sl_slug', 'service_line_description', 'img_url', 'learning_path_id'],
+                raw: true
+            });
+            if (!sl) return;
+            serviceLineData = { name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
+            if (sl.learning_path_id) {
+                const lp = await models.learning_paths.findByPk(sl.learning_path_id, {
+                    attributes: ['path_title', 'path_slug', 'path_description', 'img_url'],
+                    raw: true
+                });
+                if (lp) learningPathData = { title: lp.path_title, slug: lp.path_slug, description: lp.path_description, imgUrl: lp.img_url };
+            }
+        };
+
+        if (serviceLineLeader?.service_line_id) {
+            await resolveServiceLine(serviceLineLeader.service_line_id);
+        } else if (consultantAreas.length > 0) {
+            const primaryArea = consultantAreas.find((a) => a.is_primary);
+            if (primaryArea) {
+                const areaWithSl = await models.areas.findByPk(primaryArea.area_id, { attributes: ['service_line_id'], raw: true });
+                await resolveServiceLine(areaWithSl?.service_line_id);
+            }
+        }
+
+        const langPayload = languageRecord
+            ? { id: languageRecord.language_id, iso: languageRecord.language_iso, name: languageRecord.language_name }
+            : null;
+
+        const profile = {
+            guid: user.user_guid,
+            fullName: user.full_name,
+            username: user.username,
+            email: user.email_address,
+            role: user.user_role,
+            profileImg: user.profile_img_url,
+            lang: langPayload,
+            location: location ? { location_id: location.location_id, name: location.location_name } : null,
+            locationId: user.location_id,
+            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            serviceLine: serviceLineData,
+            learningPath: learningPathData,
+            areas: areasPayload,
+            currentStreakDays: user.current_streak_days,
+            isActive: user.is_active,
+            emailConfirmed: user.email_confirmed,
+            gdprAccepted: consultant?.gdpr_accepted ?? null,
+            lastLogin: user.last_login_at,
+            lastOnline: user.last_online,
+            createdAt: user.created_at
+        };
+
+        return res.status(200).json({ success: true, code: 'ADMIN_USER_PROFILE_RETRIEVED', data: profile });
+    } catch (error) {
+        logger.error('Error fetching user profile (admin)', { requestId, userGuid, error });
+        return res.status(500).json({ success: false, code: 'ADMIN_USER_FETCH_FAILED' });
+    }
+};
+
 const resolveUserParam = async (param, transaction) => {
     // param may be numeric id or uuid
     if (!param) return null;
@@ -803,6 +928,7 @@ const resetUserPassword = async (req, res) => {
 
 module.exports = {
     getUsers,
+    getUser,
     createUser,
     updateUser,
     deactivateUser,

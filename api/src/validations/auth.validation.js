@@ -69,7 +69,7 @@ const updateProfileSchema = z.object({
     full_name: fullNameNoFormat.optional(),
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
-    profile_img_url: imgUrlRule.optional(),
+    profile_img_url: z.union([imgUrlRule, z.null()]).optional(),
     language_id: positiveIntIdRule.optional(),
     location_id: positiveIntIdRule.optional(),
     biography: biographyRule.optional()
