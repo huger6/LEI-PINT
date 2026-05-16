@@ -1,41 +1,87 @@
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-
-const DUMMY_SL = {
-	title: 'AWS Solutions',
-	description: 'This service line groups all certifications and competencies related to Amazon Web Services. It covers foundational cloud concepts through advanced architecture and specialization credentials.',
-	imageUrl: null,
-};
-
-const DUMMY_STATS = [
-	{ icon: 'tabler_users', label: 'Users', value: 56, accentColor: 'var(--color-primary)', accentBg: 'var(--color-primary-soft)' },
-	{ icon: 'paper', label: 'Pending', value: 4, accentColor: 'var(--color-secondary)', accentBg: 'var(--color-secondary-container)' },
-	{ icon: 'target', label: 'SLAs', value: 2, accentColor: '#0f7f69', accentBg: 'var(--color-green-soft)' },
-	{ icon: 'megaphone', label: 'Alerts', value: 1, accentColor: 'var(--color-warning)', accentBg: 'var(--color-orange-soft)' },
-	{ icon: 'badge', label: 'Badges', value: 12, accentColor: '#8d640d', accentBg: 'rgba(210, 148, 21, 0.12)' },
-	{ icon: 'evolution', label: 'Avg. Progress', value: '73%', accentColor: '#274f82', accentBg: 'rgba(57, 99, 156, 0.12)' },
-];
-
-const DUMMY_SUB_STRUCTURES = [
-	{ id: 1, title: 'Cloud Practitioner', description: 'Foundational AWS cloud concepts and services', count: 3 },
-	{ id: 2, title: 'Solutions Architect', description: 'Design and deploy scalable systems on AWS', count: 4 },
-	{ id: 3, title: 'Developer Associate', description: 'Develop and maintain AWS-based applications', count: 2 },
-];
+import Spinner from '../../../../components/Spinner/Spinner';
+import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
 
 export default function ServiceLineDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
+	const [sl, setSl] = useState(null);
+	const [areas, setAreas] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		let cancelled = false;
+		setLoading(true);
+
+		Promise.all([
+			fetchServiceLineBySlug(slug),
+			fetchAreasByServiceLine(slug)
+		])
+			.then(([slData, areasData]) => {
+				if (cancelled) return;
+				setSl(slData);
+				setAreas(areasData.items);
+			})
+			.catch((err) => {
+				if (!cancelled) console.error(err);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+
+		return () => { cancelled = true; };
+	}, [slug]);
+
+	if (loading) return <Spinner />;
+	if (!sl) return null;
+
+	const activeCount = areas.filter((a) => a.is_active).length;
+	const inactiveCount = areas.filter((a) => !a.is_active).length;
+
+	const stats = [
+		{
+			icon: 'area',
+			label: t('shared.structureLabels.areas'),
+			value: areas.length,
+			accentColor: 'var(--color-primary)',
+			accentBg: 'var(--color-primary-soft)',
+		},
+		{
+			icon: 'check_circle',
+			label: t('shared.active', { defaultValue: 'Active' }),
+			value: activeCount,
+			accentColor: '#0f7f69',
+			accentBg: 'var(--color-green-soft)',
+		},
+		{
+			icon: 'close_circle',
+			label: t('shared.inactive', { defaultValue: 'Inactive' }),
+			value: inactiveCount,
+			accentColor: '#b91c1c',
+			accentBg: 'rgba(239, 68, 68, 0.1)',
+		},
+	];
+
+	const subStructures = areas.map((area) => ({
+		id: area.area_id,
+		title: area.area_name,
+		description: area.area_description,
+		isActive: area.is_active,
+	}));
 
 	return (
 		<StructureDetailLayout
-			title={DUMMY_SL.title}
-			description={DUMMY_SL.description}
+			title={sl.service_line_name}
+			description={sl.service_line_description}
 			icon="service-line"
-			imageUrl={DUMMY_SL.imageUrl}
+			imageUrl={sl.img_url}
 			tone="serviceLines"
-			stats={DUMMY_STATS}
-			subStructures={DUMMY_SUB_STRUCTURES}
+			isActive={sl.is_active}
+			stats={stats}
+			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.areas')}
 			subStructureIcon="area"
 			subStructureTone="areas"

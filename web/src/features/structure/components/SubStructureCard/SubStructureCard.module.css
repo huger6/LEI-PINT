@@ -33,11 +33,37 @@
 	min-width: 0;
 }
 
+.titleRow {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
 .title {
 	margin: 0;
 	font-size: 0.95rem;
 	font-weight: 700;
 	color: var(--color-on-background);
+}
+
+.badge {
+	flex-shrink: 0;
+	font-size: 0.65rem;
+	font-weight: 600;
+	padding: 0.12rem 0.4rem;
+	border-radius: 999px;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.active {
+	background: var(--color-green-soft);
+	color: #0f7f69;
+}
+
+.inactive {
+	background: rgba(120, 120, 128, 0.12);
+	color: var(--color-outline);
 }
 
 .description {

@@ -1,41 +1,87 @@
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-
-const DUMMY_LEVEL = {
-	title: 'Professional Level',
-	description: 'The Professional progression stage targets experienced practitioners ready to demonstrate advanced competency. Candidates at this level are expected to design complex systems, lead technical decisions, and mentor associates.',
-	imageUrl: null,
-};
-
-const DUMMY_STATS = [
-	{ icon: 'tabler_users', label: 'Users', value: 14, accentColor: 'var(--color-primary)', accentBg: 'var(--color-primary-soft)' },
-	{ icon: 'paper', label: 'Pending', value: 1, accentColor: 'var(--color-secondary)', accentBg: 'var(--color-secondary-container)' },
-	{ icon: 'target', label: 'SLAs', value: 1, accentColor: '#0f7f69', accentBg: 'var(--color-green-soft)' },
-	{ icon: 'megaphone', label: 'Alerts', value: 0, accentColor: 'var(--color-warning)', accentBg: 'var(--color-orange-soft)' },
-	{ icon: 'badge', label: 'Badges', value: 3, accentColor: '#8d640d', accentBg: 'rgba(210, 148, 21, 0.12)' },
-	{ icon: 'star-points', label: 'Avg. Points', value: 850, accentColor: '#274f82', accentBg: 'rgba(57, 99, 156, 0.12)' },
-];
-
-const DUMMY_SUB_STRUCTURES = [
-	{ id: 1, title: 'AWS Solutions Architect Professional', description: 'Advanced architecture on AWS', count: 5 },
-	{ id: 2, title: 'AWS DevOps Engineer Professional', description: 'CI/CD and automation on AWS', count: 4 },
-	{ id: 3, title: 'AWS Security Specialty', description: 'Security best practices on AWS', count: 3 },
-];
+import Spinner from '../../../../components/Spinner/Spinner';
+import { fetchLevelByCode, fetchBadgesByLevel } from '../../api/structureDetailApi';
 
 export default function LevelDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
+	const [level, setLevel] = useState(null);
+	const [badges, setBadges] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		let cancelled = false;
+		setLoading(true);
+
+		Promise.all([
+			fetchLevelByCode(slug),
+			fetchBadgesByLevel(slug)
+		])
+			.then(([levelData, badgesData]) => {
+				if (cancelled) return;
+				setLevel(levelData);
+				setBadges(badgesData.items);
+			})
+			.catch((err) => {
+				if (!cancelled) console.error(err);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+
+		return () => { cancelled = true; };
+	}, [slug]);
+
+	if (loading) return <Spinner />;
+	if (!level) return null;
+
+	const activeCount = badges.filter((b) => b.is_active).length;
+	const inactiveCount = badges.filter((b) => !b.is_active).length;
+
+	const stats = [
+		{
+			icon: 'badge',
+			label: t('structureDetail.badges', { defaultValue: 'Badges' }),
+			value: badges.length,
+			accentColor: 'var(--color-primary)',
+			accentBg: 'var(--color-primary-soft)',
+		},
+		{
+			icon: 'check_circle',
+			label: t('shared.active', { defaultValue: 'Active' }),
+			value: activeCount,
+			accentColor: '#0f7f69',
+			accentBg: 'var(--color-green-soft)',
+		},
+		{
+			icon: 'close_circle',
+			label: t('shared.inactive', { defaultValue: 'Inactive' }),
+			value: inactiveCount,
+			accentColor: '#b91c1c',
+			accentBg: 'rgba(239, 68, 68, 0.1)',
+		},
+	];
+
+	const subStructures = badges.map((badge) => ({
+		id: badge.badge_id,
+		title: badge.badge_title,
+		description: badge.badge_description,
+		isActive: badge.is_active,
+	}));
 
 	return (
 		<StructureDetailLayout
-			title={DUMMY_LEVEL.title}
-			description={DUMMY_LEVEL.description}
+			title={level.stage_title}
+			description={level.stage_description}
 			icon="evolution"
-			imageUrl={DUMMY_LEVEL.imageUrl}
+			imageUrl={null}
 			tone="levels"
-			stats={DUMMY_STATS}
-			subStructures={DUMMY_SUB_STRUCTURES}
+			isActive={level.is_active}
+			stats={stats}
+			subStructures={subStructures}
 			subStructureLabel={t('structureDetail.badges', { defaultValue: 'Badges' })}
 			subStructureIcon="badge"
 			subStructureTone="learningPaths"

@@ -70,7 +70,7 @@ export default function LevelsList() {
 			renderCard={(item) => (
 				<StructureItemCard
 					key={item.progression_stage_id}
-					to={ADMIN.LEVEL_DETAIL.replace(':slug', item.progression_stage_id)}
+					to={ADMIN.LEVEL_DETAIL.replace(':slug', item.stage_code?.stage_code || item.progression_stage_id)}
 					icon="evolution"
 					title={item.stage_title}
 					description={item.stage_description}
