@@ -17,6 +17,8 @@
 	background: linear-gradient(180deg, #ffffff 0%, #f8fcfe 100%);
 	box-shadow: var(--shadow-card);
 	transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .card:hover {
@@ -58,6 +60,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	margin-bottom: 0.25rem;
+	min-width: 0;
 }
 
 .title {

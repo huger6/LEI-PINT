@@ -79,6 +79,13 @@ export default function StructureListLayout({
 				</div>
 			) : (
 				<>
+					<Pagination
+						currentPage={page}
+						totalPages={pagination.totalPages}
+						totalItems={pagination.totalItems}
+						itemCount={items.length}
+						onPageChange={onPageChange}
+					/>
 					<div className={styles.cardGrid}>
 						{items.map(renderCard)}
 					</div>

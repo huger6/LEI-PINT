@@ -7,6 +7,7 @@ export default function StructureTypeCard({ to, icon, title, description, count,
 	const { t } = useTranslation();
 
 	const renderCount = () => {
+		if (count === '...') return <span className={`${styles.count} ${styles.loading}`}>...</span>;
 		if (typeof count === 'string') return <span className={styles.count}>{count}</span>;
 		if (count && typeof count === 'object') {
 			return (
