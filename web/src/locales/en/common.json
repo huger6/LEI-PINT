@@ -435,7 +435,19 @@
 		"pointsMin": "Min Points",
 		"pointsMax": "Max Points",
 		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?",
-		"breadcrumb": "Breadcrumb"
+		"breadcrumb": "Breadcrumb",
+		"structureLabels": {
+			"learningPaths": "Learning Paths",
+			"serviceLines": "Service Lines",
+			"areas": "Areas",
+			"stages": "Stages"
+		},
+		"structureDescriptions": {
+			"learningPaths": "Manage top-level training frameworks and career tracks (e.g., Jornada Técnica, Power Skills). Use this section to create and structure the global educational journeys that contain corporate Service Lines.",
+			"serviceLines": "Segment your Learning Paths into main operational divisions and technology pillars (e.g., Hybrid Cloud, Application Operations). Use this to organize and group specialized business units.",
+			"areas": "Define specific technology frameworks, platforms, and fields of expertise (e.g., LowCode OutSystems, DevOps). Each Area must host its own mandatory career progression milestones.",
+			"stages": "Configure the sequential advancement tiers (Junior to Knowledge Leader) within each Area. Use this card to bind unique digital badges and set up the external training requirements."
+		}
 	},
 	"adminDashboard": {
 		"title": "Administration Panel",

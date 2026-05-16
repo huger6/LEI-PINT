@@ -1,31 +1,59 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import StructureTypeCard from '../../../components/StructureTypeCard/StructureTypeCard';
+import styles from './AdminStructure.module.css';
 
 export default function AdminStructure() {
 	const { t } = useTranslation();
 
 	const SECTIONS = [
-		{ to: '/learning-paths', label: t('adminDashboard.learningPaths'), desc: t('adminStructure.learningPathsDesc') },
-		{ to: '/service-lines', label: t('adminDashboard.serviceLines'), desc: t('adminStructure.serviceLinesDesc') },
-		{ to: '/areas', label: t('adminDashboard.areas'), desc: t('adminStructure.areasDesc') },
-		{ to: '/levels', label: t('adminLevels.title'), desc: t('adminStructure.levelsDesc') },
+		{
+			to: '/learning-paths',
+			title: t('shared.structureLabels.learningPaths'),
+			description: t('shared.structureDescriptions.learningPaths'),
+			icon: 'learning-path',
+			count: 0,
+			tone: 'learningPaths',
+		},
+		{
+			to: '/service-lines',
+			title: t('shared.structureLabels.serviceLines'),
+			description: t('shared.structureDescriptions.serviceLines'),
+			icon: 'service-line',
+			count: 0,
+			tone: 'serviceLines',
+		},
+		{
+			to: '/areas',
+			title: t('shared.structureLabels.areas'),
+			description: t('shared.structureDescriptions.areas'),
+			icon: 'area',
+			count: 0,
+			tone: 'areas',
+		},
+		{
+			to: '/levels',
+			title: t('shared.structureLabels.stages'),
+			description: t('shared.structureDescriptions.stages'),
+			icon: 'evolution',
+			count: 0,
+			tone: 'levels',
+		},
 	];
 
 	return (
-		<div>
-			<h1 className="h3 mb-4">{t('adminStructure.title')}</h1>
-			<div className="row g-4">
-				{SECTIONS.map((s) => (
-					<div key={s.to} className="col-md-6 col-lg-3">
-						<Link to={s.to} className="text-decoration-none">
-							<div className="card border-0 shadow-sm h-100">
-								<div className="card-body">
-									<h5 className="fw-semibold mb-2">{s.label}</h5>
-									<p className="text-muted small mb-0">{s.desc}</p>
-								</div>
-							</div>
-						</Link>
-					</div>
+		<div className={styles.page}>
+			<header className={styles.header}>
+				<h1 className={styles.title}>{t('adminStructure.title')}</h1>
+				<p className={styles.subtitle}>
+					{t('adminStructure.countsPlaceholder', {
+						defaultValue: 'Structure counts are placeholders for now and will be connected to API data later.',
+					})}
+				</p>
+			</header>
+
+			<div className={styles.cardList}>
+				{SECTIONS.map((section) => (
+					<StructureTypeCard key={section.to} {...section} />
 				))}
 			</div>
 		</div>
