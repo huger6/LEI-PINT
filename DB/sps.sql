@@ -2,6 +2,22 @@
 /* Stored Procedures / Stored Functions                         */
 /*==============================================================*/
 
+/*--------------------------------------------------------------*/
+/* FULL NAME NORMALIZATION                                      */
+/*--------------------------------------------------------------*/
+
+CREATE OR REPLACE PROCEDURE sp_normalize_users_full_name()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE users
+    SET full_name = fn_capitalize_full_name(full_name),
+        updated_at = now()
+    WHERE full_name IS NOT NULL
+      AND full_name <> fn_capitalize_full_name(full_name);
+END;
+$$;
+
 
 /*--------------------------------------------------------------*/
 /* RANKING                                                      */
