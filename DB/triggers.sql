@@ -161,3 +161,23 @@ AFTER UPDATE OF is_active ON badges
 FOR EACH ROW
 WHEN (OLD.is_active = TRUE AND NEW.is_active = FALSE)
 EXECUTE FUNCTION trg_fn_cascade_badge_deactivate();
+
+
+-- ==============================================================
+-- FULL NAME CAPITALIZATION ENFORCEMENT
+-- ==============================================================
+
+CREATE OR REPLACE FUNCTION trg_fn_capitalize_user_full_name()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.full_name := fn_capitalize_full_name(NEW.full_name);
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER trg_capitalize_user_full_name
+BEFORE INSERT OR UPDATE OF full_name ON users
+FOR EACH ROW
+EXECUTE FUNCTION trg_fn_capitalize_user_full_name();

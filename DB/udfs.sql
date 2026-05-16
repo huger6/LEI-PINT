@@ -2,6 +2,37 @@
 /* User Defined Functions (UDFs)                                */
 /*==============================================================*/
 
+/*--------------------------------------------------------------*/
+/* FULL NAME NORMALIZATION                                      */
+/*--------------------------------------------------------------*/
+
+DROP FUNCTION IF EXISTS fn_capitalize_full_name(VARCHAR);
+
+CREATE OR REPLACE FUNCTION fn_capitalize_full_name(p_full_name VARCHAR)
+RETURNS VARCHAR
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+    v_clean_name VARCHAR;
+BEGIN
+    IF p_full_name IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    v_clean_name := regexp_replace(trim(p_full_name), '\s+', ' ', 'g');
+
+    IF v_clean_name = '' THEN
+        RETURN v_clean_name;
+    END IF;
+
+    RETURN (
+        SELECT string_agg(initcap(lower(name_part)), ' ' ORDER BY ordinality)
+        FROM unnest(string_to_array(v_clean_name, ' ')) WITH ORDINALITY AS t(name_part, ordinality)
+    );
+END;
+$$;
+
 
 /*==============================================================*/
 /* Badge Recommendation Engine                                  */
