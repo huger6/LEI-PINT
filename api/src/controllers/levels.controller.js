@@ -73,7 +73,7 @@ const getLevels = async (req, res) => {
 // GET /api/levels/count
 const getLevelsCount = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'levels:count:active';
+    const cacheKey = 'levels:count:all';
 
     try {
         const cached = await redis.get(cacheKey);
@@ -84,11 +84,12 @@ const getLevelsCount = async (req, res) => {
             });
         }
 
-        const count = await models.progression_stages.count({
-            where: { is_active: true }
-        });
+        const [active, inactive] = await Promise.all([
+            models.progression_stages.count({ where: { is_active: true } }),
+            models.progression_stages.count({ where: { is_active: false } })
+        ]);
 
-        const payload = { count };
+        const payload = { count: active + inactive, active, inactive };
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
 
         return res.status(200).json({
