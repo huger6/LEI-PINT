@@ -6,12 +6,14 @@ const api = axios.create({
 	headers: { 'Content-Type': 'application/json' },
 });
 
-// Store token in memory
 let _token = null;
 
 export const getApiToken = () => _token;
 export const setApiToken = (token) => { _token = token; };
 export const clearApiToken = () => { _token = null; };
+
+let _onRefreshSuccess = null;
+export const setOnRefreshSuccess = (cb) => { _onRefreshSuccess = cb; };
 
 const getCaller = () => {
 	const stack = new Error().stack || '';
@@ -36,15 +38,28 @@ api.interceptors.request.use((config) => {
 	return config;
 });
 
-let isRefreshing = false;
-let failedQueue = [];
+let _refreshPromise = null;
 
-const processQueue = (error, token = null) => {
-	failedQueue.forEach((prom) => {
-		if (error) prom.reject(error);
-		else prom.resolve(token);
-	});
-	failedQueue = [];
+export const performRefresh = () => {
+	if (_refreshPromise) return _refreshPromise;
+
+	_refreshPromise = api.post('/auth/refresh')
+		.then(({ data }) => {
+			const result = data.data;
+			_token = result.token;
+			if (_onRefreshSuccess) _onRefreshSuccess(result);
+			return result;
+		})
+		.catch((error) => {
+			_token = null;
+			window.dispatchEvent(new CustomEvent('auth:logout'));
+			throw error;
+		})
+		.finally(() => {
+			_refreshPromise = null;
+		});
+
+	return _refreshPromise;
 };
 
 api.interceptors.response.use(
@@ -83,32 +98,14 @@ api.interceptors.response.use(
 			url.includes('/auth/refresh') || url.includes('/auth/login');
 
 		if (status === 401 && !original._retry && !isAuthBypass) {
-			if (isRefreshing) {
-				return new Promise((resolve, reject) => {
-					failedQueue.push({ resolve, reject });
-				}).then((token) => {
-					original.headers.Authorization = `Bearer ${token}`;
-					return api(original);
-				});
-			}
-
 			original._retry = true;
-			isRefreshing = true;
 
 			try {
-				const { data } = await api.post('/auth/refresh');
-				const newToken = data.data.token;
-				_token = newToken;
-				processQueue(null, newToken);
-				original.headers.Authorization = `Bearer ${newToken}`;
+				const result = await performRefresh();
+				original.headers.Authorization = `Bearer ${result.token}`;
 				return api(original);
 			} catch (refreshError) {
-				processQueue(refreshError, null);
-				_token = null;
-				window.dispatchEvent(new CustomEvent('auth:logout'));
 				return Promise.reject(refreshError);
-			} finally {
-				isRefreshing = false;
 			}
 		}
 
