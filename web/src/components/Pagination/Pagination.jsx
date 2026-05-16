@@ -19,7 +19,15 @@ const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChan
         return () => window.removeEventListener('resize', updateMaxVisible);
     }, []);
 
-    if (totalPages <= 1) return null;
+    if (totalPages <= 1) {
+        return (
+            <nav className={styles.wrapper} aria-label={t('pagination.navigation')}>
+                <span className={styles.showingText}>
+                    {t('pagination.showing', { itemCount: itemCount ?? '-', totalItems: totalItems ?? '-' })}
+                </span>
+            </nav>
+        );
+    }
 
     const getPageNumbers = () => {
         if (totalPages <= maxVisible) {
