@@ -26,9 +26,13 @@ export default function LevelsList() {
 	}, [search]);
 
 	useEffect(() => {
+		setPage(1);
+	}, [statusFilter]);
+
+	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
-		fetchLevels({ page, search: debouncedSearch || undefined })
+		fetchLevels({ page, search: debouncedSearch || undefined, status: statusFilter !== 'all' ? statusFilter : undefined })
 			.then((result) => {
 				if (!cancelled) {
 					setItems(result.items);
@@ -42,7 +46,7 @@ export default function LevelsList() {
 				if (!cancelled) setLoading(false);
 			});
 		return () => { cancelled = true; };
-	}, [page, debouncedSearch]);
+	}, [page, debouncedSearch, statusFilter]);
 
 	return (
 		<StructureListLayout
