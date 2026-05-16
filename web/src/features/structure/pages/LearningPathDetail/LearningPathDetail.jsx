@@ -1,42 +1,87 @@
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-
-const DUMMY_LP = {
-	title: 'Cloud & DevOps',
-	description: 'This learning path covers the full spectrum of cloud computing and DevOps practices, including infrastructure as code, container orchestration, CI/CD pipelines, and cloud-native development across major providers like AWS, Azure, and GCP.',
-	imageUrl: null,
-};
-
-const DUMMY_STATS = [
-	{ icon: 'tabler_users', label: 'Users', value: 142, accentColor: 'var(--color-primary)', accentBg: 'var(--color-primary-soft)' },
-	{ icon: 'paper', label: 'Pending', value: 8, accentColor: 'var(--color-secondary)', accentBg: 'var(--color-secondary-container)' },
-	{ icon: 'target', label: 'SLAs', value: 3, accentColor: '#0f7f69', accentBg: 'var(--color-green-soft)' },
-	{ icon: 'megaphone', label: 'Alerts', value: 2, accentColor: 'var(--color-warning)', accentBg: 'var(--color-orange-soft)' },
-	{ icon: 'badge', label: 'Badges', value: 24, accentColor: '#8d640d', accentBg: 'rgba(210, 148, 21, 0.12)' },
-	{ icon: 'evolution', label: 'Avg. Progress', value: '67%', accentColor: '#274f82', accentBg: 'rgba(57, 99, 156, 0.12)' },
-];
-
-const DUMMY_SUB_STRUCTURES = [
-	{ id: 1, title: 'AWS Solutions', description: 'Amazon Web Services certifications and specializations', count: 5 },
-	{ id: 2, title: 'Azure Fundamentals', description: 'Microsoft Azure cloud infrastructure path', count: 4 },
-	{ id: 3, title: 'DevOps Engineering', description: 'CI/CD, containerization, and infrastructure automation', count: 6 },
-	{ id: 4, title: 'GCP Architecture', description: 'Google Cloud Platform design and implementation', count: 3 },
-];
+import Spinner from '../../../../components/Spinner/Spinner';
+import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
 
 export default function LearningPathDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
+	const [lp, setLp] = useState(null);
+	const [serviceLines, setServiceLines] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		let cancelled = false;
+		setLoading(true);
+
+		Promise.all([
+			fetchLearningPathBySlug(slug),
+			fetchServiceLinesByLearningPath(slug)
+		])
+			.then(([lpData, slData]) => {
+				if (cancelled) return;
+				setLp(lpData);
+				setServiceLines(slData.items);
+			})
+			.catch((err) => {
+				if (!cancelled) console.error(err);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+
+		return () => { cancelled = true; };
+	}, [slug]);
+
+	if (loading) return <Spinner />;
+	if (!lp) return null;
+
+	const activeCount = serviceLines.filter((sl) => sl.is_active).length;
+	const inactiveCount = serviceLines.filter((sl) => !sl.is_active).length;
+
+	const stats = [
+		{
+			icon: 'service-line',
+			label: t('shared.structureLabels.serviceLines'),
+			value: serviceLines.length,
+			accentColor: 'var(--color-primary)',
+			accentBg: 'var(--color-primary-soft)',
+		},
+		{
+			icon: 'check_circle',
+			label: t('shared.active', { defaultValue: 'Active' }),
+			value: activeCount,
+			accentColor: '#0f7f69',
+			accentBg: 'var(--color-green-soft)',
+		},
+		{
+			icon: 'close_circle',
+			label: t('shared.inactive', { defaultValue: 'Inactive' }),
+			value: inactiveCount,
+			accentColor: '#b91c1c',
+			accentBg: 'rgba(239, 68, 68, 0.1)',
+		},
+	];
+
+	const subStructures = serviceLines.map((sl) => ({
+		id: sl.service_line_id,
+		title: sl.service_line_name,
+		description: sl.service_line_description,
+		isActive: sl.is_active,
+	}));
 
 	return (
 		<StructureDetailLayout
-			title={DUMMY_LP.title}
-			description={DUMMY_LP.description}
+			title={lp.path_title}
+			description={lp.path_description}
 			icon="learning-path"
-			imageUrl={DUMMY_LP.imageUrl}
+			imageUrl={lp.img_url}
 			tone="learningPaths"
-			stats={DUMMY_STATS}
-			subStructures={DUMMY_SUB_STRUCTURES}
+			isActive={lp.is_active}
+			stats={stats}
+			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.serviceLines')}
 			subStructureIcon="service-line"
 			subStructureTone="serviceLines"

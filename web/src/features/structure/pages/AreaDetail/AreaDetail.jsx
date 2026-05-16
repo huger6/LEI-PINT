@@ -1,41 +1,87 @@
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-
-const DUMMY_AREA = {
-	title: 'Solutions Architect',
-	description: 'The Solutions Architect area focuses on designing distributed systems, evaluating cost-optimization strategies, and implementing best practices for high availability, fault tolerance, and security on cloud platforms.',
-	imageUrl: null,
-};
-
-const DUMMY_STATS = [
-	{ icon: 'tabler_users', label: 'Users', value: 31, accentColor: 'var(--color-primary)', accentBg: 'var(--color-primary-soft)' },
-	{ icon: 'paper', label: 'Pending', value: 2, accentColor: 'var(--color-secondary)', accentBg: 'var(--color-secondary-container)' },
-	{ icon: 'target', label: 'SLAs', value: 1, accentColor: '#0f7f69', accentBg: 'var(--color-green-soft)' },
-	{ icon: 'megaphone', label: 'Alerts', value: 0, accentColor: 'var(--color-warning)', accentBg: 'var(--color-orange-soft)' },
-	{ icon: 'badge', label: 'Badges', value: 6, accentColor: '#8d640d', accentBg: 'rgba(210, 148, 21, 0.12)' },
-	{ icon: 'fire', label: 'Completion Rate', value: '82%', accentColor: '#274f82', accentBg: 'rgba(57, 99, 156, 0.12)' },
-];
-
-const DUMMY_SUB_STRUCTURES = [
-	{ id: 1, title: 'Associate Level', description: 'Entry-level architecture fundamentals', count: 2 },
-	{ id: 2, title: 'Professional Level', description: 'Advanced architectural design patterns', count: 3 },
-	{ id: 3, title: 'Specialty Level', description: 'Domain-specific architecture expertise', count: 1 },
-];
+import Spinner from '../../../../components/Spinner/Spinner';
+import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi';
 
 export default function AreaDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
+	const [area, setArea] = useState(null);
+	const [levels, setLevels] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		let cancelled = false;
+		setLoading(true);
+
+		Promise.all([
+			fetchAreaBySlug(slug),
+			fetchLevelsByArea(slug)
+		])
+			.then(([areaData, levelsData]) => {
+				if (cancelled) return;
+				setArea(areaData);
+				setLevels(levelsData.items);
+			})
+			.catch((err) => {
+				if (!cancelled) console.error(err);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+
+		return () => { cancelled = true; };
+	}, [slug]);
+
+	if (loading) return <Spinner />;
+	if (!area) return null;
+
+	const activeCount = levels.filter((l) => l.is_active).length;
+	const inactiveCount = levels.filter((l) => !l.is_active).length;
+
+	const stats = [
+		{
+			icon: 'evolution',
+			label: t('shared.structureLabels.stages'),
+			value: levels.length,
+			accentColor: 'var(--color-primary)',
+			accentBg: 'var(--color-primary-soft)',
+		},
+		{
+			icon: 'check_circle',
+			label: t('shared.active', { defaultValue: 'Active' }),
+			value: activeCount,
+			accentColor: '#0f7f69',
+			accentBg: 'var(--color-green-soft)',
+		},
+		{
+			icon: 'close_circle',
+			label: t('shared.inactive', { defaultValue: 'Inactive' }),
+			value: inactiveCount,
+			accentColor: '#b91c1c',
+			accentBg: 'rgba(239, 68, 68, 0.1)',
+		},
+	];
+
+	const subStructures = levels.map((level) => ({
+		id: level.progression_stage_id,
+		title: level.stage_title,
+		description: level.stage_description,
+		isActive: level.is_active,
+	}));
 
 	return (
 		<StructureDetailLayout
-			title={DUMMY_AREA.title}
-			description={DUMMY_AREA.description}
+			title={area.area_name}
+			description={area.area_description}
 			icon="area"
-			imageUrl={DUMMY_AREA.imageUrl}
+			imageUrl={area.img_url}
 			tone="areas"
-			stats={DUMMY_STATS}
-			subStructures={DUMMY_SUB_STRUCTURES}
+			isActive={area.is_active}
+			stats={stats}
+			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.stages')}
 			subStructureIcon="evolution"
 			subStructureTone="levels"

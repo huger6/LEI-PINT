@@ -11,6 +11,7 @@ export default function StructureDetailLayout({
 	icon,
 	imageUrl,
 	tone,
+	isActive,
 	stats,
 	subStructures,
 	subStructureLabel,
@@ -27,7 +28,16 @@ export default function StructureDetailLayout({
 
 	return (
 		<div className={styles.page}>
-			<h1 className={styles.pageTitle}>{title}</h1>
+			<div className={styles.titleRow}>
+				<h1 className={styles.pageTitle}>{title}</h1>
+				{isActive !== undefined && (
+					<span className={`${styles.statusBadge} ${isActive ? styles.statusActive : styles.statusInactive}`}>
+						{isActive
+							? t('shared.active', { defaultValue: 'Active' })
+							: t('shared.inactive', { defaultValue: 'Inactive' })}
+					</span>
+				)}
+			</div>
 
 			<div className={styles.mainGrid}>
 				{/* Left panel - image + actions */}
@@ -114,6 +124,7 @@ export default function StructureDetailLayout({
 								title={sub.title}
 								description={sub.description}
 								count={sub.count}
+								isActive={sub.isActive}
 								tone={subStructureTone}
 							/>
 						))}
