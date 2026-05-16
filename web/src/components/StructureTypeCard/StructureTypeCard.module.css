@@ -71,6 +71,15 @@
 	color: var(--tone-fg, var(--color-primary));
 }
 
+.loading {
+	animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.35; }
+}
+
 .countGroup {
 	display: flex;
 	align-items: center;

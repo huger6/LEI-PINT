@@ -1,5 +1,6 @@
 .page {
 	padding-inline: clamp(0.75rem, 2.8vw, 2.25rem);
+	overflow-x: hidden;
 }
 
 .header {
@@ -79,6 +80,7 @@
 	grid-template-columns: repeat(2, 1fr);
 	gap: 0.85rem;
 	margin-bottom: 1.5rem;
+	min-width: 0;
 }
 
 /* Empty state */
