@@ -1,10 +1,19 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../data/repositories/badge_repo.dart';
 import '../../models/badge_model.dart';
 
-class BadgeStore extends ChangeNotifier {
-  BadgeStore(this._badgeRepository);
+class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
+  BadgeStore(this._badgeRepository) {
+    WidgetsBinding.instance.addObserver(
+      this,
+    ); // Regista o ouvinte do ciclo de vida
+    // Escuta magicamente as atualizações vindas do FCM via Repository
+    _badgeRepository.badgeStream.listen((updatedBadges) {
+      _badges = updatedBadges;
+      notifyListeners(); // Avisa a UI para se reconstruir imediatamente
+    });
+  }
 
   final BadgeRepository _badgeRepository;
 
@@ -16,6 +25,24 @@ class BadgeStore extends ChangeNotifier {
   List<BadgeModel> get badges => _badges;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Previne memory leaks
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Mecanismo de Fallback: Sincronização Passiva
+    // Se a app voltar a ser aberta e perdeu a notificação de background por falta de rede,
+    // recupera os dados neste preciso momento.
+    if (state == AppLifecycleState.resumed) {
+      // Idealmente, comparar o 'synced_at' local via cache antes de forçar o fetch completo.
+      // Para já, fazemos um reload de segurança forçado.
+      loadBadges(forceRefresh: true);
+    }
+  }
 
   Future<void> loadBadges({bool forceRefresh = false}) async {
     if (_isLoading) {

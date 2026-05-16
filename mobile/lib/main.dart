@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Gerado pelo FlutterFire CLI
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +20,7 @@ import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
 import 'injection_container.dart';
+import 'core/services/fcm_service.dart'; // Importa o novo serviço FCM
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +38,16 @@ void main() async {
     debugPrintStack(stackTrace: stack);
     return true;
   };
+
+  // 1. Inicializar Firebase e Firebase Cloud Messaging
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FCMService.initialize();
+  } catch (e) {
+    debugPrint('Erro fatal ao inicializar o Firebase/FCM: $e');
+  }
 
   try {
     await setupDependencies().timeout(
@@ -192,11 +206,7 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('pt'),
-              Locale('en'),
-              Locale('es'),
-            ],
+            supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
             initialRoute: AppRouter.initial,
             routes: AppRouter.routes,
           );
