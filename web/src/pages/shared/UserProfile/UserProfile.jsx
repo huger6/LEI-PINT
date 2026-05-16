@@ -292,7 +292,7 @@ export default function UserProfile() {
 			setIsDirty(false);
 			setSaveSuccess(true);
 			await reloadProfile();
-			const basePath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}/profile`;
+			const basePath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}`;
 			navigate(basePath, { replace: true });
 		} catch (err) {
 			const serverErrors = err.response?.data?.errors;
@@ -310,12 +310,12 @@ export default function UserProfile() {
 	const handleEdit = () => {
 		const editPath = isOwnProfile
 			? `${SHARED.PROFILE}/edit`
-			: `${ADMIN.USERS}/${guid}/profile/edit`;
+			: `${ADMIN.USERS}/${guid}/edit`;
 		navigate(editPath);
 	};
 
 	const handleCancel = () => {
-		const viewPath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}/profile`;
+		const viewPath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}`;
 		if (isDirty) {
 			pendingNavRef.current = viewPath;
 			setShowLeaveConfirm(true);

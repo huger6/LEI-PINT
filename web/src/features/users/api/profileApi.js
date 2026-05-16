@@ -2,7 +2,7 @@ import api from '../../../services/api';
 import { extractCollection } from '../../../utils/collections';
 
 export const getUserPublicProfile = async (guid) => {
-	const { data } = await api.get(`/users/${guid}/profile`);
+	const { data } = await api.get(`/admin/users/${guid}`);
 	return data?.data;
 };
 
