@@ -14,6 +14,13 @@ const slRoutes = require('./serviceLines.routes');
 router.get('/', lpController.getAllLearningPaths);
 
 /**
+ * @route   GET /api/learning-paths/count
+ * @desc    Get total number of active learning paths
+ * @access  Administrator
+ */
+router.get('/count', loginRequired, isAdmin, lpController.getLearningPathsCount);
+
+/**
  * @route   GET /api/learning-paths/check-slug?slug=mySlug
  * @desc    Check whether a given learning path slug is available
  * @access  Administrator
