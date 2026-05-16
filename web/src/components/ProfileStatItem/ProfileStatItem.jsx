@@ -6,7 +6,8 @@ export default function ProfileStatItem({ icon, accentColor, accentBg, value, la
 		<div className={styles.statItem}>
 			<span className={styles.statLabel}>{label}</span>
 			<span className={styles.statValue} style={{ color: accentColor }}>{value ?? '—'}</span>
-			<div className={styles.statIconCircle} style={{ background: accentBg }}>
+			<div className={styles.statIconCircle} style={{ background: accentBg }} />
+			<div className={styles.statIcon}>
 				<Icon name={icon} size={22} color={accentColor} />
 			</div>
 			{footer && <span className={styles.statFooter}>{footer}</span>}
