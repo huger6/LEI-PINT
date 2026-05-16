@@ -1,5 +1,6 @@
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -15,6 +16,41 @@ const getAllLearningPaths = (req, res) => {
         cachePrefix: 'lp:list',
         order: [['path_title', 'ASC']]
     });
+};
+
+// GET /api/learning-paths/count
+const getLearningPathsCount = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'lp:count:active';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cached)
+            });
+        }
+
+        const count = await models.learning_paths.count({
+            where: { is_active: true }
+        });
+
+        const payload = { count };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+
+        return res.status(200).json({
+            success: true,
+            data: payload
+        });
+    } catch (error) {
+        logger.error('Error fetching Learning Paths count', { error, requestId });
+        return res.status(500).json({
+            success: false,
+            code: "LP_COUNT_FAILED",
+            requestId
+        });
+    }
 };
 
 // GET /api/learning-paths/:pathSlug
@@ -115,6 +151,7 @@ const createLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await invalidateCacheByPrefix('lp:count');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(201).json({
@@ -189,6 +226,7 @@ const updateLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await invalidateCacheByPrefix('lp:count');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -242,6 +280,7 @@ const deleteLearningPath = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('lp:list');
+        await invalidateCacheByPrefix('lp:count');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -267,6 +306,7 @@ const deleteLearningPath = async (req, res) => {
 
 module.exports = {
     getAllLearningPaths,
+    getLearningPathsCount,
     getLearningPathBySlug,
     checkSlugAvailability,
     createLearningPath,

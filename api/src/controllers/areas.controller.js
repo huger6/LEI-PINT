@@ -1,5 +1,6 @@
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -59,6 +60,41 @@ const getAreas = async (req, res) => {
         return res.status(500).json({
             success: false,
             code: "AREA_LIST_FAILED"
+        });
+    }
+};
+
+// GET /api/areas/count
+const getAreasCount = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'areas:count:active';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cached)
+            });
+        }
+
+        const count = await models.areas.count({
+            where: { is_active: true }
+        });
+
+        const payload = { count };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+
+        return res.status(200).json({
+            success: true,
+            data: payload
+        });
+    } catch (error) {
+        logger.error('Error fetching Areas count', { error, requestId });
+        return res.status(500).json({
+            success: false,
+            code: "AREA_COUNT_FAILED",
+            requestId
         });
     }
 };
@@ -244,6 +280,7 @@ const createArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -357,6 +394,7 @@ const updateArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -437,6 +475,7 @@ const deleteArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -462,6 +501,7 @@ const deleteArea = async (req, res) => {
 
 module.exports = {
     getAreas,
+    getAreasCount,
     getAreaBySlug,
     checkSlugAvailability,
     createArea,

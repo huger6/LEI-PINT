@@ -16,6 +16,13 @@ const badgesRoutes = require('./badges.routes');
 router.get('/', areaController.getAreas);
 
 /**
+ * @route   GET /api/areas/count
+ * @desc    Get total number of active areas
+ * @access  Administrator
+ */
+router.get('/count', loginRequired, isAdmin, areaController.getAreasCount);
+
+/**
  * @route   GET /api/areas/check-slug?slug=mySlug
  * @desc    Check whether a given area slug is available
  * @access  Administrator

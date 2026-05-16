@@ -16,6 +16,13 @@ const badgeRoutes = require('./badges.routes');
 router.get('/', loginRequired, slController.getServiceLines);
 
 /**
+ * @route   GET /api/service-lines/count
+ * @desc    Get total number of active service lines
+ * @access  Administrator
+ */
+router.get('/count', loginRequired, isAdmin, slController.getServiceLinesCount);
+
+/**
  * @route   GET /api/service-lines/check-slug?slug=mySlug
  * @desc    Check whether a given service line slug is available
  * @access  Administrator
