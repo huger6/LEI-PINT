@@ -1,5 +1,6 @@
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { sendTopicUpdate } = require('../services/firebase.service');
@@ -65,6 +66,41 @@ const getLevels = async (req, res) => {
         return res.status(500).json({
             success: false,
             code: "LEVEL_LIST_FAILED"
+        });
+    }
+};
+
+// GET /api/levels/count
+const getLevelsCount = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'levels:count:active';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cached)
+            });
+        }
+
+        const count = await models.progression_stages.count({
+            where: { is_active: true }
+        });
+
+        const payload = { count };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+
+        return res.status(200).json({
+            success: true,
+            data: payload
+        });
+    } catch (error) {
+        logger.error('Error fetching Levels count', { error, requestId });
+        return res.status(500).json({
+            success: false,
+            code: "LEVEL_COUNT_FAILED",
+            requestId
         });
     }
 };
@@ -246,6 +282,7 @@ const createLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await invalidateCacheByPrefix('levels:count');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -359,6 +396,7 @@ const updateLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await invalidateCacheByPrefix('levels:count');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -417,6 +455,7 @@ const deleteLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
+        await invalidateCacheByPrefix('levels:count');
         await sendTopicUpdate("new_data", 12);
 
         return res.status(200).json({
@@ -442,6 +481,7 @@ const deleteLevel = async (req, res) => {
 
 module.exports = {
     getLevels,
+    getLevelsCount,
     getLevelByCode,
     createLevel,
     updateLevel,
