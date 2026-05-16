@@ -1,9 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { updateUser } from '../../../features/users/api/usersApi';
+import {
+	useAvailability,
+	AVAILABILITY_STATUS,
+	isCheckBlocking,
+	fetchUsernameAvailability,
+	fetchEmailAvailability,
+} from '../../../validations';
 import Icon from '../../../components/Icons/Icons';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
+import { ADMIN } from '../../../routes/paths';
 import styles from './AdminUserDrawer.module.css';
 
 function DetailRow({ label, children }) {
@@ -17,6 +26,7 @@ function DetailRow({ label, children }) {
 
 export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid }) {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const panelRef = useRef(null);
 
 	const [form, setForm] = useState({});
@@ -28,8 +38,8 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	useEffect(() => {
 		if (open && profile) {
 			const initial = {
+				username: profile.username || '',
 				email: profile.email || '',
-				role: profile.role?.role_name || profile.role_name || profile.role || '',
 				isActive: profile.isActive ?? profile.is_active ?? true,
 				emailConfirmed: profile.emailConfirmed ?? profile.email_confirmed ?? false,
 				gdprAccepted: profile.gdprAccepted ?? profile.gdpr_accepted ?? false,
@@ -50,6 +60,28 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		return () => window.removeEventListener('keydown', handleKey);
 	}, [open, onClose]);
 
+	const trimmedUsername = form.username?.trim() || '';
+	const trimmedEmail = form.email?.trim() || '';
+
+	const usernameChanged = trimmedUsername !== (initialRef.current.username?.trim() || '')
+		&& trimmedUsername.length >= 3;
+	const emailChanged = trimmedEmail !== (initialRef.current.email?.trim() || '')
+		&& /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+
+	const usernameCheck = useAvailability({
+		value: trimmedUsername,
+		isValid: trimmedUsername.length >= 3,
+		enabled: usernameChanged,
+		fetcher: fetchUsernameAvailability,
+	});
+
+	const emailCheck = useAvailability({
+		value: trimmedEmail,
+		isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail),
+		enabled: emailChanged,
+		fetcher: fetchEmailAvailability,
+	});
+
 	const checkDirty = (next) => {
 		setIsDirty(JSON.stringify(next) !== JSON.stringify(initialRef.current));
 	};
@@ -66,6 +98,8 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 
 	const validate = () => {
 		const errs = {};
+		if (!form.username?.trim()) errs.username = t('profile.errors.usernameRequired');
+		else if (form.username.trim().length < 3) errs.username = t('profile.errors.usernameTooShort');
 		if (!form.email?.trim()) errs.email = t('profile.errors.emailRequired');
 		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t('profile.errors.emailInvalid');
 		setErrors(errs);
@@ -74,9 +108,31 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 
 	const handleSave = async () => {
 		if (!validate()) return;
+		if (usernameChanged && isCheckBlocking(usernameCheck.status)) {
+			if (usernameCheck.status === AVAILABILITY_STATUS.UNAVAILABLE) {
+				setErrors((prev) => ({ ...prev, username: t('profile.errors.usernameTaken') }));
+			}
+			return;
+		}
+		if (emailChanged && isCheckBlocking(emailCheck.status)) {
+			if (emailCheck.status === AVAILABILITY_STATUS.UNAVAILABLE) {
+				setErrors((prev) => ({ ...prev, email: t('profile.errors.emailTaken') }));
+			}
+			return;
+		}
+
 		setSaving(true);
 		try {
-			await updateUser(guid, form);
+			const payload = {};
+			if (usernameChanged) payload.username = form.username.trim();
+			if (emailChanged) payload.email_address = form.email.trim();
+			if (form.isActive !== initialRef.current.isActive) payload.approve_member = form.isActive;
+			if (form.emailConfirmed !== initialRef.current.emailConfirmed) payload.email_confirmed = form.emailConfirmed;
+			if (form.gdprAccepted !== initialRef.current.gdprAccepted) payload.gdpr_accepted = form.gdprAccepted;
+
+			if (Object.keys(payload).length > 0) {
+				await updateUser(guid, payload);
+			}
 			setIsDirty(false);
 			if (onSaved) await onSaved();
 			onClose();
@@ -90,6 +146,11 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		} finally {
 			setSaving(false);
 		}
+	};
+
+	const handleEditProfile = () => {
+		onClose();
+		navigate(`${ADMIN.USERS}/${guid}/edit`);
 	};
 
 	const displayRole = profile?.role?.role_name || profile?.role_name || profile?.role || '—';
@@ -107,72 +168,103 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	if (!open) return null;
 
 	return (
-		<>
-			<div className={styles.backdrop} onClick={onClose} />
-			<aside ref={panelRef} className={styles.drawer} role="dialog" aria-label={t('profile.adminDetails')}>
-				<div className={styles.drawerHeader}>
-					<h3 className={styles.drawerTitle}>{t('profile.adminDetails')}</h3>
-					<button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t('shared.close')}>
-						<Icon name="close" size={20} />
-					</button>
+		<aside ref={panelRef} className={styles.drawer} role="dialog" aria-label={t('profile.adminDetails')}>
+			<div className={styles.drawerHeader}>
+				<h3 className={styles.drawerTitle}>{t('profile.adminDetails')}</h3>
+				<button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t('shared.close')}>
+					<Icon name="close" size={20} />
+				</button>
+			</div>
+
+			<div className={styles.drawerBody}>
+				<div>
+					<FormInput
+						id="admin-username"
+						label={t('profile.username')}
+						value={form.username || ''}
+						onChange={handleChange('username')}
+						error={errors.username || (usernameCheck.status === AVAILABILITY_STATUS.UNAVAILABLE ? t('profile.errors.usernameTaken') : null)}
+						required
+					/>
+					{usernameChanged && usernameCheck.status === AVAILABILITY_STATUS.CHECKING && (
+						<small className="text-muted">{t('register.checkingAvailability')}</small>
+					)}
+					{usernameChanged && usernameCheck.status === AVAILABILITY_STATUS.AVAILABLE && (
+						<small className="text-success">{t('register.usernameAvailable')}</small>
+					)}
 				</div>
 
-				<div className={styles.drawerBody}>
+				<div>
 					<FormInput
 						id="admin-email"
 						label={t('profile.email')}
 						value={form.email || ''}
 						onChange={handleChange('email')}
-						error={errors.email}
+						error={errors.email || (emailCheck.status === AVAILABILITY_STATUS.UNAVAILABLE ? t('profile.errors.emailTaken') : null)}
 						required
 					/>
-
-					<DetailRow label={t('profile.role')}>{t(`roles.${displayRole}`)}</DetailRow>
-					<DetailRow label={t('profile.joinedAt')}>{formatDate(joinedAt)}</DetailRow>
-					<DetailRow label={t('profile.lastLogin')}>{formatDate(lastLogin)}</DetailRow>
-
-					<div className={styles.toggleGroup}>
-						<label className={styles.toggleRow}>
-							<span>{t('profile.isActive')}</span>
-							<input
-								type="checkbox"
-								className="form-check-input"
-								checked={form.isActive || false}
-								onChange={handleChange('isActive')}
-							/>
-						</label>
-
-						<label className={styles.toggleRow}>
-							<span>{t('profile.emailConfirmed')}</span>
-							<input
-								type="checkbox"
-								className="form-check-input"
-								checked={form.emailConfirmed || false}
-								onChange={handleChange('emailConfirmed')}
-							/>
-						</label>
-
-						<label className={styles.toggleRow}>
-							<span>{t('profile.gdprAccepted')}</span>
-							<input
-								type="checkbox"
-								className="form-check-input"
-								checked={form.gdprAccepted || false}
-								onChange={handleChange('gdprAccepted')}
-							/>
-						</label>
-					</div>
+					{emailChanged && emailCheck.status === AVAILABILITY_STATUS.CHECKING && (
+						<small className="text-muted">{t('register.checkingAvailability')}</small>
+					)}
+					{emailChanged && emailCheck.status === AVAILABILITY_STATUS.AVAILABLE && (
+						<small className="text-success">{t('register.emailAvailable')}</small>
+					)}
 				</div>
 
-				<div className={styles.drawerFooter}>
-					<Button variant="outlined" onClick={onClose} disabled={saving}>
-						{t('profile.cancel')}
-					</Button>
-					<Button onClick={handleSave} loading={saving} disabled={!isDirty}>
-						{t('profile.saveChanges')}
-					</Button>
+				<DetailRow label={t('profile.role')}>{t(`roles.${displayRole}`)}</DetailRow>
+				<DetailRow label={t('profile.joinedAt')}>{formatDate(joinedAt)}</DetailRow>
+				<DetailRow label={t('profile.lastLogin')}>{formatDate(lastLogin)}</DetailRow>
+
+				<div className={styles.toggleGroup}>
+					<label className={styles.toggleRow}>
+						<span>{t('profile.isActive')}</span>
+						<input
+							type="checkbox"
+							className="form-check-input"
+							checked={form.isActive || false}
+							onChange={handleChange('isActive')}
+						/>
+					</label>
+
+					<label className={styles.toggleRow}>
+						<span>{t('profile.emailConfirmed')}</span>
+						<input
+							type="checkbox"
+							className="form-check-input"
+							checked={form.emailConfirmed || false}
+							onChange={handleChange('emailConfirmed')}
+						/>
+					</label>
+
+					<label className={styles.toggleRow}>
+						<span>{t('profile.gdprAccepted')}</span>
+						<input
+							type="checkbox"
+							className="form-check-input"
+							checked={form.gdprAccepted || false}
+							onChange={handleChange('gdprAccepted')}
+						/>
+					</label>
 				</div>
-			</aside>
-		</>
+
+				<button type="button" className={styles.editProfileLink} onClick={handleEditProfile}>
+					<Icon name="pencil" size={16} color="var(--color-primary)" />
+					<span>{t('profile.editProfileDetails')}</span>
+				</button>
+			</div>
+
+			<div className={styles.drawerFooter}>
+				<Button variant="outlined" onClick={onClose} disabled={saving}>
+					{t('profile.cancel')}
+				</Button>
+				<Button
+					onClick={handleSave}
+					loading={saving}
+					disabled={!isDirty || (usernameChanged && isCheckBlocking(usernameCheck.status)) || (emailChanged && isCheckBlocking(emailCheck.status))}
+				>
+					{t('profile.saveChanges')}
+				</Button>
+			</div>
+		</aside>
 	);
 }

@@ -154,6 +154,13 @@
 	margin-top: 2px;
 }
 
+.pairedRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 16px;
+}
+
 .infoActions {
 	position: absolute;
 	top: 0;
@@ -186,22 +193,6 @@
 	transform: scale(0.95);
 }
 
-.drawerBtn {
-	background: none;
-	border: none;
-	cursor: pointer;
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	transition: background 0.2s ease;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.drawerBtn:hover {
-	background: var(--color-primary-soft);
-}
 
 .fieldLabel {
 	font-weight: 500;

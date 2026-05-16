@@ -708,12 +708,15 @@
 		"statistics": "Estatísticas",
 		"viewBadgeGallery": "Galeria de Badges",
 		"viewBadgeGalleryDesc": "Explorar todos os badges disponíveis e o seu progresso",
+		"editProfileDetails": "Editar detalhes do perfil",
 		"errors": {
 			"nameRequired": "O nome é obrigatório.",
 			"usernameRequired": "O nome de utilizador é obrigatório.",
 			"usernameTooShort": "O nome de utilizador deve ter pelo menos 3 caracteres.",
+			"usernameTaken": "Este nome de utilizador já está em uso.",
 			"emailRequired": "O email é obrigatório.",
-			"emailInvalid": "Formato de email inválido."
+			"emailInvalid": "Formato de email inválido.",
+			"emailTaken": "Este email já está em uso."
 		}
 	}
 }
