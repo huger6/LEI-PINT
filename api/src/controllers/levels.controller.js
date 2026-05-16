@@ -58,6 +58,11 @@ const getLevels = async (req, res) => {
             schema: validations.getLevelsQuerySchema,
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
+            include: [{
+                model: models.stage_codes,
+                as: 'stage_code',
+                attributes: ['stage_code']
+            }],
             order: [['stage_sequence', 'ASC']]
         });
 
