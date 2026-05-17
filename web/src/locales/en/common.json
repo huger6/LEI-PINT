@@ -437,6 +437,7 @@
 		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?",
 		"breadcrumb": "Breadcrumb",
 		"structureLabels": {
+			"structure": "Structure",
 			"learningPaths": "Learning Paths",
 			"serviceLines": "Service Lines",
 			"areas": "Areas",

@@ -3,13 +3,17 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
-import { fetchLevelByCode, fetchBadgesByLevel } from '../../api/structureDetailApi';
+import { fetchLevelByCode, fetchBadgesByLevel, fetchParentArea, fetchParentServiceLine, fetchParentLearningPath } from '../../api/structureDetailApi';
+import { ADMIN } from '../../../../routes/paths';
 
 export default function LevelDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
 	const [level, setLevel] = useState(null);
 	const [badges, setBadges] = useState([]);
+	const [parentArea, setParentArea] = useState(null);
+	const [parentSl, setParentSl] = useState(null);
+	const [parentLp, setParentLp] = useState(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -24,6 +28,35 @@ export default function LevelDetail() {
 				if (cancelled) return;
 				setLevel(levelData);
 				setBadges(badgesData.items);
+
+				if (levelData?.area_id) {
+					return fetchParentArea(levelData.area_id);
+				}
+				return null;
+			})
+			.then((areaData) => {
+				if (cancelled) return;
+				if (areaData) {
+					setParentArea(areaData);
+					if (areaData.service_line_id) {
+						return fetchParentServiceLine(areaData.service_line_id);
+					}
+				}
+				return null;
+			})
+			.then((slData) => {
+				if (cancelled) return;
+				if (slData) {
+					setParentSl(slData);
+					if (slData.learning_path_id) {
+						return fetchParentLearningPath(slData.learning_path_id);
+					}
+				}
+				return null;
+			})
+			.then((lpData) => {
+				if (cancelled) return;
+				if (lpData) setParentLp(lpData);
 			})
 			.catch((err) => {
 				if (!cancelled) console.error(err);
@@ -72,8 +105,37 @@ export default function LevelDetail() {
 		isActive: badge.is_active,
 	}));
 
+	const breadcrumbItems = [];
+
+	if (parentLp) {
+		breadcrumbItems.push({
+			label: parentLp.path_title,
+			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', parentLp.path_slug),
+		});
+	}
+
+	if (parentSl) {
+		breadcrumbItems.push({
+			label: parentSl.service_line_name,
+			path: ADMIN.SERVICE_LINE_DETAIL.replace(':slug', parentSl.sl_slug),
+		});
+	}
+
+	if (parentArea) {
+		breadcrumbItems.push({
+			label: parentArea.area_name,
+			path: ADMIN.AREA_DETAIL.replace(':slug', parentArea.area_slug),
+		});
+	}
+
+	breadcrumbItems.push({
+		label: level.stage_title,
+		path: ADMIN.LEVEL_DETAIL.replace(':slug', slug),
+	});
+
 	return (
 		<StructureDetailLayout
+			breadcrumbItems={breadcrumbItems}
 			title={level.stage_title}
 			description={level.stage_description}
 			icon="evolution"

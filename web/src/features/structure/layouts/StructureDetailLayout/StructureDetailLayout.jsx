@@ -3,9 +3,11 @@ import Icon from '../../../../components/Icons/Icons';
 import Button from '../../../../components/Button/Button';
 import StructureStatCard from '../../components/StructureStatCard/StructureStatCard';
 import SubStructureCard from '../../components/SubStructureCard/SubStructureCard';
+import StructureBreadcrumb from '../../components/StructureBreadcrumb/StructureBreadcrumb';
 import styles from './StructureDetailLayout.module.css';
 
 export default function StructureDetailLayout({
+	breadcrumbItems,
 	title,
 	description,
 	icon,
@@ -28,6 +30,7 @@ export default function StructureDetailLayout({
 
 	return (
 		<div className={styles.page}>
+			<StructureBreadcrumb items={breadcrumbItems} />
 			<div className={styles.titleRow}>
 				<h1 className={styles.pageTitle}>{title}</h1>
 				{isActive !== undefined && (
