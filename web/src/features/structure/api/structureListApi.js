@@ -39,12 +39,48 @@ export async function fetchServiceLines({ page = 1, limit = 12, search, status }
 	return parseResponse(data);
 }
 
+export async function fetchAllServiceLines({ search } = {}) {
+	const params = { limit: 100 };
+	if (search) params.search = search;
+	const { data } = await api.get('/service-lines', { params });
+	return parseResponse(data);
+}
+
+export async function fetchServiceLinesFilterStats() {
+	const { data } = await api.get('/service-lines/filter-stats');
+	return data?.data || { maxConsultantCount: 0, maxAreaCount: 0 };
+}
+
 export async function fetchAreas({ page = 1, limit = 12, search, status } = {}) {
 	const { data } = await api.get('/areas', { params: buildParams({ page, limit, search, status }) });
 	return parseResponse(data);
 }
 
+export async function fetchAllAreas({ search } = {}) {
+	const params = { limit: 100 };
+	if (search) params.search = search;
+	const { data } = await api.get('/areas', { params });
+	return parseResponse(data);
+}
+
+export async function fetchAreasFilterStats() {
+	const { data } = await api.get('/areas/filter-stats');
+	return data?.data || { maxConsultantCount: 0, maxLevelCount: 0 };
+}
+
 export async function fetchLevels({ page = 1, limit = 12, search, status } = {}) {
 	const { data } = await api.get('/levels', { params: buildParams({ page, limit, search, status }) });
 	return parseResponse(data);
+}
+
+export async function fetchAllLevels({ search } = {}) {
+	const params = { limit: 100 };
+	if (search) params.search = search;
+	const { data } = await api.get('/levels', { params });
+	return parseResponse(data);
+}
+
+export async function fetchLevelsFilterStats() {
+	const { data } = await api.get('/levels/filter-stats');
+	return data?.data || { maxConsultantCount: 0, maxBadgeCount: 0 };
 }
