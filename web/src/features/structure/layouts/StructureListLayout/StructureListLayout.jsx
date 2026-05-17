@@ -25,6 +25,7 @@ export default function StructureListLayout({
 	renderCard,
 	emptyTitle,
 	emptyDescription,
+	renderFilters,
 }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
@@ -53,18 +54,22 @@ export default function StructureListLayout({
 					ariaLabel={searchPlaceholder}
 					className={styles.searchInput}
 				/>
-				<div className={styles.filters}>
-					<select
-						className={styles.filterSelect}
-						value={statusFilter}
-						onChange={onStatusFilterChange}
-						aria-label={t('shared.status', { defaultValue: 'Status' })}
-					>
-						<option value="all">{t('shared.allStatuses', { defaultValue: 'All Statuses' })}</option>
-						<option value="active">{t('shared.active', { defaultValue: 'Active' })}</option>
-						<option value="inactive">{t('shared.inactive', { defaultValue: 'Inactive' })}</option>
-					</select>
-				</div>
+				{renderFilters ? (
+					<div className={styles.filters}>{renderFilters()}</div>
+				) : (
+					<div className={styles.filters}>
+						<select
+							className={styles.filterSelect}
+							value={statusFilter}
+							onChange={onStatusFilterChange}
+							aria-label={t('shared.status', { defaultValue: 'Status' })}
+						>
+							<option value="all">{t('shared.allStatuses', { defaultValue: 'All Statuses' })}</option>
+							<option value="active">{t('shared.active', { defaultValue: 'Active' })}</option>
+							<option value="inactive">{t('shared.inactive', { defaultValue: 'Inactive' })}</option>
+						</select>
+					</div>
+				)}
 			</div>
 
 			{loading ? (
