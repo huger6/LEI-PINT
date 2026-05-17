@@ -22,6 +22,18 @@ export async function fetchLearningPaths({ page = 1, limit = 12, search, status 
 	return parseResponse(data);
 }
 
+export async function fetchAllLearningPaths({ search } = {}) {
+	const params = { limit: 100 };
+	if (search) params.search = search;
+	const { data } = await api.get('/learning-paths', { params });
+	return parseResponse(data);
+}
+
+export async function fetchLearningPathsFilterStats() {
+	const { data } = await api.get('/learning-paths/filter-stats');
+	return data?.data || { maxConsultantCount: 0, maxServiceLineCount: 0 };
+}
+
 export async function fetchServiceLines({ page = 1, limit = 12, search, status } = {}) {
 	const { data } = await api.get('/service-lines', { params: buildParams({ page, limit, search, status }) });
 	return parseResponse(data);
