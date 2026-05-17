@@ -10,16 +10,22 @@ const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/learning-paths
 const getAllLearningPaths = (req, res) => {
+    const isAdmin = req.user?.role === 'Administrator';
+    const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
     return handleListRequest({
         req, res,
         schema: validations.getAvailableLearningPathsQuerySchema,
         modelName: 'learning_paths',
         cachePrefix: 'lp:list',
         order: [['path_title', 'ASC']],
-        attributeIncludes: [
-            [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.learning_path_id = "learning_paths"."learning_path_id")'), 'consultant_count'],
-            [Sequelize.literal('(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths"."learning_path_id")'), 'service_line_count']
-        ]
+        attributes: {
+            include: [
+                [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.learning_path_id = "learning_paths"."learning_path_id")'), 'consultant_count'],
+                [Sequelize.literal('(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths"."learning_path_id")'), 'service_line_count']
+            ],
+            exclude: excludedFields
+        }
     });
 };
 
@@ -31,14 +37,10 @@ const getFilterStats = async (req, res) => {
     try {
         const cached = await redis.get(cacheKey);
         if (cached) {
-            return res.status(200).json({
-                success: true,
-                data: JSON.parse(cached)
-            });
+            return res.status(200).json({ success: true, data: JSON.parse(cached) });
         }
 
         const sequelize = models.learning_paths.sequelize;
-
         const [result] = await sequelize.query(`
             SELECT
                 COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
@@ -46,13 +48,8 @@ const getFilterStats = async (req, res) => {
             FROM (
                 SELECT
                     lp.learning_path_id,
-                    (SELECT COUNT(DISTINCT ba.user_id)
-                     FROM badge_applications ba
-                     INNER JOIN badges b ON ba.badge_id = b.badge_id
-                     WHERE b.learning_path_id = lp.learning_path_id) AS consultant_count,
-                    (SELECT COUNT(*)
-                     FROM service_lines sl
-                     WHERE sl.learning_path_id = lp.learning_path_id) AS service_line_count
+                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.learning_path_id = lp.learning_path_id) AS consultant_count,
+                    (SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = lp.learning_path_id) AS service_line_count
                 FROM learning_paths lp
             ) sub
         `, { type: Sequelize.QueryTypes.SELECT });
@@ -63,18 +60,10 @@ const getFilterStats = async (req, res) => {
         };
 
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-
-        return res.status(200).json({
-            success: true,
-            data: payload
-        });
+        return res.status(200).json({ success: true, data: payload });
     } catch (error) {
         logger.error('Error fetching LP filter stats', { error, requestId });
-        return res.status(500).json({
-            success: false,
-            code: "LP_FILTER_STATS_FAILED",
-            requestId
-        });
+        return res.status(500).json({ success: false, code: "LP_FILTER_STATS_FAILED", requestId });
     }
 };
 

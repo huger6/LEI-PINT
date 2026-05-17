@@ -16,6 +16,13 @@ const badgesRoutes = require('./badges.routes');
 router.get('/', areaController.getAreas);
 
 /**
+ * @route   GET /api/areas/filter-stats
+ * @desc    Get max consultant and level counts for filter bounds
+ * @access  Administrator
+ */
+router.get('/filter-stats', loginRequired, isAdmin, areaController.getFilterStats);
+
+/**
  * @route   GET /api/areas/count
  * @desc    Get total number of active areas
  * @access  Administrator

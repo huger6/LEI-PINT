@@ -1,3 +1,4 @@
+const { Sequelize } = require('sequelize');
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
@@ -47,12 +48,22 @@ const getAreas = async (req, res) => {
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
+        const isAdmin = req.user?.role === 'Administrator';
+        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
         return handleListRequest({
             req, res,
             schema: validations.getAreasQuerySchema,
             modelName: 'areas',
             cachePrefix: cachePrefix,
-            order: [['area_name', 'ASC']]
+            order: [['area_name', 'ASC']],
+            attributes: {
+                include: [
+                    [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.area_id = "areas"."area_id")'), 'consultant_count'],
+                    [Sequelize.literal('(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas"."area_id")'), 'level_count']
+                ],
+                exclude: excludedFields
+            }
         });
 
     } catch (error) {
@@ -61,6 +72,44 @@ const getAreas = async (req, res) => {
             success: false,
             code: "AREA_LIST_FAILED"
         });
+    }
+};
+
+// GET /api/areas/filter-stats
+const getFilterStats = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'areas:filter-stats';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({ success: true, data: JSON.parse(cached) });
+        }
+
+        const sequelize = models.areas.sequelize;
+        const [result] = await sequelize.query(`
+            SELECT
+                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
+                COALESCE(MAX(level_count), 0)      AS "maxLevelCount"
+            FROM (
+                SELECT
+                    a.area_id,
+                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.area_id = a.area_id) AS consultant_count,
+                    (SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = a.area_id) AS level_count
+                FROM areas a
+            ) sub
+        `, { type: Sequelize.QueryTypes.SELECT });
+
+        const payload = {
+            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
+            maxLevelCount: parseInt(result.maxLevelCount, 10)
+        };
+
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching Area filter stats', { error, requestId });
+        return res.status(500).json({ success: false, code: "AREA_FILTER_STATS_FAILED", requestId });
     }
 };
 
@@ -282,6 +331,8 @@ const createArea = async (req, res) => {
 
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
+        await invalidateCacheByPrefix('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -396,6 +447,8 @@ const updateArea = async (req, res) => {
 
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
+        await invalidateCacheByPrefix('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -477,6 +530,8 @@ const deleteArea = async (req, res) => {
 
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
+        await invalidateCacheByPrefix('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -502,6 +557,7 @@ const deleteArea = async (req, res) => {
 
 module.exports = {
     getAreas,
+    getFilterStats,
     getAreasCount,
     getAreaBySlug,
     checkSlugAvailability,

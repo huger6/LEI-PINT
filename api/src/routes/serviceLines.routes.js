@@ -16,6 +16,13 @@ const badgeRoutes = require('./badges.routes');
 router.get('/', loginRequired, slController.getServiceLines);
 
 /**
+ * @route   GET /api/service-lines/filter-stats
+ * @desc    Get max consultant and area counts for filter bounds
+ * @access  Administrator
+ */
+router.get('/filter-stats', loginRequired, isAdmin, slController.getFilterStats);
+
+/**
  * @route   GET /api/service-lines/count
  * @desc    Get total number of active service lines
  * @access  Administrator
