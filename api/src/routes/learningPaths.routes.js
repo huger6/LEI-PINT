@@ -14,6 +14,13 @@ const slRoutes = require('./serviceLines.routes');
 router.get('/', lpController.getAllLearningPaths);
 
 /**
+ * @route   GET /api/learning-paths/filter-stats
+ * @desc    Get max consultant and service line counts for filter bounds
+ * @access  Administrator
+ */
+router.get('/filter-stats', loginRequired, isAdmin, lpController.getFilterStats);
+
+/**
  * @route   GET /api/learning-paths/count
  * @desc    Get total number of active learning paths
  * @access  Administrator

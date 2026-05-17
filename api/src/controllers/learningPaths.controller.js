@@ -1,3 +1,4 @@
+const { Sequelize } = require('sequelize');
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
@@ -14,8 +15,67 @@ const getAllLearningPaths = (req, res) => {
         schema: validations.getAvailableLearningPathsQuerySchema,
         modelName: 'learning_paths',
         cachePrefix: 'lp:list',
-        order: [['path_title', 'ASC']]
+        order: [['path_title', 'ASC']],
+        attributeIncludes: [
+            [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.learning_path_id = "learning_paths"."learning_path_id")'), 'consultant_count'],
+            [Sequelize.literal('(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths"."learning_path_id")'), 'service_line_count']
+        ]
     });
+};
+
+// GET /api/learning-paths/filter-stats
+const getFilterStats = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'lp:filter-stats';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cached)
+            });
+        }
+
+        const sequelize = models.learning_paths.sequelize;
+
+        const [result] = await sequelize.query(`
+            SELECT
+                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
+                COALESCE(MAX(service_line_count), 0) AS "maxServiceLineCount"
+            FROM (
+                SELECT
+                    lp.learning_path_id,
+                    (SELECT COUNT(DISTINCT ba.user_id)
+                     FROM badge_applications ba
+                     INNER JOIN badges b ON ba.badge_id = b.badge_id
+                     WHERE b.learning_path_id = lp.learning_path_id) AS consultant_count,
+                    (SELECT COUNT(*)
+                     FROM service_lines sl
+                     WHERE sl.learning_path_id = lp.learning_path_id) AS service_line_count
+                FROM learning_paths lp
+            ) sub
+        `, { type: Sequelize.QueryTypes.SELECT });
+
+        const payload = {
+            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
+            maxServiceLineCount: parseInt(result.maxServiceLineCount, 10)
+        };
+
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+
+        return res.status(200).json({
+            success: true,
+            data: payload
+        });
+    } catch (error) {
+        logger.error('Error fetching LP filter stats', { error, requestId });
+        return res.status(500).json({
+            success: false,
+            code: "LP_FILTER_STATS_FAILED",
+            requestId
+        });
+    }
 };
 
 // GET /api/learning-paths/count
@@ -153,6 +213,7 @@ const createLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
+        await invalidateCacheByPrefix('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(201).json({
@@ -228,6 +289,7 @@ const updateLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
+        await invalidateCacheByPrefix('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -282,6 +344,7 @@ const deleteLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
+        await invalidateCacheByPrefix('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -307,6 +370,7 @@ const deleteLearningPath = async (req, res) => {
 
 module.exports = {
     getAllLearningPaths,
+    getFilterStats,
     getLearningPathsCount,
     getLearningPathBySlug,
     checkSlugAvailability,
