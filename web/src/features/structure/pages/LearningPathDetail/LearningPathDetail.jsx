@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
+import { ADMIN } from '../../../../routes/paths';
 
 export default function LearningPathDetail() {
 	const { slug } = useParams();
@@ -72,8 +73,20 @@ export default function LearningPathDetail() {
 		isActive: sl.is_active,
 	}));
 
+	const breadcrumbItems = [
+		{
+			label: t('shared.structureLabels.learningPaths'),
+			path: ADMIN.LEARNING_PATHS,
+		},
+		{
+			label: lp.path_title,
+			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', slug),
+		},
+	];
+
 	return (
 		<StructureDetailLayout
+			breadcrumbItems={breadcrumbItems}
 			title={lp.path_title}
 			description={lp.path_description}
 			icon="learning-path"

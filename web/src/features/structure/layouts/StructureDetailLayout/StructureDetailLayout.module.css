@@ -38,7 +38,7 @@
 
 .mainGrid {
 	display: grid;
-	grid-template-columns: minmax(200px, 28%) 1fr;
+	grid-template-columns: minmax(200px, 280px) 1fr;
 	gap: 1.5rem;
 	align-items: start;
 }
@@ -167,7 +167,7 @@
 
 @media (max-width: 991px) {
 	.mainGrid {
-		grid-template-columns: minmax(180px, 32%) 1fr;
+		grid-template-columns: minmax(180px, 240px) 1fr;
 	}
 }
 

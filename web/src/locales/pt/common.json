@@ -437,6 +437,7 @@
 		"confirmDiscardChanges": "Tem alterações por guardar. Tem a certeza que deseja descartá-las?",
 		"breadcrumb": "Navegação estrutural",
 		"structureLabels": {
+			"structure": "Estrutura",
 			"learningPaths": "Learning Paths",
 			"serviceLines": "Service Lines",
 			"areas": "Áreas",
