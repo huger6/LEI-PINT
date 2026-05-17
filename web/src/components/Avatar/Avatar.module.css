@@ -20,7 +20,7 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(180deg, var(--color-primary, #00B8E0) 0%, var(--color-secondary, #39639C) 100%);
-    color: var(--color-on-background);
+    color: var(--color-on-primary);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.01em;
