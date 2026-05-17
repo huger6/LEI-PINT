@@ -11,7 +11,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:generate": "node ./src/config/generate-models.js",
-    "db:test": "node ./src/config/test-db.js"
+    "db:test": "node ./src/config/test-db.js",
+    "db:seed:massive": "node ./src/scripts/generate-test-data.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",
