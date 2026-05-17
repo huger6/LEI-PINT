@@ -55,44 +55,31 @@ export default function StructureDetailLayout({
 						)}
 					</div>
 
-					<div className={styles.actions}>
-						<Button
-							variant="outlined"
-							size="sm"
-							className={styles.actionBtn}
+					<div className={styles.toolbar}>
+						<button
+							type="button"
+							className={styles.toolbarBtn}
 							onClick={onEdit}
+							data-tooltip={t('shared.edit')}
 						>
-							<Icon name="pencil" size={15} aria-hidden="true" />
-							<span>{t('shared.edit')}</span>
-						</Button>
-						<Button
-							variant="outlined"
-							size="sm"
-							className={styles.actionBtn}
-							onClick={onAddSub}
-						>
-							<Icon name="add" size={15} aria-hidden="true" />
-							<span>{addSubLabel}</span>
-						</Button>
-						<Button
-							variant="outlined"
-							size="sm"
-							color="danger"
-							className={styles.actionBtn}
-							onClick={onDelete}
-						>
-							<Icon name="trash" size={15} aria-hidden="true" />
-							<span>{t('shared.delete')}</span>
-						</Button>
-						<Button
-							variant="outlined"
-							size="sm"
-							className={styles.actionBtn}
+							<Icon name="pencil" size={16} aria-hidden="true" />
+						</button>
+						<button
+							type="button"
+							className={styles.toolbarBtn}
 							onClick={onExport}
+							data-tooltip={t('structureDetail.export', { defaultValue: 'Export' })}
 						>
-							<Icon name="download" size={15} aria-hidden="true" />
-							<span>{t('structureDetail.export', { defaultValue: 'Export' })}</span>
-						</Button>
+							<Icon name="download" size={16} aria-hidden="true" />
+						</button>
+						<button
+							type="button"
+							className={`${styles.toolbarBtn} ${styles.toolbarBtnDanger}`}
+							onClick={onDelete}
+							data-tooltip={t('shared.delete')}
+						>
+							<Icon name="trash" size={16} aria-hidden="true" />
+						</button>
 					</div>
 				</aside>
 
@@ -116,9 +103,20 @@ export default function StructureDetailLayout({
 			</div>
 
 			{/* Sub-structures section */}
-			{subStructures && subStructures.length > 0 && (
-				<section className={styles.subSection}>
+			<section className={styles.subSection}>
+				<div className={styles.subSectionHeader}>
 					<h2 className={styles.sectionTitle}>{subStructureLabel}</h2>
+					<Button
+						variant="outlined"
+						size="sm"
+						className={styles.addSubBtn}
+						onClick={onAddSub}
+					>
+						<Icon name="add" size={15} aria-hidden="true" />
+						<span>{addSubLabel}</span>
+					</Button>
+				</div>
+				{subStructures && subStructures.length > 0 && (
 					<div className={styles.subGrid}>
 						{subStructures.map((sub) => (
 							<SubStructureCard
@@ -132,8 +130,8 @@ export default function StructureDetailLayout({
 							/>
 						))}
 					</div>
-				</section>
-			)}
+				)}
+			</section>
 		</div>
 	);
 }

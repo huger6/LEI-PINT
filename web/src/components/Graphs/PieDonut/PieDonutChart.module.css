@@ -1,0 +1,14 @@
+.chartWrapper {
+	width: 100%;
+}
+
+.chartWrapper :global(.recharts-tooltip-wrapper .recharts-default-tooltip) {
+	border-radius: 8px !important;
+	border: 1px solid #e0e0e0 !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.chartWrapper :global(.recharts-legend-wrapper) {
+	font-size: 12px;
+	padding-top: 12px;
+}
