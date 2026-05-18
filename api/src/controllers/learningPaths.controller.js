@@ -1,5 +1,6 @@
 const { Sequelize } = require('sequelize');
 const { models } = require('../config/db');
+const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -19,13 +20,10 @@ const getAllLearningPaths = (req, res) => {
         modelName: 'learning_paths',
         cachePrefix: 'lp:list',
         order: [['path_title', 'ASC']],
-        attributes: {
-            include: [
-                [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.learning_path_id = "learning_paths"."learning_path_id")'), 'consultant_count'],
-                [Sequelize.literal('(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths"."learning_path_id")'), 'service_line_count']
-            ],
-            exclude: excludedFields
-        }
+        extraAttributes: [
+            [literal(`(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'service_line_count'],
+            [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'consultant_count'],
+        ]
     });
 };
 
@@ -202,7 +200,7 @@ const createLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(201).json({
@@ -278,7 +276,7 @@ const updateLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -333,7 +331,7 @@ const deleteLearningPath = async (req, res) => {
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({
@@ -357,6 +355,32 @@ const deleteLearningPath = async (req, res) => {
     }
 };
 
+const getFilterStats = async (req, res) => {
+    const cacheKey = 'lp:filter-stats';
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
+
+        const rows = await models.learning_paths.findAll({
+            attributes: [
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'service_line_count'],
+            ],
+            raw: true,
+        });
+
+        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
+        const maxServiceLineCount = Math.max(0, ...rows.map(r => Number(r.service_line_count || 0)));
+
+        const payload = { maxConsultantCount, maxServiceLineCount };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching LP filter stats', { error });
+        return res.status(500).json({ success: false, code: 'LP_FILTER_STATS_FAILED' });
+    }
+};
+
 module.exports = {
     getAllLearningPaths,
     getFilterStats,
@@ -365,5 +389,6 @@ module.exports = {
     checkSlugAvailability,
     createLearningPath,
     updateLearningPath,
-    deleteLearningPath
+    deleteLearningPath,
+    getFilterStats
 };

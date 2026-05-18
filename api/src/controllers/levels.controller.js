@@ -1,5 +1,6 @@
 const { Sequelize } = require('sequelize');
 const { models } = require('../config/db');
+const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -63,13 +64,10 @@ const getLevels = async (req, res) => {
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
             order: [['stage_sequence', 'ASC']],
-            attributes: {
-                include: [
-                    [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.progression_stage_id = "progression_stages"."progression_stage_id")'), 'consultant_count'],
-                    [Sequelize.literal('(SELECT COUNT(*) FROM badges bg WHERE bg.progression_stage_id = "progression_stages"."progression_stage_id")'), 'badge_count']
-                ],
-                exclude: excludedFields
-            }
+            extraAttributes: [
+                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {
@@ -333,8 +331,7 @@ const createLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
-        await invalidateCacheByPrefix('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:filter-stats');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -449,8 +446,7 @@ const updateLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
-        await invalidateCacheByPrefix('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:filter-stats');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -510,8 +506,7 @@ const deleteLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
-        await invalidateCacheByPrefix('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:filter-stats');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
 
         return res.status(200).json({
@@ -535,6 +530,32 @@ const deleteLevel = async (req, res) => {
     }
 };
 
+const getFilterStats = async (req, res) => {
+    const cacheKey = 'levels:filter-stats';
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
+
+        const rows = await models.progression_stages.findAll({
+            attributes: [
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+            ],
+            raw: true,
+        });
+
+        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
+        const maxBadgeCount = Math.max(0, ...rows.map(r => Number(r.badge_count || 0)));
+
+        const payload = { maxConsultantCount, maxBadgeCount };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching levels filter stats', { error });
+        return res.status(500).json({ success: false, code: 'LEVEL_FILTER_STATS_FAILED' });
+    }
+};
+
 module.exports = {
     getLevels,
     getFilterStats,
@@ -542,5 +563,6 @@ module.exports = {
     getLevelByCode,
     createLevel,
     updateLevel,
-    deleteLevel
+    deleteLevel,
+    getFilterStats
 };

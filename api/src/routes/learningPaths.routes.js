@@ -28,6 +28,13 @@ router.get('/filter-stats', loginRequired, isAdmin, lpController.getFilterStats)
 router.get('/count', loginRequired, isAdmin, lpController.getLearningPathsCount);
 
 /**
+ * @route   GET /api/learning-paths/filter-stats
+ * @desc    Get max counts for client-side range filters
+ * @access  Administrator
+ */
+router.get('/filter-stats', loginRequired, isAdmin, lpController.getFilterStats);
+
+/**
  * @route   GET /api/learning-paths/check-slug?slug=mySlug
  * @desc    Check whether a given learning path slug is available
  * @access  Administrator

@@ -13,7 +13,7 @@ const handleListRequest = async ({
     include = [],
     order = [['created_at', 'DESC']],
     attributes = null,
-    attributeIncludes = []
+    extraAttributes = []
 }) => {
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
@@ -65,7 +65,7 @@ const handleListRequest = async ({
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
         const finalAttributes = attributes || {
-            include: attributeIncludes,
+            include: extraAttributes,
             exclude: excludedFields
         };
 

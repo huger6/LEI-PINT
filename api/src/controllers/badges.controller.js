@@ -1,4 +1,5 @@
 const { models } = require('../config/db');
+const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
@@ -95,7 +96,10 @@ const getBadges = async (req, res) => {
             schema: validations.getBadgesQuerySchema,
             modelName: 'badges',
             cachePrefix: cachePrefix,
-            order: [['badge_points', 'DESC']]
+            order: [['badge_points', 'DESC']],
+            extraAttributes: [
+                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab WHERE ab.badge_id = "badges".badge_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {

@@ -1,5 +1,6 @@
 const { Sequelize, Op } = require('sequelize');
 const { models } = require('../config/db');
+const { Op, literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -45,13 +46,10 @@ const getServiceLines = async (req, res) => {
             modelName: 'service_lines',
             cachePrefix: cachePrefix,
             order: [['service_line_name', 'ASC']],
-            attributes: {
-                include: [
-                    [Sequelize.literal('(SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.service_line_id = "service_lines"."service_line_id")'), 'consultant_count'],
-                    [Sequelize.literal('(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines"."service_line_id")'), 'area_count']
-                ],
-                exclude: excludedFields
-            }
+            extraAttributes: [
+                [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {
@@ -273,8 +271,7 @@ const createServiceLine = async (req, res) => {
 
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
-        await invalidateCacheByPrefix('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('sl:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(201).json({
@@ -362,8 +359,7 @@ const updateServiceLine = async (req, res) => {
 
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
-        await invalidateCacheByPrefix('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('sl:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
@@ -419,8 +415,7 @@ const deleteServiceLine = async (req, res) => {
 
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
-        await invalidateCacheByPrefix('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:filter-stats');
+        await redis.del('sl:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
@@ -445,6 +440,32 @@ const deleteServiceLine = async (req, res) => {
 };
 
 
+const getFilterStats = async (req, res) => {
+    const cacheKey = 'sl:filter-stats';
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
+
+        const rows = await models.service_lines.findAll({
+            attributes: [
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
+            ],
+            raw: true,
+        });
+
+        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
+        const maxAreaCount = Math.max(0, ...rows.map(r => Number(r.area_count || 0)));
+
+        const payload = { maxConsultantCount, maxAreaCount };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching SL filter stats', { error });
+        return res.status(500).json({ success: false, code: 'SL_FILTER_STATS_FAILED' });
+    }
+};
+
 module.exports = {
     getServiceLines,
     getFilterStats,
@@ -453,5 +474,6 @@ module.exports = {
     checkSlugAvailability,
     createServiceLine,
     updateServiceLine,
-    deleteServiceLine
+    deleteServiceLine,
+    getFilterStats
 };
