@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 3;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -22,6 +22,9 @@ class LocalDatabase {
   static const skillsTable = 'skills_cache';
   static const rewardsTable = 'rewards_cache';
   static const announcementsTable = 'announcements_cache';
+
+  // ── Sync tracking ────────────────────────────────────────────────────────
+  static const syncMetadataTable = 'sync_metadata';
 
   // ── Own-user data (pulled from server, keyed to the logged-in consultant) ─
   static const currentUserTable = 'current_user_profile';
@@ -43,6 +46,7 @@ class LocalDatabase {
   static const myAreasTable = 'my_areas';
 
   static const List<String> userOwnedTables = [
+    syncMetadataTable,
     currentUserTable,
     notificationsTable,
     awardedBadgesTable,
@@ -100,16 +104,24 @@ class LocalDatabase {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // v1 only had 3 cache tables with no user data — safe to drop and rebuild.
       await db.execute('DROP TABLE IF EXISTS locations_cache');
       await db.execute('DROP TABLE IF EXISTS languages_cache');
       await db.execute('DROP TABLE IF EXISTS areas_cache');
       await _createAllTables(db);
     }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $syncMetadataTable (
+          update_code INTEGER PRIMARY KEY,
+          synced_at   TEXT    NOT NULL
+        )
+      ''');
+    }
   }
 
   Future<void> _createAllTables(Database db) async {
     final sqls = [
+      ..._syncSqls(),
       ..._referenceSqls(),
       ..._ownUserSqls(),
       ..._offlineWriteSqls(),
@@ -120,6 +132,17 @@ class LocalDatabase {
     }
     await batch.commit(noResult: true);
   }
+
+  // ── Sync metadata ─────────────────────────────────────────────────────────
+
+  List<String> _syncSqls() => [
+    '''
+      CREATE TABLE IF NOT EXISTS $syncMetadataTable (
+        update_code INTEGER PRIMARY KEY,
+        synced_at   TEXT    NOT NULL
+      )
+    ''',
+  ];
 
   // ── Reference tables ──────────────────────────────────────────────────────
 
