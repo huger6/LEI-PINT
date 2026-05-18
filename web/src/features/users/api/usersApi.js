@@ -1,6 +1,6 @@
 import api from '../../../services/api';
 
-export const fetchUsers = async ({ filters = {}, page = 1, limit = 20 } = {}) => {
+export const fetchUsers = async ({ filters = {}, page = 1, limit = 32 } = {}) => {
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('limit', String(limit));

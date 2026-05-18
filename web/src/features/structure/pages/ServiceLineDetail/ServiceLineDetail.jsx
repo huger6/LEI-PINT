@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
@@ -6,13 +6,21 @@ import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine, fetchParentLearningPath } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
 
+const PAGE_SIZE = 32;
+
 export default function ServiceLineDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
 	const [sl, setSl] = useState(null);
 	const [areas, setAreas] = useState([]);
+	const [pagination, setPagination] = useState(null);
+	const [currentPage, setCurrentPage] = useState(1);
 	const [parentLp, setParentLp] = useState(null);
 	const [loading, setLoading] = useState(true);
+
+	const fetchSubStructures = useCallback((page) => {
+		return fetchAreasByServiceLine(slug, { page, limit: PAGE_SIZE });
+	}, [slug]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -20,12 +28,14 @@ export default function ServiceLineDetail() {
 
 		Promise.all([
 			fetchServiceLineBySlug(slug),
-			fetchAreasByServiceLine(slug)
+			fetchSubStructures(1)
 		])
 			.then(([slData, areasData]) => {
 				if (cancelled) return;
 				setSl(slData);
 				setAreas(areasData.items);
+				setPagination(areasData.pagination);
+				setCurrentPage(1);
 
 				if (slData?.learning_path_id) {
 					return fetchParentLearningPath(slData.learning_path_id);
@@ -44,7 +54,17 @@ export default function ServiceLineDetail() {
 			});
 
 		return () => { cancelled = true; };
-	}, [slug]);
+	}, [slug, fetchSubStructures]);
+
+	const handlePageChange = useCallback((page) => {
+		setCurrentPage(page);
+		fetchSubStructures(page)
+			.then((areasData) => {
+				setAreas(areasData.items);
+				setPagination(areasData.pagination);
+			})
+			.catch(console.error);
+	}, [fetchSubStructures]);
 
 	if (loading) return <Spinner />;
 	if (!sl) return null;
@@ -56,7 +76,7 @@ export default function ServiceLineDetail() {
 		{
 			icon: 'area',
 			label: t('shared.structureLabels.areas'),
-			value: areas.length,
+			value: pagination?.totalItems ?? areas.length,
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
@@ -81,6 +101,11 @@ export default function ServiceLineDetail() {
 		title: area.area_name,
 		description: area.area_description,
 		isActive: area.is_active,
+		to: ADMIN.AREA_DETAIL.replace(':slug', area.area_slug),
+		infoItems: [
+			{ icon: 'tabler_users', value: Number(area.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+			{ icon: 'evolution', value: Number(area.level_count || 0), label: t('shared.levels', { defaultValue: 'Levels' }) },
+		],
 	}));
 
 	const breadcrumbItems = [];
@@ -116,6 +141,8 @@ export default function ServiceLineDetail() {
 			onAddSub={() => {}}
 			onDelete={() => {}}
 			onExport={() => {}}
+			pagination={pagination}
+			onPageChange={handlePageChange}
 		/>
 	);
 }

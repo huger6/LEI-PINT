@@ -436,6 +436,12 @@
 		"pointsMax": "Max Points",
 		"confirmDiscardChanges": "You have unsaved changes. Are you sure you want to discard them?",
 		"breadcrumb": "Breadcrumb",
+		"consultants": "Consultants",
+		"serviceLines": "Service Lines",
+		"areas": "Areas",
+		"levels": "Levels",
+		"badges": "Badges",
+		"status": "Status",
 		"structureLabels": {
 			"structure": "Structure",
 			"learningPaths": "Learning Paths",
@@ -586,6 +592,24 @@
 		"details": "Details",
 		"noItems": "No items",
 		"noItemsDesc": "No {{step}} found."
+	},
+	"structureList": {
+		"searchLearningPaths": "Search learning paths...",
+		"searchServiceLines": "Search service lines...",
+		"searchAreas": "Search areas...",
+		"searchLevels": "Search levels...",
+		"newLearningPath": "New Learning Path",
+		"newServiceLine": "New Service Line",
+		"newArea": "New Area",
+		"newLevel": "New Level",
+		"noLearningPaths": "No Learning Paths Found",
+		"noServiceLines": "No Service Lines Found",
+		"noAreas": "No Areas Found",
+		"noLevels": "No Levels Found",
+		"noLearningPathsDesc": "Create your first learning path to get started.",
+		"noServiceLinesDesc": "Create your first service line to get started.",
+		"noAreasDesc": "Create your first area to get started.",
+		"noLevelsDesc": "Create your first level to get started."
 	},
 	"myApplications": {
 		"title": "My Applications",

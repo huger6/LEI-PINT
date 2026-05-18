@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './SubStructureCard.module.css';
 
-export default function SubStructureCard({ icon, title, description, count, isActive, tone }) {
+export default function SubStructureCard({ icon, title, description, count, isActive, tone, to, infoItems }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
 
-	return (
-		<div className={`${styles.card} ${toneClass}`}>
+	const content = (
+		<>
 			<div className={styles.iconWrap} aria-hidden="true">
 				<Icon name={icon} size={28} />
 			</div>
@@ -23,10 +24,34 @@ export default function SubStructureCard({ icon, title, description, count, isAc
 					)}
 				</div>
 				{description && <p className={styles.description}>{description}</p>}
+				{infoItems && infoItems.length > 0 && (
+					<div className={styles.infoStrip}>
+						{infoItems.map((info) => (
+							<span key={info.label} className={styles.infoItem} title={info.label}>
+								<Icon name={info.icon} size={15} />
+								<span className={styles.infoValue}>{info.value ?? 0}</span>
+							</span>
+						))}
+					</div>
+				)}
 			</div>
 			{count !== undefined && (
 				<span className={styles.count}>{count}</span>
 			)}
+		</>
+	);
+
+	if (to) {
+		return (
+			<Link to={to} className={`${styles.card} ${toneClass}`}>
+				{content}
+			</Link>
+		);
+	}
+
+	return (
+		<div className={`${styles.card} ${toneClass}`}>
+			{content}
 		</div>
 	);
 }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './StructureItemCard.module.css';
 
-export default function StructureItemCard({ to, icon, title, description, imageUrl, isActive, meta, tone }) {
+export default function StructureItemCard({ to, icon, title, description, imageUrl, isActive, meta, tone, infoItems }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
 
@@ -33,6 +33,16 @@ export default function StructureItemCard({ to, icon, title, description, imageU
 					</div>
 					{description && <p className={styles.description}>{description}</p>}
 					{meta && <span className={styles.meta}>{meta}</span>}
+					{infoItems && infoItems.length > 0 && (
+						<div className={styles.infoStrip}>
+							{infoItems.map((info) => (
+								<span key={info.label} className={styles.infoItem} title={info.label}>
+									<Icon name={info.icon} size={16} />
+									<span className={styles.infoValue}>{info.value ?? 0}</span>
+								</span>
+							))}
+						</div>
+					)}
 				</div>
 
 				<div className={styles.arrow} aria-hidden="true">

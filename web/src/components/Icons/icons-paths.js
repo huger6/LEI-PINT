@@ -62,7 +62,7 @@ export const PATHS = {
             stroke: "none",
         },
     ],
-    'check2': [
+    'check_circle': [
         {
             d: "M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z",
             stroke: "currentColor",
@@ -104,6 +104,16 @@ export const PATHS = {
             d: "M6.4 19L5 17.6L10.6 12L5 6.4L6.4 5L12 10.6L17.6 5L19 6.4L13.4 12L19 17.6L17.6 19L12 13.4L6.4 19Z",
             fill: "currentColor",
             stroke: "none",
+        },
+    ],
+    'close_circle': [
+        {
+            d: "M7.757 16.243L16.243 7.757M16.243 16.243L7.757 7.757M22 12C22 17.523 17.523 22 12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C17.523 2 22 6.477 22 12Z",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeMiterlimit: "10",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
         },
     ],
     'eye': [
