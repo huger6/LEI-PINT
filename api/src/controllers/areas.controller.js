@@ -1,5 +1,7 @@
+const { literal } = require('sequelize');
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -46,12 +48,19 @@ const getAreas = async (req, res) => {
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
+        const isAdmin = req.user?.role === 'Administrator';
+        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
         return handleListRequest({
             req, res,
             schema: validations.getAreasQuerySchema,
             modelName: 'areas',
             cachePrefix: cachePrefix,
-            order: [['area_name', 'ASC']]
+            order: [['area_name', 'ASC']],
+            extraAttributes: [
+                [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {
@@ -59,6 +68,42 @@ const getAreas = async (req, res) => {
         return res.status(500).json({
             success: false,
             code: "AREA_LIST_FAILED"
+        });
+    }
+};
+
+// GET /api/areas/count
+const getAreasCount = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'areas:count:all';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cached)
+            });
+        }
+
+        const [active, inactive] = await Promise.all([
+            models.areas.count({ where: { is_active: true } }),
+            models.areas.count({ where: { is_active: false } })
+        ]);
+
+        const payload = { count: active + inactive, active, inactive };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+
+        return res.status(200).json({
+            success: true,
+            data: payload
+        });
+    } catch (error) {
+        logger.error('Error fetching Areas count', { error, requestId });
+        return res.status(500).json({
+            success: false,
+            code: "AREA_COUNT_FAILED",
+            requestId
         });
     }
 };
@@ -244,6 +289,8 @@ const createArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -357,6 +404,8 @@ const updateArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -437,6 +486,8 @@ const deleteArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -460,11 +511,39 @@ const deleteArea = async (req, res) => {
     }
 };
 
+const getFilterStats = async (req, res) => {
+    const cacheKey = 'areas:filter-stats';
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
+
+        const rows = await models.areas.findAll({
+            attributes: [
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
+            ],
+            raw: true,
+        });
+
+        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
+        const maxLevelCount = Math.max(0, ...rows.map(r => Number(r.level_count || 0)));
+
+        const payload = { maxConsultantCount, maxLevelCount };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching areas filter stats', { error });
+        return res.status(500).json({ success: false, code: 'AREA_FILTER_STATS_FAILED' });
+    }
+};
+
 module.exports = {
     getAreas,
+    getFilterStats,
+    getAreasCount,
     getAreaBySlug,
     checkSlugAvailability,
     createArea,
     updateArea,
-    deleteArea
+    deleteArea,
 };

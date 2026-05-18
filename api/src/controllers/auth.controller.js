@@ -509,7 +509,7 @@ const login = async (req, res) => {
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
+        const refreshTokenDurationDays = remember ? 30 : (1 / 24); // 1h
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
@@ -545,11 +545,14 @@ const login = async (req, res) => {
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
+        const decoded = jwt.decode(accessToken);
+
         return res.status(200).json({
             success: true,
             code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
+                tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
                 fpc: user.force_password_change,
                 user: {
                     full_name: user.full_name,
@@ -683,12 +686,21 @@ const refresh = async (req, res) => {
             maxAge: remainingTimeMs
         });
 
+        const decoded = jwt.decode(accessToken);
+
         return res.status(200).json({
             success: true,
             code: "AUTH_TOKEN_REFRESHED",
             data: {
                 token: accessToken,
-                fpc: user.force_password_change
+                tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
+                fpc: user.force_password_change,
+                user: {
+                    full_name: user.full_name,
+                    username: user.username,
+                    role: user.user_role,
+                    profile_img_url: user.profile_img_url
+                }
             }
         });
     } catch (error) {

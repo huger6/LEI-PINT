@@ -1,5 +1,5 @@
 const admin = require('../config/firebase');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 const sendTopicUpdate = async (topic = "new_data", updateCode) => {
     const message = {

@@ -209,7 +209,7 @@ function initModels(sequelize) {
   badge_requirements.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
   progression_stages.hasMany(badge_requirements, { as: "badge_requirements", foreignKey: "progression_stage_id"});
   badges.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
-  progression_stages.hasOne(badges, { as: "badge", foreignKey: "progression_stage_id"});
+  progression_stages.hasMany(badges, { as: "badges", foreignKey: "progression_stage_id"});
   announc_sl.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
   service_lines.hasMany(announc_sl, { as: "announc_sls", foreignKey: "service_line_id"});
   areas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});

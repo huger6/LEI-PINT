@@ -18,6 +18,13 @@ router.get('/users', loginRequired, isAdmin, adminController.getUsers);
 router.post('/users', loginRequired, isAdmin, adminController.createUser);
 
 /**
+ * @route   GET /api/admin/users/:userGuid
+ * @desc    Get a single user's full profile
+ * @access  Administrator
+ */
+router.get('/users/:userGuid', loginRequired, isAdmin, adminController.getUser);
+
+/**
  * @route   PUT /api/admin/users/:userGuid
  * @desc    Update a user's profile or role
  * @access  Administrator

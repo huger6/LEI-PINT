@@ -202,7 +202,7 @@ const getConsultantStats = async (userId) => {
     });
 
     const badgesInProgress = await models.badge_applications.count({
-        where: { consultant_id: userId, status: 'Open' }
+        where: { user_id: userId, application_state: 'Open' }
     });
 
     const [rankRows] = await sequelize.query(
