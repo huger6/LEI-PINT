@@ -1,6 +1,5 @@
-const { Sequelize } = require('sequelize');
-const { models } = require('../config/db');
 const { literal } = require('sequelize');
+const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -76,44 +75,6 @@ const getLevels = async (req, res) => {
             success: false,
             code: "LEVEL_LIST_FAILED"
         });
-    }
-};
-
-// GET /api/levels/filter-stats
-const getFilterStats = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'levels:filter-stats';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({ success: true, data: JSON.parse(cached) });
-        }
-
-        const sequelize = models.progression_stages.sequelize;
-        const [result] = await sequelize.query(`
-            SELECT
-                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
-                COALESCE(MAX(badge_count), 0)      AS "maxBadgeCount"
-            FROM (
-                SELECT
-                    ps.progression_stage_id,
-                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.progression_stage_id = ps.progression_stage_id) AS consultant_count,
-                    (SELECT COUNT(*) FROM badges bg WHERE bg.progression_stage_id = ps.progression_stage_id) AS badge_count
-                FROM progression_stages ps
-            ) sub
-        `, { type: Sequelize.QueryTypes.SELECT });
-
-        const payload = {
-            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
-            maxBadgeCount: parseInt(result.maxBadgeCount, 10)
-        };
-
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching Level filter stats', { error, requestId });
-        return res.status(500).json({ success: false, code: "LEVEL_FILTER_STATS_FAILED", requestId });
     }
 };
 
@@ -564,5 +525,4 @@ module.exports = {
     createLevel,
     updateLevel,
     deleteLevel,
-    getFilterStats
 };
