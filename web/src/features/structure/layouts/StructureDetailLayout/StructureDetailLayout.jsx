@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
 import Button from '../../../../components/Button/Button';
+import Pagination from '../../../../components/Pagination/Pagination';
 import StructureStatCard from '../../components/StructureStatCard/StructureStatCard';
 import SubStructureCard from '../../components/SubStructureCard/SubStructureCard';
 import StructureBreadcrumb from '../../components/StructureBreadcrumb/StructureBreadcrumb';
@@ -24,6 +25,8 @@ export default function StructureDetailLayout({
 	onDelete,
 	onExport,
 	addSubLabel,
+	pagination,
+	onPageChange,
 }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
@@ -127,9 +130,20 @@ export default function StructureDetailLayout({
 								count={sub.count}
 								isActive={sub.isActive}
 								tone={subStructureTone}
+								to={sub.to}
+								infoItems={sub.infoItems}
 							/>
 						))}
 					</div>
+				)}
+				{pagination && onPageChange && (
+					<Pagination
+						currentPage={pagination.currentPage}
+						totalPages={pagination.totalPages}
+						totalItems={pagination.totalItems}
+						itemCount={subStructures?.length || 0}
+						onPageChange={onPageChange}
+					/>
 				)}
 			</section>
 		</div>

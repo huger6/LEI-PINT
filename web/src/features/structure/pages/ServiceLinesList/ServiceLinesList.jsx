@@ -8,7 +8,7 @@ import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
 const DEBOUNCE_MS = 400;
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 32;
 
 export default function ServiceLinesList() {
 	const { t } = useTranslation();
@@ -174,6 +174,10 @@ export default function ServiceLinesList() {
 					imageUrl={item.img_url}
 					isActive={item.is_active}
 					tone="serviceLines"
+					infoItems={[
+						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+						{ icon: 'area', value: Number(item.area_count || 0), label: t('shared.areas', { defaultValue: 'Areas' }) },
+					]}
 				/>
 			)}
 		/>

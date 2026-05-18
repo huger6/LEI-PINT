@@ -5,7 +5,7 @@ export async function fetchLearningPathBySlug(slug) {
 	return data?.data || null;
 }
 
-export async function fetchServiceLinesByLearningPath(lpSlug, { page = 1, limit = 50 } = {}) {
+export async function fetchServiceLinesByLearningPath(lpSlug, { page = 1, limit = 32 } = {}) {
 	const { data } = await api.get(`/learning-paths/${lpSlug}/service-lines`, {
 		params: { page, limit }
 	});
@@ -20,7 +20,7 @@ export async function fetchServiceLineBySlug(slug) {
 	return data?.data || null;
 }
 
-export async function fetchAreasByServiceLine(slSlug, { page = 1, limit = 50 } = {}) {
+export async function fetchAreasByServiceLine(slSlug, { page = 1, limit = 32 } = {}) {
 	const { data } = await api.get(`/service-lines/${slSlug}/areas`, {
 		params: { page, limit }
 	});
@@ -35,7 +35,7 @@ export async function fetchAreaBySlug(slug) {
 	return data?.data || null;
 }
 
-export async function fetchLevelsByArea(areaSlug, { page = 1, limit = 50 } = {}) {
+export async function fetchLevelsByArea(areaSlug, { page = 1, limit = 32 } = {}) {
 	const { data } = await api.get(`/areas/${areaSlug}/levels`, {
 		params: { page, limit }
 	});
@@ -51,7 +51,7 @@ export async function fetchLevelByCode(stageCode) {
 	return items.length > 0 ? items[0] : null;
 }
 
-export async function fetchBadgesByLevel(stageCode, { page = 1, limit = 50 } = {}) {
+export async function fetchBadgesByLevel(stageCode, { page = 1, limit = 32 } = {}) {
 	const { data } = await api.get(`/levels/${stageCode}/badges`, {
 		params: { page, limit }
 	});

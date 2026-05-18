@@ -9,12 +9,14 @@
 	box-shadow: var(--shadow-card);
 	transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 	cursor: pointer;
+	color: inherit;
 }
 
 .card:hover {
 	transform: translateY(-1px);
 	border-color: var(--tone-border, var(--color-primary-border-medium));
 	box-shadow: 0 8px 22px rgba(14, 25, 36, 0.08);
+	text-decoration: none;
 }
 
 .iconWrap {
@@ -73,6 +75,26 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.infoStrip {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 0.3rem;
+}
+
+.infoItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.75rem;
+	color: var(--color-outline);
+}
+
+.infoValue {
+	font-weight: 700;
+	color: var(--tone-fg, var(--color-primary));
 }
 
 .count {

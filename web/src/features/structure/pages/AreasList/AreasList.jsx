@@ -8,7 +8,7 @@ import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
 const DEBOUNCE_MS = 400;
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 32;
 
 export default function AreasList() {
 	const { t } = useTranslation();
@@ -175,6 +175,10 @@ export default function AreasList() {
 					isActive={item.is_active}
 					meta={item.area_code || undefined}
 					tone="areas"
+					infoItems={[
+						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+						{ icon: 'evolution', value: Number(item.level_count || 0), label: t('shared.levels', { defaultValue: 'Levels' }) },
+					]}
 				/>
 			)}
 		/>

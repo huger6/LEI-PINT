@@ -1,20 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchLevelByCode, fetchBadgesByLevel, fetchParentArea, fetchParentServiceLine, fetchParentLearningPath } from '../../api/structureDetailApi';
-import { ADMIN } from '../../../../routes/paths';
+import { ADMIN, SHARED } from '../../../../routes/paths';
+
+const PAGE_SIZE = 32;
 
 export default function LevelDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
 	const [level, setLevel] = useState(null);
 	const [badges, setBadges] = useState([]);
+	const [pagination, setPagination] = useState(null);
+	const [currentPage, setCurrentPage] = useState(1);
 	const [parentArea, setParentArea] = useState(null);
 	const [parentSl, setParentSl] = useState(null);
 	const [parentLp, setParentLp] = useState(null);
 	const [loading, setLoading] = useState(true);
+
+	const fetchSubStructures = useCallback((page) => {
+		return fetchBadgesByLevel(slug, { page, limit: PAGE_SIZE });
+	}, [slug]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -22,12 +30,14 @@ export default function LevelDetail() {
 
 		Promise.all([
 			fetchLevelByCode(slug),
-			fetchBadgesByLevel(slug)
+			fetchSubStructures(1)
 		])
 			.then(([levelData, badgesData]) => {
 				if (cancelled) return;
 				setLevel(levelData);
 				setBadges(badgesData.items);
+				setPagination(badgesData.pagination);
+				setCurrentPage(1);
 
 				if (levelData?.area_id) {
 					return fetchParentArea(levelData.area_id);
@@ -66,7 +76,17 @@ export default function LevelDetail() {
 			});
 
 		return () => { cancelled = true; };
-	}, [slug]);
+	}, [slug, fetchSubStructures]);
+
+	const handlePageChange = useCallback((page) => {
+		setCurrentPage(page);
+		fetchSubStructures(page)
+			.then((badgesData) => {
+				setBadges(badgesData.items);
+				setPagination(badgesData.pagination);
+			})
+			.catch(console.error);
+	}, [fetchSubStructures]);
 
 	if (loading) return <Spinner />;
 	if (!level) return null;
@@ -78,7 +98,7 @@ export default function LevelDetail() {
 		{
 			icon: 'badge',
 			label: t('structureDetail.badges', { defaultValue: 'Badges' }),
-			value: badges.length,
+			value: pagination?.totalItems ?? badges.length,
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
@@ -103,6 +123,10 @@ export default function LevelDetail() {
 		title: badge.badge_title,
 		description: badge.badge_description,
 		isActive: badge.is_active,
+		to: SHARED.BADGE_DETAIL.replace(':slug', badge.badge_slug),
+		infoItems: [
+			{ icon: 'tabler_users', value: Number(badge.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+		],
 	}));
 
 	const breadcrumbItems = [];
@@ -152,6 +176,8 @@ export default function LevelDetail() {
 			onAddSub={() => {}}
 			onDelete={() => {}}
 			onExport={() => {}}
+			pagination={pagination}
+			onPageChange={handlePageChange}
 		/>
 	);
 }

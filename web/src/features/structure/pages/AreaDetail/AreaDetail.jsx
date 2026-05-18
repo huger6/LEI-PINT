@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
@@ -6,14 +6,22 @@ import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchAreaBySlug, fetchLevelsByArea, fetchParentServiceLine, fetchParentLearningPath } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
 
+const PAGE_SIZE = 32;
+
 export default function AreaDetail() {
 	const { slug } = useParams();
 	const { t } = useTranslation();
 	const [area, setArea] = useState(null);
 	const [levels, setLevels] = useState([]);
+	const [pagination, setPagination] = useState(null);
+	const [currentPage, setCurrentPage] = useState(1);
 	const [parentSl, setParentSl] = useState(null);
 	const [parentLp, setParentLp] = useState(null);
 	const [loading, setLoading] = useState(true);
+
+	const fetchSubStructures = useCallback((page) => {
+		return fetchLevelsByArea(slug, { page, limit: PAGE_SIZE });
+	}, [slug]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -21,12 +29,14 @@ export default function AreaDetail() {
 
 		Promise.all([
 			fetchAreaBySlug(slug),
-			fetchLevelsByArea(slug)
+			fetchSubStructures(1)
 		])
 			.then(([areaData, levelsData]) => {
 				if (cancelled) return;
 				setArea(areaData);
 				setLevels(levelsData.items);
+				setPagination(levelsData.pagination);
+				setCurrentPage(1);
 
 				if (areaData?.service_line_id) {
 					return fetchParentServiceLine(areaData.service_line_id);
@@ -55,7 +65,17 @@ export default function AreaDetail() {
 			});
 
 		return () => { cancelled = true; };
-	}, [slug]);
+	}, [slug, fetchSubStructures]);
+
+	const handlePageChange = useCallback((page) => {
+		setCurrentPage(page);
+		fetchSubStructures(page)
+			.then((levelsData) => {
+				setLevels(levelsData.items);
+				setPagination(levelsData.pagination);
+			})
+			.catch(console.error);
+	}, [fetchSubStructures]);
 
 	if (loading) return <Spinner />;
 	if (!area) return null;
@@ -67,7 +87,7 @@ export default function AreaDetail() {
 		{
 			icon: 'evolution',
 			label: t('shared.structureLabels.stages'),
-			value: levels.length,
+			value: pagination?.totalItems ?? levels.length,
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
@@ -92,6 +112,11 @@ export default function AreaDetail() {
 		title: level.stage_title,
 		description: level.stage_description,
 		isActive: level.is_active,
+		to: ADMIN.LEVEL_DETAIL.replace(':slug', level.stage_code?.stage_code || level.progression_stage_id),
+		infoItems: [
+			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+			{ icon: 'badge', value: Number(level.badge_count || 0), label: t('shared.badges', { defaultValue: 'Badges' }) },
+		],
 	}));
 
 	const breadcrumbItems = [];
@@ -134,6 +159,8 @@ export default function AreaDetail() {
 			onAddSub={() => {}}
 			onDelete={() => {}}
 			onExport={() => {}}
+			pagination={pagination}
+			onPageChange={handlePageChange}
 		/>
 	);
 }

@@ -8,7 +8,7 @@ import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
 const DEBOUNCE_MS = 400;
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 32;
 
 export default function LearningPathsList() {
 	const { t } = useTranslation();
@@ -174,6 +174,10 @@ export default function LearningPathsList() {
 					imageUrl={item.img_url}
 					isActive={item.is_active}
 					tone="learningPaths"
+					infoItems={[
+						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+						{ icon: 'service-line', value: Number(item.service_line_count || 0), label: t('shared.serviceLines', { defaultValue: 'Service Lines' }) },
+					]}
 				/>
 			)}
 		/>

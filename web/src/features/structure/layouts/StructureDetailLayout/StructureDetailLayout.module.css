@@ -210,9 +210,15 @@
 
 .subGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-template-columns: repeat(2, 1fr);
 	gap: 0.85rem;
 	margin-top: 0.75rem;
+}
+
+@media (max-width: 767px) {
+	.subGrid {
+		grid-template-columns: 1fr;
+	}
 }
 
 /* Tones */

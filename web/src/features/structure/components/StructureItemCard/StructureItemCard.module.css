@@ -115,6 +115,26 @@
 	border-radius: 6px;
 }
 
+.infoStrip {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	margin-top: 0.4rem;
+}
+
+.infoItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.78rem;
+	color: var(--color-outline);
+}
+
+.infoValue {
+	font-weight: 700;
+	color: var(--tone-fg, var(--color-primary));
+}
+
 .arrow {
 	flex-shrink: 0;
 	color: var(--tone-fg, var(--color-primary));

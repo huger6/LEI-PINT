@@ -435,6 +435,12 @@
 		"pointsMax": "Puntos Máximos",
 		"confirmDiscardChanges": "Tienes cambios sin guardar. ¿Estás seguro de que deseas descartarlos?",
 		"breadcrumb": "Ruta de navegación",
+		"consultants": "Consultores",
+		"serviceLines": "Service Lines",
+		"areas": "Áreas",
+		"levels": "Niveles",
+		"badges": "Badges",
+		"status": "Estado",
 		"structureLabels": {
 			"structure": "Estructura",
 			"learningPaths": "Learning Paths",
@@ -585,6 +591,24 @@
 		"details": "Detalles",
 		"noItems": "Sin elementos",
 		"noItemsDesc": "Ningún {{step}} encontrado."
+	},
+	"structureList": {
+		"searchLearningPaths": "Buscar learning paths...",
+		"searchServiceLines": "Buscar service lines...",
+		"searchAreas": "Buscar áreas...",
+		"searchLevels": "Buscar niveles...",
+		"newLearningPath": "Nuevo Learning Path",
+		"newServiceLine": "Nueva Service Line",
+		"newArea": "Nueva Área",
+		"newLevel": "Nuevo Nivel",
+		"noLearningPaths": "No se encontraron Learning Paths",
+		"noServiceLines": "No se encontraron Service Lines",
+		"noAreas": "No se encontraron Áreas",
+		"noLevels": "No se encontraron Niveles",
+		"noLearningPathsDesc": "Crea tu primer learning path para comenzar.",
+		"noServiceLinesDesc": "Crea tu primera service line para comenzar.",
+		"noAreasDesc": "Crea tu primera área para comenzar.",
+		"noLevelsDesc": "Crea tu primer nivel para comenzar."
 	},
 	"myApplications": {
 		"title": "Mis Candidaturas",
