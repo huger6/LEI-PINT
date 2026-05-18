@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/services/fcm_service.dart';
 import '../../data/remote/api_client.dart';
 import '../../data/remote/supabase_storage_service.dart';
 import '../../data/repositories/auth_repo.dart';
@@ -41,6 +42,8 @@ class AuthStore extends ChangeNotifier {
       _currentUser = result['user'] as UserModel?;
       _apiClient.setAccessToken(_accessToken);
       notifyListeners();
+
+      await FCMService.subscribe();
     }
 
     return result;
@@ -106,6 +109,8 @@ class AuthStore extends ChangeNotifier {
   }
 
   Future<void> clearSession() async {
+    await FCMService.unsubscribe();
+
     _accessToken = null;
     _currentUser = null;
     _draftRegistration = RegistrationData();

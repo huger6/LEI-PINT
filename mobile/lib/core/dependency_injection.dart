@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/local/area_dao.dart';
+import '../data/local/badge_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/remote/api_client.dart';
@@ -18,6 +19,7 @@ import '../data/repositories/location_repo.dart';
 import '../data/repositories/ranking_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
+import 'services/sync_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -93,6 +95,8 @@ Future<void> setupDependencies() async {
     getIt.registerLazySingleton<ApiClient>(() => ApiClient(getIt<Dio>()));
   }
 
+  // ── DAOs ──────────────────────────────────────────────────────────────────
+
   if (!getIt.isRegistered<AreaDao>()) {
     getIt.registerLazySingleton<AreaDao>(() => AreaDao(getIt<LocalDatabase>()));
   }
@@ -108,6 +112,14 @@ Future<void> setupDependencies() async {
       () => LocationDao(getIt<LocalDatabase>()),
     );
   }
+
+  if (!getIt.isRegistered<BadgeDao>()) {
+    getIt.registerLazySingleton<BadgeDao>(
+      () => BadgeDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  // ── Repositories ──────────────────────────────────────────────────────────
 
   if (!getIt.isRegistered<AuthRepository>()) {
     getIt.registerLazySingleton<AuthRepository>(
@@ -135,7 +147,7 @@ Future<void> setupDependencies() async {
 
   if (!getIt.isRegistered<BadgeRepository>()) {
     getIt.registerLazySingleton<BadgeRepository>(
-      () => BadgeRepository(getIt<ApiClient>()),
+      () => BadgeRepository(getIt<ApiClient>(), getIt<BadgeDao>()),
     );
   }
 
@@ -154,6 +166,14 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<ValidationRepository>()) {
     getIt.registerLazySingleton<ValidationRepository>(
       () => ValidationRepository(getIt<ApiClient>()),
+    );
+  }
+
+  // ── SyncService ───────────────────────────────────────────────────────────
+
+  if (!getIt.isRegistered<SyncService>()) {
+    getIt.registerLazySingleton<SyncService>(
+      () => SyncService(getIt<ApiClient>(), getIt<LocalDatabase>()),
     );
   }
 

@@ -1,21 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
+import '../../core/constants/sync_codes.dart';
+import '../../core/services/sync_service.dart';
 import '../../data/repositories/badge_repo.dart';
 import '../../models/badge_model.dart';
 
 class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
-  BadgeStore(this._badgeRepository) {
-    WidgetsBinding.instance.addObserver(
-      this,
-    ); // Regista o ouvinte do ciclo de vida
-    // Escuta magicamente as atualizações vindas do FCM via Repository
-    _badgeRepository.badgeStream.listen((updatedBadges) {
-      _badges = updatedBadges;
-      notifyListeners(); // Avisa a UI para se reconstruir imediatamente
-    });
+  BadgeStore(this._badgeRepository, this._syncService) {
+    WidgetsBinding.instance.addObserver(this);
+
+    _syncSubscription = _syncService.onSyncComplete
+        .where((code) => code == SyncCodes.badges)
+        .listen((_) => _reloadFromLocal());
   }
 
   final BadgeRepository _badgeRepository;
+  final SyncService _syncService;
+  StreamSubscription<int>? _syncSubscription;
 
   final Map<String, BadgeModel> _detailsBySlug = <String, BadgeModel>{};
   List<BadgeModel> _badges = [];
@@ -28,19 +31,24 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Previne memory leaks
+    WidgetsBinding.instance.removeObserver(this);
+    _syncSubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Mecanismo de Fallback: Sincronização Passiva
-    // Se a app voltar a ser aberta e perdeu a notificação de background por falta de rede,
-    // recupera os dados neste preciso momento.
     if (state == AppLifecycleState.resumed) {
-      // Idealmente, comparar o 'synced_at' local via cache antes de forçar o fetch completo.
-      // Para já, fazemos um reload de segurança forçado.
       loadBadges(forceRefresh: true);
+    }
+  }
+
+  Future<void> _reloadFromLocal() async {
+    final local = await _badgeRepository.getBadgesLocal();
+    if (local.isNotEmpty) {
+      _badges = local;
+      _errorMessage = null;
+      notifyListeners();
     }
   }
 
@@ -59,7 +67,12 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     try {
       _badges = await _badgeRepository.getBadges();
     } catch (e) {
-      _errorMessage = e.toString();
+      final local = await _badgeRepository.getBadgesLocal();
+      if (local.isNotEmpty) {
+        _badges = local;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

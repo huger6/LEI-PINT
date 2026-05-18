@@ -20,7 +20,8 @@ import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
 import 'injection_container.dart';
-import 'core/services/fcm_service.dart'; // Importa o novo serviço FCM
+import 'core/services/fcm_service.dart';
+import 'core/services/sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -127,7 +128,10 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider<BadgeStore>(
-          create: (_) => BadgeStore(getIt<BadgeRepository>()),
+          create: (_) => BadgeStore(
+            getIt<BadgeRepository>(),
+            getIt<SyncService>(),
+          ),
         ),
         ChangeNotifierProvider<ApplicationsStore>(
           create: (_) => ApplicationsStore(getIt<ApplicationsRepository>()),

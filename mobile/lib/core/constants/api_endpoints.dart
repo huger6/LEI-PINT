@@ -68,4 +68,16 @@ class ApiEndpoints {
   // === Ranking ===
   // GET /ranking
   static const String getRanking = '/api/ranking';
+
+  // === Sync-only endpoints (used by SyncService) ===
+  static const String getLearningPaths = '/api/learning-paths';
+  static const String getServiceLines = '/api/service-lines';
+  static const String getLevels = '/api/levels';
+  static const String getStageCodes = '/api/stage-codes';
+  static const String getAnnouncements = '/api/announcements';
+  static const String getNotifications = '/api/notifications';
+  static const String getEarnedBadges = '/api/gamification/earned-badges';
+  static const String getPointsHistory =
+      '/api/statistics/consultant/points-history';
+  static const String getValidationLogs = '/api/applications/validation-logs';
 }
