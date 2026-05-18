@@ -12,7 +12,8 @@ const handleListRequest = async ({
     baseWhere = {},
     include = [],
     order = [['created_at', 'DESC']],
-    attributes = null
+    attributes = null,
+    extraAttributes = []
 }) => {
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
@@ -44,6 +45,7 @@ const handleListRequest = async ({
         Object.keys(filters).forEach(key => {
             const value = filters[key];
             if (value !== undefined && value !== null && value !== '') {
+                if (key === 'is_active' && !isAdmin) return;
                 where[key] = value;
             }
         });
@@ -63,6 +65,7 @@ const handleListRequest = async ({
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
         const finalAttributes = attributes || {
+            include: extraAttributes,
             exclude: excludedFields
         };
 

@@ -1,5 +1,7 @@
 const { models } = require('../config/db');
+const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
@@ -94,7 +96,10 @@ const getBadges = async (req, res) => {
             schema: validations.getBadgesQuerySchema,
             modelName: 'badges',
             cachePrefix: cachePrefix,
-            order: [['badge_points', 'DESC']]
+            order: [['badge_points', 'DESC']],
+            extraAttributes: [
+                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab WHERE ab.badge_id = "badges".badge_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {
@@ -104,6 +109,19 @@ const getBadges = async (req, res) => {
             code: "BADGE_LIST_FAILED"
         });
     }
+};
+
+// GET /api/badges/count
+const getBadgesCount = async (req, res) => {
+    return handleCachedCountRequest({
+        req,
+        res,
+        model: models.badges,
+        cacheKey: 'badges:count:active',
+        where: { is_active: true },
+        failureCode: 'BADGE_COUNT_FAILED',
+        logContext: 'badges'
+    });
 };
 
 // GET /api/badges/:badgeSlug
@@ -422,6 +440,7 @@ const createBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await invalidateCacheByPrefix('badges:count');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(201).json({
@@ -650,6 +669,7 @@ const updateBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await invalidateCacheByPrefix('badges:count');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
@@ -708,6 +728,7 @@ const deleteBadge = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('badges:list');
+        await invalidateCacheByPrefix('badges:count');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
@@ -733,6 +754,7 @@ const deleteBadge = async (req, res) => {
 
 module.exports = {
     getBadges,
+    getBadgesCount,
     getBadgeBySlug,
     checkSlugAvailability,
     createBadge,

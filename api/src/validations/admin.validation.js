@@ -52,7 +52,7 @@ const optionalBoolQuery = z.preprocess(
 
 const listUsersQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().max(100).default(20),
+    limit: z.coerce.number().int().positive().max(100).default(32),
     user_role: userRoleRule.optional(),
     role: userRoleRule.optional(),
     location_id: positiveIntIdRule.optional(),
@@ -126,14 +126,16 @@ const updateUserBodySchema = z.object({
     email_address: emailRule.optional(),
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
-    profile_img_url: imgUrlRule.optional(),
+    profile_img_url: imgUrlRule.nullable().optional(),
     language_id: positiveIntIdRule.optional(),
     location_id: positiveIntIdRule.optional(),
     user_role: userRoleRule.optional(),
     biography: biographyRule.optional(),
     areas: consultantAreasSchema.optional(),
     service_line_id: positiveIntIdRule.optional(),
-    approve_member: z.boolean().optional()
+    approve_member: z.boolean().optional(),
+    email_confirmed: z.boolean().optional(),
+    gdpr_accepted: z.boolean().optional()
 })
     .refine(
         (data) => Object.values(data).some((value) => value !== undefined),

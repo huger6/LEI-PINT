@@ -383,8 +383,8 @@ const getEarnedBadges = async (req, res) => {
                                 'badge_title',
                                 'badge_slug',
                                 'badge_img_url',
-                                'description',
-                                'points_value'
+                                'badge_description',
+                                'badge_points'
                             ]
                         }
                     ]
