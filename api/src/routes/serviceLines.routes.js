@@ -30,13 +30,6 @@ router.get('/filter-stats', loginRequired, isAdmin, slController.getFilterStats)
 router.get('/count', loginRequired, isAdmin, slController.getServiceLinesCount);
 
 /**
- * @route   GET /api/service-lines/filter-stats
- * @desc    Get max counts for client-side range filters
- * @access  Administrator
- */
-router.get('/filter-stats', loginRequired, isAdmin, slController.getFilterStats);
-
-/**
  * @route   GET /api/service-lines/check-slug?slug=mySlug
  * @desc    Check whether a given service line slug is available
  * @access  Administrator

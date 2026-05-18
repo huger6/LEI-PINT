@@ -58,11 +58,11 @@ const moveStructureImageToPermanent = async (structureType, tempUrl, entityIdent
         ? `structure/${structureType}/${entityIdentifier}/${fileName}`
         : `structure/${structureType}/${fileName}`;
 
+    if (!supabase) return tempUrl;
+
     const { data, error } = await supabase.storage
         .from('public-assets')
         .move(tempPath, permanentPath);
-
-    if (!supabase) return tempUrl;
 
     if (error) {
         const storageError = new Error(error.message);

@@ -1,6 +1,5 @@
-const { Sequelize, Op } = require('sequelize');
+const { literal } = require('sequelize');
 const { models } = require('../config/db');
-const { Op, literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -59,44 +58,6 @@ const getServiceLines = async (req, res) => {
             code: "SL_LIST_FAILED",
             requestId
         });
-    }
-};
-
-// GET /api/service-lines/filter-stats
-const getFilterStats = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'sl:filter-stats';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({ success: true, data: JSON.parse(cached) });
-        }
-
-        const sequelize = models.service_lines.sequelize;
-        const [result] = await sequelize.query(`
-            SELECT
-                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
-                COALESCE(MAX(area_count), 0)       AS "maxAreaCount"
-            FROM (
-                SELECT
-                    sl.service_line_id,
-                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.service_line_id = sl.service_line_id) AS consultant_count,
-                    (SELECT COUNT(*) FROM areas a WHERE a.service_line_id = sl.service_line_id) AS area_count
-                FROM service_lines sl
-            ) sub
-        `, { type: Sequelize.QueryTypes.SELECT });
-
-        const payload = {
-            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
-            maxAreaCount: parseInt(result.maxAreaCount, 10)
-        };
-
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching SL filter stats', { error, requestId });
-        return res.status(500).json({ success: false, code: "SL_FILTER_STATS_FAILED", requestId });
     }
 };
 
@@ -475,5 +436,4 @@ module.exports = {
     createServiceLine,
     updateServiceLine,
     deleteServiceLine,
-    getFilterStats
 };
