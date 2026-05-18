@@ -1,6 +1,5 @@
-const { Sequelize } = require('sequelize');
-const { models } = require('../config/db');
 const { literal } = require('sequelize');
+const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -70,44 +69,6 @@ const getAreas = async (req, res) => {
             success: false,
             code: "AREA_LIST_FAILED"
         });
-    }
-};
-
-// GET /api/areas/filter-stats
-const getFilterStats = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'areas:filter-stats';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({ success: true, data: JSON.parse(cached) });
-        }
-
-        const sequelize = models.areas.sequelize;
-        const [result] = await sequelize.query(`
-            SELECT
-                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
-                COALESCE(MAX(level_count), 0)      AS "maxLevelCount"
-            FROM (
-                SELECT
-                    a.area_id,
-                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.area_id = a.area_id) AS consultant_count,
-                    (SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = a.area_id) AS level_count
-                FROM areas a
-            ) sub
-        `, { type: Sequelize.QueryTypes.SELECT });
-
-        const payload = {
-            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
-            maxLevelCount: parseInt(result.maxLevelCount, 10)
-        };
-
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching Area filter stats', { error, requestId });
-        return res.status(500).json({ success: false, code: "AREA_FILTER_STATS_FAILED", requestId });
     }
 };
 
@@ -585,5 +546,4 @@ module.exports = {
     createArea,
     updateArea,
     deleteArea,
-    getFilterStats
 };

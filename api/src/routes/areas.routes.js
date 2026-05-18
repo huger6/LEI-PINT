@@ -30,13 +30,6 @@ router.get('/filter-stats', loginRequired, isAdmin, areaController.getFilterStat
 router.get('/count', loginRequired, isAdmin, areaController.getAreasCount);
 
 /**
- * @route   GET /api/areas/filter-stats
- * @desc    Get max counts for client-side range filters
- * @access  Administrator
- */
-router.get('/filter-stats', loginRequired, isAdmin, areaController.getFilterStats);
-
-/**
  * @route   GET /api/areas/check-slug?slug=mySlug
  * @desc    Check whether a given area slug is available
  * @access  Administrator

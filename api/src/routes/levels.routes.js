@@ -29,13 +29,6 @@ router.get('/filter-stats', loginRequired, isAdmin, levelController.getFilterSta
 router.get('/count', loginRequired, isAdmin, levelController.getLevelsCount);
 
 /**
- * @route   GET /api/levels/filter-stats
- * @desc    Get max counts for client-side range filters
- * @access  Administrator
- */
-router.get('/filter-stats', loginRequired, isAdmin, levelController.getFilterStats);
-
-/**
  * @route   GET /api/levels/:stageCode
  *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
  * @desc    Get a single level by stage code
