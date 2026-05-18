@@ -30,7 +30,7 @@ const getAvailableLearningPathsQuerySchema = z.object({
 	serviceLineId: positiveIntIdRule.optional(),
 	is_active: booleanQueryRule.optional(),
 	page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
-	limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(12)
+	limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(32)
 });
 
 const getServiceLinesQuerySchema = z.object({
@@ -38,7 +38,7 @@ const getServiceLinesQuerySchema = z.object({
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(12)
+	limit: z.coerce.number().int().positive().max(100).default(32)
 });
 
 const getAreasQuerySchema = z.object({
@@ -46,7 +46,7 @@ const getAreasQuerySchema = z.object({
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(12)
+	limit: z.coerce.number().int().positive().max(100).default(32)
 });
 
 const getLevelsQuerySchema = z.object({
@@ -54,7 +54,7 @@ const getLevelsQuerySchema = z.object({
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(12)
+	limit: z.coerce.number().int().positive().max(100).default(32)
 });
 
 const getBadgesQuerySchema = z.object({
@@ -63,7 +63,7 @@ const getBadgesQuerySchema = z.object({
 	serviceLineId: positiveIntIdRule.optional(),
 	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(20)
+	limit: z.coerce.number().int().positive().max(100).default(32)
 });
 
 // Path parameter schemas

@@ -1,4 +1,6 @@
+const { Sequelize } = require('sequelize');
 const { models } = require('../config/db');
+const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
@@ -53,12 +55,19 @@ const getLevels = async (req, res) => {
             cachePrefix = `levels:list:area:${areaSlug}`;
         }
 
+        const isAdmin = req.user?.role === 'Administrator';
+        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
         return handleListRequest({
             req, res,
             schema: validations.getLevelsQuerySchema,
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
-            order: [['stage_sequence', 'ASC']]
+            order: [['stage_sequence', 'ASC']],
+            extraAttributes: [
+                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+            ]
         });
 
     } catch (error) {
@@ -67,6 +76,44 @@ const getLevels = async (req, res) => {
             success: false,
             code: "LEVEL_LIST_FAILED"
         });
+    }
+};
+
+// GET /api/levels/filter-stats
+const getFilterStats = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+    const cacheKey = 'levels:filter-stats';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.status(200).json({ success: true, data: JSON.parse(cached) });
+        }
+
+        const sequelize = models.progression_stages.sequelize;
+        const [result] = await sequelize.query(`
+            SELECT
+                COALESCE(MAX(consultant_count), 0) AS "maxConsultantCount",
+                COALESCE(MAX(badge_count), 0)      AS "maxBadgeCount"
+            FROM (
+                SELECT
+                    ps.progression_stage_id,
+                    (SELECT COUNT(DISTINCT ba.user_id) FROM badge_applications ba INNER JOIN badges b ON ba.badge_id = b.badge_id WHERE b.progression_stage_id = ps.progression_stage_id) AS consultant_count,
+                    (SELECT COUNT(*) FROM badges bg WHERE bg.progression_stage_id = ps.progression_stage_id) AS badge_count
+                FROM progression_stages ps
+            ) sub
+        `, { type: Sequelize.QueryTypes.SELECT });
+
+        const payload = {
+            maxConsultantCount: parseInt(result.maxConsultantCount, 10),
+            maxBadgeCount: parseInt(result.maxBadgeCount, 10)
+        };
+
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching Level filter stats', { error, requestId });
+        return res.status(500).json({ success: false, code: "LEVEL_FILTER_STATS_FAILED", requestId });
     }
 };
 
@@ -284,6 +331,7 @@ const createLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -398,6 +446,7 @@ const updateLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -457,6 +506,7 @@ const deleteLevel = async (req, res) => {
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 12);
 
         return res.status(200).json({
@@ -480,11 +530,39 @@ const deleteLevel = async (req, res) => {
     }
 };
 
+const getFilterStats = async (req, res) => {
+    const cacheKey = 'levels:filter-stats';
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
+
+        const rows = await models.progression_stages.findAll({
+            attributes: [
+                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+            ],
+            raw: true,
+        });
+
+        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
+        const maxBadgeCount = Math.max(0, ...rows.map(r => Number(r.badge_count || 0)));
+
+        const payload = { maxConsultantCount, maxBadgeCount };
+        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
+        return res.status(200).json({ success: true, data: payload });
+    } catch (error) {
+        logger.error('Error fetching levels filter stats', { error });
+        return res.status(500).json({ success: false, code: 'LEVEL_FILTER_STATS_FAILED' });
+    }
+};
+
 module.exports = {
     getLevels,
+    getFilterStats,
     getLevelsCount,
     getLevelByCode,
     createLevel,
     updateLevel,
-    deleteLevel
+    deleteLevel,
+    getFilterStats
 };
