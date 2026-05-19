@@ -99,6 +99,8 @@ export default function StructureDetailLayout({
 						</div>
 					)}
 
+					{extraContent}
+
 					<div className={styles.statsGrid}>
 						{stats.map((stat) => (
 							<StructureStatCard key={stat.label} {...stat} />
@@ -111,8 +113,6 @@ export default function StructureDetailLayout({
 							<span>{enrollmentMessage}</span>
 						</div>
 					)}
-
-					{extraContent}
 				</section>
 			</div>
 
