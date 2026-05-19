@@ -467,6 +467,14 @@ const createUser = async (req, res) => {
         await t.commit();
 
         await invalidateCacheByPrefix('admin:users:list');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 7);
         if (user_role === 'Consultant') {
@@ -716,7 +724,15 @@ const updateUser = async (req, res) => {
 
         await Promise.all([
             invalidateCacheByPrefix('admin:users:list'),
-            redis.del(`user:profile:${user.user_id}`)
+            redis.del(`user:profile:${user.user_id}`),
+            invalidateCacheByPrefix('lp:list'),
+            redis.del('lp:filter-stats'),
+            invalidateCacheByPrefix('sl:list'),
+            redis.del('sl:filter-stats'),
+            invalidateCacheByPrefix('areas:list'),
+            redis.del('areas:filter-stats'),
+            invalidateCacheByPrefix('levels:list'),
+            redis.del('levels:filter-stats'),
         ]);
         await sendTopicUpdate("new_data", 1);
         if (targetRole === 'Consultant') {
@@ -801,10 +817,17 @@ const deactivateUser = async (req, res) => {
             await models.user_refresh_tokens.destroy({ where: { user_id: user.user_id }, transaction: t });
         });
 
-        // Clear cached profile so /me immediately reflects deactivation
         await Promise.all([
             redis.del(`user:profile:${user.user_id}`),
-            invalidateCacheByPrefix('admin:users:list')
+            invalidateCacheByPrefix('admin:users:list'),
+            invalidateCacheByPrefix('lp:list'),
+            redis.del('lp:filter-stats'),
+            invalidateCacheByPrefix('sl:list'),
+            redis.del('sl:filter-stats'),
+            invalidateCacheByPrefix('areas:list'),
+            redis.del('areas:filter-stats'),
+            invalidateCacheByPrefix('levels:list'),
+            redis.del('levels:filter-stats'),
         ]);
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 8);
