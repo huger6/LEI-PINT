@@ -1,6 +1,7 @@
 const { models } = require('../config/db');
 const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
@@ -15,6 +16,7 @@ const getBadges = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug, stageCode } = req.params;
         let cachePrefix = 'badges:list:all';
+        let baseWhere = {};
 
         // If called through level
         if (stageCode) {
@@ -26,7 +28,7 @@ const getBadges = async (req, res) => {
                     ...(isNumeric ? {} : { where: { stage_code: stageCode } })
                 }
             ];
-            
+
             const levelWhere = isNumeric ? { progression_stage_id: parseInt(stageCode, 10) } : {};
 
             if (areaSlug) {
@@ -72,8 +74,7 @@ const getBadges = async (req, res) => {
                 });
             }
 
-            // Inject ID for Zod to recognize
-            req.query.progressionStageId = level.progression_stage_id;
+            baseWhere = { progression_stage_id: level.progression_stage_id };
             cachePrefix = `badges:list:level:${stageCode}:area:${areaSlug || 'all'}`;
 
         } else if (areaSlug) {
@@ -83,7 +84,7 @@ const getBadges = async (req, res) => {
                 attributes: ['area_id']
             });
 
-            if (area) req.query.areaId = area.area_id;
+            if (area) baseWhere = { area_id: area.area_id };
             cachePrefix = `badges:list:area:${areaSlug}`;
         } else if (slSlug) {
             const sl = await models.service_lines.findOne({
@@ -91,7 +92,7 @@ const getBadges = async (req, res) => {
                 attributes: ['service_line_id']
             });
 
-            if (sl) req.query.serviceLineId = sl.service_line_id;
+            if (sl) baseWhere = { service_line_id: sl.service_line_id };
             cachePrefix = `badges:list:sl:${slSlug}`;
         }
 
@@ -100,6 +101,7 @@ const getBadges = async (req, res) => {
             schema: validations.getBadgesQuerySchema,
             modelName: 'badges',
             cachePrefix: cachePrefix,
+            baseWhere,
             order: [['badge_points', 'DESC']],
             extraAttributes: [
                 [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
@@ -445,6 +447,8 @@ const createBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(201).json({
@@ -674,6 +678,8 @@ const updateBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
@@ -733,6 +739,8 @@ const deleteBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({

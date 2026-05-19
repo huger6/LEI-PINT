@@ -16,6 +16,7 @@ const getServiceLines = async (req, res) => {
     try {
         const { pathSlug } = req.params;
         let cachePrefix = 'sl:list:all';
+        let baseWhere = {};
 
         // If accessed via nested route, enforce Learning Path parent
         if (pathSlug) {
@@ -31,8 +32,7 @@ const getServiceLines = async (req, res) => {
                 });
             }
 
-            // Inject the ID into the query so listHelper filters by it
-            req.query.learning_path_id = lp.learning_path_id;
+            baseWhere = { learning_path_id: lp.learning_path_id };
             cachePrefix = `sl:list:lp:${pathSlug}`;
         }
 
@@ -41,6 +41,7 @@ const getServiceLines = async (req, res) => {
             schema: validations.getServiceLinesQuerySchema,
             modelName: 'service_lines',
             cachePrefix: cachePrefix,
+            baseWhere,
             order: [['service_line_name', 'ASC']],
             extraAttributes: [
                 [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
@@ -256,6 +257,8 @@ const createServiceLine = async (req, res) => {
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
         await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(201).json({
@@ -344,6 +347,8 @@ const updateServiceLine = async (req, res) => {
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
         await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
@@ -400,6 +405,8 @@ const deleteServiceLine = async (req, res) => {
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
         await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({

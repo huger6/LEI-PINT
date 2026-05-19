@@ -15,6 +15,7 @@ const getAreas = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
         let cachePrefix = 'areas:list:all';
+        let baseWhere = {};
 
         // If accessed via nested route, enforce Service Line (and optionally LP) parent
         if (slSlug) {
@@ -43,8 +44,7 @@ const getAreas = async (req, res) => {
                 });
             }
 
-            // Inject the ID into the query so listHelper filters by it
-            req.query.service_line_id = sl.service_line_id;
+            baseWhere = { service_line_id: sl.service_line_id };
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
@@ -53,6 +53,7 @@ const getAreas = async (req, res) => {
             schema: validations.getAreasQuerySchema,
             modelName: 'areas',
             cachePrefix: cachePrefix,
+            baseWhere,
             order: [['area_name', 'ASC']],
             extraAttributes: [
                 [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
@@ -118,29 +119,26 @@ const getAreaBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const includeBlock = [];
-
-        // If URL has parent slugs, enforce the hierarchy downwards
-        if (slSlug) {
-            const slInclude = {
-                model: models.service_lines,
-                as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            // Deeply nest the Learning Path include if pathSlug exists
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
-            }
-
-            includeBlock.push(slInclude);
+        const lpInclude = {
+            model: models.learning_paths,
+            as: 'learning_path',
+            attributes: ['path_title', 'path_slug'],
+        };
+        if (pathSlug) {
+            lpInclude.where = { path_slug: pathSlug };
         }
+
+        const slInclude = {
+            model: models.service_lines,
+            as: 'service_line',
+            attributes: ['service_line_name', 'sl_slug'],
+            include: [lpInclude],
+        };
+        if (slSlug) {
+            slInclude.where = { sl_slug: slSlug };
+        }
+
+        const includeBlock = [slInclude];
 
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
         const userId = req.user?.sub;
@@ -293,6 +291,10 @@ const createArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -408,6 +410,10 @@ const updateArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -490,6 +496,10 @@ const deleteArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
