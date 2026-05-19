@@ -27,6 +27,7 @@
 	transform: translateY(-2px);
 	box-shadow: 0 8px 20px rgba(14, 25, 36, 0.08);
 	border-color: var(--color-primary);
+	text-decoration: none;
 }
 
 .card:hover .arrow {
