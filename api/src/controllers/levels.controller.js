@@ -13,6 +13,7 @@ const getLevels = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug } = req.params;
         let cachePrefix = 'levels:list:all';
+        let baseWhere = {};
 
         if (areaSlug) {
             const includeBlock = [];
@@ -50,7 +51,7 @@ const getLevels = async (req, res) => {
                 });
             }
 
-            req.query.area_id = area.area_id;
+            baseWhere = { area_id: area.area_id };
             cachePrefix = `levels:list:area:${areaSlug}`;
         }
 
@@ -59,6 +60,7 @@ const getLevels = async (req, res) => {
             schema: validations.getLevelsQuerySchema,
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
+            baseWhere,
             order: [['stage_sequence', 'ASC']],
             include: [
                 {
@@ -182,24 +184,7 @@ const getLevelByCode = async (req, res) => {
                 schema: validations.getLevelsQuerySchema,
                 modelName: 'progression_stages',
                 cachePrefix: `levels:list:code:${stageCode}`,
-                include: [
-                    ...includeBlock,
-                    {
-                        model: models.areas,
-                        as: 'area',
-                        attributes: ['area_name', 'area_slug'],
-                        include: [{
-                            model: models.service_lines,
-                            as: 'service_line',
-                            attributes: ['service_line_name', 'sl_slug'],
-                            include: [{
-                                model: models.learning_paths,
-                                as: 'learning_path',
-                                attributes: ['path_title', 'path_slug']
-                            }]
-                        }]
-                    }
-                ],
+                include: includeBlock,
                 order: [['stage_sequence', 'ASC']],
                 extraAttributes: [
                     [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
