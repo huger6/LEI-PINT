@@ -4,6 +4,7 @@ import { ADMIN } from '../../../../routes/paths';
 import { fetchAllLearningPaths, fetchLearningPathsFilterStats } from '../../api/structureListApi';
 import StructureListLayout from '../../layouts/StructureListLayout/StructureListLayout';
 import StructureItemCard from '../../components/StructureItemCard/StructureItemCard';
+import CreateLearningPathModal from '../../components/CreateLearningPathModal/CreateLearningPathModal';
 import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
@@ -18,6 +19,8 @@ export default function LearningPathsList() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
 
 	const [statusFilter, setStatusFilter] = useState('all');
 	const [consultantMax, setConsultantMax] = useState(0);
@@ -61,7 +64,7 @@ export default function LearningPathsList() {
 				if (!cancelled) setLoading(false);
 			});
 		return () => { cancelled = true; };
-	}, [debouncedSearch]);
+	}, [debouncedSearch, refreshKey]);
 
 	const filtered = useMemo(() => {
 		let result = allItems;
@@ -146,40 +149,54 @@ export default function LearningPathsList() {
 		</>
 	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, serviceLineMax, serviceLineRange, t]);
 
+	const handleCreated = useCallback(() => {
+		setPage(1);
+		setRefreshKey((prev) => prev + 1);
+	}, []);
+
 	return (
-		<StructureListLayout
-			title={t('shared.structureLabels.learningPaths')}
-			icon="learning-path"
-			tone="learningPaths"
-			addLabel={t('structureList.newLearningPath', { defaultValue: 'New Learning Path' })}
-			onAdd={() => {}}
-			search={search}
-			onSearchChange={(e) => setSearch(e.target.value)}
-			searchPlaceholder={t('structureList.searchLearningPaths', { defaultValue: 'Search learning paths...' })}
-			renderFilters={renderFilters}
-			loading={loading}
-			items={paginatedItems}
-			pagination={{ totalItems: filtered.length, totalPages, currentPage }}
-			page={currentPage}
-			onPageChange={setPage}
-			emptyTitle={t('structureList.noLearningPaths', { defaultValue: 'No Learning Paths Found' })}
-			emptyDescription={t('structureList.noLearningPathsDesc', { defaultValue: 'Create your first learning path to get started.' })}
-			renderCard={(item) => (
-				<StructureItemCard
-					key={item.path_slug}
-					to={ADMIN.LEARNING_PATH_DETAIL.replace(':slug', item.path_slug)}
-					icon="learning-path"
-					title={item.path_title}
-					description={item.path_description}
-					imageUrl={item.img_url}
-					isActive={item.is_active}
-					tone="learningPaths"
-					infoItems={[
-						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
-						{ icon: 'service-line', value: Number(item.service_line_count || 0), label: t('shared.serviceLines', { defaultValue: 'Service Lines' }) },
-					]}
+		<>
+			<StructureListLayout
+				title={t('shared.structureLabels.learningPaths')}
+				icon="learning-path"
+				tone="learningPaths"
+				addLabel={t('structureList.newLearningPath', { defaultValue: 'New Learning Path' })}
+				onAdd={() => setShowCreateModal(true)}
+				search={search}
+				onSearchChange={(e) => setSearch(e.target.value)}
+				searchPlaceholder={t('structureList.searchLearningPaths', { defaultValue: 'Search learning paths...' })}
+				renderFilters={renderFilters}
+				loading={loading}
+				items={paginatedItems}
+				pagination={{ totalItems: filtered.length, totalPages, currentPage }}
+				page={currentPage}
+				onPageChange={setPage}
+				emptyTitle={t('structureList.noLearningPaths', { defaultValue: 'No Learning Paths Found' })}
+				emptyDescription={t('structureList.noLearningPathsDesc', { defaultValue: 'Create your first learning path to get started.' })}
+				renderCard={(item) => (
+					<StructureItemCard
+						key={item.path_slug}
+						to={ADMIN.LEARNING_PATH_DETAIL.replace(':slug', item.path_slug)}
+						icon="learning-path"
+						title={item.path_title}
+						description={item.path_description}
+						imageUrl={item.img_url}
+						isActive={item.is_active}
+						tone="learningPaths"
+						infoItems={[
+							{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+							{ icon: 'service-line', value: Number(item.service_line_count || 0), label: t('shared.serviceLines', { defaultValue: 'Service Lines' }) },
+						]}
+					/>
+				)}
+			/>
+
+			{showCreateModal && (
+				<CreateLearningPathModal
+					onClose={() => setShowCreateModal(false)}
+					onCreated={handleCreated}
 				/>
 			)}
-		/>
+		</>
 	);
 }

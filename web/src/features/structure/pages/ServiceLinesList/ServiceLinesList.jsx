@@ -4,6 +4,7 @@ import { ADMIN } from '../../../../routes/paths';
 import { fetchAllServiceLines, fetchServiceLinesFilterStats } from '../../api/structureListApi';
 import StructureListLayout from '../../layouts/StructureListLayout/StructureListLayout';
 import StructureItemCard from '../../components/StructureItemCard/StructureItemCard';
+import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
 import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
@@ -18,6 +19,8 @@ export default function ServiceLinesList() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
 
 	const [statusFilter, setStatusFilter] = useState('all');
 	const [consultantMax, setConsultantMax] = useState(0);
@@ -61,7 +64,7 @@ export default function ServiceLinesList() {
 				if (!cancelled) setLoading(false);
 			});
 		return () => { cancelled = true; };
-	}, [debouncedSearch]);
+	}, [debouncedSearch, refreshKey]);
 
 	const filtered = useMemo(() => {
 		let result = allItems;
@@ -146,40 +149,54 @@ export default function ServiceLinesList() {
 		</>
 	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, areaMax, areaRange, t]);
 
+	const handleCreated = useCallback(() => {
+		setPage(1);
+		setRefreshKey((prev) => prev + 1);
+	}, []);
+
 	return (
-		<StructureListLayout
-			title={t('shared.structureLabels.serviceLines')}
-			icon="service-line"
-			tone="serviceLines"
-			addLabel={t('structureList.newServiceLine', { defaultValue: 'New Service Line' })}
-			onAdd={() => {}}
-			search={search}
-			onSearchChange={(e) => setSearch(e.target.value)}
-			searchPlaceholder={t('structureList.searchServiceLines', { defaultValue: 'Search service lines...' })}
-			renderFilters={renderFilters}
-			loading={loading}
-			items={paginatedItems}
-			pagination={{ totalItems: filtered.length, totalPages, currentPage }}
-			page={currentPage}
-			onPageChange={setPage}
-			emptyTitle={t('structureList.noServiceLines', { defaultValue: 'No Service Lines Found' })}
-			emptyDescription={t('structureList.noServiceLinesDesc', { defaultValue: 'Create your first service line to get started.' })}
-			renderCard={(item) => (
-				<StructureItemCard
-					key={item.sl_slug}
-					to={ADMIN.SERVICE_LINE_DETAIL.replace(':slug', item.sl_slug)}
-					icon="service-line"
-					title={item.service_line_name}
-					description={item.service_line_description}
-					imageUrl={item.img_url}
-					isActive={item.is_active}
-					tone="serviceLines"
-					infoItems={[
-						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
-						{ icon: 'area', value: Number(item.area_count || 0), label: t('shared.areas', { defaultValue: 'Areas' }) },
-					]}
+		<>
+			<StructureListLayout
+				title={t('shared.structureLabels.serviceLines')}
+				icon="service-line"
+				tone="serviceLines"
+				addLabel={t('structureList.newServiceLine', { defaultValue: 'New Service Line' })}
+				onAdd={() => setShowCreateModal(true)}
+				search={search}
+				onSearchChange={(e) => setSearch(e.target.value)}
+				searchPlaceholder={t('structureList.searchServiceLines', { defaultValue: 'Search service lines...' })}
+				renderFilters={renderFilters}
+				loading={loading}
+				items={paginatedItems}
+				pagination={{ totalItems: filtered.length, totalPages, currentPage }}
+				page={currentPage}
+				onPageChange={setPage}
+				emptyTitle={t('structureList.noServiceLines', { defaultValue: 'No Service Lines Found' })}
+				emptyDescription={t('structureList.noServiceLinesDesc', { defaultValue: 'Create your first service line to get started.' })}
+				renderCard={(item) => (
+					<StructureItemCard
+						key={item.sl_slug}
+						to={ADMIN.SERVICE_LINE_DETAIL.replace(':slug', item.sl_slug)}
+						icon="service-line"
+						title={item.service_line_name}
+						description={item.service_line_description}
+						imageUrl={item.img_url}
+						isActive={item.is_active}
+						tone="serviceLines"
+						infoItems={[
+							{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+							{ icon: 'area', value: Number(item.area_count || 0), label: t('shared.areas', { defaultValue: 'Areas' }) },
+						]}
+					/>
+				)}
+			/>
+
+			{showCreateModal && (
+				<CreateServiceLineModal
+					onClose={() => setShowCreateModal(false)}
+					onSuccess={handleCreated}
 				/>
 			)}
-		/>
+		</>
 	);
 }
