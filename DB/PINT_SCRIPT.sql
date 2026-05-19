@@ -199,7 +199,6 @@ CREATE TABLE IF NOT EXISTS areas (
    area_name            VARCHAR(100)         NOT NULL,
    area_slug            VARCHAR(512)         NOT NULL,
       CONSTRAINT uk_slug_areas UNIQUE (area_slug),
-   area_code            VARCHAR(20)          NULL,
    area_description     TEXT                 NULL,
    img_url              VARCHAR(512)         NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
