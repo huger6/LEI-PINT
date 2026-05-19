@@ -1,6 +1,7 @@
 const { models } = require('../config/db');
 const { literal } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const redis = require('../config/redis');
 const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
@@ -446,6 +447,8 @@ const createBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(201).json({
@@ -675,6 +678,8 @@ const updateBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({
@@ -734,6 +739,8 @@ const deleteBadge = async (req, res) => {
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
         return res.status(200).json({

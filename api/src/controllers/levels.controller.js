@@ -324,6 +324,8 @@ const createLevel = async (req, res) => {
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
         await redis.del('levels:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -439,6 +441,8 @@ const updateLevel = async (req, res) => {
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
         await redis.del('levels:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
         await sendTopicUpdate("new_data", 13);
 
@@ -499,6 +503,8 @@ const deleteLevel = async (req, res) => {
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
         await redis.del('levels:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
 
         return res.status(200).json({

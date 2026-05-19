@@ -291,6 +291,10 @@ const createArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -406,6 +410,10 @@ const updateArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -488,6 +496,10 @@ const deleteArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
