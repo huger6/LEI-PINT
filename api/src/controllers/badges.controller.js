@@ -18,13 +18,16 @@ const getBadges = async (req, res) => {
 
         // If called through level
         if (stageCode) {
+            const isNumeric = /^\d+$/.test(stageCode);
             const stageIncludeBlock = [
                 {
                     model: models.stage_codes,
                     as: 'stage_code',
-                    where: { stage_code: stageCode }
+                    ...(isNumeric ? {} : { where: { stage_code: stageCode } })
                 }
             ];
+            
+            const levelWhere = isNumeric ? { progression_stage_id: parseInt(stageCode, 10) } : {};
 
             if (areaSlug) {
                 const areaInclude = {
@@ -57,6 +60,7 @@ const getBadges = async (req, res) => {
 
             // Get level's ID
             const level = await models.progression_stages.findOne({
+                where: levelWhere,
                 include: stageIncludeBlock,
                 attributes: ['progression_stage_id']
             });
@@ -98,7 +102,7 @@ const getBadges = async (req, res) => {
             cachePrefix: cachePrefix,
             order: [['badge_points', 'DESC']],
             extraAttributes: [
-                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab WHERE ab.badge_id = "badges".badge_id)`), 'consultant_count'],
+                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
             ]
         });
 

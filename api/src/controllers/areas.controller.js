@@ -118,35 +118,43 @@ const getAreaBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const lpInclude = {
-            model: models.learning_paths,
-            as: 'learning_path',
-            attributes: ['path_title', 'path_slug'],
-        };
-        if (pathSlug) {
-            lpInclude.where = { path_slug: pathSlug };
-        }
+        const includeBlock = [];
 
-        const slInclude = {
-            model: models.service_lines,
-            as: 'service_line',
-            attributes: ['service_line_name', 'sl_slug'],
-            include: [lpInclude],
-        };
+        // If URL has parent slugs, enforce the hierarchy downwards
         if (slSlug) {
-            slInclude.where = { sl_slug: slSlug };
+            const slInclude = {
+                model: models.service_lines,
+                as: 'service_line',
+                where: { sl_slug: slSlug },
+                attributes: []
+            };
+
+            // Deeply nest the Learning Path include if pathSlug exists
+            if (pathSlug) {
+                slInclude.include = [{
+                    model: models.learning_paths,
+                    as: 'learning_path',
+                    where: { path_slug: pathSlug },
+                    attributes: []
+                }];
+            }
+
+            includeBlock.push(slInclude);
         }
 
-        const includeBlock = [slInclude];
-
-        // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
+        const userId = req.user?.sub;
 
         const area = await models.areas.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca WHERE ca.area_id = "areas".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             }
         });
 

@@ -102,6 +102,7 @@ const getServiceLineBySlug = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
+        const userId = req.user?.sub;
 
         const whereClause = {
             sl_slug: slSlug,
@@ -118,14 +119,30 @@ const getServiceLineBySlug = async (req, res) => {
         }
         const includeBlock = [lpInclude];
 
-        // Hide unimportant data for non admins
+        // Include SLL leader info
+        includeBlock.push({
+            model: models.service_line_leaders,
+            as: 'service_line_leaders',
+            required: false,
+            include: [{
+                model: models.users,
+                as: 'user',
+                attributes: ['user_guid', 'full_name', 'username', 'profile_img_url']
+            }]
+        });
+
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
 
         const sl = await models.service_lines.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             }
         });
 
@@ -136,7 +153,18 @@ const getServiceLineBySlug = async (req, res) => {
             });
         }
 
-        return res.status(200).json({ success: true, data: sl });
+        const slJson = sl.toJSON();
+
+        // Flatten leader data
+        if (slJson.service_line_leaders?.length > 0) {
+            const leaderEntry = slJson.service_line_leaders[0];
+            slJson.leader = leaderEntry.user || null;
+        } else {
+            slJson.leader = null;
+        }
+        delete slJson.service_line_leaders;
+
+        return res.status(200).json({ success: true, data: slJson });
 
     } catch (error) {
         logger.error('Error fetching Service Line', { error, requestId });

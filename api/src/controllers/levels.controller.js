@@ -60,6 +60,18 @@ const getLevels = async (req, res) => {
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
             order: [['stage_sequence', 'ASC']],
+            include: [
+                {
+                    model: models.stage_codes,
+                    as: 'stage_code',
+                    attributes: ['stage_code']
+                },
+                {
+                    model: models.areas,
+                    as: 'area',
+                    attributes: ['area_name', 'area_slug']
+                }
+            ],
             extraAttributes: [
                 [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
                 [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
@@ -118,13 +130,14 @@ const getLevelByCode = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug, stageCode } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
+        const isNumeric = /^\d+$/.test(stageCode);
 
         // JOIN stage_codes to filter
         const includeBlock = [
             {
                 model: models.stage_codes,
                 as: 'stage_code',
-                where: { stage_code: stageCode }
+                ...(isNumeric ? {} : { where: { stage_code: stageCode } })
             }
         ];
 
@@ -160,21 +173,55 @@ const getLevelByCode = async (req, res) => {
 
         // /api/levels/:stageCode
         if (!areaSlug) {
+            const userId = req.user?.sub;
+            const baseWhere = isNumeric ? { progression_stage_id: parseInt(stageCode, 10) } : {};
+
             return handleListRequest({
                 req, res,
+                baseWhere,
                 schema: validations.getLevelsQuerySchema,
                 modelName: 'progression_stages',
                 cachePrefix: `levels:list:code:${stageCode}`,
-                include: includeBlock,
-                order: [['stage_sequence', 'ASC']]
+                include: [
+                    ...includeBlock,
+                    {
+                        model: models.areas,
+                        as: 'area',
+                        attributes: ['area_name', 'area_slug'],
+                        include: [{
+                            model: models.service_lines,
+                            as: 'service_line',
+                            attributes: ['service_line_name', 'sl_slug'],
+                            include: [{
+                                model: models.learning_paths,
+                                as: 'learning_path',
+                                attributes: ['path_title', 'path_slug']
+                            }]
+                        }]
+                    }
+                ],
+                order: [['stage_sequence', 'ASC']],
+                extraAttributes: [
+                    [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             });
         }
 
         const excludeFields = isAdmin ? [] : ["created_by", "updated_by"];
+        const userId = req.user?.sub;
 
         const level = await models.progression_stages.findOne({
             include: includeBlock,
-            attributes: { exclude: excludeFields }
+            attributes: {
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
+            }
         });
 
         if (!level) {
