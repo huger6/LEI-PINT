@@ -4,6 +4,7 @@ import { ADMIN } from '../../../../routes/paths';
 import { fetchAllAreas, fetchAreasFilterStats } from '../../api/structureListApi';
 import StructureListLayout from '../../layouts/StructureListLayout/StructureListLayout';
 import StructureItemCard from '../../components/StructureItemCard/StructureItemCard';
+import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
 import CustomSelect from '../../../../components/CustomSelect/CustomSelect';
 import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 
@@ -18,6 +19,8 @@ export default function AreasList() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
 
 	const [statusFilter, setStatusFilter] = useState('all');
 	const [consultantMax, setConsultantMax] = useState(0);
@@ -61,7 +64,7 @@ export default function AreasList() {
 				if (!cancelled) setLoading(false);
 			});
 		return () => { cancelled = true; };
-	}, [debouncedSearch]);
+	}, [debouncedSearch, refreshKey]);
 
 	const filtered = useMemo(() => {
 		let result = allItems;
@@ -146,41 +149,55 @@ export default function AreasList() {
 		</>
 	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, levelMax, levelRange, t]);
 
+	const handleCreated = useCallback(() => {
+		setPage(1);
+		setRefreshKey((prev) => prev + 1);
+	}, []);
+
 	return (
-		<StructureListLayout
-			title={t('shared.structureLabels.areas')}
-			icon="area"
-			tone="areas"
-			addLabel={t('structureList.newArea', { defaultValue: 'New Area' })}
-			onAdd={() => {}}
-			search={search}
-			onSearchChange={(e) => setSearch(e.target.value)}
-			searchPlaceholder={t('structureList.searchAreas', { defaultValue: 'Search areas...' })}
-			renderFilters={renderFilters}
-			loading={loading}
-			items={paginatedItems}
-			pagination={{ totalItems: filtered.length, totalPages, currentPage }}
-			page={currentPage}
-			onPageChange={setPage}
-			emptyTitle={t('structureList.noAreas', { defaultValue: 'No Areas Found' })}
-			emptyDescription={t('structureList.noAreasDesc', { defaultValue: 'Create your first area to get started.' })}
-			renderCard={(item) => (
-				<StructureItemCard
-					key={item.area_slug}
-					to={ADMIN.AREA_DETAIL.replace(':slug', item.area_slug)}
-					icon="area"
-					title={item.area_name}
-					description={item.area_description}
-					imageUrl={item.img_url}
-					isActive={item.is_active}
-					meta={item.area_code || undefined}
-					tone="areas"
-					infoItems={[
-						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
-						{ icon: 'evolution', value: Number(item.level_count || 0), label: t('shared.levels', { defaultValue: 'Levels' }) },
-					]}
+		<>
+			<StructureListLayout
+				title={t('shared.structureLabels.areas')}
+				icon="area"
+				tone="areas"
+				addLabel={t('structureList.newArea', { defaultValue: 'New Area' })}
+				onAdd={() => setShowCreateModal(true)}
+				search={search}
+				onSearchChange={(e) => setSearch(e.target.value)}
+				searchPlaceholder={t('structureList.searchAreas', { defaultValue: 'Search areas...' })}
+				renderFilters={renderFilters}
+				loading={loading}
+				items={paginatedItems}
+				pagination={{ totalItems: filtered.length, totalPages, currentPage }}
+				page={currentPage}
+				onPageChange={setPage}
+				emptyTitle={t('structureList.noAreas', { defaultValue: 'No Areas Found' })}
+				emptyDescription={t('structureList.noAreasDesc', { defaultValue: 'Create your first area to get started.' })}
+				renderCard={(item) => (
+					<StructureItemCard
+						key={item.area_slug}
+						to={ADMIN.AREA_DETAIL.replace(':slug', item.area_slug)}
+						icon="area"
+						title={item.area_name}
+						description={item.area_description}
+						imageUrl={item.img_url}
+						isActive={item.is_active}
+						meta={item.area_code || undefined}
+						tone="areas"
+						infoItems={[
+							{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
+							{ icon: 'evolution', value: Number(item.level_count || 0), label: t('shared.levels', { defaultValue: 'Levels' }) },
+						]}
+					/>
+				)}
+			/>
+
+			{showCreateModal && (
+				<CreateAreaModal
+					onClose={() => setShowCreateModal(false)}
+					onSuccess={handleCreated}
 				/>
 			)}
-		/>
+		</>
 	);
 }

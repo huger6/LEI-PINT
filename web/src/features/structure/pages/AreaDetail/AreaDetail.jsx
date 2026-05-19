@@ -1,21 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
+import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
 
 const PAGE_SIZE = 32;
 
 export default function AreaDetail() {
 	const { slug } = useParams();
+	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const [area, setArea] = useState(null);
 	const [levels, setLevels] = useState([]);
 	const [pagination, setPagination] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
+	const [showEditModal, setShowEditModal] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchLevelsByArea(slug, { page, limit: PAGE_SIZE });
@@ -55,6 +58,28 @@ export default function AreaDetail() {
 			})
 			.catch(console.error);
 	}, [fetchSubStructures]);
+
+	const handleEditSuccess = useCallback(async (updated) => {
+		const nextSlug = updated?.area_slug || slug;
+		try {
+			const refreshed = await fetchAreaBySlug(nextSlug);
+			if (refreshed) setArea(refreshed);
+		} catch (error) {
+			console.error(error);
+			setArea((prev) => (prev ? {
+				...prev,
+				area_name: updated?.area_name ?? prev.area_name,
+				area_slug: updated?.area_slug ?? prev.area_slug,
+				area_description: updated?.area_description ?? prev.area_description,
+				img_url: updated?.img_url ?? prev.img_url,
+				is_active: updated?.is_active ?? prev.is_active,
+			} : prev));
+		}
+
+		if (nextSlug && nextSlug !== slug) {
+			navigate(ADMIN.AREA_DETAIL.replace(':slug', nextSlug));
+		}
+	}, [slug, navigate]);
 
 	if (loading) return <Spinner />;
 	if (!area) return null;
@@ -116,27 +141,48 @@ export default function AreaDetail() {
 	});
 
 	return (
-		<StructureDetailLayout
-			breadcrumbItems={breadcrumbItems}
-			title={area.area_name}
-			description={area.area_description}
-			icon="area"
-			imageUrl={area.img_url}
-			tone="areas"
-			isActive={area.is_active}
-			stats={stats}
-			enrollmentMessage={enrollmentMessage}
-			subStructures={subStructures}
-			subStructureLabel={t('shared.structureLabels.stages')}
-			subStructureIcon="evolution"
-			subStructureTone="levels"
-			addSubLabel={t('structureDetail.addLevel', { defaultValue: 'Add Level' })}
-			onEdit={() => {}}
-			onAddSub={() => {}}
-			onDelete={() => {}}
-			onExport={() => {}}
-			pagination={pagination}
-			onPageChange={handlePageChange}
-		/>
+		<>
+			<StructureDetailLayout
+				breadcrumbItems={breadcrumbItems}
+				title={area.area_name}
+				description={area.area_description}
+				icon="area"
+				imageUrl={area.img_url}
+				tone="areas"
+				isActive={area.is_active}
+				stats={stats}
+				enrollmentMessage={enrollmentMessage}
+				subStructures={subStructures}
+				subStructureLabel={t('shared.structureLabels.stages')}
+				subStructureIcon="evolution"
+				subStructureTone="levels"
+				addSubLabel={t('structureDetail.addLevel', { defaultValue: 'Add Level' })}
+				onEdit={() => setShowEditModal(true)}
+				onAddSub={() => {}}
+				onDelete={() => {}}
+				onExport={() => {}}
+				pagination={pagination}
+				onPageChange={handlePageChange}
+			/>
+
+			{showEditModal && (
+				<CreateAreaModal
+					mode="edit"
+					targetSlug={area.area_slug || slug}
+					initialData={{
+						learningPathId: area.service_line?.learning_path?.learning_path_id || '',
+						serviceLineId: area.service_line_id || '',
+						areaName: area.area_name || '',
+						areaSlug: area.area_slug || '',
+						areaDescription: area.area_description || '',
+						imgUrl: area.img_url || '',
+					}}
+					defaultLearningPathSlug={area.service_line?.learning_path?.path_slug || null}
+					defaultServiceLineSlug={area.service_line?.sl_slug || null}
+					onSuccess={handleEditSuccess}
+					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+		</>
 	);
 }

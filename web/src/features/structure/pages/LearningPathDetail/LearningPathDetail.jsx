@@ -1,21 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
+import CreateLearningPathModal from '../../components/CreateLearningPathModal/CreateLearningPathModal';
+import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
 
 const PAGE_SIZE = 32;
 
 export default function LearningPathDetail() {
 	const { slug } = useParams();
+	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const [lp, setLp] = useState(null);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [pagination, setPagination] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
+	const [showEditModal, setShowEditModal] = useState(false);
+	const [showCreateServiceLineModal, setShowCreateServiceLineModal] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchServiceLinesByLearningPath(slug, { page, limit: PAGE_SIZE });
@@ -55,6 +60,43 @@ export default function LearningPathDetail() {
 			})
 			.catch(console.error);
 	}, [fetchSubStructures]);
+
+	const handleEditSuccess = useCallback(async (updated) => {
+		const nextSlug = updated?.path_slug || slug;
+		try {
+			const refreshed = await fetchLearningPathBySlug(nextSlug);
+			if (refreshed) setLp(refreshed);
+		} catch (error) {
+			console.error(error);
+			setLp((prev) => (prev ? {
+				...prev,
+				path_title: updated?.path_title ?? prev.path_title,
+				path_slug: updated?.path_slug ?? prev.path_slug,
+				path_description: updated?.path_description ?? prev.path_description,
+				img_url: updated?.img_url ?? prev.img_url,
+				is_active: updated?.is_active ?? prev.is_active,
+			} : prev));
+		}
+
+		if (nextSlug && nextSlug !== slug) {
+			navigate(ADMIN.LEARNING_PATH_DETAIL.replace(':slug', nextSlug));
+		}
+	}, [slug, navigate]);
+
+	const handleServiceLineCreated = useCallback(async () => {
+		setCurrentPage(1);
+		try {
+			const [refreshedLp, slData] = await Promise.all([
+				fetchLearningPathBySlug(slug),
+				fetchSubStructures(1),
+			]);
+			if (refreshedLp) setLp(refreshedLp);
+			setServiceLines(slData.items);
+			setPagination(slData.pagination);
+		} catch (error) {
+			console.error(error);
+		}
+	}, [slug, fetchSubStructures]);
 
 	if (loading) return <Spinner />;
 	if (!lp) return null;
@@ -100,27 +142,54 @@ export default function LearningPathDetail() {
 	];
 
 	return (
-		<StructureDetailLayout
-			breadcrumbItems={breadcrumbItems}
-			title={lp.path_title}
-			description={lp.path_description}
-			icon="learning-path"
-			imageUrl={lp.img_url}
-			tone="learningPaths"
-			isActive={lp.is_active}
-			stats={stats}
-			enrollmentMessage={enrollmentMessage}
-			subStructures={subStructures}
-			subStructureLabel={t('shared.structureLabels.serviceLines')}
-			subStructureIcon="service-line"
-			subStructureTone="serviceLines"
-			addSubLabel={t('structureDetail.addServiceLine', { defaultValue: 'Add Service Line' })}
-			onEdit={() => {}}
-			onAddSub={() => {}}
-			onDelete={() => {}}
-			onExport={() => {}}
-			pagination={pagination}
-			onPageChange={handlePageChange}
-		/>
+		<>
+			<StructureDetailLayout
+				breadcrumbItems={breadcrumbItems}
+				title={lp.path_title}
+				description={lp.path_description}
+				icon="learning-path"
+				imageUrl={lp.img_url}
+				tone="learningPaths"
+				isActive={lp.is_active}
+				stats={stats}
+				enrollmentMessage={enrollmentMessage}
+				subStructures={subStructures}
+				subStructureLabel={t('shared.structureLabels.serviceLines')}
+				subStructureIcon="service-line"
+				subStructureTone="serviceLines"
+				addSubLabel={t('structureDetail.addServiceLine', { defaultValue: 'Add Service Line' })}
+				onEdit={() => setShowEditModal(true)}
+				onAddSub={() => setShowCreateServiceLineModal(true)}
+				onDelete={() => {}}
+				onExport={() => {}}
+				pagination={pagination}
+				onPageChange={handlePageChange}
+			/>
+
+			{showEditModal && (
+				<CreateLearningPathModal
+					mode="edit"
+					targetSlug={lp.path_slug || slug}
+					initialData={{
+						pathTitle: lp.path_title || '',
+						pathSlug: lp.path_slug || '',
+						pathDescription: lp.path_description || '',
+						imgUrl: lp.img_url || '',
+					}}
+					onSuccess={handleEditSuccess}
+					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+
+			{showCreateServiceLineModal && (
+				<CreateServiceLineModal
+					defaultLearningPathId={lp.learning_path_id || null}
+					defaultLearningPathSlug={lp.path_slug || slug}
+					lockLearningPath
+					onSuccess={handleServiceLineCreated}
+					onClose={() => setShowCreateServiceLineModal(false)}
+				/>
+			)}
+		</>
 	);
 }
