@@ -19,6 +19,8 @@ import 'data/repositories/badge_repo.dart';
 import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
+import 'data/repositories/statistics_repo.dart';
+import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/sync_service.dart';
@@ -118,6 +120,7 @@ void main() async {
         Provider.value(value: getIt<BadgeRepository>()),
         Provider.value(value: getIt<ApplicationsRepository>()),
         Provider.value(value: getIt<RankingRepository>()),
+        Provider.value(value: getIt<ValidationRepository>()),
         ChangeNotifierProvider<AuthStore>(
           create: (_) => AuthStore(
             getIt<AuthRepository>(),
@@ -128,10 +131,8 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider<BadgeStore>(
-          create: (_) => BadgeStore(
-            getIt<BadgeRepository>(),
-            getIt<SyncService>(),
-          ),
+          create: (_) =>
+              BadgeStore(getIt<BadgeRepository>(), getIt<SyncService>()),
         ),
         ChangeNotifierProvider<ApplicationsStore>(
           create: (_) => ApplicationsStore(getIt<ApplicationsRepository>()),
@@ -141,6 +142,7 @@ void main() async {
             getIt<BadgeRepository>(),
             getIt<ApplicationsRepository>(),
             getIt<RankingRepository>(),
+            getIt<StatisticsRepository>(),
           ),
         ),
         ChangeNotifierProvider<LanguageController>.value(

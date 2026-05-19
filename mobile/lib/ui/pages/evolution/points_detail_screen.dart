@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../presentation/state/dashboard_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/points/points_detail_widgets.dart';
 
@@ -8,37 +10,21 @@ class PointsDetailScreen extends StatelessWidget {
 
   final int totalPoints;
 
-  static const int _weeklyDelta = 23;
-
-  static final List<PointsHistoryItem> _historyItems = [
-    const PointsHistoryItem(
-      title: 'Badge Master of API',
-      firstDescription: 'Descr 1',
-      secondDescription: 'Descr 2',
-      gainedPoints: 13,
-    ),
-    const PointsHistoryItem(
-      title: 'Conclusão de candidatura',
-      firstDescription: 'Descr 1',
-      secondDescription: 'Descr 2',
-      gainedPoints: 13,
-    ),
-    const PointsHistoryItem(
-      title: 'Validação de requisito',
-      firstDescription: 'Descr 1',
-      secondDescription: 'Descr 2',
-      gainedPoints: 13,
-    ),
-    const PointsHistoryItem(
-      title: 'Atualização de perfil',
-      firstDescription: 'Descr 1',
-      secondDescription: 'Descr 2',
-      gainedPoints: 13,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final dashStore = context.watch<DashboardStore>();
+
+    final historyItems = dashStore.recentSubmissions
+        .map(
+          (s) => PointsHistoryItem(
+            title: s.badge.title,
+            firstDescription: s.badge.category,
+            secondDescription: s.status,
+            gainedPoints: s.badge.points,
+          ),
+        )
+        .toList(growable: false);
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -79,12 +65,27 @@ class PointsDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              ..._historyItems.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: HistoryCard(item: item),
+              if (historyItems.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'Sem histórico de pontos.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                ...historyItems.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: HistoryCard(item: item),
+                  ),
                 ),
-              ),
               const SizedBox(height: 8),
               const Text(
                 'Estatísticas',
@@ -95,9 +96,9 @@ class PointsDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              const DailyEvolutionCard(),
+              DailyEvolutionCard(timeline: dashStore.timeline),
               const SizedBox(height: 12),
-              const MonthlyEvolutionCard(),
+              MonthlyEvolutionCard(timeline: dashStore.timeline),
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
@@ -114,8 +115,7 @@ class PointsDetailScreen extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  'Conquistou mais $_weeklyDelta pontos que na última semana. '
-                  'Está à frente de 89% dos nossos consultores!',
+                  'Está no top ${dashStore.topPercent}% dos nossos consultores!',
                   style: const TextStyle(
                     fontSize: 14,
                     height: 1.4,

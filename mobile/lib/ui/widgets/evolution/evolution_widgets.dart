@@ -2,10 +2,56 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class MainBadgesCard extends StatelessWidget {
-  const MainBadgesCard({super.key});
+  const MainBadgesCard({
+    super.key,
+    required this.badgeCount,
+    required this.growthPercent,
+    this.timeline = const [],
+  });
+
+  final int badgeCount;
+  final int growthPercent;
+  final List<Map<String, dynamic>> timeline;
+
+  List<FlSpot> _buildSpots() {
+    if (timeline.isEmpty) return const [];
+    final recent = timeline.length > 7
+        ? timeline.sublist(timeline.length - 7)
+        : timeline;
+    return List.generate(recent.length, (i) {
+      final val = (recent[i]['cumulative_badges'] ??
+              recent[i]['cumulative_certifications'] ??
+              0) as num;
+      return FlSpot(i.toDouble(), val.toDouble());
+    });
+  }
+
+  List<String> _buildLabels() {
+    const monthNames = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+    ];
+    if (timeline.isEmpty) return const [];
+    final recent = timeline.length > 7
+        ? timeline.sublist(timeline.length - 7)
+        : timeline;
+    return recent.map((row) {
+      final m = row['month'];
+      if (m is int && m >= 1 && m <= 12) return monthNames[m - 1];
+      return m?.toString() ?? '';
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isPositive = growthPercent >= 0;
+    final spots = _buildSpots();
+    final labels = _buildLabels();
+    final maxY = spots.isEmpty
+        ? 40.0
+        : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
+            .ceilToDouble();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -33,29 +79,35 @@ class MainBadgesCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Row(
-            children: const [
+            children: [
               Text(
-                '34',
-                style: TextStyle(
+                '$badgeCount',
+                style: const TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF21303D),
                   height: 1,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Icon(
-                Icons.trending_up_rounded,
-                color: Color(0xFF2FB45A),
+                isPositive
+                    ? Icons.trending_up_rounded
+                    : Icons.trending_down_rounded,
+                color: isPositive
+                    ? const Color(0xFF2FB45A)
+                    : const Color(0xFFD63D2B),
                 size: 26,
               ),
-              SizedBox(width: 4),
+              const SizedBox(width: 4),
               Text(
-                '32%',
+                '${growthPercent.abs()}%',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2FB45A),
+                  color: isPositive
+                      ? const Color(0xFF2FB45A)
+                      : const Color(0xFFD63D2B),
                 ),
               ),
             ],
@@ -63,102 +115,90 @@ class MainBadgesCard extends StatelessWidget {
           const SizedBox(height: 6),
           SizedBox(
             height: 190,
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 6,
-                minY: 0,
-                maxY: 40,
-                borderData: FlBorderData(show: false),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 10,
-                  getDrawingHorizontalLine: (value) =>
-                      const FlLine(color: Color(0xFFE2EAF2), strokeWidth: 1),
-                ),
-                extraLinesData: ExtraLinesData(
-                  verticalLines: [
-                    VerticalLine(
-                      x: 4,
-                      color: Color(0xFF83A7C6),
-                      strokeWidth: 1.6,
-                      dashArray: [7, 4],
-                    ),
-                  ],
-                ),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: 24,
-                      getTitlesWidget: (value, meta) {
-                        const labels = [
-                          'Mar',
-                          'Abr',
-                          'Mai',
-                          'Jun',
-                          'Jul',
-                          'Ago',
-                          'Set',
-                        ];
-                        final index = value.toInt();
-                        if (index < 0 || index >= labels.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            labels[index],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF8CA0B2),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 8),
-                      FlSpot(1, 16),
-                      FlSpot(2, 14),
-                      FlSpot(3, 24),
-                      FlSpot(4, 22),
-                      FlSpot(5, 31),
-                      FlSpot(6, 34),
-                    ],
-                    isCurved: true,
-                    color: const Color(0xFF568FC2),
-                    barWidth: 4,
-                    isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0x664E91C3), Color(0x114E91C3)],
+            child: spots.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Sem dados de evolução.',
+                      style: TextStyle(
+                        color: Color(0xFF8CA0B2),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                  )
+                : LineChart(
+                    LineChartData(
+                      minX: 0,
+                      maxX: (spots.length - 1).toDouble(),
+                      minY: 0,
+                      maxY: maxY,
+                      borderData: FlBorderData(show: false),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: (maxY / 4).clamp(1, 100),
+                        getDrawingHorizontalLine: (value) => const FlLine(
+                          color: Color(0xFFE2EAF2),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            interval: 1,
+                            reservedSize: 24,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= labels.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  labels[index],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF8CA0B2),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: const Color(0xFF568FC2),
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0x664E91C3),
+                                Color(0x114E91C3),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -255,15 +295,96 @@ class PointsBarCard extends StatelessWidget {
     required this.selectedPeriod,
     required this.periodOptions,
     required this.onPeriodChanged,
+    this.pointsHistory = const [],
   });
+
+  static const _monthNames = [
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  ];
 
   final String selectedPeriod;
   final List<String> periodOptions;
   final ValueChanged<String?> onPeriodChanged;
+  final List<Map<String, dynamic>> pointsHistory;
+
+  Map<String, double> _aggregateByMonth() {
+    final buckets = <String, double>{};
+    for (final entry in pointsHistory) {
+      final raw = entry['created_at'] ?? entry['createdAt'];
+      DateTime? date;
+      if (raw is String) date = DateTime.tryParse(raw);
+      if (date == null) continue;
+      final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
+      final delta = ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
+      buckets[key] = (buckets[key] ?? 0) + delta;
+    }
+    final keys = buckets.keys.toList()..sort();
+    final recent = keys.length > 6 ? keys.sublist(keys.length - 6) : keys;
+    return {for (final k in recent) k: buckets[k]!};
+  }
+
+  Map<String, double> _aggregateByWeek() {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday % 7));
+    final labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    final buckets = {for (final l in labels) l: 0.0};
+    for (final entry in pointsHistory) {
+      final raw = entry['created_at'] ?? entry['createdAt'];
+      DateTime? date;
+      if (raw is String) date = DateTime.tryParse(raw);
+      if (date == null) continue;
+      if (date.isBefore(weekStart)) continue;
+      final dayIdx = date.weekday % 7;
+      buckets[labels[dayIdx]] = (buckets[labels[dayIdx]] ?? 0) +
+          ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
+    }
+    return buckets;
+  }
+
+  Map<String, double> _aggregateByYear() {
+    final buckets = <String, double>{};
+    for (final entry in pointsHistory) {
+      final raw = entry['created_at'] ?? entry['createdAt'];
+      DateTime? date;
+      if (raw is String) date = DateTime.tryParse(raw);
+      if (date == null) continue;
+      final key = '${date.year}';
+      final delta = ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
+      buckets[key] = (buckets[key] ?? 0) + delta;
+    }
+    final keys = buckets.keys.toList()..sort();
+    final recent = keys.length > 5 ? keys.sublist(keys.length - 5) : keys;
+    return {for (final k in recent) k: buckets[k]!};
+  }
 
   @override
   Widget build(BuildContext context) {
-    const values = [5.0, 7.0, 9.5, 10.0, 8.2, 6.3, 4.2];
+    Map<String, double> aggregated;
+    switch (selectedPeriod) {
+      case 'Semanal':
+        aggregated = _aggregateByWeek();
+        break;
+      case 'Anual':
+        aggregated = _aggregateByYear();
+        break;
+      default:
+        aggregated = _aggregateByMonth();
+    }
+
+    final labels = aggregated.keys.map((k) {
+      if (selectedPeriod == 'Mensal' && k.contains('-')) {
+        final m = int.tryParse(k.split('-').last) ?? 0;
+        return (m >= 1 && m <= 12) ? _monthNames[m - 1] : k;
+      }
+      return k;
+    }).toList();
+
+    final values = aggregated.values.toList();
+    final maxVal = values.isEmpty
+        ? 10.0
+        : values.reduce((a, b) => a > b ? a : b);
+    final chartMax = (maxVal * 1.3).ceilToDouble().clamp(1, 100000);
 
     return Container(
       width: double.infinity,
@@ -313,83 +434,84 @@ class PointsBarCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 180,
-            child: BarChart(
-              BarChartData(
-                maxY: 12,
-                alignment: BarChartAlignment.spaceAround,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 3,
-                  getDrawingHorizontalLine: (_) =>
-                      const FlLine(color: Color(0xFFE7EEF5), strokeWidth: 1),
-                ),
-                borderData: FlBorderData(show: false),
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 24,
-                      getTitlesWidget: (value, meta) {
-                        const days = [
-                          'Dom',
-                          'Seg',
-                          'Ter',
-                          'Qua',
-                          'Qui',
-                          'Sex',
-                          'Sab',
-                        ];
-                        final index = value.toInt();
-                        if (index < 0 || index >= days.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            days[index],
-                            style: const TextStyle(
-                              color: Color(0xFF7A8FA2),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+            child: values.every((v) => v == 0)
+                ? const Center(
+                    child: Text(
+                      'Sem dados disponíveis.',
+                      style: TextStyle(
+                        color: Color(0xFF8CA0B2),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : BarChart(
+                    BarChartData(
+                      maxY: chartMax.toDouble(),
+                      alignment: BarChartAlignment.spaceAround,
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: (chartMax / 4).clamp(1, 10000),
+                        getDrawingHorizontalLine: (_) =>
+                            const FlLine(color: Color(0xFFE7EEF5), strokeWidth: 1),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      barTouchData: BarTouchData(enabled: false),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 24,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= labels.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  labels[index],
+                                  style: const TextStyle(
+                                    color: Color(0xFF7A8FA2),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
+                        ),
+                      ),
+                      barGroups: List.generate(values.length, (index) {
+                        final highIdx = values.indexOf(
+                          values.reduce((a, b) => a > b ? a : b),
                         );
-                      },
+                        return BarChartGroupData(
+                          x: index,
+                          barsSpace: 0,
+                          barRods: [
+                            BarChartRodData(
+                              toY: values[index],
+                              width: 18,
+                              borderRadius: BorderRadius.circular(8),
+                              color: index == highIdx
+                                  ? const Color(0xFF85D2FF)
+                                  : const Color(0xFF7E9DB7),
+                            ),
+                          ],
+                        );
+                      }),
                     ),
                   ),
-                ),
-                barGroups: List.generate(values.length, (index) {
-                  final value = values[index];
-                  final isHighlighted = index == 3;
-
-                  return BarChartGroupData(
-                    x: index,
-                    barsSpace: 0,
-                    barRods: [
-                      BarChartRodData(
-                        toY: value,
-                        width: 18,
-                        borderRadius: BorderRadius.circular(8),
-                        color: isHighlighted
-                            ? const Color(0xFF85D2FF)
-                            : const Color(0xFF7E9DB7),
-                      ),
-                    ],
-                  );
-                }),
-              ),
-            ),
           ),
         ],
       ),
@@ -397,17 +519,26 @@ class PointsBarCard extends StatelessWidget {
   }
 }
 
+class ActivityItem {
+  const ActivityItem({
+    required this.title,
+    required this.timeAgo,
+    required this.icon,
+  });
+
+  final String title;
+  final String timeAgo;
+  final IconData icon;
+}
+
 class RecentActivitySection extends StatelessWidget {
-  const RecentActivitySection({super.key});
+  const RecentActivitySection({super.key, required this.activities});
+
+  final List<ActivityItem> activities;
 
   @override
   Widget build(BuildContext context) {
-    const activities = [
-      ('Master of APIs', 'H\u00e1 3 horas', Icons.military_tech_rounded),
-      ('Cloud Defender', 'H\u00e1 1 dia', Icons.workspace_premium_rounded),
-      ('Agile Champion', 'H\u00e1 2 dias', Icons.emoji_events_rounded),
-      ('Data Strategist', 'H\u00e1 4 dias', Icons.stars_rounded),
-    ];
+    if (activities.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,11 +577,14 @@ class RecentActivitySection extends StatelessWidget {
                         color: Color(0xFFBCC8D4),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(activity.$3, color: const Color(0xFF2B3945)),
+                      child: Icon(
+                        activity.icon,
+                        color: const Color(0xFF2B3945),
+                      ),
                     ),
                     const Spacer(),
                     Text(
-                      activity.$1,
+                      activity.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -460,7 +594,7 @@ class RecentActivitySection extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      activity.$2,
+                      activity.timeAgo,
                       style: const TextStyle(
                         color: Color(0xFF516271),
                         fontSize: 12,
@@ -478,14 +612,21 @@ class RecentActivitySection extends StatelessWidget {
 }
 
 class ApplicationsMetricsSection extends StatelessWidget {
-  const ApplicationsMetricsSection({super.key});
+  const ApplicationsMetricsSection({
+    super.key,
+    required this.approvalPercent,
+    required this.totalApplications,
+  });
+
+  final int approvalPercent;
+  final int totalApplications;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
+      children: [
+        const Text(
           'Candidaturas',
           style: TextStyle(
             fontSize: 18,
@@ -493,26 +634,19 @@ class ApplicationsMetricsSection extends StatelessWidget {
             color: Color(0xFF2A3A47),
           ),
         ),
-        SizedBox(height: 10),
-        ApplicationMetricCard(
-          title: 'Tempo m\u00e9dio valida\u00e7\u00e3o',
-          value: '2,4 dias',
-          icon: Icons.av_timer_rounded,
-          accentColor: Color(0xFF6AA9D4),
-        ),
-        SizedBox(height: 8),
+        const SizedBox(height: 10),
         ApplicationMetricCard(
           title: 'Percentagem aprova\u00e7\u00e3o',
-          value: '87%',
+          value: '$approvalPercent%',
           icon: Icons.check_circle_outline_rounded,
-          accentColor: Color(0xFF6FC391),
+          accentColor: const Color(0xFF6FC391),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         ApplicationMetricCard(
           title: 'Candidaturas efetuadas',
-          value: '41',
+          value: '$totalApplications',
           icon: Icons.description_outlined,
-          accentColor: Color(0xFF93A8C8),
+          accentColor: const Color(0xFF93A8C8),
         ),
       ],
     );
@@ -579,10 +713,62 @@ class ApplicationMetricCard extends StatelessWidget {
 }
 
 class LevelsRadarCard extends StatelessWidget {
-  const LevelsRadarCard({super.key});
+  const LevelsRadarCard({super.key, this.lpProgress = const []});
+
+  final List<Map<String, dynamic>> lpProgress;
 
   @override
   Widget build(BuildContext context) {
+    final entries = lpProgress.where((lp) {
+      final title = lp['path_title']?.toString() ?? '';
+      return title.isNotEmpty;
+    }).toList();
+
+    if (entries.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FBFF),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Progresso por Learning Path',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2B3B48),
+              ),
+            ),
+            SizedBox(height: 30),
+            Center(
+              child: Text(
+                'Sem dados dispon\u00edveis.',
+                style: TextStyle(
+                  color: Color(0xFF8CA0B2),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+          ],
+        ),
+      );
+    }
+
+    final radarEntries = entries.map((lp) {
+      final percent = (lp['percent'] ?? lp['progress_percent'] ?? 0) as num;
+      return RadarEntry(value: percent.toDouble());
+    }).toList();
+
+    final titles = entries.map((lp) {
+      final title = lp['path_title']?.toString() ?? '';
+      return title.length > 10 ? '${title.substring(0, 10)}...' : title;
+    }).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -594,7 +780,7 @@ class LevelsRadarCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Badges por n\u00edveis',
+            'Progresso por Learning Path',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -614,24 +800,21 @@ class LevelsRadarCard extends StatelessWidget {
                 titleTextStyle: const TextStyle(
                   color: Color(0xFF516273),
                   fontWeight: FontWeight.w700,
+                  fontSize: 11,
                 ),
                 ticksTextStyle: const TextStyle(
                   color: Colors.transparent,
                   fontSize: 10,
                 ),
                 getTitle: (index, angle) {
-                  const titles = ['A', 'B', 'C', 'D', 'E'];
+                  if (index < 0 || index >= titles.length) {
+                    return RadarChartTitle(text: '', angle: angle);
+                  }
                   return RadarChartTitle(text: titles[index], angle: angle);
                 },
                 dataSets: [
                   RadarDataSet(
-                    dataEntries: const [
-                      RadarEntry(value: 4.1),
-                      RadarEntry(value: 3.4),
-                      RadarEntry(value: 4.7),
-                      RadarEntry(value: 2.8),
-                      RadarEntry(value: 3.9),
-                    ],
+                    dataEntries: radarEntries,
                     fillColor: const Color(0x665B9ED2),
                     borderColor: const Color(0xFF4E8BBF),
                     borderWidth: 2.6,

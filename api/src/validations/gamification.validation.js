@@ -25,9 +25,14 @@ const getRecommendationsQuerySchema = z.object({
     limit: z.coerce.number().int().positive().max(50).default(12)
 });
 
+const shareBadgeSchema = z.object({
+    badgeId: z.coerce.number().int().positive()
+});
+
 module.exports = {
     trackInteractionSchema,
     getInteractionsQuerySchema,
     getPointsHistoryQuerySchema,
-    getRecommendationsQuerySchema
+    getRecommendationsQuerySchema,
+    shareBadgeSchema
 };

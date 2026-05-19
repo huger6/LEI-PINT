@@ -3,6 +3,7 @@ import '../../ui/pages/auth/login_page.dart';
 import '../../ui/pages/auth/register_screen.dart';
 import '../../ui/pages/auth/forgot_password_page.dart';
 import '../../ui/pages/auth/newuser_confirm.dart';
+import '../../ui/pages/auth/change_password_screen.dart';
 import '../../ui/pages/misc/select_areas_page.dart';
 import '../../ui/pages/dashboard_page.dart';
 import '../../ui/pages/badges/explore_badges.dart';
@@ -10,6 +11,8 @@ import '../../ui/pages/badges/my_badges_screen.dart';
 import '../../ui/pages/evolution/evolucao_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 import '../../ui/pages/profile/email_signature_screen.dart';
+import '../../ui/pages/profile/edit_profile_screen.dart';
+import '../../ui/pages/profile/terms_conditions_screen.dart';
 
 class AppRouter {
   static const String initial = '/';
@@ -24,6 +27,9 @@ class AppRouter {
   static const String evolucao = '/evolucao';
   static const String profile = '/profile';
   static const String emailSignature = '/email-signature';
+  static const String editProfile = '/edit-profile';
+  static const String termsConditions = '/terms-conditions';
+  static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> get routes => {
     login: (context) => const LoginScreen(),
@@ -40,5 +46,8 @@ class AppRouter {
     evolucao: (context) => const EvolucaoScreen(),
     profile: (context) => const ProfileScreen(),
     emailSignature: (context) => const EmailSignatureScreen(),
+    editProfile: (context) => const EditProfileScreen(),
+    termsConditions: (context) => const TermsConditionsScreen(),
+    changePassword: (context) => const ChangePasswordScreen(),
   };
 }

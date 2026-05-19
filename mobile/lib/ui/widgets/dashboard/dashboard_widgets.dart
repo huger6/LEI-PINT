@@ -89,12 +89,8 @@ class DashboardTopBar extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        const CircleAvatar(
-          radius: 21,
-          backgroundColor: Color(0xFFC9D6E2),
-          child: Icon(Icons.person, color: Color(0xFF1F242A), size: 24),
-        ),
+
+
       ],
     );
   }

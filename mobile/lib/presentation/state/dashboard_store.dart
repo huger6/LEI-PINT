@@ -5,6 +5,7 @@ import '../../core/utils/badge_visuals.dart';
 import '../../data/repositories/applications_repo.dart';
 import '../../data/repositories/badge_repo.dart';
 import '../../data/repositories/ranking_repo.dart';
+import '../../data/repositories/statistics_repo.dart';
 import '../../models/application_summary_model.dart';
 import '../../models/badge_model.dart';
 import '../../models/ranking_entry_model.dart';
@@ -36,11 +37,13 @@ class DashboardStore extends ChangeNotifier {
     this._badgeRepository,
     this._applicationsRepository,
     this._rankingRepository,
+    this._statisticsRepository,
   );
 
   final BadgeRepository _badgeRepository;
   final ApplicationsRepository _applicationsRepository;
   final RankingRepository _rankingRepository;
+  final StatisticsRepository _statisticsRepository;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -49,10 +52,14 @@ class DashboardStore extends ChangeNotifier {
   List<DashboardAreaMetric> _areaMetrics = [];
   int _totalPoints = 0;
   int _completedBadges = 0;
+  int _totalApplications = 0;
   int _growthPercent = 0;
   String _selectedMonth = '-';
   List<String> _recentMonths = [];
   int _topPercent = 0;
+  List<Map<String, dynamic>> _timeline = [];
+  List<Map<String, dynamic>> _lpProgress = [];
+  List<Map<String, dynamic>> _pointsHistory = [];
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -61,10 +68,14 @@ class DashboardStore extends ChangeNotifier {
   List<DashboardAreaMetric> get areaMetrics => _areaMetrics;
   int get totalPoints => _totalPoints;
   int get completedBadges => _completedBadges;
+  int get totalApplications => _totalApplications;
   int get growthPercent => _growthPercent;
   String get selectedMonth => _selectedMonth;
   List<String> get recentMonths => _recentMonths;
   int get topPercent => _topPercent;
+  List<Map<String, dynamic>> get timeline => _timeline;
+  List<Map<String, dynamic>> get lpProgress => _lpProgress;
+  List<Map<String, dynamic>> get pointsHistory => _pointsHistory;
 
   Future<void> loadDashboard(UserModel? currentUser) async {
     _isLoading = true;
@@ -94,8 +105,8 @@ class DashboardStore extends ChangeNotifier {
           )
           .length;
 
-      final totalApplications = applications.length;
-      _growthPercent = totalApplications == 0
+      _totalApplications = applications.length;
+      _growthPercent = _totalApplications == 0
           ? 0
           : ((_completedBadges / totalApplications) * 100).round();
 
@@ -104,6 +115,20 @@ class DashboardStore extends ChangeNotifier {
 
       _totalPoints = _extractUserPoints(currentUser, ranking);
       _topPercent = _extractTopPercent(currentUser, ranking);
+
+      final statsResults = await Future.wait([
+        _statisticsRepository.getTimeline(),
+        _statisticsRepository.getLearningPathProgress(),
+        _statisticsRepository.getPointsHistory(limit: 200),
+      ]);
+      _timeline = statsResults[0] as List<Map<String, dynamic>>;
+      _lpProgress = statsResults[1] as List<Map<String, dynamic>>;
+      final phResult = statsResults[2] as Map<String, dynamic>;
+      final rawHistory = phResult['history'] as List? ?? [];
+      _pointsHistory = rawHistory
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {

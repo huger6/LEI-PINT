@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
-import '../../widgets/badges/badge_catalog.dart';
 
 class BadgesSearchBar extends StatelessWidget {
   const BadgesSearchBar({
@@ -20,34 +18,43 @@ class BadgesSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFD8E8F3),
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0E000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
         textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           hintText: hintText,
+          hintStyle: const TextStyle(
+            color: Color(0xFF9AA4AE),
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
           border: InputBorder.none,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 40,
+            minHeight: 40,
+          ),
           prefixIcon: const Icon(
             Icons.search_rounded,
-            color: Color(0xFF41525E),
-            size: 26,
-          ),
-          suffixIcon: IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.tune_rounded,
-              color: Color(0xFF41525E),
-              size: 24,
-            ),
+            color: Color(0xFF8B96A1),
+            size: 22,
           ),
         ),
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }
@@ -58,14 +65,16 @@ class AchievedBadgeCard extends StatelessWidget {
     super.key,
     required this.badge,
     required this.completionDate,
-    required this.fallbackLevel,
-    required this.fallbackPoints,
+    this.fallbackLevel = '',
+    this.fallbackPoints = 0,
+    this.onShare,
   });
 
   final BadgeModel badge;
   final DateTime completionDate;
   final String fallbackLevel;
   final int fallbackPoints;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +185,7 @@ class AchievedBadgeCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: onShare,
                   icon: const Icon(Icons.share_outlined, size: 18),
                   label: const Text('Partilhar'),
                   style: OutlinedButton.styleFrom(
@@ -406,25 +415,3 @@ class ApplicationStateVisual {
   final ApplicationFilter filter;
 }
 
-List<ApplicationSummaryModel> mockApplications() {
-  return [
-    ApplicationSummaryModel(
-      applicationGuid: 'mock-1',
-      applicationState: 'Approved',
-      badge: BadgeCatalog.all[0],
-      submittedAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    ApplicationSummaryModel(
-      applicationGuid: 'mock-2',
-      applicationState: 'In review',
-      badge: BadgeCatalog.all[1],
-      submittedAt: DateTime.now().subtract(const Duration(hours: 3)),
-    ),
-    ApplicationSummaryModel(
-      applicationGuid: 'mock-3',
-      applicationState: 'Rejected',
-      badge: BadgeCatalog.all[2],
-      submittedAt: DateTime.now().subtract(const Duration(hours: 23)),
-    ),
-  ];
-}

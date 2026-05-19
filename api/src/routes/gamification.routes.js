@@ -52,4 +52,11 @@ router.get('/consultant-stats', loginRequired, gamificationController.getConsult
  */
 router.get('/earned-badges', loginRequired, gamificationController.getEarnedBadges);
 
+/**
+ * @route   POST /api/gamification/share-badge
+ * @desc    Share an earned badge on LinkedIn: marks as published, records interaction, sends email
+ * @access  Consultant only
+ */
+router.post('/share-badge', loginRequired, gamificationController.shareBadge);
+
 module.exports = router;

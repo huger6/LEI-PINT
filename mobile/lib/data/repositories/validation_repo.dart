@@ -8,14 +8,12 @@ class ValidationRepository {
 
   ValidationRepository(this._apiClient);
 
-  /// Check if email is available for registration.
-  /// Returns a map with 'available' (bool) and optional 'message' (String).
   Future<Map<String, dynamic>> checkEmailAvailability(String email) async {
     try {
       final responseMap = _asMap(
-        await _apiClient.post(
-          ApiEndpoints.validateEmail,
-          data: {'email': email.trim()},
+        await _apiClient.get(
+          ApiEndpoints.checkEmail,
+          queryParameters: {'value': email.trim()},
         ),
       );
 
@@ -42,16 +40,14 @@ class ValidationRepository {
     }
   }
 
-  /// Check if username is available for registration.
-  /// Returns a map with 'available' (bool) and optional 'message' (String).
   Future<Map<String, dynamic>> checkUsernameAvailability(
     String username,
   ) async {
     try {
       final responseMap = _asMap(
-        await _apiClient.post(
-          ApiEndpoints.validateUsername,
-          data: {'username': username.trim()},
+        await _apiClient.get(
+          ApiEndpoints.checkUsername,
+          queryParameters: {'value': username.trim()},
         ),
       );
 

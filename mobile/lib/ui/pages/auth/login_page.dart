@@ -58,6 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (result['success'] == true) {
           final user = result['user'];
+          final forcePasswordChange =
+              result['forcePasswordChange'] == true;
+          final firstLogin = result['firstLogin'] == true;
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -73,7 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          if (forcePasswordChange || firstLogin) {
+            Navigator.pushReplacementNamed(
+              context,
+              AppRouter.changePassword,
+              arguments: true,
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

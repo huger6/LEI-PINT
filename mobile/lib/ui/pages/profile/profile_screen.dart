@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/auth_store.dart';
+import '../../../presentation/state/badge_store.dart';
+import '../../../presentation/state/dashboard_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/profile/language_selector_sheet.dart';
 import '../../widgets/profile/profile_widgets.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -14,6 +19,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BadgeStore>().loadEarnedBadges();
+    });
+  }
+
   Future<void> _handleLogout() async {
     await context.read<AuthStore>().clearSession();
 
@@ -31,6 +44,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final authStore = context.watch<AuthStore>();
+    final badgeStore = context.watch<BadgeStore>();
+    final dashStore = context.watch<DashboardStore>();
+
+    final earnedBadges = badgeStore.earnedBadges;
+    final badgeCount = earnedBadges.length;
+    final skillsCount = earnedBadges
+        .expand((e) => e.badge.skills)
+        .toSet()
+        .length;
+    final totalPoints = authStore.currentUser?.totalPoints ?? 0;
 
     final userName =
         (authStore.currentUser?.fullName.trim().isNotEmpty ?? false)
@@ -99,27 +122,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: QuickMetricCard(
-                      value: '4',
+                      value: '$badgeCount',
                       label: 'Badges',
                       icon: Icons.workspace_premium_outlined,
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: QuickMetricCard(
-                      value: '7',
+                      value: '$skillsCount',
                       label: 'Competências',
                       icon: Icons.extension_outlined,
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: QuickMetricCard(
-                      value: '538',
+                      value: '$totalPoints',
                       label: 'Pontos',
                       icon: Icons.stars_outlined,
                     ),
@@ -127,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              const BadgesStatsCard(),
+              BadgesStatsCard(timeline: dashStore.timeline),
               const SizedBox(height: 10),
               Container(
                 decoration: BoxDecoration(
@@ -210,9 +233,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Preferências notificações',
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.person_outline_rounded,
                 label: 'Editar perfil',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRouter.editProfile),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
@@ -222,9 +247,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.pushNamed(context, AppRouter.emailSignature),
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.language_rounded,
                 label: 'Idioma',
+                onTap: () {
+                  final langCtrl = LanguageScope.of(context);
+                  LanguageSelectorSheet.show(
+                    context,
+                    currentCode: langCtrl.languageCode,
+                    onSelected: (code) async {
+                      final authStore = context.read<AuthStore>();
+                      final messenger = ScaffoldMessenger.of(context);
+                      await langCtrl.setLanguageCode(code);
+                      if (!mounted) return;
+                      final langId = int.tryParse(langCtrl.languageDatabaseId);
+                      if (langId != null) {
+                        final result = await authStore.changeLanguage(langId);
+                        if (mounted && result['success'] != true) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result['message']?.toString() ??
+                                    'Erro ao alterar idioma.',
+                              ),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 14),
               const Text(
@@ -241,9 +294,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Políticas de privacidade',
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.description_outlined,
                 label: 'Termos e condições',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRouter.termsConditions),
               ),
               const SizedBox(height: 8),
               const ProfileMenuTile(

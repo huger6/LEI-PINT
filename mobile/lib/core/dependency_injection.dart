@@ -5,7 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/local/area_dao.dart';
+import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
+import '../data/local/current_user_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/remote/api_client.dart';
@@ -17,6 +19,7 @@ import '../data/repositories/badge_repo.dart';
 import '../data/repositories/lang_repo.dart';
 import '../data/repositories/location_repo.dart';
 import '../data/repositories/ranking_repo.dart';
+import '../data/repositories/statistics_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 import 'services/sync_service.dart';
@@ -119,6 +122,18 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<AwardedBadgeDao>()) {
+    getIt.registerLazySingleton<AwardedBadgeDao>(
+      () => AwardedBadgeDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<CurrentUserDao>()) {
+    getIt.registerLazySingleton<CurrentUserDao>(
+      () => CurrentUserDao(getIt<LocalDatabase>()),
+    );
+  }
+
   // ── Repositories ──────────────────────────────────────────────────────────
 
   if (!getIt.isRegistered<AuthRepository>()) {
@@ -147,7 +162,11 @@ Future<void> setupDependencies() async {
 
   if (!getIt.isRegistered<BadgeRepository>()) {
     getIt.registerLazySingleton<BadgeRepository>(
-      () => BadgeRepository(getIt<ApiClient>(), getIt<BadgeDao>()),
+      () => BadgeRepository(
+        getIt<ApiClient>(),
+        getIt<BadgeDao>(),
+        getIt<AwardedBadgeDao>(),
+      ),
     );
   }
 
@@ -166,6 +185,12 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<ValidationRepository>()) {
     getIt.registerLazySingleton<ValidationRepository>(
       () => ValidationRepository(getIt<ApiClient>()),
+    );
+  }
+
+  if (!getIt.isRegistered<StatisticsRepository>()) {
+    getIt.registerLazySingleton<StatisticsRepository>(
+      () => StatisticsRepository(getIt<ApiClient>()),
     );
   }
 
