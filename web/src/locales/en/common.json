@@ -612,6 +612,17 @@
 		"noAreasDesc": "Create your first area to get started.",
 		"noLevelsDesc": "Create your first level to get started."
 	},
+	"structureDetail": {
+		"description": "Description",
+		"export": "Export",
+		"addServiceLine": "Add Service Line",
+		"addArea": "Add Area",
+		"addLevel": "Add Level",
+		"addBadge": "Add Badge",
+		"badges": "Badges",
+		"enrolled": "You are enrolled in this structure",
+		"serviceLineLeader": "Service Line Leader"
+	},
 	"myApplications": {
 		"title": "My Applications",
 		"noApplications": "No applications",

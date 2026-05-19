@@ -16,6 +16,8 @@ export default function StructureDetailLayout({
 	tone,
 	isActive,
 	stats,
+	enrollmentMessage,
+	extraContent,
 	subStructures,
 	subStructureLabel,
 	subStructureIcon,
@@ -102,6 +104,15 @@ export default function StructureDetailLayout({
 							<StructureStatCard key={stat.label} {...stat} />
 						))}
 					</div>
+
+					{enrollmentMessage && (
+						<div className={styles.enrollmentBanner}>
+							<Icon name="check_circle" size={18} color="#0f7f69" />
+							<span>{enrollmentMessage}</span>
+						</div>
+					)}
+
+					{extraContent}
 				</section>
 			</div>
 

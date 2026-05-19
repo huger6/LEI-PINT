@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
+import SLLeaderCard from '../../components/SLLeaderCard/SLLeaderCard';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
 
@@ -59,32 +60,26 @@ export default function ServiceLineDetail() {
 	if (loading) return <Spinner />;
 	if (!sl) return null;
 
-	const activeCount = areas.filter((a) => a.is_active).length;
-	const inactiveCount = areas.filter((a) => !a.is_active).length;
-
 	const stats = [
 		{
-			icon: 'area',
-			label: t('shared.structureLabels.areas'),
-			value: pagination?.totalItems ?? areas.length,
+			icon: 'tabler_users',
+			label: t('shared.consultants', { defaultValue: 'Consultants' }),
+			value: Number(sl.consultant_count || 0),
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
 		{
-			icon: 'check_circle',
-			label: t('shared.active', { defaultValue: 'Active' }),
-			value: activeCount,
+			icon: 'area',
+			label: t('shared.structureLabels.areas'),
+			value: Number(sl.area_count || 0),
 			accentColor: '#0f7f69',
-			accentBg: 'var(--color-green-soft)',
-		},
-		{
-			icon: 'close_circle',
-			label: t('shared.inactive', { defaultValue: 'Inactive' }),
-			value: inactiveCount,
-			accentColor: '#b91c1c',
-			accentBg: 'rgba(239, 68, 68, 0.1)',
+			accentBg: 'rgba(23, 164, 136, 0.14)',
 		},
 	];
+
+	const enrollmentMessage = sl.is_enrolled
+		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
+		: null;
 
 	const subStructures = areas.map((area) => ({
 		id: area.area_id,
@@ -123,6 +118,8 @@ export default function ServiceLineDetail() {
 			tone="serviceLines"
 			isActive={sl.is_active}
 			stats={stats}
+			enrollmentMessage={enrollmentMessage}
+			extraContent={<SLLeaderCard leader={sl.leader} />}
 			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.areas')}
 			subStructureIcon="area"

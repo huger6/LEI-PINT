@@ -59,39 +59,33 @@ export default function AreaDetail() {
 	if (loading) return <Spinner />;
 	if (!area) return null;
 
-	const activeCount = levels.filter((l) => l.is_active).length;
-	const inactiveCount = levels.filter((l) => !l.is_active).length;
-
 	const stats = [
 		{
-			icon: 'evolution',
-			label: t('shared.structureLabels.stages'),
-			value: pagination?.totalItems ?? levels.length,
+			icon: 'tabler_users',
+			label: t('shared.consultants', { defaultValue: 'Consultants' }),
+			value: Number(area.consultant_count || 0),
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
 		{
-			icon: 'check_circle',
-			label: t('shared.active', { defaultValue: 'Active' }),
-			value: activeCount,
-			accentColor: '#0f7f69',
-			accentBg: 'var(--color-green-soft)',
-		},
-		{
-			icon: 'close_circle',
-			label: t('shared.inactive', { defaultValue: 'Inactive' }),
-			value: inactiveCount,
-			accentColor: '#b91c1c',
-			accentBg: 'rgba(239, 68, 68, 0.1)',
+			icon: 'evolution',
+			label: t('shared.structureLabels.stages'),
+			value: Number(area.level_count || 0),
+			accentColor: '#8d640d',
+			accentBg: 'rgba(210, 148, 21, 0.15)',
 		},
 	];
+
+	const enrollmentMessage = area.is_enrolled
+		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
+		: null;
 
 	const subStructures = levels.map((level) => ({
 		id: level.progression_stage_id,
 		title: level.stage_title,
 		description: level.stage_description,
 		isActive: level.is_active,
-		to: ADMIN.LEVEL_DETAIL.replace(':slug', level.stage_code?.stage_code || level.progression_stage_id),
+		to: ADMIN.LEVEL_DETAIL.replace(':slug', level.progression_stage_id),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
 			{ icon: 'badge', value: Number(level.badge_count || 0), label: t('shared.badges', { defaultValue: 'Badges' }) },
@@ -131,6 +125,7 @@ export default function AreaDetail() {
 			tone="areas"
 			isActive={area.is_active}
 			stats={stats}
+			enrollmentMessage={enrollmentMessage}
 			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.stages')}
 			subStructureIcon="evolution"

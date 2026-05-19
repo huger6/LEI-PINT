@@ -180,9 +180,24 @@
 }
 
 .statsGrid {
+	--stat-card-size: clamp(104px, 10vw, 128px);
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(var(--stat-card-size), var(--stat-card-size)));
 	gap: 0.75rem;
+	justify-content: start;
+}
+
+.enrollmentBanner {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.65rem 1rem;
+	border-radius: 12px;
+	background: var(--color-green-soft);
+	border: 1px solid rgba(15, 127, 105, 0.25);
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: #0f7f69;
 }
 
 /* Sub-structures section */
@@ -279,10 +294,6 @@
 		justify-content: flex-end;
 	}
 
-	.statsGrid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-
 	.subGrid > * {
 		flex: 1 1 100%;
 	}
@@ -290,7 +301,7 @@
 
 @media (max-width: 400px) {
 	.statsGrid {
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--stat-card-size)), var(--stat-card-size)));
 	}
 
 	.leftPanel {
