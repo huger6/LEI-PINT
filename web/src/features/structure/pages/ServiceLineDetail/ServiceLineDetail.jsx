@@ -1,22 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import SLLeaderCard from '../../components/SLLeaderCard/SLLeaderCard';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
+import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
+import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
 
 const PAGE_SIZE = 32;
 
 export default function ServiceLineDetail() {
 	const { slug } = useParams();
+	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const [sl, setSl] = useState(null);
 	const [areas, setAreas] = useState([]);
 	const [pagination, setPagination] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
+	const [showEditModal, setShowEditModal] = useState(false);
+	const [showCreateAreaModal, setShowCreateAreaModal] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchAreasByServiceLine(slug, { page, limit: PAGE_SIZE });
@@ -56,6 +61,43 @@ export default function ServiceLineDetail() {
 			})
 			.catch(console.error);
 	}, [fetchSubStructures]);
+
+	const handleServiceLineEdited = useCallback(async (updated) => {
+		const nextSlug = updated?.sl_slug || slug;
+		try {
+			const refreshed = await fetchServiceLineBySlug(nextSlug);
+			if (refreshed) setSl(refreshed);
+		} catch (error) {
+			console.error(error);
+			setSl((prev) => (prev ? {
+				...prev,
+				service_line_name: updated?.service_line_name ?? prev.service_line_name,
+				sl_slug: updated?.sl_slug ?? prev.sl_slug,
+				service_line_description: updated?.service_line_description ?? prev.service_line_description,
+				img_url: updated?.img_url ?? prev.img_url,
+				is_active: updated?.is_active ?? prev.is_active,
+			} : prev));
+		}
+
+		if (nextSlug && nextSlug !== slug) {
+			navigate(ADMIN.SERVICE_LINE_DETAIL.replace(':slug', nextSlug));
+		}
+	}, [slug, navigate]);
+
+	const handleAreaCreated = useCallback(async () => {
+		setCurrentPage(1);
+		try {
+			const [refreshedSl, areasData] = await Promise.all([
+				fetchServiceLineBySlug(slug),
+				fetchSubStructures(1),
+			]);
+			if (refreshedSl) setSl(refreshedSl);
+			setAreas(areasData.items);
+			setPagination(areasData.pagination);
+		} catch (error) {
+			console.error(error);
+		}
+	}, [slug, fetchSubStructures]);
 
 	if (loading) return <Spinner />;
 	if (!sl) return null;
@@ -109,28 +151,60 @@ export default function ServiceLineDetail() {
 	});
 
 	return (
-		<StructureDetailLayout
-			breadcrumbItems={breadcrumbItems}
-			title={sl.service_line_name}
-			description={sl.service_line_description}
-			icon="service-line"
-			imageUrl={sl.img_url}
-			tone="serviceLines"
-			isActive={sl.is_active}
-			stats={stats}
-			enrollmentMessage={enrollmentMessage}
-			extraContent={<SLLeaderCard leader={sl.leader} />}
-			subStructures={subStructures}
-			subStructureLabel={t('shared.structureLabels.areas')}
-			subStructureIcon="area"
-			subStructureTone="areas"
-			addSubLabel={t('structureDetail.addArea', { defaultValue: 'Add Area' })}
-			onEdit={() => {}}
-			onAddSub={() => {}}
-			onDelete={() => {}}
-			onExport={() => {}}
-			pagination={pagination}
-			onPageChange={handlePageChange}
-		/>
+		<>
+			<StructureDetailLayout
+				breadcrumbItems={breadcrumbItems}
+				title={sl.service_line_name}
+				description={sl.service_line_description}
+				icon="service-line"
+				imageUrl={sl.img_url}
+				tone="serviceLines"
+				isActive={sl.is_active}
+				stats={stats}
+				enrollmentMessage={enrollmentMessage}
+				extraContent={<SLLeaderCard leader={sl.leader} />}
+				subStructures={subStructures}
+				subStructureLabel={t('shared.structureLabels.areas')}
+				subStructureIcon="area"
+				subStructureTone="areas"
+				addSubLabel={t('structureDetail.addArea', { defaultValue: 'Add Area' })}
+				onEdit={() => setShowEditModal(true)}
+				onAddSub={() => setShowCreateAreaModal(true)}
+				onDelete={() => {}}
+				onExport={() => {}}
+				pagination={pagination}
+				onPageChange={handlePageChange}
+			/>
+
+			{showEditModal && (
+				<CreateServiceLineModal
+					mode="edit"
+					targetSlug={sl.sl_slug || slug}
+					initialData={{
+						learningPathId: sl.learning_path_id || '',
+						serviceLineName: sl.service_line_name || '',
+						slSlug: sl.sl_slug || '',
+						serviceLineDescription: sl.service_line_description || '',
+						imgUrl: sl.img_url || '',
+					}}
+					defaultLearningPathSlug={sl.learning_path?.path_slug || null}
+					onSuccess={handleServiceLineEdited}
+					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+
+			{showCreateAreaModal && (
+				<CreateAreaModal
+					defaultLearningPathId={sl.learning_path_id || null}
+					defaultLearningPathSlug={sl.learning_path?.path_slug || null}
+					defaultServiceLineId={sl.service_line_id || null}
+					defaultServiceLineSlug={sl.sl_slug || slug}
+					lockLearningPath
+					lockServiceLine
+					onSuccess={handleAreaCreated}
+					onClose={() => setShowCreateAreaModal(false)}
+				/>
+			)}
+		</>
 	);
 }
