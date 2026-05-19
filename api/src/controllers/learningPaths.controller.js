@@ -231,11 +231,20 @@ const updateLearningPath = async (req, res) => {
             );
         }
 
+        let finalImgUrl = imgUrl !== undefined ? imgUrl : lp.img_url;
+        if (imgUrl && imgUrl.includes('/temp/')) {
+            finalImgUrl = await moveStructureImageToPermanent(
+                'learning-paths',
+                imgUrl,
+                finalNewSlug
+            );
+        }
+
         await lp.update({
             path_title: pathTitle !== undefined ? pathTitle : lp.path_title,
             path_slug: finalNewSlug,
             path_description: pathDescription !== undefined ? pathDescription : lp.path_description,
-            img_url: imgUrl !== undefined ? imgUrl : lp.img_url,
+            img_url: finalImgUrl,
             is_active: isActive !== undefined ? isActive : lp.is_active,
             updated_by: userId
         });

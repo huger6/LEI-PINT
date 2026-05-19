@@ -1,6 +1,6 @@
 const { z } = require('zod');
 require('./error-map');
-const { positiveIntIdRule, imgUrlRule } = require('./shared-rules');
+const { positiveIntIdRule, imgUrlRule, imgUrlExistingRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
 const optionalSearchRule = z
@@ -86,11 +86,12 @@ const createLearningPathBodySchema = z.object({
 		.nullable(),
 
 	pathDescription: z.string().trim().max(5000).optional().nullable(),
-	imgUrl: imgUrlRule.optional()
+	imgUrl: imgUrlRule.optional().nullable()
 });
 
 const updateLearningPathBodySchema = createLearningPathBodySchema.extend({
-	isActive: z.boolean().optional()
+	isActive: z.boolean().optional(),
+	imgUrl: imgUrlExistingRule.optional().nullable()
 }).partial();
 
 const createServiceLineBodySchema = z.object({
@@ -110,7 +111,8 @@ const createServiceLineBodySchema = z.object({
 });
 
 const updateServiceLineBodySchema = createServiceLineBodySchema.extend({
-	isActive: z.boolean().optional()
+	isActive: z.boolean().optional(),
+	imgUrl: imgUrlExistingRule.optional().nullable()
 }).partial();
 
 // --- Areas ---
@@ -137,7 +139,8 @@ const createAreaBodySchema = z.object({
 });
 
 const updateAreaBodySchema = createAreaBodySchema.extend({
-	isActive: z.boolean().optional()
+	isActive: z.boolean().optional(),
+	imgUrl: imgUrlExistingRule.optional().nullable()
 }).partial();
 
 // --- Levels (Progression Stages) ---
@@ -195,7 +198,8 @@ const createBadgeBodySchema = z.object({
 });
 
 const updateBadgeBodySchema = createBadgeBodySchema.extend({
-	isActive: z.boolean().optional()
+	isActive: z.boolean().optional(),
+	badgeImgUrl: imgUrlExistingRule.optional().nullable()
 }).partial();
 
 const slugQuerySchema = z.object({
