@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
 const slController = require('../controllers/serviceLines.controller');
 
 const areasRoutes = require('./areas.routes');
@@ -13,7 +13,7 @@ const badgeRoutes = require('./badges.routes');
  * @desc    List all service lines, optionally scoped to a learning path
  * @access  Authenticated
  */
-router.get('/', loginRequired, slController.getServiceLines);
+router.get('/', optionalAuth, slController.getServiceLines);
 
 /**
  * @route   GET /api/service-lines/filter-stats

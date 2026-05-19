@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, isAdmin, optionalAuth } = require('../middlewares/auth.middleware');
 const levelController = require('../controllers/levels.controller');
 
 const badgesRoutes = require('./badges.routes');
@@ -12,7 +12,7 @@ const badgesRoutes = require('./badges.routes');
  * @desc    List all levels, optionally scoped to an area
  * @access  Authenticated
  */
-router.get('/', loginRequired, levelController.getLevels);
+router.get('/', optionalAuth, levelController.getLevels);
 
 /**
  * @route   GET /api/levels/filter-stats
