@@ -489,16 +489,23 @@ const deleteLevel = async (req, res) => {
         }
 
         if (!level.is_active) {
-            return res.status(400).json({
+            return res.status(400).json({ success: false, code: "LEVEL_ALREADY_INACTIVE" });
+        }
+
+        const activeApplications = await models.badge_applications.count({
+            where: { application_state: ['Open', 'Submitted', 'In validation'] },
+            include: [{ model: models.badges, as: 'badge', where: { progression_stage_id: level.progression_stage_id }, required: true, attributes: [] }]
+        });
+
+        if (activeApplications > 0) {
+            return res.status(409).json({
                 success: false,
-                code: "LEVEL_ALREADY_INACTIVE"
+                code: "LEVEL_HAS_DEPENDENCIES",
+                data: { activeApplications }
             });
         }
 
-        await level.update({
-            is_active: false,
-            updated_by: userId
-        });
+        await level.update({ is_active: false, updated_by: userId });
 
         await invalidateCacheByPrefix('levels:list');
         await invalidateCacheByPrefix('levels:count');
@@ -507,10 +514,7 @@ const deleteLevel = async (req, res) => {
         await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
 
-        return res.status(200).json({
-            success: true,
-            code: "LEVEL_DEACTIVATED"
-        });
+        return res.status(200).json({ success: true, code: "LEVEL_DEACTIVATED" });
 
     } catch (error) {
         if (error.name === 'ZodError') {

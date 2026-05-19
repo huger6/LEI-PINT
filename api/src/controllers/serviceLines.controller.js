@@ -383,24 +383,33 @@ const deleteServiceLine = async (req, res) => {
         const sl = await models.service_lines.findOne({ where: { sl_slug: slSlug } });
 
         if (!sl) {
-            return res.status(404).json({
-                success: false,
-                code: "SL_NOT_FOUND_BY_SLUG"
-            });
+            return res.status(404).json({ success: false, code: "SL_NOT_FOUND_BY_SLUG" });
         }
 
         if (!sl.is_active) {
-            return res.status(400).json({
+            return res.status(400).json({ success: false, code: "SL_ALREADY_INACTIVE" });
+        }
+
+        const [assignedLeaders, consultantsEnrolled, activeApplications] = await Promise.all([
+            models.service_line_leaders.count({ where: { service_line_id: sl.service_line_id } }),
+            models.consultant_areas.count({
+                include: [{ model: models.areas, as: 'area', where: { service_line_id: sl.service_line_id }, required: true, attributes: [] }]
+            }),
+            models.badge_applications.count({
+                where: { application_state: ['Open', 'Submitted', 'In validation'] },
+                include: [{ model: models.badges, as: 'badge', where: { service_line_id: sl.service_line_id }, required: true, attributes: [] }]
+            })
+        ]);
+
+        if (assignedLeaders > 0 || consultantsEnrolled > 0 || activeApplications > 0) {
+            return res.status(409).json({
                 success: false,
-                code: "SL_ALREADY_INACTIVE"
+                code: "SL_HAS_DEPENDENCIES",
+                data: { assignedLeaders, consultantsEnrolled, activeApplications }
             });
         }
 
-        // Soft delete
-        await sl.update({
-            is_active: false,
-            updated_by: userId
-        });
+        await sl.update({ is_active: false, updated_by: userId });
 
         await invalidateCacheByPrefix('sl:list');
         await invalidateCacheByPrefix('sl:count');
@@ -409,24 +418,14 @@ const deleteServiceLine = async (req, res) => {
         await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
-        return res.status(200).json({
-            success: true,
-            code: "SL_DEACTIVATED"
-        });
+        return res.status(200).json({ success: true, code: "SL_DEACTIVATED" });
 
     } catch (error) {
         if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
         }
-
         logger.error('Error deleting Service Line', { error });
-        return res.status(500).json({
-            success: false,
-            code: "SL_DELETE_FAILED"
-        });
+        return res.status(500).json({ success: false, code: "SL_DELETE_FAILED" });
     }
 };
 
