@@ -726,16 +726,22 @@ const deleteBadge = async (req, res) => {
         }
 
         if (!badge.is_active) {
-            return res.status(400).json({
+            return res.status(400).json({ success: false, code: "BADGE_ALREADY_INACTIVE" });
+        }
+
+        const activeApplications = await models.badge_applications.count({
+            where: { badge_id: badge.badge_id, application_state: ['Open', 'Submitted', 'In validation'] }
+        });
+
+        if (activeApplications > 0) {
+            return res.status(409).json({
                 success: false,
-                code: "BADGE_ALREADY_INACTIVE"
+                code: "BADGE_HAS_DEPENDENCIES",
+                data: { activeApplications }
             });
         }
 
-        await badge.update({
-            is_active: false,
-            updated_by: userId
-        });
+        await badge.update({ is_active: false, updated_by: userId });
 
         await invalidateCacheByPrefix('badges:list');
         await invalidateCacheByPrefix('badges:count');
@@ -743,10 +749,7 @@ const deleteBadge = async (req, res) => {
         await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 14);
 
-        return res.status(200).json({
-            success: true,
-            code: "BADGE_DEACTIVATED"
-        });
+        return res.status(200).json({ success: true, code: "BADGE_DEACTIVATED" });
 
     } catch (error) {
         if (error.name === 'ZodError') {

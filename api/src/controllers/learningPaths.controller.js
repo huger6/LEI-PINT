@@ -282,51 +282,55 @@ const deleteLearningPath = async (req, res) => {
         const userId = req.user.sub;
         const { pathSlug } = validations.pathSlugParamSchema.parse(req.params);
 
-        // Search by slug
         const lp = await models.learning_paths.findOne({ where: { path_slug: pathSlug } });
 
         if (!lp) {
-            return res.status(404).json({
-                success: false,
-                code: "LP_NOT_FOUND"
-            });
+            return res.status(404).json({ success: false, code: "LP_NOT_FOUND" });
         }
 
         if (!lp.is_active) {
-            return res.status(400).json({
+            return res.status(400).json({ success: false, code: "LP_ALREADY_INACTIVE" });
+        }
+
+        const [assignedLeaders, consultantsEnrolled, activeApplications] = await Promise.all([
+            models.service_line_leaders.count({
+                include: [{ model: models.service_lines, as: 'service_line', where: { learning_path_id: lp.learning_path_id }, required: true, attributes: [] }]
+            }),
+            models.consultant_areas.count({
+                include: [{
+                    model: models.areas, as: 'area', required: true, attributes: [],
+                    include: [{ model: models.service_lines, as: 'service_line', where: { learning_path_id: lp.learning_path_id }, required: true, attributes: [] }]
+                }]
+            }),
+            models.badge_applications.count({
+                where: { application_state: ['Open', 'Submitted', 'In validation'] },
+                include: [{ model: models.badges, as: 'badge', where: { learning_path_id: lp.learning_path_id }, required: true, attributes: [] }]
+            })
+        ]);
+
+        if (assignedLeaders > 0 || consultantsEnrolled > 0 || activeApplications > 0) {
+            return res.status(409).json({
                 success: false,
-                code: "LP_ALREADY_INACTIVE"
+                code: "LP_HAS_DEPENDENCIES",
+                data: { assignedLeaders, consultantsEnrolled, activeApplications }
             });
         }
 
-        await lp.update({
-            is_active: false,
-            updated_by: userId
-        });
+        await lp.update({ is_active: false, updated_by: userId });
 
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
         await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
-        return res.status(200).json({
-            success: true,
-            code: "LP_DEACTIVATED"
-        });
+        return res.status(200).json({ success: true, code: "LP_DEACTIVATED" });
 
     } catch (error) {
         if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
         }
-
         logger.error('Error deleting Learning Path', { error });
-        return res.status(500).json({
-            success: false,
-            code: "LP_DELETE_FAILED"
-        });
+        return res.status(500).json({ success: false, code: "LP_DELETE_FAILED" });
     }
 };
 
