@@ -13,7 +13,7 @@ export default function PasswordRules({ password }) {
 				const passed = rule.test(password);
 				return (
 					<li key={rule.key} className={`${styles.pwRule} ${passed ? styles.pwRuleOk : ''}`}>
-						<Icon name={passed ? 'check2' : 'circle'} size={14} aria-hidden="true" />{' '}
+						<Icon name={passed ? 'check_circle' : 'circle'} size={14} aria-hidden="true" />{' '}
 						{t(`passwordRules.${rule.key}`)}
 					</li>
 				);

@@ -377,7 +377,7 @@ export default function UserProfile() {
 			return [
 				...base,
 				{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
-				{ icon: 'check2', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
+				{ icon: 'check_circle', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
 			];
 		}
 
@@ -385,7 +385,7 @@ export default function UserProfile() {
 		return [
 			...base,
 			{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
-			{ icon: 'check2', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
+			{ icon: 'check_circle', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
 		];
 	};
 
@@ -742,7 +742,7 @@ export default function UserProfile() {
 			{/* ── Success toast ───────────────────────────────── */}
 			{saveSuccess && (
 				<div className={styles.successToast} role="status">
-					<Icon name="check2" size={20} color="var(--color-success)" />
+					<Icon name="check_circle" size={20} color="var(--color-success)" />
 					<span>{t('profile.profileUpdated')}</span>
 				</div>
 			)}
