@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
 
 const announcementController = require('../controllers/announcements.controller');
 
@@ -9,7 +9,7 @@ const announcementController = require('../controllers/announcements.controller'
  * @desc    List all announcements with pagination and filtering
  * @access  Public (admins see inactive; non-admins see only active)
  */
-router.get('/', announcementController.getAnnouncements);
+router.get('/', optionalAuth, announcementController.getAnnouncements);
 
 /**
  * @route   GET /api/announcements/:announcementId
