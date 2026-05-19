@@ -165,7 +165,9 @@ class HistoryCard extends StatelessWidget {
 }
 
 class DailyEvolutionCard extends StatelessWidget {
-  const DailyEvolutionCard({super.key});
+  const DailyEvolutionCard({super.key, this.timeline = const []});
+
+  final List<Map<String, dynamic>> timeline;
 
   @override
   Widget build(BuildContext context) {
@@ -183,27 +185,69 @@ class DailyEvolutionCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const SizedBox(height: 180, child: DailyLineChart()),
+      child: SizedBox(
+        height: 180,
+        child: DailyLineChart(timeline: timeline),
+      ),
     );
   }
 }
 
 class DailyLineChart extends StatelessWidget {
-  const DailyLineChart({super.key});
+  const DailyLineChart({super.key, this.timeline = const []});
+
+  static const _monthNames = [
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  ];
+
+  final List<Map<String, dynamic>> timeline;
 
   @override
   Widget build(BuildContext context) {
+    final recent = timeline.length > 6
+        ? timeline.sublist(timeline.length - 6)
+        : timeline;
+
+    final spots = List.generate(recent.length, (i) {
+      final val = (recent[i]['cumulative_badges'] ??
+              recent[i]['cumulative_certifications'] ??
+              0) as num;
+      return FlSpot(i.toDouble(), val.toDouble());
+    });
+
+    final labels = recent.map((row) {
+      final m = row['month'];
+      if (m is int && m >= 1 && m <= 12) return _monthNames[m - 1];
+      return m?.toString() ?? '';
+    }).toList();
+
+    if (spots.isEmpty) {
+      return const Center(
+        child: Text(
+          'Sem dados dispon\u00edveis.',
+          style: TextStyle(
+            color: Color(0xFF8CA0B2),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final chartMaxY = (maxY * 1.3).ceilToDouble().clamp(1, 10000);
+
     return LineChart(
       LineChartData(
         minX: 0,
-        maxX: 5,
+        maxX: (spots.length - 1).toDouble(),
         minY: 0,
-        maxY: 18,
+        maxY: chartMaxY.toDouble(),
         borderData: FlBorderData(show: false),
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: 3,
+          horizontalInterval: (chartMaxY / 4).clamp(1, 1000),
           getDrawingHorizontalLine: (_) =>
               const FlLine(color: Color(0xFFE7ECF1), strokeWidth: 1),
         ),
@@ -224,12 +268,10 @@ class DailyLineChart extends StatelessWidget {
               reservedSize: 24,
               interval: 1,
               getTitlesWidget: (value, _) {
-                const labels = ['Ter', 'Qua', 'Qui', 'Sex', 'S\u00e1b', 'Dom'];
                 final index = value.toInt();
                 if (index < 0 || index >= labels.length) {
                   return const SizedBox.shrink();
                 }
-
                 return Text(
                   labels[index],
                   style: const TextStyle(
@@ -244,14 +286,7 @@ class DailyLineChart extends StatelessWidget {
         ),
         lineBarsData: [
           LineChartBarData(
-            spots: const [
-              FlSpot(0, 4),
-              FlSpot(1, 8),
-              FlSpot(2, 6),
-              FlSpot(3, 10),
-              FlSpot(4, 9),
-              FlSpot(5, 12),
-            ],
+            spots: spots,
             isCurved: true,
             color: const Color(0xFF5EB3DC),
             barWidth: 3,
@@ -281,10 +316,40 @@ class DailyLineChart extends StatelessWidget {
 }
 
 class MonthlyEvolutionCard extends StatelessWidget {
-  const MonthlyEvolutionCard({super.key});
+  const MonthlyEvolutionCard({super.key, this.timeline = const []});
+
+  static const _monthNames = [
+    'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
+    'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ',
+  ];
+
+  final List<Map<String, dynamic>> timeline;
 
   @override
   Widget build(BuildContext context) {
+    final recent = timeline.length > 4
+        ? timeline.sublist(timeline.length - 4)
+        : timeline;
+
+    final barValues = recent.map((row) {
+      final val = (row['cumulative_badges'] ??
+              row['cumulative_certifications'] ??
+              0) as num;
+      return val.toDouble();
+    }).toList();
+
+    final labels = recent.map((row) {
+      final m = row['month'];
+      if (m is int && m >= 1 && m <= 12) return _monthNames[m - 1];
+      return m?.toString() ?? '';
+    }).toList();
+
+    final maxY = barValues.isEmpty
+        ? 28.0
+        : (barValues.reduce((a, b) => a > b ? a : b) * 1.3)
+            .ceilToDouble()
+            .clamp(1, 10000);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
@@ -301,107 +366,76 @@ class MonthlyEvolutionCard extends StatelessWidget {
       ),
       child: SizedBox(
         height: 185,
-        child: BarChart(
-          BarChartData(
-            maxY: 28,
-            borderData: FlBorderData(show: false),
-            gridData: FlGridData(
-              show: true,
-              drawVerticalLine: false,
-              horizontalInterval: 7,
-              getDrawingHorizontalLine: (_) =>
-                  const FlLine(color: Color(0xFFE7ECF1), strokeWidth: 1),
-            ),
-            barTouchData: BarTouchData(enabled: false),
-            titlesData: FlTitlesData(
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              leftTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 24,
-                  getTitlesWidget: (value, _) {
-                    const labels = ['SET', 'OUT', 'NOV', 'DEZ'];
-                    final index = value.toInt();
-                    if (index < 0 || index >= labels.length) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return Text(
-                      labels[index],
-                      style: const TextStyle(
-                        color: Color(0xFF6D7680),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+        child: barValues.isEmpty
+            ? const Center(
+                child: Text(
+                  'Sem dados dispon\u00edveis.',
+                  style: TextStyle(
+                    color: Color(0xFF8CA0B2),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            : BarChart(
+                BarChartData(
+                  maxY: maxY.toDouble(),
+                  borderData: FlBorderData(show: false),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: (maxY / 4).clamp(1, 1000),
+                    getDrawingHorizontalLine: (_) =>
+                        const FlLine(color: Color(0xFFE7ECF1), strokeWidth: 1),
+                  ),
+                  barTouchData: BarTouchData(enabled: false),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 24,
+                        getTitlesWidget: (value, _) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= labels.length) {
+                            return const SizedBox.shrink();
+                          }
+                          return Text(
+                            labels[index],
+                            style: const TextStyle(
+                              color: Color(0xFF6D7680),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
                       ),
+                    ),
+                  ),
+                  barGroups: List.generate(barValues.length, (i) {
+                    return BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        BarChartRodData(
+                          toY: barValues[i],
+                          width: 22,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(8),
+                          ),
+                          color: const Color(0xFF8ACCEC),
+                        ),
+                      ],
                     );
-                  },
+                  }),
                 ),
               ),
-            ),
-            barGroups: [
-              BarChartGroupData(
-                x: 0,
-                barRods: [
-                  BarChartRodData(
-                    toY: 14,
-                    width: 22,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                    color: Color(0xFF8ACCEC),
-                  ),
-                ],
-              ),
-              BarChartGroupData(
-                x: 1,
-                barRods: [
-                  BarChartRodData(
-                    toY: 18,
-                    width: 22,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                    color: Color(0xFF8ACCEC),
-                  ),
-                ],
-              ),
-              BarChartGroupData(
-                x: 2,
-                barRods: [
-                  BarChartRodData(
-                    toY: 22,
-                    width: 22,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                    color: Color(0xFF8ACCEC),
-                  ),
-                ],
-              ),
-              BarChartGroupData(
-                x: 3,
-                barRods: [
-                  BarChartRodData(
-                    toY: 25,
-                    width: 22,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                    color: Color(0xFF8ACCEC),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -35,10 +35,16 @@ class AuthRepository {
           identifier: identifier,
         );
 
+        final userPayload = _asMap(payload['user']);
+        final forcePasswordChange = payload['fpc'] == true;
+        final firstLogin = userPayload['first_login'] == true;
+
         return {
           'success': true,
           'accessToken': token,
           'user': profileUser ?? fallbackUser,
+          'forcePasswordChange': forcePasswordChange,
+          'firstLogin': firstLogin,
         };
       }
 
@@ -202,6 +208,107 @@ class AuthRepository {
       return null;
     }
     return null;
+  }
+
+  Future<Map<String, dynamic>> updateProfile(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.put(ApiEndpoints.updateProfile, data: data),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao atualizar perfil.',
+        ),
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _extractMessage(
+          _asMap(e.response?.data),
+          fallback: 'Erro ao atualizar perfil.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao atualizar perfil: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> changeLanguage(int languageId) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.patch(ApiEndpoints.changeLanguage(languageId)),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao alterar idioma.',
+        ),
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _extractMessage(
+          _asMap(e.response?.data),
+          fallback: 'Erro ao alterar idioma.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao alterar idioma: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.post(
+          ApiEndpoints.changePassword,
+          data: {
+            'current_password': currentPassword,
+            'new_password': newPassword,
+          },
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao alterar password.',
+        ),
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _extractMessage(
+          _asMap(e.response?.data),
+          fallback: 'Erro ao alterar password.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao alterar password: $e'};
+    }
   }
 
   Future<void> logout() async {

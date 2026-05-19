@@ -67,10 +67,40 @@ class QuickMetricCard extends StatelessWidget {
 }
 
 class BadgesStatsCard extends StatelessWidget {
-  const BadgesStatsCard({super.key});
+  const BadgesStatsCard({super.key, this.timeline = const []});
+
+  final List<Map<String, dynamic>> timeline;
+
+  static const _monthNames = [
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final recent = timeline.length > 6
+        ? timeline.sublist(timeline.length - 6)
+        : timeline;
+
+    final spots = List.generate(recent.length, (i) {
+      final val = (recent[i]['cumulative_badges'] ??
+              recent[i]['cumulative_certifications'] ??
+              0) as num;
+      return FlSpot(i.toDouble(), val.toDouble());
+    });
+
+    final labels = recent.map((row) {
+      final m = row['month'];
+      if (m is int && m >= 1 && m <= 12) return _monthNames[m - 1];
+      return m?.toString() ?? '';
+    }).toList();
+
+    final maxY = spots.isEmpty
+        ? 21.0
+        : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
+            .ceilToDouble()
+            .clamp(1, 1000);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
@@ -99,145 +129,93 @@ class BadgesStatsCard extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             height: 220,
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 5,
-                minY: 0,
-                maxY: 21,
-                borderData: FlBorderData(show: false),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 7,
-                  getDrawingHorizontalLine: (_) =>
-                      const FlLine(color: Color(0xFFE8EDF2), strokeWidth: 1),
-                ),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 7,
-                      reservedSize: 30,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(
-                            color: Color(0xFF718192),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+            child: spots.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Sem dados de evolu\u00e7\u00e3o.',
+                      style: TextStyle(
+                        color: Color(0xFF8CA0B2),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : LineChart(
+                    LineChartData(
+                      minX: 0,
+                      maxX: (spots.length - 1).toDouble(),
+                      minY: 0,
+                      maxY: maxY.toDouble(),
+                      borderData: FlBorderData(show: false),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: (maxY / 3).clamp(1, 100),
+                        getDrawingHorizontalLine: (_) => const FlLine(
+                          color: Color(0xFFE8EDF2),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            interval: (maxY / 3).clamp(1, 100),
+                            reservedSize: 30,
+                            getTitlesWidget: (value, meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: const TextStyle(
+                                  color: Color(0xFF718192),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: 24,
-                      getTitlesWidget: (value, meta) {
-                        const months = [
-                          'Jan',
-                          'Fev',
-                          'Mar',
-                          'Abr',
-                          'Mai',
-                          'Jun',
-                        ];
-                        final index = value.toInt();
-                        if (index < 0 || index >= months.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            months[index],
-                            style: const TextStyle(
-                              color: Color(0xFF5D6978),
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            interval: 1,
+                            reservedSize: 24,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= labels.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  labels[index],
+                                  style: const TextStyle(
+                                    color: Color(0xFF5D6978),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                extraLinesData: ExtraLinesData(
-                  verticalLines: [
-                    VerticalLine(
-                      x: 3,
-                      color: const Color(0xFFAFB8C3),
-                      strokeWidth: 1.4,
-                      dashArray: [6, 4],
-                    ),
-                  ],
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 13),
-                      FlSpot(1, 9),
-                      FlSpot(2, 8),
-                      FlSpot(3, 16),
-                      FlSpot(4, 14),
-                      FlSpot(5, 9),
-                    ],
-                    isCurved: true,
-                    color: const Color(0xFFE57D97),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    belowBarData: BarAreaData(show: false),
-                    dotData: FlDotData(
-                      show: true,
-                      checkToShowDot: (spot, barData) => spot.x == 3,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 5,
+                        ),
+                      ),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
                           color: const Color(0xFFE57D97),
-                          strokeWidth: 2,
-                          strokeColor: Colors.white,
-                        );
-                      },
+                          barWidth: 3,
+                          isStrokeCapRound: true,
+                          belowBarData: BarAreaData(show: false),
+                          dotData: const FlDotData(show: false),
+                        ),
+                      ],
                     ),
                   ),
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 9),
-                      FlSpot(1, 12),
-                      FlSpot(2, 8),
-                      FlSpot(3, 7),
-                      FlSpot(4, 10),
-                      FlSpot(5, 7),
-                    ],
-                    isCurved: true,
-                    color: const Color(0xFF494CE6),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    belowBarData: BarAreaData(show: false),
-                    dotData: const FlDotData(show: false),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              LegendItem(color: Color(0xFFE57D97), label: 'Os seus dados'),
-              SizedBox(width: 28),
-              LegendItem(
-                color: Color(0xFF494CE6),
-                label: 'M\u00e9dia dos consultores',
-              ),
-            ],
           ),
         ],
       ),

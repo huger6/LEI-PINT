@@ -22,14 +22,25 @@ class ApiEndpoints {
   static const String changePassword = '/api/auth/change-password';
 
   // === Validation ===
-  // POST /auth/validate-email - check email availability
-  static const String validateEmail = '/api/auth/validate-email';
+  // GET /utils/check/email?value=... - check email availability
+  static const String checkEmail = '/api/utils/check/email';
 
-  // POST /auth/validate-username - check username availability
-  static const String validateUsername = '/api/auth/validate-username';
+  // GET /utils/check/username?value=... - check username availability
+  static const String checkUsername = '/api/utils/check/username';
 
   // POST /auth/validate-content - check for prohibited/profane content
   static const String validateContent = '/api/auth/validate-content';
+
+  // === Profile ===
+  // GET /me - get current user profile
+  static const String getProfile = '/api/me';
+
+  // PUT /me - update current user profile
+  static const String updateProfile = '/api/me';
+
+  // PATCH /me/language/:id - change preferred language
+  static String changeLanguage(int languageId) =>
+      '/api/me/language/$languageId';
 
   // === Locations ===
   // GET /locations
@@ -69,6 +80,10 @@ class ApiEndpoints {
   // GET /ranking
   static const String getRanking = '/api/ranking';
 
+  // === Gamification ===
+  static const String shareBadge = '/api/gamification/share-badge';
+  static const String acceptShareGdpr = '/api/me/accept-share-gdpr';
+
   // === Sync-only endpoints (used by SyncService) ===
   static const String getLearningPaths = '/api/learning-paths';
   static const String getServiceLines = '/api/service-lines';
@@ -79,5 +94,9 @@ class ApiEndpoints {
   static const String getEarnedBadges = '/api/gamification/earned-badges';
   static const String getPointsHistory =
       '/api/statistics/consultant/points-history';
+  static const String getTimeline =
+      '/api/statistics/consultant/timeline';
+  static const String getLearningPathProgress =
+      '/api/statistics/consultant/learning-paths';
   static const String getValidationLogs = '/api/applications/validation-logs';
 }

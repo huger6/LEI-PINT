@@ -6,14 +6,16 @@ import '../../core/constants/sync_codes.dart';
 import '../../core/services/sync_service.dart';
 import '../../data/repositories/badge_repo.dart';
 import '../../models/badge_model.dart';
+import '../../models/earned_badge_model.dart';
 
 class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   BadgeStore(this._badgeRepository, this._syncService) {
     WidgetsBinding.instance.addObserver(this);
 
-    _syncSubscription = _syncService.onSyncComplete
-        .where((code) => code == SyncCodes.badges)
-        .listen((_) => _reloadFromLocal());
+    _syncSubscription = _syncService.onSyncComplete.listen((code) {
+      if (code == SyncCodes.badges) _reloadFromLocal();
+      if (code == SyncCodes.awardedBadges) _reloadEarnedFromLocal();
+    });
   }
 
   final BadgeRepository _badgeRepository;
@@ -22,11 +24,15 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
   final Map<String, BadgeModel> _detailsBySlug = <String, BadgeModel>{};
   List<BadgeModel> _badges = [];
+  List<EarnedBadge> _earnedBadges = [];
   bool _isLoading = false;
+  bool _isLoadingEarned = false;
   String? _errorMessage;
 
   List<BadgeModel> get badges => _badges;
+  List<EarnedBadge> get earnedBadges => _earnedBadges;
   bool get isLoading => _isLoading;
+  bool get isLoadingEarned => _isLoadingEarned;
   String? get errorMessage => _errorMessage;
 
   @override
@@ -40,6 +46,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       loadBadges(forceRefresh: true);
+      loadEarnedBadges(forceRefresh: true);
     }
   }
 
@@ -50,6 +57,12 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
       _errorMessage = null;
       notifyListeners();
     }
+  }
+
+  Future<void> _reloadEarnedFromLocal() async {
+    final local = await _badgeRepository.getEarnedBadgesLocal();
+    _earnedBadges = local;
+    notifyListeners();
   }
 
   Future<void> loadBadges({bool forceRefresh = false}) async {
@@ -75,6 +88,30 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
       }
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadEarnedBadges({bool forceRefresh = false}) async {
+    if (_isLoadingEarned) {
+      return;
+    }
+    if (!forceRefresh && _earnedBadges.isNotEmpty) {
+      return;
+    }
+
+    _isLoadingEarned = true;
+    notifyListeners();
+
+    try {
+      _earnedBadges = await _badgeRepository.getEarnedBadges();
+    } catch (_) {
+      final local = await _badgeRepository.getEarnedBadgesLocal();
+      if (local.isNotEmpty) {
+        _earnedBadges = local;
+      }
+    } finally {
+      _isLoadingEarned = false;
       notifyListeners();
     }
   }

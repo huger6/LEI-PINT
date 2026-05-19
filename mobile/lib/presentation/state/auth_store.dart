@@ -108,6 +108,42 @@ class AuthStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Map<String, dynamic>> updateProfile(
+    Map<String, dynamic> data,
+  ) async {
+    final result = await _authRepository.updateProfile(data);
+    if (result['success'] == true) {
+      final refreshed = await _authRepository.getMe(accessToken: _accessToken);
+      if (refreshed != null) {
+        _currentUser = refreshed;
+        notifyListeners();
+      }
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> changeLanguage(int languageId) async {
+    final result = await _authRepository.changeLanguage(languageId);
+    if (result['success'] == true) {
+      final refreshed = await _authRepository.getMe(accessToken: _accessToken);
+      if (refreshed != null) {
+        _currentUser = refreshed;
+        notifyListeners();
+      }
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) {
+    return _authRepository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
   Future<void> clearSession() async {
     await FCMService.unsubscribe();
 

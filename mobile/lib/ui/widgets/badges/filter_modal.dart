@@ -2,7 +2,31 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 
-void showFilterModal(BuildContext context) {
+class BadgeFilterResult {
+  const BadgeFilterResult({
+    this.sort = 'recent',
+    this.area,
+    this.level,
+    this.date,
+    this.minPoints,
+    this.maxPoints,
+  });
+
+  final String sort;
+  final String? area;
+  final String? level;
+  final String? date;
+  final int? minPoints;
+  final int? maxPoints;
+
+  static const empty = BadgeFilterResult();
+}
+
+Future<BadgeFilterResult?> showFilterModal(
+  BuildContext context, {
+  List<String> areas = const [],
+  List<String> levels = const [],
+}) {
   final tr = LanguageScope.of(context);
   const Color modalBackground = Color(0xFFF6F7F9);
   const Color handleColor = Color(0xFFD0D5DB);
@@ -14,13 +38,12 @@ void showFilterModal(BuildContext context) {
   const Color accent = Color(0xFF5EAEDC);
 
   String sortSelected = 'recent';
-  String areaSelected = 'frontend';
-  String levelSelected = 'intermediate';
-  String typeSelected = 'normal';
-  String dateSelected = 'last_30_days';
-  String pointsSelected = '201_500';
+  String? areaSelected;
+  String? levelSelected;
+  String? dateSelected;
+  String? pointsSelected;
 
-  showModalBottomSheet<void>(
+  return showModalBottomSheet<BadgeFilterResult>(
     context: context,
     isScrollControlled: true,
     backgroundColor: modalBackground,
@@ -33,14 +56,16 @@ void showFilterModal(BuildContext context) {
           Widget buildChip({
             required String optionValue,
             required String optionLabel,
-            required String selectedValue,
-            required ValueChanged<String> onSelect,
+            required String? selectedValue,
+            required ValueChanged<String?> onSelect,
           }) {
             final isSelected = selectedValue == optionValue;
             return ChoiceChip(
               label: Text(optionLabel),
               selected: isSelected,
-              onSelected: (_) => setModalState(() => onSelect(optionValue)),
+              onSelected: (_) => setModalState(() {
+                onSelect(isSelected ? null : optionValue);
+              }),
               showCheckmark: false,
               selectedColor: chipSelected,
               backgroundColor: chipBackground,
@@ -112,159 +137,84 @@ void showFilterModal(BuildContext context) {
                             optionValue: 'recent',
                             optionLabel: tr.tr('sortMostRecent'),
                             selectedValue: sortSelected,
-                            onSelect: (value) {
-                              sortSelected = value;
-                            },
+                            onSelect: (v) => sortSelected = v ?? 'recent',
                           ),
                           buildChip(
                             optionValue: 'oldest',
                             optionLabel: tr.tr('sortOldest'),
                             selectedValue: sortSelected,
-                            onSelect: (value) {
-                              sortSelected = value;
-                            },
+                            onSelect: (v) => sortSelected = v ?? 'recent',
                           ),
                           buildChip(
                             optionValue: 'points',
                             optionLabel: tr.tr('sortMostPoints'),
                             selectedValue: sortSelected,
-                            onSelect: (value) {
-                              sortSelected = value;
-                            },
+                            onSelect: (v) => sortSelected = v ?? 'recent',
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const Divider(color: sectionDivider, height: 1),
-                  ExpansionTile(
-                    title: Text(
-                      tr.tr('area'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
+                  if (areas.isNotEmpty) ...[
+                    const Divider(color: sectionDivider, height: 1),
+                    ExpansionTile(
+                      title: Text(
+                        tr.tr('area'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
                       ),
+                      childrenPadding:
+                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      children: [
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: areas
+                              .map(
+                                (area) => buildChip(
+                                  optionValue: area,
+                                  optionLabel: area,
+                                  selectedValue: areaSelected,
+                                  onSelect: (v) => areaSelected = v,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                     ),
-                    childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
-                    children: [
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: [
-                          buildChip(
-                            optionValue: 'frontend',
-                            optionLabel: tr.tr('areaFrontend'),
-                            selectedValue: areaSelected,
-                            onSelect: (value) {
-                              areaSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'backend',
-                            optionLabel: tr.tr('areaBackend'),
-                            selectedValue: areaSelected,
-                            onSelect: (value) {
-                              areaSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'fullstack',
-                            optionLabel: tr.tr('areaFullstack'),
-                            selectedValue: areaSelected,
-                            onSelect: (value) {
-                              areaSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'ai',
-                            optionLabel: tr.tr('areaAi'),
-                            selectedValue: areaSelected,
-                            onSelect: (value) {
-                              areaSelected = value;
-                            },
-                          ),
-                        ],
+                  ],
+                  if (levels.isNotEmpty) ...[
+                    const Divider(color: sectionDivider, height: 1),
+                    ExpansionTile(
+                      title: Text(
+                        tr.tr('level'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
                       ),
-                    ],
-                  ),
-                  const Divider(color: sectionDivider, height: 1),
-                  ExpansionTile(
-                    title: Text(
-                      tr.tr('level'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
-                      ),
+                      childrenPadding:
+                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      children: [
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: levels
+                              .map(
+                                (level) => buildChip(
+                                  optionValue: level,
+                                  optionLabel: level,
+                                  selectedValue: levelSelected,
+                                  onSelect: (v) => levelSelected = v,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                     ),
-                    childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
-                    children: [
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: [
-                          buildChip(
-                            optionValue: 'beginner',
-                            optionLabel: tr.tr('levelBeginner'),
-                            selectedValue: levelSelected,
-                            onSelect: (value) {
-                              levelSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'intermediate',
-                            optionLabel: tr.tr('levelIntermediate'),
-                            selectedValue: levelSelected,
-                            onSelect: (value) {
-                              levelSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'expert',
-                            optionLabel: tr.tr('levelExpert'),
-                            selectedValue: levelSelected,
-                            onSelect: (value) {
-                              levelSelected = value;
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Divider(color: sectionDivider, height: 1),
-                  ExpansionTile(
-                    title: Text(
-                      tr.tr('badgeType'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
-                      ),
-                    ),
-                    childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
-                    children: [
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: [
-                          buildChip(
-                            optionValue: 'normal',
-                            optionLabel: tr.tr('badgeTypeNormal'),
-                            selectedValue: typeSelected,
-                            onSelect: (value) {
-                              typeSelected = value;
-                            },
-                          ),
-                          buildChip(
-                            optionValue: 'special',
-                            optionLabel: tr.tr('badgeTypeSpecial'),
-                            selectedValue: typeSelected,
-                            onSelect: (value) {
-                              typeSelected = value;
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  ],
                   const Divider(color: sectionDivider, height: 1),
                   ExpansionTile(
                     title: Text(
@@ -284,25 +234,19 @@ void showFilterModal(BuildContext context) {
                             optionValue: 'last_7_days',
                             optionLabel: tr.tr('last7Days'),
                             selectedValue: dateSelected,
-                            onSelect: (value) {
-                              dateSelected = value;
-                            },
+                            onSelect: (v) => dateSelected = v,
                           ),
                           buildChip(
                             optionValue: 'last_30_days',
                             optionLabel: tr.tr('last30Days'),
                             selectedValue: dateSelected,
-                            onSelect: (value) {
-                              dateSelected = value;
-                            },
+                            onSelect: (v) => dateSelected = v,
                           ),
                           buildChip(
                             optionValue: 'this_year',
                             optionLabel: tr.tr('thisYear'),
                             selectedValue: dateSelected,
-                            onSelect: (value) {
-                              dateSelected = value;
-                            },
+                            onSelect: (v) => dateSelected = v,
                           ),
                         ],
                       ),
@@ -327,29 +271,70 @@ void showFilterModal(BuildContext context) {
                             optionValue: '0_200',
                             optionLabel: '0-200',
                             selectedValue: pointsSelected,
-                            onSelect: (value) {
-                              pointsSelected = value;
-                            },
+                            onSelect: (v) => pointsSelected = v,
                           ),
                           buildChip(
                             optionValue: '201_500',
                             optionLabel: '201-500',
                             selectedValue: pointsSelected,
-                            onSelect: (value) {
-                              pointsSelected = value;
-                            },
+                            onSelect: (v) => pointsSelected = v,
                           ),
                           buildChip(
                             optionValue: '501_plus',
                             optionLabel: '501+',
                             selectedValue: pointsSelected,
-                            onSelect: (value) {
-                              pointsSelected = value;
-                            },
+                            onSelect: (v) => pointsSelected = v,
                           ),
                         ],
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        int? minPts;
+                        int? maxPts;
+                        if (pointsSelected == '0_200') {
+                          minPts = 0;
+                          maxPts = 200;
+                        } else if (pointsSelected == '201_500') {
+                          minPts = 201;
+                          maxPts = 500;
+                        } else if (pointsSelected == '501_plus') {
+                          minPts = 501;
+                        }
+
+                        Navigator.pop(
+                          context,
+                          BadgeFilterResult(
+                            sort: sortSelected,
+                            area: areaSelected,
+                            level: levelSelected,
+                            date: dateSelected,
+                            minPoints: minPts,
+                            maxPoints: maxPts,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        tr.tr('applyFilters'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

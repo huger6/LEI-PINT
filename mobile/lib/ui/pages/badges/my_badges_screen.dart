@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/local/current_user_dao.dart';
 import '../../../data/repositories/applications_repo.dart';
+import '../../../data/repositories/badge_repo.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
-import '../../../presentation/state/badge_store.dart';
-import '../../widgets/badges/badge_catalog.dart';
+import '../../../models/earned_badge_model.dart';
+import '../../../injection_container.dart';
+import '../../widgets/badges/rgpd_consent_sheet.dart';
+import '../../widgets/badges/share_badge_sheet.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/my_badges_widgets.dart';
 
@@ -24,6 +29,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   String? _applicationsError;
   List<ApplicationSummaryModel> _applications = const [];
   ApplicationFilter _selectedFilter = ApplicationFilter.all;
+
+  bool _localGdprAccepted = false;
 
   @override
   void initState() {
@@ -46,7 +53,18 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     final badgeStore = context.read<BadgeStore>();
     final applicationsRepo = context.read<ApplicationsRepository>();
 
-    await badgeStore.loadBadges();
+    await Future.wait([
+      badgeStore.loadBadges(),
+      badgeStore.loadEarnedBadges(),
+    ]);
+
+    final userDao = getIt<CurrentUserDao>();
+    final user = await userDao.get();
+    if (mounted) {
+      setState(() {
+        _localGdprAccepted = user?.gdprAccepted ?? false;
+      });
+    }
 
     setState(() {
       _isLoadingApplications = true;
@@ -75,6 +93,50 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
         setState(() {
           _isLoadingApplications = false;
         });
+      }
+    }
+  }
+
+  Future<void> _handleShare(EarnedBadge earned) async {
+    if (!_localGdprAccepted) {
+      final accepted = await showRgpdConsentSheet(context);
+      if (!accepted || !mounted) return;
+
+      setState(() {
+        _localGdprAccepted = true;
+      });
+
+      try {
+        final badgeRepo = context.read<BadgeRepository>();
+        await badgeRepo.acceptShareGdpr();
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+
+    final verificationBaseUrl =
+        dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
+
+    final shared = await showShareBadgeSheet(
+      context,
+      badge: earned.badge,
+      award: earned.award,
+      verificationBaseUrl: verificationBaseUrl,
+    );
+
+    if (shared && mounted) {
+      try {
+        final badgeRepo = context.read<BadgeRepository>();
+        await badgeRepo.shareBadge(earned.badge.id);
+      } catch (_) {}
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Badge partilhado com sucesso!'),
+            backgroundColor: Color(0xFF59C13E),
+          ),
+        );
       }
     }
   }
@@ -135,12 +197,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
   Widget _buildBadgesTab(BadgeStore badgeStore) {
     final query = _badgesSearchController.text.trim().toLowerCase();
-    final sourceBadges = badgeStore.badges.isNotEmpty
-        ? badgeStore.badges
-        : BadgeCatalog.all;
-
-    final badges = sourceBadges
-        .where((badge) => badge.title.toLowerCase().contains(query))
+    final earned = badgeStore.earnedBadges
+        .where((e) => e.badge.title.toLowerCase().contains(query))
         .toList(growable: false);
 
     return Padding(
@@ -153,23 +211,45 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
-          if (badgeStore.isLoading && badgeStore.badges.isEmpty)
+          if (badgeStore.isLoadingEarned && badgeStore.earnedBadges.isEmpty)
             const Expanded(child: Center(child: CircularProgressIndicator()))
+          else if (earned.isEmpty)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.emoji_events_outlined,
+                      size: 56,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      query.isNotEmpty
+                          ? 'Nenhum badge encontrado.'
+                          : 'Ainda não obteve nenhum badge.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           else
             Expanded(
               child: ListView.builder(
-                itemCount: badges.length,
+                itemCount: earned.length,
                 itemBuilder: (context, index) {
-                  final badge = badges[index];
-                  final completionDate = DateTime.now().subtract(
-                    Duration(days: (index + 1) * 12),
-                  );
+                  final item = earned[index];
 
                   return AchievedBadgeCard(
-                    badge: badge,
-                    completionDate: completionDate,
-                    fallbackLevel: _fallbackLevel(index),
-                    fallbackPoints: 80 + (index * 20),
+                    badge: item.badge,
+                    completionDate: item.award.awardedAt,
+                    onShare: () => _handleShare(item),
                   );
                 },
               ),
@@ -182,11 +262,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   Widget _buildApplicationsTab() {
     final query = _applicationsSearchController.text.trim().toLowerCase();
 
-    final sourceApplications = _applications.isNotEmpty
-        ? _applications
-        : _mockApplications();
-
-    final filtered = sourceApplications
+    final filtered = _applications
         .where((application) {
           if (!_matchesFilter(application)) {
             return false;
@@ -273,28 +349,42 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                         ),
                       ),
                     ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final application = filtered[index];
-                        final state = _stateOf(application.applicationState);
-                        final badge =
-                            application.badge ??
-                            BadgeModel.empty(title: 'Badge');
-
-                        return ApplicationCard(
-                          badge: badge,
-                          state: state,
-                          date: _formatDate(application.latestDate),
-                          updateText: _buildUpdateText(
-                            state,
-                            application.latestDate,
+                  if (filtered.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          'Nenhuma candidatura encontrada.',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600,
                           ),
-                        );
-                      },
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final application = filtered[index];
+                          final state = _stateOf(application.applicationState);
+                          final badge =
+                              application.badge ??
+                              BadgeModel.empty(title: 'Badge');
+
+                          return ApplicationCard(
+                            badge: badge,
+                            state: state,
+                            date: _formatDate(application.latestDate),
+                            updateText: _buildUpdateText(
+                              state,
+                              application.latestDate,
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -314,7 +404,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   ApplicationStateVisual _stateOf(String status) {
     final normalized = status.toLowerCase();
 
-    if (normalized.contains('approved') || normalized.contains('aprov')) {
+    if (normalized.contains('accepted') || normalized.contains('approved') || normalized.contains('aprov')) {
       return const ApplicationStateVisual(
         label: 'Aprovado',
         color: Color(0xFF59C13E),
@@ -381,14 +471,5 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     final days = diff.inDays;
     return 'há $days dias';
-  }
-
-  String _fallbackLevel(int index) {
-    const levels = ['A', 'B', 'C', 'D', 'E'];
-    return levels[index % levels.length];
-  }
-
-  List<ApplicationSummaryModel> _mockApplications() {
-    return mockApplications();
   }
 }

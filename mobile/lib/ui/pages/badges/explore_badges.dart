@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../injection_container.dart';
+import '../../../models/badge_model.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/explore_badge_card.dart';
 import '../../widgets/badges/filter_modal.dart';
@@ -17,6 +18,9 @@ class ExploreCompetenciesScreen extends StatefulWidget {
 }
 
 class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
+  final _searchCtrl = TextEditingController();
+  BadgeFilterResult? _activeFilter;
+
   @override
   void initState() {
     super.initState();
@@ -26,10 +30,69 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
   }
 
   @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<BadgeModel> _applyFilters(List<BadgeModel> badges) {
+    var result = List<BadgeModel>.from(badges);
+    final query = _searchCtrl.text.trim().toLowerCase();
+
+    if (query.isNotEmpty) {
+      result = result
+          .where(
+            (b) =>
+                b.title.toLowerCase().contains(query) ||
+                b.category.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    final filter = _activeFilter;
+    if (filter != null) {
+      if (filter.area != null) {
+        result = result.where((b) => b.category == filter.area).toList();
+      }
+      if (filter.level != null) {
+        result = result.where((b) => b.level == filter.level).toList();
+      }
+      if (filter.minPoints != null) {
+        result = result.where((b) => b.points >= filter.minPoints!).toList();
+      }
+      if (filter.maxPoints != null) {
+        result = result.where((b) => b.points <= filter.maxPoints!).toList();
+      }
+
+      if (filter.sort == 'points') {
+        result.sort((a, b) => b.points.compareTo(a.points));
+      } else if (filter.sort == 'oldest') {
+        result = result.reversed.toList();
+      }
+    }
+
+    return result;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
-    final badges = badgeStore.badges;
+    final allBadges = badgeStore.badges;
+    final filtered = _applyFilters(allBadges);
+
+    final areas = allBadges
+        .map((b) => b.category)
+        .where((c) => c.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    final levels = allBadges
+        .map((b) => b.level)
+        .where((l) => l.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -73,49 +136,67 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
               ),
               const SizedBox(height: 14),
               Container(
-                height: 74,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x12000000),
-                      blurRadius: 10,
+                      color: Color(0x0E000000),
+                      blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: TextField(
+                  controller: _searchCtrl,
+                  onChanged: (_) => setState(() {}),
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     hintText: tr.tr('searchBadgeHint'),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF9AA4AE),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     prefixIconConstraints: const BoxConstraints(
-                      minWidth: 44,
-                      minHeight: 44,
+                      minWidth: 42,
+                      minHeight: 42,
                     ),
                     prefixIcon: const Icon(
                       Icons.search_rounded,
-                      size: 32,
-                      color: Color(0xFF55616A),
+                      size: 24,
+                      color: Color(0xFF8B96A1),
                     ),
                     suffixIconConstraints: const BoxConstraints(
-                      minWidth: 44,
-                      minHeight: 44,
+                      minWidth: 42,
+                      minHeight: 42,
                     ),
                     suffixIcon: IconButton(
-                      onPressed: () => showFilterModal(context),
-                      icon: const Icon(
+                      onPressed: () async {
+                        final result = await showFilterModal(
+                          context,
+                          areas: areas,
+                          levels: levels,
+                        );
+                        if (result != null) {
+                          setState(() => _activeFilter = result);
+                        }
+                      },
+                      icon: Icon(
                         Icons.tune_rounded,
-                        size: 30,
-                        color: Color(0xFF55616A),
+                        size: 22,
+                        color: _activeFilter != null
+                            ? const Color(0xFF5EAEDC)
+                            : const Color(0xFF8B96A1),
                       ),
                     ),
                   ),
-                  style: const TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
               const SizedBox(height: 14),
@@ -135,14 +216,14 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                     ),
                   ),
                 )
-              else if (badges.isEmpty)
+              else if (filtered.isEmpty)
                 Expanded(child: Center(child: Text(tr.tr('noBadgesAvailable'))))
               else
                 Expanded(
                   child: ListView.builder(
-                    itemCount: badges.length,
+                    itemCount: filtered.length,
                     itemBuilder: (context, index) {
-                      final badge = badges[index];
+                      final badge = filtered[index];
                       return ExploreBadgeCard(
                         title: badge.title,
                         category: badge.category,
@@ -156,9 +237,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                               .read<BadgeStore>()
                               .getBadgeDetail(badge);
 
-                          if (!context.mounted) {
-                            return;
-                          }
+                          if (!context.mounted) return;
 
                           Navigator.push(
                             context,

@@ -3,11 +3,19 @@ import 'package:flutter/material.dart';
 import '../../../core/sync_manager.dart';
 
 class SimpleLineStatsCard extends StatelessWidget {
-  const SimpleLineStatsCard({super.key});
+  const SimpleLineStatsCard({
+    super.key,
+    required this.completedBadges,
+    required this.growthPercent,
+  });
+
+  final int completedBadges;
+  final int growthPercent;
 
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
+    final isPositive = growthPercent >= 0;
 
     return Container(
       width: double.infinity,
@@ -35,29 +43,35 @@ class SimpleLineStatsCard extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(height: 1),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '5',
-                style: TextStyle(
+                '$completedBadges',
+                style: const TextStyle(
                   fontSize: 58,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF66B1E6),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Icon(
-                Icons.arrow_drop_up_rounded,
-                color: Color(0xFF5BBF76),
+                isPositive
+                    ? Icons.arrow_drop_up_rounded
+                    : Icons.arrow_drop_down_rounded,
+                color: isPositive
+                    ? const Color(0xFF5BBF76)
+                    : const Color(0xFFD63D2B),
                 size: 28,
               ),
               Text(
-                '23%',
+                '${growthPercent.abs()}%',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF5BBF76),
+                  color: isPositive
+                      ? const Color(0xFF5BBF76)
+                      : const Color(0xFFD63D2B),
                 ),
               ),
             ],

@@ -507,10 +507,80 @@ const sendApplicationRejectedEmail = async (email, name, badgeTitle, reviewerNot
     }
 };
 
+// ─── Badge sharing emails ────────────────────────────────────────────────────
+
+const BADGE_SHARED_TEMPLATES = {
+    'pt-PT': {
+        subject: 'Badge partilhado com sucesso',
+        greeting: 'Olá, {name}',
+        intro: 'O teu badge <strong>{badgeTitle}</strong> foi partilhado com sucesso no LinkedIn.',
+        body: 'O link público de verificação da tua credencial está agora acessível para a tua rede profissional. Podes gerir as tuas partilhas a qualquer momento através da plataforma.',
+        cta: 'Ver Badge',
+        team: 'A Equipa Softinsa'
+    },
+    'en-GB': {
+        subject: 'Badge shared successfully',
+        greeting: 'Hello, {name}',
+        intro: 'Your badge <strong>{badgeTitle}</strong> has been successfully shared on LinkedIn.',
+        body: 'The public verification link for your credential is now accessible to your professional network. You can manage your shares at any time on the platform.',
+        cta: 'View Badge',
+        team: 'The Softinsa Team'
+    },
+    'es-ES': {
+        subject: 'Badge compartido con éxito',
+        greeting: 'Hola, {name}',
+        intro: 'Tu badge <strong>{badgeTitle}</strong> ha sido compartido con éxito en LinkedIn.',
+        body: 'El enlace público de verificación de tu credencial ya está accesible para tu red profesional. Puedes gestionar tus comparticiones en cualquier momento desde la plataforma.',
+        cta: 'Ver Badge',
+        team: 'El Equipo de Softinsa'
+    }
+};
+
+/**
+ * @param {string} email
+ * @param {string} name
+ * @param {string} badgeTitle
+ * @param {string} badgeUrl        Full URL to the badge page
+ * @param {string} lang            language_iso (e.g. 'pt-PT')
+ */
+const sendBadgeSharedEmail = async (email, name, badgeTitle, badgeUrl, lang) => {
+    const t = BADGE_SHARED_TEMPLATES[lang] || BADGE_SHARED_TEMPLATES['pt-PT'];
+    const safeName = escapeHtml(name);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{badgeTitle}', safeBadge)}</p>
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, badgeUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending badge shared email', { error });
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
     sendApplicationSubmittedEmail,
     sendApplicationApprovedEmail,
-    sendApplicationRejectedEmail
+    sendApplicationRejectedEmail,
+    sendBadgeSharedEmail
 };
