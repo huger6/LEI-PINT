@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
-import { fetchAreaBySlug, fetchLevelsByArea, fetchParentServiceLine, fetchParentLearningPath } from '../../api/structureDetailApi';
+import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi';
 import { ADMIN } from '../../../../routes/paths';
 
 const PAGE_SIZE = 32;
@@ -15,8 +15,6 @@ export default function AreaDetail() {
 	const [levels, setLevels] = useState([]);
 	const [pagination, setPagination] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [parentSl, setParentSl] = useState(null);
-	const [parentLp, setParentLp] = useState(null);
 	const [loading, setLoading] = useState(true);
 
 	const fetchSubStructures = useCallback((page) => {
@@ -37,25 +35,6 @@ export default function AreaDetail() {
 				setLevels(levelsData.items);
 				setPagination(levelsData.pagination);
 				setCurrentPage(1);
-
-				if (areaData?.service_line_id) {
-					return fetchParentServiceLine(areaData.service_line_id);
-				}
-				return null;
-			})
-			.then((slData) => {
-				if (cancelled) return;
-				if (slData) {
-					setParentSl(slData);
-					if (slData.learning_path_id) {
-						return fetchParentLearningPath(slData.learning_path_id);
-					}
-				}
-				return null;
-			})
-			.then((lpData) => {
-				if (cancelled) return;
-				if (lpData) setParentLp(lpData);
 			})
 			.catch((err) => {
 				if (!cancelled) console.error(err);
@@ -120,6 +99,8 @@ export default function AreaDetail() {
 	}));
 
 	const breadcrumbItems = [];
+	const parentSl = area.service_line;
+	const parentLp = parentSl?.learning_path;
 
 	if (parentLp) {
 		breadcrumbItems.push({

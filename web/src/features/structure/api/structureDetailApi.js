@@ -61,20 +61,3 @@ export async function fetchBadgesByLevel(stageCode, { page = 1, limit = 32 } = {
 	};
 }
 
-export async function fetchParentLearningPath(learningPathId) {
-	const { data } = await api.get('/learning-paths', { params: { limit: 100 } });
-	const items = data?.data || [];
-	return items.find((lp) => lp.learning_path_id === learningPathId) || null;
-}
-
-export async function fetchParentServiceLine(serviceLineId) {
-	const { data } = await api.get('/service-lines', { params: { limit: 100 } });
-	const items = data?.data || [];
-	return items.find((sl) => sl.service_line_id === serviceLineId) || null;
-}
-
-export async function fetchParentArea(areaId) {
-	const { data } = await api.get('/areas', { params: { limit: 100 } });
-	const items = data?.data || [];
-	return items.find((a) => a.area_id === areaId) || null;
-}
