@@ -612,6 +612,17 @@
 		"noAreasDesc": "Crie a sua primeira área para começar.",
 		"noLevelsDesc": "Crie o seu primeiro nível para começar."
 	},
+	"structureDetail": {
+		"description": "Descrição",
+		"export": "Exportar",
+		"addServiceLine": "Adicionar Service Line",
+		"addArea": "Adicionar Área",
+		"addLevel": "Adicionar Nível",
+		"addBadge": "Adicionar Badge",
+		"badges": "Badges",
+		"enrolled": "Está inscrito nesta estrutura",
+		"serviceLineLeader": "Service Line Leader"
+	},
 	"myApplications": {
 		"title": "As Minhas Candidaturas",
 		"noApplications": "Sem candidaturas",

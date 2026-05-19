@@ -59,32 +59,26 @@ export default function LearningPathDetail() {
 	if (loading) return <Spinner />;
 	if (!lp) return null;
 
-	const activeCount = serviceLines.filter((sl) => sl.is_active).length;
-	const inactiveCount = serviceLines.filter((sl) => !sl.is_active).length;
-
 	const stats = [
 		{
-			icon: 'service-line',
-			label: t('shared.structureLabels.serviceLines'),
-			value: pagination?.totalItems ?? serviceLines.length,
+			icon: 'tabler_users',
+			label: t('shared.consultants', { defaultValue: 'Consultants' }),
+			value: Number(lp.consultant_count || 0),
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
 		{
-			icon: 'check_circle',
-			label: t('shared.active', { defaultValue: 'Active' }),
-			value: activeCount,
-			accentColor: '#0f7f69',
-			accentBg: 'var(--color-green-soft)',
-		},
-		{
-			icon: 'close_circle',
-			label: t('shared.inactive', { defaultValue: 'Inactive' }),
-			value: inactiveCount,
-			accentColor: '#b91c1c',
-			accentBg: 'rgba(239, 68, 68, 0.1)',
+			icon: 'service-line',
+			label: t('shared.structureLabels.serviceLines'),
+			value: Number(lp.service_line_count || 0),
+			accentColor: '#274f82',
+			accentBg: 'rgba(57, 99, 156, 0.17)',
 		},
 	];
+
+	const enrollmentMessage = lp.is_enrolled
+		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
+		: null;
 
 	const subStructures = serviceLines.map((sl) => ({
 		id: sl.service_line_id,
@@ -115,6 +109,7 @@ export default function LearningPathDetail() {
 			tone="learningPaths"
 			isActive={lp.is_active}
 			stats={stats}
+			enrollmentMessage={enrollmentMessage}
 			subStructures={subStructures}
 			subStructureLabel={t('shared.structureLabels.serviceLines')}
 			subStructureIcon="service-line"

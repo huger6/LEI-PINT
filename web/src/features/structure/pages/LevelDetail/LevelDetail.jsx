@@ -59,32 +59,26 @@ export default function LevelDetail() {
 	if (loading) return <Spinner />;
 	if (!level) return null;
 
-	const activeCount = badges.filter((b) => b.is_active).length;
-	const inactiveCount = badges.filter((b) => !b.is_active).length;
-
 	const stats = [
 		{
-			icon: 'badge',
-			label: t('structureDetail.badges', { defaultValue: 'Badges' }),
-			value: pagination?.totalItems ?? badges.length,
+			icon: 'tabler_users',
+			label: t('shared.consultants', { defaultValue: 'Consultants' }),
+			value: Number(level.consultant_count || 0),
 			accentColor: 'var(--color-primary)',
 			accentBg: 'var(--color-primary-soft)',
 		},
 		{
-			icon: 'check_circle',
-			label: t('shared.active', { defaultValue: 'Active' }),
-			value: activeCount,
-			accentColor: '#0f7f69',
-			accentBg: 'var(--color-green-soft)',
-		},
-		{
-			icon: 'close_circle',
-			label: t('shared.inactive', { defaultValue: 'Inactive' }),
-			value: inactiveCount,
-			accentColor: '#b91c1c',
-			accentBg: 'rgba(239, 68, 68, 0.1)',
+			icon: 'badge',
+			label: t('structureDetail.badges', { defaultValue: 'Badges' }),
+			value: Number(level.badge_count || 0),
+			accentColor: '#8d640d',
+			accentBg: 'rgba(210, 148, 21, 0.15)',
 		},
 	];
+
+	const enrollmentMessage = level.is_enrolled
+		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
+		: null;
 
 	const subStructures = badges.map((badge) => ({
 		id: badge.badge_id,
@@ -138,6 +132,7 @@ export default function LevelDetail() {
 			tone="levels"
 			isActive={level.is_active}
 			stats={stats}
+			enrollmentMessage={enrollmentMessage}
 			subStructures={subStructures}
 			subStructureLabel={t('structureDetail.badges', { defaultValue: 'Badges' })}
 			subStructureIcon="badge"
