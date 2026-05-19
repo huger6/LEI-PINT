@@ -1,6 +1,8 @@
 .cardLink {
 	text-decoration: none;
 	color: inherit;
+	display: flex;
+	height: 100%;
 }
 
 .cardLink:hover {
@@ -19,6 +21,7 @@
 	transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 	min-width: 0;
 	overflow: hidden;
+	flex: 1;
 }
 
 .card:hover {

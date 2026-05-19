@@ -1,3 +1,4 @@
+import { useRef, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
 import Button from '../../../../components/Button/Button';
@@ -29,6 +30,24 @@ export default function StructureListLayout({
 }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
+	const gridRef = useRef(null);
+
+	const equalizeCardHeights = useCallback(() => {
+		const grid = gridRef.current;
+		if (!grid) return;
+		const cards = grid.querySelectorAll('[data-structure-card]');
+		cards.forEach((card) => { card.style.height = 'auto'; });
+		let maxH = 0;
+		cards.forEach((card) => {
+			if (card.scrollHeight > maxH) maxH = card.scrollHeight;
+		});
+		const clamped = Math.min(maxH, 150);
+		cards.forEach((card) => { card.style.height = `${clamped}px`; });
+	}, []);
+
+	useLayoutEffect(() => {
+		equalizeCardHeights();
+	}, [items, equalizeCardHeights]);
 
 	return (
 		<div className={styles.page}>
@@ -91,7 +110,7 @@ export default function StructureListLayout({
 						itemCount={items.length}
 						onPageChange={onPageChange}
 					/>
-					<div className={styles.cardGrid}>
+					<div className={styles.cardGrid} ref={gridRef}>
 						{items.map(renderCard)}
 					</div>
 					<Pagination

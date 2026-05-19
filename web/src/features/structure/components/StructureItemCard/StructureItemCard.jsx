@@ -9,7 +9,7 @@ export default function StructureItemCard({ to, icon, title, description, imageU
 
 	return (
 		<Link to={to} className={styles.cardLink}>
-			<article className={`${styles.card} ${toneClass}`}>
+			<article className={`${styles.card} ${toneClass}`} data-structure-card>
 				<div className={styles.visual}>
 					{imageUrl ? (
 						<img src={imageUrl} alt={title} className={styles.image} />
