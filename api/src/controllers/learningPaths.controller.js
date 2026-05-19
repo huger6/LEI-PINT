@@ -67,8 +67,8 @@ const getLearningPathBySlug = async (req, res) => {
     try {
         const { pathSlug } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
+        const userId = req.user?.sub;
 
-        // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
 
         const lp = await models.learning_paths.findOne({
@@ -77,7 +77,12 @@ const getLearningPathBySlug = async (req, res) => {
                 ...(isAdmin ? {} : { is_active: true })
             },
             attributes: {
-                exclude: excludeFields
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM service_lines sl WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'service_line_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = "learning_paths".learning_path_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = "learning_paths".learning_path_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             }
         });
 

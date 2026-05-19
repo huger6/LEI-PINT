@@ -48,9 +48,6 @@ const getAreas = async (req, res) => {
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
-        const isAdmin = req.user?.role === 'Administrator';
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
-
         return handleListRequest({
             req, res,
             schema: validations.getAreasQuerySchema,
@@ -145,14 +142,19 @@ const getAreaBySlug = async (req, res) => {
             includeBlock.push(slInclude);
         }
 
-        // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
+        const userId = req.user?.sub;
 
         const area = await models.areas.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca WHERE ca.area_id = "areas".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             }
         });
 
