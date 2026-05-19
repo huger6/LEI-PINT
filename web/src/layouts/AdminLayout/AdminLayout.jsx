@@ -4,7 +4,7 @@ import AppLayout from '../AppLayout/AppLayout';
 const MENU_ITEMS = [
     { to: ADMIN.DASHBOARD, icon: 'home', label: 'sidebar.admin.dashboard' },
     { to: ADMIN.USERS, icon: 'user', label: 'sidebar.admin.users' },
-    { to: ADMIN.STRUCTURE, icon: 'service-line', label: 'sidebar.admin.structure' },
+    { to: ADMIN.STRUCTURE, icon: 'structure', label: 'sidebar.admin.structure' },
     { to: ADMIN.BADGES, icon: 'badge', label: 'sidebar.admin.badges' },
     { to: ADMIN.APPLICATIONS, icon: 'paper', label: 'sidebar.admin.applications' },
     { to: ADMIN.SLAS, icon: 'time', label: 'sidebar.admin.slas' },

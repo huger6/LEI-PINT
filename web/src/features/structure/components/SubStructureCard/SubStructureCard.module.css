@@ -138,6 +138,10 @@
 		gap: 0.75rem;
 	}
 
+	.content {
+		width: 100%;
+	}
+
 	.count {
 		align-self: flex-end;
 	}

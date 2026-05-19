@@ -538,6 +538,7 @@
 	},
 	"adminStructure": {
 		"title": "Manage Structure",
+		"description": "Manage and structure the platform's learning paths, service lines, and technological areas.",
 		"learningPathsDesc": "Professional progression paths",
 		"serviceLinesDesc": "Organization service lines",
 		"areasDesc": "Specialization areas",
