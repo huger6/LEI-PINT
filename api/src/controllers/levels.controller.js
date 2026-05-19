@@ -54,9 +54,6 @@ const getLevels = async (req, res) => {
             cachePrefix = `levels:list:area:${areaSlug}`;
         }
 
-        const isAdmin = req.user?.role === 'Administrator';
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
-
         return handleListRequest({
             req, res,
             schema: validations.getLevelsQuerySchema,
@@ -131,6 +128,36 @@ const getLevelByCode = async (req, res) => {
             }
         ];
 
+        const lpInclude = {
+            model: models.learning_paths,
+            as: 'learning_path',
+            attributes: ['path_title', 'path_slug'],
+        };
+        if (pathSlug) {
+            lpInclude.where = { path_slug: pathSlug };
+        }
+
+        const slInclude = {
+            model: models.service_lines,
+            as: 'service_line',
+            attributes: ['service_line_name', 'sl_slug'],
+            include: [lpInclude],
+        };
+        if (slSlug) {
+            slInclude.where = { sl_slug: slSlug };
+        }
+
+        const areaInclude = {
+            model: models.areas,
+            as: 'area',
+            attributes: ['area_name', 'area_slug'],
+            include: [slInclude],
+        };
+        if (areaSlug) {
+            areaInclude.where = { area_slug: areaSlug };
+        }
+        includeBlock.push(areaInclude);
+
         // /api/levels/:stageCode
         if (!areaSlug) {
             return handleListRequest({
@@ -142,34 +169,6 @@ const getLevelByCode = async (req, res) => {
                 order: [['stage_sequence', 'ASC']]
             });
         }
-
-        // /api/.../areas/.../levels/:stageCode
-        const areaInclude = {
-            model: models.areas,
-            as: 'area',
-            where: { area_slug: areaSlug },
-            attributes: []
-        };
-
-        if (slSlug) {
-            const slInclude = {
-                model: models.service_lines,
-                as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
-            }
-            areaInclude.include = [slInclude];
-        }
-        includeBlock.push(areaInclude);
 
         const excludeFields = isAdmin ? [] : ["created_by", "updated_by"];
 

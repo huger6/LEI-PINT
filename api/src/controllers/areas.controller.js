@@ -48,9 +48,6 @@ const getAreas = async (req, res) => {
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
-        const isAdmin = req.user?.role === 'Administrator';
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
-
         return handleListRequest({
             req, res,
             schema: validations.getAreasQuerySchema,
@@ -121,29 +118,26 @@ const getAreaBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const includeBlock = [];
-
-        // If URL has parent slugs, enforce the hierarchy downwards
-        if (slSlug) {
-            const slInclude = {
-                model: models.service_lines,
-                as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            // Deeply nest the Learning Path include if pathSlug exists
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
-            }
-
-            includeBlock.push(slInclude);
+        const lpInclude = {
+            model: models.learning_paths,
+            as: 'learning_path',
+            attributes: ['path_title', 'path_slug'],
+        };
+        if (pathSlug) {
+            lpInclude.where = { path_slug: pathSlug };
         }
+
+        const slInclude = {
+            model: models.service_lines,
+            as: 'service_line',
+            attributes: ['service_line_name', 'sl_slug'],
+            include: [lpInclude],
+        };
+        if (slSlug) {
+            slInclude.where = { sl_slug: slSlug };
+        }
+
+        const includeBlock = [slInclude];
 
         // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];

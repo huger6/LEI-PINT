@@ -36,9 +36,6 @@ const getServiceLines = async (req, res) => {
             cachePrefix = `sl:list:lp:${pathSlug}`;
         }
 
-        const isAdmin = req.user?.role === 'Administrator';
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
-
         return handleListRequest({
             req, res,
             schema: validations.getServiceLinesQuerySchema,
@@ -111,17 +108,15 @@ const getServiceLineBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const includeBlock = [];
-
-        // Enforce hierarchy if pathSlug is present in the URL
+        const lpInclude = {
+            model: models.learning_paths,
+            as: 'learning_path',
+            attributes: ['path_title', 'path_slug'],
+        };
         if (pathSlug) {
-            includeBlock.push({
-                model: models.learning_paths,
-                as: 'learning_path',
-                where: { path_slug: pathSlug },
-                attributes: []
-            });
+            lpInclude.where = { path_slug: pathSlug };
         }
+        const includeBlock = [lpInclude];
 
         // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
