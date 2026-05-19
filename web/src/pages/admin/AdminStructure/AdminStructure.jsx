@@ -48,9 +48,7 @@ export default function AdminStructure() {
 			<header className={styles.header}>
 				<h1 className={styles.title}>{t('adminStructure.title')}</h1>
 				<p className={styles.subtitle}>
-					{t('adminStructure.countsPlaceholder', {
-						defaultValue: 'Counts are fetched from live structure data.',
-					})}
+					{t('adminStructure.description')}
 				</p>
 			</header>
 

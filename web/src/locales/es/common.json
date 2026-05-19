@@ -537,6 +537,7 @@
 	},
 	"adminStructure": {
 		"title": "Gestionar Estructura",
+		"description": "Gestionar y estructurar las rutas de aprendizaje, líneas de servicio y áreas tecnológicas de la plataforma.",
 		"learningPathsDesc": "Itinerarios de progresión profesional",
 		"serviceLinesDesc": "Organization Service Lines",
 		"areasDesc": "Áreas de especialización",

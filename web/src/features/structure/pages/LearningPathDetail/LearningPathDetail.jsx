@@ -100,10 +100,6 @@ export default function LearningPathDetail() {
 
 	const breadcrumbItems = [
 		{
-			label: t('shared.structureLabels.learningPaths'),
-			path: ADMIN.LEARNING_PATHS,
-		},
-		{
 			label: lp.path_title,
 			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', slug),
 		},

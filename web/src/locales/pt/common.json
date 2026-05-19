@@ -538,6 +538,7 @@
 	},
 	"adminStructure": {
 		"title": "Gerir Estrutura",
+		"description": "Gerir e estruturar os percursos formativos, linhas de serviço e áreas tecnológicas da plataforma.",
 		"learningPathsDesc": "Percursos de progressão profissional",
 		"serviceLinesDesc": "Organization Service Lines",
 		"areasDesc": "Áreas de especialização",
