@@ -39,6 +39,13 @@ router.put('/users/:userGuid', loginRequired, isAdmin, adminController.updateUse
 router.delete('/users/:userGuid', loginRequired, isAdmin, adminController.deactivateUser);
 
 /**
+ * @route   PATCH /api/admin/users/:userGuid/activate
+ * @desc    Reactivate an inactive user account
+ * @access  Administrator
+ */
+router.patch('/users/:userGuid/activate', loginRequired, isAdmin, adminController.reactivateUser);
+
+/**
  * @route   POST /api/admin/users/:userGuid/reset-password
  * @desc    Trigger a password reset for a specific user
  * @access  Administrator
