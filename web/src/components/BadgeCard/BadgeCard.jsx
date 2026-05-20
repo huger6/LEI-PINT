@@ -1,0 +1,83 @@
+import { Link } from 'react-router-dom';
+import Icon from '../Icons/Icons';
+import styles from './BadgeCard.module.css';
+
+function getBadgeClassLabel(rawType) {
+	const normalized = String(rawType || '').trim().toLowerCase();
+	if (normalized === 'standard') return 'Standard';
+	if (normalized === 'special') return 'Special';
+	return rawType || 'Standard';
+}
+
+export default function BadgeCard({ badge, to }) {
+	const title = badge.badge_title || badge.badgeTitle;
+	const description = badge.badge_description || badge.badgeDescription || '';
+	const imageUrl = badge.badge_img_url || badge.badgeImgUrl;
+	const points = badge.badge_points ?? badge.badgePoints ?? 0;
+	const badgeType = badge.badge_type || badge.badgeType;
+	const consultantCount = Number(badge.consultant_count || badge.consultantCount || 0);
+	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
+
+	const areaName = badge.area?.area_name || badge.area?.areaName;
+	const serviceLineName = badge.service_line?.service_line_name || badge.serviceLine?.serviceLineName;
+	const learningPathName = badge.learning_path?.path_title || badge.learningPath?.pathTitle;
+	const stageCode = badge.progression_stage?.stage_code?.stage_code || badge.progressionStage?.stageCode?.stageCode;
+	const stageTitle = badge.progression_stage?.stage_title || badge.progressionStage?.stageTitle;
+
+	const badgeClass = getBadgeClassLabel(badgeType);
+	const isSpecial = badgeClass.toLowerCase() === 'special';
+
+	return (
+		<Link to={to} className={`text-decoration-none ${styles.link}`}>
+			<article className={styles.card}>
+				<div className={styles.imageWrap}>
+					{imageUrl ? (
+						<img src={imageUrl} alt={title} className={styles.image} />
+					) : (
+						<Icon name="badge" size={56} className={styles.imageFallback} aria-hidden="true" />
+					)}
+					<span className={`${styles.typePill} ${isSpecial ? styles.special : styles.standard}`}>
+						{badgeClass}
+					</span>
+				</div>
+
+				<div className={styles.content}>
+					<h3 className={styles.title}>{title}</h3>
+					<p className={styles.description}>{description || 'No description available.'}</p>
+
+					<div className={styles.metaGrid}>
+						{learningPathName && <span className={styles.metaChip}>{learningPathName}</span>}
+						{serviceLineName && <span className={styles.metaChip}>{serviceLineName}</span>}
+						{areaName && <span className={styles.metaChip}>{areaName}</span>}
+						{stageCode && <span className={styles.metaChip}>{stageCode}{stageTitle ? ` - ${stageTitle}` : ''}</span>}
+					</div>
+				</div>
+
+				<div className={styles.footer}>
+					<div className={styles.metrics}>
+						<span className={styles.metric}>
+							<Icon name="star" size={14} aria-hidden="true" />
+							{points} pts
+						</span>
+						{consultantCount > 0 && (
+							<span className={styles.metric}>
+								<Icon name="user" size={14} aria-hidden="true" />
+								{consultantCount}
+							</span>
+						)}
+						{expirationDays ? (
+							<span className={styles.metric}>
+								<Icon name="today" size={14} aria-hidden="true" />
+								{expirationDays}d
+							</span>
+						) : null}
+					</div>
+					<span className={styles.viewHint}>
+						View
+						<Icon name="chevron_forward" size={14} aria-hidden="true" />
+					</span>
+				</div>
+			</article>
+		</Link>
+	);
+}
