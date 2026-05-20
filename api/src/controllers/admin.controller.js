@@ -871,6 +871,44 @@ const deactivateUser = async (req, res) => {
     }
 };
 
+const reactivateUser = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+
+    try {
+        const { userGuid } = validations.userIdParamSchema.parse(req.params);
+        const user = await resolveUserParam(userGuid);
+
+        if (!user) {
+            return res.status(404).json({ success: false, code: 'ADMIN_USER_NOT_FOUND' });
+        }
+
+        if (user.is_active) {
+            return res.status(400).json({ success: false, code: 'ADMIN_USER_ALREADY_ACTIVE' });
+        }
+
+        await user.update({ is_active: true });
+
+        await Promise.all([
+            redis.del(`user:profile:${user.user_id}`),
+            invalidateCacheByPrefix('admin:users:list'),
+        ]);
+        await sendTopicUpdate("new_data", 1);
+
+        return res.status(200).json({ success: true, code: 'ADMIN_USER_REACTIVATED' });
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_URL_PARAM',
+                errors: error.issues || error.errors
+            });
+        }
+
+        logger.error('Error reactivating user through admin module.', { requestId, error });
+        return res.status(500).json({ success: false, code: 'ADMIN_USER_REACTIVATE_FAILED' });
+    }
+};
+
 const resetUserPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const t = await sequelize.transaction();
@@ -998,6 +1036,7 @@ module.exports = {
     createUser,
     updateUser,
     deactivateUser,
+    reactivateUser,
     resetUserPassword,
     getSllCount
 };
