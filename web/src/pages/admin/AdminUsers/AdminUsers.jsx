@@ -10,6 +10,7 @@ import CreateUserModal from '../../../components/CreateUserModal/CreateUserModal
 import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/UserFilters';
 import Pagination from '../../../components/Pagination/Pagination';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
+import Modal from '../../../components/Modal/Modal';
 import styles from './AdminUsers.module.css';
 
 const ROLE_CLASS = {
@@ -39,6 +40,8 @@ export default function AdminUsers() {
 	const [pagination, setPagination] = useState(null);
 
 	const [showModal, setShowModal] = useState(false);
+	const [confirmTarget, setConfirmTarget] = useState(null);
+	const [deactivating, setDeactivating] = useState(false);
 
 	useEffect(() => {
 		loadHierarchy();
@@ -91,13 +94,17 @@ export default function AdminUsers() {
 		loadUsers(filters, page);
 	}
 
-	async function handleDelete(user) {
-		if (!window.confirm(t('shared.confirmDeactivate', { name: user.full_name || user.fullName }))) return;
+	async function handleDeactivateConfirm() {
+		if (!confirmTarget) return;
+		setDeactivating(true);
 		try {
-			await deactivateUser(user.user_guid || user.userGuid);
+			await deactivateUser(confirmTarget.user_guid || confirmTarget.userGuid);
+			setConfirmTarget(null);
 			await loadUsers(filters, page);
 		} catch (err) {
 			console.error(err);
+		} finally {
+			setDeactivating(false);
 		}
 	}
 
@@ -167,16 +174,19 @@ export default function AdminUsers() {
 										const isActive = u.is_active ?? u.isActive;
 										const userGuid = u.user_guid || u.userGuid;
 										const profilePath = ADMIN.USER_PROFILE.replace(':guid', userGuid);
-										const editPath = ADMIN.USER_PROFILE_EDIT.replace(':guid', userGuid);
 
 										return (
 											<tr key={userGuid}>
 												{/* Name + email combined in one cell with avatar */}
 												<td style={{ paddingLeft: '1.25rem' }}>
 													<Link to={profilePath} className={`${styles.userCell} text-decoration-none`}>
+														{u.profile_img_url ? (
+														<img src={u.profile_img_url} alt={fullName} className={styles.avatarImg} />
+													) : (
 														<div className={styles.avatar} aria-hidden="true">
 															{getInitials(fullName)}
 														</div>
+													)}
 														<div>
 															<div className={styles.userName}>{fullName}</div>
 															<div className={styles.userEmail}>
@@ -206,10 +216,10 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button as={Link} to={editPath} size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
+													<Button as={Link} to={profilePath} size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
-													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => handleDelete(u)}>
+													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => setConfirmTarget(u)}>
 														<Icon name="trash" size={14} aria-hidden="true" />
 													</Button>
 												</td>
@@ -232,6 +242,29 @@ export default function AdminUsers() {
 					itemCount={users.length}
 					onPageChange={setPage}
 				/>
+			)}
+
+			{/* ── Deactivate confirm modal ────────────────────────────────── */}
+			{confirmTarget && (
+				<Modal
+					title={t('shared.deactivate')}
+					size="sm"
+					onClose={() => !deactivating && setConfirmTarget(null)}
+					footer={
+						<>
+							<Button variant="outlined" onClick={() => setConfirmTarget(null)} disabled={deactivating}>
+								{t('shared.cancel')}
+							</Button>
+							<Button color="danger" onClick={handleDeactivateConfirm} loading={deactivating}>
+								{t('shared.deactivate')}
+							</Button>
+						</>
+					}
+				>
+					<p className="mb-0">
+						{t('shared.confirmDeactivate', { name: confirmTarget.full_name || confirmTarget.fullName })}
+					</p>
+				</Modal>
 			)}
 
 			{/* ── Create modal ─────────────────────────────────────────────── */}

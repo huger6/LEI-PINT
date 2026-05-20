@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { updateUser } from '../../../features/users/api/usersApi';
+import { getLocations } from '../../../features/users/api/profileApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { uploadProfileImageToTemp } from '../../../services/storage';
 import api from '../../../services/api';
 import {
 	useAvailability,
@@ -16,11 +17,20 @@ import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import AreaPickerList from '../../../components/AreaPickerList/AreaPickerList';
+import Chip from '../../../components/Chip/Chip';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
-import { ADMIN } from '../../../routes/paths';
 import styles from './AdminUserDrawer.module.css';
 
 const CHANGEABLE_ROLES = ['Consultant', 'Talent Manager', 'Service Line Leader'];
+
+function SectionDivider({ label }) {
+	return (
+		<div className={styles.sectionDivider}>
+			<span className={styles.sectionDividerLabel}>{label}</span>
+			<div className={styles.sectionDividerLine} />
+		</div>
+	);
+}
 
 function DetailRow({ label, children }) {
 	return (
@@ -31,9 +41,15 @@ function DetailRow({ label, children }) {
 	);
 }
 
+function getInitials(name = '') {
+	const parts = name.trim().split(/\s+/);
+	if (parts.length === 0 || !parts[0]) return '?';
+	if (parts.length === 1) return parts[0][0].toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid }) {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
 	const panelRef = useRef(null);
 
 	const [form, setForm] = useState({});
@@ -44,17 +60,43 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 
 	const [serviceLines, setServiceLines] = useState([]);
 	const [allAreas, setAllAreas] = useState([]);
+	const [locations, setLocations] = useState([]);
 	const [showSllWarning, setShowSllWarning] = useState(false);
 	const [pendingRoleChange, setPendingRoleChange] = useState(null);
+
+	const [interestInput, setInterestInput] = useState('');
+	const [goalInput, setGoalInput] = useState('');
+
+	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	const [profileUploading, setProfileUploading] = useState(false);
+	const [profileUploadError, setProfileUploadError] = useState('');
+	const profileFileRef = useRef(null);
 
 	const displayRole = profile?.role?.role_name || profile?.role_name || profile?.role || '';
 	const isAdminRole = displayRole === 'Administrator';
 
+	const locationOptions = useMemo(
+		() => locations.map((l) => {
+			const id = Number(l.location_id ?? l.id);
+			const name = l.location_name ?? l.name ?? l.label;
+			return Number.isInteger(id) && id > 0 && name ? { value: id, label: String(name) } : null;
+		}).filter(Boolean),
+		[locations],
+	);
+
 	useEffect(() => {
 		if (open && profile) {
+			const photoUrl = profile.profileImg || profile.profile_img_url || '';
+			const locId = profile.location_id ?? profile.locationId ?? '';
 			const initial = {
+				fullName: profile.fullName || profile.full_name || '',
 				username: profile.username || '',
 				email: profile.email || '',
+				locationId: locId ? String(locId) : '',
+				about: profile.biography || profile.about || profile.bio || '',
+				interests: [...(profile.interests || [])],
+				goals: [...(profile.goals || [])],
+				profileImgUrl: photoUrl,
 				isActive: profile.isActive ?? profile.is_active ?? true,
 				emailConfirmed: profile.emailConfirmed ?? profile.email_confirmed ?? false,
 				gdprAccepted: profile.gdprAccepted ?? profile.gdpr_accepted ?? false,
@@ -66,16 +108,27 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 				})).filter((a) => a.area_id),
 			};
 			setForm(initial);
-			initialRef.current = { ...initial, areas: [...initial.areas] };
+			initialRef.current = JSON.parse(JSON.stringify(initial));
+			setProfilePreviewUrl(photoUrl);
+			setProfileUploadError('');
 			setErrors({});
 			setIsDirty(false);
+			setInterestInput('');
+			setGoalInput('');
 		}
 	}, [open, profile, displayRole]);
 
 	useEffect(() => {
 		if (!open) return;
-		getServiceLines().then(setServiceLines).catch(() => setServiceLines([]));
-		getAreas().then(setAllAreas).catch(() => setAllAreas([]));
+		Promise.all([
+			getServiceLines().catch(() => []),
+			getAreas().catch(() => []),
+			getLocations().catch(() => []),
+		]).then(([sl, ar, loc]) => {
+			setServiceLines(sl || []);
+			setAllAreas(ar || []);
+			setLocations(loc || []);
+		});
 	}, [open]);
 
 	useEffect(() => {
@@ -109,10 +162,16 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		fetcher: fetchEmailAvailability,
 	});
 
-	const checkDirty = (next) => {
+	const checkDirty = useCallback((next) => {
 		const initial = initialRef.current;
-		const changed = next.username !== initial.username
+		const changed = next.fullName !== initial.fullName
+			|| next.username !== initial.username
 			|| next.email !== initial.email
+			|| next.locationId !== initial.locationId
+			|| next.about !== initial.about
+			|| JSON.stringify(next.interests) !== JSON.stringify(initial.interests)
+			|| JSON.stringify(next.goals) !== JSON.stringify(initial.goals)
+			|| next.profileImgUrl !== initial.profileImgUrl
 			|| next.isActive !== initial.isActive
 			|| next.emailConfirmed !== initial.emailConfirmed
 			|| next.gdprAccepted !== initial.gdprAccepted
@@ -120,7 +179,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 			|| next.serviceLine !== initial.serviceLine
 			|| JSON.stringify(next.areas) !== JSON.stringify(initial.areas);
 		setIsDirty(changed);
-	};
+	}, []);
 
 	const handleChange = (field) => (e) => {
 		const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -131,6 +190,85 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		});
 		if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
 	};
+
+	// ── Interest chips ───────────────────────────────────────────
+	const addInterest = () => {
+		const val = interestInput.trim();
+		if (!val || form.interests?.includes(val)) return;
+		setForm((prev) => {
+			const next = { ...prev, interests: [...(prev.interests || []), val] };
+			checkDirty(next);
+			return next;
+		});
+		setInterestInput('');
+	};
+
+	const removeInterest = (idx) => {
+		setForm((prev) => {
+			const next = { ...prev, interests: prev.interests.filter((_, i) => i !== idx) };
+			checkDirty(next);
+			return next;
+		});
+	};
+
+	// ── Goals list ───────────────────────────────────────────────
+	const addGoal = () => {
+		const val = goalInput.trim();
+		if (!val) return;
+		setForm((prev) => {
+			const next = { ...prev, goals: [...(prev.goals || []), val] };
+			checkDirty(next);
+			return next;
+		});
+		setGoalInput('');
+	};
+
+	const removeGoal = (idx) => {
+		setForm((prev) => {
+			const next = { ...prev, goals: prev.goals.filter((_, i) => i !== idx) };
+			checkDirty(next);
+			return next;
+		});
+	};
+
+	// ── Profile image ────────────────────────────────────────────
+	const onProfileImageChange = useCallback(async (e) => {
+		const file = e.target.files?.[0];
+		e.target.value = '';
+		if (!file) return;
+
+		setProfileUploadError('');
+		setProfileUploading(true);
+
+		const localUrl = URL.createObjectURL(file);
+		setProfilePreviewUrl(localUrl);
+
+		try {
+			const { publicUrl } = await uploadProfileImageToTemp(file);
+			URL.revokeObjectURL(localUrl);
+			setProfilePreviewUrl(publicUrl);
+			setForm((prev) => {
+				const next = { ...prev, profileImgUrl: publicUrl };
+				checkDirty(next);
+				return next;
+			});
+		} catch {
+			setProfileUploadError(t('register.profilePictureUploadFailed'));
+		} finally {
+			setProfileUploading(false);
+		}
+	}, [t, checkDirty]);
+
+	const clearProfileImage = useCallback(() => {
+		setProfilePreviewUrl('');
+		setProfileUploadError('');
+		setForm((prev) => {
+			const next = { ...prev, profileImgUrl: null };
+			checkDirty(next);
+			return next;
+		});
+		if (profileFileRef.current) profileFileRef.current.value = '';
+	}, [checkDirty]);
 
 	const applyRoleChange = (newRole) => {
 		setForm((prev) => {
@@ -167,6 +305,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 
 	const validate = () => {
 		const errs = {};
+		if (!form.fullName?.trim()) errs.fullName = t('profile.errors.nameRequired');
 		if (!form.username?.trim()) errs.username = t('profile.errors.usernameRequired');
 		else if (form.username.trim().length < 3) errs.username = t('profile.errors.usernameTooShort');
 		if (!form.email?.trim()) errs.email = t('profile.errors.emailRequired');
@@ -201,13 +340,29 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		setSaving(true);
 		try {
 			const payload = {};
+			const initial = initialRef.current;
+
+			if (form.fullName?.trim() !== initial.fullName) payload.full_name = form.fullName.trim();
 			if (usernameChanged) payload.username = form.username.trim();
 			if (emailChanged) payload.email_address = form.email.trim();
-			if (form.isActive !== initialRef.current.isActive) payload.approve_member = form.isActive;
-			if (form.emailConfirmed !== initialRef.current.emailConfirmed) payload.email_confirmed = form.emailConfirmed;
-			if (form.gdprAccepted !== initialRef.current.gdprAccepted) payload.gdpr_accepted = form.gdprAccepted;
+			if (form.locationId !== initial.locationId) {
+				payload.location_id = form.locationId ? Number(form.locationId) : null;
+			}
+			if ((form.about || '') !== (initial.about || '')) payload.biography = form.about?.trim() || null;
+			if (JSON.stringify(form.interests) !== JSON.stringify(initial.interests)) payload.interests = form.interests;
+			if (JSON.stringify(form.goals) !== JSON.stringify(initial.goals)) payload.goals = form.goals;
 
-			if (form.role !== initialRef.current.role) {
+			if (form.profileImgUrl === null) {
+				payload.profile_img_url = null;
+			} else if (form.profileImgUrl && form.profileImgUrl !== initial.profileImgUrl) {
+				payload.profile_img_url = form.profileImgUrl;
+			}
+
+			if (form.isActive !== initial.isActive) payload.approve_member = form.isActive;
+			if (form.emailConfirmed !== initial.emailConfirmed) payload.email_confirmed = form.emailConfirmed;
+			if (form.gdprAccepted !== initial.gdprAccepted) payload.gdpr_accepted = form.gdprAccepted;
+
+			if (form.role !== initial.role) {
 				payload.user_role = form.role;
 			}
 			if (form.role === 'Service Line Leader' && form.serviceLine) {
@@ -233,11 +388,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		} finally {
 			setSaving(false);
 		}
-	};
-
-	const handleEditProfile = () => {
-		onClose();
-		navigate(`${ADMIN.USERS}/${guid}/edit`);
 	};
 
 	const joinedAt = profile?.createdAt || profile?.created_at;
@@ -272,6 +422,60 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 			</div>
 
 			<div className={styles.drawerBody}>
+				{/* ── Profile Image ─────────────────────────── */}
+				<div className={styles.avatarSection}>
+					<div className={styles.avatarWrapper}>
+						<div className={styles.avatar}>
+							{profilePreviewUrl ? (
+								<img src={profilePreviewUrl} alt={form.fullName || ''} className={styles.avatarImg} />
+							) : (
+								<span className={styles.avatarFallback}>{getInitials(form.fullName || '')}</span>
+							)}
+							<button
+								type="button"
+								className={styles.avatarOverlay}
+								onClick={() => profileFileRef.current?.click()}
+								disabled={profileUploading}
+							>
+								<Icon name="photo" size={20} color="white" />
+							</button>
+						</div>
+						{(profilePreviewUrl || form.profileImgUrl) && (
+							<button
+								type="button"
+								className={styles.avatarRemoveBtn}
+								onClick={clearProfileImage}
+								disabled={profileUploading}
+								aria-label={t('register.profilePictureRemove')}
+							>
+								<Icon name="trash" size={12} color="var(--color-error)" />
+							</button>
+						)}
+					</div>
+					<input
+						ref={profileFileRef}
+						type="file"
+						className="d-none"
+						accept="image/jpeg,image/png,image/webp,image/gif"
+						onChange={onProfileImageChange}
+					/>
+					{profileUploadError && (
+						<span className={styles.avatarError}>{profileUploadError}</span>
+					)}
+				</div>
+
+				{/* ── Profile Details ───────────────────────── */}
+				<SectionDivider label={t('profile.profileDetails')} />
+
+				<FormInput
+					id="admin-fullname"
+					label={t('profile.fullName')}
+					value={form.fullName || ''}
+					onChange={handleChange('fullName')}
+					error={errors.fullName}
+					required
+				/>
+
 				<div>
 					<FormInput
 						id="admin-username"
@@ -305,6 +509,41 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 						<small className="text-success">{t('register.emailAvailable')}</small>
 					)}
 				</div>
+
+				<div>
+					<label htmlFor="admin-location" className={styles.detailLabel}>{t('profile.location')}</label>
+					<CustomSelect
+						id="admin-location"
+						name="locationId"
+						value={form.locationId || ''}
+						onChange={(e) => {
+							const val = e.target.value;
+							setForm((prev) => {
+								const next = { ...prev, locationId: String(val) };
+								checkDirty(next);
+								return next;
+							});
+						}}
+						options={locationOptions}
+						placeholder={locationOptions.length === 0 ? t('profile.noLocationsAvailable') : t('profile.selectLocation')}
+						disabled={locationOptions.length === 0}
+					/>
+				</div>
+
+				<div>
+					<label htmlFor="admin-about" className={styles.detailLabel}>{t('profile.aboutMe')}</label>
+					<textarea
+						id="admin-about"
+						className={`form-control ${styles.textarea}`}
+						rows={3}
+						value={form.about || ''}
+						onChange={handleChange('about')}
+						placeholder={t('profile.aboutMePlaceholder')}
+					/>
+				</div>
+
+				{/* ── Role & Structure ──────────────────────── */}
+				<SectionDivider label={t('profile.roleAndStructure')} />
 
 				{isAdminRole ? (
 					<DetailRow label={t('profile.role')}>{t(`roles.${displayRole}`)}</DetailRow>
@@ -358,6 +597,61 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 					</div>
 				)}
 
+				{/* ── Interests & Goals ─────────────────────── */}
+				<SectionDivider label={t('profile.interestsAndGoals')} />
+
+				<div>
+					<label className={styles.detailLabel}>{t('profile.keyInterests')}</label>
+					<div className={styles.chipList}>
+						{(form.interests || []).map((interest, idx) => (
+							<Chip key={idx} label={interest} onRemove={() => removeInterest(idx)} />
+						))}
+					</div>
+					<div className={styles.addRow}>
+						<input
+							type="text"
+							className={`form-control ${styles.addInput}`}
+							value={interestInput}
+							onChange={(e) => setInterestInput(e.target.value)}
+							onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
+							placeholder={t('profile.addInterest')}
+						/>
+						<Button size="sm" onClick={addInterest} disabled={!interestInput.trim()}>
+							<Icon name="add" size={16} />
+						</Button>
+					</div>
+				</div>
+
+				<div>
+					<label className={styles.detailLabel}>{t('profile.currentGoals')}</label>
+					<div className={styles.goalsList}>
+						{(form.goals || []).map((goal, idx) => (
+							<div key={idx} className={styles.goalEditRow}>
+								<span className={styles.goalText}>{goal}</span>
+								<button type="button" className={styles.removeBtn} onClick={() => removeGoal(idx)} aria-label={`Remove goal`}>
+									<Icon name="close" size={14} color="var(--color-error)" />
+								</button>
+							</div>
+						))}
+					</div>
+					<div className={styles.addRow}>
+						<input
+							type="text"
+							className={`form-control ${styles.addInput}`}
+							value={goalInput}
+							onChange={(e) => setGoalInput(e.target.value)}
+							onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGoal())}
+							placeholder={t('profile.addGoal')}
+						/>
+						<Button size="sm" onClick={addGoal} disabled={!goalInput.trim()}>
+							<Icon name="add" size={16} />
+						</Button>
+					</div>
+				</div>
+
+				{/* ── Account Settings ──────────────────────── */}
+				<SectionDivider label={t('profile.accountSettings')} />
+
 				<DetailRow label={t('profile.joinedAt')}>{formatDate(joinedAt)}</DetailRow>
 				<DetailRow label={t('profile.lastLogin')}>{formatDate(lastLogin)}</DetailRow>
 
@@ -392,11 +686,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 						/>
 					</label>
 				</div>
-
-				<button type="button" className={styles.editProfileLink} onClick={handleEditProfile}>
-					<Icon name="pencil" size={16} color="var(--color-primary)" />
-					<span>{t('profile.editProfileDetails')}</span>
-				</button>
 			</div>
 
 			<div className={styles.drawerFooter}>
