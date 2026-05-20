@@ -145,6 +145,8 @@ export default function StructureDetailLayout({
 						size="sm"
 						className={styles.addSubBtn}
 						onClick={onAddSub}
+						disabled={isActive === false}
+						title={isActive === false ? t('structureDetail.inactiveCannotAdd', { defaultValue: 'Cannot add substructures to an inactive structure' }) : undefined}
 					>
 						<Icon name="add" size={15} aria-hidden="true" />
 						<span>{addSubLabel}</span>
