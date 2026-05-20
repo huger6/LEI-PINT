@@ -487,7 +487,10 @@
 		"noAreasFound": "Ninguna área coincide con la búsqueda.",
 		"selectedCount": "{{count}} / {{max}} seleccionadas",
 		"setPrimary": "Establecer como principal",
-		"autoConfirmEmail": "Confirmar email automáticamente"
+		"autoConfirmEmail": "Confirmar email automáticamente",
+		"sllLastLeaderWarning": "Este usuario es el único Service Line Leader de su service line. Cambiar su perfil dejará la service line sin líder. ¿Continuar?",
+		"serviceLineRequired": "Se debe seleccionar una service line para Service Line Leaders.",
+		"areasRequired": "Se debe seleccionar al menos un área para Consultores."
 	},
 	"adminBadges": {
 		"title": "Badges",
@@ -567,7 +570,29 @@
 		"sortRecent": "Más reciente",
 		"sortAZ": "A-Z",
 		"sortZA": "Z-A",
-		"errorLoading": "Error al cargar badges: {{error}}"
+		"errorLoading": "Error al cargar badges: {{error}}",
+		"filters": {
+			"title": "Filtros",
+			"open": "Filtrar 🔍",
+			"apply": "Aplicar Filtros",
+			"clear": "Limpiar filtros",
+			"structure": "Jerarquía Estructural",
+			"allLearningPaths": "Todos los learning paths",
+			"allServiceLines": "Todas las service lines",
+			"area": "Área",
+			"selectServiceLineFirst": "Selecciona una Service Line para elegir el Área.",
+			"progression": "Niveles de Progresión",
+			"classification": "Clasificación del Badge",
+			"class": {
+				"all": "Todos",
+				"standard": "Standard",
+				"special": "Special"
+			},
+			"points": "Valoración de Puntos",
+			"minPoints": "Puntos Mínimos",
+			"maxPoints": "Puntos Máximos",
+			"expiringOnly": "Mostrar solo badges con expiración"
+		}
 	},
 	"badgeDetail": {
 		"notFound": "Badge no encontrado",

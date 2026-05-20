@@ -56,5 +56,7 @@
 	"STATUS_429": "Demasiados pedidos. Por favor aguarde antes de tentar novamente.",
 	"STATUS_500": "Ocorreu um erro no servidor. Por favor tente novamente mais tarde.",
 	"STATUS_502": "O servidor está temporariamente indisponível. Por favor tente novamente mais tarde.",
-	"STATUS_503": "O serviço está temporariamente indisponível. Por favor tente novamente mais tarde."
+	"STATUS_503": "O serviço está temporariamente indisponível. Por favor tente novamente mais tarde.",
+	"ADMIN_CANNOT_PROMOTE_TO_ADMIN": "Não é possível promover utilizadores a Administrador através de alteração de perfil.",
+	"ADMIN_SLL_LAST_LEADER_WARNING": "Este utilizador era o último Service Line Leader da sua service line."
 }
