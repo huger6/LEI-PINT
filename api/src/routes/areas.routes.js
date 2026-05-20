@@ -68,6 +68,13 @@ router.put('/:areaSlug', loginRequired, isAdmin, areaController.updateArea);
  */
 router.delete('/:areaSlug', loginRequired, isAdmin, areaController.deleteArea);
 
+/**
+ * @route   PATCH /api/areas/:areaSlug/activate
+ * @desc    Reactivate an inactive area
+ * @access  Administrator
+ */
+router.patch('/:areaSlug/activate', loginRequired, isAdmin, areaController.reactivateArea);
+
 router.use('/:areaSlug/levels', levelsRoutes);
 router.use('/:areaSlug/badges', badgesRoutes);
 
