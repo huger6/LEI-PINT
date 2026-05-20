@@ -23,7 +23,7 @@ export async function fetchLearningPaths({ page = 1, limit = 12, search, status 
 }
 
 export async function fetchAllLearningPaths({ search } = {}) {
-	const params = { limit: 100 };
+	const params = { limit: 100, is_active: true };
 	if (search) params.search = search;
 	const { data } = await api.get('/learning-paths', { params });
 	return parseResponse(data);
@@ -55,7 +55,7 @@ export async function fetchServiceLines({ page = 1, limit = 12, search, status }
 }
 
 export async function fetchAllServiceLines({ search } = {}) {
-	const params = { limit: 100 };
+	const params = { limit: 100, is_active: true };
 	if (search) params.search = search;
 	const { data } = await api.get('/service-lines', { params });
 	return parseResponse(data);
@@ -87,7 +87,7 @@ export async function fetchAreas({ page = 1, limit = 12, search, status } = {}) 
 }
 
 export async function fetchAllAreas({ search } = {}) {
-	const params = { limit: 100 };
+	const params = { limit: 100, is_active: true };
 	if (search) params.search = search;
 	const { data } = await api.get('/areas', { params });
 	return parseResponse(data);
@@ -119,7 +119,7 @@ export async function fetchLevels({ page = 1, limit = 12, search, status } = {})
 }
 
 export async function fetchAllLevels({ search } = {}) {
-	const params = { limit: 100 };
+	const params = { limit: 100, is_active: true };
 	if (search) params.search = search;
 	const { data } = await api.get('/levels', { params });
 	return parseResponse(data);
