@@ -12,7 +12,7 @@ import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteSt
 const PAGE_SIZE = 32;
 
 export default function LevelDetail() {
-	const { slug } = useParams();
+	const { areaSlug, stageCode: stageCodeParam } = useParams();
 	const { t } = useTranslation();
 	const [level, setLevel] = useState(null);
 	const [badges, setBadges] = useState([]);
@@ -24,15 +24,15 @@ export default function LevelDetail() {
 	const [isActivating, setIsActivating] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
-		return fetchBadgesByLevel(slug, { page, limit: PAGE_SIZE });
-	}, [slug]);
+		return fetchBadgesByLevel(areaSlug, stageCodeParam, { page, limit: PAGE_SIZE });
+	}, [areaSlug, stageCodeParam]);
 
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
 
 		Promise.all([
-			fetchLevelByCode(slug),
+			fetchLevelByCode(areaSlug, stageCodeParam),
 			fetchSubStructures(1)
 		])
 			.then(([levelData, badgesData]) => {
@@ -50,7 +50,7 @@ export default function LevelDetail() {
 			});
 
 		return () => { cancelled = true; };
-	}, [slug, fetchSubStructures]);
+	}, [areaSlug, stageCodeParam, fetchSubStructures]);
 
 	const handlePageChange = useCallback((page) => {
 		setCurrentPage(page);
@@ -64,32 +64,33 @@ export default function LevelDetail() {
 
 	const handleEditSuccess = useCallback(async () => {
 		try {
-			const refreshed = await fetchLevelByCode(slug);
+			const refreshed = await fetchLevelByCode(areaSlug, stageCodeParam);
 			if (refreshed) setLevel(refreshed);
 		} catch (error) {
 			console.error(error);
 		}
-	}, [slug]);
+	}, [areaSlug, stageCodeParam]);
 
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
 			const stageCode = level?.stage_code?.stage_code;
 			if (!stageCode) return;
-			await activateLevel(stageCode);
-			const refreshed = await fetchLevelByCode(slug);
+			await activateLevel(areaSlug, stageCode);
+			const refreshed = await fetchLevelByCode(areaSlug, stageCodeParam);
 			if (refreshed) setLevel(refreshed);
 		} catch (error) {
 			console.error(error);
 		} finally {
 			setIsActivating(false);
 		}
-	}, [slug, level]);
+	}, [areaSlug, stageCodeParam, level]);
 
 	if (loading) return <Spinner />;
 	if (!level) return null;
 
 	const stageCode = level.stage_code?.stage_code;
+	const parentAreaSlug = level.area?.area_slug;
 	const title = level.stage_sequence != null
 		? `#${level.stage_sequence} ${level.stage_title}`
 		: level.stage_title;
@@ -154,7 +155,7 @@ export default function LevelDetail() {
 
 	breadcrumbItems.push({
 		label: title,
-		path: ADMIN.LEVEL_DETAIL.replace(':slug', slug),
+		path: ADMIN.LEVEL_DETAIL.replace(':areaSlug', parentAreaSlug).replace(':stageCode', stageCode),
 	});
 
 	return (
@@ -187,12 +188,12 @@ export default function LevelDetail() {
 			{showDeleteModal && (
 				<DeleteStructureModal
 					entityName={level.stage_title}
-					onConfirm={() => deleteLevel(stageCode)}
+					onConfirm={() => deleteLevel(areaSlug, stageCode)}
 					onSuccess={async () => {
 						setShowDeleteModal(false);
 						try {
 							const [refreshed, badgesData] = await Promise.all([
-								fetchLevelByCode(slug),
+								fetchLevelByCode(areaSlug, stageCodeParam),
 								fetchSubStructures(1),
 							]);
 							if (refreshed) setLevel(refreshed);
