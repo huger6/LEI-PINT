@@ -112,8 +112,10 @@ export function AuthProvider({ children }) {
 				applyRefreshData(result);
 				setIsAuthenticated(true);
 			})
-			.catch(() => {
-				localStorage.removeItem(SESSION_FLAG);
+			.catch((err) => {
+				if (err.response?.status === 401 || err.response?.status === 403) {
+					localStorage.removeItem(SESSION_FLAG);
+				}
 			})
 			.finally(() => {
 				setIsLoading(false);
