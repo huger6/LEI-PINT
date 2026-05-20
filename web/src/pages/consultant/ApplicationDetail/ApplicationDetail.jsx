@@ -5,7 +5,7 @@ import { SHARED } from '../../../routes/paths';
 import { getApplicationById, submitApplication, upsertEvidence } from '../../../features/applications/api/applicationsApi';
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { uploadFileToTemp } from '../../../services/storage';
-import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationDetail.module.css';
@@ -139,7 +139,7 @@ export default function ApplicationDetail() {
 		);
 	}
 
-	if (loading) return <LoadingScreen />;
+	if (loading) return <DetailPageSkeleton />;
 
 	if (error) {
 		return (

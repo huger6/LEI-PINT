@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-import Spinner from '../../../../components/Spinner/Spinner';
+import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import { fetchLevelByCode, fetchBadgesByLevel } from '../../api/structureDetailApi';
 import { deleteLevel, activateLevel } from '../../api/structureListApi';
 import { ADMIN, SHARED } from '../../../../routes/paths';
@@ -86,7 +86,7 @@ export default function LevelDetail() {
 		}
 	}, [areaSlug, stageCodeParam, level]);
 
-	if (loading) return <Spinner />;
+	if (loading) return <StructureDetailSkeleton />;
 	if (!level) return null;
 
 	const stageCode = level.stage_code?.stage_code;

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
 import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
 import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
-import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './BadgeDetail.module.css';
@@ -57,7 +57,7 @@ export default function BadgeDetail() {
 		}
 	}
 
-	if (loading) return <LoadingScreen />;
+	if (loading) return <DetailPageSkeleton />;
 
 	if (error) {
 		return (

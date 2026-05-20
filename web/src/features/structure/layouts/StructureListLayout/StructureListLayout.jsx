@@ -4,7 +4,7 @@ import Icon from '../../../../components/Icons/Icons';
 import Button from '../../../../components/Button/Button';
 import FilterSearchInput from '../../../../components/FilterSearchInput/FilterSearchInput';
 import Pagination from '../../../../components/Pagination/Pagination';
-import Spinner from '../../../../components/Spinner/Spinner';
+import CardGridSkeleton from '../../../../components/Skeleton/CardGridSkeleton';
 import styles from './StructureListLayout.module.css';
 
 export default function StructureListLayout({
@@ -91,7 +91,7 @@ export default function StructureListLayout({
 			</div>
 
 			{loading ? (
-				<Spinner />
+				<CardGridSkeleton count={4} columns={2} />
 			) : items.length === 0 ? (
 				<div className={styles.empty}>
 					<div className={`${styles.emptyIcon} ${toneClass}`}>

@@ -175,12 +175,12 @@ export async function updateLevel(stageCode, payload) {
 	return data?.data;
 }
 
-export async function deleteLevel(stageCode) {
-	const { data } = await api.delete(`/levels/${stageCode}`);
+export async function deleteLevel(areaSlug, stageCode) {
+	const { data } = await api.delete(`/areas/${areaSlug}/levels/${stageCode}`);
 	return data;
 }
 
-export async function activateLevel(stageCode) {
-	const { data } = await api.patch(`/levels/${stageCode}/activate`);
+export async function activateLevel(areaSlug, stageCode) {
+	const { data } = await api.patch(`/areas/${areaSlug}/levels/${stageCode}/activate`);
 	return data;
 }

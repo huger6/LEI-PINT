@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-import Spinner from '../../../../components/Spinner/Spinner';
+import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
 import { deleteLearningPath, activateLearningPath } from '../../api/structureListApi';
 import { ADMIN } from '../../../../routes/paths';
@@ -115,7 +115,7 @@ export default function LearningPathDetail() {
 		}
 	}, [slug, fetchSubStructures]);
 
-	if (loading) return <Spinner />;
+	if (loading) return <StructureDetailSkeleton />;
 	if (!lp) return null;
 
 	const stats = [

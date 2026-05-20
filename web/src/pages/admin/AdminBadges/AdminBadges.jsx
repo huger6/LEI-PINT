@@ -6,7 +6,7 @@ import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
-import Spinner from '../../../components/Spinner/Spinner';
+import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 
 const BADGE_TYPES = ['Standard', 'Special'];
 
@@ -124,7 +124,7 @@ export default function AdminBadges() {
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
 					{loading ? (
-						<Spinner />
+						<TableSkeleton rows={5} columns={6} />
 					) : badges.length === 0 ? (
 						<div className="text-center py-5">
 							<h5 className="text-muted">{t('adminBadges.noBadges')}</h5>

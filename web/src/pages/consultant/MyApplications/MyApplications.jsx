@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
-import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';
 
@@ -59,7 +59,18 @@ export default function MyApplications() {
 		return applications.filter((a) => (a.application_state || a.state) === activeTab);
 	}, [applications, activeTab]);
 
-	if (loading) return <LoadingScreen />;
+	if (loading) {
+		return (
+			<>
+				<h1 className="h3 mb-4">{t('myApplications.title')}</h1>
+				<div className="card border-0 shadow-sm">
+					<div className="card-body p-0">
+						<TableSkeleton rows={5} columns={4} />
+					</div>
+				</div>
+			</>
+		);
+	}
 
 	if (error) {
 		return (

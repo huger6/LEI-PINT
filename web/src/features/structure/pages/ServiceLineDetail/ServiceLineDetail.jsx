@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
-import Spinner from '../../../../components/Spinner/Spinner';
+import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import SLLeaderCard from '../../components/SLLeaderCard/SLLeaderCard';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
 import { deleteServiceLine, activateServiceLine } from '../../api/structureListApi';
@@ -116,7 +116,7 @@ export default function ServiceLineDetail() {
 		}
 	}, [slug, fetchSubStructures]);
 
-	if (loading) return <Spinner />;
+	if (loading) return <StructureDetailSkeleton />;
 	if (!sl) return null;
 
 	const stats = [
