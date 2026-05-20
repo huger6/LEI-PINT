@@ -145,7 +145,7 @@ export default function AreaDetail() {
 		description: level.stage_description,
 		isActive: level.is_active,
 		count: level.stage_sequence != null ? `#${level.stage_sequence}` : undefined,
-		to: ADMIN.LEVEL_DETAIL.replace(':slug', level.progression_stage_id),
+		to: ADMIN.LEVEL_DETAIL.replace(':areaSlug', area.area_slug).replace(':stageCode', level.stage_code?.stage_code),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
 			{ icon: 'badge', value: Number(level.badge_count || 0), label: t('shared.badges', { defaultValue: 'Badges' }) },
