@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
+import { deleteLearningPath, activateLearningPath } from '../../api/structureListApi';
 import { ADMIN } from '../../../../routes/paths';
 import CreateLearningPathModal from '../../components/CreateLearningPathModal/CreateLearningPathModal';
 import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
+import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
 const PAGE_SIZE = 32;
 
@@ -21,6 +23,8 @@ export default function LearningPathDetail() {
 	const [loading, setLoading] = useState(true);
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [showCreateServiceLineModal, setShowCreateServiceLineModal] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [isActivating, setIsActivating] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchServiceLinesByLearningPath(slug, { page, limit: PAGE_SIZE });
@@ -82,6 +86,19 @@ export default function LearningPathDetail() {
 			navigate(ADMIN.LEARNING_PATH_DETAIL.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
+
+	const handleActivate = useCallback(async () => {
+		setIsActivating(true);
+		try {
+			await activateLearningPath(slug);
+			const refreshed = await fetchLearningPathBySlug(slug);
+			if (refreshed) setLp(refreshed);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setIsActivating(false);
+		}
+	}, [slug]);
 
 	const handleServiceLineCreated = useCallback(async () => {
 		setCurrentPage(1);
@@ -160,7 +177,9 @@ export default function LearningPathDetail() {
 				addSubLabel={t('structureDetail.addServiceLine', { defaultValue: 'Add Service Line' })}
 				onEdit={() => setShowEditModal(true)}
 				onAddSub={() => setShowCreateServiceLineModal(true)}
-				onDelete={() => {}}
+				onDelete={lp.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={!lp.is_active ? handleActivate : undefined}
+				isActivating={isActivating}
 				onExport={() => {}}
 				pagination={pagination}
 				onPageChange={handlePageChange}
@@ -178,6 +197,23 @@ export default function LearningPathDetail() {
 					}}
 					onSuccess={handleEditSuccess}
 					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+
+			{showDeleteModal && (
+				<DeleteStructureModal
+					entityName={lp.path_title}
+					onConfirm={() => deleteLearningPath(slug)}
+					onSuccess={async () => {
+						setShowDeleteModal(false);
+						try {
+							const refreshed = await fetchLearningPathBySlug(slug);
+							if (refreshed) setLp(refreshed);
+						} catch (error) {
+							console.error(error);
+						}
+					}}
+					onClose={() => setShowDeleteModal(false)}
 				/>
 			)}
 

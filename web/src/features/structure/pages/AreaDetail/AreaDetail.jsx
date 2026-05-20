@@ -4,8 +4,10 @@ import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi';
+import { deleteArea, activateArea } from '../../api/structureListApi';
 import { ADMIN } from '../../../../routes/paths';
 import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
+import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
 const PAGE_SIZE = 32;
 
@@ -19,6 +21,8 @@ export default function AreaDetail() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
 	const [showEditModal, setShowEditModal] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [isActivating, setIsActivating] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchLevelsByArea(slug, { page, limit: PAGE_SIZE });
@@ -80,6 +84,19 @@ export default function AreaDetail() {
 			navigate(ADMIN.AREA_DETAIL.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
+
+	const handleActivate = useCallback(async () => {
+		setIsActivating(true);
+		try {
+			await activateArea(slug);
+			const refreshed = await fetchAreaBySlug(slug);
+			if (refreshed) setArea(refreshed);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setIsActivating(false);
+		}
+	}, [slug]);
 
 	if (loading) return <Spinner />;
 	if (!area) return null;
@@ -159,11 +176,30 @@ export default function AreaDetail() {
 				addSubLabel={t('structureDetail.addLevel', { defaultValue: 'Add Level' })}
 				onEdit={() => setShowEditModal(true)}
 				onAddSub={() => {}}
-				onDelete={() => {}}
+				onDelete={area.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={!area.is_active ? handleActivate : undefined}
+				isActivating={isActivating}
 				onExport={() => {}}
 				pagination={pagination}
 				onPageChange={handlePageChange}
 			/>
+
+			{showDeleteModal && (
+				<DeleteStructureModal
+					entityName={area.area_name}
+					onConfirm={() => deleteArea(slug)}
+					onSuccess={async () => {
+						setShowDeleteModal(false);
+						try {
+							const refreshed = await fetchAreaBySlug(slug);
+							if (refreshed) setArea(refreshed);
+						} catch (error) {
+							console.error(error);
+						}
+					}}
+					onClose={() => setShowDeleteModal(false)}
+				/>
+			)}
 
 			{showEditModal && (
 				<CreateAreaModal

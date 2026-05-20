@@ -25,6 +25,8 @@ export default function StructureDetailLayout({
 	onEdit,
 	onAddSub,
 	onDelete,
+	onActivate,
+	isActivating,
 	onExport,
 	addSubLabel,
 	pagination,
@@ -77,14 +79,32 @@ export default function StructureDetailLayout({
 						>
 							<Icon name="download" size={16} aria-hidden="true" />
 						</button>
-						<button
-							type="button"
-							className={`${styles.toolbarBtn} ${styles.toolbarBtnDanger}`}
-							onClick={onDelete}
-							data-tooltip={t('shared.delete')}
-						>
-							<Icon name="trash" size={16} aria-hidden="true" />
-						</button>
+						{onActivate ? (
+							<button
+								type="button"
+								className={`${styles.toolbarBtn} ${styles.toolbarBtnSuccess}`}
+								onClick={onActivate}
+								disabled={isActivating}
+								data-tooltip={t('shared.activate', { defaultValue: 'Activate' })}
+							>
+								<Icon
+									name="activate"
+									size={16}
+									className={isActivating ? styles.spinning : ''}
+									aria-hidden="true"
+								/>
+							</button>
+						) : (
+							<button
+								type="button"
+								className={`${styles.toolbarBtn} ${styles.toolbarBtnDanger}`}
+								onClick={onDelete}
+								disabled={!onDelete}
+								data-tooltip={t('shared.delete')}
+							>
+								<Icon name="trash" size={16} aria-hidden="true" />
+							</button>
+						)}
 					</div>
 				</aside>
 
