@@ -418,6 +418,8 @@
 		"quickActions": "Quick Actions",
 		"confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
 		"confirmDeactivate": "Are you sure you want to deactivate \"{{name}}\"?",
+			"confirmReactivate": "Are you sure you want to reactivate \"{{name}}\"?",
+			"reactivate": "Reactivate",
 		"noResults": "No results found.",
 		"badge": "Badge",
 		"state": "State",

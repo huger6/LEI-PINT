@@ -88,6 +88,23 @@
 	cursor: not-allowed;
 }
 
+/* ─── Filled Success ────────────────── */
+
+.filled.success {
+	background: var(--color-success);
+	color: #fff;
+	border-color: transparent;
+}
+
+.filled.success:hover:not(:disabled) {
+	background: #039e00;
+}
+
+.filled.success:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 /* ─── Outlined Primary ───────────────── */
 
 .outlined.primary {
@@ -126,6 +143,27 @@
 	box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.25);
 }
 
+/* ─── Outlined Success ──────────────── */
+
+.outlined.success {
+	background: transparent;
+	color: var(--color-success);
+	border-color: var(--color-success);
+}
+
+.outlined.success:hover:not(:disabled) {
+	background: rgba(4, 206, 0, 0.06);
+}
+
+.outlined.success:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.outlined.success:focus-visible {
+	box-shadow: 0 0 0 3px rgba(4, 206, 0, 0.25);
+}
+
 /* ─── Spinner ────────────────────────── */
 
 .spinner {
@@ -147,6 +185,11 @@
 .outlined.danger .spinner {
 	border-color: rgba(179, 38, 30, 0.3);
 	border-top-color: var(--color-error);
+}
+
+.outlined.success .spinner {
+	border-color: rgba(4, 206, 0, 0.3);
+	border-top-color: var(--color-success);
 }
 
 .content {
