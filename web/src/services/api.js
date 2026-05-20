@@ -52,7 +52,9 @@ export const performRefresh = () => {
 		})
 		.catch((error) => {
 			_token = null;
-			window.dispatchEvent(new CustomEvent('auth:logout'));
+			if (error.response?.status === 401 || error.response?.status === 403) {
+				window.dispatchEvent(new CustomEvent('auth:logout'));
+			}
 			throw error;
 		})
 		.finally(() => {
