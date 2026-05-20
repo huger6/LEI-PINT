@@ -60,6 +60,8 @@ router.put('/:stageCode', loginRequired, isAdmin, levelController.updateLevel);
  */
 router.delete('/:stageCode', loginRequired, isAdmin, levelController.deleteLevel);
 
+router.patch('/:stageCode/activate', loginRequired, isAdmin, levelController.reactivateLevel);
+
 router.use('/:stageCode/badges', badgesRoutes);
 
 module.exports = router;
