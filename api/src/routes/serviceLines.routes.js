@@ -65,6 +65,13 @@ router.put('/:slSlug', loginRequired, isAdmin, slController.updateServiceLine);
  */
 router.delete('/:slSlug', loginRequired, isAdmin, slController.deleteServiceLine);
 
+/**
+ * @route   PATCH /api/service-lines/:slSlug/activate
+ * @desc    Reactivate an inactive service line
+ * @access  Administrator
+ */
+router.patch('/:slSlug/activate', loginRequired, isAdmin, slController.reactivateServiceLine);
+
 router.use('/:slSlug/areas', areasRoutes);
 router.use('/:slSlug/badges', badgeRoutes);
 

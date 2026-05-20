@@ -416,6 +416,9 @@ const deleteServiceLine = async (req, res) => {
         await redis.del('sl:filter-stats');
         await invalidateCacheByPrefix('lp:list');
         await redis.del('lp:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({ success: true, code: "SL_DEACTIVATED" });
@@ -456,6 +459,41 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+const reactivateServiceLine = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { slSlug } = validations.slSlugParamSchema.parse(req.params);
+
+        const sl = await models.service_lines.findOne({ where: { sl_slug: slSlug } });
+
+        if (!sl) {
+            return res.status(404).json({ success: false, code: "SL_NOT_FOUND_BY_SLUG" });
+        }
+
+        if (sl.is_active) {
+            return res.status(400).json({ success: false, code: "SL_ALREADY_ACTIVE" });
+        }
+
+        await sl.update({ is_active: true, updated_by: userId });
+
+        await invalidateCacheByPrefix('sl:list');
+        await invalidateCacheByPrefix('sl:count');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
+        await sendTopicUpdate("new_data", 10);
+
+        return res.status(200).json({ success: true, code: "SL_ACTIVATED" });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
+        }
+        logger.error('Error reactivating Service Line', { error });
+        return res.status(500).json({ success: false, code: "SL_ACTIVATE_FAILED" });
+    }
+};
+
 module.exports = {
     getServiceLines,
     getFilterStats,
@@ -465,4 +503,5 @@ module.exports = {
     createServiceLine,
     updateServiceLine,
     deleteServiceLine,
+    reactivateServiceLine,
 };

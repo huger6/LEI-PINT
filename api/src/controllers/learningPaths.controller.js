@@ -321,6 +321,12 @@ const deleteLearningPath = async (req, res) => {
         await invalidateCacheByPrefix('lp:list');
         await invalidateCacheByPrefix('lp:count');
         await redis.del('lp:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await invalidateCacheByPrefix('sl:count');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 9);
 
         return res.status(200).json({ success: true, code: "LP_DEACTIVATED" });
@@ -360,6 +366,39 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+const reactivateLearningPath = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { pathSlug } = validations.pathSlugParamSchema.parse(req.params);
+
+        const lp = await models.learning_paths.findOne({ where: { path_slug: pathSlug } });
+
+        if (!lp) {
+            return res.status(404).json({ success: false, code: "LP_NOT_FOUND" });
+        }
+
+        if (lp.is_active) {
+            return res.status(400).json({ success: false, code: "LP_ALREADY_ACTIVE" });
+        }
+
+        await lp.update({ is_active: true, updated_by: userId });
+
+        await invalidateCacheByPrefix('lp:list');
+        await invalidateCacheByPrefix('lp:count');
+        await redis.del('lp:filter-stats');
+        await sendTopicUpdate("new_data", 9);
+
+        return res.status(200).json({ success: true, code: "LP_ACTIVATED" });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
+        }
+        logger.error('Error reactivating Learning Path', { error });
+        return res.status(500).json({ success: false, code: "LP_ACTIVATE_FAILED" });
+    }
+};
+
 module.exports = {
     getAllLearningPaths,
     getFilterStats,
@@ -369,4 +408,5 @@ module.exports = {
     createLearningPath,
     updateLearningPath,
     deleteLearningPath,
+    reactivateLearningPath,
 };
