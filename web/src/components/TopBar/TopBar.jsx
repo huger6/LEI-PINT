@@ -23,7 +23,7 @@ export default function TopBar() {
             </div>
             <div className={styles.rightSection}>
                 {
-                    user.role === 'Consultant' && (
+                    user?.role === 'Consultant' && (
                         <div className={styles.pointsCardWrap}>
                             <PointsCard points={points ? points : 0} />
                         </div>
