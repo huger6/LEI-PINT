@@ -191,8 +191,14 @@ export default function AreaDetail() {
 					onSuccess={async () => {
 						setShowDeleteModal(false);
 						try {
-							const refreshed = await fetchAreaBySlug(slug);
+							const [refreshed, levelsData] = await Promise.all([
+								fetchAreaBySlug(slug),
+								fetchSubStructures(1),
+							]);
 							if (refreshed) setArea(refreshed);
+							setLevels(levelsData.items);
+							setPagination(levelsData.pagination);
+							setCurrentPage(1);
 						} catch (error) {
 							console.error(error);
 						}
