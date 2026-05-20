@@ -7,6 +7,7 @@ import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi
 import { deleteArea, activateArea } from '../../api/structureListApi';
 import { ADMIN } from '../../../../routes/paths';
 import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
+import CreateLevelModal from '../../components/CreateLevelModal/CreateLevelModal';
 import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
 const PAGE_SIZE = 32;
@@ -21,6 +22,7 @@ export default function AreaDetail() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
 	const [showEditModal, setShowEditModal] = useState(false);
+	const [showCreateLevelModal, setShowCreateLevelModal] = useState(false);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [isActivating, setIsActivating] = useState(false);
 
@@ -85,6 +87,21 @@ export default function AreaDetail() {
 		}
 	}, [slug, navigate]);
 
+	const handleLevelCreated = useCallback(async () => {
+		setCurrentPage(1);
+		try {
+			const [refreshedArea, levelsData] = await Promise.all([
+				fetchAreaBySlug(slug),
+				fetchSubStructures(1),
+			]);
+			if (refreshedArea) setArea(refreshedArea);
+			setLevels(levelsData.items);
+			setPagination(levelsData.pagination);
+		} catch (error) {
+			console.error(error);
+		}
+	}, [slug, fetchSubStructures]);
+
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
@@ -127,6 +144,7 @@ export default function AreaDetail() {
 		title: level.stage_title,
 		description: level.stage_description,
 		isActive: level.is_active,
+		count: level.stage_sequence != null ? `#${level.stage_sequence}` : undefined,
 		to: ADMIN.LEVEL_DETAIL.replace(':slug', level.progression_stage_id),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
@@ -175,7 +193,7 @@ export default function AreaDetail() {
 				subStructureTone="levels"
 				addSubLabel={t('structureDetail.addLevel', { defaultValue: 'Add Level' })}
 				onEdit={() => setShowEditModal(true)}
-				onAddSub={() => {}}
+				onAddSub={() => setShowCreateLevelModal(true)}
 				onDelete={area.is_active ? () => setShowDeleteModal(true) : undefined}
 				onActivate={!area.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
@@ -204,6 +222,15 @@ export default function AreaDetail() {
 						}
 					}}
 					onClose={() => setShowDeleteModal(false)}
+				/>
+			)}
+
+			{showCreateLevelModal && (
+				<CreateLevelModal
+					defaultAreaId={area.area_id}
+					defaultAreaName={area.area_name}
+					onSuccess={handleLevelCreated}
+					onClose={() => setShowCreateLevelModal(false)}
 				/>
 			)}
 
