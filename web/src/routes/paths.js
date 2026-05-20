@@ -30,7 +30,7 @@ export const ADMIN = {
 	LEARNING_PATH_DETAIL: '/admin/structure/learning-paths/:slug',
 	SERVICE_LINE_DETAIL: '/admin/structure/service-lines/:slug',
 	AREA_DETAIL: '/admin/structure/areas/:slug',
-	LEVEL_DETAIL: '/admin/structure/levels/:slug',
+	LEVEL_DETAIL: '/admin/structure/levels/:areaSlug/:stageCode',
 };
 
 export const CONSULTANT = {

@@ -167,12 +167,12 @@ export default function LevelsList() {
 			renderCard={(item) => (
 				<StructureItemCard
 					key={item.progression_stage_id}
-					to={ADMIN.LEVEL_DETAIL.replace(':slug', item.progression_stage_id)}
+					to={ADMIN.LEVEL_DETAIL.replace(':areaSlug', item.area?.area_slug).replace(':stageCode', item.stage_code?.stage_code)}
 					icon="evolution"
 					title={item.area ? `${item.stage_title} (${item.area.area_name})` : item.stage_title}
 					description={item.stage_description}
 					isActive={item.is_active}
-					meta={item.stage_sequence ? `#${item.stage_sequence}` : undefined}
+					meta={item.stage_code?.stage_code || undefined}
 					tone="levels"
 					infoItems={[
 						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
