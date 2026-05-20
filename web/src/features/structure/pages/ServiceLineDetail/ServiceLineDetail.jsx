@@ -219,8 +219,14 @@ export default function ServiceLineDetail() {
 					onSuccess={async () => {
 						setShowDeleteModal(false);
 						try {
-							const refreshed = await fetchServiceLineBySlug(slug);
+							const [refreshed, areasData] = await Promise.all([
+								fetchServiceLineBySlug(slug),
+								fetchSubStructures(1),
+							]);
 							if (refreshed) setSl(refreshed);
+							setAreas(areasData.items);
+							setPagination(areasData.pagination);
+							setCurrentPage(1);
 						} catch (error) {
 							console.error(error);
 						}

@@ -207,8 +207,14 @@ export default function LearningPathDetail() {
 					onSuccess={async () => {
 						setShowDeleteModal(false);
 						try {
-							const refreshed = await fetchLearningPathBySlug(slug);
+							const [refreshed, slData] = await Promise.all([
+								fetchLearningPathBySlug(slug),
+								fetchSubStructures(1),
+							]);
 							if (refreshed) setLp(refreshed);
+							setServiceLines(slData.items);
+							setPagination(slData.pagination);
+							setCurrentPage(1);
 						} catch (error) {
 							console.error(error);
 						}
