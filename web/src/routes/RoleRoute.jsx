@@ -3,7 +3,9 @@ import { useUser } from '../hooks/userContext';
 import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 
 export default function RoleRoute({ allowedRoles }) {
-	const { user } = useUser();
+	const { user, isUserLoading } = useUser();
+
+	if (isUserLoading) return <Outlet />;
 
 	if (allowedRoles && !allowedRoles.includes(user?.role)) {
 		return <ErrorCodePage code={403} />;

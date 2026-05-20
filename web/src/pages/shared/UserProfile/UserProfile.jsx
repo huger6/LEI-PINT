@@ -17,7 +17,7 @@ import BulletItem from '../../../components/BulletItem/BulletItem';
 import CheckItem from '../../../components/CheckItem/CheckItem';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
-import Spinner from '../../../components/Spinner/Spinner';
+import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import { uploadProfileImageToTemp } from '../../../services/storage';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
@@ -393,7 +393,7 @@ export default function UserProfile() {
 	if (loading) {
 		return (
 			<div className={styles.page}>
-				<Spinner />
+				<DetailPageSkeleton />
 			</div>
 		);
 	}

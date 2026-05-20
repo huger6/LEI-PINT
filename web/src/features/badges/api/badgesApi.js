@@ -5,6 +5,15 @@ export async function getBadges(params = {}) {
 	return data?.data || [];
 }
 
+export async function getBadgesCatalog(params = {}) {
+	const { data } = await api.get('/badges', { params });
+
+	return {
+		data: data?.data || [],
+		pagination: data?.pagination || { totalItems: 0, totalPages: 0, currentPage: 1 }
+	};
+}
+
 export async function getBadgeBySlug(slug) {
 	const { data } = await api.get(`/badges/${slug}`);
 	return data?.data;

@@ -45,14 +45,13 @@ export async function fetchLevelsByArea(areaSlug, { page = 1, limit = 32 } = {})
 	};
 }
 
-export async function fetchLevelByCode(stageCode) {
-	const { data } = await api.get(`/levels/${stageCode}`);
-	const items = data?.data || [];
-	return items.length > 0 ? items[0] : null;
+export async function fetchLevelByCode(areaSlug, stageCode) {
+	const { data } = await api.get(`/areas/${areaSlug}/levels/${stageCode}`);
+	return data?.data || null;
 }
 
-export async function fetchBadgesByLevel(stageCode, { page = 1, limit = 32 } = {}) {
-	const { data } = await api.get(`/levels/${stageCode}/badges`, {
+export async function fetchBadgesByLevel(areaSlug, stageCode, { page = 1, limit = 32 } = {}) {
+	const { data } = await api.get(`/areas/${areaSlug}/levels/${stageCode}/badges`, {
 		params: { page, limit }
 	});
 	return {

@@ -6,7 +6,7 @@ import { useUser } from '../../../hooks/userContext';
 import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
 import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
-import LoadingScreen from '../../../components/LoadingScreen/LoadingScreen';
+import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
 import Icon from '../../../components/Icons/Icons';
 import { ADMIN } from '../../../routes/paths';
 
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 		{ label: t('adminDashboard.areas'), path: ADMIN.STRUCTURE },
 	];
 
-	if (loading) return <LoadingScreen />;
+	if (loading) return <DashboardSkeleton />;
 
 	return (
 		<div>
