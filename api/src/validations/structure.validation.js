@@ -61,10 +61,48 @@ const getBadgesQuerySchema = z.object({
 	areaId: positiveIntIdRule.optional(),
 	progressionStageId: positiveIntIdRule.optional(),
 	serviceLineId: positiveIntIdRule.optional(),
+	learningPathId: positiveIntIdRule.optional(),
+	stageCodes: z.preprocess((value) => {
+		if (value === undefined || value === null || value === '') {
+			return undefined;
+		}
+
+		if (Array.isArray(value)) {
+			return value
+				.flatMap((item) => String(item).split(','))
+				.map((item) => item.trim())
+				.filter(Boolean);
+		}
+
+		if (typeof value === 'string') {
+			return value
+				.split(',')
+				.map((item) => item.trim())
+				.filter(Boolean);
+		}
+
+		return value;
+	}, z.array(z.string().trim().min(1).max(20)).max(5).optional()),
+	badgeClass: z.enum(['all', 'standard', 'special']).optional(),
+	minPoints: z.coerce.number().int().min(0).optional(),
+	maxPoints: z.coerce.number().int().min(0).optional(),
+	expiringOnly: booleanQueryRule.optional(),
 	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(32)
-});
+}).refine(
+	({ minPoints, maxPoints }) => {
+		if (minPoints === undefined || maxPoints === undefined) {
+			return true;
+		}
+
+		return minPoints <= maxPoints;
+	},
+	{
+		message: 'VALIDATION_POINTS_RANGE_INVALID',
+		path: ['maxPoints']
+	}
+);
 
 // Path parameter schemas
 const pathSlugParamSchema = z.object({

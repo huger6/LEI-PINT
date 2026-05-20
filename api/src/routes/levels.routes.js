@@ -60,6 +60,12 @@ router.put('/:stageCode', loginRequired, isAdmin, levelController.updateLevel);
  */
 router.delete('/:stageCode', loginRequired, isAdmin, levelController.deleteLevel);
 
+/**
+ * @route   PATCH /api/levels/:stageCode/activate
+ *          PATCH /api/areas/:areaSlug/levels/:stageCode/activate
+ * @desc    Reactivate an inactive level
+ * @access  Administrator
+ */
 router.patch('/:stageCode/activate', loginRequired, isAdmin, levelController.reactivateLevel);
 
 router.use('/:stageCode/badges', badgesRoutes);

@@ -558,10 +558,12 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+// PATCH /api/areas/:areaSlug/levels/:stageCode/activate
 const reactivateLevel = async (req, res) => {
     try {
         const userId = req.user.sub;
         const { pathSlug, slSlug, areaSlug } = req.params;
+
         const { stageCode } = validations.stageCodeParamSchema.parse(req.params);
 
         const level = await findLevelInHierarchy({ stageCode, areaSlug, slSlug, pathSlug });

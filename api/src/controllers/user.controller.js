@@ -222,7 +222,10 @@ const me = async (req, res) => {
             profileImg: user.profile_img_url,
             lang: langPayload,
             location: location?.location_name || null,
-            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            biography: user.user_role === 'Consultant' ? (consultant?.biography || null)
+                : user.user_role === 'Talent Manager' ? (talentManager?.biography || null)
+                : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
+                : null,
             serviceLine: serviceLineData,
             learningPath: learningPathData,
             areas: areasPayload,
