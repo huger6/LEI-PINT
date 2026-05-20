@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchUsers as getUsers, deactivateUser } from '../../../features/users/api/usersApi';
+import { fetchUsers as getUsers, deactivateUser, reactivateUser } from '../../../features/users/api/usersApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import { ADMIN } from '../../../routes/paths';
 import Button from '../../../components/Button/Button';
@@ -94,11 +94,17 @@ export default function AdminUsers() {
 		loadUsers(filters, page);
 	}
 
-	async function handleDeactivateConfirm() {
+	async function handleToggleActiveConfirm() {
 		if (!confirmTarget) return;
+		const guid = confirmTarget.user_guid || confirmTarget.userGuid;
+		const isActive = confirmTarget.is_active ?? confirmTarget.isActive;
 		setDeactivating(true);
 		try {
-			await deactivateUser(confirmTarget.user_guid || confirmTarget.userGuid);
+			if (isActive) {
+				await deactivateUser(guid);
+			} else {
+				await reactivateUser(guid);
+			}
 			setConfirmTarget(null);
 			await loadUsers(filters, page);
 		} catch (err) {
@@ -181,12 +187,12 @@ export default function AdminUsers() {
 												<td style={{ paddingLeft: '1.25rem' }}>
 													<Link to={profilePath} className={`${styles.userCell} text-decoration-none`}>
 														{u.profile_img_url ? (
-														<img src={u.profile_img_url} alt={fullName} className={styles.avatarImg} />
-													) : (
-														<div className={styles.avatar} aria-hidden="true">
-															{getInitials(fullName)}
-														</div>
-													)}
+															<img src={u.profile_img_url} alt={fullName} className={styles.avatarImg} />
+														) : (
+															<div className={styles.avatar} aria-hidden="true">
+																{getInitials(fullName)}
+															</div>
+														)}
 														<div>
 															<div className={styles.userName}>{fullName}</div>
 															<div className={styles.userEmail}>
@@ -219,9 +225,15 @@ export default function AdminUsers() {
 													<Button as={Link} to={profilePath} size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
 														<Icon name="pencil" size={14} aria-hidden="true" />
 													</Button>
-													<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => setConfirmTarget(u)}>
-														<Icon name="trash" size={14} aria-hidden="true" />
-													</Button>
+													{isActive ? (
+														<Button size="sm" variant="outlined" color="danger" title={t('shared.deactivate')} aria-label={t('shared.deactivate')} onClick={() => setConfirmTarget(u)}>
+															<Icon name="trash" size={14} aria-hidden="true" />
+														</Button>
+													) : (
+														<Button size="sm" variant="outlined" color="success" title={t('shared.reactivate')} aria-label={t('shared.reactivate')} onClick={() => setConfirmTarget(u)}>
+															<Icon name="activate" size={14} aria-hidden="true" />
+														</Button>
+													)}
 												</td>
 											</tr>
 										);
@@ -244,28 +256,38 @@ export default function AdminUsers() {
 				/>
 			)}
 
-			{/* ── Deactivate confirm modal ────────────────────────────────── */}
-			{confirmTarget && (
-				<Modal
-					title={t('shared.deactivate')}
-					size="sm"
-					onClose={() => !deactivating && setConfirmTarget(null)}
-					footer={
-						<>
-							<Button variant="outlined" onClick={() => setConfirmTarget(null)} disabled={deactivating}>
-								{t('shared.cancel')}
-							</Button>
-							<Button color="danger" onClick={handleDeactivateConfirm} loading={deactivating}>
-								{t('shared.deactivate')}
-							</Button>
-						</>
-					}
-				>
-					<p className="mb-0">
-						{t('shared.confirmDeactivate', { name: confirmTarget.full_name || confirmTarget.fullName })}
-					</p>
-				</Modal>
-			)}
+			{/* ── Deactivate / Reactivate confirm modal ───────────────────── */}
+			{confirmTarget && (() => {
+				const targetActive = confirmTarget.is_active ?? confirmTarget.isActive;
+				return (
+					<Modal
+						title={targetActive ? t('shared.deactivate') : t('shared.reactivate')}
+						size="sm"
+						onClose={() => !deactivating && setConfirmTarget(null)}
+						footer={
+							<>
+								<Button variant="outlined" onClick={() => setConfirmTarget(null)} disabled={deactivating}>
+									{t('shared.cancel')}
+								</Button>
+								<Button
+									color={targetActive ? 'danger' : 'success'}
+									onClick={handleToggleActiveConfirm}
+									loading={deactivating}
+								>
+									{targetActive ? t('shared.deactivate') : t('shared.reactivate')}
+								</Button>
+							</>
+						}
+					>
+						<p className="mb-0">
+							{targetActive
+								? t('shared.confirmDeactivate', { name: confirmTarget.full_name || confirmTarget.fullName })
+								: t('shared.confirmReactivate', { name: confirmTarget.full_name || confirmTarget.fullName })
+							}
+						</p>
+					</Modal>
+				);
+			})()}
 
 			{/* ── Create modal ─────────────────────────────────────────────── */}
 			{showModal && (

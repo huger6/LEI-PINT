@@ -34,3 +34,7 @@ export const updateUser = async (userGuid, payload) => {
 export const deactivateUser = async (userGuid) => {
     await api.delete(`/admin/users/${userGuid}`);
 };
+
+export const reactivateUser = async (userGuid) => {
+    await api.patch(`/admin/users/${userGuid}/activate`);
+};

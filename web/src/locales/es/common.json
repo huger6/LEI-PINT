@@ -417,6 +417,8 @@
 		"quickActions": "Acciones Rápidas",
 		"confirmDelete": "¿Está seguro de que desea eliminar \"{{name}}\"?",
 		"confirmDeactivate": "¿Está seguro de que desea desactivar \"{{name}}\"?",
+			"confirmReactivate": "¿Está seguro de que desea reactivar \"{{name}}\"?",
+			"reactivate": "Reactivar",
 		"noResults": "No se encontraron resultados.",
 		"badge": "Badge",
 		"state": "Estado",
