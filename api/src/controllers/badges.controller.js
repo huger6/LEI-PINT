@@ -1,6 +1,6 @@
 const { models } = require('../config/db');
-const { literal } = require('sequelize');
-const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
+const { literal, Op } = require('sequelize');
+const { invalidateCacheByPrefix } = require('../utils/listHelper');
 const redis = require('../config/redis');
 const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
@@ -15,8 +15,33 @@ const { sendTopicUpdate } = require('../services/firebase.service');
 const getBadges = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug, stageCode } = req.params;
-        let cachePrefix = 'badges:list:all';
         let baseWhere = {};
+        const isAdmin = req.user?.role === 'Administrator';
+
+        const queryValidation = validations.getBadgesQuerySchema.safeParse(req.query);
+        if (!queryValidation.success) {
+            return res.status(400).json({
+                success: false,
+                errors: queryValidation.error.issues
+            });
+        }
+
+        const {
+            page,
+            limit,
+            search,
+            minPoints,
+            maxPoints,
+            badgeClass,
+            stageCodes,
+            expiringOnly,
+            areaId,
+            serviceLineId,
+            learningPathId,
+            progressionStageId
+        } = queryValidation.data;
+
+        const offset = (page - 1) * limit;
 
         // If called through level
         if (stageCode) {
@@ -75,7 +100,6 @@ const getBadges = async (req, res) => {
             }
 
             baseWhere = { progression_stage_id: level.progression_stage_id };
-            cachePrefix = `badges:list:level:${stageCode}:area:${areaSlug || 'all'}`;
 
         } else if (areaSlug) {
             // Area specific badges (no level mentioned)
@@ -85,7 +109,6 @@ const getBadges = async (req, res) => {
             });
 
             if (area) baseWhere = { area_id: area.area_id };
-            cachePrefix = `badges:list:area:${areaSlug}`;
         } else if (slSlug) {
             const sl = await models.service_lines.findOne({
                 where: { sl_slug: slSlug },
@@ -93,19 +116,117 @@ const getBadges = async (req, res) => {
             });
 
             if (sl) baseWhere = { service_line_id: sl.service_line_id };
-            cachePrefix = `badges:list:sl:${slSlug}`;
         }
 
-        return handleListRequest({
-            req, res,
-            schema: validations.getBadgesQuerySchema,
-            modelName: 'badges',
-            cachePrefix: cachePrefix,
-            baseWhere,
-            order: [['badge_points', 'DESC']],
-            extraAttributes: [
-                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
-            ]
+        const where = {
+            ...baseWhere,
+            ...(isAdmin ? {} : { is_active: true })
+        };
+
+        if (areaId !== undefined) where.area_id = areaId;
+        if (serviceLineId !== undefined) where.service_line_id = serviceLineId;
+        if (learningPathId !== undefined) where.learning_path_id = learningPathId;
+        if (progressionStageId !== undefined) where.progression_stage_id = progressionStageId;
+
+        if (minPoints !== undefined || maxPoints !== undefined) {
+            where.badge_points = {};
+            if (minPoints !== undefined) where.badge_points[Op.gte] = minPoints;
+            if (maxPoints !== undefined) where.badge_points[Op.lte] = maxPoints;
+        }
+
+        if (expiringOnly) {
+            where.expiration_duration_days = {
+                [Op.ne]: null,
+                [Op.gt]: 0
+            };
+        }
+
+        if (badgeClass === 'standard') {
+            where.badge_type = { [Op.iLike]: 'Standard' };
+        } else if (badgeClass === 'special') {
+            where.badge_type = { [Op.iLike]: 'Special' };
+        }
+
+        if (search) {
+            where[Op.or] = [
+                { badge_title: { [Op.iLike]: `%${search}%` } },
+                { badge_description: { [Op.iLike]: `%${search}%` } }
+            ];
+        }
+
+        const progressionStageInclude = {
+            model: models.progression_stages,
+            as: 'progression_stage',
+            attributes: ['progression_stage_id', 'stage_title', 'stage_sequence'],
+            include: [{
+                model: models.stage_codes,
+                as: 'stage_code',
+                attributes: ['stage_code']
+            }]
+        };
+
+        if (Array.isArray(stageCodes) && stageCodes.length > 0) {
+            progressionStageInclude.required = true;
+            progressionStageInclude.include[0].where = {
+                stage_code: {
+                    [Op.in]: stageCodes.map((code) => String(code).toUpperCase())
+                }
+            };
+        }
+
+        const include = [
+            progressionStageInclude,
+            {
+                model: models.areas,
+                as: 'area',
+                attributes: ['area_id', 'area_name', 'area_slug']
+            },
+            {
+                model: models.service_lines,
+                as: 'service_line',
+                attributes: ['service_line_id', 'service_line_name', 'sl_slug']
+            },
+            {
+                model: models.learning_paths,
+                as: 'learning_path',
+                attributes: ['learning_path_id', 'path_title', 'path_slug']
+            }
+        ];
+
+        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
+        const { rows, count } = await models.badges.findAndCountAll({
+            where,
+            include,
+            limit,
+            offset,
+            order: [['badge_points', 'DESC'], ['badge_title', 'ASC']],
+            distinct: true,
+            attributes: {
+                include: [
+                    [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
+                ],
+                exclude: excludedFields
+            }
+        });
+
+        const totalPages = Math.ceil(count / limit);
+
+        if (page > totalPages && count > 0) {
+            return res.status(404).json({
+                success: false,
+                code: "PAGINATION_PAGE_NOT_FOUND"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: rows,
+            pagination: {
+                totalItems: count,
+                totalPages,
+                currentPage: page
+            }
         });
 
     } catch (error) {

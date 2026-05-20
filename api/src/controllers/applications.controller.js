@@ -479,7 +479,10 @@ const submitApplication = async (req, res) => {
             }
 
             if (application.badge && application.badge.service_line_id) {
-                const slls = await models.service_line_leaders.findAll({ where: { service_line_id: application.badge.service_line_id } });
+                const slls = await models.service_line_leaders.findAll({
+                    where: { service_line_id: application.badge.service_line_id },
+                    include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
+                });
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
@@ -492,7 +495,9 @@ const submitApplication = async (req, res) => {
                 }
             }
 
-            const tms = await models.talent_managers.findAll();
+            const tms = await models.talent_managers.findAll({
+                include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Talent Manager' } }]
+            });
             for (const tm of tms) {
                 await notificationsService.createNotification({
                     userId: tm.user_id,

@@ -45,4 +45,11 @@ router.delete('/users/:userGuid', loginRequired, isAdmin, adminController.deacti
  */
 router.post('/users/:userGuid/reset-password', loginRequired, isAdmin, adminController.resetUserPassword);
 
+/**
+ * @route   GET /api/admin/service-lines/:serviceLineId/sll-count
+ * @desc    Count active Service Line Leaders for a given service line
+ * @access  Administrator
+ */
+router.get('/service-lines/:serviceLineId/sll-count', loginRequired, isAdmin, adminController.getSllCount);
+
 module.exports = router;

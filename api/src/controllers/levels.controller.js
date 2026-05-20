@@ -558,6 +558,44 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+// PATCH /api/areas/:areaSlug/levels/:stageCode/activate
+const reactivateLevel = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { pathSlug, slSlug, areaSlug } = req.params;
+
+        const { stageCode } = validations.stageCodeParamSchema.parse(req.params);
+
+        const level = await findLevelInHierarchy({ stageCode, areaSlug, slSlug, pathSlug });
+
+        if (!level) {
+            return res.status(404).json({ success: false, code: "LEVEL_NOT_FOUND" });
+        }
+
+        if (level.is_active) {
+            return res.status(400).json({ success: false, code: "LEVEL_ALREADY_ACTIVE" });
+        }
+
+        await level.update({ is_active: true, updated_by: userId });
+
+        await invalidateCacheByPrefix('levels:list');
+        await invalidateCacheByPrefix('levels:count');
+        await redis.del('levels:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
+        await sendTopicUpdate("new_data", 12);
+
+        return res.status(200).json({ success: true, code: "LEVEL_ACTIVATED" });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
+        }
+        logger.error('Error reactivating Level', { error });
+        return res.status(500).json({ success: false, code: "LEVEL_ACTIVATE_FAILED" });
+    }
+};
+
 module.exports = {
     getLevels,
     getFilterStats,
@@ -566,4 +604,5 @@ module.exports = {
     createLevel,
     updateLevel,
     deleteLevel,
+    reactivateLevel,
 };
