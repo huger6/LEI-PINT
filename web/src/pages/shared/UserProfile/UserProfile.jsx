@@ -295,10 +295,9 @@ export default function UserProfile() {
 
 	// ── Navigation ───────────────────────────────────────────────
 	const handleEdit = () => {
-		const editPath = isOwnProfile
-			? `${SHARED.PROFILE}/edit`
-			: `${ADMIN.USERS}/${guid}/edit`;
-		navigate(editPath);
+		if (isOwnProfile) {
+			navigate(`${SHARED.PROFILE}/edit`);
+		}
 	};
 
 	const handleCancel = () => {

@@ -14,7 +14,6 @@ export const ADMIN = {
 	STRUCTURE: '/admin/structure',
 	USERS: '/admin/users',
 	USER_PROFILE: '/admin/users/:guid',
-	USER_PROFILE_EDIT: '/admin/users/:guid/edit',
 	BADGES: '/admin/badges',
 	AREAS: '/admin/structure/areas',
 	SERVICE_LINES: '/admin/structure/service-lines',

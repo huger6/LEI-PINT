@@ -43,6 +43,14 @@
 	user-select: none;
 }
 
+.avatarImg {
+	flex-shrink: 0;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
 .userName {
 	font-weight: 600;
 	font-size: 0.875rem;

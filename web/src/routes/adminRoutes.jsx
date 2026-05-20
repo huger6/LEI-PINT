@@ -21,7 +21,6 @@ const adminRoutes = [
 	{ path: ADMIN.STRUCTURE, element: <AdminStructure /> },
 	{ path: ADMIN.USERS, element: <AdminUsers /> },
 	{ path: ADMIN.USER_PROFILE, element: <UserProfile /> },
-	{ path: ADMIN.USER_PROFILE_EDIT, element: <UserProfile /> },
 	{ path: ADMIN.BADGES, element: <AdminBadges /> },
 	{ path: ADMIN.AREAS, element: <AreasList /> },
 	{ path: ADMIN.SERVICE_LINES, element: <ServiceLinesList /> },
