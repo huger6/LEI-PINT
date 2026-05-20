@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import StructureDetailLayout from '../../layouts/StructureDetailLayout/StructureDetailLayout';
 import Spinner from '../../../../components/Spinner/Spinner';
 import { fetchLevelByCode, fetchBadgesByLevel } from '../../api/structureDetailApi';
+import { deleteLevel, activateLevel } from '../../api/structureListApi';
 import { ADMIN, SHARED } from '../../../../routes/paths';
+import CreateLevelModal from '../../components/CreateLevelModal/CreateLevelModal';
+import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
 const PAGE_SIZE = 32;
 
@@ -16,6 +19,9 @@ export default function LevelDetail() {
 	const [pagination, setPagination] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [loading, setLoading] = useState(true);
+	const [showEditModal, setShowEditModal] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [isActivating, setIsActivating] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchBadgesByLevel(slug, { page, limit: PAGE_SIZE });
@@ -56,8 +62,37 @@ export default function LevelDetail() {
 			.catch(console.error);
 	}, [fetchSubStructures]);
 
+	const handleEditSuccess = useCallback(async () => {
+		try {
+			const refreshed = await fetchLevelByCode(slug);
+			if (refreshed) setLevel(refreshed);
+		} catch (error) {
+			console.error(error);
+		}
+	}, [slug]);
+
+	const handleActivate = useCallback(async () => {
+		setIsActivating(true);
+		try {
+			const stageCode = level?.stage_code?.stage_code;
+			if (!stageCode) return;
+			await activateLevel(stageCode);
+			const refreshed = await fetchLevelByCode(slug);
+			if (refreshed) setLevel(refreshed);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setIsActivating(false);
+		}
+	}, [slug, level]);
+
 	if (loading) return <Spinner />;
 	if (!level) return null;
+
+	const stageCode = level.stage_code?.stage_code;
+	const title = level.stage_sequence != null
+		? `#${level.stage_sequence} ${level.stage_title}`
+		: level.stage_title;
 
 	const stats = [
 		{
@@ -118,32 +153,76 @@ export default function LevelDetail() {
 	}
 
 	breadcrumbItems.push({
-		label: level.stage_title,
+		label: title,
 		path: ADMIN.LEVEL_DETAIL.replace(':slug', slug),
 	});
 
 	return (
-		<StructureDetailLayout
-			breadcrumbItems={breadcrumbItems}
-			title={level.stage_title}
-			description={level.stage_description}
-			icon="evolution"
-			imageUrl={null}
-			tone="levels"
-			isActive={level.is_active}
-			stats={stats}
-			enrollmentMessage={enrollmentMessage}
-			subStructures={subStructures}
-			subStructureLabel={t('structureDetail.badges', { defaultValue: 'Badges' })}
-			subStructureIcon="badge"
-			subStructureTone="learningPaths"
-			addSubLabel={t('structureDetail.addBadge', { defaultValue: 'Add Badge' })}
-			onEdit={() => {}}
-			onAddSub={() => {}}
-			onDelete={() => {}}
-			onExport={() => {}}
-			pagination={pagination}
-			onPageChange={handlePageChange}
-		/>
+		<>
+			<StructureDetailLayout
+				breadcrumbItems={breadcrumbItems}
+				title={title}
+				description={level.stage_description}
+				icon="evolution"
+				imageUrl={null}
+				tone="levels"
+				isActive={level.is_active}
+				stats={stats}
+				enrollmentMessage={enrollmentMessage}
+				subStructures={subStructures}
+				subStructureLabel={t('structureDetail.badges', { defaultValue: 'Badges' })}
+				subStructureIcon="badge"
+				subStructureTone="learningPaths"
+				addSubLabel={t('structureDetail.addBadge', { defaultValue: 'Add Badge' })}
+				onEdit={() => setShowEditModal(true)}
+				onAddSub={() => {}}
+				onDelete={level.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={!level.is_active ? handleActivate : undefined}
+				isActivating={isActivating}
+				onExport={() => {}}
+				pagination={pagination}
+				onPageChange={handlePageChange}
+			/>
+
+			{showDeleteModal && (
+				<DeleteStructureModal
+					entityName={level.stage_title}
+					onConfirm={() => deleteLevel(stageCode)}
+					onSuccess={async () => {
+						setShowDeleteModal(false);
+						try {
+							const [refreshed, badgesData] = await Promise.all([
+								fetchLevelByCode(slug),
+								fetchSubStructures(1),
+							]);
+							if (refreshed) setLevel(refreshed);
+							setBadges(badgesData.items);
+							setPagination(badgesData.pagination);
+							setCurrentPage(1);
+						} catch (error) {
+							console.error(error);
+						}
+					}}
+					onClose={() => setShowDeleteModal(false)}
+				/>
+			)}
+
+			{showEditModal && (
+				<CreateLevelModal
+					mode="edit"
+					targetStageCode={stageCode}
+					initialData={{
+						stageTitle: level.stage_title || '',
+						stageCode: stageCode || '',
+						stageSequence: level.stage_sequence != null ? level.stage_sequence : '',
+						stageDescription: level.stage_description || '',
+					}}
+					defaultAreaId={level.area_id}
+					defaultAreaName={level.area?.area_name || ''}
+					onSuccess={handleEditSuccess}
+					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+		</>
 	);
 }

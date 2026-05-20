@@ -164,3 +164,23 @@ export async function activateArea(slug) {
 	const { data } = await api.patch(`/areas/${slug}/activate`);
 	return data;
 }
+
+export async function createLevel(payload) {
+	const { data } = await api.post('/levels', payload);
+	return data?.data;
+}
+
+export async function updateLevel(stageCode, payload) {
+	const { data } = await api.put(`/levels/${stageCode}`, payload);
+	return data?.data;
+}
+
+export async function deleteLevel(stageCode) {
+	const { data } = await api.delete(`/levels/${stageCode}`);
+	return data;
+}
+
+export async function activateLevel(stageCode) {
+	const { data } = await api.patch(`/levels/${stageCode}/activate`);
+	return data;
+}
