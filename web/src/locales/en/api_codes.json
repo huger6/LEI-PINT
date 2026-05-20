@@ -56,5 +56,7 @@
 	"STATUS_429": "Too many requests. Please wait before trying again.",
 	"STATUS_500": "A server error occurred. Please try again later.",
 	"STATUS_502": "The server is temporarily unavailable. Please try again later.",
-	"STATUS_503": "The service is temporarily unavailable. Please try again later."
+	"STATUS_503": "The service is temporarily unavailable. Please try again later.",
+	"ADMIN_CANNOT_PROMOTE_TO_ADMIN": "Users cannot be promoted to Administrator through role change.",
+	"ADMIN_SLL_LAST_LEADER_WARNING": "This user was the last Service Line Leader for their service line."
 }
