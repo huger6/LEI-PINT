@@ -62,6 +62,13 @@ router.put('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath
  */
 router.delete('/:pathSlug', loginRequired, isAdmin, lpController.deleteLearningPath);
 
+/**
+ * @route   PATCH /api/learning-paths/:pathSlug/activate
+ * @desc    Reactivate an inactive learning path
+ * @access  Administrator
+ */
+router.patch('/:pathSlug/activate', loginRequired, isAdmin, lpController.reactivateLearningPath);
+
 router.use('/:pathSlug/service-lines', slRoutes);
 
 module.exports = router;

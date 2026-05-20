@@ -556,6 +556,43 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+const reactivateArea = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { areaSlug } = validations.areaSlugParamSchema.parse(req.params);
+
+        const area = await models.areas.findOne({ where: { area_slug: areaSlug } });
+
+        if (!area) {
+            return res.status(404).json({ success: false, code: "AREA_NOT_FOUND" });
+        }
+
+        if (area.is_active) {
+            return res.status(400).json({ success: false, code: "AREA_ALREADY_ACTIVE" });
+        }
+
+        await area.update({ is_active: true, updated_by: userId });
+
+        await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
+        await sendTopicUpdate("new_data", 11);
+
+        return res.status(200).json({ success: true, code: "AREA_ACTIVATED" });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
+        }
+        logger.error('Error reactivating Area', { error });
+        return res.status(500).json({ success: false, code: "AREA_ACTIVATE_FAILED" });
+    }
+};
+
 module.exports = {
     getAreas,
     getFilterStats,
@@ -565,4 +602,5 @@ module.exports = {
     createArea,
     updateArea,
     deleteArea,
+    reactivateArea,
 };
