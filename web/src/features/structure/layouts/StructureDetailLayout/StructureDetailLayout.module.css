@@ -127,6 +127,25 @@
 	box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.25);
 }
 
+.toolbarBtnSuccess:hover {
+	background: rgba(15, 127, 105, 0.08);
+	color: #0f7f69;
+	border-color: #0f7f69;
+}
+
+.toolbarBtnSuccess:focus-visible {
+	box-shadow: 0 0 0 3px rgba(15, 127, 105, 0.25);
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.spinning {
+	animation: spin 0.7s linear infinite;
+	display: block;
+}
+
 /* Tooltip */
 .toolbarBtn::after {
 	content: attr(data-tooltip);

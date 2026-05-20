@@ -41,8 +41,7 @@ export default function StructureListLayout({
 		cards.forEach((card) => {
 			if (card.scrollHeight > maxH) maxH = card.scrollHeight;
 		});
-		const clamped = Math.min(maxH, 150);
-		cards.forEach((card) => { card.style.height = `${clamped}px`; });
+		cards.forEach((card) => { card.style.height = `${maxH}px`; });
 	}, []);
 
 	useLayoutEffect(() => {

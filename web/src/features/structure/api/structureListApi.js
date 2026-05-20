@@ -129,3 +129,38 @@ export async function fetchLevelsFilterStats() {
 	const { data } = await api.get('/levels/filter-stats');
 	return data?.data || { maxConsultantCount: 0, maxBadgeCount: 0 };
 }
+
+export async function deleteLearningPath(slug) {
+	const { data } = await api.delete(`/learning-paths/${slug}`);
+	return data;
+}
+
+export async function deleteServiceLine(slug) {
+	const { data } = await api.delete(`/service-lines/${slug}`);
+	return data;
+}
+
+export async function deleteArea(slug) {
+	const { data } = await api.delete(`/areas/${slug}`);
+	return data;
+}
+
+export async function deleteBadge(slug) {
+	const { data } = await api.delete(`/badges/${slug}`);
+	return data;
+}
+
+export async function activateLearningPath(slug) {
+	const { data } = await api.patch(`/learning-paths/${slug}/activate`);
+	return data;
+}
+
+export async function activateServiceLine(slug) {
+	const { data } = await api.patch(`/service-lines/${slug}/activate`);
+	return data;
+}
+
+export async function activateArea(slug) {
+	const { data } = await api.patch(`/areas/${slug}/activate`);
+	return data;
+}

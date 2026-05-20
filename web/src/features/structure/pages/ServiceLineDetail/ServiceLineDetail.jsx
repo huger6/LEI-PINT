@@ -5,9 +5,11 @@ import StructureDetailLayout from '../../layouts/StructureDetailLayout/Structure
 import Spinner from '../../../../components/Spinner/Spinner';
 import SLLeaderCard from '../../components/SLLeaderCard/SLLeaderCard';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
+import { deleteServiceLine, activateServiceLine } from '../../api/structureListApi';
 import { ADMIN } from '../../../../routes/paths';
 import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
 import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
+import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
 const PAGE_SIZE = 32;
 
@@ -22,6 +24,8 @@ export default function ServiceLineDetail() {
 	const [loading, setLoading] = useState(true);
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [showCreateAreaModal, setShowCreateAreaModal] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [isActivating, setIsActivating] = useState(false);
 
 	const fetchSubStructures = useCallback((page) => {
 		return fetchAreasByServiceLine(slug, { page, limit: PAGE_SIZE });
@@ -83,6 +87,19 @@ export default function ServiceLineDetail() {
 			navigate(ADMIN.SERVICE_LINE_DETAIL.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
+
+	const handleActivate = useCallback(async () => {
+		setIsActivating(true);
+		try {
+			await activateServiceLine(slug);
+			const refreshed = await fetchServiceLineBySlug(slug);
+			if (refreshed) setSl(refreshed);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setIsActivating(false);
+		}
+	}, [slug]);
 
 	const handleAreaCreated = useCallback(async () => {
 		setCurrentPage(1);
@@ -170,7 +187,9 @@ export default function ServiceLineDetail() {
 				addSubLabel={t('structureDetail.addArea', { defaultValue: 'Add Area' })}
 				onEdit={() => setShowEditModal(true)}
 				onAddSub={() => setShowCreateAreaModal(true)}
-				onDelete={() => {}}
+				onDelete={sl.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={!sl.is_active ? handleActivate : undefined}
+				isActivating={isActivating}
 				onExport={() => {}}
 				pagination={pagination}
 				onPageChange={handlePageChange}
@@ -190,6 +209,23 @@ export default function ServiceLineDetail() {
 					defaultLearningPathSlug={sl.learning_path?.path_slug || null}
 					onSuccess={handleServiceLineEdited}
 					onClose={() => setShowEditModal(false)}
+				/>
+			)}
+
+			{showDeleteModal && (
+				<DeleteStructureModal
+					entityName={sl.service_line_name}
+					onConfirm={() => deleteServiceLine(slug)}
+					onSuccess={async () => {
+						setShowDeleteModal(false);
+						try {
+							const refreshed = await fetchServiceLineBySlug(slug);
+							if (refreshed) setSl(refreshed);
+						} catch (error) {
+							console.error(error);
+						}
+					}}
+					onClose={() => setShowDeleteModal(false)}
 				/>
 			)}
 
