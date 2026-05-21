@@ -631,18 +631,15 @@ const validateApplication = async (req, res) => {
         }
 
         // Create awarded_badge record when application is accepted
+        // expiration_at is computed by the trg_set_badge_expiration database trigger
         let awardedBadge = null;
         if (newState === 'Accepted') {
             const badge = application.badge;
-            const expirationAt = badge.expiration_duration_days
-                ? new Date(Date.now() + badge.expiration_duration_days * 24 * 60 * 60 * 1000)
-                : null;
 
             awardedBadge = await models.awarded_badges.create({
                 application_id: application.application_id,
                 user_id: application.user_id,
                 awarded_at: new Date(),
-                expiration_at: expirationAt,
                 points_snapshot: badge.badge_points,
                 public_verification_link: require('crypto').randomUUID(),
                 is_published: false,

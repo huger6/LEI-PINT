@@ -398,3 +398,54 @@ BEGIN
     ORDER BY awarded_count DESC, b.badge_title;
 END;
 $$;
+
+
+/*--------------------------------------------------------------*/
+/* POINTS RECONCILIATION                                        */
+/*--------------------------------------------------------------*/
+
+/* Audits points_history against awarded badges. For every
+   accepted badge application whose badge-level completion
+   points row is missing from points_history, inserts it.
+   Handles edge cases where a badge was accepted but the
+   points record was lost (failed transaction, manual fix). */
+CREATE OR REPLACE PROCEDURE sp_reconcile_badge_points()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_inserted_count INTEGER := 0;
+    v_rec RECORD;
+BEGIN
+    FOR v_rec IN
+        SELECT
+            ab.user_id,
+            ba.badge_id,
+            b.badge_title,
+            b.badge_points
+        FROM awarded_badges ab
+        JOIN badge_applications ba ON ba.application_id = ab.application_id
+        JOIN badges b              ON b.badge_id        = ba.badge_id
+        WHERE b.badge_points > 0
+          AND NOT EXISTS (
+              SELECT 1
+              FROM points_history ph
+              WHERE ph.user_id       = ab.user_id
+                AND ph.badge_id      = ba.badge_id
+                AND ph.requirement_id IS NULL
+          )
+    LOOP
+        INSERT INTO points_history (user_id, badge_id, requirement_id, points_delta, justification)
+        VALUES (
+            v_rec.user_id,
+            v_rec.badge_id,
+            NULL,
+            v_rec.badge_points,
+            'Reconciled: Badge completed — ' || v_rec.badge_title
+        );
+
+        v_inserted_count := v_inserted_count + 1;
+    END LOOP;
+
+    RAISE NOTICE 'sp_reconcile_badge_points: inserted % missing points record(s).', v_inserted_count;
+END;
+$$;
