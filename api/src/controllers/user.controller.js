@@ -222,7 +222,10 @@ const me = async (req, res) => {
             profileImg: user.profile_img_url,
             lang: langPayload,
             location: location?.location_name || null,
-            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            biography: user.user_role === 'Consultant' ? (consultant?.biography || null)
+                : user.user_role === 'Talent Manager' ? (talentManager?.biography || null)
+                : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
+                : null,
             serviceLine: serviceLineData,
             learningPath: learningPathData,
             areas: areasPayload,
@@ -497,43 +500,8 @@ const changeLanguage = async (req, res) => {
     }
 };
 
-const acceptShareGdpr = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const role = req.user.role;
-
-        if (role !== 'Consultant') {
-            return res.status(403).json({
-                success: false,
-                code: 'APP_ACCESS_DENIED_OWN'
-            });
-        }
-
-        await models.consultants.update(
-            { gdpr_accepted: true },
-            { where: { user_id: userId } }
-        );
-
-        const cacheKey = `user:profile:${userId}`;
-        await redis.del(cacheKey);
-
-        return res.status(200).json({
-            success: true,
-            code: 'USER_GDPR_ACCEPTED'
-        });
-
-    } catch (error) {
-        logger.error('Error accepting share GDPR', { error });
-        return res.status(500).json({
-            success: false,
-            code: 'AUTH_REQUEST_FAILED'
-        });
-    }
-};
-
 module.exports = {
     me,
     updateProfile,
-    changeLanguage,
-    acceptShareGdpr
+    changeLanguage
 };

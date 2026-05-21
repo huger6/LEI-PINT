@@ -67,17 +67,14 @@ const syncRoleAssignments = async ({
     isSuperAdmin,
     transaction
 }) => {
-    if (targetRole !== 'Consultant') {
-        await models.consultant_areas.destroy({
-            where: { user_id: userId },
-            transaction
-        });
-
-        await models.consultants.destroy({
-            where: { user_id: userId },
-            transaction
-        });
-    }
+    // Consultant rows are intentionally preserved on role change (FK children
+    // with ON DELETE RESTRICT prevent deletion, and domain rules require points
+    // to be permanently preserved). Query hardening ensures orphaned rows are
+    // invisible to business logic.
+    // Consultant rows are intentionally preserved on role change (FK children
+    // with ON DELETE RESTRICT prevent deletion, and domain rules require points
+    // to be permanently preserved). Query hardening ensures orphaned rows are
+    // invisible to business logic.
 
     if (targetRole !== 'Talent Manager') {
         await models.talent_managers.destroy({
@@ -279,7 +276,8 @@ const getUser = async (req, res) => {
                 .map((ca) => {
                     const area = areaById.get(ca.area_id);
                     if (!area) return null;
-                    return { name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
                 })
                 .filter(Boolean);
             if (areasPayload.length === 0) areasPayload = null;
@@ -295,7 +293,8 @@ const getUser = async (req, res) => {
                 raw: true
             });
             if (!sl) return;
-            serviceLineData = { name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
+            serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
+            serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
             if (sl.learning_path_id) {
                 const lp = await models.learning_paths.findByPk(sl.learning_path_id, {
                     attributes: ['path_title', 'path_slug', 'path_description', 'img_url'],
@@ -329,7 +328,11 @@ const getUser = async (req, res) => {
             lang: langPayload,
             location: location ? { location_id: location.location_id, name: location.location_name } : null,
             locationId: user.location_id,
-            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
+            biography: user.user_role === 'Consultant' ? (consultant?.biography || null)
+                : user.user_role === 'Talent Manager' ? (talentManager?.biography || null)
+                    : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
+                        : null,
+            serviceLineId: serviceLineLeader?.service_line_id || null,
             serviceLine: serviceLineData,
             learningPath: learningPathData,
             areas: areasPayload,
@@ -467,6 +470,14 @@ const createUser = async (req, res) => {
         await t.commit();
 
         await invalidateCacheByPrefix('admin:users:list');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('areas:list');
+        await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('levels:list');
+        await redis.del('levels:filter-stats');
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 7);
         if (user_role === 'Consultant') {
@@ -599,6 +610,22 @@ const updateUser = async (req, res) => {
             });
         }
 
+        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
+            });
+        }
+
+        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
+            });
+        }
+
         if (payload.areas && targetRole !== 'Consultant') {
             await t.rollback();
             return res.status(400).json({
@@ -662,6 +689,30 @@ const updateUser = async (req, res) => {
             });
         }
 
+        let lastSllWarning = false;
+        if (user.user_role === 'Service Line Leader' && payload.user_role && payload.user_role !== 'Service Line Leader') {
+            const currentSll = await models.service_line_leaders.findByPk(user.user_id, { transaction: t });
+            if (currentSll) {
+                const sllCount = await models.service_line_leaders.count({
+                    where: { service_line_id: currentSll.service_line_id },
+                    transaction: t
+                });
+                if (sllCount <= 1) lastSllWarning = true;
+            }
+        }
+
+        let lastSllWarning = false;
+        if (user.user_role === 'Service Line Leader' && payload.user_role && payload.user_role !== 'Service Line Leader') {
+            const currentSll = await models.service_line_leaders.findByPk(user.user_id, { transaction: t });
+            if (currentSll) {
+                const sllCount = await models.service_line_leaders.count({
+                    where: { service_line_id: currentSll.service_line_id },
+                    transaction: t
+                });
+                if (sllCount <= 1) lastSllWarning = true;
+            }
+        }
+
         const hasExistingConsultantAreas = Boolean(user.consultant?.consultant_areas?.length);
         if (targetRole === 'Consultant' && !payload.areas && !hasExistingConsultantAreas) {
             await t.rollback();
@@ -716,7 +767,15 @@ const updateUser = async (req, res) => {
 
         await Promise.all([
             invalidateCacheByPrefix('admin:users:list'),
-            redis.del(`user:profile:${user.user_id}`)
+            redis.del(`user:profile:${user.user_id}`),
+            invalidateCacheByPrefix('lp:list'),
+            redis.del('lp:filter-stats'),
+            invalidateCacheByPrefix('sl:list'),
+            redis.del('sl:filter-stats'),
+            invalidateCacheByPrefix('areas:list'),
+            redis.del('areas:filter-stats'),
+            invalidateCacheByPrefix('levels:list'),
+            redis.del('levels:filter-stats'),
         ]);
         await sendTopicUpdate("new_data", 1);
         if (targetRole === 'Consultant') {
@@ -732,7 +791,10 @@ const updateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            code: 'ADMIN_USER_UPDATED'
+            code: 'ADMIN_USER_UPDATED',
+            ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
+            code: 'ADMIN_USER_UPDATED',
+            ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
         });
     } catch (error) {
         if (t && !t.finished) await t.rollback();
@@ -801,10 +863,17 @@ const deactivateUser = async (req, res) => {
             await models.user_refresh_tokens.destroy({ where: { user_id: user.user_id }, transaction: t });
         });
 
-        // Clear cached profile so /me immediately reflects deactivation
         await Promise.all([
             redis.del(`user:profile:${user.user_id}`),
-            invalidateCacheByPrefix('admin:users:list')
+            invalidateCacheByPrefix('admin:users:list'),
+            invalidateCacheByPrefix('lp:list'),
+            redis.del('lp:filter-stats'),
+            invalidateCacheByPrefix('sl:list'),
+            redis.del('sl:filter-stats'),
+            invalidateCacheByPrefix('areas:list'),
+            redis.del('areas:filter-stats'),
+            invalidateCacheByPrefix('levels:list'),
+            redis.del('levels:filter-stats'),
         ]);
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 8);
@@ -827,6 +896,44 @@ const deactivateUser = async (req, res) => {
             success: false,
             code: 'ADMIN_USER_DEACTIVATE_FAILED'
         });
+    }
+};
+
+const reactivateUser = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+
+    try {
+        const { userGuid } = validations.userIdParamSchema.parse(req.params);
+        const user = await resolveUserParam(userGuid);
+
+        if (!user) {
+            return res.status(404).json({ success: false, code: 'ADMIN_USER_NOT_FOUND' });
+        }
+
+        if (user.is_active) {
+            return res.status(400).json({ success: false, code: 'ADMIN_USER_ALREADY_ACTIVE' });
+        }
+
+        await user.update({ is_active: true });
+
+        await Promise.all([
+            redis.del(`user:profile:${user.user_id}`),
+            invalidateCacheByPrefix('admin:users:list'),
+        ]);
+        await sendTopicUpdate("new_data", 1);
+
+        return res.status(200).json({ success: true, code: 'ADMIN_USER_REACTIVATED' });
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_URL_PARAM',
+                errors: error.issues || error.errors
+            });
+        }
+
+        logger.error('Error reactivating user through admin module.', { requestId, error });
+        return res.status(500).json({ success: false, code: 'ADMIN_USER_REACTIVATE_FAILED' });
     }
 };
 
@@ -934,11 +1041,47 @@ const resetUserPassword = async (req, res) => {
     }
 };
 
+const getSllCount = async (req, res) => {
+    try {
+        const serviceLineId = Number(req.params.serviceLineId);
+        if (!Number.isInteger(serviceLineId) || serviceLineId <= 0) {
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
+        }
+        const count = await models.service_line_leaders.count({
+            where: { service_line_id: serviceLineId },
+            include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
+        });
+        return res.status(200).json({ success: true, data: { count } });
+    } catch (error) {
+        logger.error('Error counting SLLs for service line.', { error });
+        return res.status(500).json({ success: false, code: 'ADMIN_SLL_COUNT_FAILED' });
+    }
+};
+
+const getSllCount = async (req, res) => {
+    try {
+        const serviceLineId = Number(req.params.serviceLineId);
+        if (!Number.isInteger(serviceLineId) || serviceLineId <= 0) {
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
+        }
+        const count = await models.service_line_leaders.count({
+            where: { service_line_id: serviceLineId },
+            include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
+        });
+        return res.status(200).json({ success: true, data: { count } });
+    } catch (error) {
+        logger.error('Error counting SLLs for service line.', { error });
+        return res.status(500).json({ success: false, code: 'ADMIN_SLL_COUNT_FAILED' });
+    }
+};
+
 module.exports = {
     getUsers,
     getUser,
     createUser,
     updateUser,
     deactivateUser,
-    resetUserPassword
+    reactivateUser,
+    resetUserPassword,
+    getSllCount
 };

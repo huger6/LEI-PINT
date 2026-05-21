@@ -72,6 +72,13 @@ const imgUrlRule = z.string()
         'VALIDATION_IMAGE_MUST_BE_IN_TEMP_STORAGE'
     );
 
+const imgUrlExistingRule = z.string()
+    .url('VALIDATION_URL_INVALID')
+    .startsWith(
+        `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/public/public-assets/`,
+        'VALIDATION_IMAGE_MUST_BE_IN_STORAGE'
+    );
+
 const biographyRule = z.string().trim()
     .max(5000, 'VALIDATION_BIOGRAPHY_MAX_LENGTH')
     .transform(sanitizeText)
@@ -98,5 +105,6 @@ module.exports = {
     positiveIntIdRule,
     uuidRule,
     imgUrlRule,
+    imgUrlExistingRule,
     usernameRule
 };

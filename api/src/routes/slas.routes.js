@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
 
 const slaController = require('../controllers/slas.controller');
 
@@ -9,7 +9,7 @@ const slaController = require('../controllers/slas.controller');
  * @desc    List all SLAs with pagination and filtering
  * @access  Public (admins see inactive; non-admins see only active)
  */
-router.get('/', slaController.getSLAs);
+router.get('/', optionalAuth, slaController.getSLAs);
 
 /**
  * @route   GET /api/slas/:slaId

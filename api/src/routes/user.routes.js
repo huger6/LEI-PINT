@@ -27,11 +27,4 @@ router.put('/', loginRequired, userController.updateProfile);
  */
 router.patch('/language/:id', loginRequired, userController.changeLanguage);
 
-/**
- * @route   PUT /api/me/accept-share-gdpr
- * @desc    Accept GDPR consent for badge sharing
- * @access  Consultant only
- */
-router.put('/accept-share-gdpr', loginRequired, userController.acceptShareGdpr);
-
 module.exports = router;

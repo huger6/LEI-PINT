@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, isAdmin, optionalAuth } = require('../middlewares/auth.middleware');
 const levelController = require('../controllers/levels.controller');
 
 const badgesRoutes = require('./badges.routes');
@@ -12,7 +12,7 @@ const badgesRoutes = require('./badges.routes');
  * @desc    List all levels, optionally scoped to an area
  * @access  Authenticated
  */
-router.get('/', loginRequired, levelController.getLevels);
+router.get('/', optionalAuth, levelController.getLevels);
 
 /**
  * @route   GET /api/levels/filter-stats
@@ -59,6 +59,14 @@ router.put('/:stageCode', loginRequired, isAdmin, levelController.updateLevel);
  * @access  Administrator
  */
 router.delete('/:stageCode', loginRequired, isAdmin, levelController.deleteLevel);
+
+/**
+ * @route   PATCH /api/levels/:stageCode/activate
+ *          PATCH /api/areas/:areaSlug/levels/:stageCode/activate
+ * @desc    Reactivate an inactive level
+ * @access  Administrator
+ */
+router.patch('/:stageCode/activate', loginRequired, isAdmin, levelController.reactivateLevel);
 
 router.use('/:stageCode/badges', badgesRoutes);
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
 const lpController = require('../controllers/learningPaths.controller');
 
 const slRoutes = require('./serviceLines.routes');
@@ -11,7 +11,7 @@ const slRoutes = require('./serviceLines.routes');
  * @desc    List all learning paths
  * @access  Public
  */
-router.get('/', lpController.getAllLearningPaths);
+router.get('/', optionalAuth, lpController.getAllLearningPaths);
 
 /**
  * @route   GET /api/learning-paths/count
@@ -61,6 +61,13 @@ router.put('/:pathSlug', loginRequired, isAdmin, lpController.updateLearningPath
  * @access  Administrator
  */
 router.delete('/:pathSlug', loginRequired, isAdmin, lpController.deleteLearningPath);
+
+/**
+ * @route   PATCH /api/learning-paths/:pathSlug/activate
+ * @desc    Reactivate an inactive learning path
+ * @access  Administrator
+ */
+router.patch('/:pathSlug/activate', loginRequired, isAdmin, lpController.reactivateLearningPath);
 
 router.use('/:pathSlug/service-lines', slRoutes);
 

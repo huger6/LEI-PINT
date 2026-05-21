@@ -6,9 +6,6 @@ const validations = require('../validations/gamification.validation');
 const { uuidRule } = require('../validations/shared-rules');
 const gamificationService = require('../services/gamification.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
-const { sendBadgeSharedEmail } = require('../services/email.service');
-
-const FRONTEND_URL = process.env.FRONTEND_URL || '';
 
 /*──────────────────────────────────────────────────────────────
   POST /api/gamification/interactions
@@ -465,106 +462,6 @@ const getEarnedBadges = async (req, res) => {
     }
 };
 
-/*──────────────────────────────────────────────────────────────
-  POST /api/gamification/share-badge
-  Records a SHARE_LINKEDIN interaction, marks the awarded badge
-  as published, and sends a confirmation email to the consultant.
-──────────────────────────────────────────────────────────────*/
-const shareBadge = async (req, res) => {
-    const t = await sequelize.transaction();
-    try {
-        const userId = req.user.sub;
-        const role = req.user.role;
-
-        if (role !== 'Consultant') {
-            await t.rollback();
-            return res.status(403).json({
-                success: false,
-                code: 'APP_ACCESS_DENIED_OWN'
-            });
-        }
-
-        const { badgeId } = validations.shareBadgeSchema.parse(req.body);
-
-        const badge = await models.badges.findByPk(badgeId, {
-            attributes: ['badge_id', 'badge_title', 'badge_slug', 'is_active'],
-            transaction: t
-        });
-
-        if (!badge || !badge.is_active) {
-            await t.rollback();
-            return res.status(404).json({
-                success: false,
-                code: 'APP_BADGE_NOT_FOUND'
-            });
-        }
-
-        const awardedBadge = await models.awarded_badges.findOne({
-            where: { user_id: userId },
-            include: [{
-                model: models.badge_applications,
-                as: 'application',
-                where: { badge_id: badgeId },
-                attributes: ['application_id']
-            }],
-            transaction: t
-        });
-
-        if (!awardedBadge) {
-            await t.rollback();
-            return res.status(404).json({
-                success: false,
-                code: 'GAMIFICATION_BADGE_NOT_EARNED'
-            });
-        }
-
-        await awardedBadge.update({ is_published: true }, { transaction: t });
-
-        await gamificationService.trackInteraction(userId, badgeId, 'SHARE_LINKEDIN');
-
-        await t.commit();
-
-        await sendTopicUpdate("new_data", 17);
-        await sendTopicUpdate("new_data", 19);
-
-        try {
-            const user = await models.users.findByPk(userId, {
-                attributes: ['email_address', 'full_name'],
-                include: [{ model: models.languages, as: 'language', attributes: ['language_iso'] }]
-            });
-
-            if (user) {
-                const badgeUrl = `${FRONTEND_URL}/badges/${badge.badge_slug}`;
-                await sendBadgeSharedEmail(
-                    user.email_address,
-                    user.full_name,
-                    badge.badge_title,
-                    badgeUrl,
-                    user.language?.language_iso || 'pt-PT'
-                );
-            }
-        } catch (emailErr) {
-            logger.error('Failed to send badge shared email', { error: emailErr });
-        }
-
-        return res.status(200).json({
-            success: true,
-            code: 'GAMIFICATION_BADGE_SHARED',
-            data: {
-                badgeId,
-                isPublished: true,
-                verificationLink: awardedBadge.public_verification_link
-            }
-        });
-
-    } catch (error) {
-        await t.rollback();
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
-        logger.error('Error sharing badge', { error });
-        return res.status(500).json({ success: false, code: 'GAMIFICATION_SHARE_FAILED' });
-    }
-};
-
 module.exports = {
     trackInteraction,
     getInteractions,
@@ -572,6 +469,5 @@ module.exports = {
     getConsultantPointsById,
     getRecommendations,
     getConsultantStats,
-    getEarnedBadges,
-    shareBadge
+    getEarnedBadges
 };

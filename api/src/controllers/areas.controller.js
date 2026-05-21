@@ -15,6 +15,7 @@ const getAreas = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
         let cachePrefix = 'areas:list:all';
+        let baseWhere = {};
 
         // If accessed via nested route, enforce Service Line (and optionally LP) parent
         if (slSlug) {
@@ -43,19 +44,16 @@ const getAreas = async (req, res) => {
                 });
             }
 
-            // Inject the ID into the query so listHelper filters by it
-            req.query.service_line_id = sl.service_line_id;
+            baseWhere = { service_line_id: sl.service_line_id };
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
-
-        const isAdmin = req.user?.role === 'Administrator';
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
 
         return handleListRequest({
             req, res,
             schema: validations.getAreasQuerySchema,
             modelName: 'areas',
             cachePrefix: cachePrefix,
+            baseWhere,
             order: [['area_name', 'ASC']],
             extraAttributes: [
                 [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
@@ -121,38 +119,40 @@ const getAreaBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const includeBlock = [];
-
-        // If URL has parent slugs, enforce the hierarchy downwards
-        if (slSlug) {
-            const slInclude = {
-                model: models.service_lines,
-                as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            // Deeply nest the Learning Path include if pathSlug exists
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
-            }
-
-            includeBlock.push(slInclude);
+        const lpInclude = {
+            model: models.learning_paths,
+            as: 'learning_path',
+            attributes: ['path_title', 'path_slug'],
+        };
+        if (pathSlug) {
+            lpInclude.where = { path_slug: pathSlug };
         }
 
-        // Hide unimportant data for non admins
+        const slInclude = {
+            model: models.service_lines,
+            as: 'service_line',
+            attributes: ['service_line_name', 'sl_slug'],
+            include: [lpInclude],
+        };
+        if (slSlug) {
+            slInclude.where = { sl_slug: slSlug };
+        }
+
+        const includeBlock = [slInclude];
+
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
+        const userId = req.user?.sub;
 
         const area = await models.areas.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields
+                exclude: excludeFields,
+                include: [
+                    [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
+                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca WHERE ca.area_id = "areas".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
+                ]
             }
         });
 
@@ -291,6 +291,10 @@ const createArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
@@ -406,6 +410,10 @@ const updateArea = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
@@ -480,27 +488,38 @@ const deleteArea = async (req, res) => {
             });
         }
 
-        await area.update({
-            is_active: false,
-            updated_by: userId
-        });
+        const [consultantsEnrolled, activeApplications] = await Promise.all([
+            models.consultant_areas.count({ where: { area_id: area.area_id } }),
+            models.badge_applications.count({
+                where: { application_state: ['Open', 'Submitted', 'In validation'] },
+                include: [{ model: models.badges, as: 'badge', where: { area_id: area.area_id }, required: true, attributes: [] }]
+            })
+        ]);
+
+        if (consultantsEnrolled > 0 || activeApplications > 0) {
+            return res.status(409).json({
+                success: false,
+                code: "AREA_HAS_DEPENDENCIES",
+                data: { consultantsEnrolled, activeApplications }
+            });
+        }
+
+        await area.update({ is_active: false, updated_by: userId });
 
         await invalidateCacheByPrefix('areas:list');
         await invalidateCacheByPrefix('areas:count');
         await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
         await sendTopicUpdate("new_data", 11);
 
-        return res.status(200).json({
-            success: true,
-            code: "AREA_DEACTIVATED"
-        });
+        return res.status(200).json({ success: true, code: "AREA_DEACTIVATED" });
 
     } catch (error) {
         if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
         }
 
         logger.error('Error deleting Area', { error });
@@ -537,6 +556,43 @@ const getFilterStats = async (req, res) => {
     }
 };
 
+const reactivateArea = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { areaSlug } = validations.areaSlugParamSchema.parse(req.params);
+
+        const area = await models.areas.findOne({ where: { area_slug: areaSlug } });
+
+        if (!area) {
+            return res.status(404).json({ success: false, code: "AREA_NOT_FOUND" });
+        }
+
+        if (area.is_active) {
+            return res.status(400).json({ success: false, code: "AREA_ALREADY_ACTIVE" });
+        }
+
+        await area.update({ is_active: true, updated_by: userId });
+
+        await invalidateCacheByPrefix('areas:list');
+        await invalidateCacheByPrefix('areas:count');
+        await redis.del('areas:filter-stats');
+        await invalidateCacheByPrefix('sl:list');
+        await redis.del('sl:filter-stats');
+        await invalidateCacheByPrefix('lp:list');
+        await redis.del('lp:filter-stats');
+        await sendTopicUpdate("new_data", 11);
+
+        return res.status(200).json({ success: true, code: "AREA_ACTIVATED" });
+
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
+        }
+        logger.error('Error reactivating Area', { error });
+        return res.status(500).json({ success: false, code: "AREA_ACTIVATE_FAILED" });
+    }
+};
+
 module.exports = {
     getAreas,
     getFilterStats,
@@ -546,4 +602,5 @@ module.exports = {
     createArea,
     updateArea,
     deleteArea,
+    reactivateArea,
 };
