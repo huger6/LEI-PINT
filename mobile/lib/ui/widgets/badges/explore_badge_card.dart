@@ -74,7 +74,7 @@ class ExploreBadgeCard extends StatelessWidget {
                       GestureDetector(
                         onTap: onSaveToggle,
                         child: Icon(
-                          isSaved ? Icons.bookmark_border_rounded : Icons.bookmark_add_outlined,
+                          isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                           color: isSaved ? const Color(0xFF00B8E0) : const Color(0xFF415865),
                           size: 34,
                         ),

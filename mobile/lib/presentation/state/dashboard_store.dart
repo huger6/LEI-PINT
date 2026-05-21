@@ -236,7 +236,7 @@ class DashboardStore extends ChangeNotifier {
     }
 
     for (final entry in ranking) {
-      if (entry.userId == user.id) {
+      if (entry.username == user.username) {
         return entry.totalPoints;
       }
     }
@@ -249,7 +249,8 @@ class DashboardStore extends ChangeNotifier {
       return 0;
     }
 
-    final index = ranking.indexWhere((entry) => entry.userId == user.id);
+    final index =
+        ranking.indexWhere((entry) => entry.username == user.username);
     if (index < 0) {
       return 0;
     }

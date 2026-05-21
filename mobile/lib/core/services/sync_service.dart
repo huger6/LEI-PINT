@@ -14,9 +14,7 @@ import '../../data/local/notification_dao.dart';
 import '../../data/local/points_history_dao.dart';
 import '../../data/local/progression_stage_dao.dart';
 import '../../data/local/service_line_dao.dart';
-import '../../data/local/stage_code_dao.dart';
 import '../../data/local/sync_metadata_dao.dart';
-import '../../data/local/validation_log_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../models/announcement_model.dart';
 import '../../models/area_model.dart';
@@ -27,9 +25,7 @@ import '../../models/notification_model.dart';
 import '../../models/points_history_model.dart';
 import '../../models/progression_stage_model.dart';
 import '../../models/service_line_model.dart';
-import '../../models/stage_code_model.dart';
 import '../../models/user_model.dart';
-import '../../models/validation_log_model.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/sync_codes.dart';
 import '../database/database_helper.dart';
@@ -46,13 +42,11 @@ class SyncService {
   late final _areaDao = AreaDao(_database);
   late final _badgeDao = BadgeDao(_database);
   late final _progressionStageDao = ProgressionStageDao(_database);
-  late final _stageCodeDao = StageCodeDao(_database);
   late final _announcementDao = AnnouncementDao(_database);
   late final _notificationDao = NotificationDao(_database);
   late final _awardedBadgeDao = AwardedBadgeDao(_database);
   late final _pointsHistoryDao = PointsHistoryDao(_database);
   late final _myApplicationDao = MyApplicationDao(_database);
-  late final _validationLogDao = ValidationLogDao(_database);
   late final _currentUserDao = CurrentUserDao(_database);
 
   final _syncController = StreamController<int>.broadcast();
@@ -87,7 +81,7 @@ class SyncService {
       case SyncCodes.progressionStages:
         success = await _syncProgressionStages();
       case SyncCodes.stageCodes:
-        success = await _syncStageCodes();
+        success = true;
       case SyncCodes.badges:
         success = await _syncBadges();
       case SyncCodes.applications:
@@ -96,7 +90,7 @@ class SyncService {
       case SyncCodes.awardedBadges:
         success = await _syncAwardedBadges();
       case SyncCodes.validationLogs:
-        success = await _syncValidationLogs();
+        success = true;
       case SyncCodes.points:
         success = await _syncPointsHistory();
       case SyncCodes.announcements:
@@ -208,12 +202,6 @@ class SyncService {
     replaceAll: _progressionStageDao.replaceAll,
   );
 
-  Future<bool> _syncStageCodes() => _syncList(
-    endpoint: ApiEndpoints.getStageCodes,
-    fromJson: StageCodeModel.fromJson,
-    replaceAll: _stageCodeDao.replaceAll,
-  );
-
   Future<bool> _syncBadges() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getBadges);
@@ -246,21 +234,60 @@ class SyncService {
 
   Future<bool> _syncAwardedBadges() => _syncList(
     endpoint: ApiEndpoints.getEarnedBadges,
-    fromJson: AwardedBadgeModel.fromJson,
+    fromJson: (json) => AwardedBadgeModel.fromJson({
+      'id': json['awardedBadgeId'] ?? json['awarded_badges_id'] ?? json['id'],
+      'application_id': json['applicationId'] ?? json['application_id'] ?? 0,
+      'badge_id': json['badge']?['id'] ??
+          json['badge']?['badge_id'] ??
+          json['badge_id'] ??
+          0,
+      'awarded_at': json['awardedDate'] ?? json['awarded_at'],
+      'expiration_at': json['expirationDate'] ?? json['expiration_at'],
+      'points_snapshot': json['pointsSnapshot'] ?? json['points_snapshot'],
+      'verification_link':
+          json['verificationLink'] ?? json['public_verification_link'],
+      'is_published': json['isPublished'] ?? json['is_published'] ?? false,
+      'is_featured': json['isFeatured'] ?? json['is_featured'] ?? false,
+      'display_order': json['displayOrder'] ?? json['display_order'],
+    }),
     replaceAll: _awardedBadgeDao.replaceAll,
   );
 
-  Future<bool> _syncValidationLogs() => _syncList(
-    endpoint: ApiEndpoints.getValidationLogs,
-    fromJson: ValidationLogModel.fromJson,
-    replaceAll: _validationLogDao.replaceAll,
-  );
-
-  Future<bool> _syncPointsHistory() => _syncList(
-    endpoint: ApiEndpoints.getPointsHistory,
-    fromJson: PointsHistoryModel.fromJson,
-    replaceAll: _pointsHistoryDao.replaceAll,
-  );
+  Future<bool> _syncPointsHistory() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.getPointsHistory);
+      debugPrint('───────────────────────────────────────────────────');
+      debugPrint(
+          'SyncService: API response from ${ApiEndpoints.getPointsHistory}:');
+      debugPrint('SyncService: Raw data: $response');
+      debugPrint('───────────────────────────────────────────────────');
+      final data = response is Map<String, dynamic>
+          ? (response['data'] ?? response)
+          : response;
+      List<dynamic> historyList;
+      if (data is Map) {
+        historyList = (data['history'] as List?) ?? [];
+      } else if (data is List) {
+        historyList = data;
+      } else {
+        return false;
+      }
+      final items = historyList
+          .whereType<Map>()
+          .map((e) => PointsHistoryModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      debugPrint('SyncService: Parsed ${items.length} points history items');
+      await _pointsHistoryDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (e) {
+      debugPrint('SyncService: points history failed: $e');
+      return false;
+    }
+  }
 
   Future<bool> _syncAnnouncements() => _syncList(
     endpoint: ApiEndpoints.getAnnouncements,

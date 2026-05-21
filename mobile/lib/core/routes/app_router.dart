@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../ui/pages/auth/auth_loading_screen.dart';
 import '../../ui/pages/auth/login_page.dart';
 import '../../ui/pages/auth/register_screen.dart';
 import '../../ui/pages/auth/forgot_password_page.dart';
@@ -19,7 +20,7 @@ import '../../ui/pages/profile/terms_conditions_screen.dart';
 
 class AppRouter {
   static const String initial = '/';
-  static const String login = '/';
+  static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String selectArea = '/select-area';
@@ -38,6 +39,7 @@ class AppRouter {
   static const String badgeGallery = '/badge-gallery';
 
   static Map<String, WidgetBuilder> get routes => {
+    initial: (context) => const AuthLoadingScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     forgotPassword: (context) => const ForgotPasswordScreen(),

@@ -89,30 +89,16 @@ class ApiEndpoints {
   static const String getRanking = '/api/ranking';
 
   // === Gamification ===
-  static const String shareBadge = '/api/gamification/share-badge';
-  static const String acceptShareGdpr = '/api/me/accept-share-gdpr';
+  // POST /gamification/interactions - record interaction (VIEW, FAVORITE, SHARE_LINKEDIN)
+  static const String trackInteraction = '/api/gamification/interactions';
 
-  // PATCH /gamification/earned-badges/:awardedBadgeId/gallery
-  static String toggleBadgeGallery(int awardedBadgeId) =>
-      '/api/gamification/earned-badges/$awardedBadgeId/gallery';
-
-  // === Favorites ===
-  // GET /gamification/favorites
-  static const String getFavorites = '/api/gamification/favorites';
-
-  // POST /gamification/favorites/:badgeId
-  static String addFavorite(int badgeId) =>
-      '/api/gamification/favorites/$badgeId';
-
-  // DELETE /gamification/favorites/:badgeId
-  static String removeFavorite(int badgeId) =>
-      '/api/gamification/favorites/$badgeId';
+  // GET /gamification/interactions - get user's interaction history
+  static const String getInteractions = '/api/gamification/interactions';
 
   // === Sync-only endpoints (used by SyncService) ===
   static const String getLearningPaths = '/api/learning-paths';
   static const String getServiceLines = '/api/service-lines';
   static const String getLevels = '/api/levels';
-  static const String getStageCodes = '/api/stage-codes';
   static const String getAnnouncements = '/api/announcements';
   static const String getNotifications = '/api/notifications';
   static const String getEarnedBadges = '/api/gamification/earned-badges';
@@ -122,5 +108,4 @@ class ApiEndpoints {
       '/api/statistics/consultant/timeline';
   static const String getLearningPathProgress =
       '/api/statistics/consultant/learning-paths';
-  static const String getValidationLogs = '/api/applications/validation-logs';
 }

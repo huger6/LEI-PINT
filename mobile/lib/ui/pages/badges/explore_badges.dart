@@ -125,7 +125,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.bookmark_rounded, size: 28),
+                    icon: const Icon(Icons.bookmark_border_rounded, size: 28),
                     color: const Color(0xFF1E2932),
                   ),
                   IconButton(

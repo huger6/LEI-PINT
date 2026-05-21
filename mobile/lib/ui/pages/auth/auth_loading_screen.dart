@@ -21,15 +21,19 @@ class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
 
   Future<void> _openNextScreen() async {
     await Future.delayed(const Duration(milliseconds: 1450));
-    if (!mounted) {
+    if (!mounted) return;
+
+    final authStore = context.read<AuthStore>();
+
+    if (authStore.isAuthenticated) {
+      Navigator.of(context).pushReplacementNamed(AppRouter.dashboard);
       return;
     }
 
-    final authStore = context.read<AuthStore>();
-    final targetRoute = authStore.isAuthenticated
-        ? AppRouter.dashboard
-        : AppRouter.login;
+    final restored = await authStore.tryRestoreSession();
+    if (!mounted) return;
 
+    final targetRoute = restored ? AppRouter.dashboard : AppRouter.login;
     Navigator.of(context).pushReplacementNamed(targetRoute);
   }
 

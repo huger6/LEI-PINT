@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/sync_manager.dart';
-import '../../../models/application_summary_model.dart';
+import '../../../injection_container.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/badges/recommended_badge_card.dart';

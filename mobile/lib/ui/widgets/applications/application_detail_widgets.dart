@@ -158,7 +158,7 @@ class ApplicationDetailHeader extends StatelessWidget {
   }
 }
 
-class ApplicationProgressStepper extends StatelessWidget {
+class ApplicationProgressStepper extends StatefulWidget {
   const ApplicationProgressStepper({
     super.key,
     required this.applicationState,
@@ -167,7 +167,53 @@ class ApplicationProgressStepper extends StatelessWidget {
   final String applicationState;
 
   @override
+  State<ApplicationProgressStepper> createState() =>
+      _ApplicationProgressStepperState();
+}
+
+class _ApplicationProgressStepperState
+    extends State<ApplicationProgressStepper> {
+  final ScrollController _dotsController = ScrollController();
+  final ScrollController _labelsController = ScrollController();
+  bool _syncing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _dotsController.addListener(_syncLabelsFromDots);
+    _labelsController.addListener(_syncDotsFromLabels);
+  }
+
+  void _syncLabelsFromDots() {
+    if (_syncing) return;
+    _syncing = true;
+    if (_labelsController.hasClients) {
+      _labelsController.jumpTo(_dotsController.offset);
+    }
+    _syncing = false;
+  }
+
+  void _syncDotsFromLabels() {
+    if (_syncing) return;
+    _syncing = true;
+    if (_dotsController.hasClients) {
+      _dotsController.jumpTo(_labelsController.offset);
+    }
+    _syncing = false;
+  }
+
+  @override
+  void dispose() {
+    _dotsController.removeListener(_syncLabelsFromDots);
+    _labelsController.removeListener(_syncDotsFromLabels);
+    _dotsController.dispose();
+    _labelsController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final applicationState = widget.applicationState;
     final normalized = applicationState.toLowerCase();
 
     final bool isAccepted = normalized.contains('accepted') ||
@@ -244,6 +290,7 @@ class ApplicationProgressStepper extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SingleChildScrollView(
+            controller: _dotsController,
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             child: ConstrainedBox(
@@ -304,6 +351,7 @@ class ApplicationProgressStepper extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SingleChildScrollView(
+            controller: _labelsController,
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             child: ConstrainedBox(

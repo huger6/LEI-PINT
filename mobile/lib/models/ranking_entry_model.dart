@@ -1,33 +1,31 @@
 class RankingEntryModel {
   RankingEntryModel({
-    required this.userId,
+    required this.userGuid,
     required this.fullName,
+    required this.username,
+    this.profileImgUrl,
     required this.totalPoints,
-    required this.totalBadges,
   });
 
-  final int userId;
+  final String userGuid;
   final String fullName;
+  final String username;
+  final String? profileImgUrl;
   final int totalPoints;
-  final int totalBadges;
 
   factory RankingEntryModel.fromJson(Map<String, dynamic> json) {
     return RankingEntryModel(
-      userId: _toInt(json['user_id'] ?? json['id']),
+      userGuid: (json['user_guid'] ?? '').toString(),
       fullName: (json['full_name'] ?? json['name'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      profileImgUrl: json['profile_img_url']?.toString(),
       totalPoints: _toInt(json['total_points']),
-      totalBadges: _toInt(json['total_badges']),
     );
   }
 
   static int _toInt(dynamic value) {
-    if (value is int) {
-      return value;
-    }
-    if (value is num) {
-      return value.toInt();
-    }
-
+    if (value is int) return value;
+    if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }
