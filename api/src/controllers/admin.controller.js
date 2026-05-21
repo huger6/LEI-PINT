@@ -701,18 +701,6 @@ const updateUser = async (req, res) => {
             }
         }
 
-        let lastSllWarning = false;
-        if (user.user_role === 'Service Line Leader' && payload.user_role && payload.user_role !== 'Service Line Leader') {
-            const currentSll = await models.service_line_leaders.findByPk(user.user_id, { transaction: t });
-            if (currentSll) {
-                const sllCount = await models.service_line_leaders.count({
-                    where: { service_line_id: currentSll.service_line_id },
-                    transaction: t
-                });
-                if (sllCount <= 1) lastSllWarning = true;
-            }
-        }
-
         const hasExistingConsultantAreas = Boolean(user.consultant?.consultant_areas?.length);
         if (targetRole === 'Consultant' && !payload.areas && !hasExistingConsultantAreas) {
             await t.rollback();
@@ -791,8 +779,6 @@ const updateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            code: 'ADMIN_USER_UPDATED',
-            ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
             code: 'ADMIN_USER_UPDATED',
             ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
         });
@@ -1038,23 +1024,6 @@ const resetUserPassword = async (req, res) => {
             success: false,
             code: 'ADMIN_PASSWORD_RESET_FAILED'
         });
-    }
-};
-
-const getSllCount = async (req, res) => {
-    try {
-        const serviceLineId = Number(req.params.serviceLineId);
-        if (!Number.isInteger(serviceLineId) || serviceLineId <= 0) {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
-        }
-        const count = await models.service_line_leaders.count({
-            where: { service_line_id: serviceLineId },
-            include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
-        });
-        return res.status(200).json({ success: true, data: { count } });
-    } catch (error) {
-        logger.error('Error counting SLLs for service line.', { error });
-        return res.status(500).json({ success: false, code: 'ADMIN_SLL_COUNT_FAILED' });
     }
 };
 
