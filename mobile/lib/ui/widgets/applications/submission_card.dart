@@ -55,6 +55,8 @@ class SubmissionCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF20252B),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -73,12 +75,15 @@ class SubmissionCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.history_toggle_off_rounded, size: 20),
                         const SizedBox(width: 4),
-                        Text(
-                          timestamp,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF20252B),
+                        Flexible(
+                          child: Text(
+                            timestamp,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF20252B),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

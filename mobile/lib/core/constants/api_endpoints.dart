@@ -72,6 +72,14 @@ class ApiEndpoints {
   // POST /applications/start
   static const String startApplication = '/api/applications/start';
 
+  // POST /applications/:applicationGuid/upload-url
+  static String getUploadUrl(String applicationGuid) =>
+      '/api/applications/$applicationGuid/upload-url';
+
+  // POST /applications/:applicationGuid/evidences
+  static String upsertEvidence(String applicationGuid) =>
+      '/api/applications/$applicationGuid/evidences';
+
   // POST /applications/:applicationId/submit
   static String submitApplication(String applicationId) =>
       '/api/applications/$applicationId/submit';
@@ -83,6 +91,22 @@ class ApiEndpoints {
   // === Gamification ===
   static const String shareBadge = '/api/gamification/share-badge';
   static const String acceptShareGdpr = '/api/me/accept-share-gdpr';
+
+  // PATCH /gamification/earned-badges/:awardedBadgeId/gallery
+  static String toggleBadgeGallery(int awardedBadgeId) =>
+      '/api/gamification/earned-badges/$awardedBadgeId/gallery';
+
+  // === Favorites ===
+  // GET /gamification/favorites
+  static const String getFavorites = '/api/gamification/favorites';
+
+  // POST /gamification/favorites/:badgeId
+  static String addFavorite(int badgeId) =>
+      '/api/gamification/favorites/$badgeId';
+
+  // DELETE /gamification/favorites/:badgeId
+  static String removeFavorite(int badgeId) =>
+      '/api/gamification/favorites/$badgeId';
 
   // === Sync-only endpoints (used by SyncService) ===
   static const String getLearningPaths = '/api/learning-paths';

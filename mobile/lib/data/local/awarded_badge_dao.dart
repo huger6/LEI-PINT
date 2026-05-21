@@ -66,6 +66,16 @@ class AwardedBadgeDao {
     await batch.commit(noResult: true);
   }
 
+  Future<void> updateFeatured(int awardedBadgeId, bool featured) async {
+    final db = await _database.database;
+    await db.update(
+      LocalDatabase.awardedBadgesTable,
+      {'is_featured': featured ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [awardedBadgeId],
+    );
+  }
+
   AwardedBadgeModel _fromRow(Map<String, dynamic> row) {
     return AwardedBadgeModel(
       id: row['id'] as int,

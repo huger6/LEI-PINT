@@ -136,11 +136,16 @@ class SyncService {
   }) async {
     try {
       final response = await _apiClient.get(endpoint);
+      debugPrint('───────────────────────────────────────────────────');
+      debugPrint('SyncService: API response from $endpoint:');
+      debugPrint('SyncService: Raw data: $response');
+      debugPrint('───────────────────────────────────────────────────');
       final list = _extractList(response);
       final items = list
           .whereType<Map>()
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
+      debugPrint('SyncService: Parsed ${items.length} items from $endpoint');
       await replaceAll(items);
       return true;
     } on SocketException {
@@ -157,7 +162,11 @@ class SyncService {
 
   Future<bool> _syncUserProfile() async {
     try {
-      final response = await _apiClient.get(ApiEndpoints.me);
+      final response = await _apiClient.get(ApiEndpoints.getProfile);
+      debugPrint('───────────────────────────────────────────────────');
+      debugPrint('SyncService: API response from ${ApiEndpoints.getProfile}:');
+      debugPrint('SyncService: Raw data: $response');
+      debugPrint('───────────────────────────────────────────────────');
       final data = response is Map<String, dynamic>
           ? (response['data'] ?? response)
           : response;
@@ -208,6 +217,10 @@ class SyncService {
   Future<bool> _syncBadges() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getBadges);
+      debugPrint('───────────────────────────────────────────────────');
+      debugPrint('SyncService: API response from ${ApiEndpoints.getBadges}:');
+      debugPrint('SyncService: Raw data: $response');
+      debugPrint('───────────────────────────────────────────────────');
       final list = _extractList(response);
       final rows = list
           .whereType<Map>()

@@ -80,36 +80,49 @@ class MainBadgesCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                '$badgeCount',
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF21303D),
-                  height: 1,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$badgeCount',
+                    style: const TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF21303D),
+                      height: 1,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Icon(
-                isPositive
-                    ? Icons.trending_up_rounded
-                    : Icons.trending_down_rounded,
-                color: isPositive
-                    ? const Color(0xFF2FB45A)
-                    : const Color(0xFFD63D2B),
-                size: 26,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${growthPercent.abs()}%',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+              if (growthPercent != 0) ...[
+                const SizedBox(width: 12),
+                Icon(
+                  isPositive
+                      ? Icons.trending_up_rounded
+                      : Icons.trending_down_rounded,
                   color: isPositive
                       ? const Color(0xFF2FB45A)
                       : const Color(0xFFD63D2B),
+                  size: 26,
                 ),
-              ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${growthPercent.abs()}%',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: isPositive
+                            ? const Color(0xFF2FB45A)
+                            : const Color(0xFFD63D2B),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 6),
@@ -273,12 +286,18 @@ class MiniStatCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF263746),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF263746),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -698,12 +717,18 @@ class ApplicationMetricCard extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF22323F),
+          Flexible(
+            flex: 0,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF22323F),
+                ),
+              ),
             ),
           ),
         ],

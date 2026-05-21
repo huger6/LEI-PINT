@@ -100,6 +100,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
+  static final _fallbackLanguages = [
+    LanguageModel(id: 1, code: '1', name: 'Português'),
+    LanguageModel(id: 2, code: '2', name: 'English'),
+    LanguageModel(id: 3, code: '3', name: 'Español'),
+  ];
+
   Future<void> _fetchDropdownData() async {
     setState(() => _isLoadingData = true);
     try {
@@ -113,7 +119,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         setState(() {
-          _availableLanguages = results[0] as List<LanguageModel>;
+          final fetched = results[0] as List<LanguageModel>;
+          final existingIds = fetched.map((l) => l.id).toSet();
+          final merged = List<LanguageModel>.from(fetched);
+          for (final fallback in _fallbackLanguages) {
+            if (!existingIds.contains(fallback.id)) {
+              merged.add(fallback);
+            }
+          }
+          _availableLanguages = merged;
           _availableLocations = results[1] as List<LocationModel>;
 
           if (_availableLanguages.isNotEmpty && _preferredLanguage == null) {
@@ -125,6 +139,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       debugPrint("Error loading locations/languages: $e");
+      if (mounted) {
+        setState(() {
+          if (_availableLanguages.isEmpty) {
+            _availableLanguages = List.from(_fallbackLanguages);
+          }
+        });
+      }
     } finally {
       if (mounted) setState(() => _isLoadingData = false);
     }

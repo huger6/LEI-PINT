@@ -13,6 +13,7 @@ import '../../widgets/badges/rgpd_consent_sheet.dart';
 import '../../widgets/badges/share_badge_sheet.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/my_badges_widgets.dart';
+import '../applications/application_detail_screen.dart';
 
 class MyBadgesScreen extends StatefulWidget {
   const MyBadgesScreen({super.key});
@@ -56,6 +57,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     await Future.wait([
       badgeStore.loadBadges(),
       badgeStore.loadEarnedBadges(),
+      badgeStore.loadFavorites(),
     ]);
 
     final userDao = getIt<CurrentUserDao>();
@@ -381,6 +383,16 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                               state,
                               application.latestDate,
                             ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ApplicationDetailScreen(
+                                    application: application,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),

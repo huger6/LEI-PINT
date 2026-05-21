@@ -24,13 +24,16 @@ class SuccessHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Candidatura submetida',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF20252B),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: const Text(
+              'Candidatura submetida',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF20252B),
+              ),
             ),
           ),
           const SizedBox(height: 8),

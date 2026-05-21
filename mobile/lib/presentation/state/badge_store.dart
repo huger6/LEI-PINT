@@ -25,12 +25,14 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, BadgeModel> _detailsBySlug = <String, BadgeModel>{};
   List<BadgeModel> _badges = [];
   List<EarnedBadge> _earnedBadges = [];
+  Set<int> _favoriteBadgeIds = {};
   bool _isLoading = false;
   bool _isLoadingEarned = false;
   String? _errorMessage;
 
   List<BadgeModel> get badges => _badges;
   List<EarnedBadge> get earnedBadges => _earnedBadges;
+  Set<int> get favoriteBadgeIds => _favoriteBadgeIds;
   bool get isLoading => _isLoading;
   bool get isLoadingEarned => _isLoadingEarned;
   String? get errorMessage => _errorMessage;
@@ -140,11 +142,44 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     return badge;
   }
 
+  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+    try {
+      await _badgeRepository.toggleBadgeGallery(awardedBadgeId, featured);
+      await _reloadEarnedFromLocal();
+    } catch (_) {}
+  }
+
   List<BadgeModel> similarTo(BadgeModel badge, {int limit = 3}) {
     return _badges
         .where((item) => item.slug != badge.slug && item.title != badge.title)
         .take(limit)
         .toList(growable: false);
+  }
+
+  List<BadgeModel> get savedBadges {
+    return _badges
+        .where((b) => _favoriteBadgeIds.contains(b.id))
+        .toList(growable: false);
+  }
+
+  bool isFavorite(int badgeId) => _favoriteBadgeIds.contains(badgeId);
+
+  Future<void> loadFavorites() async {
+    final ids = await _badgeRepository.getFavorites();
+    _favoriteBadgeIds = ids.toSet();
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(int badgeId) async {
+    if (_favoriteBadgeIds.contains(badgeId)) {
+      _favoriteBadgeIds.remove(badgeId);
+      notifyListeners();
+      await _badgeRepository.removeFavorite(badgeId);
+    } else {
+      _favoriteBadgeIds.add(badgeId);
+      notifyListeners();
+      await _badgeRepository.addFavorite(badgeId);
+    }
   }
 
   void _replaceBadge(BadgeModel detail) {

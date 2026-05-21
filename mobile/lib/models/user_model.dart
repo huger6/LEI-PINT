@@ -10,6 +10,9 @@ class UserModel {
   final int totalPoints;
   final int? preferredLangId;
   final int? locationId;
+  final String? serviceLineName;
+  final String? learningPathTitle;
+  final List<UserArea> areas;
 
   UserModel({
     required this.id,
@@ -23,12 +26,35 @@ class UserModel {
     this.totalPoints = 0,
     this.preferredLangId,
     this.locationId,
+    this.serviceLineName,
+    this.learningPathTitle,
+    this.areas = const [],
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final fullName =
         (json['fullName'] ?? json['full_name'] ?? json['name'] ?? '')
             .toString();
+
+    final sl = json['serviceLine'];
+    final slName = sl is Map
+        ? (sl['name'] ?? sl['service_line_name'])?.toString()
+        : json['service_line_name']?.toString();
+
+    final lp = json['learningPath'];
+    final lpTitle = lp is Map
+        ? (lp['title'] ?? lp['path_title'])?.toString()
+        : json['learning_path_title']?.toString();
+
+    final rawAreas = json['areas'];
+    final parsedAreas = <UserArea>[];
+    if (rawAreas is List) {
+      for (final a in rawAreas) {
+        if (a is Map) {
+          parsedAreas.add(UserArea.fromJson(Map<String, dynamic>.from(a)));
+        }
+      }
+    }
 
     return UserModel(
       id: _toInt(json['id']),
@@ -51,6 +77,9 @@ class UserModel {
       locationId: json['location_id'] != null
           ? _toInt(json['location_id'])
           : null,
+      serviceLineName: slName,
+      learningPathTitle: lpTitle,
+      areas: parsedAreas,
     );
   }
 
@@ -93,5 +122,21 @@ class UserModel {
     }
 
     return int.tryParse(value.toString()) ?? 0;
+  }
+}
+
+class UserArea {
+  final String name;
+  final String? slug;
+  final bool isPrimary;
+
+  const UserArea({required this.name, this.slug, this.isPrimary = false});
+
+  factory UserArea.fromJson(Map<String, dynamic> json) {
+    return UserArea(
+      name: (json['name'] ?? json['area_name'] ?? '').toString(),
+      slug: json['slug']?.toString() ?? json['area_slug']?.toString(),
+      isPrimary: json['isPrimary'] == true || json['is_primary'] == true,
+    );
   }
 }

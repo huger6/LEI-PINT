@@ -83,6 +83,7 @@ class BadgeModel {
         area: area,
         points: points,
         stageCode: stageCode,
+        duration: _readString(json, const ['estimated_duration', 'duration']),
       ),
       requirements: _extractRequirements(json),
     );
@@ -129,6 +130,7 @@ class BadgeModel {
     required String area,
     required int points,
     required String stageCode,
+    required String duration,
   }) {
     final attributes = <BadgeAttribute>[];
 
@@ -162,6 +164,16 @@ class BadgeModel {
       );
     }
 
+    if (duration.trim().isNotEmpty) {
+      attributes.add(
+        BadgeAttribute(
+          icon: Icons.schedule_rounded,
+          label: 'Duração',
+          value: duration,
+        ),
+      );
+    }
+
     return attributes;
   }
 
@@ -182,7 +194,15 @@ class BadgeModel {
             'title',
             'requirement_text',
           ]);
-          return BadgeRequirement(icon: Icons.task_alt_outlined, text: text);
+          final id = _readInt(item, const [
+            'requirement_id',
+            'id',
+          ]);
+          return BadgeRequirement(
+            id: id > 0 ? id : null,
+            icon: Icons.task_alt_outlined,
+            text: text,
+          );
         })
         .where((item) => item.text.trim().isNotEmpty)
         .toList();
@@ -264,8 +284,9 @@ class BadgeAttribute {
 }
 
 class BadgeRequirement {
-  const BadgeRequirement({required this.icon, required this.text});
+  const BadgeRequirement({this.id, required this.icon, required this.text});
 
+  final int? id;
   final IconData icon;
   final String text;
 }

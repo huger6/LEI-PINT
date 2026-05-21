@@ -20,6 +20,7 @@ import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
 import 'data/repositories/statistics_repo.dart';
+import 'data/local/notification_dao.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
@@ -143,6 +144,12 @@ void main() async {
             getIt<ApplicationsRepository>(),
             getIt<RankingRepository>(),
             getIt<StatisticsRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<NotificationStore>(
+          create: (_) => NotificationStore(
+            getIt<NotificationDao>(),
+            getIt<SyncService>(),
           ),
         ),
         ChangeNotifierProvider<LanguageController>.value(

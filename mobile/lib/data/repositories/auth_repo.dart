@@ -191,7 +191,7 @@ class AuthRepository {
     try {
       final responseMap = _asMap(
         await _apiClient.get(
-          ApiEndpoints.me,
+          ApiEndpoints.getProfile,
           options: accessToken != null
               ? Options(headers: {'Authorization': 'Bearer $accessToken'})
               : null,

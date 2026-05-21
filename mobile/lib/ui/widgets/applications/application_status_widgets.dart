@@ -11,34 +11,48 @@ class StatusProgressStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
 
-    return Column(
-      children: [
-        const Row(
-          children: [
-            StatusStepDot(isDone: true),
-            Expanded(
-              child: Divider(color: StatusColors.primaryAction, thickness: 6),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 520),
+        child: IntrinsicWidth(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const StatusStepDot(isDone: true),
+                    const Expanded(
+                      child: Divider(color: StatusColors.primaryAction, thickness: 6),
+                    ),
+                    const StatusStepDot(isDone: true),
+                    const Expanded(
+                      child: Divider(color: StatusColors.primaryAction, thickness: 6),
+                    ),
+                    const StatusStepDot(isDone: false),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    StatusStepLabel(text: tr.tr('stepSubmitted'), isCurrent: false),
+                    const SizedBox(width: 12),
+                    StatusStepLabel(text: tr.tr('stepTm'), isCurrent: false),
+                    const SizedBox(width: 12),
+                    StatusStepLabel(
+                      text: tr.tr('stepServiceLineLeader'),
+                      isCurrent: true,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            StatusStepDot(isDone: true),
-            Expanded(
-              child: Divider(color: StatusColors.primaryAction, thickness: 6),
-            ),
-            StatusStepDot(isDone: false),
-          ],
+          ),
         ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            StatusStepLabel(text: tr.tr('stepSubmitted'), isCurrent: false),
-            StatusStepLabel(text: tr.tr('stepTm'), isCurrent: false),
-            StatusStepLabel(
-              text: tr.tr('stepServiceLineLeader'),
-              isCurrent: true,
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }
@@ -51,8 +65,8 @@ class StatusStepDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 30,
-      height: 30,
+      width: 36,
+      height: 36,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isDone ? StatusColors.primaryAction : Colors.transparent,
@@ -62,7 +76,7 @@ class StatusStepDot extends StatelessWidget {
         ),
       ),
       child: isDone
-          ? const Icon(Icons.check, color: Colors.white, size: 18)
+          ? const Icon(Icons.check, color: Colors.white, size: 22)
           : const SizedBox.shrink(),
     );
   }
@@ -77,20 +91,21 @@ class StatusStepLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(minWidth: isCurrent ? 120 : 84),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isCurrent ? StatusColors.currentStep : StatusColors.primaryAction,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: FontWeight.w700,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

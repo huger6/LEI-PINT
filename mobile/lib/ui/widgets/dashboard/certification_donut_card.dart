@@ -66,40 +66,47 @@ class CertificationDonutCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ...segments.map(
-            (segment) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: segment.color,
-                      shape: BoxShape.circle,
+            (segment) {
+              final total =
+                  segments.fold<int>(0, (sum, s) => sum + s.value);
+              final percent =
+                  total > 0 ? ((segment.value / total) * 100).round() : 0;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: segment.color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      segment.label,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        segment.label,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF555B76),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$percent%',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF555B76),
+                        color: Color(0xFF66B1E6),
                       ),
                     ),
-                  ),
-                  Text(
-                    segment.value.toString(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF66B1E6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

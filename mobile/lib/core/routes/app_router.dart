@@ -12,6 +12,9 @@ import '../../ui/pages/evolution/evolucao_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 import '../../ui/pages/profile/email_signature_screen.dart';
 import '../../ui/pages/profile/edit_profile_screen.dart';
+import '../../ui/pages/profile/characteristics_screen.dart';
+import '../../ui/pages/profile/help_screen.dart';
+import '../../ui/pages/profile/badge_gallery_screen.dart';
 import '../../ui/pages/profile/terms_conditions_screen.dart';
 
 class AppRouter {
@@ -30,6 +33,9 @@ class AppRouter {
   static const String editProfile = '/edit-profile';
   static const String termsConditions = '/terms-conditions';
   static const String changePassword = '/change-password';
+  static const String characteristics = '/characteristics';
+  static const String help = '/help';
+  static const String badgeGallery = '/badge-gallery';
 
   static Map<String, WidgetBuilder> get routes => {
     login: (context) => const LoginScreen(),
@@ -49,5 +55,8 @@ class AppRouter {
     editProfile: (context) => const EditProfileScreen(),
     termsConditions: (context) => const TermsConditionsScreen(),
     changePassword: (context) => const ChangePasswordScreen(),
+    characteristics: (context) => const CharacteristicsScreen(),
+    help: (context) => const HelpScreen(),
+    badgeGallery: (context) => const BadgeGalleryScreen(),
   };
 }
