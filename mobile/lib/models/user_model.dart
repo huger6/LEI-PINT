@@ -56,24 +56,31 @@ class UserModel {
       }
     }
 
+    int? langId;
+    final lang = json['lang'];
+    if (lang is Map) {
+      langId = lang['id'] is int ? lang['id'] as int : null;
+    }
+    langId ??= json['preferred_lang_id'] != null
+        ? _toInt(json['preferred_lang_id'])
+        : null;
+
     return UserModel(
-      id: _toInt(json['id']),
+      id: _toInt(json['id'] ?? json['user_id'] ?? 0),
       email: (json['email'] ?? json['email_address'] ?? '').toString(),
       fullName: fullName,
       username: (json['username'] ?? '').toString(),
-      profilePicture: (json['profilePicture'] ??
+      profilePicture: (json['profileImg'] ??
+              json['profilePicture'] ??
               json['profile_picture'] ??
-              json['profile_img_url'] ??
-              json['profileImg'])
+              json['profile_img_url'])
           ?.toString(),
       role: json['role']?.toString(),
       biography: json['biography']?.toString(),
       gdprAccepted: json['gdpr_accepted'] == true ||
           json['gdpr_accepted'] == 1,
       totalPoints: _toInt(json['total_points'] ?? json['totalPoints'] ?? 0),
-      preferredLangId: json['preferred_lang_id'] != null
-          ? _toInt(json['preferred_lang_id'])
-          : null,
+      preferredLangId: langId,
       locationId: json['location_id'] != null
           ? _toInt(json['location_id'])
           : null,

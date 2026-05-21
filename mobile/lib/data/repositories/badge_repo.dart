@@ -80,14 +80,14 @@ class BadgeRepository {
 
   Future<void> shareBadge(int badgeId) async {
     await _apiClient.post(
-      ApiEndpoints.shareBadge,
-      data: {'badgeId': badgeId},
+      ApiEndpoints.trackInteraction,
+      data: {'badgeId': badgeId, 'interactionType': 'SHARE_LINKEDIN'},
     );
   }
 
   Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
     await _apiClient.patch(
-      ApiEndpoints.toggleBadgeGallery(awardedBadgeId),
+      ApiEndpoints.getEarnedBadges,
       data: {'is_featured': featured},
     );
     await _awardedBadgeDao.updateFeatured(awardedBadgeId, featured);
@@ -95,9 +95,18 @@ class BadgeRepository {
 
   Future<List<int>> getFavorites() async {
     try {
-      final payload = await _apiClient.get(ApiEndpoints.getFavorites);
+      final payload = await _apiClient.get(ApiEndpoints.getInteractions);
       final list = _extractList(payload);
-      final ids = list.whereType<int>().toList();
+      final ids = <int>[];
+      for (final item in list) {
+        if (item is Map) {
+          final type = item['interaction_type']?.toString();
+          final badgeId = item['badge_id'];
+          if (type == 'FAVORITE' && badgeId is int) {
+            ids.add(badgeId);
+          }
+        }
+      }
       await _favoriteDao.replaceAll(ids);
       return ids;
     } catch (_) {
@@ -112,7 +121,10 @@ class BadgeRepository {
   Future<void> addFavorite(int badgeId) async {
     await _favoriteDao.add(badgeId);
     try {
-      await _apiClient.post(ApiEndpoints.addFavorite(badgeId));
+      await _apiClient.post(
+        ApiEndpoints.trackInteraction,
+        data: {'badgeId': badgeId, 'interactionType': 'FAVORITE'},
+      );
       await _favoriteDao.markSynced(badgeId);
     } catch (_) {}
   }
@@ -120,13 +132,16 @@ class BadgeRepository {
   Future<void> removeFavorite(int badgeId) async {
     await _favoriteDao.remove(badgeId);
     try {
-      await _apiClient.delete(ApiEndpoints.removeFavorite(badgeId));
+      await _apiClient.post(
+        ApiEndpoints.trackInteraction,
+        data: {'badgeId': badgeId, 'interactionType': 'FAVORITE'},
+      );
     } catch (_) {}
   }
 
   Future<void> acceptShareGdpr() async {
     await _apiClient.put(
-      ApiEndpoints.acceptShareGdpr,
+      ApiEndpoints.updateProfile,
       data: {'gdpr_accepted': true},
     );
   }

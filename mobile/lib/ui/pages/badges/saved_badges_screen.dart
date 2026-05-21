@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../injection_container.dart';
-import '../../../models/badge_model.dart';
 import '../../widgets/badges/explore_badge_card.dart';
 import 'badges_page.dart';
 
