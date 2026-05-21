@@ -6,15 +6,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/routes/app_router.dart';
 import '../../../core/sync_manager.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/applications_store.dart';
+import '../../../presentation/state/auth_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/applications/application_page_widgets.dart';
-import '../../widgets/applications/application_detail_widgets.dart';
-import 'application_detail_screen.dart';
+import 'badge_email_confirmation_screen.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -194,27 +193,15 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => SuccessSubmissionDialog(
-          onViewApplication: () {
-            Navigator.of(ctx).pop();
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => ApplicationDetailScreen(
-                  application: submittedApplication,
-                ),
-              ),
-            );
-          },
-          onViewBadges: () {
-            Navigator.of(ctx).pop();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRouter.exploreCompetencies,
-              (route) => route.isFirst,
-            );
-          },
+      final userEmail =
+          context.read<AuthStore>().currentUser?.email ?? '';
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => BadgeEmailConfirmationScreen(
+            application: submittedApplication,
+            userEmail: userEmail,
+          ),
         ),
       );
     } catch (e) {

@@ -5,6 +5,7 @@ import '../../ui/pages/auth/register_screen.dart';
 import '../../ui/pages/auth/forgot_password_page.dart';
 import '../../ui/pages/auth/newuser_confirm.dart';
 import '../../ui/pages/auth/change_password_screen.dart';
+import '../../ui/pages/auth/email_confirmation_screen.dart';
 import '../../ui/pages/misc/select_areas_page.dart';
 import '../../ui/pages/dashboard_page.dart';
 import '../../ui/pages/badges/explore_badges.dart';
@@ -25,6 +26,7 @@ class AppRouter {
   static const String forgotPassword = '/forgot-password';
   static const String selectArea = '/select-area';
   static const String newUserConfirm = '/newuser-confirm';
+  static const String emailConfirmation = '/email-confirmation';
   static const String dashboard = '/dashboard';
   static const String exploreCompetencies = '/explore-competencies';
   static const String myBadges = '/my-badges';
@@ -47,6 +49,7 @@ class AppRouter {
     selectArea: (context) => const SelectAreaScreen(),
 
     newUserConfirm: (context) => const NewUserConfirmScreen(),
+    emailConfirmation: (context) => const EmailConfirmationScreen(),
 
     dashboard: (context) => const DashboardScreen(),
     exploreCompetencies: (context) => const ExploreCompetenciesScreen(),

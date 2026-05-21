@@ -93,7 +93,7 @@ class DashboardStore extends ChangeNotifier {
       final applications = results[1] as List<ApplicationSummaryModel>;
       final ranking = results[2] as List<RankingEntryModel>;
 
-      _recommendedBadges = badges.take(5).toList(growable: false);
+      _recommendedBadges = _buildRecommendedBadges(badges, currentUser);
       _recentSubmissions = _buildSubmissions(applications, badges);
       _areaMetrics = _buildAreaMetrics(badges);
 
@@ -177,6 +177,52 @@ class DashboardStore extends ChangeNotifier {
     }
 
     return fromApp;
+  }
+
+  List<BadgeModel> _buildRecommendedBadges(
+    List<BadgeModel> badges,
+    UserModel? currentUser,
+  ) {
+    if (badges.isEmpty) return const [];
+
+    final userAreas = currentUser?.areas ?? [];
+    final primaryAreaName = userAreas
+        .where((a) => a.isPrimary)
+        .map((a) => a.name.toLowerCase())
+        .firstOrNull;
+    final otherAreaNames = userAreas
+        .where((a) => !a.isPrimary)
+        .map((a) => a.name.toLowerCase())
+        .toSet();
+
+    if (primaryAreaName == null && otherAreaNames.isEmpty) {
+      return badges.take(5).toList(growable: false);
+    }
+
+    final sorted = List<BadgeModel>.from(badges);
+    sorted.sort((a, b) {
+      final aCat = a.category.toLowerCase();
+      final bCat = b.category.toLowerCase();
+
+      int aPriority = 2;
+      int bPriority = 2;
+
+      if (primaryAreaName != null && aCat == primaryAreaName) {
+        aPriority = 0;
+      } else if (otherAreaNames.contains(aCat)) {
+        aPriority = 1;
+      }
+
+      if (primaryAreaName != null && bCat == primaryAreaName) {
+        bPriority = 0;
+      } else if (otherAreaNames.contains(bCat)) {
+        bPriority = 1;
+      }
+
+      return aPriority.compareTo(bPriority);
+    });
+
+    return sorted.take(5).toList(growable: false);
   }
 
   List<DashboardAreaMetric> _buildAreaMetrics(List<BadgeModel> badges) {

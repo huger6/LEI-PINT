@@ -84,6 +84,10 @@ class ApiEndpoints {
   static String submitApplication(String applicationId) =>
       '/api/applications/$applicationId/submit';
 
+  // POST /applications/:applicationGuid/resend-confirmation
+  static String resendBadgeConfirmation(String applicationGuid) =>
+      '/api/applications/$applicationGuid/resend-confirmation';
+
   // === Ranking ===
   // GET /ranking
   static const String getRanking = '/api/ranking';

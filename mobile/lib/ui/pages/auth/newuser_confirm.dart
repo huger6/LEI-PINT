@@ -29,6 +29,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
     final tr = LanguageScope.of(context);
     final authStore = context.read<AuthStore>();
     final pendingUsername = authStore.draftRegistration.username;
+    final pendingEmail = authStore.draftRegistration.email;
 
     setState(() => _isLoading = true);
 
@@ -55,8 +56,9 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
           if (!mounted) return;
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRouter.login,
+            AppRouter.emailConfirmation,
             (route) => false,
+            arguments: pendingEmail,
           );
         });
       } else {
