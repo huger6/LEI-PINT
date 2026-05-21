@@ -191,6 +191,18 @@ const getUserEnrollment = async () => {
     return rows[0];
 };
 
+const getBadgesPerArea = async (userId) => {
+    const [rows] = await sequelize.query(
+        `SELECT * FROM fn_consultant_badges_per_area(:userId)`,
+        { replacements: { userId } }
+    );
+    return rows;
+};
+
+const reconcileBadgePoints = async () => {
+    await sequelize.query(`CALL sp_reconcile_badge_points()`);
+};
+
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
@@ -204,5 +216,7 @@ module.exports = {
     getBadgesAwardedByLearningPath,
     getBadgesAwardedByServiceLine,
     getLevelDistribution,
-    getUserEnrollment
+    getUserEnrollment,
+    getBadgesPerArea,
+    reconcileBadgePoints
 };

@@ -39,10 +39,24 @@ router.put('/users/:userGuid', loginRequired, isAdmin, adminController.updateUse
 router.delete('/users/:userGuid', loginRequired, isAdmin, adminController.deactivateUser);
 
 /**
+ * @route   PATCH /api/admin/users/:userGuid/activate
+ * @desc    Reactivate an inactive user account
+ * @access  Administrator
+ */
+router.patch('/users/:userGuid/activate', loginRequired, isAdmin, adminController.reactivateUser);
+
+/**
  * @route   POST /api/admin/users/:userGuid/reset-password
  * @desc    Trigger a password reset for a specific user
  * @access  Administrator
  */
 router.post('/users/:userGuid/reset-password', loginRequired, isAdmin, adminController.resetUserPassword);
+
+/**
+ * @route   GET /api/admin/service-lines/:serviceLineId/sll-count
+ * @desc    Count active Service Line Leaders for a given service line
+ * @access  Administrator
+ */
+router.get('/service-lines/:serviceLineId/sll-count', loginRequired, isAdmin, adminController.getSllCount);
 
 module.exports = router;
