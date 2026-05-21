@@ -11,6 +11,8 @@ class ExploreBadgeCard extends StatelessWidget {
     required this.medalColor,
     required this.ribbonColor,
     this.onTap,
+    this.isSaved = false,
+    this.onSaveToggle,
   });
 
   final String title;
@@ -21,6 +23,8 @@ class ExploreBadgeCard extends StatelessWidget {
   final Color medalColor;
   final Color ribbonColor;
   final VoidCallback? onTap;
+  final bool isSaved;
+  final VoidCallback? onSaveToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +66,18 @@ class ExploreBadgeCard extends StatelessWidget {
                             color: Color(0xFF172733),
                             height: 1.1,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.bookmark_add_outlined,
-                        color: Color(0xFF415865),
-                        size: 34,
+                      GestureDetector(
+                        onTap: onSaveToggle,
+                        child: Icon(
+                          isSaved ? Icons.bookmark_border_rounded : Icons.bookmark_add_outlined,
+                          color: isSaved ? const Color(0xFF00B8E0) : const Color(0xFF415865),
+                          size: 34,
+                        ),
                       ),
                     ],
                   ),
@@ -83,8 +92,8 @@ class ExploreBadgeCard extends StatelessWidget {
                       ),
                       Expanded(
                         child: _DetailItem(
-                          icon: Icons.stars_rounded,
-                          value: points.toString(),
+                          icon: Icons.stairs_outlined,
+                          value: level,
                         ),
                       ),
                     ],
@@ -94,14 +103,14 @@ class ExploreBadgeCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _DetailItem(
-                          icon: Icons.bar_chart_rounded,
-                          value: level,
+                          icon: Icons.schedule_rounded,
+                          value: duration,
                         ),
                       ),
                       Expanded(
                         child: _DetailItem(
-                          icon: Icons.schedule_rounded,
-                          value: duration,
+                          icon: Icons.stars_rounded,
+                          value: points.toString(),
                         ),
                       ),
                     ],

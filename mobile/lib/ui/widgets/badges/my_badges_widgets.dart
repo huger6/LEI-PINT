@@ -122,25 +122,59 @@ class AchievedBadgeCard extends StatelessWidget {
                               color: Color(0xFF172733),
                               height: 1.1,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          '$level  $points',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF213241),
-                            fontSize: 13,
+                        Flexible(
+                          flex: 0,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$level  $points',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF213241),
+                                  fontSize: 13,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(width: 3),
+                              const Icon(
+                                Icons.workspace_premium_outlined,
+                                size: 17,
+                                color: Color(0xFF445967),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 3),
-                        const Icon(
-                          Icons.workspace_premium_outlined,
-                          size: 17,
-                          color: Color(0xFF445967),
                         ),
                       ],
                     ),
+                    if (badge.category.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.category_outlined,
+                            size: 17,
+                            color: Color(0xFF445967),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              badge.category,
+                              style: const TextStyle(
+                                color: Color(0xFF445967),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -150,11 +184,14 @@ class AchievedBadgeCard extends StatelessWidget {
                           color: Color(0xFF445967),
                         ),
                         const SizedBox(width: 5),
-                        Text(
-                          _formatDate(completionDate),
-                          style: const TextStyle(
-                            color: Color(0xFF445967),
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Text(
+                            _formatDate(completionDate),
+                            style: const TextStyle(
+                              color: Color(0xFF445967),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -171,7 +208,7 @@ class AchievedBadgeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Comprovativo'),
+                  label: const FittedBox(child: Text('Comprovativo')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF263542),
                     side: const BorderSide(color: Color(0xFFC2CDD7)),
@@ -187,7 +224,7 @@ class AchievedBadgeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onShare,
                   icon: const Icon(Icons.share_outlined, size: 18),
-                  label: const Text('Partilhar'),
+                  label: const FittedBox(child: Text('Partilhar')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF263542),
                     side: const BorderSide(color: Color(0xFFC2CDD7)),
@@ -220,16 +257,21 @@ class ApplicationCard extends StatelessWidget {
     required this.state,
     required this.date,
     required this.updateText,
+    this.onTap,
   });
 
   final BadgeModel badge;
   final ApplicationStateVisual state;
   final String date;
   final String updateText;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -267,7 +309,32 @@ class ApplicationCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1E2A35),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                if (badge.category.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.category_outlined,
+                        size: 16,
+                        color: Color(0xFF445967),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          badge.category,
+                          style: const TextStyle(
+                            color: Color(0xFF445967),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -298,11 +365,14 @@ class ApplicationCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      state.label,
-                      style: TextStyle(
-                        color: state.color,
-                        fontWeight: FontWeight.w700,
+                    Flexible(
+                      child: Text(
+                        state.label,
+                        style: TextStyle(
+                          color: state.color,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -332,6 +402,7 @@ class ApplicationCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -97,6 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF1E2932),
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: 3),
@@ -108,6 +111,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Color(0xFF5B6773),
                     fontWeight: FontWeight.w600,
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: 1),
@@ -192,25 +198,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     'View and manage your achievement badges',
                     style: TextStyle(color: Color(0xFF6E7A86), fontSize: 12),
                   ),
-                  trailing: const Row(
+                  trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'Ver galeria',
-                        style: TextStyle(
-                          color: Color(0xFF5D9FD1),
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          'Ver galeria',
+                          style: const TextStyle(
+                            color: Color(0xFF5D9FD1),
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      SizedBox(width: 2),
-                      Icon(
+                      const SizedBox(width: 2),
+                      const Icon(
                         Icons.chevron_right_rounded,
                         color: Color(0xFF5D9FD1),
                         size: 24,
                       ),
                     ],
                   ),
-                  onTap: () {},
+                  onTap: () => Navigator.pushNamed(
+                    context, AppRouter.badgeGallery),
                 ),
               ),
               const SizedBox(height: 14),
@@ -223,9 +233,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.edit_note_rounded,
                 label: 'As minhas características',
+                onTap: () => Navigator.pushNamed(
+                    context, AppRouter.characteristics),
               ),
               const SizedBox(height: 8),
               const ProfileMenuTile(
@@ -301,9 +313,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.pushNamed(context, AppRouter.termsConditions),
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.help_outline_rounded,
                 label: 'Ajuda',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRouter.help),
               ),
               const SizedBox(height: 10),
               Container(

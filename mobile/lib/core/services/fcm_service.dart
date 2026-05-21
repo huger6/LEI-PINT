@@ -68,15 +68,32 @@ class FCMService {
   static Future<void> _handleMessage(RemoteMessage message) async {
     final data = message.data;
 
+    debugPrint('═══════════════════════════════════════════════════');
+    debugPrint('FCM: Firebase message received');
+    debugPrint('FCM: Full data payload: $data');
+    if (message.notification != null) {
+      debugPrint(
+        'FCM: Notification title=${message.notification!.title} '
+        'body=${message.notification!.body}',
+      );
+    }
+    debugPrint('═══════════════════════════════════════════════════');
+
     final updateCodeRaw = data['update_code'];
     final timestamp = data['timestamp'];
 
-    if (updateCodeRaw == null || timestamp == null) return;
+    if (updateCodeRaw == null || timestamp == null) {
+      debugPrint('FCM: Missing update_code or timestamp, ignoring message.');
+      return;
+    }
 
     final updateCode = int.tryParse(updateCodeRaw.toString());
-    if (updateCode == null) return;
+    if (updateCode == null) {
+      debugPrint('FCM: Invalid update_code format: $updateCodeRaw');
+      return;
+    }
 
-    debugPrint('FCM: Received update_code=$updateCode timestamp=$timestamp');
+    debugPrint('FCM: Parsed update_code=$updateCode timestamp=$timestamp');
 
     try {
       final syncService = getIt<SyncService>();

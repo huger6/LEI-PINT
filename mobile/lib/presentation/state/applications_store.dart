@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../data/repositories/applications_repo.dart';
@@ -60,12 +61,70 @@ class ApplicationsStore extends ChangeNotifier {
         badgeId: badgeId,
       );
 
-      final success = payload['success'] == true;
+      final success = payload['success'] ?? true;
       return {
-        'success': success,
+        'success': success != false,
         'message': payload['message']?.toString(),
         'data': payload['data'],
       };
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
+      if (responseData is Map<String, dynamic> &&
+          responseData['code'] == 'APP_ALREADY_EXISTS') {
+        return {
+          'success': false,
+          'code': 'APP_ALREADY_EXISTS',
+          'data': responseData['data'],
+        };
+      }
+      return {'success': false, 'message': e.toString()};
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> getUploadUrl({
+    required String applicationGuid,
+    required int requirementId,
+    required String fileName,
+  }) async {
+    try {
+      final payload = await _applicationsRepository.getUploadUrl(
+        applicationGuid: applicationGuid,
+        requirementId: requirementId,
+        fileName: fileName,
+      );
+
+      final success = payload['success'] ?? true;
+      final data = payload['data'];
+      return {
+        'success': success != false,
+        'uploadUrl': data is Map ? data['uploadUrl'] : null,
+        'finalFileUrl': data is Map ? data['finalFileUrl'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> upsertEvidence({
+    required String applicationGuid,
+    required int requirementId,
+    required String evidenceFileUrl,
+    required String evidenceTitle,
+    String? evidenceFileType,
+  }) async {
+    try {
+      final payload = await _applicationsRepository.upsertEvidence(
+        applicationGuid: applicationGuid,
+        requirementId: requirementId,
+        evidenceFileUrl: evidenceFileUrl,
+        evidenceTitle: evidenceTitle,
+        evidenceFileType: evidenceFileType,
+      );
+
+      final success = payload['success'] ?? true;
+      return {'success': success != false, 'data': payload['data']};
     } catch (e) {
       return {'success': false, 'message': e.toString()};
     }
@@ -77,9 +136,9 @@ class ApplicationsStore extends ChangeNotifier {
         applicationGuid,
       );
 
-      final success = payload['success'] == true;
+      final success = payload['success'] ?? true;
       return {
-        'success': success,
+        'success': success != false,
         'message': payload['message']?.toString(),
         'data': payload['data'],
       };

@@ -66,6 +66,44 @@ class ApplicationsRepository {
     return _extractMap(payload);
   }
 
+  Future<Map<String, dynamic>> getUploadUrl({
+    required String applicationGuid,
+    required int requirementId,
+    required String fileName,
+  }) async {
+    final payload = await _apiClient.post(
+      ApiEndpoints.getUploadUrl(applicationGuid),
+      data: {
+        'requirementId': requirementId,
+        'fileName': fileName,
+      },
+    );
+
+    return _extractMap(payload);
+  }
+
+  Future<Map<String, dynamic>> upsertEvidence({
+    required String applicationGuid,
+    required int requirementId,
+    required String evidenceFileUrl,
+    required String evidenceTitle,
+    String? evidenceDescription,
+    String? evidenceFileType,
+  }) async {
+    final payload = await _apiClient.post(
+      ApiEndpoints.upsertEvidence(applicationGuid),
+      data: {
+        'requirementId': requirementId,
+        'evidenceFileUrl': evidenceFileUrl,
+        'evidenceTitle': evidenceTitle,
+        ...?evidenceDescription == null ? null : {'evidenceDescription': evidenceDescription},
+        ...?evidenceFileType == null ? null : {'evidenceFileType': evidenceFileType},
+      },
+    );
+
+    return _extractMap(payload);
+  }
+
   Future<Map<String, dynamic>> submitApplication(String applicationGuid) async {
     final payload = await _apiClient.post(
       ApiEndpoints.submitApplication(applicationGuid),

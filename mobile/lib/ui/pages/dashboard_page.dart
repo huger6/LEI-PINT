@@ -125,6 +125,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF20252B),
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 12),
                       if (dashStore.recentSubmissions.isNotEmpty) ...[

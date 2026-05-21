@@ -4,14 +4,21 @@ import '../../models/badge_model.dart';
 import '../../models/earned_badge_model.dart';
 import '../local/awarded_badge_dao.dart';
 import '../local/badge_dao.dart';
+import '../local/my_favorite_dao.dart';
 import '../remote/api_client.dart';
 
 class BadgeRepository {
-  BadgeRepository(this._apiClient, this._badgeDao, this._awardedBadgeDao);
+  BadgeRepository(
+    this._apiClient,
+    this._badgeDao,
+    this._awardedBadgeDao,
+    this._favoriteDao,
+  );
 
   final ApiClient _apiClient;
   final BadgeDao _badgeDao;
   final AwardedBadgeDao _awardedBadgeDao;
+  final MyFavoriteDao _favoriteDao;
 
   Future<List<BadgeModel>> getBadgesLocal() async {
     return _badgeDao.getAll();
@@ -76,6 +83,45 @@ class BadgeRepository {
       ApiEndpoints.shareBadge,
       data: {'badgeId': badgeId},
     );
+  }
+
+  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+    await _apiClient.patch(
+      ApiEndpoints.toggleBadgeGallery(awardedBadgeId),
+      data: {'is_featured': featured},
+    );
+    await _awardedBadgeDao.updateFeatured(awardedBadgeId, featured);
+  }
+
+  Future<List<int>> getFavorites() async {
+    try {
+      final payload = await _apiClient.get(ApiEndpoints.getFavorites);
+      final list = _extractList(payload);
+      final ids = list.whereType<int>().toList();
+      await _favoriteDao.replaceAll(ids);
+      return ids;
+    } catch (_) {
+      return _favoriteDao.getFavoriteBadgeIds();
+    }
+  }
+
+  Future<List<int>> getFavoritesLocal() async {
+    return _favoriteDao.getFavoriteBadgeIds();
+  }
+
+  Future<void> addFavorite(int badgeId) async {
+    await _favoriteDao.add(badgeId);
+    try {
+      await _apiClient.post(ApiEndpoints.addFavorite(badgeId));
+      await _favoriteDao.markSynced(badgeId);
+    } catch (_) {}
+  }
+
+  Future<void> removeFavorite(int badgeId) async {
+    await _favoriteDao.remove(badgeId);
+    try {
+      await _apiClient.delete(ApiEndpoints.removeFavorite(badgeId));
+    } catch (_) {}
   }
 
   Future<void> acceptShareGdpr() async {

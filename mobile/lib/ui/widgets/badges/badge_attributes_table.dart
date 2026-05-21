@@ -38,12 +38,16 @@ class BadgeAttributesTable extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    attribute.value,
-                    style: const TextStyle(
-                      color: Color(0xFF4A67A3),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                  Flexible(
+                    child: Text(
+                      attribute.value,
+                      style: const TextStyle(
+                        color: Color(0xFF4A67A3),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

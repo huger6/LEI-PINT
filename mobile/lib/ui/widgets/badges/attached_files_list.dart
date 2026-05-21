@@ -3,10 +3,17 @@ import 'package:flutter/material.dart';
 import '../../../core/sync_manager.dart';
 
 class AttachedDocument {
-  const AttachedDocument({required this.name, required this.subtitle});
+  const AttachedDocument({
+    required this.name,
+    required this.subtitle,
+    this.filePath,
+    this.requirementId,
+  });
 
   final String name;
   final String subtitle;
+  final String? filePath;
+  final int? requirementId;
 }
 
 class AttachedFilesList extends StatelessWidget {

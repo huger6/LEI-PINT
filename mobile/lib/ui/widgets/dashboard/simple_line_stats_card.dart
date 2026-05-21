@@ -32,49 +32,56 @@ class SimpleLineStatsCard extends StatelessWidget {
             tr.tr('statistics'),
             style: const TextStyle(fontSize: 16, color: Color(0xFF8D97A5)),
           ),
-          Text(
-            tr.tr('completedBadges'),
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF66B1E6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              tr.tr('completedBadges'),
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF66B1E6),
+              ),
             ),
           ),
           const SizedBox(height: 8),
           const Divider(height: 1),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '$completedBadges',
-                style: const TextStyle(
-                  fontSize: 58,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF66B1E6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$completedBadges',
+                  style: const TextStyle(
+                    fontSize: 58,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF66B1E6),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                isPositive
-                    ? Icons.arrow_drop_up_rounded
-                    : Icons.arrow_drop_down_rounded,
-                color: isPositive
-                    ? const Color(0xFF5BBF76)
-                    : const Color(0xFFD63D2B),
-                size: 28,
-              ),
-              Text(
-                '${growthPercent.abs()}%',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                const SizedBox(width: 8),
+                Icon(
+                  isPositive
+                      ? Icons.arrow_drop_up_rounded
+                      : Icons.arrow_drop_down_rounded,
                   color: isPositive
                       ? const Color(0xFF5BBF76)
                       : const Color(0xFFD63D2B),
+                  size: 28,
                 ),
-              ),
-            ],
+                Text(
+                  '${growthPercent.abs()}%',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: isPositive
+                        ? const Color(0xFF5BBF76)
+                        : const Color(0xFFD63D2B),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(

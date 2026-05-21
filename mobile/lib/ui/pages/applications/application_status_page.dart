@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
-import '../../widgets/badges/badge_catalog.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/badges/recommended_badge_card.dart';
-import '../../widgets/applications/application_status_widgets.dart';
+import '../../widgets/applications/application_detail_widgets.dart';
 import '../badges/badges_page.dart';
 
 class CandidaturaStatusScreen extends StatelessWidget {
@@ -13,221 +14,184 @@ class CandidaturaStatusScreen extends StatelessWidget {
     super.key,
     required this.badge,
     required this.attachedFiles,
+    this.applicationState = 'Submitted',
+    this.latestObservation,
+    this.submittedAt,
   });
 
   final BadgeModel badge;
   final List<AttachedDocument> attachedFiles;
+  final String applicationState;
+  final String? latestObservation;
+  final DateTime? submittedAt;
 
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    final similarBadges = BadgeCatalog.all
-        .where((item) => item.title != badge.title)
-        .take(3)
-        .toList();
+    final badgeStore = context.read<BadgeStore>();
+    final similarBadges = badgeStore.similarTo(badge);
 
     return Scaffold(
-      backgroundColor: StatusColors.pageBackground,
+      backgroundColor: const Color(0xFFF0F3F6),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 10,
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back, size: 24),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        tr.tr('applicationStatusTitle'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: StatusColors.primaryText,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-                decoration: BoxDecoration(
-                  color: StatusColors.cardBackground,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      tr
-                          .tr('applicationStatusForBadge')
-                          .replaceAll('{badge}', badge.title),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: StatusColors.primaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const StatusProgressStepper(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                tr.tr('latestUpdates'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: StatusColors.primaryText,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              child: Row(
                 children: [
-                  const Icon(
-                    Icons.sync_alt_rounded,
-                    color: StatusColors.primaryAction,
-                    size: 18,
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back, size: 24),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      tr.tr('applicationInReviewBySll'),
+                      tr.tr('applicationStatusTitle'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: StatusColors.highlightText,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1D2A35),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.history_toggle_off_rounded,
-                    color: StatusColors.primaryAction,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    tr.tr('applicationStatusTimestamp'),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: StatusColors.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                tr.tr('notes'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: StatusColors.primaryText,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text.rich(
-                TextSpan(
-                  style: const TextStyle(
-                    color: StatusColors.primaryText,
-                    fontSize: 14,
-                    height: 1.35,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '${tr.tr('talentManagerLabel')}: ',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    TextSpan(
-                      text: tr.tr('applicationStatusPlaceholderNote'),
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              StatusInfoExpansion(attributes: badge.attributes),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: StatusColors.cardBackground,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      tr.tr('attachedFiles'),
-                      style: const TextStyle(
-                        color: StatusColors.primaryText,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
+                    ApplicationDetailHeader(
+                      badge: badge,
+                      stateLabel: _stateLabel(),
+                      stateColor: _stateColor(),
                     ),
-                    const SizedBox(height: 8),
-                    AttachedFilesList(files: attachedFiles, readOnly: true),
+                    const SizedBox(height: 14),
+                    ApplicationProgressStepper(
+                      applicationState: applicationState,
+                    ),
+                    if (latestObservation != null &&
+                        latestObservation!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      ApplicationInfoSection(
+                        submittedAt: submittedAt,
+                        openedAt: null,
+                        latestObservation: latestObservation,
+                      ),
+                    ],
+                    if (attachedFiles.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tr.tr('attachedFiles'),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1D2A35),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            AttachedFilesList(
+                              files: attachedFiles,
+                              readOnly: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (similarBadges.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        tr.tr('similarBadges'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1D2A35),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 192,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: similarBadges.length,
+                          itemBuilder: (context, index) {
+                            final item = similarBadges[index];
+                            return RecommendedBadgeCard(
+                              title: item.title,
+                              area: item.category,
+                              medalColor: item.medalColor,
+                              ribbonColor: item.ribbonColor,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        BadgeDetailScreen(badge: item),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              StatusRequirementsExpansion(requirements: badge.requirements),
-              const SizedBox(height: 12),
-              Text(
-                tr.tr('similarBadges'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: StatusColors.primaryText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 192,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: similarBadges.length,
-                  itemBuilder: (context, index) {
-                    final item = similarBadges[index];
-                    return RecommendedBadgeCard(
-                      title: item.title,
-                      area: item.category,
-                      medalColor: item.medalColor,
-                      ribbonColor: item.ribbonColor,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BadgeDetailScreen(badge: item),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  String _stateLabel() {
+    final n = applicationState.toLowerCase();
+    if (n.contains('accepted') || n.contains('approved') || n.contains('aprov')) {
+      return 'Aprovada';
+    }
+    if (n.contains('reject') || n.contains('rejeit') || n.contains('devolv')) {
+      return 'Rejeitada';
+    }
+    if (n.contains('validation') || n.contains('valida')) {
+      return 'Em validação';
+    }
+    if (n.contains('submitted') || n.contains('submet')) {
+      return 'Submetida';
+    }
+    return 'Em análise';
+  }
+
+  Color _stateColor() {
+    final n = applicationState.toLowerCase();
+    if (n.contains('accepted') || n.contains('approved') || n.contains('aprov')) {
+      return const Color(0xFF59C13E);
+    }
+    if (n.contains('reject') || n.contains('rejeit') || n.contains('devolv')) {
+      return const Color(0xFFD94A2A);
+    }
+    return const Color(0xFFC9A625);
   }
 }

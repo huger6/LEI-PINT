@@ -10,6 +10,8 @@ import '../data/local/badge_dao.dart';
 import '../data/local/current_user_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/location_dao.dart';
+import '../data/local/my_favorite_dao.dart';
+import '../data/local/notification_dao.dart';
 import '../data/remote/api_client.dart';
 import '../data/remote/supabase_storage_service.dart';
 import '../data/repositories/area_repo.dart';
@@ -134,6 +136,18 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<NotificationDao>()) {
+    getIt.registerLazySingleton<NotificationDao>(
+      () => NotificationDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<MyFavoriteDao>()) {
+    getIt.registerLazySingleton<MyFavoriteDao>(
+      () => MyFavoriteDao(getIt<LocalDatabase>()),
+    );
+  }
+
   // ── Repositories ──────────────────────────────────────────────────────────
 
   if (!getIt.isRegistered<AuthRepository>()) {
@@ -166,6 +180,7 @@ Future<void> setupDependencies() async {
         getIt<ApiClient>(),
         getIt<BadgeDao>(),
         getIt<AwardedBadgeDao>(),
+        getIt<MyFavoriteDao>(),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/explore_badge_card.dart';
 import '../../widgets/badges/filter_modal.dart';
 import 'badges_page.dart';
+import 'saved_badges_screen.dart';
 import '../notifications/notifications_screen.dart';
 
 class ExploreCompetenciesScreen extends StatefulWidget {
@@ -25,7 +26,9 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BadgeStore>().loadBadges();
+      final store = context.read<BadgeStore>();
+      store.loadBadges();
+      store.loadFavorites();
     });
   }
 
@@ -112,6 +115,18 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         color: Color(0xFF212D36),
                       ),
                     ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SavedBadgesScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.bookmark_rounded, size: 28),
+                    color: const Color(0xFF1E2932),
                   ),
                   IconButton(
                     onPressed: () {},
@@ -232,6 +247,10 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         duration: badge.duration,
                         medalColor: badge.medalColor,
                         ribbonColor: badge.ribbonColor,
+                        isSaved: badgeStore.isFavorite(badge.id),
+                        onSaveToggle: () {
+                          badgeStore.toggleFavorite(badge.id);
+                        },
                         onTap: () async {
                           final detailed = await context
                               .read<BadgeStore>()

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../data/repositories/lang_repo.dart';
+import '../../../injection_container.dart';
+import '../../../models/lang_model.dart';
 
 class LanguageOption {
   const LanguageOption({
@@ -14,13 +17,29 @@ class LanguageOption {
   final String flag;
 }
 
-const _languages = [
-  LanguageOption(code: 'pt', label: 'Portugues', flag: '\u{1F1F5}\u{1F1F9}'),
-  LanguageOption(code: 'es', label: 'Espanol', flag: '\u{1F1EA}\u{1F1F8}'),
+const _fallbackLanguages = [
+  LanguageOption(code: 'pt', label: 'Português', flag: '\u{1F1F5}\u{1F1F9}'),
+  LanguageOption(code: 'es', label: 'Español', flag: '\u{1F1EA}\u{1F1F8}'),
   LanguageOption(code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}'),
 ];
 
-class LanguageSelectorSheet extends StatelessWidget {
+String _flagForCode(String code) {
+  final lower = code.toLowerCase();
+  if (lower.startsWith('pt') || lower == '1') return '\u{1F1F5}\u{1F1F9}';
+  if (lower.startsWith('es') || lower == '3') return '\u{1F1EA}\u{1F1F8}';
+  if (lower.startsWith('en') || lower == '2') return '\u{1F1EC}\u{1F1E7}';
+  return '\u{1F30D}';
+}
+
+String _normalizeToAppCode(LanguageModel lang) {
+  final code = lang.code.toLowerCase();
+  if (code == '1' || code.startsWith('pt')) return 'pt';
+  if (code == '2' || code.startsWith('en')) return 'en';
+  if (code == '3' || code.startsWith('es')) return 'es';
+  return 'pt';
+}
+
+class LanguageSelectorSheet extends StatefulWidget {
   const LanguageSelectorSheet({
     super.key,
     required this.currentCode,
@@ -46,7 +65,52 @@ class LanguageSelectorSheet extends StatelessWidget {
   }
 
   @override
+  State<LanguageSelectorSheet> createState() => _LanguageSelectorSheetState();
+}
+
+class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
+  List<LanguageOption>? _loadedLanguages;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLanguages();
+  }
+
+  Future<void> _fetchLanguages() async {
+    try {
+      final repo = getIt<LanguageRepository>();
+      final languages = await repo.getAvailableLanguages();
+      if (!mounted) return;
+
+      final loaded = languages.map((lang) {
+        final appCode = _normalizeToAppCode(lang);
+        return LanguageOption(
+          code: appCode,
+          label: lang.name,
+          flag: _flagForCode(lang.code),
+        );
+      }).toList();
+
+      final existingCodes = loaded.map((l) => l.code).toSet();
+      for (final fallback in _fallbackLanguages) {
+        if (!existingCodes.contains(fallback.code)) {
+          loaded.add(fallback);
+        }
+      }
+
+      if (loaded.isNotEmpty) {
+        setState(() {
+          _loadedLanguages = loaded;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final languages = _loadedLanguages ?? _fallbackLanguages;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -74,12 +138,12 @@ class LanguageSelectorSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ..._languages.map(
+          ...languages.map(
             (lang) => _LanguageTile(
               option: lang,
-              isSelected: lang.code == currentCode,
+              isSelected: lang.code == widget.currentCode,
               onTap: () {
-                onSelected(lang.code);
+                widget.onSelected(lang.code);
                 Navigator.pop(context);
               },
             ),

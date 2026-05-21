@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
-import '../../../core/sync_manager.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../models/badge_model.dart';
-import '../../widgets/badges/badge_attributes_table.dart';
+import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
 import '../applications/application_page.dart';
 
@@ -16,8 +19,55 @@ class BadgeDetailScreen extends StatefulWidget {
 }
 
 class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
-  bool _isOverviewTab = true;
-  bool _showRequirements = false;
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteState();
+  }
+
+  void _loadFavoriteState() {
+    final store = context.read<BadgeStore>();
+    setState(() {
+      _isFavorite = store.isFavorite(widget.badge.id);
+    });
+  }
+
+  Future<void> _toggleFavorite() async {
+    final store = context.read<BadgeStore>();
+    await store.toggleFavorite(widget.badge.id);
+    if (mounted) {
+      setState(() {
+        _isFavorite = store.isFavorite(widget.badge.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isFavorite ? 'Badge guardado!' : 'Badge removido dos guardados.'),
+          backgroundColor: _isFavorite ? AppColors.success : const Color(0xFF5A6872),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
+  void _shareBadge() {
+    final badge = widget.badge;
+    final baseUrl = dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
+    final text =
+        '${badge.title}\n${badge.description.isNotEmpty ? badge.description : ''}'
+        '\n\n$baseUrl/badges/${badge.slug}';
+    Clipboard.setData(ClipboardData(text: text));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Link copiado para a área de transferência!'),
+          backgroundColor: Color(0xFF4E6CA2),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,219 +75,353 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
     final badge = widget.badge;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE7EBEE),
+      backgroundColor: const Color(0xFFF2F4F7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back, size: 32),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: Text(
-                  badge.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 26),
+                    color: const Color(0xFF1E2932),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: LargeBadgeIcon(
-                  medalColor: badge.medalColor,
-                  ribbonColor: badge.ribbonColor,
-                ),
-              ),
-              const SizedBox(height: 22),
-              Container(
-                color: const Color(0xFFEFF2F5),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: BadgeDetailTabButton(
-                        title: tr.tr('overviewTab'),
-                        isActive: _isOverviewTab,
-                        onTap: () => setState(() => _isOverviewTab = true),
-                      ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: _toggleFavorite,
+                    icon: Icon(
+                      _isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                      size: 28,
                     ),
-                    Expanded(
-                      child: BadgeDetailTabButton(
-                        title: tr.tr('detailsTab'),
-                        isActive: !_isOverviewTab,
-                        onTap: () => setState(() => _isOverviewTab = false),
-                      ),
-                    ),
-                  ],
-                ),
+                    color: _isFavorite ? AppColors.primary : const Color(0xFF4A545B),
+                  ),
+                  IconButton(
+                    onPressed: _shareBadge,
+                    icon: const Icon(Icons.share_rounded, size: 26),
+                    color: const Color(0xFF4A545B),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      tr.tr('description'),
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      badge.description,
-                      textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.45,
-                        color: Color(0xFF2A2A2A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Center(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ApplicationScreen(badge: badge),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFB4BDC6)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          backgroundColor: const Color(0xFFF8FBFD),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 22,
-                            vertical: 10,
-                          ),
-                        ),
-                        child: Text(
-                          tr.tr('submitApplication'),
-                          style: const TextStyle(
-                            color: Color(0xFF5BAFDF),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      tr.tr('skills'),
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                      child: LargeBadgeIcon(
+                        medalColor: badge.medalColor,
+                        ribbonColor: badge.ribbonColor,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 10,
-                      children: badge.skills
-                          .map(
-                            (skill) => Chip(
-                              label: Text(skill),
-                              backgroundColor: const Color(0xFFE6EAEE),
-                              side: const BorderSide(color: Color(0xFFB2BBC4)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF222629),
-                                fontWeight: FontWeight.w600,
-                              ),
+                    Center(
+                      child: Text(
+                        badge.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A1F25),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (badge.category.trim().isNotEmpty)
+                            _InfoTag(
+                              icon: Icons.category_outlined,
+                              label: badge.category,
                             ),
-                          )
-                          .toList(),
+                          if (badge.level.trim().isNotEmpty)
+                            _InfoTag(
+                              icon: Icons.stairs_outlined,
+                              label: badge.level,
+                            ),
+                          if (badge.points > 0)
+                            _InfoTag(
+                              icon: Icons.stars_rounded,
+                              label: '${badge.points} pts',
+                            ),
+                          if (badge.duration.trim().isNotEmpty)
+                            _InfoTag(
+                              icon: Icons.schedule_rounded,
+                              label: badge.duration,
+                            ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
-                    if (!_isOverviewTab) ...[
-                      BadgeAttributesTable(attributes: badge.attributes),
-                      const SizedBox(height: 8),
-                      if (_showRequirements)
-                        BadgeRequirementsSection(
-                          requirements: badge.requirements,
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ApplicationScreen(badge: badge),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            tr.tr('submitApplication'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    if (badge.description.trim().isNotEmpty) ...[
+                      _SectionCard(
+                        title: tr.tr('description'),
+                        child: Text(
+                          badge.description,
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
+                            color: Color(0xFF3A4550),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
                     ],
+                    if (badge.skills.isNotEmpty) ...[
+                      _SectionCard(
+                        title: tr.tr('skills'),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: badge.skills
+                              .map(
+                                (skill) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryContainer.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    skill,
+                                    style: const TextStyle(
+                                      color: Color(0xFF1E3A4F),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    if (badge.requirements.isNotEmpty) ...[
+                      _SectionCard(
+                        title: tr.tr('requirements'),
+                        child: Column(
+                          children: badge.requirements.asMap().entries.map((entry) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: entry.key < badge.requirements.length - 1 ? 10 : 0,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 26,
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '${entry.key + 1}',
+                                      style: TextStyle(
+                                        color: AppColors.secondary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      entry.value.text,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF2A3540),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    _SectionCard(
+                      title: 'Detalhes',
+                      child: Column(
+                        children: [
+                          if (badge.category.trim().isNotEmpty)
+                            _DetailRow(label: 'Área', value: badge.category),
+                          if (badge.level.trim().isNotEmpty)
+                            _DetailRow(label: 'Nível', value: badge.level),
+                          if (badge.points > 0)
+                            _DetailRow(label: 'Pontos', value: '${badge.points}'),
+                          if (badge.duration.trim().isNotEmpty)
+                            _DetailRow(label: 'Duração', value: badge.duration),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 84,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8F8F8),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 6,
-              offset: Offset(0, -1),
+    );
+  }
+}
+
+class _InfoTag extends StatelessWidget {
+  const _InfoTag({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDDE2E8)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: const Color(0xFF4A5C6A)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2A3640),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.ios_share_outlined, size: 30),
-              color: const Color(0xFF4A545B),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1F25),
             ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.bookmark_add_outlined, size: 30),
-              color: const Color(0xFF4A545B),
-            ),
-            const Spacer(),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isOverviewTab = false;
-                    _showRequirements = true;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 3,
-                  backgroundColor: const Color(0xFF84C4E7),
-                  foregroundColor: const Color(0xFF1E2932),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                ),
-                child: Text(
-                  tr.tr('requirements'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF7A8894),
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E2932),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

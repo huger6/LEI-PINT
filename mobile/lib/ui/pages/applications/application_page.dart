@@ -1,14 +1,20 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/routes/app_router.dart';
 import '../../../core/sync_manager.dart';
+import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
-import '../../../presentation/state/auth_store.dart';
+import '../../../presentation/state/applications_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/applications/application_page_widgets.dart';
-import 'success_submission_screen.dart';
+import '../../widgets/applications/application_detail_widgets.dart';
+import 'application_detail_screen.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -18,62 +24,216 @@ class ApplicationScreen extends StatefulWidget {
   @override
   State<ApplicationScreen> createState() => _ApplicationScreenState();
 }
- 
+
 class _ApplicationScreenState extends State<ApplicationScreen> {
   bool isTermsAccepted = false;
-  final List<AttachedDocument> attachedFiles = [];
-  late final List<String> _requirements;
-
-  static const String _fallbackConfirmationEmail = 'jorge.jesus@softinsa.pt';
+  bool _isSubmitting = false;
+  late final Map<int, List<AttachedDocument>> _filesByRequirement;
 
   @override
   void initState() {
     super.initState();
-    _requirements = widget.badge.requirements.map((item) => item.text).toList();
+    _filesByRequirement = {
+      for (final req in widget.badge.requirements)
+        if (req.id != null) req.id!: <AttachedDocument>[],
+    };
   }
 
-  Future<void> _pickFiles() async {
+  bool get _allRequirementsHaveEvidence {
+    if (_filesByRequirement.isEmpty) return false;
+    return _filesByRequirement.values.every((files) => files.isNotEmpty);
+  }
+
+  Future<void> _pickFilesForRequirement(int requirementId) async {
     final result = await FilePicker.pickFiles(
-      allowMultiple: true,
+      allowMultiple: false,
       type: FileType.any,
       withData: false,
     );
 
-    if (result == null) {
-      return;
-    }
-
-    if (!mounted) {
-      return;
-    }
+    if (result == null || !mounted) return;
 
     final tr = LanguageScope.of(context);
+    final file = result.files.first;
+
+    if (file.path == null) return;
 
     setState(() {
-      for (final file in result.files) {
-        attachedFiles.add(
-          AttachedDocument(
-            name: file.name,
-            subtitle: tr.tr('applicationAttachedFileSubtitle'),
-          ),
-        );
-      }
+      _filesByRequirement[requirementId] = [
+        AttachedDocument(
+          name: file.name,
+          subtitle: tr.tr('applicationAttachedFileSubtitle'),
+          filePath: file.path,
+          requirementId: requirementId,
+        ),
+      ];
     });
   }
 
-  String _resolveConfirmationEmail() {
-    final userEmail = context.read<AuthStore>().currentUser?.email.trim();
-    if (userEmail != null && userEmail.isNotEmpty) {
-      return userEmail;
+  String _mimeTypeForFile(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'png':
+        return 'image/png';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      default:
+        return 'application/octet-stream';
     }
+  }
 
-    return _fallbackConfirmationEmail;
+  Future<void> _submitApplication() async {
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    final appStore = context.read<ApplicationsStore>();
+    final messenger = ScaffoldMessenger.of(context);
+    final badge = widget.badge;
+
+    try {
+      final startResult = await appStore.startApplication(badgeId: badge.id);
+      final isExisting = startResult['code'] == 'APP_ALREADY_EXISTS';
+      if (startResult['success'] != true && !isExisting) {
+        final msg = startResult['message']?.toString() ?? 'Erro ao iniciar candidatura.';
+        messenger.showSnackBar(SnackBar(
+          content: Text(msg),
+          backgroundColor: const Color(0xFFD94A2A),
+        ));
+        return;
+      }
+
+      final appData = startResult['data'];
+      final applicationGuid =
+          (appData is Map
+                  ? (appData['application_guid'] ?? appData['applicationGuid'])
+                  : null)
+              ?.toString() ??
+          '';
+
+      if (applicationGuid.isEmpty) {
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Erro: GUID da candidatura não recebido.'),
+          backgroundColor: Color(0xFFD94A2A),
+        ));
+        return;
+      }
+
+      final dio = Dio();
+
+      for (final entry in _filesByRequirement.entries) {
+        final requirementId = entry.key;
+        final files = entry.value;
+
+        for (final file in files) {
+          if (file.filePath == null) continue;
+
+          final uploadResult = await appStore.getUploadUrl(
+            applicationGuid: applicationGuid,
+            requirementId: requirementId,
+            fileName: file.name,
+          );
+
+          if (uploadResult['success'] != true) continue;
+
+          final uploadUrl = uploadResult['uploadUrl']?.toString() ?? '';
+          final finalFileUrl = uploadResult['finalFileUrl']?.toString() ?? '';
+
+          if (uploadUrl.isNotEmpty) {
+            final fileBytes = await File(file.filePath!).readAsBytes();
+            await dio.put(
+              uploadUrl,
+              data: Stream.fromIterable([fileBytes]),
+              options: Options(
+                headers: {
+                  'Content-Type': _mimeTypeForFile(file.name),
+                  'Content-Length': fileBytes.length,
+                },
+              ),
+            );
+          }
+
+          if (finalFileUrl.isNotEmpty) {
+            await appStore.upsertEvidence(
+              applicationGuid: applicationGuid,
+              requirementId: requirementId,
+              evidenceFileUrl: finalFileUrl,
+              evidenceTitle: file.name,
+              evidenceFileType: _mimeTypeForFile(file.name),
+            );
+          }
+        }
+      }
+
+      final submitResult = await appStore.submitApplication(applicationGuid);
+      if (!mounted) return;
+
+      if (submitResult['success'] != true) {
+        final msg = submitResult['message']?.toString() ?? 'Erro ao submeter candidatura.';
+        messenger.showSnackBar(SnackBar(
+          content: Text(msg),
+          backgroundColor: const Color(0xFFD94A2A),
+        ));
+        return;
+      }
+
+      final submittedApplication = ApplicationSummaryModel(
+        applicationGuid: applicationGuid,
+        applicationState: 'Submitted',
+        badge: badge,
+        submittedAt: DateTime.now(),
+        openedAt: DateTime.now(),
+      );
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => SuccessSubmissionDialog(
+          onViewApplication: () {
+            Navigator.of(ctx).pop();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => ApplicationDetailScreen(
+                  application: submittedApplication,
+                ),
+              ),
+            );
+          },
+          onViewBadges: () {
+            Navigator.of(ctx).pop();
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRouter.exploreCompetencies,
+              (route) => route.isFirst,
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+        content: Text('Erro: ${e.toString()}'),
+        backgroundColor: const Color(0xFFD94A2A),
+      ));
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    final canSubmit = isTermsAccepted && attachedFiles.isNotEmpty;
+    final canSubmit = isTermsAccepted && _allRequirementsHaveEvidence && !_isSubmitting;
 
     return Scaffold(
       backgroundColor: ApplicationColors.pageBackground,
@@ -103,51 +263,125 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
               title: tr.tr('applicationSectionEvidence'),
             ),
             const SizedBox(height: 10),
-            _buildAttachBox(tr),
-            const SizedBox(height: 10),
-            if (attachedFiles.isNotEmpty)
-              AttachedFilesList(
-                files: attachedFiles,
-                onDelete: (index) {
-                  setState(() => attachedFiles.removeAt(index));
-                },
-              ),
-            ApplicationCardContainer(
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                collapsedIconColor: ApplicationColors.secondaryText,
-                iconColor: ApplicationColors.secondaryText,
-                title: Text(
-                  tr.tr('requirements'),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: ApplicationColors.primaryText,
+            if (widget.badge.requirements.isEmpty)
+              ApplicationCardContainer(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Text(
+                    tr.tr('noRequirementsLinked'),
+                    style: const TextStyle(
+                      color: ApplicationColors.mutedText,
+                    ),
                   ),
                 ),
-                children:
-                    (_requirements.isEmpty
-                            ? [tr.tr('noRequirementsLinked')]
-                            : _requirements)
-                        .map(
-                          (item) => ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(
-                              Icons.check_circle_outline_rounded,
-                              color: ApplicationColors.primaryAction,
-                              size: 20,
-                            ),
-                            title: Text(
-                              item,
+              )
+            else
+              ...widget.badge.requirements.map((req) {
+                final reqId = req.id;
+                if (reqId == null) return const SizedBox.shrink();
+                final files = _filesByRequirement[reqId] ?? [];
+                final hasFiles = files.isNotEmpty;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ApplicationColors.cardBackground,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: hasFiles
+                          ? ApplicationColors.primaryAction.withValues(alpha: 0.5)
+                          : ApplicationColors.cardBorder,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            hasFiles
+                                ? Icons.check_circle_rounded
+                                : Icons.check_circle_outline_rounded,
+                            color: hasFiles
+                                ? const Color(0xFF4CAF50)
+                                : ApplicationColors.primaryAction,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              req.text,
                               style: const TextStyle(
+                                fontWeight: FontWeight.w600,
                                 color: ApplicationColors.primaryText,
                               ),
                             ),
                           ),
-                        )
-                        .toList(),
-              ),
-            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (files.isNotEmpty) ...[
+                        AttachedFilesList(
+                          files: files,
+                          onDelete: (index) {
+                            setState(() => files.removeAt(index));
+                          },
+                        ),
+                      ],
+                      if (!hasFiles) DottedBorder(
+                        options: RoundedRectDottedBorderOptions(
+                          color: ApplicationColors.dashedBorder,
+                          radius: const Radius.circular(10),
+                          dashPattern: const [7, 4],
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: _isSubmitting
+                              ? null
+                              : () => _pickFilesForRequirement(reqId),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ApplicationColors.cardBackground,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.attach_file_rounded,
+                                  color: ApplicationColors.iconMuted,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    tr.tr('applicationAttachFile'),
+                                    style: const TextStyle(
+                                      color: ApplicationColors.secondaryText,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.upload_file_rounded,
+                                  color: ApplicationColors.iconMuted,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
 
             const SizedBox(height: 18),
             ApplicationSectionTitle(
@@ -166,9 +400,11 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                   CheckboxListTile(
                     value: isTermsAccepted,
                     activeColor: ApplicationColors.primaryAction,
-                    onChanged: (value) {
-                      setState(() => isTermsAccepted = value ?? false);
-                    },
+                    onChanged: _isSubmitting
+                        ? null
+                        : (value) {
+                            setState(() => isTermsAccepted = value ?? false);
+                          },
                     title: RichText(
                       text: TextSpan(
                         style: const TextStyle(
@@ -223,25 +459,18 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: canSubmit
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => SuccessSubmissionScreen(
-                              badge: widget.badge,
-                              attachedFiles: List<AttachedDocument>.from(
-                                attachedFiles,
-                              ),
-                              confirmationEmail: _resolveConfirmationEmail(),
-                              submittedAt: DateTime.now(),
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                icon: const Icon(Icons.check_circle_outline_rounded),
-                label: Text(tr.tr('submit')),
+                onPressed: canSubmit ? _submitApplication : null,
+                icon: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_outline_rounded),
+                label: Text(_isSubmitting ? 'A submeter...' : tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   backgroundColor: ApplicationColors.primaryAction,
@@ -264,47 +493,4 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     );
   }
 
-  Widget _buildAttachBox(LanguageController tr) {
-    return DottedBorder(
-      options: RoundedRectDottedBorderOptions(
-        color: ApplicationColors.dashedBorder,
-        radius: const Radius.circular(14),
-        dashPattern: const [7, 4],
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: _pickFiles,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          decoration: BoxDecoration(
-            color: ApplicationColors.cardBackground,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.attach_file_rounded,
-                color: ApplicationColors.iconMuted,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  tr.tr('applicationAttachFile'),
-                  style: const TextStyle(
-                    color: ApplicationColors.secondaryText,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const Icon(
-                Icons.upload_file_rounded,
-                color: ApplicationColors.iconMuted,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

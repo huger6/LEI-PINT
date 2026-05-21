@@ -41,7 +41,8 @@ Future<BadgeFilterResult?> showFilterModal(
   String? areaSelected;
   String? levelSelected;
   String? dateSelected;
-  String? pointsSelected;
+  double minPointsValue = 0;
+  double maxPointsValue = 1000;
 
   return showModalBottomSheet<BadgeFilterResult>(
     context: context,
@@ -263,29 +264,103 @@ Future<BadgeFilterResult?> showFilterModal(
                     ),
                     childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
                     children: [
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
+                      Row(
                         children: [
-                          buildChip(
-                            optionValue: '0_200',
-                            optionLabel: '0-200',
-                            selectedValue: pointsSelected,
-                            onSelect: (v) => pointsSelected = v,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Mínimo',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  height: 42,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: chipBackground,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFD7DDE4),
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '${minPointsValue.round()}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          buildChip(
-                            optionValue: '201_500',
-                            optionLabel: '201-500',
-                            selectedValue: pointsSelected,
-                            onSelect: (v) => pointsSelected = v,
-                          ),
-                          buildChip(
-                            optionValue: '501_plus',
-                            optionLabel: '501+',
-                            selectedValue: pointsSelected,
-                            onSelect: (v) => pointsSelected = v,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Máximo',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  height: 42,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: chipBackground,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFD7DDE4),
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '${maxPointsValue.round()}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 8),
+                      RangeSlider(
+                        values: RangeValues(minPointsValue, maxPointsValue),
+                        min: 0,
+                        max: 1000,
+                        divisions: 20,
+                        activeColor: accent,
+                        inactiveColor: const Color(0xFFD7DDE4),
+                        labels: RangeLabels(
+                          '${minPointsValue.round()}',
+                          '${maxPointsValue.round()}',
+                        ),
+                        onChanged: (values) => setModalState(() {
+                          minPointsValue = values.start;
+                          maxPointsValue = values.end;
+                        }),
                       ),
                     ],
                   ),
@@ -295,17 +370,12 @@ Future<BadgeFilterResult?> showFilterModal(
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        int? minPts;
-                        int? maxPts;
-                        if (pointsSelected == '0_200') {
-                          minPts = 0;
-                          maxPts = 200;
-                        } else if (pointsSelected == '201_500') {
-                          minPts = 201;
-                          maxPts = 500;
-                        } else if (pointsSelected == '501_plus') {
-                          minPts = 501;
-                        }
+                        final minPts = minPointsValue > 0
+                            ? minPointsValue.round()
+                            : null;
+                        final maxPts = maxPointsValue < 1000
+                            ? maxPointsValue.round()
+                            : null;
 
                         Navigator.pop(
                           context,
@@ -327,9 +397,9 @@ Future<BadgeFilterResult?> showFilterModal(
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        tr.tr('applyFilters'),
-                        style: const TextStyle(
+                      child: const Text(
+                        'Filtrar',
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
