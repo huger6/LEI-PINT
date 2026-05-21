@@ -71,6 +71,10 @@ const syncRoleAssignments = async ({
     // with ON DELETE RESTRICT prevent deletion, and domain rules require points
     // to be permanently preserved). Query hardening ensures orphaned rows are
     // invisible to business logic.
+    // Consultant rows are intentionally preserved on role change (FK children
+    // with ON DELETE RESTRICT prevent deletion, and domain rules require points
+    // to be permanently preserved). Query hardening ensures orphaned rows are
+    // invisible to business logic.
 
     if (targetRole !== 'Talent Manager') {
         await models.talent_managers.destroy({
@@ -273,6 +277,7 @@ const getUser = async (req, res) => {
                     const area = areaById.get(ca.area_id);
                     if (!area) return null;
                     return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
                 })
                 .filter(Boolean);
             if (areasPayload.length === 0) areasPayload = null;
@@ -288,6 +293,7 @@ const getUser = async (req, res) => {
                 raw: true
             });
             if (!sl) return;
+            serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
             serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
             if (sl.learning_path_id) {
                 const lp = await models.learning_paths.findByPk(sl.learning_path_id, {
@@ -324,8 +330,8 @@ const getUser = async (req, res) => {
             locationId: user.location_id,
             biography: user.user_role === 'Consultant' ? (consultant?.biography || null)
                 : user.user_role === 'Talent Manager' ? (talentManager?.biography || null)
-                : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
-                : null,
+                    : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
+                        : null,
             serviceLineId: serviceLineLeader?.service_line_id || null,
             serviceLine: serviceLineData,
             learningPath: learningPathData,
@@ -612,6 +618,14 @@ const updateUser = async (req, res) => {
             });
         }
 
+        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
+            });
+        }
+
         if (payload.areas && targetRole !== 'Consultant') {
             await t.rollback();
             return res.status(400).json({
@@ -673,6 +687,18 @@ const updateUser = async (req, res) => {
                 success: false,
                 code: 'ADMIN_SLL_NO_SERVICE_LINE'
             });
+        }
+
+        let lastSllWarning = false;
+        if (user.user_role === 'Service Line Leader' && payload.user_role && payload.user_role !== 'Service Line Leader') {
+            const currentSll = await models.service_line_leaders.findByPk(user.user_id, { transaction: t });
+            if (currentSll) {
+                const sllCount = await models.service_line_leaders.count({
+                    where: { service_line_id: currentSll.service_line_id },
+                    transaction: t
+                });
+                if (sllCount <= 1) lastSllWarning = true;
+            }
         }
 
         let lastSllWarning = false;
@@ -765,6 +791,8 @@ const updateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
+            code: 'ADMIN_USER_UPDATED',
+            ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
             code: 'ADMIN_USER_UPDATED',
             ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
         });
@@ -1010,6 +1038,23 @@ const resetUserPassword = async (req, res) => {
             success: false,
             code: 'ADMIN_PASSWORD_RESET_FAILED'
         });
+    }
+};
+
+const getSllCount = async (req, res) => {
+    try {
+        const serviceLineId = Number(req.params.serviceLineId);
+        if (!Number.isInteger(serviceLineId) || serviceLineId <= 0) {
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
+        }
+        const count = await models.service_line_leaders.count({
+            where: { service_line_id: serviceLineId },
+            include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
+        });
+        return res.status(200).json({ success: true, data: { count } });
+    } catch (error) {
+        logger.error('Error counting SLLs for service line.', { error });
+        return res.status(500).json({ success: false, code: 'ADMIN_SLL_COUNT_FAILED' });
     }
 };
 
