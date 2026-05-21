@@ -184,6 +184,10 @@ class AuthStore extends ChangeNotifier {
     return result;
   }
 
+  Future<Map<String, dynamic>> resendConfirmation(String email) {
+    return _authRepository.resendConfirmation(email);
+  }
+
   Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,

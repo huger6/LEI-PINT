@@ -112,6 +112,16 @@ class ApplicationsRepository {
     return _extractMap(payload);
   }
 
+  Future<Map<String, dynamic>> resendBadgeConfirmation(
+    String applicationGuid,
+  ) async {
+    final payload = await _apiClient.post(
+      ApiEndpoints.resendBadgeConfirmation(applicationGuid),
+    );
+
+    return _extractMap(payload);
+  }
+
   List<dynamic> _extractList(dynamic payload) {
     if (payload is List) {
       return payload;

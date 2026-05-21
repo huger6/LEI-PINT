@@ -146,4 +146,22 @@ class ApplicationsStore extends ChangeNotifier {
       return {'success': false, 'message': e.toString()};
     }
   }
+
+  Future<Map<String, dynamic>> resendBadgeConfirmation(
+    String applicationGuid,
+  ) async {
+    try {
+      final payload = await _applicationsRepository.resendBadgeConfirmation(
+        applicationGuid,
+      );
+
+      final success = payload['success'] ?? true;
+      return {
+        'success': success != false,
+        'message': payload['message']?.toString(),
+      };
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
 }

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/notification_defs.dart';
+import '../../../data/repositories/applications_repo.dart';
+import '../../../models/notification_model.dart';
 import '../../../presentation/state/notification_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/notifications/notifications_widgets.dart';
+import '../applications/application_detail_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key, this.sourceTab = AppTab.home});
@@ -31,6 +35,51 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleNotificationTap(NotificationModel notification) async {
+    final store = context.read<NotificationStore>();
+    if (!notification.isRead) {
+      store.markRead(notification.id);
+    }
+
+    final isBadgeWorkflow = _isBadgeWorkflowNotification(notification);
+    final appGuid = _extractApplicationGuid(notification);
+
+    if (isBadgeWorkflow && appGuid != null && appGuid.isNotEmpty) {
+      await _navigateToApplication(appGuid);
+    }
+  }
+
+  bool _isBadgeWorkflowNotification(NotificationModel notification) {
+    final id = notification.definitionId;
+    return id == NotificationDefs.applicationSubmitted ||
+        id == NotificationDefs.approvedByTm ||
+        id == NotificationDefs.approvedBySll ||
+        id == NotificationDefs.applicationRejected;
+  }
+
+  String? _extractApplicationGuid(NotificationModel notification) {
+    final url = notification.url;
+    if (url == null || url.isEmpty) return null;
+    final match = RegExp(r'applications?/([a-zA-Z0-9\-]+)').firstMatch(url);
+    return match?.group(1);
+  }
+
+  Future<void> _navigateToApplication(String applicationGuid) async {
+    try {
+      final repo = context.read<ApplicationsRepository>();
+      final application = await repo.getApplicationById(applicationGuid);
+      if (!mounted || application == null) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              ApplicationDetailScreen(application: application),
+        ),
+      );
+    } catch (_) {}
   }
 
   @override
@@ -111,10 +160,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       NotificationsList(
                         notifications: unreadNotifications,
                         onDismiss: (id) => store.markRead(id),
+                        onTap: _handleNotificationTap,
                       ),
                       NotificationsList(
                         notifications: allNotifications,
                         onDismiss: (id) => store.markRead(id),
+                        onTap: _handleNotificationTap,
                       ),
                     ],
                   ),

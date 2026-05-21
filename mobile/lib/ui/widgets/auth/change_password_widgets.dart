@@ -187,24 +187,6 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                       ),
               ),
             ),
-            if (widget.isFirstLogin) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pushReplacementNamed(
-                    context,
-                    AppRouter.dashboard,
-                  ),
-                  child: const Text(
-                    'Saltar por agora',
-                    style: TextStyle(
-                      color: Color(0xFF6E7A86),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

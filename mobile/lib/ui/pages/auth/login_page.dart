@@ -85,6 +85,29 @@ class _LoginScreenState extends State<LoginScreen> {
           } else {
             Navigator.pushReplacementNamed(context, AppRouter.dashboard);
           }
+        } else if (result['emailNotConfirmed'] == true) {
+          final identifier = _loginController.text.trim();
+          final email = identifier.contains('@') ? identifier : '';
+
+          if (email.isNotEmpty) {
+            Navigator.pushNamed(
+              context,
+              AppRouter.emailConfirmation,
+              arguments: email,
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  result['message'] ??
+                      'O seu email ainda não foi confirmado. '
+                          'Verifique a sua caixa de correio.',
+                ),
+                backgroundColor: AppColors.warning,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -174,15 +197,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: FormValidators.validatePassword,
                       ),
 
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        value: _saveLoginData,
-                        onChanged: (value) {
-                          setState(() => _saveLoginData = value ?? false);
-                        },
-                        activeColor: colorScheme.primary,
-                        title: Text(tr.tr('saveLoginData')),
-                        controlAffinity: ListTileControlAffinity.leading,
+                      Material(
+                        color: Colors.transparent,
+                        child: CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          value: _saveLoginData,
+                          onChanged: (value) {
+                            setState(() => _saveLoginData = value ?? false);
+                          },
+                          activeColor: colorScheme.primary,
+                          title: Text(tr.tr('saveLoginData')),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
                       ),
 
                       // Forgot password link

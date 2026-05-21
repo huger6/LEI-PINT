@@ -52,13 +52,19 @@ class AuthRepository {
         responseMap,
         fallback: 'Credenciais inválidas.',
       );
-      return {'success': false, 'message': message};
+      return {
+        'success': false,
+        'message': message,
+        if (_isEmailNotConfirmed(responseMap)) 'emailNotConfirmed': true,
+      };
     } on DioException catch (e) {
-      final msg = _extractMessage(
-        _asMap(e.response?.data),
-        fallback: 'Erro ao fazer login.',
-      );
-      return {'success': false, 'message': msg};
+      final data = _asMap(e.response?.data);
+      final msg = _extractMessage(data, fallback: 'Erro ao fazer login.');
+      return {
+        'success': false,
+        'message': msg,
+        if (_isEmailNotConfirmed(data)) 'emailNotConfirmed': true,
+      };
     } catch (e) {
       return {'success': false, 'message': 'Erro ao fazer login: $e'};
     }
@@ -311,10 +317,62 @@ class AuthRepository {
     }
   }
 
+  Future<Map<String, dynamic>> resendConfirmation(String email) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.post(
+          ApiEndpoints.resendConfirmation,
+          data: {'email': email},
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao reenviar email de confirmação.',
+        ),
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _extractMessage(
+          _asMap(e.response?.data),
+          fallback: 'Erro ao reenviar email de confirmação.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao reenviar email: $e'};
+    }
+  }
+
   Future<void> logout() async {
     try {
       await _apiClient.post(ApiEndpoints.logout);
     } catch (_) {}
+  }
+
+  bool _isEmailNotConfirmed(Map<String, dynamic> payload) {
+    if (payload['email_confirmed'] == false ||
+        payload['emailConfirmed'] == false) {
+      return true;
+    }
+    final data = payload['data'];
+    if (data is Map) {
+      if (data['email_confirmed'] == false ||
+          data['emailConfirmed'] == false) {
+        return true;
+      }
+    }
+    final message = (payload['message'] ?? '').toString().toLowerCase();
+    if (message.contains('confirm') && message.contains('email')) {
+      return true;
+    }
+    return false;
   }
 
   Map<String, dynamic> _asMap(dynamic value) {
