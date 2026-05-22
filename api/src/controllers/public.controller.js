@@ -109,4 +109,51 @@ const viewPublicBadge = async (req, res) => {
     }
 };
 
-module.exports = { viewPublicBadge };
+const viewPublicCertificate = async (req, res) => {
+    try {
+        const { applicationGuid } = req.params;
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid },
+            include: [
+                { model: models.badges, as: 'badge' },
+                { model: models.consultants, as: 'user', include: [{ model: models.users, as: 'user', attributes: ['full_name', 'user_guid'] }] },
+                { model: models.certificates, as: 'certificate' }
+            ]
+        });
+
+        if (!application) {
+            res.status(404).send('<h1>Certificate or application not found</h1>');
+            return;
+        }
+
+        const badge = application.badge || {};
+        const consultant = application.user || {};
+        const user = consultant.user || {};
+
+        const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
+        const verifyUrl = `${appUrl.replace(/\/$/, '')}/public/certificate/${encodeURIComponent(applicationGuid)}`;
+        const qrUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(verifyUrl)}`;
+
+        if (req.query.format === 'json' || req.get('accept') === 'application/json') {
+            return res.json({
+                application_guid: applicationGuid,
+                certificate: application.certificate || null,
+                badge: { title: badge.badge_title, description: badge.badge_description, points: badge.badge_points },
+                user: { full_name: user.full_name, user_guid: user.user_guid },
+                verification_url: verifyUrl
+            });
+        }
+
+        const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Certificate - ${badge.badge_title || 'Certificate'}</title></head><body><div style="max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:8px;font-family:Arial,Helvetica,sans-serif;color:#222"><h1>${badge.badge_title || 'Certificate'}</h1><p>Awarded to <strong>${user.full_name || 'Unknown'}</strong></p><p>Issued: ${application.closed_at ? new Date(application.closed_at).toLocaleString() : '—'}</p><p><img src="${qrUrl}" alt="QR" style="width:160px"></p><p>Verify: <a href="${verifyUrl}">${verifyUrl}</a></p></div></body></html>`;
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.status(200).send(html);
+    } catch (error) {
+        logger.error('Error rendering public certificate page', { error });
+        res.status(500).send('<h1>Internal server error</h1>');
+    }
+};
+
+module.exports = { viewPublicBadge, viewPublicCertificate };
+

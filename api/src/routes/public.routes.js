@@ -8,6 +8,9 @@ const publicCtrl = require('../controllers/public.controller');
  */
 router.get('/badge/:link', publicCtrl.viewPublicBadge);
 
+// Public certificate verification
+router.get('/certificate/:applicationGuid', publicCtrl.viewPublicCertificate);
+
 // Simple test route that does not hit the database — useful for local dev
 router.get('/test', (req, res) => {
 	const sampleVerifyUrl = (process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`) + '/public/badge/SAMPLE_LINK';

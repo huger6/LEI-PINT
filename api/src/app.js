@@ -48,6 +48,10 @@ if (apiRoutes) {
     app.use('/api', apiRoutes);
 }
 
+// Dev-only: serve generated files when Supabase/storage is not available
+const path = require('path');
+app.use('/_dev_storage', express.static(path.join(__dirname, '../logs/dev_storage')));
+
 module.exports = {
     app,
     PORT
