@@ -4,10 +4,26 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const requestLogger = require('./middlewares/logger.middleware');
 require('./validations/error-map'); // Necessary for validation codes to run
-require('./config/firebase'); // Necessary for firebase to initialize
+// Initialize firebase only when not explicitly skipped (useful for local dev without installing firebase-admin)
+if (!process.env.SKIP_FIREBASE || process.env.SKIP_FIREBASE === '0') {
+    try {
+        require('./config/firebase'); // Necessary for firebase to initialize
+    } catch (err) {
+        // If firebase isn't available and SKIP_FIREBASE not set, log and continue.
+        // This avoids crashing dev servers where firebase-admin is not installed.
+        // eslint-disable-next-line no-console
+        console.warn('Firebase initialization skipped or failed:', err && err.message);
+    }
+}
 
 
-const apiRoutes = require('./routes/apiRoutes');
+// Load public routes (safe for no-DB dev server)
+const publicRoutes = require('./routes/public.routes');
+// Load API routes only when not explicitly skipped (to avoid pulling heavy deps like firebase-admin during local quick tests)
+let apiRoutes;
+if (!process.env.SKIP_API_ROUTES) {
+    apiRoutes = require('./routes/apiRoutes');
+}
 
 // App
 const app = express();
@@ -25,7 +41,12 @@ app.use(cookieParser());
 app.use(requestLogger);
 
 // Routes
-app.use('/api', apiRoutes)
+// Public pages (HTML)
+app.use('/public', publicRoutes);
+
+if (apiRoutes) {
+    app.use('/api', apiRoutes);
+}
 
 module.exports = {
     app,

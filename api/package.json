@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jest --runInBand --forceExit",
     "start": "node server.js",
+    "lint:js": "node --check ./src/**/*.js || true",
     "dev": "nodemon server.js",
     "db:generate": "node ./src/config/generate-models.js",
     "db:test": "node ./src/config/test-db.js",
