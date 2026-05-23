@@ -100,7 +100,6 @@ const me = async (req, res) => {
                     'area_id',
                     'area_name',
                     'area_slug',
-                    'area_code',
                     'area_description',
                     'img_url'
                 ],
@@ -121,7 +120,6 @@ const me = async (req, res) => {
                     return {
                         name: currentArea.area_name,
                         slug: currentArea.area_slug,
-                        code: currentArea.area_code,
                         description: currentArea.area_description,
                         imgUrl: currentArea.img_url,
                         isPrimary: consultantArea.is_primary
