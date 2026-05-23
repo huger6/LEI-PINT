@@ -630,7 +630,8 @@
 		"related": "Relacionado",
 		"noRelated": "Nenhum badge relacionado encontrado.",
 		"level": "Nível",
-		"hours": "h"
+		"validDays": "dias de validade",
+		"linkedInShareText": "Acabei de conquistar o badge \"{{badgeTitle}}\" na plataforma de badges da Softinsa! 🏆\n\nEsta conquista valida as minhas competências e reforça o meu percurso de desenvolvimento profissional.\n\n{{url}}"
 	},
 	"browseHierarchy": {
 		"learningPaths": "Learning Paths",

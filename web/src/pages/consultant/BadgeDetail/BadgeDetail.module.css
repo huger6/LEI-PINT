@@ -116,7 +116,7 @@
 	border-color: rgba(4, 206, 0, 0.25);
 }
 
-.chipHours {
+.chipExpiration {
 	color: var(--color-warning);
 	border-color: rgba(207, 166, 0, 0.3);
 }
@@ -134,6 +134,18 @@
 	min-width: 180px;
 }
 
+.actionBtnObjective {
+	background: var(--color-success) !important;
+	border-color: var(--color-success) !important;
+	color: #fff !important;
+	min-width: 160px;
+}
+
+.actionBtnObjective:hover {
+	background: #03b800 !important;
+	border-color: #03b800 !important;
+}
+
 .actionBtnLinkedIn {
 	border-color: #0A66C2 !important;
 	color: #0A66C2 !important;
@@ -141,6 +153,19 @@
 
 .actionBtnLinkedIn:hover {
 	background: rgba(10, 102, 194, 0.06) !important;
+}
+
+.obtainedIndicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: rgba(255, 204, 0, 0.1);
+	border: 2px solid var(--color-badge-premium);
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 /* ─── Shared section ───────────────────── */
@@ -459,6 +484,16 @@
 
 	.actionRow {
 		justify-content: center;
+	}
+
+	.actionBtn,
+	.actionBtnObjective {
+		width: 100%;
+		min-width: unset;
+	}
+
+	.obtainedIndicator {
+		margin-left: 0;
 	}
 
 	.rewardsGrid {
