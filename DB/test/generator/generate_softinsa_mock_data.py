@@ -179,6 +179,9 @@ NOTIFICATION_TYPES = [
 APPLICATION_STATES = ["Accepted", "Submitted", "In validation", "Open", "Rejected"]
 INTERACTION_TYPES = ["VIEW", "SHARE_LINKEDIN", "FAVORITE"]
 
+CONFIRMED_PASSWORD_HASH = "$2b$10$HeVPLvvIURQ2EyMdp3frJ.snlFd5F4EqF646Fss4f5LNBzoykYG9G"
+UNCONFIRMED_PASSWORD_HASH = "$2b$10$softinsa.mock.hash.for.local.testing"
+
 
 class IdFactory:
     def __init__(self) -> None:
@@ -392,12 +395,13 @@ def generate_sql() -> str:
         language_iso = random.choices(["pt-PT", "en-GB", "es-ES"], weights=[7, 2, 1], k=1)[0]
         created_at = random_past_datetime(120, 720)
         last_login = clamp_before_now(BASE_NOW - timedelta(days=random.randint(0, 45), hours=random.randint(1, 20)))
+        email_confirmed = True
         row = {
             "user_id": user_id,
             "full_name": full_name,
             "username": username,
             "email_address": email,
-            "password_hash": "$2b$10$softinsa.mock.hash.for.local.testing",
+            "password_hash": CONFIRMED_PASSWORD_HASH if email_confirmed else UNCONFIRMED_PASSWORD_HASH,
             "user_role": role,
             "user_guid": uuid.uuid5(uuid.NAMESPACE_DNS, f"softinsa-user-{user_id}"),
             "phone_number": f"+3519{random.randint(10000000, 99999999)}",
@@ -407,7 +411,7 @@ def generate_sql() -> str:
             "location_id": locations[location_name],
             "approved_by": None,
             "is_active": True,
-            "email_confirmed": True,
+            "email_confirmed": email_confirmed,
             "force_password_change": False,
             "last_login_at": last_login,
             "last_online": last_login + timedelta(minutes=random.randint(2, 90)),
