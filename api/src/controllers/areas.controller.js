@@ -4,6 +4,7 @@ const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHel
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
+const { handleZodError } = require('../utils/responseHelper');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
@@ -192,13 +193,7 @@ const checkSlugAvailability = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error checking Area slug', { error });
         return res.status(500).json({
@@ -304,13 +299,7 @@ const createArea = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating Area', { error });
         return res.status(500).json({
@@ -423,13 +412,7 @@ const updateArea = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating Area', { error });
         return res.status(500).json({
@@ -518,9 +501,7 @@ const deleteArea = async (req, res) => {
         return res.status(200).json({ success: true, code: "AREA_DEACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deleting Area', { error });
         return res.status(500).json({
@@ -585,9 +566,7 @@ const reactivateArea = async (req, res) => {
         return res.status(200).json({ success: true, code: "AREA_ACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
         logger.error('Error reactivating Area', { error });
         return res.status(500).json({ success: false, code: "AREA_ACTIVATE_FAILED" });
     }

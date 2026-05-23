@@ -4,6 +4,7 @@ const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHel
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
+const { handleZodError } = require('../utils/responseHelper');
 const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/levels
@@ -336,13 +337,7 @@ const createLevel = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating Level', { error });
         return res.status(500).json({
@@ -453,13 +448,7 @@ const updateLevel = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating Level', { error });
         return res.status(500).json({
@@ -517,12 +506,7 @@ const deleteLevel = async (req, res) => {
         return res.status(200).json({ success: true, code: "LEVEL_DEACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deleting Level', { error });
         return res.status(500).json({
@@ -588,9 +572,7 @@ const reactivateLevel = async (req, res) => {
         return res.status(200).json({ success: true, code: "LEVEL_ACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
         logger.error('Error reactivating Level', { error });
         return res.status(500).json({ success: false, code: "LEVEL_ACTIVATE_FAILED" });
     }

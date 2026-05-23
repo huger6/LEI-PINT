@@ -19,9 +19,9 @@ if (!process.env.SKIP_FIREBASE || process.env.SKIP_FIREBASE === '0') {
 
 // Load public routes (safe for no-DB dev server)
 const publicRoutes = require('./routes/public.routes');
-// Load API routes only when not explicitly skipped (to avoid pulling heavy deps like firebase-admin during local quick tests)
+// Load API routes only when SKIP_API_ROUTES is not set to '1'
 let apiRoutes;
-if (!process.env.SKIP_API_ROUTES) {
+if (process.env.SKIP_API_ROUTES !== '1') {
     apiRoutes = require('./routes/apiRoutes');
 }
 
