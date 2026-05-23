@@ -13,9 +13,14 @@ const { uuidRule } = require('../validations/shared-rules');
 const resolveTargetUserId = async (req) => {
     if (req.user.role === 'Consultant') return req.user.sub;
     const requestedGuid = req.query.userGuid;
-    if (requestedGuid && uuidRule.safeParse(requestedGuid).success) {
-        const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
-        if (user) return user.user_id;
+    if (requestedGuid) {
+        try {
+            uuidRule.parse(requestedGuid);
+            const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
+            if (user) return user.user_id;
+        } catch (_) {
+            // Invalid GUID — ignore and fall back to authenticated user
+        }
     }
     return req.user.sub;
 };
@@ -299,6 +304,39 @@ const getUserEnrollment = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  GET /api/statistics/consultant/badges-per-area
+  Per-area breakdown: badges earned and points per area.
+──────────────────────────────────────────────────────────────*/
+const getBadgesPerArea = async (req, res) => {
+    try {
+        const targetUserId = await resolveTargetUserId(req);
+        if (!await assertConsultantExists(res, targetUserId)) return;
+
+        const data = await statsService.getBadgesPerArea(targetUserId);
+        return res.status(200).json({ success: true, code: 'STATS_BADGES_PER_AREA_RETRIEVED', data });
+
+    } catch (error) {
+        logger.error('Error fetching badges per area', { error });
+        return res.status(500).json({ success: false, code: 'STATS_BADGES_PER_AREA_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  POST /api/statistics/admin/reconcile-points
+  Runs sp_reconcile_badge_points() to fix missing points records.
+──────────────────────────────────────────────────────────────*/
+const reconcilePoints = async (req, res) => {
+    try {
+        await statsService.reconcileBadgePoints();
+        return res.status(200).json({ success: true, code: 'STATS_POINTS_RECONCILED' });
+
+    } catch (error) {
+        logger.error('Error reconciling badge points', { error });
+        return res.status(500).json({ success: false, code: 'STATS_POINTS_RECONCILE_FAILED' });
+    }
+};
+
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
@@ -312,5 +350,7 @@ module.exports = {
     getBadgesByLearningPath,
     getBadgesByServiceLine,
     getLevelDistribution,
-    getUserEnrollment
+    getUserEnrollment,
+    getBadgesPerArea,
+    reconcilePoints
 };

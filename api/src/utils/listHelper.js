@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { models } = require('../config/db');
 const redis = require('../config/redis');
 const { logger } = require('./logger');
+const { handleZodError } = require('./responseHelper');
 
 const handleListRequest = async ({
     req,
@@ -18,13 +19,15 @@ const handleListRequest = async ({
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
 
-    const queryValidation = schema.safeParse(req.query);
-    if (!queryValidation.success) return res.status(400).json({
-        success: false,
-        errors: queryValidation.error.issues
-    });
+    let validatedQuery;
+    try {
+        validatedQuery = schema.parse(req.query);
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+        throw error;
+    }
 
-    const { page, limit, search, ...filters } = queryValidation.data;
+    const { page, limit, search, ...filters } = validatedQuery;
     const offset = (page - 1) * limit;
 
     const cacheKey = `${cachePrefix}:${Buffer.from(JSON.stringify({ ...filters, search, isAdmin, page, limit })).toString('base64')}`;

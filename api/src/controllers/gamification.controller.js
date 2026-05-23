@@ -139,8 +139,11 @@ const getConsultantPointsById = async (req, res) => {
         }
 
         const userGuid = req.params.userGuid;
-        if (!uuidRule.safeParse(userGuid).success) {
-            return res.status(400).json({ success: false, code: 'GAMIFICATION_INVALID_USER_ID' });
+        try {
+            uuidRule.parse(userGuid);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'GAMIFICATION_INVALID_USER_ID');
+            throw error;
         }
 
         const user = await models.users.findOne({ where: { user_guid: userGuid }, attributes: ['user_id'] });
@@ -444,13 +447,7 @@ const getEarnedBadges = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_QUERY_PARAMS',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
         logger.error('Error fetching earned badges', {
             error,
             userId: req.user.sub

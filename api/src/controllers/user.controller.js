@@ -5,6 +5,7 @@ const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const stripNullishFields = require('../utils/stripNullishFields');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 const me = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
@@ -408,18 +409,7 @@ const updateProfile = async (req, res) => {
     } catch (error) {
         await t.rollback();
 
-        if (error.name === 'ZodError') {
-            logger.warn('Profile update validation failed', {
-                requestId,
-                userId: req.user.sub,
-                errors: error.errors
-            });
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating user profile', {
             requestId,

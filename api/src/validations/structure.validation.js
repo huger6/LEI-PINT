@@ -82,7 +82,7 @@ const getBadgesQuerySchema = z.object({
 		}
 
 		return value;
-	}, z.array(z.string().trim().min(1).max(20)).max(5).optional()),
+	}, z.array(z.string().trim().min(1).max(20)).max(5)).optional(),
 	badgeClass: z.enum(['all', 'standard', 'special']).optional(),
 	minPoints: z.coerce.number().int().min(0).optional(),
 	maxPoints: z.coerce.number().int().min(0).optional(),
