@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SHARED } from '../../../routes/paths';
+import { SHARED, CONSULTANT } from '../../../routes/paths';
 import { getBadgeBySlug, getBadges } from '../../../features/badges/api/badgesApi';
 import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
@@ -42,9 +42,11 @@ export default function BadgeDetail() {
 			setServiceLines(slData);
 			setRequirements(badgeData?.badge_requirements || badgeData?.badgeRequirements || []);
 
+			const serviceLineId = badgeData?.service_line_id || badgeData?.serviceLineId;
+
 			const [apps, related] = await Promise.all([
 				getApplications().catch(() => []),
-				getBadges({ limit: 8 }).catch(() => []),
+				getBadges(serviceLineId ? { serviceLineId, limit: 8 } : { limit: 8 }).catch(() => []),
 			]);
 
 			const appList = apps.data || apps || [];
@@ -76,6 +78,19 @@ export default function BadgeDetail() {
 			setError(err.message);
 			setApplying(false);
 		}
+	}
+
+	function handleShareLinkedIn() {
+		const badgeTitle = badge.badge_title || badge.badgeTitle;
+		const verificationLink = badge.user_award?.public_verification_link;
+
+		const shareUrl = verificationLink
+			? `${window.location.origin}/verify/${verificationLink}`
+			: window.location.href;
+
+		const shareText = t('badgeDetail.linkedInShareText', { badgeTitle, url: shareUrl });
+		const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}`;
+		window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
 	}
 
 	function scrollCarousel(direction) {
@@ -110,18 +125,22 @@ export default function BadgeDetail() {
 	const description = badge.badge_description || badge.badgeDescription;
 	const points = badge.badge_points || badge.badgePoints;
 	const imgUrl = badge.badge_img_url || badge.badgeImgUrl;
-	const hours = badge.estimated_hours || badge.estimatedHours;
-	const expirationDate = badge.expiration_date || badge.expirationDate;
+	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
 
 	const serviceLine = badge.service_line || badge.serviceLine;
 	const serviceLineName = serviceLine?.service_line_name || serviceLine?.serviceLineName;
 	const learningPath = badge.learning_path || badge.learningPath;
 	const learningPathName = learningPath?.path_title || learningPath?.pathTitle;
-	const area = badge.area || {};
-	const areaName = area.area_name || area.areaName;
 	const stage = badge.progression_stage || badge.progressionStage;
 	const stageCode = stage?.stage_code?.stage_code || stage?.stageCode?.stageCode;
 	const stageTitle = stage?.stage_title || stage?.stageTitle;
+
+	const skills = badge.skills || [];
+	const rewards = badge.rewards || [];
+	const userAward = badge.user_award;
+	const hasObtained = !!userAward;
+
+	const specialTitleReward = rewards.find((r) => r.special_title);
 
 	const completedCount = requirements.filter(
 		(r) => r.status === 'complete' || r.status === 'completed' || r.is_completed
@@ -132,8 +151,8 @@ export default function BadgeDetail() {
 		: 0;
 
 	const breadcrumbItems = [
-		{ label: t('badgeDetail.catalog'), to: SHARED.BADGES },
-		...(learningPathName ? [{ label: learningPathName }] : []),
+		{ label: t('navbar.consultant.home'), to: SHARED.HOME },
+		...(learningPathName ? [{ label: learningPathName, to: SHARED.BADGES }] : []),
 		...(serviceLineName ? [{ label: serviceLineName }] : []),
 		{ label: title, active: true },
 	];
@@ -193,10 +212,10 @@ export default function BadgeDetail() {
 								{serviceLineName}
 							</span>
 						)}
-						{hours && (
-							<span className={`${styles.chip} ${styles.chipHours}`}>
+						{expirationDays && (
+							<span className={`${styles.chip} ${styles.chipExpiration}`}>
 								<Icon name="clock" size={16} />
-								{hours}{t('badgeDetail.hours')}
+								{expirationDays} {t('badgeDetail.validDays')}
 							</span>
 						)}
 					</div>
@@ -212,14 +231,23 @@ export default function BadgeDetail() {
 								{t('badgeDetail.applyNow')}
 							</Button>
 						)}
-						<Button variant="outlined" color="success" className={styles.actionBtn}>
+						<Button
+							variant="filled"
+							className={styles.actionBtnObjective}
+							onClick={() => navigate(CONSULTANT.OBJECTIVES)}
+						>
 							<Icon name="target" size={16} />
 							{t('badgeDetail.addObjective')}
 						</Button>
-						<Button variant="outlined" className={styles.actionBtnLinkedIn}>
+						<Button variant="outlined" className={styles.actionBtnLinkedIn} onClick={handleShareLinkedIn}>
 							<Icon name="linkedin" size={16} />
 							{t('badgeDetail.shareLinkedIn')}
 						</Button>
+						{hasObtained && (
+							<div className={styles.obtainedIndicator} title={t('badgeDetail.complete')}>
+								<Icon name="trophy" size={28} color="var(--color-badge-premium)" />
+							</div>
+						)}
 					</div>
 				</div>
 			</section>
@@ -240,17 +268,30 @@ export default function BadgeDetail() {
 								<p className={styles.rewardDesc}>{t('badgeDetail.certificateDesc')}</p>
 							</div>
 						</div>
-						<div className={styles.rewardItem}>
-							<div className={styles.rewardIcon}>
-								<Icon name="badge-premium" size={20} color="var(--color-secondary)" />
+						{specialTitleReward && (
+							<div className={styles.rewardItem}>
+								<div className={styles.rewardIcon}>
+									<Icon name="badge-premium" size={20} color="var(--color-secondary)" />
+								</div>
+								<div>
+									<strong>{t('badgeDetail.specialTitle')}</strong>
+									<p className={styles.rewardDesc}>&quot;{specialTitleReward.special_title}&quot;</p>
+								</div>
 							</div>
-							<div>
-								<strong>{t('badgeDetail.specialTitle')}</strong>
-								<p className={styles.rewardDesc}>
-									&quot;{learningPathName ? `Pioneiro ${serviceLineName || ''} Softinsa` : 'Especialista Softinsa'}&quot;
-								</p>
+						)}
+						{!specialTitleReward && rewards.length === 0 && (
+							<div className={styles.rewardItem}>
+								<div className={styles.rewardIcon}>
+									<Icon name="badge-premium" size={20} color="var(--color-secondary)" />
+								</div>
+								<div>
+									<strong>{t('badgeDetail.specialTitle')}</strong>
+									<p className={styles.rewardDesc}>
+										&quot;{serviceLineName ? `Pioneiro ${serviceLineName} Softinsa` : 'Especialista Softinsa'}&quot;
+									</p>
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
 
 					<div className={styles.badgePreview}>
@@ -271,20 +312,18 @@ export default function BadgeDetail() {
 					<p className={styles.sectionDesc}>{t('badgeDetail.competenciesDescription')}</p>
 
 					<ul className={styles.competencyList}>
-						{(badge.badge_competencies || badge.badgeCompetencies || []).length > 0
-							? (badge.badge_competencies || badge.badgeCompetencies).map((c, i) => (
-								<li key={i} className={styles.competencyItem}>
+						{skills.length > 0
+							? skills.map((s) => (
+								<li key={s.skills_id} className={styles.competencyItem}>
 									<Icon name="check_circle" size={18} color="var(--color-primary)" />
-									{c.competency_name || c.competencyName || c.name || c}
+									{s.skill_name}
 								</li>
 							))
 							: (
-								<>
-									<li className={styles.competencyItem}>
-										<Icon name="check_circle" size={18} color="var(--color-primary)" />
-										{areaName || serviceLineName || 'N/A'}
-									</li>
-								</>
+								<li className={styles.competencyItem}>
+									<Icon name="check_circle" size={18} color="var(--color-primary)" />
+									{serviceLineName || title}
+								</li>
 							)
 						}
 					</ul>
@@ -311,10 +350,10 @@ export default function BadgeDetail() {
 						<h2 className={styles.sectionTitle}>{t('badgeDetail.requirements')}</h2>
 						<p className={styles.sectionDesc}>{t('badgeDetail.requirementsDescription')}</p>
 					</div>
-					{expirationDate && (
+					{hasObtained && userAward.expiration_at && (
 						<span className={styles.expirationBadge}>
 							<Icon name="clock" size={18} color="var(--color-warning)" />
-							{t('badgeDetail.expiresOn')}: {new Date(expirationDate).toLocaleDateString('pt-PT', {
+							{t('badgeDetail.expiresOn')}: {new Date(userAward.expiration_at).toLocaleDateString('pt-PT', {
 								day: 'numeric', month: 'short', year: 'numeric'
 							})}
 						</span>
