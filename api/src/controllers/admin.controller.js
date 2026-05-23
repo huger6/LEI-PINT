@@ -269,7 +269,7 @@ const getUser = async (req, res) => {
             const areaIds = consultantAreas.map((a) => a.area_id);
             const areaRecords = await models.areas.findAll({
                 where: { area_id: { [Op.in]: areaIds } },
-                attributes: ['area_id', 'area_name', 'area_slug', 'area_code', 'area_description', 'img_url'],
+                attributes: ['area_id', 'area_name', 'area_slug', 'area_description', 'img_url'],
                 raw: true
             });
             const areaById = new Map(areaRecords.map((a) => [a.area_id, a]));
@@ -277,8 +277,7 @@ const getUser = async (req, res) => {
                 .map((ca) => {
                     const area = areaById.get(ca.area_id);
                     if (!area) return null;
-                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
-                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
                 })
                 .filter(Boolean);
             if (areasPayload.length === 0) areasPayload = null;
