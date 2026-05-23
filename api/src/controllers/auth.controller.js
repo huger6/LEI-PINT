@@ -10,6 +10,7 @@ const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/e
 const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 loadEnvironment();
 
@@ -248,27 +249,7 @@ const register = async (req, res) => {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Registration validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code || 'VALIDATION_INVALID_DATA'
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         // Dups error (more of a failsafe as it is checked above as well)
         if (error.name === 'SequelizeUniqueConstraintError') {
@@ -571,27 +552,7 @@ const login = async (req, res) => {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Login validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Unexpected error processing login', {
             requestId,
@@ -767,13 +728,12 @@ const changePassword = async (req, res) => {
         const user_id = req.user.sub; // get from jwt
 
         // Verify if new password is valid
-        const validPw = passwordRule.safeParse(newPassword).success;
-        if (!validPw) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_FORMAT_INVALID"
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_FORMAT_INVALID');
+            throw error;
         }
 
         // Get user
@@ -884,12 +844,11 @@ const forgotPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const { email } = req.body;
 
-    if (!emailRule.safeParse(email).success) {
-        // Email is invalid
-        return res.status(400).json({
-            success: false,
-            code: "AUTH_EMAIL_INVALID"
-        });
+    try {
+        emailRule.parse(email);
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_EMAIL_INVALID');
+        throw error;
     }
 
     const t = await sequelize.transaction();
@@ -1033,16 +992,12 @@ const resetPassword = async (req, res) => {
 
     try {
         // Validate new pw
-        const validation = passwordRule.safeParse(newPassword);
-        if (!validation.success) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_WEAK",
-                data: {
-                    errors: validation.error.issues
-                }
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_WEAK');
+            throw error;
         }
 
         // Generate token hash

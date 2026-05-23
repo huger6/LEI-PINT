@@ -3,6 +3,8 @@ const router = express.Router();
 const { loginRequired, checkRole, leadership } = require('../middlewares/auth.middleware');
 const ctrl = require('../controllers/statistics.controller');
 
+const adminOnly = checkRole('Administrator');
+
 /*──────────────────────────────────────────────────────────────
   Individual consultant statistics
 ──────────────────────────────────────────────────────────────*/
@@ -28,6 +30,13 @@ router.get('/consultant/points-history', loginRequired, ctrl.getPointsHistory);
  * @access  Authenticated
  */
 router.get('/consultant/timeline', loginRequired, ctrl.getAcquisitionTimeline);
+
+/**
+ * @route   GET /api/statistics/consultant/badges-per-area
+ * @desc    Per-area breakdown of earned badges and points for a consultant
+ * @access  Authenticated
+ */
+router.get('/consultant/badges-per-area', loginRequired, ctrl.getBadgesPerArea);
 
 /*──────────────────────────────────────────────────────────────
   Service Line Leader / Talent Manager
@@ -109,5 +118,16 @@ router.get('/reports/level-distribution', loginRequired, leadership, ctrl.getLev
  * @access  Service Line Leader, Talent Manager, Administrator
  */
 router.get('/reports/user-enrollment', loginRequired, leadership, ctrl.getUserEnrollment);
+
+/*──────────────────────────────────────────────────────────────
+  Admin maintenance
+──────────────────────────────────────────────────────────────*/
+
+/**
+ * @route   POST /api/statistics/admin/reconcile-points
+ * @desc    Run sp_reconcile_badge_points() to insert missing badge-completion points
+ * @access  Administrator
+ */
+router.post('/admin/reconcile-points', loginRequired, adminOnly, ctrl.reconcilePoints);
 
 module.exports = router;

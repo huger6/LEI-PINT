@@ -4,22 +4,14 @@ const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const { invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/announcements.validation');
+const { handleZodError } = require('../utils/responseHelper');
 
 // GET /api/announcements
 const getAnnouncements = async (req, res) => {
     try {
         const isAdmin = req.user?.role === 'Administrator';
 
-        const queryValidation = validations.getAnnouncementsQuerySchema.safeParse(req.query);
-        if (!queryValidation.success) {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: queryValidation.error.issues
-            });
-        }
-
-        const { page, limit, search, isActive, isGlobal, targetProfile, announcementType } = queryValidation.data;
+        const { page, limit, search, isActive, isGlobal, targetProfile, announcementType } = validations.getAnnouncementsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const cacheKey = `announcements:list:${Buffer.from(JSON.stringify({ isActive, isGlobal, targetProfile, announcementType, search, isAdmin, page, limit })).toString('base64')}`;
@@ -69,6 +61,8 @@ const getAnnouncements = async (req, res) => {
         return res.status(200).json({ success: true, ...responseData });
 
     } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+
         logger.error('Error listing announcements', { error });
         return res.status(500).json({ success: false, code: 'ANNOUNCEMENT_LIST_FAILED' });
     }
@@ -99,9 +93,7 @@ const getAnnouncementById = async (req, res) => {
         return res.status(200).json({ success: true, data: announcement });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error fetching announcement', { error });
         return res.status(500).json({ success: false, code: 'ANNOUNCEMENT_FETCH_FAILED' });
@@ -144,13 +136,7 @@ const createAnnouncement = async (req, res) => {
         return res.status(201).json({ success: true, code: 'ANNOUNCEMENT_CREATED', data: newAnnouncement });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating announcement', { error });
         return res.status(500).json({ success: false, code: 'ANNOUNCEMENT_CREATE_FAILED' });
@@ -204,13 +190,7 @@ const updateAnnouncement = async (req, res) => {
         return res.status(200).json({ success: true, code: 'ANNOUNCEMENT_UPDATED', data: announcement });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating announcement', { error });
         return res.status(500).json({ success: false, code: 'ANNOUNCEMENT_UPDATE_FAILED' });
@@ -242,9 +222,7 @@ const deleteAnnouncement = async (req, res) => {
         return res.status(200).json({ success: true, code: 'ANNOUNCEMENT_DEACTIVATED' });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deactivating announcement', { error });
         return res.status(500).json({ success: false, code: 'ANNOUNCEMENT_DELETE_FAILED' });

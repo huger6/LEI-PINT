@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { sequelize, models } = require('../config/db');
 const { logger } = require('../utils/logger');
+const { handleZodError } = require('../utils/responseHelper');
 const { z } = require('zod');
 const { biographyRule } = require('../validations/shared-rules');
 
@@ -22,16 +23,16 @@ const dbCheck = async (model, field, value, caseInsensitive = false) => {
 };
 
 const handleQueryCheck = async (req, res, label, checkFn) => {
-    const parsed = valueQuerySchema.safeParse(req.query);
-    if (!parsed.success) {
-        return res.status(400).json({
-            success: false,
-            code: "VALIDATION_INVALID_QUERY_PARAMS",
-            errors: parsed.error.issues
-        });
+    try {
+        const { value } = valueQuerySchema.parse(req.query);
+        const available = await checkFn(value);
+        return res.status(200).json({ success: true, data: { available } });
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+
+        logger.error(`Error handling query check for ${label}`, { error });
+        return res.status(500).json({ success: false, code: "UTIL_CHECK_FAILED" });
     }
-    const available = await checkFn(parsed.data.value);
-    return res.status(200).json({ success: true, data: { available } });
 };
 
 const checkUsername = async (req, res) => {
@@ -102,9 +103,11 @@ const checkBadgeSlug = async (req, res) => {
 
 const checkBiography = async (req, res) => {
     try {
-        const parsed = biographyBodySchema.safeParse(req.body);
-        if (!parsed.success) {
-            const firstIssue = parsed.error.issues[0];
+        biographyBodySchema.parse(req.body);
+        return res.status(200).json({ success: true, data: { available: true } });
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            const firstIssue = error.issues?.[0];
             return res.status(200).json({
                 success: true,
                 data: {
@@ -113,8 +116,7 @@ const checkBiography = async (req, res) => {
                 }
             });
         }
-        return res.status(200).json({ success: true, data: { available: true } });
-    } catch (error) {
+
         logger.error('Error checking biography', { error });
         return res.status(500).json({ success: false, code: "UTIL_BIOGRAPHY_CHECK_FAILED" });
     }

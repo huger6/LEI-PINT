@@ -2,6 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { annonymousUsersOnly, loginRequired, optionalAuth } = require('../middlewares/auth.middleware');
 const authController = require('../controllers/auth.controller');
+const me = require('./user.routes');
 
 const router = express.Router();
 
@@ -117,3 +118,6 @@ router.post('/reset-password', annonymousUsersOnly, authController.resetPassword
 router.post('/change-password', loginRequired, authController.changePassword);
 
 module.exports = router;
+
+// Backwards-compatibility: expose `/auth/me` by mounting user routes here
+router.use('/me', me);
