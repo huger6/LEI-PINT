@@ -41,10 +41,12 @@ function normalizeNumericInput(value) {
 }
 
 function normalizeFilters(filters) {
+	const minPoints = normalizeNumericInput(filters.minPoints);
+	const maxPoints = normalizeNumericInput(filters.maxPoints);
 	return {
 		...filters,
-		minPoints: normalizeNumericInput(filters.minPoints),
-		maxPoints: normalizeNumericInput(filters.maxPoints),
+		minPoints: Math.min(minPoints, maxPoints),
+		maxPoints: Math.max(minPoints, maxPoints),
 	};
 }
 
@@ -294,8 +296,8 @@ export default function BadgeCatalog() {
 					<h1 className="h3 mb-0">{t('badgeCatalog.title')}</h1>
 				</div>
 				<div className="row g-4">
-					<aside className="col-lg-3 d-none d-lg-block" />
-					<section className="col-12 col-lg-9">
+					<aside className="col-xl-3 d-none d-xl-block" />
+					<section className="col-12 col-xl-9">
 						<CardGridSkeleton count={6} columns={3} />
 					</section>
 				</div>
@@ -350,7 +352,7 @@ export default function BadgeCatalog() {
 			<div className={`d-flex flex-column gap-4 ${styles.filtersContent}`}>
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.structure')}</h3>
-					<div className="d-flex flex-column gap-2">
+					<div className={`d-flex flex-column gap-2 ${styles.fieldStack}`}>
 						<label className={styles.inputLabel} htmlFor={`${keyPrefix}-learning-path`}>
 							{t('badgeCatalog.filters.learningPath')}
 						</label>
@@ -405,7 +407,7 @@ export default function BadgeCatalog() {
 
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.progression')}</h3>
-					<div className="d-flex flex-column gap-2">
+					<div className={`d-flex flex-column gap-2 ${styles.fieldStack}`}>
 						{PROGRESSION_TIERS.map((tier) => (
 							<label className={`form-check ${styles.checkboxRow}`} key={`${keyPrefix}-tier-${tier.code}`}>
 								<input
@@ -438,7 +440,7 @@ export default function BadgeCatalog() {
 
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.points')}</h3>
-					<div className="row g-3">
+					<div className={`row g-3 ${styles.fieldStack}`}>
 						<div className="col-12">
 							<label className={styles.inputLabel} htmlFor={`${keyPrefix}-min-points`}>{t('badgeCatalog.filters.minPoints')}</label>
 							<input
@@ -497,18 +499,20 @@ export default function BadgeCatalog() {
 			</div>
 
 			<div className={styles.searchWrap}>
-				<Icon name="search" size={16} className={styles.searchIcon} aria-hidden="true" />
 				<label htmlFor="badge-catalog-search" className={styles.inputLabel}>
 					{t('badgeCatalog.filters.search')}
 				</label>
-				<input
-					id="badge-catalog-search"
-					type="text"
-					className={`form-control ${styles.searchInput}`}
-					placeholder={t('badgeCatalog.searchPlaceholder')}
-					value={filters.search}
-					onChange={(event) => handleDesktopSearchChange(event.target.value)}
-				/>
+				<div className={styles.searchInputWrap}>
+					<Icon name="search" size={16} className={styles.searchIcon} aria-hidden="true" />
+					<input
+						id="badge-catalog-search"
+						type="text"
+						className={`form-control ${styles.searchInput}`}
+						placeholder={t('badgeCatalog.searchPlaceholder')}
+						value={filters.search}
+						onChange={(event) => handleDesktopSearchChange(event.target.value)}
+					/>
+				</div>
 			</div>
 
 			<div className="d-xl-none mb-3">

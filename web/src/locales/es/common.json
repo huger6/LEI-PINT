@@ -576,12 +576,15 @@
 		"errorLoading": "Error al cargar badges: {{error}}",
 		"filters": {
 			"title": "Filtros",
-			"open": "Filtrar 🔍",
+			"open": "Abrir filtros",
 			"apply": "Aplicar Filtros",
-			"clear": "Limpiar filtros",
-			"structure": "Jerarquía Estructural",
-			"allLearningPaths": "Todos los learning paths",
-			"allServiceLines": "Todas las service lines",
+                "clear": "Limpiar filtros",
+                "search": "Buscar badges",
+                "structure": "Jerarquía Estructural",
+                "learningPath": "Learning Path",
+                "allLearningPaths": "Todos los learning paths",
+                "serviceLine": "Service Line",
+                "allServiceLines": "Todas las service lines",
 			"area": "Área",
 			"selectServiceLineFirst": "Selecciona una Service Line para elegir el Área.",
 			"progression": "Niveles de Progresión",
@@ -658,6 +661,9 @@
 		"remaining": "Restante",
 		"reminder": "Recordatorio",
 		"noReminders": "Sin recordatorios en este momento.",
+		"completedOn": "Completado el {{date}}",
+		"inProgressLabel": "En progreso",
+		"lockedLabel": "Bloqueado",
 		"beginner": "Principiante",
 		"intermediate": "Intermedio",
 		"senior": "Sénior",
@@ -869,3 +875,4 @@
 		}
 	}
 }
+
