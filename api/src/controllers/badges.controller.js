@@ -5,6 +5,7 @@ const redis = require('../config/redis');
 const { handleCachedCountRequest } = require('../utils/countHelper');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
+const { handleZodError } = require('../utils/responseHelper');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
@@ -17,14 +18,6 @@ const getBadges = async (req, res) => {
         const { pathSlug, slSlug, areaSlug, stageCode } = req.params;
         let baseWhere = {};
         const isAdmin = req.user?.role === 'Administrator';
-
-        const queryValidation = validations.getBadgesQuerySchema.safeParse(req.query);
-        if (!queryValidation.success) {
-            return res.status(400).json({
-                success: false,
-                errors: queryValidation.error.issues
-            });
-        }
 
         const {
             page,
@@ -39,7 +32,7 @@ const getBadges = async (req, res) => {
             serviceLineId,
             learningPathId,
             progressionStageId
-        } = queryValidation.data;
+        } = validations.getBadgesQuerySchema.parse(req.query);
 
         const offset = (page - 1) * limit;
 
@@ -230,6 +223,8 @@ const getBadges = async (req, res) => {
         });
 
     } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error);
+
         logger.error('Error listing Badges', { error });
         return res.status(500).json({
             success: false,
@@ -446,13 +441,7 @@ const checkSlugAvailability = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error checking Badge slug', { error });
         return res.status(500).json({
@@ -579,13 +568,7 @@ const createBadge = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating Badge', { error });
         return res.status(500).json({
@@ -810,13 +793,7 @@ const updateBadge = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating Badge', { error });
         return res.status(500).json({
@@ -873,12 +850,7 @@ const deleteBadge = async (req, res) => {
         return res.status(200).json({ success: true, code: "BADGE_DEACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_URL_PARAM"
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deleting Badge', { error });
         return res.status(500).json({

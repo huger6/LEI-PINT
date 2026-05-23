@@ -19,6 +19,8 @@ const notifications = require('./notifications.routes');
 const statistics = require('./statistics.routes');
 const slas = require('./slas.routes');
 const announcements = require('./announcements.routes');
+const search = require('./search.routes');
+const exportsRoutes = require('./exports.routes');
 
 // --- Auth & user session ---
 router.use('/auth', auth);
@@ -47,6 +49,8 @@ router.use('/statistics', statistics);
 // --- SLAs & Announcements ---
 router.use('/slas', slas);
 router.use('/announcements', announcements);
+router.use('/search', search);
+router.use('/exports', exportsRoutes);
 
 // --- Utilities & admin ---
 router.use('/utils', utils);
