@@ -5,65 +5,12 @@ import { CONSULTANT, SHARED } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
+import { getGoals, getGoalStats, getProgressionTimeline } from '../../../features/goals/api/goalsApi';
+import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './Objectives.module.css';
-
-// ── Mock data (no API exists yet for goals) ────────────────
-const MOCK_OBJECTIVES = [
-	{
-		id: 1,
-		stageCode: 'A1',
-		learningPath: 'objectives.pathTechnical',
-		title: 'React Advanced Certification',
-		description: 'objectives.mockDesc1',
-		daysRemaining: 12,
-		completedReqs: 6,
-		totalReqs: 8,
-	},
-	{
-		id: 2,
-		stageCode: 'A2',
-		learningPath: 'objectives.pathCloud',
-		title: 'AWS Cloud Practitioner',
-		description: 'objectives.mockDesc2',
-		daysRemaining: 28,
-		completedReqs: 4,
-		totalReqs: 10,
-	},
-	{
-		id: 3,
-		stageCode: 'A3',
-		learningPath: 'objectives.pathTechnical',
-		title: 'Node.js Mastery',
-		description: 'objectives.mockDesc3',
-		daysRemaining: 45,
-		completedReqs: 2,
-		totalReqs: 12,
-	},
-];
-
-const MOCK_TIMELINE = [
-	{ code: 'E', label: 'objectives.beginner', title: 'objectives.foundations', reqs: '3/3', status: 'complete', detail: 'objectives.completedJan2025' },
-	{ code: 'D', label: 'objectives.intermediate', title: 'objectives.development', reqs: '4/4', status: 'complete', detail: 'objectives.completedJun2025' },
-	{ code: 'C', label: 'objectives.senior', title: 'objectives.specialization', reqs: '7/8', status: 'inProgress', detail: 'objectives.deadline31Dec2026' },
-	{ code: 'B', label: 'objectives.advanced', title: 'objectives.techLeadership', reqs: '0/6', status: 'locked', detail: 'objectives.availableAfterC' },
-	{ code: 'A', label: 'objectives.expert', title: 'objectives.architectureMentoring', reqs: '0/5', status: 'locked', detail: 'objectives.availableAfterB' },
-];
-
-const MOCK_STATS = {
-	activeObjectives: 3,
-	daysToNext: 12,
-	badgesExpiring: 2,
-	completedObjectives: 16,
-};
-
-const MOCK_PROGRESS = [
-	{ name: 'objectives.technicalJourney', completed: 15, total: 20 },
-	{ name: 'objectives.softSkills', completed: 15, total: 20 },
-];
-// ── End mock data ──────────────────────────────────────────
 
 function getGreeting(t) {
 	const hour = new Date().getHours();
@@ -72,12 +19,57 @@ function getGreeting(t) {
 	return t('welcomeCard.goodEvening');
 }
 
+function deriveTimelineStatus(stages) {
+	let foundInProgress = false;
+	return stages.map((s) => {
+		if (s.total_badges > 0 && s.earned_badges >= s.total_badges) {
+			return { ...s, status: 'complete' };
+		}
+		if (s.earned_badges > 0 && !foundInProgress) {
+			foundInProgress = true;
+			return { ...s, status: 'inProgress' };
+		}
+		return { ...s, status: 'locked' };
+	});
+}
+
+function mapGoalToObjective(goal) {
+	const badge = goal.badge_badge;
+	const app = goal.application;
+	const totalReqs = badge?.badge_requirements?.length || 0;
+	const completedReqs = app?.requirements_evidences?.length || 0;
+	const stageCode = badge?.progression_stage?.stage_code?.stage_code || '?';
+	const learningPath = badge?.learning_path?.path_title || '';
+
+	let daysRemaining = 0;
+	if (goal.event_end_date) {
+		const diff = new Date(goal.event_end_date) - new Date();
+		daysRemaining = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+	}
+
+	return {
+		id: goal.goal_id,
+		stageCode,
+		learningPath,
+		title: badge?.badge_title || goal.event_title,
+		description: goal.event_description || '',
+		daysRemaining,
+		completedReqs,
+		totalReqs,
+	};
+}
+
 export default function Objectives() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user: authUser } = useAuth();
 	const { displayName } = useUser();
 	const [reminders, setReminders] = useState([]);
+	const [stats, setStats] = useState({ activeObjectives: 0, daysToNext: 0, badgesExpiring: 0, completedObjectives: 0 });
+	const [objectives, setObjectives] = useState([]);
+	const [timeline, setTimeline] = useState([]);
+	const [progressData, setProgressData] = useState([]);
+	const greeting = getGreeting(t);
 
 	useEffect(() => {
 		fetchNotifications({ limit: 5 })
@@ -86,13 +78,37 @@ export default function Objectives() {
 				setReminders(Array.isArray(list) ? list.slice(0, 5) : []);
 			})
 			.catch(() => setReminders([]));
-	}, []);
 
-	const greeting = getGreeting(t);
-	const stats = MOCK_STATS;
-	const objectives = MOCK_OBJECTIVES;
-	const timeline = MOCK_TIMELINE;
-	const progressData = MOCK_PROGRESS;
+		getGoalStats()
+			.then((data) => setStats({
+				activeObjectives: data.active_objectives ?? 0,
+				daysToNext: data.days_to_next ?? 0,
+				badgesExpiring: data.badges_expiring ?? 0,
+				completedObjectives: data.completed_objectives ?? 0,
+			}))
+			.catch(() => {});
+
+		getGoals()
+			.then((data) => setObjectives(data.map(mapGoalToObjective)))
+			.catch(() => setObjectives([]));
+
+		getProgressionTimeline()
+			.then((data) => setTimeline(deriveTimelineStatus(data)))
+			.catch(() => setTimeline([]));
+
+		getLearningPathProgress()
+			.then((data) => {
+				const mapped = data
+					.filter((lp) => lp.total_badges > 0)
+					.map((lp) => ({
+						name: lp.path_title || lp.learning_path,
+						completed: parseInt(lp.earned_badges ?? lp.badges_earned ?? 0, 10),
+						total: parseInt(lp.total_badges ?? 0, 10),
+					}));
+				setProgressData(mapped.length > 0 ? mapped : []);
+			})
+			.catch(() => setProgressData([]));
+	}, []);
 
 	const urgentCount = reminders.filter(
 		(r) => r.priority === 'urgent' || r.type === 'warning' || r.type === 'sla_breach'
@@ -125,7 +141,6 @@ export default function Objectives() {
 					label={t('objectives.activeObjectives')}
 					value={stats.activeObjectives}
 					color="var(--color-primary)"
-					badge="+1"
 				/>
 				<StatCard
 					icon="clock"
@@ -144,7 +159,6 @@ export default function Objectives() {
 					label={t('objectives.completedObjectives')}
 					value={stats.completedObjectives}
 					color="var(--color-success)"
-					badge="+5"
 				/>
 			</div>
 
@@ -179,14 +193,18 @@ export default function Objectives() {
 									stage.status === 'complete' ? styles.codeComplete :
 									stage.status === 'inProgress' ? styles.codeInProgress : styles.codeLocked
 								}`}>
-									{stage.code} - {t(stage.label)}
+									{stage.code} - {stage.title}
 								</span>
-								<strong className={styles.timelineTitle}>{t(stage.title)}</strong>
-								<span className={styles.timelineReqs}>{stage.reqs} {t('objectives.requirements')}</span>
+								<strong className={styles.timelineTitle}>{stage.title}</strong>
+								<span className={styles.timelineReqs}>{stage.earned_badges}/{stage.total_badges} {t('objectives.requirements')}</span>
 								<span className={`${styles.timelineDetail} ${
 									stage.status === 'inProgress' ? styles.detailWarning : ''
 								}`}>
-									{t(stage.detail)}
+									{stage.status === 'complete' && stage.last_awarded
+										? t('objectives.completedOn', { date: new Date(stage.last_awarded).toLocaleDateString() })
+										: stage.status === 'inProgress'
+											? t('objectives.inProgressLabel')
+											: t('objectives.lockedLabel')}
 								</span>
 							</div>
 						</div>
@@ -201,20 +219,20 @@ export default function Objectives() {
 					<h2 className={styles.sectionTitle}>{t('objectives.myObjectives')}</h2>
 					<div className={styles.objectivesList}>
 						{objectives.map((obj) => {
-							const pct = Math.round((obj.completedReqs / obj.totalReqs) * 100);
+							const pct = obj.totalReqs > 0 ? Math.round((obj.completedReqs / obj.totalReqs) * 100) : 0;
 							return (
 								<div key={obj.id} className={styles.objectiveCard}>
 									<div className={styles.objectiveHeader}>
 										<div className={styles.objectiveTags}>
 											<span className={styles.stageTag}>{obj.stageCode}</span>
-											<span className={styles.pathTag}>{t(obj.learningPath)}</span>
+											<span className={styles.pathTag}>{obj.learningPath}</span>
 										</div>
 										<span className={styles.daysRemaining}>
 											{obj.daysRemaining} {t('objectives.daysRemaining')}
 										</span>
 									</div>
 									<h3 className={styles.objectiveTitle}>{obj.title}</h3>
-									<p className={styles.objectiveDesc}>{t(obj.description)}</p>
+									<p className={styles.objectiveDesc}>{obj.description}</p>
 									<div className={styles.objectiveProgress}>
 										<div className={styles.progressMeta}>
 											<span>{obj.completedReqs}/{obj.totalReqs} {t('objectives.reqsCompleted')}</span>
@@ -321,7 +339,7 @@ export default function Objectives() {
 									colors={['var(--color-primary)', 'rgba(57, 99, 156, 0.12)']}
 								/>
 								<div className={styles.donutLabel}>
-									<strong>{t(pd.name)}</strong>
+									<strong>{pd.name}</strong>
 									<span>{pd.completed}/{pd.total} badges</span>
 								</div>
 							</div>
