@@ -264,6 +264,16 @@ const getBadgeBySlug = async (req, res) => {
                 model: models.badge_requirements,
                 as: 'badge_requirements',
                 attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
+            },
+            {
+                model: models.skills,
+                as: 'skills',
+                attributes: ['skills_id', 'skill_name', 'skill_description']
+            },
+            {
+                model: models.rewards,
+                as: 'rewards',
+                attributes: ['reward_id', 'special_title', 'special_portrait_svg']
             }
         ];
 
@@ -373,9 +383,36 @@ const getBadgeBySlug = async (req, res) => {
             });
         }
 
+        const badgeData = badge.toJSON();
+
+        const userId = req.user?.sub;
+        if (userId && !isAdmin) {
+            const awardedBadge = await models.awarded_badges.findOne({
+                where: { user_id: userId },
+                include: [{
+                    model: models.badge_applications,
+                    as: 'application',
+                    where: { badge_id: badge.badge_id },
+                    attributes: []
+                }],
+                attributes: ['awarded_badges_id', 'awarded_at', 'expiration_at', 'public_verification_link'],
+                order: [['awarded_at', 'DESC']]
+            });
+
+            if (awardedBadge) {
+                badgeData.user_award = {
+                    awarded_at: awardedBadge.awarded_at,
+                    expiration_at: awardedBadge.expiration_at,
+                    public_verification_link: awardedBadge.public_verification_link,
+                };
+            } else {
+                badgeData.user_award = null;
+            }
+        }
+
         return res.status(200).json({
             success: true,
-            data: badge
+            data: badgeData
         });
 
     } catch (error) {
