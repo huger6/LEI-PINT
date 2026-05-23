@@ -1,7 +1,479 @@
-.requirementBlock {
-	background: var(--color-background);
+/* ─── Page ─────────────────────────────── */
+
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	max-width: 1068px;
+	margin: 0 auto;
+	padding-bottom: 48px;
 }
 
-.stickyCard {
-	top: calc(var(--topbar-height, 64px) + 24px);
+/* ─── Breadcrumb ───────────────────────── */
+
+.breadcrumb {
+	margin-bottom: 0;
+}
+
+.breadcrumb .breadcrumb-item a {
+	color: var(--color-outline);
+	text-decoration: none;
+	font-size: 0.875rem;
+}
+
+.breadcrumb .breadcrumb-item a:hover {
+	color: var(--color-primary);
+}
+
+.breadcrumb .breadcrumb-item.active {
+	color: var(--color-secondary);
+}
+
+/* ─── Hero Card ────────────────────────── */
+
+.heroCard {
+	display: flex;
+	align-items: flex-start;
+	gap: 28px;
+	padding: 32px;
+	border-radius: 18px;
+	background: #fff;
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.heroImageWrap {
+	flex-shrink: 0;
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, rgba(0, 184, 224, 0.12) 0%, rgba(57, 99, 156, 0.12) 100%);
+	border: 3px solid var(--color-secondary);
+	overflow: hidden;
+}
+
+.heroImage {
+	width: 80px;
+	height: 80px;
+	object-fit: contain;
+	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+}
+
+.heroImageFallback {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+
+.heroBody {
+	flex: 1;
+	min-width: 0;
+}
+
+.heroTitle {
+	font-size: 1.5rem;
+	font-weight: 800;
+	margin: 0 0 6px;
+	color: var(--color-on-background);
+}
+
+.heroDescription {
+	font-size: 0.9rem;
+	color: var(--color-outline);
+	margin: 0 0 16px;
+	line-height: 1.5;
+}
+
+/* ─── Chips ────────────────────────────── */
+
+.chipRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 14px;
+	border-radius: 999px;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	border: 1px solid rgba(57, 99, 156, 0.18);
+	background: #fff;
+	color: var(--color-on-background);
+}
+
+.chipPoints {
+	color: var(--color-success);
+	border-color: rgba(4, 206, 0, 0.25);
+}
+
+.chipHours {
+	color: var(--color-warning);
+	border-color: rgba(207, 166, 0, 0.3);
+}
+
+/* ─── Action buttons ───────────────────── */
+
+.actionRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.actionBtn {
+	min-width: 180px;
+}
+
+.actionBtnLinkedIn {
+	border-color: #0A66C2 !important;
+	color: #0A66C2 !important;
+}
+
+.actionBtnLinkedIn:hover {
+	background: rgba(10, 102, 194, 0.06) !important;
+}
+
+/* ─── Shared section ───────────────────── */
+
+.section {
+	padding: 28px 32px;
+	border-radius: 18px;
+	background: #fff;
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 800;
+	margin: 0 0 8px;
+	color: var(--color-on-background);
+}
+
+.sectionDesc {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	margin: 0 0 20px;
+	line-height: 1.55;
+}
+
+/* ─── Rewards ──────────────────────────── */
+
+.rewardsGrid {
+	display: flex;
+	gap: 32px;
+	align-items: center;
+}
+
+.rewardsList {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.rewardItem {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 14px 18px;
+	border-radius: 12px;
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	background: var(--color-surface);
+}
+
+.rewardItem strong {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+}
+
+.rewardDesc {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	margin: 2px 0 0;
+}
+
+.rewardIcon {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badgePreview {
+	flex-shrink: 0;
+	width: 160px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
+
+.badgePreviewImg {
+	width: 120px;
+	height: 120px;
+	object-fit: contain;
+	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+	border-radius: 50%;
+	border: 3px solid rgba(57, 99, 156, 0.12);
+	padding: 12px;
+	background: rgba(245, 250, 253, 0.6);
+}
+
+.badgePreviewLabel {
+	font-size: 0.8125rem;
+	font-weight: 700;
+	color: var(--color-secondary);
+	text-align: center;
+}
+
+/* ─── Two-column layout ────────────────── */
+
+.twoColumn {
+	display: grid;
+	grid-template-columns: 1fr 320px;
+	gap: 24px;
+	align-items: start;
+}
+
+/* ─── Competencies ─────────────────────── */
+
+.competencyList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.competencyItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+}
+
+/* ─── Service Lines panel ──────────────── */
+
+.serviceLinesCard {
+	padding: 24px;
+	border-radius: 18px;
+	background: #fff;
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.serviceLineTitle {
+	font-size: 1rem;
+	font-weight: 800;
+	margin: 0 0 16px;
+	color: var(--color-on-background);
+}
+
+.serviceLineList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.serviceLineItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 4px;
+	border-bottom: 1px solid rgba(57, 99, 156, 0.08);
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	cursor: pointer;
+	transition: background 150ms ease;
+}
+
+.serviceLineItem:hover {
+	background: var(--color-primary-hover-bg-soft);
+	border-radius: 8px;
+}
+
+.serviceLineItem:last-child {
+	border-bottom: none;
+}
+
+.serviceLineItem span {
+	flex: 1;
+}
+
+/* ─── Requirements ─────────────────────── */
+
+.requirementsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.expirationBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-warning);
+	padding: 6px 14px;
+	border-radius: 999px;
+	border: 1px solid rgba(207, 166, 0, 0.25);
+	background: rgba(207, 166, 0, 0.06);
+}
+
+.progressBlock {
+	margin-bottom: 24px;
+}
+
+.progressMeta {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 8px;
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	font-weight: 600;
+}
+
+.progressTrack {
+	height: 10px;
+	border-radius: 999px;
+	background: rgba(57, 99, 156, 0.1);
+	overflow: hidden;
+}
+
+.progressFill {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+	transition: width 400ms ease;
+}
+
+.requirementsGrid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
+}
+
+/* ─── Related / Carousel ───────────────── */
+
+.relatedSection {
+	padding: 0;
+}
+
+.relatedHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.carouselControls {
+	display: flex;
+	gap: 8px;
+}
+
+.carouselBtn {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1px solid rgba(57, 99, 156, 0.18);
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease;
+	color: var(--color-on-background);
+}
+
+.carouselBtn:hover {
+	background: var(--color-primary-hover-bg-soft);
+	border-color: var(--color-primary-border-soft);
+}
+
+.carousel {
+	display: flex;
+	gap: 20px;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	padding-bottom: 8px;
+}
+
+.carousel::-webkit-scrollbar {
+	display: none;
+}
+
+.carouselItem {
+	flex: 0 0 240px;
+	scroll-snap-align: start;
+}
+
+/* ─── Responsive ───────────────────────── */
+
+@media (max-width: 992px) {
+	.twoColumn {
+		grid-template-columns: 1fr;
+	}
+
+	.requirementsGrid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.heroCard {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding: 24px;
+	}
+
+	.chipRow {
+		justify-content: center;
+	}
+
+	.actionRow {
+		justify-content: center;
+	}
+
+	.rewardsGrid {
+		flex-direction: column;
+	}
+
+	.section {
+		padding: 20px;
+	}
+
+	.requirementsHeader {
+		flex-direction: column;
+	}
+
+	.carouselItem {
+		flex: 0 0 220px;
+	}
 }
