@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import Pagination from '../../../components/Pagination/Pagination';
@@ -10,6 +11,7 @@ import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeCatalog.module.css';
 
 const PAGE_SIZE = 12;
+const MAX_POINTS = 5000;
 
 const PROGRESSION_TIERS = [
 	{ code: 'A', label: 'Junior (A)' },
@@ -26,15 +28,16 @@ const EMPTY_FILTERS = {
 	areaId: '',
 	stageCodes: [],
 	badgeClass: 'all',
-	minPoints: '',
-	maxPoints: '',
+	minPoints: 0,
+	maxPoints: MAX_POINTS,
 	expiringOnly: false,
 };
 
 function normalizeNumericInput(value) {
-	if (value === '' || value === null || value === undefined) return '';
+	if (value === '' || value === null || value === undefined) return 0;
 	const parsed = Number(value);
-	return Number.isFinite(parsed) && parsed >= 0 ? parsed : '';
+	if (!Number.isFinite(parsed)) return 0;
+	return Math.min(MAX_POINTS, Math.max(0, parsed));
 }
 
 function normalizeFilters(filters) {
@@ -155,8 +158,8 @@ export default function BadgeCatalog() {
 				if (filters.areaId) params.areaId = Number(filters.areaId);
 				if (filters.stageCodes.length > 0) params.stageCodes = filters.stageCodes.join(',');
 				if (filters.badgeClass && filters.badgeClass !== 'all') params.badgeClass = filters.badgeClass;
-				if (filters.minPoints !== '') params.minPoints = Number(filters.minPoints);
-				if (filters.maxPoints !== '') params.maxPoints = Number(filters.maxPoints);
+				if (Number(filters.minPoints) > 0) params.minPoints = Number(filters.minPoints);
+				if (Number(filters.maxPoints) < MAX_POINTS) params.maxPoints = Number(filters.maxPoints);
 				if (filters.expiringOnly) params.expiringOnly = true;
 
 				const response = await getBadgesCatalog(params);
@@ -239,7 +242,21 @@ export default function BadgeCatalog() {
 	}
 
 	function handleDesktopPointsChange(field, value) {
-		updateFilters((prev) => ({ ...prev, [field]: value }));
+		const nextValue = normalizeNumericInput(value);
+		updateFilters((prev) => {
+			if (field === 'minPoints') {
+				return {
+					...prev,
+					minPoints: nextValue,
+					maxPoints: Math.max(nextValue, normalizeNumericInput(prev.maxPoints)),
+				};
+			}
+			return {
+				...prev,
+				maxPoints: nextValue,
+				minPoints: Math.min(nextValue, normalizeNumericInput(prev.minPoints)),
+			};
+		});
 	}
 
 	function handleDesktopExpiringToggle(checked) {
@@ -301,8 +318,8 @@ export default function BadgeCatalog() {
 		Boolean(filters.areaId) ||
 		filters.stageCodes.length > 0 ||
 		filters.badgeClass !== 'all' ||
-		filters.minPoints !== '' ||
-		filters.maxPoints !== '' ||
+		Number(filters.minPoints) > 0 ||
+		Number(filters.maxPoints) < MAX_POINTS ||
 		filters.expiringOnly;
 
 	function renderFilterGroups(state, handlers, keyPrefix = 'desktop') {
@@ -312,38 +329,54 @@ export default function BadgeCatalog() {
 		const scopedAreas = state.serviceLineId
 			? areas.filter((area) => String(area.service_line_id || area.serviceLineId) === String(state.serviceLineId))
 			: [];
+		const minPointsValue = normalizeNumericInput(state.minPoints);
+		const maxPointsValue = normalizeNumericInput(state.maxPoints);
+		const learningPathOptions = [
+			{ value: '', label: t('badgeCatalog.filters.allLearningPaths') },
+			...learningPaths.map((lp) => ({
+				value: String(lp.learning_path_id || lp.learningPathId),
+				label: lp.path_title || lp.pathTitle,
+			})),
+		];
+		const serviceLineOptions = [
+			{ value: '', label: t('badgeCatalog.filters.allServiceLines') },
+			...scopedServiceLines.map((sl) => ({
+				value: String(sl.service_line_id || sl.serviceLineId),
+				label: sl.service_line_name || sl.serviceLineName,
+			})),
+		];
 
 		return (
-			<div className="d-flex flex-column gap-4">
+			<div className={`d-flex flex-column gap-4 ${styles.filtersContent}`}>
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.structure')}</h3>
 					<div className="d-flex flex-column gap-2">
-						<select
-							className={`form-select ${styles.filterControl}`}
-							value={state.learningPathId}
+						<label className={styles.inputLabel} htmlFor={`${keyPrefix}-learning-path`}>
+							{t('badgeCatalog.filters.learningPath')}
+						</label>
+						<CustomSelect
+							id={`${keyPrefix}-learning-path`}
+							name={`${keyPrefix}-learning-path`}
+							value={String(state.learningPathId)}
 							onChange={(event) => handlers.onLearningPathChange(event.target.value)}
-						>
-							<option value="">{t('badgeCatalog.filters.allLearningPaths')}</option>
-							{learningPaths.map((lp) => (
-								<option key={lp.path_slug || lp.pathSlug} value={lp.learning_path_id || lp.learningPathId}>
-									{lp.path_title || lp.pathTitle}
-								</option>
-							))}
-						</select>
+							options={learningPathOptions}
+							placeholder={t('badgeCatalog.filters.allLearningPaths')}
+							ariaLabel={t('badgeCatalog.filters.learningPath')}
+						/>
 
-						<select
-							className={`form-select ${styles.filterControl}`}
-							value={state.serviceLineId}
-							disabled={!state.learningPathId}
+						<label className={styles.inputLabel} htmlFor={`${keyPrefix}-service-line`}>
+							{t('badgeCatalog.filters.serviceLine')}
+						</label>
+						<CustomSelect
+							id={`${keyPrefix}-service-line`}
+							name={`${keyPrefix}-service-line`}
+							value={String(state.serviceLineId)}
 							onChange={(event) => handlers.onServiceLineChange(event.target.value)}
-						>
-							<option value="">{t('badgeCatalog.filters.allServiceLines')}</option>
-							{scopedServiceLines.map((sl) => (
-								<option key={sl.sl_slug || sl.slSlug} value={sl.service_line_id || sl.serviceLineId}>
-									{sl.service_line_name || sl.serviceLineName}
-								</option>
-							))}
-						</select>
+							options={serviceLineOptions}
+							placeholder={t('badgeCatalog.filters.allServiceLines')}
+							ariaLabel={t('badgeCatalog.filters.serviceLine')}
+							disabled={!state.learningPathId}
+						/>
 
 						<div className={styles.areaPickerWrap}>
 							<div className={styles.areaPickerLabel}>{t('badgeCatalog.filters.area')}</div>
@@ -405,28 +438,34 @@ export default function BadgeCatalog() {
 
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.points')}</h3>
-					<div className="row g-2">
-						<div className="col-6">
+					<div className="row g-3">
+						<div className="col-12">
 							<label className={styles.inputLabel} htmlFor={`${keyPrefix}-min-points`}>{t('badgeCatalog.filters.minPoints')}</label>
 							<input
 								id={`${keyPrefix}-min-points`}
-								type="number"
+								type="range"
 								min={0}
-								className={`form-control ${styles.filterControl}`}
-								value={state.minPoints}
+								max={MAX_POINTS}
+								step={50}
+								className={`form-range ${styles.pointsRange}`}
+								value={minPointsValue}
 								onChange={(event) => handlers.onPointsChange('minPoints', event.target.value)}
 							/>
+							<div className={styles.rangeValue}>{minPointsValue}</div>
 						</div>
-						<div className="col-6">
+						<div className="col-12">
 							<label className={styles.inputLabel} htmlFor={`${keyPrefix}-max-points`}>{t('badgeCatalog.filters.maxPoints')}</label>
 							<input
 								id={`${keyPrefix}-max-points`}
-								type="number"
+								type="range"
 								min={0}
-								className={`form-control ${styles.filterControl}`}
-								value={state.maxPoints}
+								max={MAX_POINTS}
+								step={50}
+								className={`form-range ${styles.pointsRange}`}
+								value={maxPointsValue}
 								onChange={(event) => handlers.onPointsChange('maxPoints', event.target.value)}
 							/>
+							<div className={styles.rangeValue}>{maxPointsValue}</div>
 						</div>
 					</div>
 				</section>
@@ -450,16 +489,20 @@ export default function BadgeCatalog() {
 		<>
 			<div className="d-flex align-items-center justify-content-between mb-3">
 				<h1 className="h3 mb-0">{t('badgeCatalog.title')}</h1>
-				{hasActiveFilters ? (
-					<button type="button" className="btn btn-sm btn-outline-primary d-none d-lg-inline-flex" onClick={resetDesktopFilters}>
+				{hasActiveFilters && (
+					<button type="button" className="btn btn-sm btn-outline-primary d-none d-xl-inline-flex" onClick={resetDesktopFilters}>
 						{t('badgeCatalog.filters.clear')}
 					</button>
-				) : null}
+				)}
 			</div>
 
 			<div className={styles.searchWrap}>
 				<Icon name="search" size={16} className={styles.searchIcon} aria-hidden="true" />
+				<label htmlFor="badge-catalog-search" className={styles.inputLabel}>
+					{t('badgeCatalog.filters.search')}
+				</label>
 				<input
+					id="badge-catalog-search"
 					type="text"
 					className={`form-control ${styles.searchInput}`}
 					placeholder={t('badgeCatalog.searchPlaceholder')}
@@ -468,16 +511,17 @@ export default function BadgeCatalog() {
 				/>
 			</div>
 
-			<div className="d-lg-none mb-3">
+			<div className="d-xl-none mb-3">
 				<button type="button" className={`btn btn-primary w-100 ${styles.mobileFilterButton}`} onClick={openDrawer}>
+					<Icon name="filter" size={16} className="me-2" aria-hidden="true" />
 					{t('badgeCatalog.filters.open')}
 				</button>
 			</div>
 
 			<div className="row g-4">
-				<aside className="col-lg-3 d-none d-lg-block">
+				<aside className="col-xl-3 d-none d-xl-block">
 					<div className={`card ${styles.filterCard}`}>
-						<div className="card-body p-3 p-xl-4">
+						<div className={`card-body ${styles.filterCardBody}`}>
 							{renderFilterGroups(filters, {
 								onLearningPathChange: handleDesktopLearningPathChange,
 								onServiceLineChange: handleDesktopServiceLineChange,
@@ -491,7 +535,7 @@ export default function BadgeCatalog() {
 					</div>
 				</aside>
 
-				<section className="col-12 col-lg-9">
+				<section className="col-12 col-xl-9">
 					{loadingBadges ? (
 						<CardGridSkeleton count={6} columns={3} />
 					) : badges.length === 0 ? (
@@ -571,7 +615,21 @@ export default function BadgeCatalog() {
 										: [...prev.stageCodes, code]
 								})),
 								onBadgeClassChange: (value) => updateMobileFilters((prev) => ({ ...prev, badgeClass: value })),
-								onPointsChange: (field, value) => updateMobileFilters((prev) => ({ ...prev, [field]: value })),
+								onPointsChange: (field, value) => updateMobileFilters((prev) => {
+									const nextValue = normalizeNumericInput(value);
+									if (field === 'minPoints') {
+										return {
+											...prev,
+											minPoints: nextValue,
+											maxPoints: Math.max(nextValue, normalizeNumericInput(prev.maxPoints)),
+										};
+									}
+									return {
+										...prev,
+										maxPoints: nextValue,
+										minPoints: Math.min(nextValue, normalizeNumericInput(prev.minPoints)),
+									};
+								}),
 								onExpiringToggle: (checked) => updateMobileFilters((prev) => ({ ...prev, expiringOnly: checked })),
 							}, 'mobile')}
 						</div>
