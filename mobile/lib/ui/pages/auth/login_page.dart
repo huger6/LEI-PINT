@@ -62,6 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
               result['forcePasswordChange'] == true;
           final firstLogin = result['firstLogin'] == true;
 
+          final langId = authStore.currentUser?.preferredLangId;
+          await LanguageScope.of(context).setLanguageFromId(langId);
+
+          if (!mounted) return;
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

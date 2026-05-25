@@ -106,6 +106,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     LanguageModel(id: 3, code: '3', name: 'Español'),
   ];
 
+  static String _normalizeLanguageCode(String code) {
+    final lower = code.toLowerCase();
+    if (lower == '1' || lower.startsWith('pt')) return 'pt';
+    if (lower == '2' || lower.startsWith('en')) return 'en';
+    if (lower == '3' || lower.startsWith('es')) return 'es';
+    return lower;
+  }
+
   Future<void> _fetchDropdownData() async {
     setState(() => _isLoadingData = true);
     try {
@@ -120,14 +128,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         setState(() {
           final fetched = results[0] as List<LanguageModel>;
-          final existingIds = fetched.map((l) => l.id).toSet();
-          final merged = List<LanguageModel>.from(fetched);
-          for (final fallback in _fallbackLanguages) {
-            if (!existingIds.contains(fallback.id)) {
-              merged.add(fallback);
+          final seen = <String>{};
+          final deduped = <LanguageModel>[];
+          for (final lang in fetched) {
+            final normalized = _normalizeLanguageCode(lang.code);
+            if (seen.add(normalized)) {
+              deduped.add(lang);
             }
           }
-          _availableLanguages = merged;
+          final existingCodes = seen;
+          for (final fallback in _fallbackLanguages) {
+            final normalized = _normalizeLanguageCode(fallback.code);
+            if (!existingCodes.contains(normalized)) {
+              deduped.add(fallback);
+            }
+          }
+          _availableLanguages = deduped;
           _availableLocations = results[1] as List<LocationModel>;
 
           if (_availableLanguages.isNotEmpty && _preferredLanguage == null) {

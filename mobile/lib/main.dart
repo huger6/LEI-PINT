@@ -20,6 +20,7 @@ import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
 import 'data/repositories/statistics_repo.dart';
+import 'data/local/current_user_dao.dart';
 import 'data/local/notification_dao.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
@@ -126,6 +127,7 @@ void main() async {
           create: (_) => AuthStore(
             getIt<AuthRepository>(),
             getIt<ApiClient>(),
+            getIt<CurrentUserDao>(),
             storageService: getIt.isRegistered<SupabaseStorageService>()
                 ? getIt<SupabaseStorageService>()
                 : null,

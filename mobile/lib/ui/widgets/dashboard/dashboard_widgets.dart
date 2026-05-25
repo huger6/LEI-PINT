@@ -6,11 +6,13 @@ class DashboardTopBar extends StatelessWidget {
     required this.totalPoints,
     required this.onPointsTap,
     required this.onNotificationsTap,
+    this.hasUnread = false,
   });
 
   final int totalPoints;
   final VoidCallback onPointsTap;
   final VoidCallback onNotificationsTap;
+  final bool hasUnread;
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +76,19 @@ class DashboardTopBar extends StatelessWidget {
                   color: Color(0xFF20252B),
                 ),
               ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDE5A6A),
-                    shape: BoxShape.circle,
+              if (hasUnread)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFDE5A6A),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

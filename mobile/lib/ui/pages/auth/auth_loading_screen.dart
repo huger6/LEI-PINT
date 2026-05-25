@@ -24,14 +24,22 @@ class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
     if (!mounted) return;
 
     final authStore = context.read<AuthStore>();
+    final langCtrl = LanguageScope.of(context);
 
     if (authStore.isAuthenticated) {
+      await langCtrl.setLanguageFromId(authStore.currentUser?.preferredLangId);
+      if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(AppRouter.dashboard);
       return;
     }
 
     final restored = await authStore.tryRestoreSession();
     if (!mounted) return;
+
+    if (restored) {
+      await langCtrl.setLanguageFromId(authStore.currentUser?.preferredLangId);
+      if (!mounted) return;
+    }
 
     final targetRoute = restored ? AppRouter.dashboard : AppRouter.login;
     Navigator.of(context).pushReplacementNamed(targetRoute);

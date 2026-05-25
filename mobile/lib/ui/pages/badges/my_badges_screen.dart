@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../data/local/current_user_dao.dart';
 import '../../../data/repositories/applications_repo.dart';
 import '../../../data/repositories/badge_repo.dart';
@@ -9,6 +10,7 @@ import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../../models/earned_badge_model.dart';
 import '../../../injection_container.dart';
+import '../../widgets/badges/download_confirmation_sheet.dart';
 import '../../widgets/badges/rgpd_consent_sheet.dart';
 import '../../widgets/badges/share_badge_sheet.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
@@ -55,8 +57,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     final applicationsRepo = context.read<ApplicationsRepository>();
 
     await Future.wait([
-      badgeStore.loadBadges(),
-      badgeStore.loadEarnedBadges(),
+      badgeStore.loadBadges(forceRefresh: true),
+      badgeStore.loadEarnedBadges(forceRefresh: true),
       badgeStore.loadFavorites(),
     ]);
 
@@ -140,6 +142,58 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleDownload(EarnedBadge earned) async {
+    final badge = earned.badge;
+    final award = earned.award;
+    final applicationGuid = award.applicationGuid;
+
+    if (applicationGuid == null || applicationGuid.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Não foi possível identificar a candidatura.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    final dateStr =
+        '${award.awardedAt.day.toString().padLeft(2, '0')}-'
+        '${award.awardedAt.month.toString().padLeft(2, '0')}-'
+        '${award.awardedAt.year}';
+
+    final safeTitle = badge.title
+        .replaceAll(RegExp(r'[^\w\s-]'), '')
+        .replaceAll(RegExp(r'\s+'), '_');
+
+    final fileName = 'Comprovativo_${safeTitle}_$dateStr.pdf';
+
+    try {
+      final badgeRepo = context.read<BadgeRepository>();
+      await badgeRepo.downloadCertificate(
+        applicationGuid: applicationGuid,
+        fileName: fileName,
+      );
+
+      if (!mounted) return;
+
+      await showDownloadConfirmationSheet(
+        context,
+        fileName: fileName,
+        badgeTitle: badge.title,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao transferir comprovativo.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -252,6 +306,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                     badge: item.badge,
                     completionDate: item.award.awardedAt,
                     onShare: () => _handleShare(item),
+                    onDownload: () => _handleDownload(item),
                   );
                 },
               ),

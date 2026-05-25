@@ -24,7 +24,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authStore = context.read<AuthStore>();
-      context.read<BadgeStore>().loadEarnedBadges();
+      context.read<BadgeStore>().loadEarnedBadges(forceRefresh: true);
       context.read<DashboardStore>().loadDashboard(authStore.currentUser);
     });
   }

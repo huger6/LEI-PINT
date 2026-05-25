@@ -32,6 +32,14 @@ class DashboardSubmission {
   final String timestamp;
 }
 
+class MonthBadgeCount {
+  MonthBadgeCount({required this.year, required this.month, required this.count});
+
+  final int year;
+  final int month;
+  final int count;
+}
+
 class DashboardStore extends ChangeNotifier {
   DashboardStore(
     this._badgeRepository,
@@ -60,6 +68,7 @@ class DashboardStore extends ChangeNotifier {
   List<Map<String, dynamic>> _timeline = [];
   List<Map<String, dynamic>> _lpProgress = [];
   List<Map<String, dynamic>> _pointsHistory = [];
+  List<MonthBadgeCount> _monthlyBadgeCounts = [];
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -76,6 +85,7 @@ class DashboardStore extends ChangeNotifier {
   List<Map<String, dynamic>> get timeline => _timeline;
   List<Map<String, dynamic>> get lpProgress => _lpProgress;
   List<Map<String, dynamic>> get pointsHistory => _pointsHistory;
+  List<MonthBadgeCount> get monthlyBadgeCounts => _monthlyBadgeCounts;
 
   Future<void> loadDashboard(UserModel? currentUser) async {
     _isLoading = true;
@@ -98,14 +108,16 @@ class DashboardStore extends ChangeNotifier {
       _areaMetrics = _buildAreaMetrics(badges);
 
       _completedBadges = applications
-          .where(
-            (app) =>
-                app.applicationState.toLowerCase().contains('approved') ||
-                app.applicationState.toLowerCase().contains('aprov'),
-          )
+          .where((app) {
+            final state = app.applicationState.toLowerCase();
+            return state.contains('accepted') ||
+                state.contains('approved') ||
+                state.contains('aprov');
+          })
           .length;
 
       _totalApplications = applications.length;
+      _monthlyBadgeCounts = _buildMonthlyBadgeCounts(applications);
       _growthPercent = _totalApplications == 0
           ? 0
           : ((_completedBadges / totalApplications) * 100).round();
@@ -302,6 +314,31 @@ class DashboardStore extends ChangeNotifier {
     }
 
     return (((index + 1) / ranking.length) * 100).ceil();
+  }
+
+  List<MonthBadgeCount> _buildMonthlyBadgeCounts(
+    List<ApplicationSummaryModel> applications,
+  ) {
+    final now = DateTime.now();
+    final months = List.generate(5, (i) {
+      return DateTime(now.year, now.month - (4 - i));
+    });
+
+    final accepted = applications.where((app) {
+      final state = app.applicationState.toLowerCase();
+      return state.contains('accepted') ||
+          state.contains('approved') ||
+          state.contains('aprov');
+    }).toList();
+
+    return months.map((month) {
+      final count = accepted.where((app) {
+        final date = app.latestDate;
+        if (date == null) return false;
+        return date.year == month.year && date.month == month.month;
+      }).length;
+      return MonthBadgeCount(year: month.year, month: month.month, count: count);
+    }).toList();
   }
 
   String _formatRelative(DateTime? date) {

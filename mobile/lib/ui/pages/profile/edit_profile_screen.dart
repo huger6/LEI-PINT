@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../widgets/profile/edit_profile_widgets.dart';
 
@@ -9,6 +10,7 @@ class EditProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final user = context.read<AuthStore>().currentUser;
 
     return Scaffold(
@@ -25,9 +27,9 @@ class EditProfileScreen extends StatelessWidget {
             size: 26,
           ),
         ),
-        title: const Text(
-          'Editar Perfil',
-          style: TextStyle(
+        title: Text(
+          tr.tr('editProfile'),
+          style: const TextStyle(
             color: Color(0xFF20252B),
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -39,6 +41,7 @@ class EditProfileScreen extends StatelessWidget {
           initialUsername: user?.username ?? '',
           initialFullName: user?.fullName ?? '',
           initialBiography: user?.biography ?? '',
+          initialLocationId: user?.locationId,
         ),
       ),
     );

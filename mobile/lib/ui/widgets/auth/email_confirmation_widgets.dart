@@ -22,9 +22,14 @@ class EmailConfirmationBody extends StatefulWidget {
 
 class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
   bool _isSending = false;
-  bool _emailSent = false;
   int _cooldownSeconds = 0;
   Timer? _cooldownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCooldown();
+  }
 
   @override
   void dispose() {
@@ -32,7 +37,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
     super.dispose();
   }
 
-  Future<void> _handleSend() async {
+  Future<void> _handleResend() async {
     if (_cooldownSeconds > 0 || _isSending) return;
 
     setState(() => _isSending = true);
@@ -43,14 +48,13 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        setState(() => _emailSent = true);
         _startCooldown();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               result['message']?.toString() ??
-                  'Erro ao enviar email de confirmação.',
+                  'Erro ao reenviar email de confirmação.',
             ),
             backgroundColor: AppColors.error,
           ),
@@ -60,7 +64,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erro ao enviar email. Tente novamente.'),
+          content: Text('Erro ao reenviar email. Tente novamente.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -90,103 +94,6 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
 
   @override
   Widget build(BuildContext context) {
-    return _emailSent ? _buildSentState(context) : _buildInitialState(context);
-  }
-
-  Widget _buildInitialState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.6),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.email_outlined,
-            size: 42,
-            color: colorScheme.primary,
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Confirme o seu email',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'A sua conta foi criada com sucesso!',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Para ativar a sua conta, envie o email de confirmação '
-          'e clique no link que irá receber.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.7),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          widget.email,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colorScheme.primary,
-          ),
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: _isSending ? null : _handleSend,
-            icon: _isSending
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: AppColors.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.send_rounded, size: 20),
-            label: Text(
-              _isSending ? 'A enviar...' : 'Enviar email de confirmação',
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
-              disabledForegroundColor:
-                  AppColors.onPrimary.withValues(alpha: 0.8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              elevation: 0,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _buildSentState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -276,7 +183,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
           height: 50,
           child: OutlinedButton(
             onPressed:
-                (_cooldownSeconds > 0 || _isSending) ? null : _handleSend,
+                (_cooldownSeconds > 0 || _isSending) ? null : _handleResend,
             style: OutlinedButton.styleFrom(
               side: BorderSide(
                 color: (_cooldownSeconds > 0 || _isSending)

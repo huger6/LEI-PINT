@@ -79,7 +79,7 @@ class BadgeModel {
         'description',
       ]),
       skills: _extractStringList(json['skills']),
-      attributes: _buildAttributes(
+      attributes: buildAttributes(
         area: area,
         points: points,
         stageCode: stageCode,
@@ -126,7 +126,7 @@ class BadgeModel {
   final List<BadgeAttribute> attributes;
   final List<BadgeRequirement> requirements;
 
-  static List<BadgeAttribute> _buildAttributes({
+  static List<BadgeAttribute> buildAttributes({
     required String area,
     required int points,
     required String stageCode,

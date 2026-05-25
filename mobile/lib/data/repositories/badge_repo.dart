@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '../../core/constants/api_endpoints.dart';
 import '../../models/awarded_badge_model.dart';
 import '../../models/badge_model.dart';
@@ -32,7 +35,7 @@ class BadgeRepository {
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
     await _badgeDao.replaceAllFromJson(rows);
-    return _badgeDao.getAll();
+    return rows.map((json) => BadgeModel.fromApiSummary(json)).toList();
   }
 
   Future<BadgeModel?> getBadgeBySlug(String badgeSlug) async {
@@ -146,10 +149,36 @@ class BadgeRepository {
     );
   }
 
+  Future<String> downloadCertificate({
+    required String applicationGuid,
+    required String fileName,
+    String lang = 'pt',
+  }) async {
+    final payload = await _apiClient.post(
+      ApiEndpoints.getCertificate(applicationGuid),
+      data: {'lang': lang},
+    );
+
+    final map = _extractMap(payload);
+    final data = _extractMap(map['data']);
+    final certificateUrl = (data['certificateUrl'] ?? '').toString();
+    if (certificateUrl.isEmpty) {
+      throw Exception('Certificate URL not available');
+    }
+
+    final dir = await getApplicationDocumentsDirectory();
+    final filePath = '${dir.path}/$fileName';
+
+    await Dio().download(certificateUrl, filePath);
+
+    return filePath;
+  }
+
   AwardedBadgeModel _parseAwardedFromApi(Map<String, dynamic> json) {
     return AwardedBadgeModel.fromJson({
       'id': json['awardedBadgeId'] ?? json['awarded_badges_id'] ?? json['id'],
       'application_id': json['applicationId'] ?? json['application_id'] ?? 0,
+      'application_guid': json['applicationGuid'] ?? json['application_guid'],
       'badge_id': json['badge']?['id'] ??
           json['badge']?['badge_id'] ??
           json['badge_id'] ??

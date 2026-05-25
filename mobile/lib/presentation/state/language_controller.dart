@@ -29,6 +29,16 @@ class LanguageController extends ChangeNotifier {
     await _loadLanguageJson(_languageCode);
   }
 
+  Future<void> setLanguageFromId(int? langId) async {
+    if (langId == null) return;
+    final code = switch (langId) {
+      2 => 'en',
+      3 => 'es',
+      _ => 'pt',
+    };
+    await setLanguageCode(code);
+  }
+
   Future<void> setLanguageCode(String code) async {
     final normalizedCode = _normalizeCode(code);
 

@@ -19,21 +19,37 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authStore = context.read<AuthStore>();
       context.read<DashboardStore>().loadDashboard(authStore.currentUser);
     });
   }
 
-  String _timeGreeting() {
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final authStore = context.read<AuthStore>();
+      context.read<DashboardStore>().loadDashboard(authStore.currentUser);
+    }
+  }
+
+  String _timeGreeting(String Function(String) tr) {
     final hour = DateTime.now().hour;
-    if (hour >= 6 && hour < 12) return 'Bom dia';
-    if (hour >= 12 && hour < 20) return 'Boa tarde';
-    return 'Boa noite';
+    if (hour >= 6 && hour < 12) return tr('goodMorning');
+    if (hour >= 12 && hour < 20) return tr('goodAfternoon');
+    return tr('goodEvening');
   }
 
   @override
@@ -41,6 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final dashStore = context.watch<DashboardStore>();
+    final notifStore = context.watch<NotificationStore>();
 
     const pageBackground = Color(0xFFE2E6EB);
 
@@ -54,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? dashStore.totalPoints
         : (authStore.currentUser?.totalPoints ?? 0);
 
-    final greeting = '${_timeGreeting()}, $userName';
+    final greeting = '${_timeGreeting(tr.tr)}, $userName!';
 
     const segmentColors = [
       Color(0xFF5C4FE0),
@@ -97,6 +114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       DashboardTopBar(
                         totalPoints: totalPoints,
+                        hasUnread: notifStore.unreadCount > 0,
                         onPointsTap: () {
                           Navigator.push(
                             context,
@@ -243,6 +261,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       SimpleLineStatsCard(
                         completedBadges: dashStore.completedBadges,
                         growthPercent: dashStore.growthPercent,
+                        monthlyBadgeCounts: dashStore.monthlyBadgeCounts,
                       ),
                       if (donutSegments.isNotEmpty)
                         CertificationDonutCard(

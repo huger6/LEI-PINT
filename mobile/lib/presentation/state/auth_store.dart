@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/fcm_service.dart';
+import '../../data/local/current_user_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../data/remote/supabase_storage_service.dart';
 import '../../data/repositories/auth_repo.dart';
@@ -12,12 +13,14 @@ import '../../models/user_model.dart';
 class AuthStore extends ChangeNotifier {
   AuthStore(
     this._authRepository,
-    this._apiClient, {
+    this._apiClient,
+    this._currentUserDao, {
     SupabaseStorageService? storageService,
   }) : _storageService = storageService;
 
   final AuthRepository _authRepository;
   final ApiClient _apiClient;
+  final CurrentUserDao _currentUserDao;
   final SupabaseStorageService? _storageService;
 
   static const String _rememberKey = 'remember_me';
@@ -45,6 +48,10 @@ class AuthStore extends ChangeNotifier {
       _accessToken = (result['accessToken'] ?? result['token']).toString();
       _currentUser = result['user'] as UserModel?;
       _apiClient.setAccessToken(_accessToken);
+
+      if (_currentUser != null) {
+        await _currentUserDao.save(_currentUser!);
+      }
 
       if (remember) {
         final expiryMs = DateTime.now()
@@ -88,6 +95,7 @@ class AuthStore extends ChangeNotifier {
       final user = await _authRepository.getMe(accessToken: _accessToken);
       if (user != null) {
         _currentUser = user;
+        await _currentUserDao.save(user);
       }
 
       notifyListeners();
@@ -166,8 +174,13 @@ class AuthStore extends ChangeNotifier {
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
         _currentUser = refreshed;
-        notifyListeners();
+      } else if (_currentUser != null) {
+        _currentUser = _applyProfilePatch(_currentUser!, data);
       }
+      if (_currentUser != null) {
+        await _currentUserDao.save(_currentUser!);
+      }
+      notifyListeners();
     }
     return result;
   }
@@ -178,8 +191,11 @@ class AuthStore extends ChangeNotifier {
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
         _currentUser = refreshed;
-        notifyListeners();
       }
+      if (_currentUser != null) {
+        await _currentUserDao.save(_currentUser!);
+      }
+      notifyListeners();
     }
     return result;
   }
@@ -209,6 +225,30 @@ class AuthStore extends ChangeNotifier {
     _currentUser = null;
     _draftRegistration = RegistrationData();
     _apiClient.setAccessToken(null);
+    await _currentUserDao.clear();
     notifyListeners();
+  }
+
+  UserModel _applyProfilePatch(UserModel user, Map<String, dynamic> data) {
+    return UserModel(
+      id: user.id,
+      email: user.email,
+      fullName: (data['full_name'] as String?) ?? user.fullName,
+      username: (data['username'] as String?) ?? user.username,
+      profilePicture: user.profilePicture,
+      role: user.role,
+      biography: data.containsKey('biography')
+          ? data['biography']?.toString()
+          : user.biography,
+      gdprAccepted: (data['gdpr_accepted'] as bool?) ?? user.gdprAccepted,
+      totalPoints: user.totalPoints,
+      preferredLangId: user.preferredLangId,
+      locationId: data.containsKey('location_id')
+          ? data['location_id'] as int?
+          : user.locationId,
+      serviceLineName: user.serviceLineName,
+      learningPathTitle: user.learningPathTitle,
+      areas: user.areas,
+    );
   }
 }
