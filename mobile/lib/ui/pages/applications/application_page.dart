@@ -204,6 +204,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
           ),
         ),
       );
+      return;
     } catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(

@@ -51,6 +51,7 @@ class AwardedBadgeDao {
       batch.insert(LocalDatabase.awardedBadgesTable, {
         'id': ab.id,
         'application_id': ab.applicationId,
+        'application_guid': ab.applicationGuid,
         'badge_id': ab.badgeId,
         'awarded_at': ab.awardedAt.millisecondsSinceEpoch,
         'expiration_at': ab.expirationAt?.millisecondsSinceEpoch,
@@ -80,6 +81,7 @@ class AwardedBadgeDao {
     return AwardedBadgeModel(
       id: row['id'] as int,
       applicationId: row['application_id'] as int,
+      applicationGuid: row['application_guid'] as String?,
       badgeId: row['badge_id'] as int,
       awardedAt: DateTime.fromMillisecondsSinceEpoch(row['awarded_at'] as int),
       expirationAt: row['expiration_at'] != null

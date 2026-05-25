@@ -68,6 +68,7 @@ class AchievedBadgeCard extends StatelessWidget {
     this.fallbackLevel = '',
     this.fallbackPoints = 0,
     this.onShare,
+    this.onDownload,
   });
 
   final BadgeModel badge;
@@ -75,6 +76,7 @@ class AchievedBadgeCard extends StatelessWidget {
   final String fallbackLevel;
   final int fallbackPoints;
   final VoidCallback? onShare;
+  final VoidCallback? onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +208,7 @@ class AchievedBadgeCard extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: onDownload,
                   icon: const Icon(Icons.download_rounded, size: 18),
                   label: const FittedBox(child: Text('Comprovativo')),
                   style: OutlinedButton.styleFrom(

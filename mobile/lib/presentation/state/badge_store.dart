@@ -82,11 +82,13 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     try {
       _badges = await _badgeRepository.getBadges();
     } catch (e) {
+      debugPrint('BadgeStore: loadBadges failed: $e');
       final local = await _badgeRepository.getBadgesLocal();
       if (local.isNotEmpty) {
         _badges = local;
       } else {
-        _errorMessage = e.toString();
+        _errorMessage =
+            'Não foi possível carregar os badges. Verifique a sua ligação.';
       }
     } finally {
       _isLoading = false;

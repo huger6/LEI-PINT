@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
+
 class PointsHighlight extends StatelessWidget {
   const PointsHighlight({super.key, required this.totalPoints});
 
@@ -8,11 +10,11 @@ class PointsHighlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
         Container(
-          width: 70,
-          height: 70,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF6DC1E3), Color(0xFF658CC9)],
@@ -21,39 +23,32 @@ class PointsHighlight extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1F3954).withValues(alpha: 0.23),
-                blurRadius: 12,
+                blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
           child: const Icon(
-            Icons.star_border_rounded,
+            Icons.workspace_premium_rounded,
             color: Colors.white,
-            size: 34,
+            size: 40,
           ),
         ),
-        const SizedBox(width: 14),
-        RichText(
-          text: TextSpan(
-            style: const TextStyle(fontFamily: 'Roboto'),
-            children: [
-              TextSpan(
-                text: '$totalPoints',
-                style: const TextStyle(
-                  fontSize: 56,
-                  color: Color(0xFF56A8D7),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const TextSpan(
-                text: ' pontos',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Color(0xFF27333F),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+        const SizedBox(height: 14),
+        Text(
+          '$totalPoints',
+          style: const TextStyle(
+            fontSize: 52,
+            color: Color(0xFF56A8D7),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          LanguageScope.of(context).tr('pointsLabel'),
+          style: const TextStyle(
+            fontSize: 20,
+            color: Color(0xFF5A6774),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

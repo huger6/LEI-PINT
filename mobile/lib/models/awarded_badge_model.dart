@@ -1,6 +1,7 @@
 class AwardedBadgeModel {
   final int id;
   final int applicationId;
+  final String? applicationGuid;
   final int badgeId;
   final DateTime awardedAt;
   final DateTime? expirationAt;
@@ -13,6 +14,7 @@ class AwardedBadgeModel {
   AwardedBadgeModel({
     required this.id,
     required this.applicationId,
+    this.applicationGuid,
     required this.badgeId,
     required this.awardedAt,
     this.expirationAt,
@@ -32,6 +34,7 @@ class AwardedBadgeModel {
     return AwardedBadgeModel(
       id: _toInt(json['id'] ?? json['awarded_badges_id']),
       applicationId: _toInt(json['application_id']),
+      applicationGuid: json['application_guid']?.toString(),
       badgeId: _toInt(json['badge_id']),
       awardedAt: _parseDate(json['awarded_at']) ?? DateTime.now(),
       expirationAt: _parseDate(json['expiration_at']),

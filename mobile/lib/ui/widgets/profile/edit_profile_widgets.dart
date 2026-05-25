@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/repositories/location_repo.dart';
 import '../../../data/repositories/validation_repo.dart';
+import '../../../models/location_model.dart';
 import '../../../presentation/state/auth_store.dart';
 
 class EditProfileForm extends StatefulWidget {
@@ -14,11 +17,13 @@ class EditProfileForm extends StatefulWidget {
     required this.initialUsername,
     required this.initialFullName,
     required this.initialBiography,
+    this.initialLocationId,
   });
 
   final String initialUsername;
   final String initialFullName;
   final String initialBiography;
+  final int? initialLocationId;
 
   @override
   State<EditProfileForm> createState() => _EditProfileFormState();
@@ -35,12 +40,37 @@ class _EditProfileFormState extends State<EditProfileForm> {
   String? _fullNameError;
   Timer? _usernameDebounce;
 
+  List<LocationModel> _locations = [];
+  LocationModel? _selectedLocation;
+  bool _isLoadingLocations = true;
+  bool _isDropdownOpen = false;
+
   @override
   void initState() {
     super.initState();
     _usernameCtrl = TextEditingController(text: widget.initialUsername);
     _fullNameCtrl = TextEditingController(text: widget.initialFullName);
     _bioCtrl = TextEditingController(text: widget.initialBiography);
+    _fetchLocations();
+  }
+
+  Future<void> _fetchLocations() async {
+    try {
+      final repo = GetIt.instance<LocationRepository>();
+      final locations = await repo.getAvailableLocations();
+      if (!mounted) return;
+      setState(() {
+        _locations = locations;
+        if (widget.initialLocationId != null) {
+          _selectedLocation = locations
+              .where((l) => l.id == widget.initialLocationId)
+              .firstOrNull;
+        }
+        _isLoadingLocations = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingLocations = false);
+    }
   }
 
   @override
@@ -59,8 +89,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
       return;
     }
     _usernameDebounce = Timer(const Duration(milliseconds: 500), () async {
+      final tr = LanguageScope.of(context);
       if (value.trim().length < 3) {
-        setState(() => _usernameError = 'Mínimo de 3 caracteres.');
+        setState(() => _usernameError = tr.tr('usernameMinCharsEdit'));
         return;
       }
       final repo = GetIt.instance<ValidationRepository>();
@@ -71,7 +102,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
       } else {
         setState(
           () => _usernameError =
-              result['message']?.toString() ?? 'Username indisponível.',
+              result['message']?.toString() ?? tr.tr('usernameUnavailable'),
         );
       }
     });
@@ -84,15 +115,17 @@ class _EditProfileFormState extends State<EditProfileForm> {
     final fullName = _fullNameCtrl.text.trim();
     final bio = _bioCtrl.text.trim();
 
+    final tr = LanguageScope.of(context);
+
     if (fullName.isEmpty) {
-      setState(() => _fullNameError = 'O nome é obrigatório.');
+      setState(() => _fullNameError = tr.tr('nameRequired'));
       return;
     } else {
       setState(() => _fullNameError = null);
     }
 
     if (username.isEmpty || username.length < 3) {
-      setState(() => _usernameError = 'Mínimo de 3 caracteres.');
+      setState(() => _usernameError = tr.tr('usernameMinCharsEdit'));
       return;
     }
 
@@ -102,6 +135,10 @@ class _EditProfileFormState extends State<EditProfileForm> {
     if (username != widget.initialUsername) data['username'] = username;
     if (fullName != widget.initialFullName) data['full_name'] = fullName;
     if (bio != widget.initialBiography) data['biography'] = bio;
+    final newLocationId = _selectedLocation?.id;
+    if (newLocationId != widget.initialLocationId) {
+      data['location_id'] = newLocationId;
+    }
 
     if (data.isEmpty) {
       setState(() => _isLoading = false);
@@ -116,8 +153,8 @@ class _EditProfileFormState extends State<EditProfileForm> {
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Perfil atualizado com sucesso.'),
+        SnackBar(
+          content: Text(tr.tr('profileUpdatedSuccess')),
           backgroundColor: AppColors.success,
         ),
       );
@@ -126,7 +163,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result['message']?.toString() ?? 'Erro ao atualizar perfil.',
+            result['message']?.toString() ?? tr.tr('profileUpdateError'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -136,6 +173,8 @@ class _EditProfileFormState extends State<EditProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       child: Form(
@@ -144,7 +183,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _ProfileField(
-              label: 'Nome completo',
+              label: tr.tr('fullName'),
               controller: _fullNameCtrl,
               icon: Icons.person_outline_rounded,
               errorText: _fullNameError,
@@ -163,12 +202,81 @@ class _EditProfileFormState extends State<EditProfileForm> {
               onChanged: _onUsernameChanged,
             ),
             const SizedBox(height: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr.tr('location'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2A3540),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFDDE3E9)),
+                  ),
+                  child: _isLoadingLocations
+                      ? const SizedBox(
+                          height: 50,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                      : DropdownButton<LocationModel>(
+                          value: _selectedLocation,
+                          hint: Text(
+                            tr.tr('selectLocationLabel'),
+                            style: const TextStyle(
+                              color: Color(0xFFACB5BE),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          isExpanded: true,
+                          underline: const SizedBox.shrink(),
+                          icon: Icon(
+                            _isDropdownOpen
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: const Color(0xFF8B96A1),
+                            size: 24,
+                          ),
+                          onTap: () {
+                            setState(() => _isDropdownOpen = true);
+                          },
+                          items: _locations.map((loc) {
+                            return DropdownMenuItem(
+                              value: loc,
+                              child: Text(loc.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedLocation = value;
+                              _isDropdownOpen = false;
+                            });
+                          },
+                        ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
             _ProfileField(
-              label: 'Biografia',
+              label: tr.tr('biography'),
               controller: _bioCtrl,
               icon: Icons.short_text_rounded,
               maxLines: 4,
-              hintText: 'Escreva algo sobre si...',
+              hintText: tr.tr('biographyHint'),
             ),
             const SizedBox(height: 28),
             SizedBox(
@@ -193,9 +301,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Guardar Alterações',
-                        style: TextStyle(
+                    : Text(
+                        tr.tr('saveChanges'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),

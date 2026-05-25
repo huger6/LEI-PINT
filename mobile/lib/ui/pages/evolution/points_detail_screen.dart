@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../presentation/state/dashboard_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/points/points_detail_widgets.dart';
@@ -12,6 +13,7 @@ class PointsDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final dashStore = context.watch<DashboardStore>();
 
     final historyItems = dashStore.recentSubmissions
@@ -39,9 +41,9 @@ class PointsDetailScreen extends StatelessWidget {
             size: 26,
           ),
         ),
-        title: const Text(
-          'Pontos',
-          style: TextStyle(
+        title: Text(
+          tr.tr('pointsTitle'),
+          style: const TextStyle(
             color: Color(0xFF20252B),
             fontSize: 30,
             fontWeight: FontWeight.w500,
@@ -52,16 +54,45 @@ class PointsDetailScreen extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
               PointsHighlight(totalPoints: totalPoints),
-              const SizedBox(height: 16),
-              const Text(
-                'Histórico',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF21262C),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1A2530).withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  tr.tr('topPercentMessage').replaceAll('{percent}', '${dashStore.topPercent}'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: Color(0xFF36414D),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  tr.tr('history'),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF21262C),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -70,7 +101,7 @@ class PointsDetailScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Center(
                     child: Text(
-                      'Sem histórico de pontos.',
+                      tr.tr('noPointsHistory'),
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],
@@ -87,43 +118,21 @@ class PointsDetailScreen extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 8),
-              const Text(
-                'Estatísticas',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF21262C),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  tr.tr('statistics'),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF21262C),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               DailyEvolutionCard(timeline: dashStore.timeline),
               const SizedBox(height: 12),
               MonthlyEvolutionCard(timeline: dashStore.timeline),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF1A2530).withValues(alpha: 0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  'Está no top ${dashStore.topPercent}% dos nossos consultores!',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                    color: Color(0xFF36414D),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

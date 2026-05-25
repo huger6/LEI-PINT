@@ -84,6 +84,10 @@ class ApiEndpoints {
   static String submitApplication(String applicationId) =>
       '/api/applications/$applicationId/submit';
 
+  // POST /applications/:applicationGuid/certificate
+  static String getCertificate(String applicationGuid) =>
+      '/api/applications/$applicationGuid/certificate';
+
   // POST /applications/:applicationGuid/resend-confirmation
   static String resendBadgeConfirmation(String applicationGuid) =>
       '/api/applications/$applicationGuid/resend-confirmation';

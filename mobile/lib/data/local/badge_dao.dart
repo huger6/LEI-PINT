@@ -75,6 +75,22 @@ class BadgeDao {
     batch.delete(LocalDatabase.badgesTable);
 
     for (final row in rows) {
+      final area = row['area'];
+      final areaName = area is Map
+          ? (area['area_name'] ?? area['name'])?.toString() ?? ''
+          : (row['area_name'] ?? '').toString();
+
+      final stage = row['progression_stage'];
+      String stageCode = '';
+      if (stage is Map) {
+        final sc = stage['stage_code'];
+        if (sc is Map) {
+          stageCode = (sc['stage_code'] ?? '').toString();
+        } else if (sc is String) {
+          stageCode = sc;
+        }
+      }
+
       batch.insert(LocalDatabase.badgesTable, {
         'id': row['badge_id'] ?? row['id'],
         'slug': row['badge_slug'] ?? row['slug'] ?? '',
@@ -87,6 +103,8 @@ class BadgeDao {
         'description': row['badge_description'] ?? row['description'],
         'img_url': row['badge_img_url'] ?? row['img_url'],
         'area_id': row['area_id'] ?? 0,
+        'area_name': areaName,
+        'stage_code': stageCode,
         'service_line_id': row['service_line_id'] ?? 0,
         'learning_path_id': row['learning_path_id'] ?? 0,
         'progression_stage_id': row['progression_stage_id'] ?? 0,
@@ -101,20 +119,29 @@ class BadgeDao {
     final slug = (row['slug'] as String?) ?? '';
     final title = (row['title'] as String?) ?? '';
     final seed = slug.isNotEmpty ? slug : title;
+    final area = (row['area_name'] as String?) ?? '';
+    final level = (row['stage_code'] as String?) ?? '';
+    final points = row['points'] as int? ?? 0;
+    final duration = (row['estimated_time'] as String?) ?? '';
 
     return BadgeModel(
       id: row['id'] as int,
       slug: slug,
       title: title,
-      category: '',
-      points: row['points'] as int? ?? 0,
-      level: '',
-      duration: (row['estimated_time'] as String?) ?? '',
+      category: area,
+      points: points,
+      level: level,
+      duration: duration,
       medalColor: BadgeVisuals.medalColor(seed),
       ribbonColor: BadgeVisuals.ribbonColor(seed),
       description: (row['description'] as String?) ?? '',
       skills: const [],
-      attributes: const [],
+      attributes: BadgeModel.buildAttributes(
+        area: area,
+        points: points,
+        stageCode: level,
+        duration: duration,
+      ),
       requirements: const [],
     );
   }

@@ -13,43 +13,43 @@ class StatusProgressStepper extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 520),
-        child: IntrinsicWidth(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const StatusStepDot(isDone: true),
-                    const Expanded(
-                      child: Divider(color: StatusColors.primaryAction, thickness: 6),
-                    ),
-                    const StatusStepDot(isDone: true),
-                    const Expanded(
-                      child: Divider(color: StatusColors.primaryAction, thickness: 6),
-                    ),
-                    const StatusStepDot(isDone: false),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    StatusStepLabel(text: tr.tr('stepSubmitted'), isCurrent: false),
-                    const SizedBox(width: 12),
-                    StatusStepLabel(text: tr.tr('stepTm'), isCurrent: false),
-                    const SizedBox(width: 12),
-                    StatusStepLabel(
-                      text: tr.tr('stepServiceLineLeader'),
-                      isCurrent: true,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const StatusStepDot(isDone: true),
+                  const Expanded(
+                    child: Divider(color: StatusColors.primaryAction, thickness: 6),
+                  ),
+                  const StatusStepDot(isDone: true),
+                  const Expanded(
+                    child: Divider(color: StatusColors.primaryAction, thickness: 6),
+                  ),
+                  const StatusStepDot(isDone: false),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  StatusStepLabel(text: tr.tr('stepSubmitted'), isCurrent: false),
+                  const SizedBox(width: 12),
+                  StatusStepLabel(text: tr.tr('stepTm'), isCurrent: false),
+                  const SizedBox(width: 12),
+                  StatusStepLabel(
+                    text: tr.tr('stepServiceLineLeader'),
+                    isCurrent: true,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

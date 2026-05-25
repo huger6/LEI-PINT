@@ -83,14 +83,18 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
       final languages = await repo.getAvailableLanguages();
       if (!mounted) return;
 
-      final loaded = languages.map((lang) {
+      final seen = <String>{};
+      final loaded = <LanguageOption>[];
+      for (final lang in languages) {
         final appCode = _normalizeToAppCode(lang);
-        return LanguageOption(
-          code: appCode,
-          label: lang.name,
-          flag: _flagForCode(lang.code),
-        );
-      }).toList();
+        if (seen.add(appCode)) {
+          loaded.add(LanguageOption(
+            code: appCode,
+            label: lang.name,
+            flag: _flagForCode(lang.code),
+          ));
+        }
+      }
 
       final existingCodes = loaded.map((l) => l.code).toSet();
       for (final fallback in _fallbackLanguages) {
@@ -129,9 +133,9 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Selecionar idioma',
-            style: TextStyle(
+          Text(
+            LanguageScope.of(context).tr('selectLanguageTitle'),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: Color(0xFF1E2932),
@@ -181,9 +185,12 @@ class _LanguageTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Text(
-                  option.flag,
-                  style: const TextStyle(fontSize: 24),
+                Icon(
+                  Icons.language_rounded,
+                  size: 24,
+                  color: isSelected
+                      ? AppColors.secondary
+                      : const Color(0xFF5A6774),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

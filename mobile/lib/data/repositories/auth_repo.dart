@@ -287,8 +287,8 @@ class AuthRepository {
         await _apiClient.post(
           ApiEndpoints.changePassword,
           data: {
-            'current_password': currentPassword,
-            'new_password': newPassword,
+            'currentPassword': currentPassword,
+            'newPassword': newPassword,
           },
         ),
       );
