@@ -1,5 +1,6 @@
 const { models } = require('../config/db');
 const { emitToUser } = require('../config/websocket');
+const { broadcastToWebhooks } = require('./integrations.service');
 
 const VALID_NOTIFICATION_TYPES = ['HOME', 'BADGES', 'APPLICATIONS', 'ACHIEVEMENTS', 'POINTS', 'OBJECTIVES', 'EVOLUTION', 'ANNOUNCEMENTS', 'SYSTEM'];
 
@@ -30,6 +31,16 @@ const createNotification = async ({ userId, definitionId, notificationType, titl
         is_read: false,
         sent_at: notification.sent_at
     });
+
+    // Fire-and-forget: broadcast to configured external webhooks (Teams/Slack)
+    if (notificationType === 'BADGES' || notificationType === 'ACHIEVEMENTS') {
+        broadcastToWebhooks(models, {
+            title: title || 'New Badge Notification',
+            body: body || '',
+            badgeImageUrl: meta?.badge_img_url || null,
+            verificationUrl: url || null
+        });
+    }
 
     return notification;
 };

@@ -1,9 +1,19 @@
 const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
+const { handleZodError } = require('../utils/responseHelper');
+const { publicBadgeLinkParam, publicCertificateParam } = require('../validations/public.validation');
 
 const viewPublicBadge = async (req, res) => {
     try {
-        const { link } = req.params;
+        let validated;
+        try {
+            validated = publicBadgeLinkParam.parse(req.params);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_PARAMS');
+            throw error;
+        }
+
+        const { link } = validated;
 
         const awarded = await models.awarded_badges.findOne({
             where: { public_verification_link: link },
@@ -111,7 +121,15 @@ const viewPublicBadge = async (req, res) => {
 
 const viewPublicCertificate = async (req, res) => {
     try {
-        const { applicationGuid } = req.params;
+        let validated;
+        try {
+            validated = publicCertificateParam.parse(req.params);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_PARAMS');
+            throw error;
+        }
+
+        const { applicationGuid } = validated;
 
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
