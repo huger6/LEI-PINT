@@ -109,6 +109,7 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
                       const SizedBox(height: 14),
                       ApplicationProgressStepper(
                         applicationState: _application.applicationState,
+                        rejectedByRole: _application.rejectedByRole,
                       ),
                       const SizedBox(height: 14),
                       ApplicationInfoSection(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/repositories/applications_repo.dart';
 import '../../../injection_container.dart';
+import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/explore_badge_card.dart';
@@ -22,14 +24,26 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
   final _searchCtrl = TextEditingController();
   BadgeFilterResult? _activeFilter;
 
+  List<ApplicationSummaryModel> _applications = const [];
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final store = context.read<BadgeStore>();
       store.loadBadges();
+      store.loadEarnedBadges();
       store.loadFavorites();
+      _loadApplications();
     });
+  }
+
+  Future<void> _loadApplications() async {
+    try {
+      final repo = context.read<ApplicationsRepository>();
+      final apps = await repo.getApplications(limit: 100);
+      if (mounted) setState(() => _applications = apps);
+    } catch (_) {}
   }
 
   @override
@@ -38,8 +52,21 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
     super.dispose();
   }
 
-  List<BadgeModel> _applyFilters(List<BadgeModel> badges) {
-    var result = List<BadgeModel>.from(badges);
+  List<BadgeModel> _applyFilters(List<BadgeModel> badges, BadgeStore badgeStore) {
+    final earnedIds = badgeStore.earnedBadges.map((e) => e.badge.id).toSet();
+
+    final activeAppBadgeIds = _applications
+        .where((app) {
+          final state = app.applicationState.toLowerCase();
+          return !state.contains('rejected') && !state.contains('rejeit');
+        })
+        .map((app) => app.badge?.id)
+        .whereType<int>()
+        .toSet();
+
+    final excludedIds = {...earnedIds, ...activeAppBadgeIds};
+
+    var result = badges.where((b) => !excludedIds.contains(b.id)).toList();
     final query = _searchCtrl.text.trim().toLowerCase();
 
     if (query.isNotEmpty) {
@@ -82,7 +109,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
     final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
     final allBadges = badgeStore.badges;
-    final filtered = _applyFilters(allBadges);
+    final filtered = _applyFilters(allBadges, badgeStore);
 
     final areas = allBadges
         .map((b) => b.category)

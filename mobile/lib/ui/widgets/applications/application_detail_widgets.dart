@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../badges/my_badges_widgets.dart';
@@ -162,9 +163,11 @@ class ApplicationProgressStepper extends StatefulWidget {
   const ApplicationProgressStepper({
     super.key,
     required this.applicationState,
+    this.rejectedByRole,
   });
 
   final String applicationState;
+  final String? rejectedByRole;
 
   @override
   State<ApplicationProgressStepper> createState() =>
@@ -211,8 +214,19 @@ class _ApplicationProgressStepperState
     super.dispose();
   }
 
+  bool get _rejectedByTM {
+    final role = (widget.rejectedByRole ?? '').toLowerCase();
+    return role.contains('talent');
+  }
+
+  bool get _rejectedBySL {
+    final role = (widget.rejectedByRole ?? '').toLowerCase();
+    return role.contains('service') || role.contains('line');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final applicationState = widget.applicationState;
     final normalized = applicationState.toLowerCase();
 
@@ -228,8 +242,16 @@ class _ApplicationProgressStepperState
         normalized.contains('submet');
 
     int currentStep;
-    if (isAccepted || isRejected) {
+    if (isAccepted) {
       currentStep = 4;
+    } else if (isRejected) {
+      if (_rejectedByTM) {
+        currentStep = 2;
+      } else if (_rejectedBySL) {
+        currentStep = 3;
+      } else {
+        currentStep = 3;
+      }
     } else if (isInValidation) {
       currentStep = 3;
     } else if (isSubmitted) {
@@ -246,7 +268,11 @@ class _ApplicationProgressStepperState
       statusColor = ApplicationDetailColors.stepAccepted;
       statusIcon = Icons.check_circle_rounded;
     } else if (isRejected) {
-      statusMessage = 'Candidatura rejeitada.';
+      if (_rejectedByTM) {
+        statusMessage = tr.tr('rejectedByTM');
+      } else {
+        statusMessage = tr.tr('rejectedBySL');
+      }
       statusColor = ApplicationDetailColors.stepRejected;
       statusIcon = Icons.cancel_rounded;
     } else if (isInValidation) {
@@ -262,6 +288,9 @@ class _ApplicationProgressStepperState
       statusColor = ApplicationDetailColors.mutedText;
       statusIcon = Icons.edit_note_rounded;
     }
+
+    final bool rejAtStep2 = isRejected && currentStep == 2;
+    final bool rejAtStep3 = isRejected && currentStep == 3;
 
     return Container(
       width: double.infinity,
@@ -301,46 +330,46 @@ class _ApplicationProgressStepperState
                     _StepDot(
                       step: 1,
                       currentStep: currentStep,
-                      isRejected: isRejected,
-                      isAccepted: isAccepted,
+                      isRejected: false,
+                      isAccepted: false,
                       totalSteps: 4,
                     ),
                     Expanded(
                       child: _StepConnector(
                         isCompleted: currentStep >= 2,
-                        isRejected: false,
+                        isRejected: rejAtStep2,
                       ),
                     ),
                     _StepDot(
                       step: 2,
                       currentStep: currentStep,
-                      isRejected: isRejected,
-                      isAccepted: isAccepted,
+                      isRejected: rejAtStep2,
+                      isAccepted: false,
                       totalSteps: 4,
                     ),
                     Expanded(
                       child: _StepConnector(
-                        isCompleted: currentStep >= 3,
-                        isRejected: false,
+                        isCompleted: currentStep >= 3 && !rejAtStep2,
+                        isRejected: rejAtStep3,
                       ),
                     ),
                     _StepDot(
                       step: 3,
-                      currentStep: currentStep,
-                      isRejected: isRejected,
-                      isAccepted: isAccepted,
+                      currentStep: rejAtStep2 ? 99 : currentStep,
+                      isRejected: rejAtStep3,
+                      isAccepted: false,
                       totalSteps: 4,
                     ),
                     Expanded(
                       child: _StepConnector(
-                        isCompleted: currentStep >= 4,
-                        isRejected: isRejected && currentStep >= 4,
+                        isCompleted: isAccepted,
+                        isRejected: false,
                       ),
                     ),
                     _StepDot(
                       step: 4,
-                      currentStep: currentStep,
-                      isRejected: isRejected,
+                      currentStep: isAccepted ? 4 : 99,
+                      isRejected: false,
                       isAccepted: isAccepted,
                       totalSteps: 4,
                     ),
@@ -368,18 +397,19 @@ class _ApplicationProgressStepperState
                     _StepLabel(
                       text: 'Talent\nManager',
                       isActive: currentStep >= 2,
-                      isCurrent: currentStep == 2,
+                      isCurrent: currentStep == 2 && !isRejected,
+                      isRejected: rejAtStep2,
                     ),
                     _StepLabel(
                       text: 'Service\nLine',
-                      isActive: currentStep >= 3,
-                      isCurrent: currentStep == 3,
+                      isActive: currentStep >= 3 && !rejAtStep2,
+                      isCurrent: currentStep == 3 && !isRejected,
+                      isRejected: rejAtStep3,
                     ),
                     _StepLabel(
-                      text: isRejected ? 'Rejeitado' : 'Aprovado',
-                      isActive: currentStep >= 4,
-                      isCurrent: currentStep == 4,
-                      isRejected: isRejected,
+                      text: 'Aprovado',
+                      isActive: isAccepted,
+                      isCurrent: isAccepted,
                       isAccepted: isAccepted,
                     ),
                   ],
@@ -444,17 +474,17 @@ class _StepDot extends StatelessWidget {
     Color borderColor;
     Widget? child;
 
-    if (isCompleted) {
-      bgColor = ApplicationDetailColors.stepCompleted;
-      borderColor = ApplicationDetailColors.stepCompleted;
-      child = const Icon(Icons.check, color: Colors.white, size: 18);
-    } else if (isCurrent && isFinalStep && isRejected) {
+    if (isCurrent && isRejected) {
       bgColor = ApplicationDetailColors.stepRejected;
       borderColor = ApplicationDetailColors.stepRejected;
       child = const Icon(Icons.close, color: Colors.white, size: 18);
     } else if (isCurrent && isFinalStep && isAccepted) {
       bgColor = ApplicationDetailColors.stepAccepted;
       borderColor = ApplicationDetailColors.stepAccepted;
+      child = const Icon(Icons.check, color: Colors.white, size: 18);
+    } else if (isCompleted) {
+      bgColor = ApplicationDetailColors.stepCompleted;
+      borderColor = ApplicationDetailColors.stepCompleted;
       child = const Icon(Icons.check, color: Colors.white, size: 18);
     } else if (isCurrent) {
       bgColor = Colors.white;

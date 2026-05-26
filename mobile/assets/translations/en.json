@@ -236,5 +236,18 @@
   "languageLabel": "Location",
   "goodMorning": "Good morning",
   "goodAfternoon": "Good afternoon",
-  "goodEvening": "Good evening"
+  "goodEvening": "Good evening",
+
+  "pwReqMinChars": "At least 8 characters",
+  "pwReqUppercase": "At least 1 uppercase letter",
+  "pwReqLowercase": "At least 1 lowercase letter",
+  "pwReqNumber": "At least 1 number",
+  "pwReqSpecialChar": "At least 1 special character (!@#$%^&*)",
+
+  "loginErrorUserNotFound": "User or email not found.",
+  "loginErrorWrongPassword": "Incorrect password.",
+  "loginErrorAccountDeactivated": "Your account has been deactivated. Contact the administrator.",
+  "loginErrorAccountLocked": "Account locked due to too many attempts. Try again in 15 minutes.",
+  "rejectedByTM": "Rejected by Talent Manager",
+  "rejectedBySL": "Rejected by Service Line Leader"
 }

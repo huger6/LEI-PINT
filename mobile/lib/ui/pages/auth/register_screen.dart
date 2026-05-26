@@ -12,6 +12,8 @@ import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/shared/nav_link.dart';
+import '../../widgets/shared/password_strength_indicator.dart';
+import '../../widgets/shared/modern_date_picker.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/lang_model.dart';
@@ -43,6 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoadingData = true;
   bool _agreedToTerms = false;
   String _phonePrefix = '+351';
+  String _passwordText = '';
 
   // Validation state tracking
   final Map<String, bool?> _validationState = {
@@ -94,6 +97,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _usernameController.addListener(() => _debounceValidation('username'));
     _nameController.addListener(() => _debounceValidation('name'));
     _bioController.addListener(() => _debounceValidation('bio'));
+    _passwordController.addListener(() {
+      if (_passwordText != _passwordController.text) {
+        setState(() => _passwordText = _passwordController.text);
+      }
+    });
     _resetForm();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDropdownData();
@@ -615,6 +623,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _passwordController,
                             validator: FormValidators.validatePassword,
                           ),
+                          PasswordStrengthIndicator(
+                            password: _passwordText,
+                          ),
+                          const SizedBox(height: 8),
 
                           // Confirm password field
                           CustomTextField(
@@ -736,13 +748,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: FormValidators.validateBirthdate,
                             readOnly: true,
                             onTap: () async {
-                              final DateTime? picked = await showDatePicker(
+                              final DateTime? picked =
+                                  await showModernDatePicker(
                                 context: context,
                                 initialDate: DateTime(2000),
                                 firstDate: DateTime(1950),
                                 lastDate: DateTime.now(),
-                                initialEntryMode:
-                                    DatePickerEntryMode.calendarOnly,
                               );
                               if (picked != null) {
                                 _birthdateController.text =

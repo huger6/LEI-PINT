@@ -8,6 +8,7 @@ import '../../data/repositories/ranking_repo.dart';
 import '../../data/repositories/statistics_repo.dart';
 import '../../models/application_summary_model.dart';
 import '../../models/badge_model.dart';
+import '../../models/earned_badge_model.dart';
 import '../../models/ranking_entry_model.dart';
 import '../../models/user_model.dart';
 
@@ -93,28 +94,28 @@ class DashboardStore extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await Future.wait([
-        _badgeRepository.getBadges(),
-        _applicationsRepository.getApplications(limit: 50),
-        _rankingRepository.getRanking(limit: 100),
-      ]);
+      final badgesFuture = _badgeRepository.getBadges().catchError((_) => <BadgeModel>[]);
+      final appsFuture = _applicationsRepository.getApplications(limit: 50).catchError((_) => <ApplicationSummaryModel>[]);
+      final rankingFuture = _rankingRepository.getRanking(limit: 100).catchError((_) => <RankingEntryModel>[]);
+
+      final results = await Future.wait([badgesFuture, appsFuture, rankingFuture]);
 
       final badges = results[0] as List<BadgeModel>;
       final applications = results[1] as List<ApplicationSummaryModel>;
       final ranking = results[2] as List<RankingEntryModel>;
 
+      List<EarnedBadge> earnedBadges = [];
+      try {
+        earnedBadges = await _badgeRepository.getEarnedBadges();
+      } catch (_) {
+        earnedBadges = await _badgeRepository.getEarnedBadgesLocal();
+      }
+
       _recommendedBadges = _buildRecommendedBadges(badges, currentUser);
       _recentSubmissions = _buildSubmissions(applications, badges);
-      _areaMetrics = _buildAreaMetrics(badges);
+      _areaMetrics = _buildAreaMetricsFromEarned(earnedBadges);
 
-      _completedBadges = applications
-          .where((app) {
-            final state = app.applicationState.toLowerCase();
-            return state.contains('accepted') ||
-                state.contains('approved') ||
-                state.contains('aprov');
-          })
-          .length;
+      _completedBadges = earnedBadges.length;
 
       _totalApplications = applications.length;
       _monthlyBadgeCounts = _buildMonthlyBadgeCounts(applications);
@@ -141,6 +142,13 @@ class DashboardStore extends ChangeNotifier {
           .whereType<Map>()
           .map((e) => Map<String, dynamic>.from(e))
           .toList();
+
+      if (_totalPoints == 0) {
+        final statsPoints = phResult['totalPoints'];
+        if (statsPoints is int && statsPoints > 0) {
+          _totalPoints = statsPoints;
+        }
+      }
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -237,12 +245,14 @@ class DashboardStore extends ChangeNotifier {
     return sorted.take(5).toList(growable: false);
   }
 
-  List<DashboardAreaMetric> _buildAreaMetrics(List<BadgeModel> badges) {
+  List<DashboardAreaMetric> _buildAreaMetricsFromEarned(
+    List<EarnedBadge> earned,
+  ) {
     final grouped = <String, int>{};
-    for (final badge in badges) {
-      final key = badge.category.trim().isEmpty
+    for (final e in earned) {
+      final key = e.badge.category.trim().isEmpty
           ? 'Sem categoria'
-          : badge.category;
+          : e.badge.category;
       grouped[key] = (grouped[key] ?? 0) + 1;
     }
 

@@ -23,24 +23,23 @@ class SubmissionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F5F8),
-          borderRadius: BorderRadius.circular(20),
+          color: const Color(0xFFF4F6FA),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1A000000),
-              blurRadius: 8,
+              color: Color(0x12000000),
+              blurRadius: 6,
               offset: Offset(0, 2),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _MedalIcon(medalColor: medalColor, ribbonColor: ribbonColor),
             const SizedBox(width: 12),
@@ -51,46 +50,55 @@ class SubmissionCard extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF20252B),
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     status,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                       color: statusColor,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.history_toggle_off_rounded, size: 20),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            timestamp,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF20252B),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.grey.shade400,
+                  size: 22,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 14,
+                      color: Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      timestamp,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -108,24 +116,24 @@ class _MedalIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 64,
-      height: 86,
+      width: 50,
+      height: 62,
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
           Positioned(
-            top: 40,
+            top: 30,
             child: Row(
               children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 24),
-                const SizedBox(width: 2),
-                Icon(Icons.bookmark, color: ribbonColor, size: 24),
+                Icon(Icons.bookmark, color: ribbonColor, size: 20),
+                const SizedBox(width: 1),
+                Icon(Icons.bookmark, color: ribbonColor, size: 20),
               ],
             ),
           ),
           Container(
-            width: 56,
-            height: 56,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: medalColor,
@@ -134,7 +142,7 @@ class _MedalIcon extends StatelessWidget {
             child: const Icon(
               Icons.star_rounded,
               color: Colors.white,
-              size: 30,
+              size: 24,
             ),
           ),
         ],

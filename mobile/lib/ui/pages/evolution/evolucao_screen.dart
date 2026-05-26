@@ -114,7 +114,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   ),
                   MiniStatCard(
                     title: 'Pontos totais',
-                    value: '${user?.totalPoints ?? 0}',
+                    value: '${dashStore.totalPoints > 0 ? dashStore.totalPoints : (user?.totalPoints ?? 0)}',
                     icon: Icons.stars_rounded,
                     accentColor: const Color(0xFF96B8CF),
                   ),

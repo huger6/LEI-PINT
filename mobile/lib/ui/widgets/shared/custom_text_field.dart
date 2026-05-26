@@ -10,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final TextEditingController? controller;
   final bool obscureText;
   final String? errorText;
+  final bool hasError;
   final ValueChanged<String>? onChanged;
   final int maxLines;
   final bool readOnly;
@@ -26,6 +27,7 @@ class CustomTextField extends StatefulWidget {
     this.controller,
     this.obscureText = false,
     this.errorText,
+    this.hasError = false,
     this.onChanged,
     this.maxLines = 1,
     this.readOnly = false,
@@ -47,22 +49,25 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final errorColor = Theme.of(context).colorScheme.error;
+    final showError = widget.hasError || widget.errorText != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label
         RichText(
           text: TextSpan(
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: showError ? errorColor : null,
+            ),
             children: [
               TextSpan(text: widget.label),
               if (widget.isRequired)
                 TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
+                    color: errorColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -71,7 +76,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         const SizedBox(height: 8),
 
-        // TextFormField
         TextFormField(
           controller: widget.controller,
           keyboardType: widget.keyboardType,
@@ -96,15 +100,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     ),
                   )
                 : null,
+            enabledBorder: showError
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide(color: errorColor, width: 1.5),
+                  )
+                : null,
+            focusedBorder: showError
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide(color: errorColor, width: 2),
+                  )
+                : null,
           ),
         ),
 
         if (widget.errorText != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             widget.errorText!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.error,
+              color: errorColor,
             ),
           ),
         ],

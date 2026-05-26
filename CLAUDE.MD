@@ -131,6 +131,7 @@ Badge progression maps directly across five distinct state flags managed inside 
 - Ensure responsive design practices are applied to support varying mobile screen dimensions. The application layout is strictly locked to portrait orientation (device rotation is forbidden).
 - Hardcoding colors in UI components is strictly forbidden. Always implement colors by invoking the predefined variables located exclusively in the Mobile/lib/core/theme directory. Variables follow functional semantic naming (e.g., primary, error, surface) to ensure scalability and ease of future theme modifications.
 - If a required widget is not available during page composition, it must first be developed within the appropriate Mobile/lib/ui/widgets/theme_directory. This new widget must strictly follow the architectural logic and styling patterns of existing components before being finally instantiated in the target page.
+- When doing changes in the Mobile part of the project never change the api part of the project
 
 
 ### Validation & Error Handling Architecture
