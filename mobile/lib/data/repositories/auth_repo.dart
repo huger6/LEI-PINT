@@ -60,9 +60,13 @@ class AuthRepository {
     } on DioException catch (e) {
       final data = _asMap(e.response?.data);
       final msg = _extractMessage(data, fallback: 'Erro ao fazer login.');
+      final code = data['code']?.toString() ?? '';
+      final statusCode = e.response?.statusCode ?? 0;
       return {
         'success': false,
         'message': msg,
+        'code': code,
+        'statusCode': statusCode,
         if (_isEmailNotConfirmed(data)) 'emailNotConfirmed': true,
       };
     } catch (e) {

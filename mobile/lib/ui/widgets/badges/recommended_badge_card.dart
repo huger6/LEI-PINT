@@ -19,40 +19,40 @@ class RecommendedBadgeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        width: 175,
+        width: 150,
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFDDE3E9),
-          borderRadius: BorderRadius.circular(20),
+          color: const Color(0xFFEAEDF2),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Center(
                 child: SizedBox(
-                  width: 78,
-                  height: 98,
+                  width: 72,
+                  height: 90,
                   child: Stack(
                     alignment: Alignment.topCenter,
                     children: [
                       Positioned(
-                        top: 50,
+                        top: 44,
                         child: Row(
                           children: [
-                            Icon(Icons.bookmark, color: ribbonColor, size: 30),
-                            const SizedBox(width: 3),
-                            Icon(Icons.bookmark, color: ribbonColor, size: 30),
+                            Icon(Icons.bookmark, color: ribbonColor, size: 26),
+                            const SizedBox(width: 2),
+                            Icon(Icons.bookmark, color: ribbonColor, size: 26),
                           ],
                         ),
                       ),
                       Container(
-                        width: 68,
-                        height: 68,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: medalColor,
@@ -64,7 +64,7 @@ class RecommendedBadgeCard extends StatelessWidget {
                         child: const Icon(
                           Icons.star_rounded,
                           color: Color(0xFFFFF6C7),
-                          size: 40,
+                          size: 34,
                         ),
                       ),
                     ],
@@ -74,20 +74,22 @@ class RecommendedBadgeCard extends StatelessWidget {
             ),
             Text(
               title,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 17,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF222A30),
+                height: 1.2,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               area,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 15, color: Color(0xFF343B42)),
+              style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
             ),
           ],
         ),

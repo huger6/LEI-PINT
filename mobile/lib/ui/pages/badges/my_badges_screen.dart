@@ -497,17 +497,28 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   }
 
   String _buildUpdateText(ApplicationStateVisual state, DateTime? date) {
-    final relative = _relativeLower(date);
-
     if (state.filter == ApplicationFilter.approved) {
-      return 'Aprovado pelo Talent Manager $relative';
+      return _approvedRelative(date);
     }
 
     if (state.filter == ApplicationFilter.rejected) {
-      return 'Rejeitado pelo Service Line Leader $relative';
+      return 'Rejeitado ${_relativeLower(date)}';
     }
 
-    return relative;
+    return _relativeLower(date);
+  }
+
+  String _approvedRelative(DateTime? date) {
+    if (date == null) return 'Aprovado';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dateDay = DateTime(date.year, date.month, date.day);
+    final days = today.difference(dateDay).inDays;
+
+    if (days <= 0) return 'Aprovado hoje';
+    if (days == 1) return 'Aprovado há 1 dia';
+    return 'Aprovado há $days dias';
   }
 
   String _formatDate(DateTime? date) {

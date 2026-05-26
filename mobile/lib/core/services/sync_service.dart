@@ -232,26 +232,60 @@ class SyncService {
     replaceAll: _myApplicationDao.replaceAll,
   );
 
-  Future<bool> _syncAwardedBadges() => _syncList(
-    endpoint: ApiEndpoints.getEarnedBadges,
-    fromJson: (json) => AwardedBadgeModel.fromJson({
-      'id': json['awardedBadgeId'] ?? json['awarded_badges_id'] ?? json['id'],
-      'application_id': json['applicationId'] ?? json['application_id'] ?? 0,
-      'badge_id': json['badge']?['id'] ??
-          json['badge']?['badge_id'] ??
-          json['badge_id'] ??
-          0,
-      'awarded_at': json['awardedDate'] ?? json['awarded_at'],
-      'expiration_at': json['expirationDate'] ?? json['expiration_at'],
-      'points_snapshot': json['pointsSnapshot'] ?? json['points_snapshot'],
-      'verification_link':
-          json['verificationLink'] ?? json['public_verification_link'],
-      'is_published': json['isPublished'] ?? json['is_published'] ?? false,
-      'is_featured': json['isFeatured'] ?? json['is_featured'] ?? false,
-      'display_order': json['displayOrder'] ?? json['display_order'],
-    }),
-    replaceAll: _awardedBadgeDao.replaceAll,
-  );
+  Future<bool> _syncAwardedBadges() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.getEarnedBadges);
+      final list = _extractList(response);
+      final rawMaps = list
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+
+      for (final json in rawMaps) {
+        final badgeData = json['badge'];
+        if (badgeData is Map) {
+          await _badgeDao.insertIfMissing(Map<String, dynamic>.from(badgeData));
+        }
+      }
+
+      final items = rawMaps
+          .map((json) => AwardedBadgeModel.fromJson({
+                'id': json['awardedBadgeId'] ??
+                    json['awarded_badges_id'] ??
+                    json['id'],
+                'application_id':
+                    json['applicationId'] ?? json['application_id'] ?? 0,
+                'badge_id': json['badge']?['id'] ??
+                    json['badge']?['badge_id'] ??
+                    json['badge_id'] ??
+                    0,
+                'awarded_at': json['awardedDate'] ?? json['awarded_at'],
+                'expiration_at':
+                    json['expirationDate'] ?? json['expiration_at'],
+                'points_snapshot':
+                    json['pointsSnapshot'] ?? json['points_snapshot'],
+                'verification_link': json['verificationLink'] ??
+                    json['public_verification_link'],
+                'is_published':
+                    json['isPublished'] ?? json['is_published'] ?? false,
+                'is_featured':
+                    json['isFeatured'] ?? json['is_featured'] ?? false,
+                'display_order':
+                    json['displayOrder'] ?? json['display_order'],
+              }))
+          .toList();
+
+      await _awardedBadgeDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (e) {
+      debugPrint('SyncService: awarded badges failed: $e');
+      return false;
+    }
+  }
 
   Future<bool> _syncPointsHistory() async {
     try {

@@ -34,7 +34,9 @@ class ApplicationSummaryModel {
     this.badge,
     this.submittedAt,
     this.openedAt,
+    this.updatedAt,
     this.latestObservation,
+    this.rejectedByRole,
     this.evidences = const [],
   });
 
@@ -43,10 +45,12 @@ class ApplicationSummaryModel {
   final BadgeModel? badge;
   final DateTime? submittedAt;
   final DateTime? openedAt;
+  final DateTime? updatedAt;
   final String? latestObservation;
+  final String? rejectedByRole;
   final List<EvidenceSummary> evidences;
 
-  DateTime? get latestDate => submittedAt ?? openedAt;
+  DateTime? get latestDate => updatedAt ?? submittedAt ?? openedAt;
 
   factory ApplicationSummaryModel.fromJson(Map<String, dynamic> json) {
     final badgePayload = json['badge'];
@@ -55,13 +59,26 @@ class ApplicationSummaryModel {
         : null;
 
     String? latestObservation;
+    String? rejectedByRole;
     final validationLogs = json['application_validation_logs'];
     if (validationLogs is List && validationLogs.isNotEmpty) {
       final latest = validationLogs.first;
       if (latest is Map<String, dynamic>) {
         latestObservation =
+            latest['validations_comments']?.toString() ??
             latest['validation_comment']?.toString() ??
             latest['comment']?.toString();
+
+        final action = (latest['validator_action'] ?? '').toString().toLowerCase();
+        if (action.contains('reject')) {
+          rejectedByRole = latest['validator_function']?.toString();
+          if (rejectedByRole == null || rejectedByRole.isEmpty) {
+            final user = latest['user'];
+            if (user is Map) {
+              rejectedByRole = user['user_role']?.toString();
+            }
+          }
+        }
       }
     }
 
@@ -90,7 +107,11 @@ class ApplicationSummaryModel {
         _readString(json, const ['submitted_at', 'submittedAt']),
       ),
       openedAt: _parseDate(_readString(json, const ['opened_at', 'openedAt'])),
+      updatedAt: _parseDate(
+        _readString(json, const ['updated_at', 'updatedAt']),
+      ),
       latestObservation: latestObservation,
+      rejectedByRole: rejectedByRole,
       evidences: evidences,
     );
   }

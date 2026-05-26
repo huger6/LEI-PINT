@@ -24,11 +24,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _saveLoginData = false;
 
+  String? _loginError;
+  String? _passwordError;
+
   @override
   void initState() {
     super.initState();
     _loginController = TextEditingController();
     _passwordController = TextEditingController();
+
+    _loginController.addListener(_clearFieldErrors);
+    _passwordController.addListener(_clearFieldErrors);
   }
 
   @override
@@ -38,8 +44,23 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _clearFieldErrors() {
+    if (_loginError != null || _passwordError != null) {
+      setState(() {
+        _loginError = null;
+        _passwordError = null;
+      });
+    }
+  }
+
   Future<void> _handleLogin() async {
     final tr = LanguageScope.of(context);
+
+    setState(() {
+      _loginError = null;
+      _passwordError = null;
+    });
+
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -114,14 +135,44 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result['message'] ?? tr.tr('loginErrorInvalidCredentials'),
+          final code = result['code']?.toString() ?? '';
+          final statusCode = result['statusCode'] as int? ?? 0;
+
+          if (code == 'AUTH_INVALID_CREDENTIALS') {
+            if (statusCode == 400) {
+              setState(() {
+                _loginError = tr.tr('loginErrorUserNotFound');
+              });
+            } else {
+              setState(() {
+                _passwordError = tr.tr('loginErrorWrongPassword');
+              });
+            }
+          } else if (code == 'AUTH_ACCOUNT_DEACTIVATED') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(tr.tr('loginErrorAccountDeactivated')),
+                backgroundColor: AppColors.error,
               ),
-              backgroundColor: AppColors.error,
-            ),
-          );
+            );
+          } else if (code == 'AUTH_ACCOUNT_LOCKED') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(tr.tr('loginErrorAccountLocked')),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  result['message'] ?? tr.tr('loginErrorInvalidCredentials'),
+                ),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (!mounted) return;
@@ -165,7 +216,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 36),
 
-                      // Email/Username field
                       CustomTextField(
                         label: tr.tr('emailOrUsername'),
                         isRequired: true,
@@ -173,6 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.text,
                         controller: _loginController,
+                        hasError: _loginError != null,
+                        errorText: _loginError,
                         validator: (value) {
                           final text = value?.trim() ?? '';
                           if (text.isEmpty) {
@@ -191,7 +243,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      // Password field
                       CustomTextField(
                         label: tr.tr('password'),
                         isRequired: true,
@@ -199,6 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: Icons.lock_outlined,
                         obscureText: true,
                         controller: _passwordController,
+                        hasError: _passwordError != null,
+                        errorText: _passwordError,
                         validator: FormValidators.validatePassword,
                       ),
 
@@ -216,7 +269,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      // Forgot password link
                       Align(
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
@@ -239,7 +291,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 28),
 
-                      // Login button
                       CustomButton(
                         text: tr.tr('login'),
                         isLoading: _isLoading,
@@ -248,7 +299,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 22),
 
-                      // Sign up link
                       NavLink(
                         text: tr.tr('noAccount'),
                         linkText: tr.tr('register'),

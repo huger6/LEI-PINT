@@ -236,5 +236,18 @@
   "languageLabel": "Ubicación",
   "goodMorning": "Buenos días",
   "goodAfternoon": "Buenas tardes",
-  "goodEvening": "Buenas noches"
+  "goodEvening": "Buenas noches",
+
+  "pwReqMinChars": "Mínimo de 8 caracteres",
+  "pwReqUppercase": "Al menos 1 letra mayúscula",
+  "pwReqLowercase": "Al menos 1 letra minúscula",
+  "pwReqNumber": "Al menos 1 número",
+  "pwReqSpecialChar": "Al menos 1 carácter especial (!@#$%^&*)",
+
+  "loginErrorUserNotFound": "Usuario o email no encontrado.",
+  "loginErrorWrongPassword": "Contraseña incorrecta.",
+  "loginErrorAccountDeactivated": "Su cuenta ha sido desactivada. Contacte al administrador.",
+  "loginErrorAccountLocked": "Cuenta bloqueada por demasiados intentos. Intente de nuevo en 15 minutos.",
+  "rejectedByTM": "Rechazado por Talent Manager",
+  "rejectedBySL": "Rechazado por Service Line Leader"
 }

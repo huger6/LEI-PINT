@@ -106,7 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             color: pageBackground,
             borderRadius: BorderRadius.circular(28),
           ),
-          child: dashStore.isLoading
+          child: dashStore.isLoading && dashStore.recentSubmissions.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                   child: Column(
@@ -136,27 +136,31 @@ class _DashboardScreenState extends State<DashboardScreen>
                         },
                       ),
                       const SizedBox(height: 20),
+
+                      // Greeting
                       Text(
                         greeting,
                         style: const TextStyle(
-                          fontSize: 28,
+                          fontSize: 26,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF20252B),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 12),
+
+                      // Recent submissions
                       if (dashStore.recentSubmissions.isNotEmpty) ...[
+                        const SizedBox(height: 16),
                         Text(
                           tr.tr('recentSubmissions'),
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF20252B),
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
                         ...dashStore.recentSubmissions.map((submission) {
                           return SubmissionCard(
                             title: submission.badge.title,
@@ -177,20 +181,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                             },
                           );
                         }),
-                        const SizedBox(height: 8),
                       ],
+
+                      // Recommended badges carousel
                       if (dashStore.recommendedBadges.isNotEmpty) ...[
+                        const SizedBox(height: 12),
                         Text(
                           tr.tr('forYou'),
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF20252B),
                           ),
                         ),
                         const SizedBox(height: 10),
                         SizedBox(
-                          height: 240,
+                          height: 200,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: dashStore.recommendedBadges.length,
@@ -215,12 +221,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                             },
                           ),
                         ),
-                        const SizedBox(height: 10),
                       ],
+
+                      // Keep going / top percent
+                      const SizedBox(height: 16),
                       Text(
                         tr.tr('keepGoing'),
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF20252B),
                         ),
@@ -229,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       RichText(
                         text: TextSpan(
                           style: const TextStyle(
-                            fontSize: 17,
+                            fontSize: 15,
                             color: Color(0xFF30353C),
                             height: 1.4,
                           ),
@@ -258,11 +266,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ],
                         ),
                       ),
+
+                      // Stats line chart
                       SimpleLineStatsCard(
                         completedBadges: dashStore.completedBadges,
                         growthPercent: dashStore.growthPercent,
                         monthlyBadgeCounts: dashStore.monthlyBadgeCounts,
                       ),
+
+                      // Donut chart
                       if (donutSegments.isNotEmpty)
                         CertificationDonutCard(
                           totalAreas: donutSegments.length,

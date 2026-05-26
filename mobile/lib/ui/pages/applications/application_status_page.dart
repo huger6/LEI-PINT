@@ -16,6 +16,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
     this.applicationState = 'Submitted',
     this.latestObservation,
     this.submittedAt,
+    this.rejectedByRole,
   });
 
   final BadgeModel badge;
@@ -23,6 +24,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
   final String applicationState;
   final String? latestObservation;
   final DateTime? submittedAt;
+  final String? rejectedByRole;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     ApplicationProgressStepper(
                       applicationState: applicationState,
+                      rejectedByRole: rejectedByRole,
                     ),
                     if (latestObservation != null &&
                         latestObservation!.trim().isNotEmpty) ...[

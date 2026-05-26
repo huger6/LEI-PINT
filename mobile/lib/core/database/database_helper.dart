@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 5;
+  static const _databaseVersion = 6;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -129,6 +129,14 @@ class LocalDatabase {
       await db.execute(
         'ALTER TABLE $badgesTable ADD COLUMN stage_code TEXT NOT NULL DEFAULT \'\'',
       );
+    }
+    if (oldVersion < 6) {
+      for (final table in userOwnedTables) {
+        await db.execute('DELETE FROM $table');
+      }
+      for (final table in offlineWriteTables) {
+        await db.execute('DELETE FROM $table');
+      }
     }
   }
 

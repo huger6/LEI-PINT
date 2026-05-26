@@ -71,12 +71,19 @@ class BadgeRepository {
     final payload = await _apiClient.get(ApiEndpoints.getEarnedBadges);
     final list = _extractList(payload);
 
-    final awarded = list
+    final rawMaps = list
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
-        .map(_parseAwardedFromApi)
         .toList();
 
+    for (final json in rawMaps) {
+      final badgeData = json['badge'];
+      if (badgeData is Map) {
+        await _badgeDao.insertIfMissing(Map<String, dynamic>.from(badgeData));
+      }
+    }
+
+    final awarded = rawMaps.map(_parseAwardedFromApi).toList();
     await _awardedBadgeDao.replaceAll(awarded);
     return getEarnedBadgesLocal();
   }
