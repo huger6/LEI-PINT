@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/api_endpoints.dart';
@@ -29,12 +30,17 @@ class BadgeRepository {
 
   Future<List<BadgeModel>> getBadges() async {
     final payload = await _apiClient.get(ApiEndpoints.getBadges);
+    debugPrint('BadgeRepo.getBadges: raw payload type=${payload.runtimeType}');
     final list = _extractList(payload);
+    debugPrint('BadgeRepo.getBadges: extracted ${list.length} items');
     final rows = list
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
-    await _badgeDao.replaceAllFromJson(rows);
+    debugPrint('BadgeRepo.getBadges: parsed ${rows.length} badge rows');
+    if (rows.isNotEmpty) {
+      await _badgeDao.replaceAllFromJson(rows);
+    }
     return rows.map((json) => BadgeModel.fromApiSummary(json)).toList();
   }
 

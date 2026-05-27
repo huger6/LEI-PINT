@@ -25,12 +25,14 @@ class DashboardSubmission {
     required this.status,
     required this.statusColor,
     required this.timestamp,
+    required this.application,
   });
 
   final BadgeModel badge;
   final String status;
   final Color statusColor;
   final String timestamp;
+  final ApplicationSummaryModel application;
 }
 
 class MonthBadgeCount {
@@ -132,7 +134,7 @@ class DashboardStore extends ChangeNotifier {
       final statsResults = await Future.wait([
         _statisticsRepository.getTimeline(),
         _statisticsRepository.getLearningPathProgress(),
-        _statisticsRepository.getPointsHistory(limit: 200),
+        _statisticsRepository.getPointsHistory(limit: 100),
       ]);
       _timeline = statsResults[0] as List<Map<String, dynamic>>;
       _lpProgress = statsResults[1] as List<Map<String, dynamic>>;
@@ -177,6 +179,7 @@ class DashboardStore extends ChangeNotifier {
             status: app.applicationState,
             statusColor: BadgeVisuals.statusColor(app.applicationState),
             timestamp: _formatRelative(app.latestDate),
+            application: app,
           );
         })
         .toList(growable: false);

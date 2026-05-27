@@ -8,6 +8,7 @@ import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
+import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
 import 'notifications/notifications_screen.dart';
 import 'evolution/points_detail_screen.dart';
@@ -173,8 +174,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => BadgeDetailScreen(
-                                    badge: submission.badge,
+                                  builder: (_) => ApplicationDetailScreen(
+                                    application: submission.application,
                                   ),
                                 ),
                               );

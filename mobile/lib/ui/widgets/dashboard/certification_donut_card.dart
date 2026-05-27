@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 
-class CertificationDonutCard extends StatelessWidget {
+class CertificationDonutCard extends StatefulWidget {
   const CertificationDonutCard({
     super.key,
     required this.totalAreas,
@@ -13,6 +13,30 @@ class CertificationDonutCard extends StatelessWidget {
 
   final int totalAreas;
   final List<DonutSegmentData> segments;
+
+  @override
+  State<CertificationDonutCard> createState() =>
+      _CertificationDonutCardState();
+}
+
+class _CertificationDonutCardState extends State<CertificationDonutCard> {
+  int? _selectedIndex;
+
+  int get _centerValue {
+    if (_selectedIndex != null &&
+        _selectedIndex! < widget.segments.length) {
+      return widget.segments[_selectedIndex!].value;
+    }
+    return widget.segments.fold<int>(0, (sum, s) => sum + s.value);
+  }
+
+  String _centerLabel(String Function(String) tr) {
+    if (_selectedIndex != null &&
+        _selectedIndex! < widget.segments.length) {
+      return widget.segments[_selectedIndex!].label;
+    }
+    return tr('totalBadges');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,77 +52,114 @@ class CertificationDonutCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: 250,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _DonutChartPainter(segments: segments),
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final size = min(constraints.maxWidth * 0.7, 250.0);
+              return SizedBox(
+                height: size,
+                width: size,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(
-                      '$totalAreas',
-                      style: const TextStyle(
-                        fontSize: 54,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF66B1E6),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      tr.tr('areasWithCertifications'),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Color(0xFF454A52),
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          ...segments.map(
-            (segment) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 7),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: segment.color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        segment.label,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF555B76),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _DonutChartPainter(
+                          segments: widget.segments,
+                          selectedIndex: _selectedIndex,
                         ),
                       ),
                     ),
-                    Text(
-                      '${segment.value}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF30353C),
-                      ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$_centerValue',
+                          style: const TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF66B1E6),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            _centerLabel(tr.tr),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF454A52),
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          ...widget.segments.asMap().entries.map(
+            (entry) {
+              final index = entry.key;
+              final segment = entry.value;
+              final isSelected = _selectedIndex == index;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = isSelected ? null : index;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 7,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? segment.color.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: segment.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          segment.label,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w600,
+                            color: const Color(0xFF555B76),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${segment.value}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                              isSelected ? FontWeight.w800 : FontWeight.w700,
+                          color: const Color(0xFF30353C),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -122,9 +183,10 @@ class DonutSegmentData {
 }
 
 class _DonutChartPainter extends CustomPainter {
-  _DonutChartPainter({required this.segments});
+  _DonutChartPainter({required this.segments, this.selectedIndex});
 
   final List<DonutSegmentData> segments;
+  final int? selectedIndex;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -134,53 +196,63 @@ class _DonutChartPainter extends CustomPainter {
     }
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = min(size.width, size.height) * 0.35;
-    const strokeWidth = 34.0;
+    final radius = min(size.width, size.height) * 0.38;
+    const strokeWidth = 30.0;
     const gapRadians = 0.08;
 
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     var startAngle = -pi / 2;
 
-    for (final segment in segments) {
+    for (int i = 0; i < segments.length; i++) {
+      final segment = segments[i];
       final sweep = (segment.value / total) * (2 * pi);
       final adjustedSweep = max(0.0, sweep - gapRadians);
 
+      final isSelected = selectedIndex == i;
+      final currentStroke = isSelected ? strokeWidth + 8 : strokeWidth;
+
       final paint = Paint()
-        ..color = segment.color
+        ..color = isSelected
+            ? segment.color
+            : (selectedIndex != null
+                ? segment.color.withValues(alpha: 0.4)
+                : segment.color)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
+        ..strokeWidth = currentStroke
         ..strokeCap = StrokeCap.round;
 
       canvas.drawArc(rect, startAngle, adjustedSweep, false, paint);
 
-      final labelAngle = startAngle + (adjustedSweep / 2);
-      final labelRadius = radius;
-      final labelOffset = Offset(
-        center.dx + cos(labelAngle) * labelRadius,
-        center.dy + sin(labelAngle) * labelRadius,
-      );
+      if (selectedIndex == null || isSelected) {
+        final labelAngle = startAngle + (adjustedSweep / 2);
+        final labelRadius = radius;
+        final labelOffset = Offset(
+          center.dx + cos(labelAngle) * labelRadius,
+          center.dy + sin(labelAngle) * labelRadius,
+        );
 
-      final percent = ((segment.value / total) * 100).round();
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: '$percent%',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+        final percent = ((segment.value / total) * 100).round();
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '$percent%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
           ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
+          textDirection: TextDirection.ltr,
+        )..layout();
 
-      textPainter.paint(
-        canvas,
-        Offset(
-          labelOffset.dx - textPainter.width / 2,
-          labelOffset.dy - textPainter.height / 2,
-        ),
-      );
+        textPainter.paint(
+          canvas,
+          Offset(
+            labelOffset.dx - textPainter.width / 2,
+            labelOffset.dy - textPainter.height / 2,
+          ),
+        );
+      }
 
       startAngle += sweep;
     }
@@ -188,6 +260,7 @@ class _DonutChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DonutChartPainter oldDelegate) {
-    return oldDelegate.segments != segments;
+    return oldDelegate.segments != segments ||
+        oldDelegate.selectedIndex != selectedIndex;
   }
 }

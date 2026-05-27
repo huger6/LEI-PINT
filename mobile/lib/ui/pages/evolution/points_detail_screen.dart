@@ -16,15 +16,27 @@ class PointsDetailScreen extends StatelessWidget {
     final tr = LanguageScope.of(context);
     final dashStore = context.watch<DashboardStore>();
 
-    final historyItems = dashStore.recentSubmissions
-        .map(
-          (s) => PointsHistoryItem(
-            title: s.badge.title,
-            firstDescription: s.badge.category,
-            secondDescription: s.status,
-            gainedPoints: s.badge.points,
-          ),
-        )
+    final historyItems = dashStore.pointsHistory
+        .map((entry) {
+          final badge = entry['badge'];
+          final badgeTitle = badge is Map
+              ? (badge['badge_title'] ?? badge['title'] ?? '').toString()
+              : (entry['justification'] ?? '').toString();
+          final requirement = entry['requirement'];
+          final reqTitle = requirement is Map
+              ? (requirement['requirement_title'] ?? '').toString()
+              : '';
+          final delta = entry['points_delta'] is int
+              ? entry['points_delta'] as int
+              : int.tryParse(entry['points_delta']?.toString() ?? '') ?? 0;
+
+          return PointsHistoryItem(
+            title: badgeTitle.isNotEmpty ? badgeTitle : 'Badge',
+            firstDescription: reqTitle,
+            secondDescription: entry['justification']?.toString() ?? '',
+            gainedPoints: delta,
+          );
+        })
         .toList(growable: false);
 
     return Scaffold(

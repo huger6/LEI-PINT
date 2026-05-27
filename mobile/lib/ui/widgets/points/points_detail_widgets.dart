@@ -120,10 +120,14 @@ class HistoryCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            '+${item.gainedPoints}',
-            style: const TextStyle(
+            item.gainedPoints >= 0
+                ? '+${item.gainedPoints}'
+                : '${item.gainedPoints}',
+            style: TextStyle(
               fontSize: 34,
-              color: Color(0xFF53BB38),
+              color: item.gainedPoints >= 0
+                  ? const Color(0xFF53BB38)
+                  : const Color(0xFFD94A2A),
               fontWeight: FontWeight.w500,
             ),
           ),

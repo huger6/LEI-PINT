@@ -101,35 +101,15 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
               ),
               const SizedBox(height: 12),
 
-              Container(
-                height: 46,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD8E8F3),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (_) => setState(() {}),
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    hintText: 'Procure badges',
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      color: Color(0xFF41525E),
-                      size: 26,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.tune_rounded,
-                        color: Color(0xFF41525E),
-                        size: 24,
-                      ),
-                    ),
+              TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'Procure badges',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.tune_rounded),
                   ),
                 ),
               ),

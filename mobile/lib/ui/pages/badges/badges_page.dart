@@ -20,11 +20,14 @@ class BadgeDetailScreen extends StatefulWidget {
 
 class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
   bool _isFavorite = false;
+  late BadgeModel _badge;
 
   @override
   void initState() {
     super.initState();
+    _badge = widget.badge;
     _loadFavoriteState();
+    _loadFullDetail();
   }
 
   void _loadFavoriteState() {
@@ -32,6 +35,15 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
     setState(() {
       _isFavorite = store.isFavorite(widget.badge.id);
     });
+  }
+
+  Future<void> _loadFullDetail() async {
+    if (_badge.requirements.isNotEmpty || _badge.slug.trim().isEmpty) return;
+    final store = context.read<BadgeStore>();
+    final detailed = await store.getBadgeDetail(_badge);
+    if (detailed != null && mounted) {
+      setState(() => _badge = detailed);
+    }
   }
 
   Future<void> _toggleFavorite() async {
@@ -52,7 +64,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
   }
 
   void _shareBadge() {
-    final badge = widget.badge;
+    final badge = _badge;
     final baseUrl = dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
     final text =
         '${badge.title}\n${badge.description.isNotEmpty ? badge.description : ''}'
@@ -72,7 +84,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
-    final badge = widget.badge;
+    final badge = _badge;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),

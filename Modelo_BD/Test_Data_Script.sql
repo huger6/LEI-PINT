@@ -333,13 +333,15 @@ WITH admin_ref AS (
       WHERE u.username = 'admin'
 )
 INSERT INTO badges
-(progression_stage_id, area_id,
+(progression_stage_id, area_id, service_line_id, learning_path_id,
  badge_title, badge_slug, badge_type,
  badge_points, badge_description,
  expiration_duration_days, created_by)
 SELECT
       ps.progression_stage_id,
       a.area_id,
+      sl.service_line_id,
+      sl.learning_path_id,
       a.area_name || ' - ' || ps.stage_title,
       a.area_slug || '-' || LOWER(REPLACE(ps.stage_title, ' ', '-')),
       'Standard',
@@ -350,6 +352,8 @@ SELECT
 FROM progression_stages ps
 JOIN areas a
    ON a.area_id = ps.area_id
+JOIN service_lines sl
+   ON sl.service_line_id = a.service_line_id
 LEFT JOIN badges b
    ON b.progression_stage_id = ps.progression_stage_id
 CROSS JOIN admin_ref ar
