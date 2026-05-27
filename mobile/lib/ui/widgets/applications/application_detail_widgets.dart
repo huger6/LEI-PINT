@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../models/application_summary_model.dart';
@@ -355,7 +356,7 @@ class _ApplicationProgressStepperState
                     ),
                     _StepDot(
                       step: 3,
-                      currentStep: rejAtStep2 ? 99 : currentStep,
+                      currentStep: rejAtStep2 ? 0 : currentStep,
                       isRejected: rejAtStep3,
                       isAccepted: false,
                       totalSteps: 4,
@@ -368,7 +369,7 @@ class _ApplicationProgressStepperState
                     ),
                     _StepDot(
                       step: 4,
-                      currentStep: isAccepted ? 4 : 99,
+                      currentStep: isAccepted ? 4 : 0,
                       isRejected: false,
                       isAccepted: isAccepted,
                       totalSteps: 4,
@@ -892,6 +893,23 @@ class ApplicationRequirementsList extends StatelessWidget {
   final List<BadgeRequirement> requirements;
   final List<EvidenceSummary> evidences;
 
+  Future<void> _openEvidenceFile(BuildContext context, String url) async {
+    final tr = LanguageScope.of(context);
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(tr.tr('fileDownloadError')),
+          backgroundColor: const Color(0xFFD94A2A),
+        ));
+      }
+    }
+  }
+
   EvidenceSummary? _evidenceForRequirement(int? requirementId) {
     if (requirementId == null) return null;
     for (final e in evidences) {
@@ -982,55 +1000,67 @@ class ApplicationRequirementsList extends StatelessWidget {
                   ),
                   if (evidence != null) ...[
                     const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: ApplicationDetailColors.divider,
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: evidence.fileUrl.isNotEmpty
+                          ? () => _openEvidenceFile(context, evidence.fileUrl)
+                          : null,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.description_outlined,
-                            size: 18,
-                            color: ApplicationDetailColors.primaryAction,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: ApplicationDetailColors.divider,
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              evidence.title,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: ApplicationDetailColors.primaryText,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.description_outlined,
+                              size: 18,
+                              color: ApplicationDetailColors.primaryAction,
                             ),
-                          ),
-                          if (evidence.fileType != null)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 6),
+                            const SizedBox(width: 8),
+                            Expanded(
                               child: Text(
-                                evidence.fileType!
-                                    .split('/')
-                                    .last
-                                    .toUpperCase(),
+                                evidence.title,
                                 style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: ApplicationDetailColors.mutedText,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: ApplicationDetailColors.primaryText,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (evidence.fileType != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: Text(
+                                  evidence.fileType!
+                                      .split('/')
+                                      .last
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: ApplicationDetailColors.mutedText,
+                                  ),
                                 ),
                               ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.download_rounded,
+                              size: 18,
+                              color: ApplicationDetailColors.primaryAction,
                             ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],

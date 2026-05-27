@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../data/local/current_user_dao.dart';
@@ -142,6 +143,35 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleCardTap(EarnedBadge earned) async {
+    final award = earned.award;
+    final link = award.verificationLink;
+
+    if (link == null || link.isEmpty) return;
+
+    final verificationBaseUrl =
+        dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
+
+    final fullUrl = link.startsWith('http')
+        ? link
+        : '$verificationBaseUrl/verify/$link';
+
+    final uri = Uri.tryParse(fullUrl);
+    if (uri == null) return;
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Não foi possível abrir a ligação.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -305,6 +335,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                   return AchievedBadgeCard(
                     badge: item.badge,
                     completionDate: item.award.awardedAt,
+                    onTap: () => _handleCardTap(item),
                     onShare: () => _handleShare(item),
                     onDownload: () => _handleDownload(item),
                   );

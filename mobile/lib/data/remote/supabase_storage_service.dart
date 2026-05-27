@@ -29,6 +29,24 @@ class SupabaseStorageService {
     return _client.storage.from(bucket).getPublicUrl(objectPath);
   }
 
+  Future<String> uploadFileToTemp(File file, {String prefix = 'evidence'}) async {
+    final extension = p.extension(file.path).toLowerCase();
+    final safeExt = extension.isEmpty ? '' : extension;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final fileName = '${prefix}_$timestamp$safeExt';
+    final objectPath = '$tempFolder/$fileName';
+
+    await _client.storage
+        .from(bucket)
+        .upload(
+          objectPath,
+          file,
+          fileOptions: FileOptions(contentType: _contentTypeFor(safeExt)),
+        );
+
+    return _client.storage.from(bucket).getPublicUrl(objectPath);
+  }
+
   String? _contentTypeFor(String extension) {
     switch (extension) {
       case '.jpg':
@@ -40,8 +58,14 @@ class SupabaseStorageService {
         return 'image/webp';
       case '.gif':
         return 'image/gif';
+      case '.pdf':
+        return 'application/pdf';
+      case '.doc':
+        return 'application/msword';
+      case '.docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       default:
-        return null;
+        return 'application/octet-stream';
     }
   }
 }

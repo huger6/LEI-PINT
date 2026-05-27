@@ -51,7 +51,7 @@ class RegistrationData {
       ...?(location == null ? null : {'location_id': location!.id}),
       ...?(preferredLanguage == null
           ? null
-          : {'preferred_lang_id': preferredLanguage!.id}),
+          : {'language_id': preferredLanguage!.id}),
       'areas': selectedAreasPayload,
     };
   }

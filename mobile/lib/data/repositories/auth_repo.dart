@@ -155,8 +155,15 @@ class AuthRepository {
         };
       }
 
+      final data = _asMap(e.response?.data);
+      final code = data['code']?.toString() ?? '';
+
+      if (code == 'AUTH_REGISTER_EMAIL_FAILED') {
+        return {'success': true, 'emailFailed': true};
+      }
+
       final message = _extractMessage(
-        _asMap(e.response?.data),
+        data,
         fallback: 'Erro ao criar conta.',
       );
       return {'success': false, 'message': message};
@@ -351,6 +358,26 @@ class AuthRepository {
       };
     } catch (e) {
       return {'success': false, 'message': 'Erro ao reenviar email: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchPoints() async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.get(ApiEndpoints.getPoints),
+      );
+
+      if (responseMap['success'] == true) {
+        final data = _asMap(responseMap['data']);
+        return {
+          'success': true,
+          'totalPoints': data['totalPoints'] ?? 0,
+        };
+      }
+
+      return {'success': false};
+    } catch (_) {
+      return {'success': false};
     }
   }
 

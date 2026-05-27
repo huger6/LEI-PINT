@@ -204,6 +204,31 @@ class AuthStore extends ChangeNotifier {
     return _authRepository.resendConfirmation(email);
   }
 
+  Future<void> fetchPoints() async {
+    final result = await _authRepository.fetchPoints();
+    if (result['success'] == true && _currentUser != null) {
+      final pts = result['totalPoints'];
+      final totalPoints = pts is int ? pts : int.tryParse(pts.toString()) ?? 0;
+      _currentUser = UserModel(
+        id: _currentUser!.id,
+        email: _currentUser!.email,
+        fullName: _currentUser!.fullName,
+        username: _currentUser!.username,
+        profilePicture: _currentUser!.profilePicture,
+        role: _currentUser!.role,
+        biography: _currentUser!.biography,
+        gdprAccepted: _currentUser!.gdprAccepted,
+        totalPoints: totalPoints,
+        preferredLangId: _currentUser!.preferredLangId,
+        locationId: _currentUser!.locationId,
+        serviceLineName: _currentUser!.serviceLineName,
+        learningPathTitle: _currentUser!.learningPathTitle,
+        areas: _currentUser!.areas,
+      );
+      notifyListeners();
+    }
+  }
+
   Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,

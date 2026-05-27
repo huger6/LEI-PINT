@@ -24,6 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BadgeStore>().loadEarnedBadges();
+      context.read<AuthStore>().fetchPoints();
     });
   }
 
@@ -62,11 +63,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ? authStore.currentUser!.username.trim()
               : 'Utilizador');
 
-    final userArea =
-        (authStore.draftRegistration.mainArea?.name.trim().isNotEmpty ?? false)
-        ? authStore.draftRegistration.mainArea!.name.trim()
-        : (authStore.draftRegistration.selectedAreas.isNotEmpty
-              ? authStore.draftRegistration.selectedAreas.first.name
+    final userAreas = authStore.currentUser?.areas ?? const [];
+    final primaryArea = userAreas.where((a) => a.isPrimary).firstOrNull;
+    final userArea = primaryArea?.name.trim().isNotEmpty == true
+        ? primaryArea!.name.trim()
+        : (userAreas.isNotEmpty
+              ? userAreas.first.name
               : 'Área principal não definida');
 
     return Scaffold(

@@ -35,6 +35,7 @@ class AchievedBadgeCard extends StatelessWidget {
     required this.completionDate,
     this.fallbackLevel = '',
     this.fallbackPoints = 0,
+    this.onTap,
     this.onShare,
     this.onDownload,
   });
@@ -43,6 +44,7 @@ class AchievedBadgeCard extends StatelessWidget {
   final DateTime completionDate;
   final String fallbackLevel;
   final int fallbackPoints;
+  final VoidCallback? onTap;
   final VoidCallback? onShare;
   final VoidCallback? onDownload;
 
@@ -51,7 +53,10 @@ class AchievedBadgeCard extends StatelessWidget {
     final level = badge.level.trim().isNotEmpty ? badge.level : fallbackLevel;
     final points = badge.points > 0 ? badge.points : fallbackPoints;
 
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       decoration: BoxDecoration(
@@ -208,6 +213,7 @@ class AchievedBadgeCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

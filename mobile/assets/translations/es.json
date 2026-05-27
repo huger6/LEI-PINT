@@ -76,6 +76,9 @@
   "maxFiveAreas": "Puedes seleccionar como máximo 5 áreas.",
   "areasLoadFailed": "Error al cargar áreas: {error}",
   "noAreasAvailable": "No hay áreas disponibles.",
+  "areasEditHint": "La primera área seleccionada es la principal. Mínimo 1, máximo 5.",
+  "areasMinRequired": "Debes seleccionar al menos 1 área.",
+  "areas": "Áreas",
 
   "confirmRegister": "Confirmar registro",
   "registerSummary": "Resumen del registro",
@@ -229,6 +232,11 @@
   "history": "Historial",
   "noPointsHistory": "Sin historial de puntos.",
   "topPercentMessage": "¡Estás en el top {percent}% de nuestros consultores!",
+  "seeMore": "Ver más",
+  "seeLess": "Ver menos",
+  "weeklyPoints": "Puntos esta semana",
+  "monthlyPoints": "Puntos por mes",
+  "noDataAvailable": "Sin datos disponibles.",
   "badgesEarned": "badges conseguidos",
   "selectLanguageTitle": "Seleccionar idioma",
   "usernameUnavailable": "Usuario no disponible.",
@@ -250,5 +258,11 @@
   "loginErrorAccountDeactivated": "Su cuenta ha sido desactivada. Contacte al administrador.",
   "loginErrorAccountLocked": "Cuenta bloqueada por demasiados intentos. Intente de nuevo en 15 minutos.",
   "rejectedByTM": "Rechazado por Talent Manager",
-  "rejectedBySL": "Rechazado por Service Line Leader"
+  "rejectedBySL": "Rechazado por Service Line Leader",
+  "fileTooLarge": "El archivo es demasiado grande. El tamaño máximo permitido es {size} MB.",
+  "fileUploadError": "No se pudo subir el archivo. Inténtalo de nuevo.",
+  "downloadingFile": "Descargando archivo...",
+  "fileDownloaded": "Archivo descargado con éxito.",
+  "fileDownloadError": "No se pudo descargar el archivo.",
+  "openingLink": "Abriendo enlace..."
 }

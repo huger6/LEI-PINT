@@ -44,7 +44,6 @@ class _EditProfileFormState extends State<EditProfileForm> {
   LocationModel? _selectedLocation;
   bool _isLoadingLocations = true;
   bool _isDropdownOpen = false;
-
   @override
   void initState() {
     super.initState();
