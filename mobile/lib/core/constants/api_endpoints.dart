@@ -103,6 +103,13 @@ class ApiEndpoints {
   // GET /gamification/interactions - get user's interaction history
   static const String getInteractions = '/api/gamification/interactions';
 
+  // === Gamification ===
+  // GET /gamification/points - get consultant's total points + history
+  static const String getPoints = '/api/gamification/points';
+
+  // GET /gamification/consultant-stats - get comprehensive consultant stats
+  static const String getConsultantStats = '/api/gamification/consultant-stats';
+
   // === Sync-only endpoints (used by SyncService) ===
   static const String getLearningPaths = '/api/learning-paths';
   static const String getServiceLines = '/api/service-lines';

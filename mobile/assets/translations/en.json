@@ -76,6 +76,9 @@
   "maxFiveAreas": "You can select up to 5 areas.",
   "areasLoadFailed": "Failed to load areas: {error}",
   "noAreasAvailable": "No areas available.",
+  "areasEditHint": "The first selected area is your main area. Min 1, max 5.",
+  "areasMinRequired": "You must select at least 1 area.",
+  "areas": "Areas",
 
   "confirmRegister": "Confirm registration",
   "registerSummary": "Registration summary",
@@ -229,6 +232,11 @@
   "history": "History",
   "noPointsHistory": "No points history.",
   "topPercentMessage": "You are in the top {percent}% of our consultants!",
+  "seeMore": "See more",
+  "seeLess": "See less",
+  "weeklyPoints": "Points this week",
+  "monthlyPoints": "Points per month",
+  "noDataAvailable": "No data available.",
   "badgesEarned": "badges earned",
   "selectLanguageTitle": "Select language",
   "usernameUnavailable": "Username unavailable.",
@@ -250,5 +258,11 @@
   "loginErrorAccountDeactivated": "Your account has been deactivated. Contact the administrator.",
   "loginErrorAccountLocked": "Account locked due to too many attempts. Try again in 15 minutes.",
   "rejectedByTM": "Rejected by Talent Manager",
-  "rejectedBySL": "Rejected by Service Line Leader"
+  "rejectedBySL": "Rejected by Service Line Leader",
+  "fileTooLarge": "The file is too large. Maximum allowed size is {size} MB.",
+  "fileUploadError": "Could not upload the file. Please try again.",
+  "downloadingFile": "Downloading file...",
+  "fileDownloaded": "File downloaded successfully.",
+  "fileDownloadError": "Could not download the file.",
+  "openingLink": "Opening link..."
 }

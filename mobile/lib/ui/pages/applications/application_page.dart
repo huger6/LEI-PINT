@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../data/remote/supabase_storage_service.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/applications_store.dart';
@@ -25,6 +26,9 @@ class ApplicationScreen extends StatefulWidget {
 }
 
 class _ApplicationScreenState extends State<ApplicationScreen> {
+  static const int _maxFileSizeMB = 10;
+  static const int _maxFileSizeBytes = _maxFileSizeMB * 1024 * 1024;
+
   bool isTermsAccepted = false;
   bool _isSubmitting = false;
   late final Map<int, List<AttachedDocument>> _filesByRequirement;
@@ -56,6 +60,18 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     final file = result.files.first;
 
     if (file.path == null) return;
+
+    final fileSize = File(file.path!).lengthSync();
+    if (fileSize > _maxFileSizeBytes) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          tr.tr('fileTooLarge').replaceAll('{size}', '$_maxFileSizeMB'),
+        ),
+        backgroundColor: const Color(0xFFD94A2A),
+      ));
+      return;
+    }
 
     setState(() {
       _filesByRequirement[requirementId] = [
@@ -110,12 +126,31 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       }
 
       final appData = startResult['data'];
-      final applicationGuid =
-          (appData is Map
-                  ? (appData['application_guid'] ?? appData['applicationGuid'])
-                  : null)
-              ?.toString() ??
-          '';
+
+      if (isExisting) {
+        final existingState = (appData is Map ? appData['currentState'] : null)?.toString() ?? '';
+        if (existingState.isNotEmpty && existingState != 'Open') {
+          messenger.showSnackBar(SnackBar(
+            content: Text('Já existe uma candidatura em estado "$existingState" para este badge.'),
+            backgroundColor: const Color(0xFFD94A2A),
+          ));
+          return;
+        }
+      }
+
+      String applicationGuid;
+
+      if (isExisting) {
+        final existing = await appStore.loadLatestForBadgeSlug(badge.slug);
+        applicationGuid = existing?.applicationGuid ?? '';
+      } else {
+        applicationGuid =
+            (appData is Map
+                    ? (appData['application_guid'] ?? appData['applicationGuid'])
+                    : null)
+                ?.toString() ??
+            '';
+      }
 
       if (applicationGuid.isEmpty) {
         messenger.showSnackBar(const SnackBar(
@@ -125,7 +160,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         return;
       }
 
-      final dio = Dio();
+      final storage = GetIt.instance<SupabaseStorageService>();
 
       for (final entry in _filesByRequirement.entries) {
         final requirementId = entry.key;
@@ -134,40 +169,18 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         for (final file in files) {
           if (file.filePath == null) continue;
 
-          final uploadResult = await appStore.getUploadUrl(
-            applicationGuid: applicationGuid,
-            requirementId: requirementId,
-            fileName: file.name,
+          final fileUrl = await storage.uploadFileToTemp(
+            File(file.filePath!),
+            prefix: 'evidence',
           );
 
-          if (uploadResult['success'] != true) continue;
-
-          final uploadUrl = uploadResult['uploadUrl']?.toString() ?? '';
-          final finalFileUrl = uploadResult['finalFileUrl']?.toString() ?? '';
-
-          if (uploadUrl.isNotEmpty) {
-            final fileBytes = await File(file.filePath!).readAsBytes();
-            await dio.put(
-              uploadUrl,
-              data: Stream.fromIterable([fileBytes]),
-              options: Options(
-                headers: {
-                  'Content-Type': _mimeTypeForFile(file.name),
-                  'Content-Length': fileBytes.length,
-                },
-              ),
-            );
-          }
-
-          if (finalFileUrl.isNotEmpty) {
-            await appStore.upsertEvidence(
-              applicationGuid: applicationGuid,
-              requirementId: requirementId,
-              evidenceFileUrl: finalFileUrl,
-              evidenceTitle: file.name,
-              evidenceFileType: _mimeTypeForFile(file.name),
-            );
-          }
+          await appStore.upsertEvidence(
+            applicationGuid: applicationGuid,
+            requirementId: requirementId,
+            evidenceFileUrl: fileUrl,
+            evidenceTitle: file.name,
+            evidenceFileType: _mimeTypeForFile(file.name),
+          );
         }
       }
 
@@ -207,8 +220,19 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       return;
     } catch (e) {
       if (!mounted) return;
+      final tr = LanguageScope.of(context);
+      final errorMsg = e.toString().toLowerCase();
+      String userMessage;
+      if (errorMsg.contains('size') ||
+          errorMsg.contains('too large') ||
+          errorMsg.contains('payload') ||
+          errorMsg.contains('413')) {
+        userMessage = tr.tr('fileTooLarge').replaceAll('{size}', '$_maxFileSizeMB');
+      } else {
+        userMessage = tr.tr('fileUploadError');
+      }
       messenger.showSnackBar(SnackBar(
-        content: Text('Erro: ${e.toString()}'),
+        content: Text(userMessage),
         backgroundColor: const Color(0xFFD94A2A),
       ));
     } finally {

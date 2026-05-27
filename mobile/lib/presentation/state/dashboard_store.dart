@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../../core/utils/badge_visuals.dart';
 import '../../data/repositories/applications_repo.dart';
 import '../../data/repositories/badge_repo.dart';
 import '../../data/repositories/ranking_repo.dart';
@@ -163,26 +162,42 @@ class DashboardStore extends ChangeNotifier {
     List<ApplicationSummaryModel> applications,
     List<BadgeModel> badges,
   ) {
-    final sorted = [...applications]
-      ..sort((a, b) {
-        final aDate = a.latestDate ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bDate = b.latestDate ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bDate.compareTo(aDate);
-      });
+    final filtered = applications.where((app) {
+      final s = app.applicationState.toLowerCase();
+      return !s.contains('open');
+    }).toList();
 
-    return sorted
+    filtered.sort((a, b) {
+      final aDate = a.latestDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = b.latestDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bDate.compareTo(aDate);
+    });
+
+    return filtered
         .take(3)
         .map((app) {
           final badge = _resolveBadge(app, badges);
+          final mapped = _mapSubmissionStatus(app.applicationState);
           return DashboardSubmission(
             badge: badge,
-            status: app.applicationState,
-            statusColor: BadgeVisuals.statusColor(app.applicationState),
+            status: mapped.key,
+            statusColor: mapped.color,
             timestamp: _formatRelative(app.latestDate),
             application: app,
           );
         })
         .toList(growable: false);
+  }
+
+  _MappedStatus _mapSubmissionStatus(String state) {
+    final n = state.toLowerCase();
+    if (n.contains('accepted') || n.contains('approved') || n.contains('aprov')) {
+      return const _MappedStatus('submissionStatusApproved', Color(0xFF2E9E4D));
+    }
+    if (n.contains('reject') || n.contains('rejeit') || n.contains('devolv')) {
+      return const _MappedStatus('submissionStatusRejected', Color(0xFFC5392E));
+    }
+    return const _MappedStatus('submissionStatusInReview', Color(0xFFC7A11D));
   }
 
   BadgeModel _resolveBadge(
@@ -369,4 +384,10 @@ class DashboardStore extends ChangeNotifier {
 
     return '${diff.inDays}d';
   }
+}
+
+class _MappedStatus {
+  const _MappedStatus(this.key, this.color);
+  final String key;
+  final Color color;
 }

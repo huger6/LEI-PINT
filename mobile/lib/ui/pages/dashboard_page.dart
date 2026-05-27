@@ -165,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ...dashStore.recentSubmissions.map((submission) {
                           return SubmissionCard(
                             title: submission.badge.title,
-                            status: submission.status,
+                            status: tr.tr(submission.status),
                             statusColor: submission.statusColor,
                             timestamp: submission.timestamp,
                             medalColor: submission.badge.medalColor,

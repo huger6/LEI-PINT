@@ -30,11 +30,23 @@ class PointsDetailScreen extends StatelessWidget {
               ? entry['points_delta'] as int
               : int.tryParse(entry['points_delta']?.toString() ?? '') ?? 0;
 
+          String dateStr = '';
+          final createdAt = entry['created_at'];
+          if (createdAt is String) {
+            final parsed = DateTime.tryParse(createdAt);
+            if (parsed != null) {
+              dateStr = '${parsed.day.toString().padLeft(2, '0')}/'
+                  '${parsed.month.toString().padLeft(2, '0')}/'
+                  '${parsed.year}';
+            }
+          }
+
           return PointsHistoryItem(
             title: badgeTitle.isNotEmpty ? badgeTitle : 'Badge',
             firstDescription: reqTitle,
             secondDescription: entry['justification']?.toString() ?? '',
             gainedPoints: delta,
+            date: dateStr,
           );
         })
         .toList(growable: false);
@@ -142,9 +154,9 @@ class PointsDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              DailyEvolutionCard(timeline: dashStore.timeline),
+              WeeklyPointsChart(pointsHistory: dashStore.pointsHistory),
               const SizedBox(height: 12),
-              MonthlyEvolutionCard(timeline: dashStore.timeline),
+              MonthlyPointsChart(pointsHistory: dashStore.pointsHistory),
             ],
           ),
         ),
