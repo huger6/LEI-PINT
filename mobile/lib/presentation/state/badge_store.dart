@@ -81,6 +81,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
     try {
       _badges = await _badgeRepository.getBadges();
+      debugPrint('BadgeStore: loaded ${_badges.length} badges');
     } catch (e) {
       debugPrint('BadgeStore: loadBadges failed: $e');
       final local = await _badgeRepository.getBadgesLocal();

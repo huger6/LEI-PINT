@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/repositories/applications_repo.dart';
+import '../../../injection_container.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/applications/application_detail_widgets.dart';
@@ -21,6 +22,7 @@ class ApplicationDetailScreen extends StatefulWidget {
 
 class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
   late ApplicationSummaryModel _application;
+  BadgeModel? _detailedBadge;
   bool _isRefreshing = false;
 
   @override
@@ -47,11 +49,27 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
     }
+
+    _loadBadgeDetail();
+  }
+
+  Future<void> _loadBadgeDetail() async {
+    final badge = _application.badge;
+    if (badge == null || badge.slug.trim().isEmpty) return;
+    if (badge.requirements.isNotEmpty) return;
+
+    try {
+      final store = context.read<BadgeStore>();
+      final detailed = await store.getBadgeDetail(badge);
+      if (detailed != null && mounted) {
+        setState(() => _detailedBadge = detailed);
+      }
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
-    final badge = _application.badge ?? BadgeModel.empty(title: 'Badge');
+    final badge = _detailedBadge ?? _application.badge ?? BadgeModel.empty(title: 'Badge');
     final stateVisual = _resolveState(_application.applicationState);
 
     return Scaffold(

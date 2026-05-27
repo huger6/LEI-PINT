@@ -50,16 +50,6 @@ class DashboardTopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: Color(0xFFD2DAE2),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.campaign_outlined, color: Color(0xFF20252B)),
-        ),
-        const SizedBox(width: 8),
         GestureDetector(
           onTap: onNotificationsTap,
           child: Stack(

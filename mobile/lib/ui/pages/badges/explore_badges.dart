@@ -31,8 +31,8 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final store = context.read<BadgeStore>();
-      store.loadBadges();
-      store.loadEarnedBadges();
+      store.loadBadges(forceRefresh: true);
+      store.loadEarnedBadges(forceRefresh: true);
       store.loadFavorites();
       _loadApplications();
     });
@@ -66,7 +66,12 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
 
     final excludedIds = {...earnedIds, ...activeAppBadgeIds};
 
+    debugPrint('ExploreFilter: ${badges.length} total badges, '
+        '${earnedIds.length} earned, ${activeAppBadgeIds.length} active apps, '
+        'excludedIds=$excludedIds');
+
     var result = badges.where((b) => !excludedIds.contains(b.id)).toList();
+    debugPrint('ExploreFilter: ${result.length} after exclusion');
     final query = _searchCtrl.text.trim().toLowerCase();
 
     if (query.isNotEmpty) {
@@ -156,11 +161,6 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                     color: const Color(0xFF1E2932),
                   ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.campaign_outlined, size: 31),
-                    color: const Color(0xFF1E2932),
-                  ),
-                  IconButton(
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -177,69 +177,33 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0E000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: TextField(
-                  controller: _searchCtrl,
-                  onChanged: (_) => setState(() {}),
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    hintText: tr.tr('searchBadgeHint'),
-                    hintStyle: const TextStyle(
-                      color: Color(0xFF9AA4AE),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 42,
-                      minHeight: 42,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      size: 24,
-                      color: Color(0xFF8B96A1),
-                    ),
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 42,
-                      minHeight: 42,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () async {
-                        final result = await showFilterModal(
-                          context,
-                          areas: areas,
-                          levels: levels,
-                        );
-                        if (result != null) {
-                          setState(() => _activeFilter = result);
-                        }
-                      },
-                      icon: Icon(
-                        Icons.tune_rounded,
-                        size: 22,
-                        color: _activeFilter != null
-                            ? const Color(0xFF5EAEDC)
-                            : const Color(0xFF8B96A1),
-                      ),
+              TextField(
+                controller: _searchCtrl,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: tr.tr('searchBadgeHint'),
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: IconButton(
+                    onPressed: () async {
+                      final result = await showFilterModal(
+                        context,
+                        areas: areas,
+                        levels: levels,
+                      );
+                      if (result != null) {
+                        setState(() => _activeFilter = result);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.tune_rounded,
+                      size: 22,
+                      color: _activeFilter != null
+                          ? const Color(0xFF5EAEDC)
+                          : null,
                     ),
                   ),
-                  style: const TextStyle(fontSize: 15),
                 ),
+                style: const TextStyle(fontSize: 15),
               ),
               const SizedBox(height: 14),
               if (badgeStore.isLoading)

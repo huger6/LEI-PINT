@@ -16,46 +16,14 @@ class BadgesSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 46,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0E000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: const Icon(Icons.search_rounded),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textAlignVertical: TextAlignVertical.center,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFF9AA4AE),
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 40,
-            minHeight: 40,
-          ),
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            color: Color(0xFF8B96A1),
-            size: 22,
-          ),
-        ),
-        style: const TextStyle(fontSize: 14),
-      ),
+      style: const TextStyle(fontSize: 14),
     );
   }
 }
