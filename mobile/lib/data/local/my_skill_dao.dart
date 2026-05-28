@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../core/database/database_helper.dart';
+import '../../models/skill_model.dart';
 
 class MySkillDao {
   final LocalDatabase _database;
@@ -15,6 +16,23 @@ class MySkillDao {
     );
 
     return rows.map((r) => r['skills_id'] as int).toList();
+  }
+
+  Future<List<SkillModel>> getSelectedSkills() async {
+    final db = await _database.database;
+    final rows = await db.rawQuery('''
+      SELECT s.id, s.badge_id, s.name, s.description
+      FROM ${LocalDatabase.mySelectedSkillsTable} ms
+      INNER JOIN ${LocalDatabase.skillsTable} s ON s.id = ms.skills_id
+      ORDER BY s.name ASC
+    ''');
+
+    return rows.map((r) => SkillModel(
+      id: r['id'] as int,
+      badgeId: r['badge_id'] as int?,
+      name: r['name'] as String,
+      description: r['description'] as String?,
+    )).toList();
   }
 
   Future<List<int>> getPendingSkillIds() async {

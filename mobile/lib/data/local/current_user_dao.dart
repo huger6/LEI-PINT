@@ -13,7 +13,23 @@ class CurrentUserDao {
     final rows = await db.query(LocalDatabase.currentUserTable, limit: 1);
 
     if (rows.isEmpty) return null;
-    return _fromRow(rows.first);
+
+    final areas = await _loadAreas(db);
+    return _fromRow(rows.first, areas: areas);
+  }
+
+  Future<List<UserArea>> _loadAreas(Database db) async {
+    final rows = await db.rawQuery('''
+      SELECT ma.area_id, ma.is_primary, ac.name
+      FROM ${LocalDatabase.myAreasTable} ma
+      LEFT JOIN ${LocalDatabase.areasTable} ac ON ac.id = ma.area_id
+      ORDER BY ma.is_primary DESC, ac.name ASC
+    ''');
+
+    return rows.map((r) => UserArea(
+      name: (r['name'] as String?) ?? '',
+      isPrimary: (r['is_primary'] as int?) == 1,
+    )).toList();
   }
 
   Future<void> save(UserModel user) async {
@@ -52,7 +68,7 @@ class CurrentUserDao {
     await db.delete(LocalDatabase.currentUserTable);
   }
 
-  UserModel _fromRow(Map<String, dynamic> row) {
+  UserModel _fromRow(Map<String, dynamic> row, {List<UserArea> areas = const []}) {
     return UserModel(
       id: row['user_id'] as int,
       email: row['email_address'] as String,
@@ -65,6 +81,7 @@ class CurrentUserDao {
       totalPoints: row['total_points'] as int? ?? 0,
       preferredLangId: row['preferred_lang_id'] as int?,
       locationId: row['location_id'] as int?,
+      areas: areas,
     );
   }
 }

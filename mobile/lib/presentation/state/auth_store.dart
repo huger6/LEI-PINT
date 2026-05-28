@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/database/database_helper.dart';
 import '../../core/services/fcm_service.dart';
 import '../../data/local/current_user_dao.dart';
 import '../../data/remote/api_client.dart';
@@ -251,6 +252,9 @@ class AuthStore extends ChangeNotifier {
     _draftRegistration = RegistrationData();
     _apiClient.setAccessToken(null);
     await _currentUserDao.clear();
+
+    await LocalDatabase.instance.clearUserData();
+
     notifyListeners();
   }
 

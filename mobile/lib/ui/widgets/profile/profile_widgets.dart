@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../models/earned_badge_model.dart';
+
 class QuickMetricCard extends StatelessWidget {
   const QuickMetricCard({
     super.key,
@@ -71,36 +73,71 @@ class QuickMetricCard extends StatelessWidget {
 }
 
 class BadgesStatsCard extends StatelessWidget {
-  const BadgesStatsCard({super.key, this.timeline = const []});
+  const BadgesStatsCard({
+    super.key,
+    required this.earnedBadges,
+    this.userCreatedAt,
+  });
 
-  final List<Map<String, dynamic>> timeline;
+  final List<EarnedBadge> earnedBadges;
+  final DateTime? userCreatedAt;
 
   static const _monthNames = [
     'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
     'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
   ];
 
+  List<_MonthPoint> _buildCumulativeData() {
+    final now = DateTime.now();
+    final start = userCreatedAt ?? now.subtract(const Duration(days: 180));
+
+    final activeBadges = earnedBadges
+        .where((e) => !e.award.isExpired)
+        .toList()
+      ..sort((a, b) => a.award.awardedAt.compareTo(b.award.awardedAt));
+
+    final monthCount = <String, int>{};
+    for (final badge in activeBadges) {
+      final d = badge.award.awardedAt;
+      final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
+      monthCount[key] = (monthCount[key] ?? 0) + 1;
+    }
+
+    final months = <_MonthPoint>[];
+    var cursor = DateTime(start.year, start.month);
+    final end = DateTime(now.year, now.month);
+    var cumulative = 0;
+
+    while (!cursor.isAfter(end)) {
+      final key =
+          '${cursor.year}-${cursor.month.toString().padLeft(2, '0')}';
+      cumulative += monthCount[key] ?? 0;
+      months.add(_MonthPoint(
+        month: cursor.month,
+        year: cursor.year,
+        count: cumulative,
+      ));
+      cursor = DateTime(cursor.year, cursor.month + 1);
+    }
+
+    if (months.length > 6) {
+      return months.sublist(months.length - 6);
+    }
+    return months;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final recent = timeline.length > 6
-        ? timeline.sublist(timeline.length - 6)
-        : timeline;
+    final data = _buildCumulativeData();
 
-    final spots = List.generate(recent.length, (i) {
-      final val = (recent[i]['cumulative_badges'] ??
-              recent[i]['cumulative_certifications'] ??
-              0) as num;
-      return FlSpot(i.toDouble(), val.toDouble());
+    final spots = List.generate(data.length, (i) {
+      return FlSpot(i.toDouble(), data[i].count.toDouble());
     });
 
-    final labels = recent.map((row) {
-      final m = row['month'];
-      if (m is int && m >= 1 && m <= 12) return _monthNames[m - 1];
-      return m?.toString() ?? '';
-    }).toList();
+    final labels = data.map((d) => _monthNames[d.month - 1]).toList();
 
     final maxY = spots.isEmpty
-        ? 21.0
+        ? 5.0
         : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
             .ceilToDouble()
             .clamp(1, 1000);
@@ -122,18 +159,31 @@ class BadgesStatsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Badges Obtidos',
-            style: TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF3C4453),
-            ),
+          Row(
+            children: [
+              const Text(
+                'Badges Obtidos',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF3C4453),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${earnedBadges.where((e) => !e.award.isExpired).length} ativos',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5D9FD1),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           SizedBox(
-            height: 220,
-            child: spots.isEmpty
+            height: 180,
+            child: spots.isEmpty || spots.every((s) => s.y == 0)
                 ? const Center(
                     child: Text(
                       'Sem dados de evolu\u00e7\u00e3o.',
@@ -159,6 +209,24 @@ class BadgesStatsCard extends StatelessWidget {
                           strokeWidth: 1,
                         ),
                       ),
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (_) => const Color(0xFF2C3E50),
+                          tooltipBorderRadius: BorderRadius.circular(8),
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              return LineTooltipItem(
+                                '${spot.y.toInt()} badges',
+                                const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
                       titlesData: FlTitlesData(
                         topTitles: const AxisTitles(
                           sideTitles: SideTitles(showTitles: false),
@@ -172,6 +240,9 @@ class BadgesStatsCard extends StatelessWidget {
                             interval: (maxY / 3).clamp(1, 100),
                             reservedSize: 30,
                             getTitlesWidget: (value, meta) {
+                              if (value != value.roundToDouble()) {
+                                return const SizedBox.shrink();
+                              }
                               return Text(
                                 value.toInt().toString(),
                                 style: const TextStyle(
@@ -200,6 +271,7 @@ class BadgesStatsCard extends StatelessWidget {
                                   style: const TextStyle(
                                     color: Color(0xFF5D6978),
                                     fontWeight: FontWeight.w600,
+                                    fontSize: 12,
                                   ),
                                 ),
                               );
@@ -211,11 +283,31 @@ class BadgesStatsCard extends StatelessWidget {
                         LineChartBarData(
                           spots: spots,
                           isCurved: true,
-                          color: const Color(0xFFE57D97),
-                          barWidth: 3,
+                          curveSmoothness: 0.3,
+                          color: const Color(0xFF5D9FD1),
+                          barWidth: 2.5,
                           isStrokeCapRound: true,
-                          belowBarData: BarAreaData(show: false),
-                          dotData: const FlDotData(show: false),
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) =>
+                                FlDotCirclePainter(
+                              radius: 4,
+                              color: const Color(0xFF5D9FD1),
+                              strokeWidth: 2,
+                              strokeColor: Colors.white,
+                            ),
+                          ),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFF5D9FD1).withValues(alpha: 0.18),
+                                const Color(0xFF5D9FD1).withValues(alpha: 0.02),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -225,6 +317,17 @@ class BadgesStatsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MonthPoint {
+  const _MonthPoint({
+    required this.month,
+    required this.year,
+    required this.count,
+  });
+  final int month;
+  final int year;
+  final int count;
 }
 
 class LegendItem extends StatelessWidget {

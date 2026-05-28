@@ -79,6 +79,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (result['success'] == true) {
           final user = result['user'];
+
+          final role = (user?.role ?? authStore.currentUser?.role ?? '')
+              .toString()
+              .trim();
+          if (role.isNotEmpty &&
+              role.toLowerCase() != 'consultant') {
+            await authStore.clearSession();
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Apenas contas de Consultores podem aceder à aplicação móvel.',
+                ),
+                backgroundColor: Color(0xFFD94827),
+                duration: Duration(seconds: 4),
+              ),
+            );
+            return;
+          }
+
           final forcePasswordChange =
               result['forcePasswordChange'] == true;
           final firstLogin = result['firstLogin'] == true;

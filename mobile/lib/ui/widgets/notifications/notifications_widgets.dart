@@ -45,6 +45,62 @@ class NotificationsList extends StatelessWidget {
   }
 }
 
+class NotificationTypeChip extends StatelessWidget {
+  const NotificationTypeChip({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? color : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? color : const Color(0xFFD5DCE3),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : color,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF3C4D5C),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class NotificationCard extends StatelessWidget {
   const NotificationCard({
     super.key,
@@ -59,6 +115,9 @@ class NotificationCard extends StatelessWidget {
 
   NotificationDisplay get _display =>
       NotificationDefs.getDisplay(item.definitionId, url: item.url);
+
+  NotificationTypeDisplay get _typeDisplay =>
+      NotificationDefs.getTypeDisplay(item.notificationType);
 
   String get _title {
     final payload = item.payload;
@@ -97,6 +156,7 @@ class NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final display = _display;
+    final typeDisplay = _typeDisplay;
 
     return GestureDetector(
       onTap: onTap,
@@ -179,13 +239,47 @@ class NotificationCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 6),
-                  Text(
-                    _timestamp,
-                    style: const TextStyle(
-                      color: Color(0xFF6E7A86),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: typeDisplay.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              typeDisplay.icon,
+                              size: 12,
+                              color: typeDisplay.color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              typeDisplay.label,
+                              style: TextStyle(
+                                color: typeDisplay.color,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _timestamp,
+                        style: const TextStyle(
+                          color: Color(0xFF6E7A86),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

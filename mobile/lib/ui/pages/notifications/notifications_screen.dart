@@ -21,20 +21,42 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  String? _selectedType;
+  Set<int> _unreadOnEntry = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationStore>().loadNotifications();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final store = context.read<NotificationStore>();
+      await store.loadNotifications();
+      if (mounted) {
+        setState(() {
+          _unreadOnEntry = store.unread.map((n) => n.id).toSet();
+        });
+      }
     });
   }
 
   @override
   void dispose() {
+    _markSeenAsRead();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _markSeenAsRead() {
+    if (_unreadOnEntry.isEmpty) return;
+    final store = context.read<NotificationStore>();
+    for (final id in _unreadOnEntry) {
+      store.markRead(id);
+    }
+  }
+
+  List<NotificationModel> _filterByType(List<NotificationModel> list) {
+    if (_selectedType == null) return list;
+    return list.where((n) => n.notificationType == _selectedType).toList();
   }
 
   Future<void> _handleNotificationTap(NotificationModel notification) async {
@@ -82,11 +104,16 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     } catch (_) {}
   }
 
+  Set<String> _availableTypes(List<NotificationModel> notifications) {
+    return notifications.map((n) => n.notificationType).toSet();
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = context.watch<NotificationStore>();
     final allNotifications = store.all;
     final unreadNotifications = store.unread;
+    final types = _availableTypes(allNotifications);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -126,6 +153,36 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       ),
       body: Column(
         children: [
+          if (types.length > 1)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  NotificationTypeChip(
+                    label: 'Todas',
+                    icon: Icons.notifications_outlined,
+                    color: const Color(0xFF5D9FD1),
+                    isSelected: _selectedType == null,
+                    onTap: () => setState(() => _selectedType = null),
+                  ),
+                  ...types.map((type) {
+                    final display = NotificationDefs.getTypeDisplay(type);
+                    return NotificationTypeChip(
+                      label: display.label,
+                      icon: display.icon,
+                      color: display.color,
+                      isSelected: _selectedType == type,
+                      onTap: () => setState(() {
+                        _selectedType = _selectedType == type ? null : type;
+                      }),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          const SizedBox(height: 4),
           Container(
             color: Colors.grey[100],
             child: TabBar(
@@ -158,12 +215,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     controller: _tabController,
                     children: [
                       NotificationsList(
-                        notifications: unreadNotifications,
+                        notifications: _filterByType(unreadNotifications),
                         onDismiss: (id) => store.markRead(id),
                         onTap: _handleNotificationTap,
                       ),
                       NotificationsList(
-                        notifications: allNotifications,
+                        notifications: _filterByType(allNotifications),
                         onDismiss: (id) => store.markRead(id),
                         onTap: _handleNotificationTap,
                       ),

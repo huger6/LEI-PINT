@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../core/utils/badge_visuals.dart';
 import '../../../presentation/state/dashboard_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/points/points_detail_widgets.dart';
@@ -41,12 +42,18 @@ class PointsDetailScreen extends StatelessWidget {
             }
           }
 
+          final badgeSeed = badge is Map
+              ? (badge['badge_slug'] ?? badge['slug'] ?? badge['badge_id'] ?? badge['id'] ?? '').toString()
+              : '';
+
           return PointsHistoryItem(
             title: badgeTitle.isNotEmpty ? badgeTitle : 'Badge',
             firstDescription: reqTitle,
             secondDescription: entry['justification']?.toString() ?? '',
             gainedPoints: delta,
             date: dateStr,
+            badgeMedalColor: badgeSeed.isNotEmpty ? BadgeVisuals.medalColor(badgeSeed) : null,
+            badgeRibbonColor: badgeSeed.isNotEmpty ? BadgeVisuals.ribbonColor(badgeSeed) : null,
           );
         })
         .toList(growable: false);

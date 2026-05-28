@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 6;
+  static const _databaseVersion = 7;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -137,6 +137,11 @@ class LocalDatabase {
       for (final table in offlineWriteTables) {
         await db.execute('DELETE FROM $table');
       }
+    }
+    if (oldVersion < 7) {
+      await db.execute(
+        "ALTER TABLE $notificationsTable ADD COLUMN notification_type TEXT NOT NULL DEFAULT 'SYSTEM'",
+      );
     }
   }
 
@@ -324,13 +329,14 @@ class LocalDatabase {
     ''',
     '''
       CREATE TABLE IF NOT EXISTS $notificationsTable (
-        id            INTEGER PRIMARY KEY,
-        definition_id INTEGER NOT NULL,
-        payload       TEXT,
-        url           TEXT,
-        is_read       INTEGER NOT NULL DEFAULT 0,
-        sent_at       INTEGER NOT NULL,
-        synced_at     INTEGER NOT NULL
+        id                 INTEGER PRIMARY KEY,
+        definition_id      INTEGER NOT NULL,
+        payload            TEXT,
+        url                TEXT,
+        notification_type  TEXT    NOT NULL DEFAULT 'SYSTEM',
+        is_read            INTEGER NOT NULL DEFAULT 0,
+        sent_at            INTEGER NOT NULL,
+        synced_at          INTEGER NOT NULL
       )
     ''',
     'CREATE INDEX IF NOT EXISTS idx_notif_unread ON $notificationsTable (is_read)',

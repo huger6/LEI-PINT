@@ -70,6 +70,67 @@ class _HistoryCardState extends State<HistoryCard>
     with SingleTickerProviderStateMixin {
   bool _expanded = false;
 
+  Widget _buildIcon(PointsHistoryItem item, bool isPositive) {
+    if (item.badgeMedalColor != null) {
+      return Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: item.badgeMedalColor!.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              Icons.workspace_premium_rounded,
+              color: item.badgeMedalColor,
+              size: 26,
+            ),
+            Positioned(
+              right: 4,
+              bottom: 4,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: isPositive
+                      ? const Color(0xFF2E9E4D)
+                      : const Color(0xFFD94A2A),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Icon(
+                  isPositive ? Icons.add : Icons.remove,
+                  size: 8,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: isPositive
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : AppColors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        isPositive
+            ? Icons.trending_up_rounded
+            : Icons.trending_down_rounded,
+        color: isPositive ? AppColors.primary : AppColors.error,
+        size: 24,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
@@ -101,23 +162,7 @@ class _HistoryCardState extends State<HistoryCard>
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
             child: Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isPositive
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isPositive
-                        ? Icons.trending_up_rounded
-                        : Icons.trending_down_rounded,
-                    color: isPositive ? AppColors.primary : AppColors.error,
-                    size: 24,
-                  ),
-                ),
+                _buildIcon(item, isPositive),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -693,6 +738,8 @@ class PointsHistoryItem {
     required this.secondDescription,
     required this.gainedPoints,
     this.date = '',
+    this.badgeMedalColor,
+    this.badgeRibbonColor,
   });
 
   final String title;
@@ -700,4 +747,6 @@ class PointsHistoryItem {
   final String secondDescription;
   final int gainedPoints;
   final String date;
+  final Color? badgeMedalColor;
+  final Color? badgeRibbonColor;
 }

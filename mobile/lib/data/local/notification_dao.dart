@@ -63,6 +63,7 @@ class NotificationDao {
         'definition_id': n.definitionId,
         'payload': n.payload,
         'url': n.url,
+        'notification_type': n.notificationType,
         'is_read': n.isRead ? 1 : 0,
         'sent_at': n.sentAt.millisecondsSinceEpoch,
         'synced_at': now,
@@ -78,6 +79,7 @@ class NotificationDao {
       definitionId: row['definition_id'] as int,
       payload: row['payload'] as String?,
       url: row['url'] as String?,
+      notificationType: (row['notification_type'] as String?) ?? 'SYSTEM',
       isRead: (row['is_read'] as int?) == 1,
       sentAt: DateTime.fromMillisecondsSinceEpoch(row['sent_at'] as int),
     );

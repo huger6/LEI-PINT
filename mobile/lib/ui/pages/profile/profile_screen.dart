@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/local/my_skill_dao.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
-import '../../../presentation/state/dashboard_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
@@ -19,13 +20,21 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  int _skillsCount = 0;
+
   @override
   void initState() {
     super.initState();
+    _loadSkillsCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BadgeStore>().loadEarnedBadges();
       context.read<AuthStore>().fetchPoints();
     });
+  }
+
+  Future<void> _loadSkillsCount() async {
+    final ids = await GetIt.instance<MySkillDao>().getSelectedSkillIds();
+    if (mounted) setState(() => _skillsCount = ids.length);
   }
 
   Future<void> _handleLogout() async {
@@ -46,14 +55,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final authStore = context.watch<AuthStore>();
     final badgeStore = context.watch<BadgeStore>();
-    final dashStore = context.watch<DashboardStore>();
 
     final earnedBadges = badgeStore.earnedBadges;
     final badgeCount = earnedBadges.length;
-    final skillsCount = earnedBadges
-        .expand((e) => e.badge.skills)
-        .toSet()
-        .length;
+    final skillsCount = _skillsCount;
     final totalPoints = authStore.currentUser?.totalPoints ?? 0;
 
     final userName =
@@ -158,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              BadgesStatsCard(timeline: dashStore.timeline),
+              BadgesStatsCard(earnedBadges: earnedBadges),
               const SizedBox(height: 10),
               Container(
                 decoration: BoxDecoration(
@@ -256,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.email_outlined,
-                label: 'Editar assinatura de email',
+                label: 'Assinatura de email',
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.emailSignature),
               ),
