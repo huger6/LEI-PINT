@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../injection_container.dart';
 import '../../ui/pages/auth/auth_loading_screen.dart';
 import '../../ui/pages/auth/login_page.dart';
 import '../../ui/pages/auth/register_screen.dart';
@@ -18,6 +20,10 @@ import '../../ui/pages/profile/characteristics_screen.dart';
 import '../../ui/pages/profile/help_screen.dart';
 import '../../ui/pages/profile/badge_gallery_screen.dart';
 import '../../ui/pages/profile/terms_conditions_screen.dart';
+import '../../ui/widgets/shared/no_connection/no_connection_widget.dart';
+import '../../ui/widgets/shared/screen_scope/screen_scope.dart';
+import '../constants/screen_data_scope.dart';
+import '../services/connectivity_service.dart';
 
 class AppRouter {
   static const String initial = '/';
@@ -40,17 +46,14 @@ class AppRouter {
   static const String help = '/help';
   static const String badgeGallery = '/badge-gallery';
 
-  static Map<String, WidgetBuilder> get routes => {
+  static final Map<String, WidgetBuilder> _builders = {
     initial: (context) => const AuthLoadingScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     forgotPassword: (context) => const ForgotPasswordScreen(),
-
     selectArea: (context) => const SelectAreaScreen(),
-
     newUserConfirm: (context) => const NewUserConfirmScreen(),
     emailConfirmation: (context) => const EmailConfirmationScreen(),
-
     dashboard: (context) => const DashboardScreen(),
     exploreCompetencies: (context) => const ExploreCompetenciesScreen(),
     myBadges: (context) => const MyBadgesScreen(),
@@ -64,4 +67,32 @@ class AppRouter {
     help: (context) => const HelpScreen(),
     badgeGallery: (context) => const BadgeGalleryScreen(),
   };
+
+  static Route<dynamic>? generateRoute(RouteSettings settings) {
+    final name = settings.name;
+    if (name == null) return null;
+
+    final builder = _builders[name];
+    if (builder == null) return null;
+
+    if (ScreenDataScope.isAuthRoute(name) || ScreenDataScope.isStaticRoute(name)) {
+      return MaterialPageRoute(settings: settings, builder: builder);
+    }
+
+    final connectivity = getIt<ConnectivityService>();
+    if (!connectivity.isOnline) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => NoConnectionWidget(targetRoute: name),
+      );
+    }
+
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (context) => ScreenScope(
+        route: name,
+        child: builder(context),
+      ),
+    );
+  }
 }

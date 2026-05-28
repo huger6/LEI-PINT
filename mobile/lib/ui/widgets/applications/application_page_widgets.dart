@@ -75,14 +75,20 @@ class SelectedBadgeCard extends StatelessWidget {
                   fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                '${badge.category} - ${badge.level}',
-                style: const TextStyle(
-                  color: ApplicationColors.mutedText,
-                  fontSize: 12,
+              if (badge.category.trim().isNotEmpty ||
+                  badge.level.trim().isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  [
+                    if (badge.category.trim().isNotEmpty) badge.category,
+                    if (badge.level.trim().isNotEmpty) badge.level,
+                  ].join(' - '),
+                  style: const TextStyle(
+                    color: ApplicationColors.mutedText,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -110,12 +116,12 @@ class SelectedBadgeMedal extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 46,
-      height: 58,
+      height: 48,
       child: Stack(
-        alignment: Alignment.topCenter,
+        alignment: Alignment.center,
         children: [
           Positioned(
-            top: 27,
+            bottom: 0,
             child: Row(
               children: [
                 Icon(Icons.bookmark, color: ribbonColor, size: 15),
@@ -152,7 +158,7 @@ class ApplicationCardContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: ApplicationColors.cardBackground,
         borderRadius: BorderRadius.circular(12),

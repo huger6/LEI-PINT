@@ -24,6 +24,7 @@ import '../data/repositories/ranking_repo.dart';
 import '../data/repositories/statistics_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
+import 'services/connectivity_service.dart';
 import 'services/sync_service.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -86,6 +87,10 @@ Future<void> setupDependencies() async {
     getIt.registerLazySingleton<SupabaseStorageService>(
       () => SupabaseStorageService(getIt<SupabaseClient>()),
     );
+  }
+
+  if (!getIt.isRegistered<ConnectivityService>()) {
+    getIt.registerSingleton<ConnectivityService>(ConnectivityService());
   }
 
   if (!getIt.isRegistered<Dio>()) {

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../core/constants/api_endpoints.dart';
 import '../../models/application_summary_model.dart';
 import '../remote/api_client.dart';
@@ -51,6 +53,11 @@ class ApplicationsRepository {
     return ApplicationSummaryModel.fromJson(data);
   }
 
+  static final _longTimeout = Options(
+    receiveTimeout: const Duration(seconds: 60),
+    sendTimeout: const Duration(seconds: 60),
+  );
+
   Future<Map<String, dynamic>> startApplication({
     required int badgeId,
     int? goalId,
@@ -61,6 +68,7 @@ class ApplicationsRepository {
         'badgeId': badgeId,
         ...?(goalId == null ? null : {'goalId': goalId}),
       },
+      options: _longTimeout,
     );
 
     return _extractMap(payload);
@@ -99,6 +107,7 @@ class ApplicationsRepository {
         ...?evidenceDescription == null ? null : {'evidenceDescription': evidenceDescription},
         ...?evidenceFileType == null ? null : {'evidenceFileType': evidenceFileType},
       },
+      options: _longTimeout,
     );
 
     return _extractMap(payload);
@@ -107,6 +116,7 @@ class ApplicationsRepository {
   Future<Map<String, dynamic>> submitApplication(String applicationGuid) async {
     final payload = await _apiClient.post(
       ApiEndpoints.submitApplication(applicationGuid),
+      options: _longTimeout,
     );
 
     return _extractMap(payload);
