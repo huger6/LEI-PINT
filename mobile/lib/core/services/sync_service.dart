@@ -27,6 +27,7 @@ import '../../models/progression_stage_model.dart';
 import '../../models/service_line_model.dart';
 import '../../models/user_model.dart';
 import '../constants/api_endpoints.dart';
+import '../constants/screen_data_scope.dart';
 import '../constants/sync_codes.dart';
 import '../database/database_helper.dart';
 
@@ -49,12 +50,94 @@ class SyncService {
   late final _myApplicationDao = MyApplicationDao(_database);
   late final _currentUserDao = CurrentUserDao(_database);
 
+  String? _activeRoute;
+
   final _syncController = StreamController<int>.broadcast();
 
   Stream<int> get onSyncComplete => _syncController.stream;
 
+  // ── Screen-driven sync API ────────────────────────────────────────────────
+
+  void setActiveRoute(String route) {
+    _activeRoute = route;
+    debugPrint('SyncService: Active route set to $route');
+  }
+
+  Future<bool> syncForScreen(String route) async {
+    final codes = ScreenDataScope.requiredSyncCodes(route);
+    if (codes.isEmpty) return true;
+
+    debugPrint('SyncService: Syncing ${codes.length} codes for $route');
+    final results = await Future.wait(codes.map(_syncCode));
+    final allOk = results.every((ok) => ok);
+
+    for (var i = 0; i < codes.length; i++) {
+      if (results[i]) {
+        await _syncDao.setLastSync(codes[i], DateTime.now().toUtc());
+        if (!_syncController.isClosed) _syncController.add(codes[i]);
+      }
+    }
+    return allOk;
+  }
+
+  Future<bool> hasLocalDataForScreen(String route) async {
+    final tables = ScreenDataScope.requiredTables(route);
+    if (tables.isEmpty) return true;
+
+    final db = await _database.database;
+    for (final table in tables) {
+      final rows = await db.rawQuery('SELECT COUNT(*) AS c FROM $table');
+      final count = rows.isNotEmpty ? (rows.first['c'] as int? ?? 0) : 0;
+      if (count == 0) return false;
+    }
+    return true;
+  }
+
+  Future<bool> _syncCode(int code) {
+    switch (code) {
+      case SyncCodes.userProfile:
+      case SyncCodes.userSession:
+        return _syncUserProfile();
+      case SyncCodes.learningPaths:
+        return _syncLearningPaths();
+      case SyncCodes.serviceLines:
+        return _syncServiceLines();
+      case SyncCodes.areas:
+        return _syncAreas();
+      case SyncCodes.progressionStages:
+        return _syncProgressionStages();
+      case SyncCodes.badges:
+        return _syncBadges();
+      case SyncCodes.applications:
+      case SyncCodes.evidences:
+        return _syncApplications();
+      case SyncCodes.awardedBadges:
+        return _syncAwardedBadges();
+      case SyncCodes.points:
+        return _syncPointsHistory();
+      case SyncCodes.announcements:
+        return _syncAnnouncements();
+      case SyncCodes.notifications:
+        return _syncNotifications();
+      default:
+        return Future.value(true);
+    }
+  }
+
+  // ── FCM-driven sync (existing) ────────────────────────────────────────────
+
   Future<void> handleUpdate(int updateCode, String timestampStr) async {
     if (!SyncCodes.isRelevantForMobile(updateCode)) return;
+
+    if (_activeRoute != null) {
+      final relevantCodes = ScreenDataScope.requiredSyncCodes(_activeRoute!);
+      if (relevantCodes.isNotEmpty && !relevantCodes.contains(updateCode)) {
+        debugPrint(
+          'SyncService: Code $updateCode skipped (not relevant for $_activeRoute)',
+        );
+        return;
+      }
+    }
 
     final incoming = DateTime.tryParse(timestampStr)?.toUtc();
     if (incoming == null) return;

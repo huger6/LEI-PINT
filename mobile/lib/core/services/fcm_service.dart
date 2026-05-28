@@ -97,6 +97,7 @@ class FCMService {
 
     try {
       final syncService = getIt<SyncService>();
+      // handleUpdate already filters by active screen relevance
       await syncService.handleUpdate(updateCode, timestamp.toString());
     } catch (e) {
       debugPrint('FCM: Sync handling failed: $e');

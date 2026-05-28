@@ -162,27 +162,27 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
 
       final storage = GetIt.instance<SupabaseStorageService>();
 
+      final uploadFutures = <Future<void>>[];
       for (final entry in _filesByRequirement.entries) {
         final requirementId = entry.key;
-        final files = entry.value;
-
-        for (final file in files) {
+        for (final file in entry.value) {
           if (file.filePath == null) continue;
-
-          final fileUrl = await storage.uploadFileToTemp(
-            File(file.filePath!),
-            prefix: 'evidence',
-          );
-
-          await appStore.upsertEvidence(
-            applicationGuid: applicationGuid,
-            requirementId: requirementId,
-            evidenceFileUrl: fileUrl,
-            evidenceTitle: file.name,
-            evidenceFileType: _mimeTypeForFile(file.name),
-          );
+          uploadFutures.add(() async {
+            final fileUrl = await storage.uploadFileToTemp(
+              File(file.filePath!),
+              prefix: 'evidence',
+            );
+            await appStore.upsertEvidence(
+              applicationGuid: applicationGuid,
+              requirementId: requirementId,
+              evidenceFileUrl: fileUrl,
+              evidenceTitle: file.name,
+              evidenceFileType: _mimeTypeForFile(file.name),
+            );
+          }());
         }
       }
+      await Future.wait(uploadFutures);
 
       final submitResult = await appStore.submitApplication(applicationGuid);
       if (!mounted) return;

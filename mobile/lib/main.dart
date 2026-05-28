@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/routes/app_router.dart';
+import 'core/services/connectivity_service.dart';
 import 'core/theme/app_theme.dart';
 import 'data/remote/api_client.dart';
 import 'data/remote/supabase_storage_service.dart';
@@ -97,23 +98,15 @@ void main() async {
     return;
   }
 
-  final routes = AppRouter.routes;
-  if (!routes.containsKey(AppRouter.initial)) {
-    runApp(
-      const ErrorApp(
-        errorMessage:
-            'Invalid initial route. Configure AppRouter.initial in the route map.',
-      ),
-    );
-    return;
-  }
-
   final languageController = LanguageController();
   await languageController.initialize();
 
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<ConnectivityService>.value(
+          value: getIt<ConnectivityService>(),
+        ),
         Provider.value(value: getIt<ApiClient>()),
         Provider.value(value: getIt<AuthRepository>()),
         Provider.value(value: getIt<LocationRepository>()),
@@ -223,7 +216,7 @@ class MyApp extends StatelessWidget {
             ],
             supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
             initialRoute: AppRouter.initial,
-            routes: AppRouter.routes,
+            onGenerateRoute: AppRouter.generateRoute,
           );
         },
       ),
