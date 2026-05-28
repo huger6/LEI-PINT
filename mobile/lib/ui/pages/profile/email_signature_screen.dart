@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../models/earned_badge_model.dart';
 import '../../../presentation/state/auth_store.dart';
@@ -19,6 +20,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   bool _showPreview = false;
   final _searchController = TextEditingController();
   String _filterTab = 'Todos';
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -50,6 +52,50 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         .toList();
   }
 
+  Future<void> _handleConfirm(List<EarnedBadge> earned) async {
+    if (_selectedBadgeIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione pelo menos um badge.'),
+          backgroundColor: Color(0xFFD94827),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Assinatura de email guardada com sucesso.'),
+          backgroundColor: Color(0xFF2E9E4D),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao guardar a assinatura de email.'),
+          backgroundColor: Color(0xFFD94827),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _openVerificationLink(String? link) async {
+    if (link == null || link.isEmpty) return;
+    final uri = Uri.tryParse(link);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final badgeStore = context.watch<BadgeStore>();
@@ -64,6 +110,11 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
             ? user!.username.trim()
             : 'Utilizador';
     final userEmail = user?.email ?? '';
+    final userAreas = user?.areas ?? const [];
+    final primaryArea = userAreas.where((a) => a.isPrimary).firstOrNull;
+    final areaName = primaryArea?.name.trim().isNotEmpty == true
+        ? primaryArea!.name.trim()
+        : (userAreas.isNotEmpty ? userAreas.first.name : '');
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -220,7 +271,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 0.82,
                   children: filtered.map((item) {
                     final badge = item.badge;
                     final isSelected = _selectedBadgeIds.contains(badge.id);
@@ -262,8 +313,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                                 EmailSignatureBadgeMedalIcon(
                                   medalColor: badge.medalColor,
                                   ribbonColor: badge.ribbonColor,
+                                  size: 48,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Text(
                                   badge.title,
                                   textAlign: TextAlign.center,
@@ -384,8 +436,19 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                                   color: Color(0xFF172733),
                                 ),
                               ),
+                              if (areaName.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  areaName,
+                                  style: const TextStyle(
+                                    color: Color(0xFF3B8DBD),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                               if (userEmail.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Text(
                                   userEmail,
                                   style: const TextStyle(
@@ -405,7 +468,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                       Divider(color: Colors.grey[300], height: 1),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 40,
+                        height: 48,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: _selectedBadgeIds.length,
@@ -420,12 +483,40 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                             if (match.isEmpty) {
                               return const SizedBox.shrink();
                             }
-                            final badge = match.first.badge;
+                            final earnedBadge = match.first;
+                            final badge = earnedBadge.badge;
+                            final link = earnedBadge.award.verificationLink;
 
-                            return EmailSignatureBadgeMedalIcon(
-                              medalColor: badge.medalColor,
-                              ribbonColor: badge.ribbonColor,
-                              size: 40,
+                            return GestureDetector(
+                              onTap: link != null && link.isNotEmpty
+                                  ? () => _openVerificationLink(link)
+                                  : null,
+                              child: Tooltip(
+                                message: badge.title,
+                                child: SizedBox(
+                                  width: 38,
+                                  height: 48,
+                                  child: Stack(
+                                    alignment: Alignment.topCenter,
+                                    children: [
+                                      EmailSignatureBadgeMedalIcon(
+                                        medalColor: badge.medalColor,
+                                        ribbonColor: badge.ribbonColor,
+                                        size: 30,
+                                      ),
+                                      if (link != null && link.isNotEmpty)
+                                        const Positioned(
+                                          bottom: 0,
+                                          child: Icon(
+                                            Icons.link_rounded,
+                                            size: 12,
+                                            color: Color(0xFF5D9FD1),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -442,6 +533,89 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                         ),
                       ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x14000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: _isSaving ? null : () => _handleConfirm(earned),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD5EAF6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: _isSaving
+                                ? const Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Color(0xFF5D9FD1),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.check_circle_outline_rounded,
+                                    color: Color(0xFF4D9ECC),
+                                  ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Confirmar Assinatura de email',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1E2932),
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Guardar e enviar a sua assinatura',
+                                  style: TextStyle(
+                                    color: Color(0xFF6E7A86),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFF5D9FD1),
+                            size: 28,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

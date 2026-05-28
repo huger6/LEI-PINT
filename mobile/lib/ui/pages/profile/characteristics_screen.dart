@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/local/my_skill_dao.dart';
+import '../../../models/skill_model.dart';
 import '../../../presentation/state/auth_store.dart';
-import '../../../presentation/state/badge_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/characteristics_widgets.dart';
 
@@ -14,18 +16,22 @@ class CharacteristicsScreen extends StatefulWidget {
 }
 
 class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
+  List<SkillModel> _skills = [];
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BadgeStore>().loadEarnedBadges();
-    });
+    _loadSkills();
+  }
+
+  Future<void> _loadSkills() async {
+    final skills = await GetIt.instance<MySkillDao>().getSelectedSkills();
+    if (mounted) setState(() => _skills = skills);
   }
 
   @override
   Widget build(BuildContext context) {
     final authStore = context.watch<AuthStore>();
-    final badgeStore = context.watch<BadgeStore>();
     final user = authStore.currentUser;
 
     final userName = (user?.fullName.trim().isNotEmpty ?? false)
@@ -34,10 +40,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
             ? user!.username.trim()
             : 'Utilizador';
 
-    final skills = badgeStore.earnedBadges
-        .expand((e) => e.badge.skills)
-        .toSet()
-        .toList();
+    final skills = _skills;
 
     final areas = user?.areas ?? [];
     final role = user?.role;
@@ -215,7 +218,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                         ),
                       ),
                       child: Text(
-                        skill,
+                        skill.name,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,

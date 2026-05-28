@@ -3,6 +3,7 @@ class NotificationModel {
   final int definitionId;
   final String? payload;
   final String? url;
+  final String notificationType;
   final bool isRead;
   final DateTime sentAt;
 
@@ -11,6 +12,7 @@ class NotificationModel {
     required this.definitionId,
     this.payload,
     this.url,
+    this.notificationType = 'SYSTEM',
     required this.isRead,
     required this.sentAt,
   });
@@ -22,6 +24,9 @@ class NotificationModel {
       payload: json['payload']?.toString() ??
           json['notification_payload']?.toString(),
       url: json['url']?.toString() ?? json['notification_url']?.toString(),
+      notificationType: (json['notification_type'] ?? json['type'] ?? 'SYSTEM')
+          .toString()
+          .toUpperCase(),
       isRead: json['is_read'] == true || json['is_read'] == 1,
       sentAt: _parseDate(json['sent_at']) ?? DateTime.now(),
     );
@@ -33,6 +38,7 @@ class NotificationModel {
       definitionId: definitionId,
       payload: payload,
       url: url,
+      notificationType: notificationType,
       isRead: isRead ?? this.isRead,
       sentAt: sentAt,
     );
