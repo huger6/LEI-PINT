@@ -104,7 +104,7 @@ class BadgeDao {
       'slug': badgeJson['badge_slug'] ?? badgeJson['slug'] ?? '',
       'title': badgeJson['badge_title'] ?? badgeJson['title'] ?? '',
       'badge_type': badgeJson['badge_type'] ?? 'Standard',
-      'points': badgeJson['badge_points'] ?? badgeJson['points'] ?? 0,
+      'points': badgeJson['badge_points'] ?? badgeJson['points'] ?? badgeJson['pointsValue'] ?? 0,
       'expiration_days': badgeJson['expiration_duration_days'],
       'estimated_time':
           badgeJson['estimated_time_to_acquire'] ?? badgeJson['estimated_duration'],

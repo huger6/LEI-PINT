@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\Projetos\\\\PINT\\\\mobile\\\\lib\" -Recurse -Filter \"*.dart\")",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(Select-Object -Last 20)"
     ]
   }
 }

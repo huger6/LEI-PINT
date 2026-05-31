@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
 
 Future<void> showDownloadConfirmationSheet(
   BuildContext context, {
   required String fileName,
   required String badgeTitle,
+  required String filePath,
 }) async {
   await showModalBottomSheet<void>(
     context: context,
@@ -16,6 +18,7 @@ Future<void> showDownloadConfirmationSheet(
       return _DownloadConfirmationContent(
         fileName: fileName,
         badgeTitle: badgeTitle,
+        filePath: filePath,
       );
     },
   );
@@ -25,10 +28,12 @@ class _DownloadConfirmationContent extends StatelessWidget {
   const _DownloadConfirmationContent({
     required this.fileName,
     required this.badgeTitle,
+    required this.filePath,
   });
 
   final String fileName;
   final String badgeTitle;
+  final String filePath;
 
   @override
   Widget build(BuildContext context) {
@@ -145,11 +150,35 @@ class _DownloadConfirmationContent extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  OpenFilex.open(filePath);
+                },
+                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                label: const Text('Abrir Comprovativo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E6CA2),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF4E6CA2),
+                  side: const BorderSide(color: Color(0xFF4E6CA2)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

@@ -308,6 +308,23 @@ const register = async (req, res) => {
     }
 };
 
+const _confirmationHtml = (success, message) => {
+    const icon = success ? '&#10004;' : '&#10006;';
+    const color = success ? '#59C13E' : '#D94A2A';
+    const title = success ? 'E-mail Verificado' : 'Verificação Falhou';
+    const logoUrl = process.env.LOGO_URL || '';
+
+    return `<!DOCTYPE html>
+<html lang="pt">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} - Softinsa Badges</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f3f6;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.card{background:#fff;border-radius:20px;padding:48px 36px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08)}.icon{width:72px;height:72px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:36px;color:#fff;margin-bottom:24px}h1{font-size:22px;color:#1D2A35;margin-bottom:12px}p{font-size:15px;color:#5A6872;line-height:1.5}img{max-width:80px;margin-bottom:20px}</style>
+</head>
+<body><div class="card">${logoUrl ? `<img src="${logoUrl}" alt="Softinsa">` : ''}
+<div class="icon" style="background:${color}">${icon}</div>
+<h1>${title}</h1><p>${message}</p></div></body></html>`;
+};
+
 const confirmEmail = async (req, res) => {
     const { token } = req.query;
     const requestId = req.headers['x-request-id'] || null;
@@ -333,6 +350,10 @@ const confirmEmail = async (req, res) => {
                 requestId
             });
 
+            if (req.accepts('html')) {
+                return res.status(400).send(_confirmationHtml(false, 'Este link de verificação é inválido ou já foi utilizado. Por favor, solicite um novo e-mail de confirmação na aplicação.'));
+            }
+
             return res.status(400).json({
                 success: false,
                 code: 'AUTH_TOKEN_INVALID_OR_USED'
@@ -346,6 +367,10 @@ const confirmEmail = async (req, res) => {
                 user_id: tokenRecord.user_id,
                 expires_at: tokenRecord.expires_at
             });
+
+            if (req.accepts('html')) {
+                return res.status(410).send(_confirmationHtml(false, 'Este link de verificação expirou. Por favor, solicite um novo e-mail de confirmação na aplicação.'));
+            }
 
             return res.status(410).json({
                 success: false,
@@ -382,6 +407,10 @@ const confirmEmail = async (req, res) => {
             token_id: tokenRecord.token_id
         });
 
+        if (req.accepts('html')) {
+            return res.status(200).send(_confirmationHtml(true, 'O seu e-mail foi verificado com sucesso! Já pode fechar esta página e iniciar sessão na aplicação.'));
+        }
+
         return res.status(200).json({
             success: true,
             code: 'AUTH_EMAIL_CONFIRMED'
@@ -391,6 +420,10 @@ const confirmEmail = async (req, res) => {
             requestId,
             error
         });
+
+        if (req.accepts('html')) {
+            return res.status(500).send(_confirmationHtml(false, 'Ocorreu um erro ao verificar o e-mail. Por favor, tente novamente mais tarde.'));
+        }
 
         return res.status(500).json({
             success: false,

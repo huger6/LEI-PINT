@@ -180,6 +180,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     final award = earned.award;
     final applicationGuid = award.applicationGuid;
 
+    debugPrint('Download: badgeId=${badge.id}, applicationId=${award.applicationId}, applicationGuid=$applicationGuid');
+
     if (applicationGuid == null || applicationGuid.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -204,7 +206,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     try {
       final badgeRepo = context.read<BadgeRepository>();
-      await badgeRepo.downloadCertificate(
+      final filePath = await badgeRepo.downloadCertificate(
         applicationGuid: applicationGuid,
         fileName: fileName,
       );
@@ -215,6 +217,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
         context,
         fileName: fileName,
         badgeTitle: badge.title,
+        filePath: filePath,
       );
     } catch (e) {
       if (!mounted) return;

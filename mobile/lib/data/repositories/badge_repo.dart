@@ -89,6 +89,10 @@ class BadgeRepository {
       }
     }
 
+    for (final raw in rawMaps) {
+      debugPrint('EarnedBadge API raw: applicationGuid=${raw['applicationGuid']}, application_guid=${raw['application_guid']}');
+    }
+
     final awarded = rawMaps.map(_parseAwardedFromApi).toList();
     await _awardedBadgeDao.replaceAll(awarded);
     return getEarnedBadgesLocal();
