@@ -46,7 +46,9 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          if (_accessToken != null && _accessToken!.isNotEmpty) {
+          if (options.extra['skipAuth'] == true) {
+            options.headers.remove('Authorization');
+          } else if (_accessToken != null && _accessToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_accessToken';
           } else {
             options.headers.remove('Authorization');

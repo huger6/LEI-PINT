@@ -23,6 +23,7 @@ class AuthRepository {
             'password': password,
             'remember': remember,
           },
+          options: Options(extra: {'skipAuth': true}),
         ),
       );
       final payload = _asMap(responseMap['data']);
@@ -117,6 +118,7 @@ class AuthRepository {
           ApiEndpoints.register,
           data: userData,
           options: Options(
+            extra: {'skipAuth': true},
             connectTimeout: const Duration(seconds: 20),
             sendTimeout: const Duration(seconds: 45),
             receiveTimeout: const Duration(seconds: 45),
@@ -178,6 +180,7 @@ class AuthRepository {
         await _apiClient.post(
           ApiEndpoints.forgotPassword,
           data: {'email': email},
+          options: Options(extra: {'skipAuth': true}),
         ),
       );
 

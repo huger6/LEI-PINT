@@ -20,7 +20,9 @@ const escapeHtml = (value) => String(value || '')
     .replace(/'/g, '&#39;');
 
 const sendConfirmationEmail = async (email, name, token, lang) => {
-    const confirmationUrl = `${process.env.FRONTEND_EMAIL_CONFIRMATION_URL}?token=${token}`; // CHANGE TO FRONTEND LINK
+    const baseUrl = process.env.FRONTEND_EMAIL_CONFIRMATION_URL
+        || `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/confirm-email`;
+    const confirmationUrl = `${baseUrl}?token=${token}`;
 
     const templates = {
         'pt-PT': {
