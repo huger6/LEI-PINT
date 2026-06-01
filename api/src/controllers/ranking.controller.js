@@ -2,6 +2,7 @@ const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/ranking.validation');
+const { handleZodError } = require('../utils/responseHelper');
 
 const getRanking = async (req, res) => {
     try {
@@ -138,13 +139,7 @@ const getRanking = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_QUERY_PARAMS",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
 
         logger.error('Error fetching consultant ranking', { error });
         return res.status(500).json({

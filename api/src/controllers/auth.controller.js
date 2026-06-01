@@ -10,6 +10,7 @@ const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/e
 const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 loadEnvironment();
 
@@ -248,27 +249,7 @@ const register = async (req, res) => {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Registration validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code || 'VALIDATION_INVALID_DATA'
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         // Dups error (more of a failsafe as it is checked above as well)
         if (error.name === 'SequelizeUniqueConstraintError') {
@@ -308,23 +289,6 @@ const register = async (req, res) => {
     }
 };
 
-const _confirmationHtml = (success, message) => {
-    const icon = success ? '&#10004;' : '&#10006;';
-    const color = success ? '#59C13E' : '#D94A2A';
-    const title = success ? 'E-mail Verificado' : 'Verificação Falhou';
-    const logoUrl = process.env.LOGO_URL || '';
-
-    return `<!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title} - Softinsa Badges</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f3f6;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.card{background:#fff;border-radius:20px;padding:48px 36px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08)}.icon{width:72px;height:72px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:36px;color:#fff;margin-bottom:24px}h1{font-size:22px;color:#1D2A35;margin-bottom:12px}p{font-size:15px;color:#5A6872;line-height:1.5}img{max-width:80px;margin-bottom:20px}</style>
-</head>
-<body><div class="card">${logoUrl ? `<img src="${logoUrl}" alt="Softinsa">` : ''}
-<div class="icon" style="background:${color}">${icon}</div>
-<h1>${title}</h1><p>${message}</p></div></body></html>`;
-};
-
 const confirmEmail = async (req, res) => {
     const { token } = req.query;
     const requestId = req.headers['x-request-id'] || null;
@@ -350,10 +314,6 @@ const confirmEmail = async (req, res) => {
                 requestId
             });
 
-            if (req.accepts('html')) {
-                return res.status(400).send(_confirmationHtml(false, 'Este link de verificação é inválido ou já foi utilizado. Por favor, solicite um novo e-mail de confirmação na aplicação.'));
-            }
-
             return res.status(400).json({
                 success: false,
                 code: 'AUTH_TOKEN_INVALID_OR_USED'
@@ -367,10 +327,6 @@ const confirmEmail = async (req, res) => {
                 user_id: tokenRecord.user_id,
                 expires_at: tokenRecord.expires_at
             });
-
-            if (req.accepts('html')) {
-                return res.status(410).send(_confirmationHtml(false, 'Este link de verificação expirou. Por favor, solicite um novo e-mail de confirmação na aplicação.'));
-            }
 
             return res.status(410).json({
                 success: false,
@@ -407,10 +363,6 @@ const confirmEmail = async (req, res) => {
             token_id: tokenRecord.token_id
         });
 
-        if (req.accepts('html')) {
-            return res.status(200).send(_confirmationHtml(true, 'O seu e-mail foi verificado com sucesso! Já pode fechar esta página e iniciar sessão na aplicação.'));
-        }
-
         return res.status(200).json({
             success: true,
             code: 'AUTH_EMAIL_CONFIRMED'
@@ -420,10 +372,6 @@ const confirmEmail = async (req, res) => {
             requestId,
             error
         });
-
-        if (req.accepts('html')) {
-            return res.status(500).send(_confirmationHtml(false, 'Ocorreu um erro ao verificar o e-mail. Por favor, tente novamente mais tarde.'));
-        }
 
         return res.status(500).json({
             success: false,
@@ -604,27 +552,7 @@ const login = async (req, res) => {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Login validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Unexpected error processing login', {
             requestId,
@@ -800,13 +728,12 @@ const changePassword = async (req, res) => {
         const user_id = req.user.sub; // get from jwt
 
         // Verify if new password is valid
-        const validPw = passwordRule.safeParse(newPassword).success;
-        if (!validPw) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_FORMAT_INVALID"
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_FORMAT_INVALID');
+            throw error;
         }
 
         // Get user
@@ -917,12 +844,11 @@ const forgotPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const { email } = req.body;
 
-    if (!emailRule.safeParse(email).success) {
-        // Email is invalid
-        return res.status(400).json({
-            success: false,
-            code: "AUTH_EMAIL_INVALID"
-        });
+    try {
+        emailRule.parse(email);
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_EMAIL_INVALID');
+        throw error;
     }
 
     const t = await sequelize.transaction();
@@ -1066,16 +992,12 @@ const resetPassword = async (req, res) => {
 
     try {
         // Validate new pw
-        const validation = passwordRule.safeParse(newPassword);
-        if (!validation.success) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_WEAK",
-                data: {
-                    errors: validation.error.issues
-                }
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_WEAK');
+            throw error;
         }
 
         // Generate token hash

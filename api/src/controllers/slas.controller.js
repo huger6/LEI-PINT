@@ -4,22 +4,14 @@ const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const { invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/slas.validation');
+const { handleZodError } = require('../utils/responseHelper');
 
 // GET /api/slas
 const getSLAs = async (req, res) => {
     try {
         const isAdmin = req.user?.role === 'Administrator';
 
-        const queryValidation = validations.getSLAsQuerySchema.safeParse(req.query);
-        if (!queryValidation.success) {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: queryValidation.error.issues
-            });
-        }
-
-        const { page, limit, search, isActive, isGlobal, targetProfile } = queryValidation.data;
+        const { page, limit, search, isActive, isGlobal, targetProfile } = validations.getSLAsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const cacheKey = `slas:list:${Buffer.from(JSON.stringify({ isActive, isGlobal, targetProfile, search, isAdmin, page, limit })).toString('base64')}`;
@@ -68,6 +60,8 @@ const getSLAs = async (req, res) => {
         return res.status(200).json({ success: true, ...responseData });
 
     } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+
         logger.error('Error listing SLAs', { error });
         return res.status(500).json({ success: false, code: 'SLA_LIST_FAILED' });
     }
@@ -145,13 +139,7 @@ const createSLA = async (req, res) => {
         return res.status(201).json({ success: true, code: 'SLA_CREATED', data: newSLA });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating SLA', { error });
         return res.status(500).json({ success: false, code: 'SLA_CREATE_FAILED' });
@@ -205,13 +193,7 @@ const updateSLA = async (req, res) => {
         return res.status(200).json({ success: true, code: 'SLA_UPDATED', data: sla });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating SLA', { error });
         return res.status(500).json({ success: false, code: 'SLA_UPDATE_FAILED' });
@@ -241,9 +223,7 @@ const deleteSLA = async (req, res) => {
         return res.status(200).json({ success: true, code: 'SLA_DEACTIVATED' });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deactivating SLA', { error });
         return res.status(500).json({ success: false, code: 'SLA_DELETE_FAILED' });

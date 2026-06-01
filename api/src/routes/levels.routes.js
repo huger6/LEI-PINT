@@ -12,7 +12,7 @@ const badgesRoutes = require('./badges.routes');
  * @desc    List all levels, optionally scoped to an area
  * @access  Authenticated
  */
-router.get('/', optionalAuth, levelController.getLevels);
+router.get('/', loginRequired, levelController.getLevels);
 
 /**
  * @route   GET /api/levels/filter-stats

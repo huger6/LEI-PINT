@@ -1,10 +1,20 @@
-const { Server } = require('socket.io');
+let Server;
+try {
+    Server = require('socket.io').Server;
+} catch (err) {
+    Server = null;
+}
 const jwt = require('jsonwebtoken');
 const { logger } = require('../utils/logger');
 
 let io = null;
 
 function initWebSocket(httpServer) {
+    if (!Server) {
+        logger && logger.info && logger.info('socket.io not available; websocket functionality disabled');
+        return null;
+    }
+
     io = new Server(httpServer, {
         cors: {
             origin: process.env.APP_URL,
@@ -31,8 +41,6 @@ function initWebSocket(httpServer) {
     });
 
     io.on('connection', (socket) => {
-        // Place each authenticated user in a private room keyed by their user ID.
-        // This lets us push notifications to a specific user even across multiple tabs/devices.
         const userRoom = `user:${socket.userId}`;
         socket.join(userRoom);
 
