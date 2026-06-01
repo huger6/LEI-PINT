@@ -264,6 +264,16 @@ const getBadgeBySlug = async (req, res) => {
                 model: models.badge_requirements,
                 as: 'badge_requirements',
                 attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
+            },
+            {
+                model: models.skills,
+                as: 'skills',
+                attributes: ['skills_id', 'skill_name', 'skill_description']
+            },
+            {
+                model: models.rewards,
+                as: 'rewards',
+                attributes: ['reward_id', 'special_title', 'special_portrait_svg']
             }
         ];
 
@@ -373,9 +383,36 @@ const getBadgeBySlug = async (req, res) => {
             });
         }
 
+        const badgeData = badge.toJSON();
+
+        const userId = req.user?.sub;
+        if (userId && !isAdmin) {
+            const awardedBadge = await models.awarded_badges.findOne({
+                where: { user_id: userId },
+                include: [{
+                    model: models.badge_applications,
+                    as: 'application',
+                    where: { badge_id: badge.badge_id },
+                    attributes: []
+                }],
+                attributes: ['awarded_badges_id', 'awarded_at', 'expiration_at', 'public_verification_link'],
+                order: [['awarded_at', 'DESC']]
+            });
+
+            if (awardedBadge) {
+                badgeData.user_award = {
+                    awarded_at: awardedBadge.awarded_at,
+                    expiration_at: awardedBadge.expiration_at,
+                    public_verification_link: awardedBadge.public_verification_link,
+                };
+            } else {
+                badgeData.user_award = null;
+            }
+        }
+
         return res.status(200).json({
             success: true,
-            data: badge
+            data: badgeData
         });
 
     } catch (error) {
@@ -461,7 +498,6 @@ const createBadge = async (req, res) => {
 
         const {
             progressionStageId: bodyStageId,
-            goalId,
             badgeTitle,
             badgeSlug,
             badgeType,
@@ -542,7 +578,6 @@ const createBadge = async (req, res) => {
             area_id: areaRow.area_id,
             service_line_id: slRow.service_line_id,
             learning_path_id: slRow.learning_path_id,
-            goal_id: goalId || null,
             badge_title: badgeTitle,
             badge_slug: finalUniqueSlug,
             badge_type: badgeType,
@@ -685,7 +720,6 @@ const updateBadge = async (req, res) => {
 
         const {
             progressionStageId,
-            goalId,
             badgeTitle,
             badgeSlug: manualNewSlug,
             badgeType,
@@ -767,7 +801,6 @@ const updateBadge = async (req, res) => {
             area_id: nextAreaId,
             service_line_id: nextSlId,
             learning_path_id: nextLpId,
-            goal_id: goalId !== undefined ? goalId : badge.goal_id,
             badge_title: badgeTitle !== undefined ? badgeTitle : badge.badge_title,
             badge_slug: finalNewSlug,
             badge_type: badgeType !== undefined ? badgeType : badge.badge_type,
