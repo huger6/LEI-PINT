@@ -180,13 +180,11 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     final award = earned.award;
     final applicationGuid = award.applicationGuid;
 
-    debugPrint('Download: badgeId=${badge.id}, applicationId=${award.applicationId}, applicationGuid=$applicationGuid');
-
     if (applicationGuid == null || applicationGuid.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Não foi possível identificar a candidatura.'),
+          content: const Text('Não foi possível identificar a candidatura associada a este badge.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -204,6 +202,15 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     final fileName = 'Comprovativo_${safeTitle}_$dateStr.pdf';
 
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('A transferir comprovativo...'),
+        duration: Duration(seconds: 30),
+        backgroundColor: Color(0xFF3D5A80),
+      ),
+    );
+
     try {
       final badgeRepo = context.read<BadgeRepository>();
       final filePath = await badgeRepo.downloadCertificate(
@@ -212,6 +219,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       );
 
       if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       await showDownloadConfirmationSheet(
         context,
@@ -221,9 +229,14 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Erro ao transferir comprovativo.'),
+          content: Text(
+            errorMsg.isNotEmpty ? errorMsg : 'Erro ao transferir comprovativo.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );

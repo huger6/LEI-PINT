@@ -171,22 +171,36 @@ class BadgeRepository {
     required String fileName,
     String lang = 'pt',
   }) async {
-    final payload = await _apiClient.post(
-      ApiEndpoints.getCertificate(applicationGuid),
-      data: {'lang': lang},
-    );
+    final dynamic payload;
+    try {
+      payload = await _apiClient.post(
+        ApiEndpoints.getCertificate(applicationGuid),
+        data: {'lang': lang},
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final code = data is Map ? data['code']?.toString() ?? '' : '';
+      if (code == 'CERTIFICATE_NOT_ELIGIBLE') {
+        throw Exception('Esta candidatura não é elegível para comprovativo. Verifique se está no estado "Aceite".');
+      }
+      throw Exception('Não foi possível gerar o comprovativo. Tente novamente mais tarde.');
+    }
 
     final map = _extractMap(payload);
     final data = _extractMap(map['data']);
     final certificateUrl = (data['certificateUrl'] ?? '').toString();
     if (certificateUrl.isEmpty) {
-      throw Exception('Certificate URL not available');
+      throw Exception('O comprovativo ainda não está disponível para este badge.');
     }
 
     final dir = await getApplicationDocumentsDirectory();
     final filePath = '${dir.path}/$fileName';
 
-    await Dio().download(certificateUrl, filePath);
+    try {
+      await Dio().download(certificateUrl, filePath);
+    } on DioException catch (_) {
+      throw Exception('Falha ao transferir o ficheiro. Verifique a sua ligação.');
+    }
 
     return filePath;
   }

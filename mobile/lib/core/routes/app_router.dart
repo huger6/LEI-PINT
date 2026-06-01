@@ -20,6 +20,7 @@ import '../../ui/pages/profile/characteristics_screen.dart';
 import '../../ui/pages/profile/help_screen.dart';
 import '../../ui/pages/profile/badge_gallery_screen.dart';
 import '../../ui/pages/profile/terms_conditions_screen.dart';
+import '../../ui/pages/goals/goals_screen.dart';
 import '../../ui/widgets/shared/no_connection/no_connection_widget.dart';
 import '../../ui/widgets/shared/screen_scope/screen_scope.dart';
 import '../constants/screen_data_scope.dart';
@@ -45,6 +46,7 @@ class AppRouter {
   static const String characteristics = '/characteristics';
   static const String help = '/help';
   static const String badgeGallery = '/badge-gallery';
+  static const String goals = '/goals';
 
   static final Map<String, WidgetBuilder> _builders = {
     initial: (context) => const AuthLoadingScreen(),
@@ -66,6 +68,7 @@ class AppRouter {
     characteristics: (context) => const CharacteristicsScreen(),
     help: (context) => const HelpScreen(),
     badgeGallery: (context) => const BadgeGalleryScreen(),
+    goals: (context) => const GoalsScreen(),
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {

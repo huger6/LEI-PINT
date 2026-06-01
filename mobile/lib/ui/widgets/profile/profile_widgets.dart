@@ -9,15 +9,19 @@ class QuickMetricCard extends StatelessWidget {
     required this.value,
     required this.label,
     required this.icon,
+    this.onTap,
   });
 
   final String value;
   final String label;
   final IconData icon;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       constraints: const BoxConstraints(minHeight: 84),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
@@ -68,6 +72,7 @@ class QuickMetricCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

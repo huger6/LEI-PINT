@@ -23,6 +23,7 @@ import '../data/repositories/lang_repo.dart';
 import '../data/repositories/location_repo.dart';
 import '../data/repositories/ranking_repo.dart';
 import '../data/repositories/statistics_repo.dart';
+import '../data/repositories/goals_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 import 'services/connectivity_service.dart';
@@ -218,6 +219,12 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<StatisticsRepository>()) {
     getIt.registerLazySingleton<StatisticsRepository>(
       () => StatisticsRepository(getIt<ApiClient>()),
+    );
+  }
+
+  if (!getIt.isRegistered<GoalsRepository>()) {
+    getIt.registerLazySingleton<GoalsRepository>(
+      () => GoalsRepository(getIt<ApiClient>()),
     );
   }
 

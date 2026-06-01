@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/auth_store.dart';
+import '../../../presentation/state/form_validators.dart';
+import '../shared/password_strength_indicator.dart';
 
 class ChangePasswordForm extends StatefulWidget {
   const ChangePasswordForm({super.key, this.isFirstLogin = false});
@@ -23,6 +25,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  String _newPasswordText = '';
 
   @override
   void initState() {
@@ -30,6 +33,11 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     _currentCtrl = TextEditingController();
     _newCtrl = TextEditingController();
     _confirmCtrl = TextEditingController();
+    _newCtrl.addListener(() {
+      if (_newPasswordText != _newCtrl.text) {
+        setState(() => _newPasswordText = _newCtrl.text);
+      }
+    });
   }
 
   @override
@@ -38,6 +46,20 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     _newCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
+  }
+
+  String _friendlyError(Map<String, dynamic> result) {
+    final code = result['code']?.toString() ?? '';
+    switch (code) {
+      case 'AUTH_CURRENT_PASSWORD_WRONG':
+        return 'A password atual está incorreta. Verifique e tente novamente.';
+      case 'AUTH_PASSWORD_FORMAT_INVALID':
+        return 'A nova password não cumpre os requisitos de segurança.';
+      case 'AUTH_PASSWORD_SAME_AS_CURRENT':
+        return 'A nova password não pode ser igual à password atual.';
+      default:
+        return result['message']?.toString() ?? 'Erro ao alterar password.';
+    }
   }
 
   Future<void> _submit() async {
@@ -70,9 +92,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            result['message']?.toString() ?? 'Erro ao alterar password.',
-          ),
+          content: Text(_friendlyError(result)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -128,16 +148,9 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               controller: _newCtrl,
               obscure: _obscureNew,
               onToggle: () => setState(() => _obscureNew = !_obscureNew),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Introduza a nova password.';
-                }
-                if (v.length < 8) {
-                  return 'A password deve ter pelo menos 8 caracteres.';
-                }
-                return null;
-              },
+              validator: FormValidators.validatePassword,
             ),
+            PasswordStrengthIndicator(password: _newPasswordText),
             const SizedBox(height: 14),
             _PasswordField(
               label: 'Confirmar password',
@@ -145,15 +158,10 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               obscure: _obscureConfirm,
               onToggle: () =>
                   setState(() => _obscureConfirm = !_obscureConfirm),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Confirme a nova password.';
-                }
-                if (v != _newCtrl.text) {
-                  return 'As passwords não coincidem.';
-                }
-                return null;
-              },
+              validator: (v) => FormValidators.validatePasswordConfirm(
+                v,
+                password: _newCtrl.text,
+              ),
             ),
             const SizedBox(height: 28),
             SizedBox(

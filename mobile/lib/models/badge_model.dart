@@ -6,11 +6,14 @@ class BadgeModel {
   const BadgeModel({
     this.id = 0,
     this.slug = '',
+    this.badgeType = 'Standard',
     required this.title,
     required this.category,
     required this.points,
     required this.level,
     required this.duration,
+    this.expirationDays,
+    this.createdAt,
     required this.medalColor,
     required this.ribbonColor,
     required this.description,
@@ -19,11 +22,14 @@ class BadgeModel {
     required this.requirements,
   });
 
+  bool get isSpecial => badgeType.toLowerCase() == 'special';
+
   factory BadgeModel.empty({required String title}) {
     final seed = title.trim().isEmpty ? 'badge' : title;
     return BadgeModel(
       id: 0,
       slug: '',
+      badgeType: 'Standard',
       title: title,
       category: '',
       points: 0,
@@ -64,14 +70,22 @@ class BadgeModel {
 
     final points = _readInt(json, const ['badge_points', 'points']);
 
+    final badgeType = _readString(json, const ['badge_type']);
+
+    final expDays = json['expiration_duration_days'] ?? json['expirationDays'];
+    final createdRaw = json['created_at'] ?? json['createdAt'];
+
     return BadgeModel(
       id: _readInt(json, const ['badge_id', 'id']),
       slug: _readString(json, const ['badge_slug', 'slug']),
+      badgeType: badgeType.isEmpty ? 'Standard' : badgeType,
       title: _readString(json, const ['badge_title', 'title', 'name']),
       category: area,
       points: points,
       level: stageCode,
-      duration: _readString(json, const ['estimated_duration', 'duration']),
+      duration: _readString(json, const ['estimated_duration', 'duration', 'estimated_time_to_acquire']),
+      expirationDays: expDays is int ? expDays : (int.tryParse(expDays?.toString() ?? '')),
+      createdAt: createdRaw != null ? DateTime.tryParse(createdRaw.toString()) : null,
       medalColor: BadgeVisuals.medalColor(seed),
       ribbonColor: BadgeVisuals.ribbonColor(seed),
       description: _readString(json, const [
@@ -83,7 +97,7 @@ class BadgeModel {
         area: area,
         points: points,
         stageCode: stageCode,
-        duration: _readString(json, const ['estimated_duration', 'duration']),
+        duration: _readString(json, const ['estimated_duration', 'duration', 'estimated_time_to_acquire']),
       ),
       requirements: _extractRequirements(json),
     );
@@ -98,11 +112,14 @@ class BadgeModel {
     return BadgeModel(
       id: summary.id,
       slug: summary.slug,
+      badgeType: summary.badgeType,
       title: summary.title,
       category: summary.category,
       points: summary.points,
       level: summary.level,
       duration: summary.duration,
+      expirationDays: summary.expirationDays,
+      createdAt: summary.createdAt,
       medalColor: summary.medalColor,
       ribbonColor: summary.ribbonColor,
       description: summary.description,
@@ -114,11 +131,14 @@ class BadgeModel {
 
   final int id;
   final String slug;
+  final String badgeType;
   final String title;
   final String category;
   final int points;
   final String level;
   final String duration;
+  final int? expirationDays;
+  final DateTime? createdAt;
   final Color medalColor;
   final Color ribbonColor;
   final String description;

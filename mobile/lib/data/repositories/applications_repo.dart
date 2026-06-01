@@ -125,11 +125,17 @@ class ApplicationsRepository {
   Future<Map<String, dynamic>> resendBadgeConfirmation(
     String applicationGuid,
   ) async {
-    final payload = await _apiClient.post(
-      ApiEndpoints.resendBadgeConfirmation(applicationGuid),
-    );
-
-    return _extractMap(payload);
+    try {
+      final payload = await _apiClient.post(
+        ApiEndpoints.resendBadgeConfirmation(applicationGuid),
+      );
+      return _extractMap(payload);
+    } on DioException catch (_) {
+      return {
+        'success': false,
+        'message': 'O reenvio de email não está disponível de momento.',
+      };
+    }
   }
 
   List<dynamic> _extractList(dynamic payload) {

@@ -176,10 +176,13 @@ class BadgeDao {
     final level = (row['stage_code'] as String?) ?? '';
     final points = row['points'] as int? ?? 0;
     final duration = (row['estimated_time'] as String?) ?? '';
+    final badgeType = (row['badge_type'] as String?) ?? 'Standard';
 
     return BadgeModel(
       id: row['id'] as int,
       slug: slug,
+      badgeType: badgeType,
+      expirationDays: row['expiration_days'] as int?,
       title: title,
       category: area,
       points: points,
