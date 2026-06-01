@@ -53,6 +53,8 @@ class AchievedBadgeCard extends StatelessWidget {
     final level = badge.level.trim().isNotEmpty ? badge.level : fallbackLevel;
     final points = badge.points > 0 ? badge.points : fallbackPoints;
 
+    final isSpecial = badge.isSpecial;
+
     return InkWell(
       borderRadius: BorderRadius.circular(15),
       onTap: onTap,
@@ -62,11 +64,16 @@ class AchievedBadgeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: const [
+        border: isSpecial
+            ? Border.all(color: const Color(0xFFD4A843), width: 1.6)
+            : null,
+        boxShadow: [
           BoxShadow(
-            color: Color(0x14000000),
+            color: isSpecial
+                ? const Color(0x20D4A843)
+                : const Color(0x14000000),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -107,6 +114,25 @@ class AchievedBadgeCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (isSpecial) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF3D6),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: const Color(0xFFD4A843), width: 0.8),
+                                  ),
+                                  child: const Text(
+                                    'Special',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFB08A2E),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                              ],
                               Text(
                                 '$level  $points',
                                 style: const TextStyle(
@@ -117,10 +143,14 @@ class AchievedBadgeCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(width: 3),
-                              const Icon(
-                                Icons.workspace_premium_outlined,
+                              Icon(
+                                isSpecial
+                                    ? Icons.star_rounded
+                                    : Icons.workspace_premium_outlined,
                                 size: 17,
-                                color: Color(0xFF445967),
+                                color: isSpecial
+                                    ? const Color(0xFFD4A843)
+                                    : const Color(0xFF445967),
                               ),
                             ],
                           ),

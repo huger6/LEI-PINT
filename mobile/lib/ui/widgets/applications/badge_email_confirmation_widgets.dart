@@ -12,6 +12,7 @@ class BadgeEmailConfirmationBody extends StatefulWidget {
     required this.onSendConfirmation,
     required this.onViewApplication,
     required this.onGoToDashboard,
+    this.alreadySent = false,
   });
 
   final String badgeTitle;
@@ -19,6 +20,7 @@ class BadgeEmailConfirmationBody extends StatefulWidget {
   final Future<Map<String, dynamic>> Function() onSendConfirmation;
   final VoidCallback onViewApplication;
   final VoidCallback onGoToDashboard;
+  final bool alreadySent;
 
   @override
   State<BadgeEmailConfirmationBody> createState() =>
@@ -28,9 +30,15 @@ class BadgeEmailConfirmationBody extends StatefulWidget {
 class _BadgeEmailConfirmationBodyState
     extends State<BadgeEmailConfirmationBody> {
   bool _isSending = false;
-  bool _emailSent = false;
+  late bool _emailSent;
   int _cooldownSeconds = 0;
   Timer? _cooldownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailSent = widget.alreadySent;
+  }
 
   @override
   void dispose() {
@@ -52,12 +60,13 @@ class _BadgeEmailConfirmationBodyState
         setState(() => _emailSent = true);
         _startCooldown();
       } else {
+        final msg = result['message']?.toString() ?? '';
+        final friendlyMsg = msg.contains('DioException') || msg.contains('404') || msg.contains('status code')
+            ? 'O reenvio de email não está disponível de momento. O email original foi enviado com a submissão.'
+            : (msg.isNotEmpty ? msg : 'Erro ao enviar email de confirmação.');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              result['message']?.toString() ??
-                  'Erro ao enviar email de confirmação.',
-            ),
+            content: Text(friendlyMsg),
             backgroundColor: AppColors.error,
           ),
         );
@@ -66,7 +75,7 @@ class _BadgeEmailConfirmationBodyState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erro ao enviar email. Tente novamente.'),
+          content: Text('Não foi possível reenviar o email. Tente novamente mais tarde.'),
           backgroundColor: AppColors.error,
         ),
       );

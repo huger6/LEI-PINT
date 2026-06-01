@@ -20,6 +20,7 @@ import 'data/repositories/badge_repo.dart';
 import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
+import 'data/repositories/goals_repo.dart';
 import 'data/repositories/statistics_repo.dart';
 import 'data/local/current_user_dao.dart';
 import 'data/local/notification_dao.dart';
@@ -146,6 +147,9 @@ void main() async {
             getIt<NotificationDao>(),
             getIt<SyncService>(),
           ),
+        ),
+        ChangeNotifierProvider<GoalsStore>(
+          create: (_) => GoalsStore(getIt<GoalsRepository>()),
         ),
         ChangeNotifierProvider<LanguageController>.value(
           value: languageController,

@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
 import '../../../presentation/state/dashboard_store.dart';
+import '../../../core/routes/app_router.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
+import 'points_detail_screen.dart';
 
 class EvolucaoScreen extends StatefulWidget {
   const EvolucaoScreen({super.key});
@@ -53,6 +55,20 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
         .toSet()
         .length;
 
+    final yearlyBadges = <int, int>{};
+    for (final eb in earnedBadges) {
+      final year = eb.award.awardedAt.year;
+      yearlyBadges[year] = (yearlyBadges[year] ?? 0) + 1;
+    }
+
+    final areaCounts = <String, int>{};
+    for (final eb in earnedBadges) {
+      final area = eb.badge.category.trim();
+      if (area.isNotEmpty) {
+        areaCounts[area] = (areaCounts[area] ?? 0) + 1;
+      }
+    }
+
     final recentActivities = dashStore.recentSubmissions
         .map(
           (s) => ActivityItem(
@@ -84,6 +100,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                 badgeCount: badgeCount,
                 growthPercent: dashStore.growthPercent,
                 timeline: dashStore.timeline,
+                yearlyBadges: yearlyBadges,
               ),
               const SizedBox(height: 14),
               GridView.count(
@@ -99,6 +116,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                     value: '$badgeCount',
                     icon: Icons.workspace_premium_rounded,
                     accentColor: const Color(0xFF66B6E6),
+                    onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
                   ),
                   MiniStatCard(
                     title: 'Conquistas ativas',
@@ -117,6 +135,18 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                     value: '${dashStore.totalPoints > 0 ? dashStore.totalPoints : (user?.totalPoints ?? 0)}',
                     icon: Icons.stars_rounded,
                     accentColor: const Color(0xFF96B8CF),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PointsDetailScreen(
+                            totalPoints: dashStore.totalPoints > 0
+                                ? dashStore.totalPoints
+                                : (user?.totalPoints ?? 0),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -140,7 +170,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                 totalApplications: dashStore.totalApplications,
               ),
               const SizedBox(height: 14),
-              LevelsRadarCard(lpProgress: dashStore.lpProgress),
+              BadgesPerAreaCard(areaCounts: areaCounts),
             ],
           ),
         ),

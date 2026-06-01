@@ -11,6 +11,7 @@ import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
 import '../../widgets/profile/profile_widgets.dart';
+import '../evolution/points_detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -142,6 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: '$badgeCount',
                       label: 'Badges',
                       icon: Icons.workspace_premium_outlined,
+                      onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -158,6 +160,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: '$totalPoints',
                       label: 'Pontos',
                       icon: Icons.stars_outlined,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PointsDetailScreen(totalPoints: totalPoints),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -257,6 +267,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Editar perfil',
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.editProfile),
+              ),
+              const SizedBox(height: 8),
+              ProfileMenuTile(
+                icon: Icons.lock_outline_rounded,
+                label: 'Alterar palavra-passe',
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  AppRouter.changePassword,
+                  arguments: false,
+                ),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(

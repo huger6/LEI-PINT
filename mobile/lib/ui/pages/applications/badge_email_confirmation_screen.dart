@@ -49,6 +49,7 @@ class BadgeEmailConfirmationScreen extends StatelessWidget {
             child: BadgeEmailConfirmationBody(
               badgeTitle: application.badge?.title ?? 'Badge',
               userEmail: userEmail,
+              alreadySent: true,
               onSendConfirmation: () =>
                   appStore.resendBadgeConfirmation(application.applicationGuid),
               onViewApplication: () {

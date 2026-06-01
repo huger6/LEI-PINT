@@ -6,12 +6,14 @@ class DashboardTopBar extends StatelessWidget {
     required this.totalPoints,
     required this.onPointsTap,
     required this.onNotificationsTap,
+    this.onGoalsTap,
     this.hasUnread = false,
   });
 
   final int totalPoints;
   final VoidCallback onPointsTap;
   final VoidCallback onNotificationsTap;
+  final VoidCallback? onGoalsTap;
   final bool hasUnread;
 
   @override
@@ -50,6 +52,24 @@ class DashboardTopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
+        if (onGoalsTap != null) ...[
+          GestureDetector(
+            onTap: onGoalsTap,
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD2DAE2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_flags_rounded,
+                color: Color(0xFF20252B),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
         GestureDetector(
           onTap: onNotificationsTap,
           child: Stack(

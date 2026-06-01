@@ -313,21 +313,24 @@ class AuthRepository {
 
       return {
         'success': false,
+        'code': responseMap['code']?.toString() ?? '',
         'message': _extractMessage(
           responseMap,
           fallback: 'Erro ao alterar password.',
         ),
       };
     } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
       return {
         'success': false,
+        'code': data['code']?.toString() ?? '',
         'message': _extractMessage(
-          _asMap(e.response?.data),
+          data,
           fallback: 'Erro ao alterar password.',
         ),
       };
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao alterar password: $e'};
+      return {'success': false, 'code': '', 'message': 'Erro ao alterar password: $e'};
     }
   }
 

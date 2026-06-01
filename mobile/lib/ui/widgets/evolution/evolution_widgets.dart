@@ -7,50 +7,28 @@ class MainBadgesCard extends StatelessWidget {
     required this.badgeCount,
     required this.growthPercent,
     this.timeline = const [],
+    this.yearlyBadges = const {},
   });
 
   final int badgeCount;
   final int growthPercent;
   final List<Map<String, dynamic>> timeline;
-
-  List<FlSpot> _buildSpots() {
-    if (timeline.isEmpty) return const [];
-    final recent = timeline.length > 7
-        ? timeline.sublist(timeline.length - 7)
-        : timeline;
-    return List.generate(recent.length, (i) {
-      final val = (recent[i]['cumulative_badges'] ??
-              recent[i]['cumulative_certifications'] ??
-              0) as num;
-      return FlSpot(i.toDouble(), val.toDouble());
-    });
-  }
-
-  List<String> _buildLabels() {
-    const monthNames = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-    ];
-    if (timeline.isEmpty) return const [];
-    final recent = timeline.length > 7
-        ? timeline.sublist(timeline.length - 7)
-        : timeline;
-    return recent.map((row) {
-      final m = row['month'];
-      if (m is int && m >= 1 && m <= 12) return monthNames[m - 1];
-      return m?.toString() ?? '';
-    }).toList();
-  }
+  final Map<int, int> yearlyBadges;
 
   @override
   Widget build(BuildContext context) {
     final isPositive = growthPercent >= 0;
-    final spots = _buildSpots();
-    final labels = _buildLabels();
+
+    final years = yearlyBadges.keys.toList()..sort();
+    final spots = List.generate(years.length, (i) {
+      return FlSpot(i.toDouble(), (yearlyBadges[years[i]] ?? 0).toDouble());
+    });
+    final labels = years.map((y) => '$y').toList();
+
     final maxY = spots.isEmpty
         ? 40.0
         : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
-            .ceilToDouble();
+            .ceilToDouble().clamp(1.0, 100000.0);
 
     return Container(
       width: double.infinity,
@@ -70,7 +48,7 @@ class MainBadgesCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Badges adquiridos',
+            'Badges por ano',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -226,16 +204,20 @@ class MiniStatCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.accentColor,
+    this.onTap,
   });
 
   final String title;
   final String value;
   final IconData icon;
   final Color accentColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FBFF),
@@ -304,11 +286,12 @@ class MiniStatCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
 
-class PointsBarCard extends StatelessWidget {
+class PointsBarCard extends StatefulWidget {
   const PointsBarCard({
     super.key,
     required this.selectedPeriod,
@@ -317,70 +300,104 @@ class PointsBarCard extends StatelessWidget {
     this.pointsHistory = const [],
   });
 
-  static const _monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-  ];
-
   final String selectedPeriod;
   final List<String> periodOptions;
   final ValueChanged<String?> onPeriodChanged;
   final List<Map<String, dynamic>> pointsHistory;
 
-  Map<String, double> _aggregateByMonth() {
-    final buckets = <String, double>{};
-    for (final entry in pointsHistory) {
-      final raw = entry['created_at'] ?? entry['createdAt'];
-      DateTime? date;
-      if (raw is String) date = DateTime.tryParse(raw);
-      if (date == null) continue;
-      final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
-      final delta = ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
-      buckets[key] = (buckets[key] ?? 0) + delta;
-    }
-    final keys = buckets.keys.toList()..sort();
-    final recent = keys.length > 6 ? keys.sublist(keys.length - 6) : keys;
-    return {for (final k in recent) k: buckets[k]!};
+  @override
+  State<PointsBarCard> createState() => _PointsBarCardState();
+}
+
+class _PointsBarCardState extends State<PointsBarCard> {
+  static const _monthNames = [
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  ];
+
+  int _selectedBarIndex = -1;
+
+  DateTime? _parseDate(dynamic raw) {
+    if (raw is String) return DateTime.tryParse(raw);
+    return null;
+  }
+
+  double _delta(Map<String, dynamic> entry) {
+    return ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
   }
 
   Map<String, double> _aggregateByWeek() {
     final now = DateTime.now();
-    final weekStart = now.subtract(Duration(days: now.weekday % 7));
-    final labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-    final buckets = {for (final l in labels) l: 0.0};
-    for (final entry in pointsHistory) {
-      final raw = entry['created_at'] ?? entry['createdAt'];
-      DateTime? date;
-      if (raw is String) date = DateTime.tryParse(raw);
+    final buckets = <String, double>{};
+    for (var i = 4; i >= 0; i--) {
+      final weekEnd = now.subtract(Duration(days: 7 * i));
+      final weekStart = weekEnd.subtract(const Duration(days: 6));
+      final label = '${weekStart.day.toString().padLeft(2, '0')}/${weekStart.month.toString().padLeft(2, '0')}';
+      buckets[label] = 0;
+      for (final entry in widget.pointsHistory) {
+        final date = _parseDate(entry['created_at'] ?? entry['createdAt']);
+        if (date == null) continue;
+        final dateDay = DateTime(date.year, date.month, date.day);
+        final startDay = DateTime(weekStart.year, weekStart.month, weekStart.day);
+        final endDay = DateTime(weekEnd.year, weekEnd.month, weekEnd.day);
+        if (!dateDay.isBefore(startDay) && !dateDay.isAfter(endDay)) {
+          buckets[label] = (buckets[label] ?? 0) + _delta(entry);
+        }
+      }
+    }
+    return buckets;
+  }
+
+  Map<String, double> _aggregateByMonth() {
+    final now = DateTime.now();
+    final buckets = <String, double>{};
+    for (var i = 11; i >= 0; i--) {
+      final month = DateTime(now.year, now.month - i);
+      final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+      buckets[key] = 0;
+    }
+    for (final entry in widget.pointsHistory) {
+      final date = _parseDate(entry['created_at'] ?? entry['createdAt']);
       if (date == null) continue;
-      if (date.isBefore(weekStart)) continue;
-      final dayIdx = date.weekday % 7;
-      buckets[labels[dayIdx]] = (buckets[labels[dayIdx]] ?? 0) +
-          ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
+      final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
+      if (buckets.containsKey(key)) {
+        buckets[key] = (buckets[key] ?? 0) + _delta(entry);
+      }
     }
     return buckets;
   }
 
   Map<String, double> _aggregateByYear() {
     final buckets = <String, double>{};
-    for (final entry in pointsHistory) {
-      final raw = entry['created_at'] ?? entry['createdAt'];
-      DateTime? date;
-      if (raw is String) date = DateTime.tryParse(raw);
+    for (final entry in widget.pointsHistory) {
+      final date = _parseDate(entry['created_at'] ?? entry['createdAt']);
       if (date == null) continue;
       final key = '${date.year}';
-      final delta = ((entry['points_delta'] ?? entry['pointsDelta'] ?? 0) as num).toDouble();
-      buckets[key] = (buckets[key] ?? 0) + delta;
+      buckets[key] = (buckets[key] ?? 0) + _delta(entry);
     }
-    final keys = buckets.keys.toList()..sort();
-    final recent = keys.length > 5 ? keys.sublist(keys.length - 5) : keys;
-    return {for (final k in recent) k: buckets[k]!};
+    if (buckets.isEmpty) return buckets;
+    final sortedKeys = buckets.keys.toList()..sort();
+    final firstYear = int.tryParse(sortedKeys.first) ?? DateTime.now().year;
+    final currentYear = DateTime.now().year;
+    final result = <String, double>{};
+    for (var y = firstYear; y <= currentYear; y++) {
+      result['$y'] = buckets['$y'] ?? 0;
+    }
+    return result;
+  }
+
+  @override
+  void didUpdateWidget(covariant PointsBarCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedPeriod != widget.selectedPeriod) {
+      _selectedBarIndex = -1;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     Map<String, double> aggregated;
-    switch (selectedPeriod) {
+    switch (widget.selectedPeriod) {
       case 'Semanal':
         aggregated = _aggregateByWeek();
         break;
@@ -391,8 +408,9 @@ class PointsBarCard extends StatelessWidget {
         aggregated = _aggregateByMonth();
     }
 
-    final labels = aggregated.keys.map((k) {
-      if (selectedPeriod == 'Mensal' && k.contains('-')) {
+    final rawKeys = aggregated.keys.toList();
+    final labels = rawKeys.map((k) {
+      if (widget.selectedPeriod == 'Mensal' && k.contains('-')) {
         final m = int.tryParse(k.split('-').last) ?? 0;
         return (m >= 1 && m <= 12) ? _monthNames[m - 1] : k;
       }
@@ -404,6 +422,13 @@ class PointsBarCard extends StatelessWidget {
         ? 10.0
         : values.reduce((a, b) => a > b ? a : b);
     final chartMax = (maxVal * 1.3).ceilToDouble().clamp(1, 100000);
+
+    final selectedLabel = _selectedBarIndex >= 0 && _selectedBarIndex < labels.length
+        ? labels[_selectedBarIndex]
+        : null;
+    final selectedValue = _selectedBarIndex >= 0 && _selectedBarIndex < values.length
+        ? values[_selectedBarIndex]
+        : null;
 
     return Container(
       width: double.infinity,
@@ -434,9 +459,9 @@ class PointsBarCard extends StatelessWidget {
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: selectedPeriod,
+                    value: widget.selectedPeriod,
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                    items: periodOptions
+                    items: widget.periodOptions
                         .map(
                           (period) => DropdownMenuItem<String>(
                             value: period,
@@ -444,12 +469,52 @@ class PointsBarCard extends StatelessWidget {
                           ),
                         )
                         .toList(),
-                    onChanged: onPeriodChanged,
+                    onChanged: widget.onPeriodChanged,
                   ),
                 ),
               ),
             ],
           ),
+          if (selectedLabel != null && selectedValue != null) ...[
+            const SizedBox(height: 8),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F7FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFB8D8F0)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.stars_rounded, size: 18, color: Color(0xFF00B8E0)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF2B3B48)),
+                        children: [
+                          TextSpan(
+                            text: '$selectedLabel: ',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          TextSpan(
+                            text: '${selectedValue.toInt()} pontos',
+                            style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF00B8E0)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedBarIndex = -1),
+                    child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF8CA0B2)),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             height: 180,
@@ -475,7 +540,22 @@ class PointsBarCard extends StatelessWidget {
                             const FlLine(color: Color(0xFFE7EEF5), strokeWidth: 1),
                       ),
                       borderData: FlBorderData(show: false),
-                      barTouchData: BarTouchData(enabled: false),
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipColor: (_) => Colors.transparent,
+                          tooltipPadding: EdgeInsets.zero,
+                          getTooltipItem: (_, _, _, _) => null,
+                        ),
+                        touchCallback: (event, response) {
+                          if (event is FlTapUpEvent && response?.spot != null) {
+                            final idx = response!.spot!.touchedBarGroupIndex;
+                            setState(() {
+                              _selectedBarIndex = _selectedBarIndex == idx ? -1 : idx;
+                            });
+                          }
+                        },
+                      ),
                       titlesData: FlTitlesData(
                         topTitles: const AxisTitles(
                           sideTitles: SideTitles(showTitles: false),
@@ -499,10 +579,14 @@ class PointsBarCard extends StatelessWidget {
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text(
                                   labels[index],
-                                  style: const TextStyle(
-                                    color: Color(0xFF7A8FA2),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                    color: index == _selectedBarIndex
+                                        ? const Color(0xFF00B8E0)
+                                        : const Color(0xFF7A8FA2),
+                                    fontSize: widget.selectedPeriod == 'Mensal' ? 10 : 12,
+                                    fontWeight: index == _selectedBarIndex
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
                                   ),
                                 ),
                               );
@@ -511,19 +595,17 @@ class PointsBarCard extends StatelessWidget {
                         ),
                       ),
                       barGroups: List.generate(values.length, (index) {
-                        final highIdx = values.indexOf(
-                          values.reduce((a, b) => a > b ? a : b),
-                        );
+                        final isSelected = index == _selectedBarIndex;
                         return BarChartGroupData(
                           x: index,
                           barsSpace: 0,
                           barRods: [
                             BarChartRodData(
                               toY: values[index],
-                              width: 18,
+                              width: widget.selectedPeriod == 'Mensal' ? 14 : 18,
                               borderRadius: BorderRadius.circular(8),
-                              color: index == highIdx
-                                  ? const Color(0xFF85D2FF)
+                              color: isSelected
+                                  ? const Color(0xFF00B8E0)
                                   : const Color(0xFF7E9DB7),
                             ),
                           ],
@@ -849,6 +931,140 @@ class LevelsRadarCard extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class BadgesPerAreaCard extends StatelessWidget {
+  const BadgesPerAreaCard({super.key, required this.areaCounts});
+
+  final Map<String, int> areaCounts;
+
+  @override
+  Widget build(BuildContext context) {
+    if (areaCounts.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FBFF),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Badges por área',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2B3B48),
+              ),
+            ),
+            SizedBox(height: 30),
+            Center(
+              child: Text(
+                'Sem dados disponíveis.',
+                style: TextStyle(
+                  color: Color(0xFF8CA0B2),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+          ],
+        ),
+      );
+    }
+
+    final sorted = areaCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final maxVal = sorted.first.value;
+
+    const barColors = [
+      Color(0xFF5B9ED2),
+      Color(0xFF83A9E8),
+      Color(0xFF66B6E6),
+      Color(0xFF8BC4D9),
+      Color(0xFF96B8CF),
+      Color(0xFF6FC391),
+      Color(0xFFC9A625),
+      Color(0xFFE57D97),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7FBFF),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Badges por área',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF2B3B48),
+            ),
+          ),
+          const SizedBox(height: 14),
+          ...sorted.asMap().entries.map((entry) {
+            final area = entry.value.key;
+            final count = entry.value.value;
+            final ratio = maxVal > 0 ? count / maxVal : 0.0;
+            final color = barColors[entry.key % barColors.length];
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: entry.key < sorted.length - 1 ? 10 : 0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          area,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF334453),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$count',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF263746),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: ratio,
+                      minHeight: 10,
+                      backgroundColor: const Color(0xFFE2EAF2),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

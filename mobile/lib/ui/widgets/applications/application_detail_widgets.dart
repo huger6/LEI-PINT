@@ -766,6 +766,12 @@ class ApplicationBadgeAttributes extends StatelessWidget {
   Widget build(BuildContext context) {
     final chips = <_AttributeChipData>[];
 
+    if (badge.category.trim().isNotEmpty) {
+      chips.add(_AttributeChipData(
+        icon: Icons.category_outlined,
+        label: badge.category,
+      ));
+    }
     if (badge.level.trim().isNotEmpty) {
       chips.add(_AttributeChipData(
         icon: Icons.trending_up_rounded,
@@ -784,8 +790,12 @@ class ApplicationBadgeAttributes extends StatelessWidget {
         label: badge.duration,
       ));
     }
-
-    if (chips.isEmpty) return const SizedBox.shrink();
+    if (badge.expirationDays != null && badge.expirationDays! > 0) {
+      chips.add(_AttributeChipData(
+        icon: Icons.event_available_rounded,
+        label: 'Validade: ${badge.expirationDays} dias',
+      ));
+    }
 
     return Container(
       width: double.infinity,
@@ -805,7 +815,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Informacao do badge',
+            'Informação do badge',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -813,13 +823,31 @@ class ApplicationBadgeAttributes extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: chips
-                .map((c) => _AttributeChip(icon: c.icon, label: c.label))
-                .toList(),
-          ),
+          if (chips.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: chips
+                  .map((c) => _AttributeChip(icon: c.icon, label: c.label))
+                  .toList(),
+            ),
+          if (badge.createdAt != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today_rounded, size: 14, color: ApplicationDetailColors.mutedText),
+                const SizedBox(width: 6),
+                Text(
+                  'Criado a ${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
+                  style: const TextStyle(
+                    color: ApplicationDetailColors.mutedText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (badge.description.trim().isNotEmpty) ...[
             const SizedBox(height: 14),
             const Divider(
@@ -836,6 +864,44 @@ class ApplicationBadgeAttributes extends StatelessWidget {
               ),
               maxLines: 5,
               overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (badge.skills.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            const Divider(
+              color: ApplicationDetailColors.divider,
+              height: 1,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Competências',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: ApplicationDetailColors.primaryText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: badge.skills
+                  .map((skill) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F0F8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          skill,
+                          style: const TextStyle(
+                            color: Color(0xFF1E3A4F),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ))
+                  .toList(),
             ),
           ],
         ],

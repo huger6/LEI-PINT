@@ -221,7 +221,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                     ],
                     if (badge.skills.isNotEmpty) ...[
                       BadgeSectionCard(
-                        title: tr.tr('skills'),
+                        title: 'Competências',
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -310,7 +310,17 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                           if (badge.points > 0)
                             BadgeDetailRow(label: 'Pontos', value: '${badge.points}'),
                           if (badge.duration.trim().isNotEmpty)
-                            BadgeDetailRow(label: 'Duração', value: badge.duration),
+                            BadgeDetailRow(label: 'Tempo estimado', value: badge.duration),
+                          if (badge.expirationDays != null && badge.expirationDays! > 0)
+                            BadgeDetailRow(
+                              label: 'Validade',
+                              value: '${badge.expirationDays} dias',
+                            ),
+                          if (badge.createdAt != null)
+                            BadgeDetailRow(
+                              label: 'Criado a',
+                              value: '${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
+                            ),
                         ],
                       ),
                     ),

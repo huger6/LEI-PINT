@@ -10,6 +10,7 @@ import '../widgets/applications/submission_card.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
 import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
+import 'goals/goals_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'evolution/points_detail_screen.dart';
 
@@ -116,6 +117,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                       DashboardTopBar(
                         totalPoints: totalPoints,
                         hasUnread: notifStore.unreadCount > 0,
+                        onGoalsTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GoalsScreen(),
+                            ),
+                          );
+                        },
                         onPointsTap: () {
                           Navigator.push(
                             context,
