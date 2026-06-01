@@ -1,26 +1,32 @@
 const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { emitToUser } = require('../config/websocket');
-const { VALID_NOTIFICATION_TYPES } = require('../services/notifications.service');
+const { handleZodError } = require('../utils/responseHelper');
+const { listNotificationsQuery, notificationIdParam } = require('../validations/notifications.validation');
 
 const listNotifications = async (req, res) => {
     try {
         const userId = req.user.sub;
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 20;
+
+        let validated;
+        try {
+            validated = listNotificationsQuery.parse(req.query);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+            throw error;
+        }
+
+        const { page, limit, type, is_read } = validated;
         const offset = (page - 1) * limit;
 
         const where = { user_id: userId };
 
-        if (req.query.type) {
-            if (!VALID_NOTIFICATION_TYPES.includes(req.query.type)) {
-                return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_NOTIFICATION_TYPE' });
-            }
-            where.notification_type = req.query.type;
+        if (type) {
+            where.notification_type = type;
         }
 
-        if (req.query.is_read !== undefined) {
-            where.is_read = req.query.is_read === 'true';
+        if (is_read !== undefined) {
+            where.is_read = is_read;
         }
 
         const { count, rows } = await models.notifications.findAndCountAll({
@@ -67,10 +73,16 @@ const getUnreadCount = async (req, res) => {
 const markAsRead = async (req, res) => {
     try {
         const userId = req.user.sub;
-        const notificationId = Number.parseInt(req.params.notificationId, 10);
-        if (Number.isNaN(notificationId)) {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_ID' });
+
+        let validated;
+        try {
+            validated = notificationIdParam.parse(req.params);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_ID');
+            throw error;
         }
+
+        const { notificationId } = validated;
 
         const notification = await models.notifications.findOne({
             where: { notification_id: notificationId, user_id: userId }

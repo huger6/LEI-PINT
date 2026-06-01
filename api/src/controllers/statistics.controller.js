@@ -13,9 +13,14 @@ const { uuidRule } = require('../validations/shared-rules');
 const resolveTargetUserId = async (req) => {
     if (req.user.role === 'Consultant') return req.user.sub;
     const requestedGuid = req.query.userGuid;
-    if (requestedGuid && uuidRule.safeParse(requestedGuid).success) {
-        const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
-        if (user) return user.user_id;
+    if (requestedGuid) {
+        try {
+            uuidRule.parse(requestedGuid);
+            const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
+            if (user) return user.user_id;
+        } catch (_) {
+            // Invalid GUID — ignore and fall back to authenticated user
+        }
     }
     return req.user.sub;
 };

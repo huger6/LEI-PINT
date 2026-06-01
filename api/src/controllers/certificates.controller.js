@@ -1,6 +1,7 @@
 const { logger } = require('../utils/logger');
 const validations = require('../validations/certificates.validation');
 const certificateService = require('../services/certificate.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 /*──────────────────────────────────────────────────────────────
   POST /api/applications/:applicationGuid/certificate
@@ -38,13 +39,7 @@ const generateCertificate = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         if (error.code === 'CERTIFICATE_NOT_ELIGIBLE') {
             return res.status(403).json({

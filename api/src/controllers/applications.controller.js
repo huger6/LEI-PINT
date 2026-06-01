@@ -1,6 +1,7 @@
 const { models, sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
+const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
 const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
@@ -105,13 +106,7 @@ const getApplications = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_QUERY_PARAMS",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
 
         logger.error('Error fetching applications', { error });
         return res.status(500).json({
@@ -188,12 +183,7 @@ const getApplicationById = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "APP_INVALID_APPLICATION_ID"
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'APP_INVALID_APPLICATION_ID');
 
         logger.error('Error fetching application details', { error });
         return res.status(500).json({
@@ -249,13 +239,7 @@ const startApplication = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
         logger.error('Error starting application', { error });
         return res.status(500).json({
             success: false,
@@ -298,13 +282,7 @@ const getUploadUrl = async (req, res) => {
         })
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error generating upload URL in controller', { error });
         return res.status(500).json({
@@ -374,13 +352,7 @@ const upsertEvidence = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error upserting evidence', { error });
         return res.status(500).json({
@@ -523,13 +495,7 @@ const submitApplication = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "APP_INVALID_IDENTIFIER",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'APP_INVALID_IDENTIFIER');
 
         logger.error('Error submitting application', { error });
         return res.status(500).json({
@@ -754,9 +720,7 @@ const validateApplication = async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_DATA', errors: error.errors });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
         logger.error('Error validating application', { error });
         return res.status(500).json({ success: false, code: 'APP_VALIDATE_FAILED' });
     }
@@ -860,13 +824,7 @@ const reviewEvidence = async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
         logger.error('Error reviewing evidence', { error });
         return res.status(500).json({ success: false, code: 'APP_EVIDENCE_REVIEW_FAILED' });
     }
