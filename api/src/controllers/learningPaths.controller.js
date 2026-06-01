@@ -7,6 +7,7 @@ const validations = require('../validations/structure.validation');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 // GET /api/learning-paths
 const getAllLearningPaths = (req, res) => {
@@ -122,13 +123,7 @@ const checkSlugAvailability = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating Learning Path', { error });
         return res.status(500).json({
@@ -176,13 +171,7 @@ const createLearningPath = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating Learning Path', { error });
         return res.status(500).json({
@@ -261,13 +250,7 @@ const updateLearningPath = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating Learning Path', { error });
         return res.status(500).json({
@@ -332,9 +315,7 @@ const deleteLearningPath = async (req, res) => {
         return res.status(200).json({ success: true, code: "LP_DEACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
         logger.error('Error deleting Learning Path', { error });
         return res.status(500).json({ success: false, code: "LP_DELETE_FAILED" });
     }
@@ -391,9 +372,7 @@ const reactivateLearningPath = async (req, res) => {
         return res.status(200).json({ success: true, code: "LP_ACTIVATED" });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ success: false, code: "VALIDATION_INVALID_URL_PARAM" });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
         logger.error('Error reactivating Learning Path', { error });
         return res.status(500).json({ success: false, code: "LP_ACTIVATE_FAILED" });
     }

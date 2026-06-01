@@ -64,7 +64,25 @@ const hLine = (doc, y, cx) => {
  * @param {string} data.issuingEntity
  * @returns {Promise<Buffer>}
  */
-const generateCertificatePDF = (data) => {
+const https = require('https');
+
+const fetchImageBuffer = (url) => new Promise((resolve, reject) => {
+    try {
+        https.get(url, (res) => {
+            const chunks = [];
+            res.on('data', (c) => chunks.push(c));
+            res.on('end', () => resolve(Buffer.concat(chunks)));
+            res.on('error', reject);
+        }).on('error', reject);
+    } catch (err) {
+        reject(err);
+    }
+});
+
+/**
+ * data.verificationUrl (optional) - public URL to verify the certificate/badge
+ */
+const generateCertificatePDF = async (data) => {
     return new Promise((resolve, reject) => {
         const lang = SUPPORTED_LANGS.includes(data.lang) ? data.lang : 'en';
         const t = i18n[lang];
@@ -161,13 +179,33 @@ const generateCertificatePDF = (data) => {
             }
         }
 
-        // Footer
-        doc.fontSize(8).font('Helvetica').fillColor('#BDC3C7')
-            .text(`${t.issuedBy}: ${data.issuingEntity}`, margin, H - 46, {
-                width: contentW, align: 'center'
-            });
+        // Optionally draw QR code (fetch remote PNG)
+        (async () => {
+            try {
+                if (data.verificationUrl) {
+                    const qrUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(data.verificationUrl)}`;
+                    try {
+                        const qrBuf = await fetchImageBuffer(qrUrl);
+                        const qrSize = 110;
+                        const qrX = W - margin - qrSize;
+                        const qrY = H - margin - qrSize - 12; // leave space for footer
+                        doc.image(qrBuf, qrX, qrY, { width: qrSize, height: qrSize });
+                    } catch (err) {
+                        // ignore QR failures and continue
+                    }
+                }
 
-        doc.end();
+                // Footer
+                doc.fontSize(8).font('Helvetica').fillColor('#BDC3C7')
+                    .text(`${t.issuedBy}: ${data.issuingEntity}`, margin, H - 46, {
+                        width: contentW, align: 'center'
+                    });
+
+                doc.end();
+            } catch (err) {
+                reject(err);
+            }
+        })();
     });
 };
 

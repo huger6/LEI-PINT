@@ -13,7 +13,7 @@ const badgeRoutes = require('./badges.routes');
  * @desc    List all service lines, optionally scoped to a learning path
  * @access  Authenticated
  */
-router.get('/', optionalAuth, slController.getServiceLines);
+router.get('/', loginRequired, slController.getServiceLines);
 
 /**
  * @route   GET /api/service-lines/filter-stats

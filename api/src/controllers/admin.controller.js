@@ -9,6 +9,7 @@ const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHel
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
 const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 const throwRequestError = (status, code) => {
     const error = new Error(code);
@@ -177,17 +178,12 @@ const syncRoleAssignments = async ({
 const getUsers = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
-    const queryValidation = validations.listUsersQuerySchema.safeParse(req.query);
-    if (!queryValidation.success) return res.status(400).json({
-        success: false,
-        errors: queryValidation.error.issues
-    });
-
-    const { page, limit, ...filterParams } = queryValidation.data;
-    const offset = (page - 1) * limit;
-    const cacheKey = `admin:users:list:${Buffer.from(JSON.stringify({ ...filterParams, page, limit })).toString('base64')}`;
-
     try {
+        const parsed = validations.listUsersQuerySchema.parse(req.query);
+        const { page, limit, ...filterParams } = parsed;
+        const offset = (page - 1) * limit;
+        const cacheKey = `admin:users:list:${Buffer.from(JSON.stringify({ ...filterParams, page, limit })).toString('base64')}`;
+
         const cached = await redis.get(cacheKey);
         if (cached) return res.status(200).json({ success: true, ...JSON.parse(cached) });
 
@@ -216,6 +212,8 @@ const getUsers = async (req, res) => {
         await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
         return res.status(200).json({ success: true, ...responseData });
     } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+
         logger.error('Error in admin:users:list', { requestId, error });
         return res.status(500).json({ success: false, code: 'LIST_FETCH_FAILED' });
     }
@@ -224,12 +222,15 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
-    const paramValidation = validations.userIdParamSchema.safeParse(req.params);
-    if (!paramValidation.success) {
-        return res.status(400).json({ success: false, errors: paramValidation.error.issues });
+    let userGuid;
+    try {
+        const parsed = validations.userIdParamSchema.parse(req.params);
+        userGuid = parsed.userGuid;
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        logger.error('Error validating user id param', { requestId, error });
+        return res.status(500).json({ success: false, code: 'ADMIN_USER_FETCH_FAILED' });
     }
-
-    const { userGuid } = paramValidation.data;
 
     try {
         const user = await models.users.findOne({
@@ -268,7 +269,7 @@ const getUser = async (req, res) => {
             const areaIds = consultantAreas.map((a) => a.area_id);
             const areaRecords = await models.areas.findAll({
                 where: { area_id: { [Op.in]: areaIds } },
-                attributes: ['area_id', 'area_name', 'area_slug', 'area_code', 'area_description', 'img_url'],
+                attributes: ['area_id', 'area_name', 'area_slug', 'area_description', 'img_url'],
                 raw: true
             });
             const areaById = new Map(areaRecords.map((a) => [a.area_id, a]));
@@ -276,8 +277,7 @@ const getUser = async (req, res) => {
                 .map((ca) => {
                     const area = areaById.get(ca.area_id);
                     if (!area) return null;
-                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
-                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, code: area.area_code, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
+                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
                 })
                 .filter(Boolean);
             if (areasPayload.length === 0) areasPayload = null;
@@ -541,13 +541,7 @@ const createUser = async (req, res) => {
     } catch (error) {
         if (t && !t.finished) await t.rollback();
 
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         if (error.statusCode) {
             return res.status(error.statusCode).json({
@@ -785,13 +779,7 @@ const updateUser = async (req, res) => {
     } catch (error) {
         if (t && !t.finished) await t.rollback();
 
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         if (error.statusCode) {
             return res.status(error.statusCode).json({
@@ -869,13 +857,7 @@ const deactivateUser = async (req, res) => {
             code: 'ADMIN_USER_DEACTIVATED'
         });
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_URL_PARAM',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error deactivating user through admin module.', { requestId, error });
         return res.status(500).json({
@@ -910,13 +892,7 @@ const reactivateUser = async (req, res) => {
 
         return res.status(200).json({ success: true, code: 'ADMIN_USER_REACTIVATED' });
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_URL_PARAM',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error reactivating user through admin module.', { requestId, error });
         return res.status(500).json({ success: false, code: 'ADMIN_USER_REACTIVATE_FAILED' });
@@ -1011,13 +987,7 @@ const resetUserPassword = async (req, res) => {
     } catch (error) {
         if (t && !t.finished) await t.rollback();
 
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_URL_PARAM',
-                errors: error.issues || error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
 
         logger.error('Error forcing password reset through admin module.', { requestId, error });
         return res.status(500).json({
