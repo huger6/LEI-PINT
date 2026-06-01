@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "node -e \"process.env.SKIP_FIREBASE='1'; require('jest/bin/jest')\" --runInBand --forceExit",
+    "test": "node -e \"process.env.SKIP_FIREBASE='1'; require('jest/bin/jest')\" -- --runInBand --forceExit",
     "start": "node server.js",
     "lint:js": "node --check ./src/**/*.js || true",
     "dev": "nodemon server.js",

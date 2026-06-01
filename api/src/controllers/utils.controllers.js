@@ -2,16 +2,7 @@ const { Op } = require('sequelize');
 const { sequelize, models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
-const { z } = require('zod');
-const { biographyRule } = require('../validations/shared-rules');
-
-const valueQuerySchema = z.object({
-    value: z.string().trim().min(1, 'VALIDATION_QUERY_VALUE_REQUIRED')
-});
-
-const biographyBodySchema = z.object({
-    biography: biographyRule
-});
+const { valueQuerySchema, biographyBodySchema } = require('../validations/utils.validation');
 
 const dbCheck = async (model, field, value, caseInsensitive = false) => {
     const supportsILike = sequelize.getDialect() === 'postgres';
