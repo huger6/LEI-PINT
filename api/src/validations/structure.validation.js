@@ -209,7 +209,6 @@ const badgeSlugParamSchema = z.object({
 
 const createBadgeBodySchema = z.object({
 	progressionStageId: positiveIntIdRule.optional(),
-	goalId: positiveIntIdRule.optional().nullable(),
 
 	badgeTitle: z.string().trim().min(2).max(100),
 

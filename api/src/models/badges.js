@@ -41,14 +41,6 @@ module.exports = function (sequelize, DataTypes) {
         key: 'learning_path_id'
       }
     },
-    goal_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'goals',
-        key: 'goal_id'
-      }
-    },
     badge_title: {
       type: DataTypes.STRING(100),
       allowNull: false
@@ -159,12 +151,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "area_badges_fk",
         fields: [
           { name: "area_id" },
-        ]
-      },
-      {
-        name: "goals2_fk",
-        fields: [
-          { name: "goal_id" },
         ]
       },
       {

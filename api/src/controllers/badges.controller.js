@@ -498,7 +498,6 @@ const createBadge = async (req, res) => {
 
         const {
             progressionStageId: bodyStageId,
-            goalId,
             badgeTitle,
             badgeSlug,
             badgeType,
@@ -579,7 +578,6 @@ const createBadge = async (req, res) => {
             area_id: areaRow.area_id,
             service_line_id: slRow.service_line_id,
             learning_path_id: slRow.learning_path_id,
-            goal_id: goalId || null,
             badge_title: badgeTitle,
             badge_slug: finalUniqueSlug,
             badge_type: badgeType,
@@ -722,7 +720,6 @@ const updateBadge = async (req, res) => {
 
         const {
             progressionStageId,
-            goalId,
             badgeTitle,
             badgeSlug: manualNewSlug,
             badgeType,
@@ -804,7 +801,6 @@ const updateBadge = async (req, res) => {
             area_id: nextAreaId,
             service_line_id: nextSlId,
             learning_path_id: nextLpId,
-            goal_id: goalId !== undefined ? goalId : badge.goal_id,
             badge_title: badgeTitle !== undefined ? badgeTitle : badge.badge_title,
             badge_slug: finalNewSlug,
             badge_type: badgeType !== undefined ? badgeType : badge.badge_type,
