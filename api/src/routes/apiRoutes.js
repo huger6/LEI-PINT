@@ -19,6 +19,11 @@ const notifications = require('./notifications.routes');
 const statistics = require('./statistics.routes');
 const slas = require('./slas.routes');
 const announcements = require('./announcements.routes');
+const goals = require('./goals.routes');
+const search = require('./search.routes');
+const exportsRoutes = require('./exports.routes');
+const gdpr = require('./gdpr.routes');
+const integrations = require('./integrations.routes');
 
 // --- Auth & user session ---
 router.use('/auth', auth);
@@ -37,6 +42,7 @@ router.use('/badges', badges);
 
 // --- Applications & workflow ---
 router.use('/applications', applications);
+router.use('/goals', goals);
 
 // --- Gamification & rankings ---
 router.use('/ranking', ranking);
@@ -47,9 +53,13 @@ router.use('/statistics', statistics);
 // --- SLAs & Announcements ---
 router.use('/slas', slas);
 router.use('/announcements', announcements);
+router.use('/search', search);
+router.use('/exports', exportsRoutes);
 
 // --- Utilities & admin ---
 router.use('/utils', utils);
 router.use('/admin', admin);
+router.use('/gdpr', gdpr);
+router.use('/integrations', integrations);
 
 module.exports = router;

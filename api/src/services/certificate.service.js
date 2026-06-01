@@ -111,6 +111,8 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         return { certificateUrl: data.existingCertificate.certificate_file_url, isNew: false };
     }
 
+    const verificationUrl = `${(process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '')}/public/certificate/${applicationGuid}`;
+
     const pdfBuffer = await generateCertificatePDF({
         lang,
         badge: data.badge,
@@ -118,12 +120,14 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         tmReviewer: data.tmReviewer,
         sllReviewer: data.sllReviewer,
         dates: data.dates,
-        issuingEntity: data.issuingEntity
+        issuingEntity: data.issuingEntity,
+        verificationUrl
     });
 
     const storagePath = `certificates/${data.consultant.userGuid}/application_${applicationGuid}/certificate_${lang}.pdf`;
 
-    const certificateUrl = await uploadBuffer(CERTIFICATE_BUCKET, storagePath, pdfBuffer, 'application/pdf');
+    // Some Supabase instances may restrict mime types; use binary/octet as fallback
+    const certificateUrl = await uploadBuffer(CERTIFICATE_BUCKET, storagePath, pdfBuffer, 'application/octet-stream');
 
     const t = await sequelize.transaction();
     try {
