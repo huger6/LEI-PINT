@@ -181,3 +181,98 @@ CREATE OR REPLACE TRIGGER trg_capitalize_user_full_name
 BEFORE INSERT OR UPDATE OF full_name ON users
 FOR EACH ROW
 EXECUTE FUNCTION trg_fn_capitalize_user_full_name();
+
+
+-- ==============================================================
+-- APPLICATION STATE CHANGE AUDIT LOG
+-- ==============================================================
+-- Safety-net trigger: automatically logs every application state
+-- transition into application_validation_logs. Avoids duplicating
+-- rows the API already wrote by checking for a matching log
+-- within the last 5 seconds.
+-- ==============================================================
+
+CREATE OR REPLACE FUNCTION trg_fn_log_application_state_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_already_logged BOOLEAN;
+    v_action VARCHAR(50);
+BEGIN
+    v_action := OLD.application_state || ' -> ' || NEW.application_state;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM application_validation_logs
+        WHERE application_id   = NEW.application_id
+          AND validator_action = v_action
+          AND validated_at     >= NOW() - INTERVAL '5 seconds'
+    ) INTO v_already_logged;
+
+    IF NOT v_already_logged THEN
+        INSERT INTO application_validation_logs (
+            application_id,
+            user_id,
+            validator_function,
+            validator_action,
+            validations_comments,
+            validated_at
+        )
+        VALUES (
+            NEW.application_id,
+            NULL,
+            'trg_log_application_state_change',
+            v_action,
+            'Auto-logged by database trigger',
+            NOW()
+        );
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER trg_log_application_state_change
+AFTER UPDATE OF application_state ON badge_applications
+FOR EACH ROW
+WHEN (OLD.application_state IS DISTINCT FROM NEW.application_state)
+EXECUTE FUNCTION trg_fn_log_application_state_change();
+
+
+-- ==============================================================
+-- BADGE EXPIRATION AUTO-CALCULATION
+-- ==============================================================
+-- On INSERT into awarded_badges, automatically computes
+-- expiration_at from the badge's expiration_duration_days when
+-- the caller did not set it. The API delegates this computation
+-- to the trigger by omitting expiration_at from the INSERT.
+-- ==============================================================
+
+CREATE OR REPLACE FUNCTION trg_fn_set_badge_expiration()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_duration_days INTEGER;
+BEGIN
+    IF NEW.expiration_at IS NULL THEN
+        SELECT b.expiration_duration_days
+        INTO v_duration_days
+        FROM badges b
+        JOIN badge_applications ba ON ba.badge_id = b.badge_id
+        WHERE ba.application_id = NEW.application_id;
+
+        IF v_duration_days IS NOT NULL AND v_duration_days > 0 THEN
+            NEW.expiration_at := NEW.awarded_at + (v_duration_days || ' days')::INTERVAL;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER trg_set_badge_expiration
+BEFORE INSERT ON awarded_badges
+FOR EACH ROW
+EXECUTE FUNCTION trg_fn_set_badge_expiration();

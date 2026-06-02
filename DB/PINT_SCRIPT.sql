@@ -60,7 +60,6 @@ DROP INDEX IF EXISTS AWARDED_BADGES_PK CASCADE;
 DROP TABLE IF EXISTS awarded_badges CASCADE;
 DROP INDEX IF EXISTS BADGES_UPDATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS BADGES_CREATEDBY_FK CASCADE;
-DROP INDEX IF EXISTS GOALS2_FK CASCADE;
 DROP INDEX IF EXISTS AREA_BADGES_FK CASCADE;
 DROP INDEX IF EXISTS STAGES_BADGES2_FK CASCADE;
 DROP INDEX IF EXISTS SL_BADGES_FK CASCADE;
@@ -199,7 +198,6 @@ CREATE TABLE IF NOT EXISTS areas (
    area_name            VARCHAR(100)         NOT NULL,
    area_slug            VARCHAR(512)         NOT NULL,
       CONSTRAINT uk_slug_areas UNIQUE (area_slug),
-   area_code            VARCHAR(20)          NULL,
    area_description     TEXT                 NULL,
    img_url              VARCHAR(512)         NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
@@ -348,7 +346,6 @@ CREATE TABLE IF NOT EXISTS badges (
    area_id              INTEGER                 NOT NULL, -- FK -> areas(area_id)
    service_line_id      INTEGER                 NOT NULL, -- FK -> service_lines(service_line_id)
    learning_path_id      INTEGER                 NOT NULL, -- FK -> learning_path(learning_path_id)
-   goal_id              INTEGER                 NULL, -- FK -> goals(goal_id)
    badge_title          VARCHAR(100)         NOT NULL,
    badge_slug           VARCHAR(100)         NOT NULL,
       CONSTRAINT uk_slug_badges UNIQUE (badge_slug),
@@ -357,7 +354,6 @@ CREATE TABLE IF NOT EXISTS badges (
    badge_points         INTEGER                 NOT NULL DEFAULT 0,
       CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
    expiration_duration_days INTEGER                 NULL,
-   estimated_time_to_acquire TIME                 NULL,
    badge_description    TEXT                 NULL,
    badge_img_url        VARCHAR(512)         NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
@@ -1070,11 +1066,6 @@ ALTER TABLE badges
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE badges
-   ADD CONSTRAINT fk_badges_goals2_goals FOREIGN KEY (goal_id)
-      REFERENCES goals (goal_id)
-      ON DELETE RESTRICT ON UPDATE RESTRICT;
-
-ALTER TABLE badges
    ADD CONSTRAINT fk_badges_stages_ba_progress FOREIGN KEY (progression_stage_id)
       REFERENCES progression_stages (progression_stage_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
@@ -1455,7 +1446,6 @@ CREATE INDEX IF NOT EXISTS CONS_AWARDED_FK ON awarded_badges (user_id);
 CREATE INDEX IF NOT EXISTS AWARDED_APPLICATIONS2_FK ON awarded_badges (application_id);
 CREATE INDEX IF NOT EXISTS STAGES_BADGES2_FK ON badges (progression_stage_id);
 CREATE INDEX IF NOT EXISTS AREA_BADGES_FK ON badges (area_id);
-CREATE INDEX IF NOT EXISTS GOALS2_FK ON badges (goal_id);
 CREATE INDEX IF NOT EXISTS BADGES_CREATEDBY_FK ON badges (created_by);
 CREATE INDEX IF NOT EXISTS BADGES_UPDATEDBY_FK ON badges (updated_by);
 CREATE INDEX IF NOT EXISTS SL_BADGES_FK ON badges (service_line_id);
