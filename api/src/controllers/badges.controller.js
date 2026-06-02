@@ -503,7 +503,6 @@ const createBadge = async (req, res) => {
             badgeType,
             badgePoints,
             expirationDurationDays,
-            estimatedTimeToAcquire,
             badgeDescription,
             badgeImgUrl
         } = validations.createBadgeBodySchema.parse(req.body);
@@ -583,7 +582,6 @@ const createBadge = async (req, res) => {
             badge_type: badgeType,
             badge_points: badgePoints,
             expiration_duration_days: expirationDurationDays ?? null,
-            estimated_time_to_acquire: estimatedTimeToAcquire || null,
             badge_description: badgeDescription || null,
             badge_img_url: finalImgUrl || null,
             created_by: userId,
@@ -725,7 +723,6 @@ const updateBadge = async (req, res) => {
             badgeType,
             badgePoints,
             expirationDurationDays,
-            estimatedTimeToAcquire,
             badgeDescription,
             badgeImgUrl,
             isActive
@@ -806,7 +803,6 @@ const updateBadge = async (req, res) => {
             badge_type: badgeType !== undefined ? badgeType : badge.badge_type,
             badge_points: badgePoints !== undefined ? badgePoints : badge.badge_points,
             expiration_duration_days: expirationDurationDays !== undefined ? expirationDurationDays : badge.expiration_duration_days,
-            estimated_time_to_acquire: estimatedTimeToAcquire !== undefined ? estimatedTimeToAcquire : badge.estimated_time_to_acquire,
             badge_description: badgeDescription !== undefined ? badgeDescription : badge.badge_description,
             badge_img_url: finalImgUrl,
             is_active: isActive !== undefined ? isActive : badge.is_active,
