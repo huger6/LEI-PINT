@@ -184,8 +184,6 @@ function initModels(sequelize) {
   consultants.hasMany(goals, { as: "goals", foreignKey: "user_id"});
   points_history.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
   consultants.hasMany(points_history, { as: "points_histories", foreignKey: "user_id"});
-  badge_applications.belongsTo(goals, { as: "goal", foreignKey: "goal_id"});
-  goals.hasMany(badge_applications, { as: "badge_applications", foreignKey: "goal_id"});
   badges.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
   learning_paths.hasMany(badges, { as: "badges", foreignKey: "learning_path_id"});
   service_lines.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});

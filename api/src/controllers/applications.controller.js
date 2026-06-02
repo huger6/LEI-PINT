@@ -196,7 +196,7 @@ const getApplicationById = async (req, res) => {
 const startApplication = async (req, res) => {
     try {
         const userId = req.user.sub; // From JWT
-        const { badgeId, goalId } = validations.startApplicationSchema.parse(req.body);
+        const { badgeId } = validations.startApplicationSchema.parse(req.body);
 
         // Check if badge exists and is active
         const badge = await models.badges.findByPk(badgeId);
@@ -226,8 +226,7 @@ const startApplication = async (req, res) => {
         // Create new application
         const newApp = await models.badge_applications.create({
             user_id: userId,
-            badge_id: badgeId,
-            goal_id: goalId || null
+            badge_id: badgeId
         });
 
         await sendTopicUpdate("new_data", 15);

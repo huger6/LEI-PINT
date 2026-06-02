@@ -790,10 +790,6 @@ def generate_sql() -> str:
         goals.append(row)
         sql.insert("goals", row)
 
-    goals_by_user_badge: dict[tuple[int, int], list[int]] = {}
-    for goal in goals:
-        goals_by_user_badge.setdefault((int(goal["user_id"]), int(goal["badge_id"])), []).append(int(goal["goal_id"]))
-
     for index in range(NUM_BADGE_APPLICATIONS):
         state = APPLICATION_STATES[index % len(APPLICATION_STATES)]
         consultant_id = random.choice(consultant_ids)
@@ -805,12 +801,10 @@ def generate_sql() -> str:
             submitted_at = opened_at + timedelta(days=random.randint(1, 14), hours=random.randint(1, 8))
         if state in {"Accepted", "Rejected"}:
             closed_at = submitted_at + timedelta(days=random.randint(1, 12), hours=random.randint(1, 8))  # type: ignore[operator]
-        goal_candidates = goals_by_user_badge.get((consultant_id, int(badge["badge_id"])), [])
         row = {
             "application_id": ids.next("badge_applications"),
             "badge_id": badge["badge_id"],
             "user_id": consultant_id,
-            "goal_id": random.choice(goal_candidates) if goal_candidates and random.random() < 0.35 else None,
             "certificate_id": None,
             "awarded_badges_id": None,
             "application_guid": uuid.uuid5(uuid.NAMESPACE_URL, f"softinsa-application-{index + 1}-{consultant_id}-{badge['badge_id']}"),

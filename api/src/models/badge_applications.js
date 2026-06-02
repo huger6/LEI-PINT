@@ -24,14 +24,6 @@ module.exports = function (sequelize, DataTypes) {
         key: 'user_id'
       }
     },
-    goal_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'goals',
-        key: 'goal_id'
-      }
-    },
     certificate_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -114,12 +106,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "cons_apllications_fk",
         fields: [
           { name: "user_id" },
-        ]
-      },
-      {
-        name: "timelines_applications2_fk",
-        fields: [
-          { name: "goal_id" },
         ]
       },
       {
