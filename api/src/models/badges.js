@@ -15,7 +15,6 @@ module.exports = function (sequelize, DataTypes) {
         model: 'progression_stages',
         key: 'progression_stage_id'
       },
-      unique: "uk_stage_badge"
     },
     area_id: {
       type: DataTypes.INTEGER,
@@ -128,13 +127,6 @@ module.exports = function (sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "badge_slug" },
-        ]
-      },
-      {
-        name: "uk_stage_badge",
-        unique: true,
-        fields: [
-          { name: "progression_stage_id" },
         ]
       },
       {
