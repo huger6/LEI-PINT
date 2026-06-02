@@ -214,3 +214,43 @@ AS $$
     LIMIT  p_limit
     OFFSET p_offset;
 $$;
+
+
+/*==============================================================*/
+/* Consultant Badges Per Area                                   */
+/*                                                              */
+/* Given a user ID, returns one row per area where the          */
+/* consultant has earned at least one badge, including the      */
+/* area name, service line name, badges earned, and total       */
+/* points accumulated in that area.                             */
+/*==============================================================*/
+
+CREATE OR REPLACE FUNCTION fn_consultant_badges_per_area(p_user_id INTEGER)
+RETURNS TABLE (
+    area_id           INTEGER,
+    area_name         VARCHAR,
+    service_line_name VARCHAR,
+    badges_earned     BIGINT,
+    total_points      BIGINT
+)
+LANGUAGE plpgsql STABLE
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        a.area_id,
+        a.area_name,
+        sl.service_line_name,
+        COUNT(ab.awarded_badges_id)::BIGINT AS badges_earned,
+        COALESCE(SUM(ab.points_snapshot), 0)::BIGINT AS total_points
+    FROM awarded_badges ab
+    JOIN badge_applications ba ON ba.application_id = ab.application_id
+    JOIN badges b              ON b.badge_id        = ba.badge_id
+    JOIN areas a               ON a.area_id         = b.area_id
+    JOIN service_lines sl      ON sl.service_line_id = b.service_line_id
+    WHERE ab.user_id = p_user_id
+    GROUP BY a.area_id, a.area_name, sl.service_line_name
+    HAVING COUNT(ab.awarded_badges_id) > 0
+    ORDER BY badges_earned DESC, a.area_name;
+END;
+$$;
