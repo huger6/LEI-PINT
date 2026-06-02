@@ -224,11 +224,6 @@ const createBadgeBodySchema = z.object({
 
 	expirationDurationDays: z.coerce.number().int().positive().optional().nullable(),
 
-	estimatedTimeToAcquire: z.string().trim()
-		.regex(/^\d{2}:\d{2}(:\d{2})?$/, 'VALIDATION_ESTIMATED_TIME_INVALID_FORMAT')
-		.optional()
-		.nullable(),
-
 	badgeDescription: z.string().trim().max(5000).optional().nullable(),
 
 	badgeImgUrl: imgUrlRule.optional().nullable()
