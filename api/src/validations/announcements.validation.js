@@ -45,7 +45,6 @@ const createAnnouncementBodySchema = z.object({
     targetProfile: z.string().trim().max(128).optional().nullable(),
     isGlobal: z.boolean().optional().nullable(),
 
-    preferenceId: positiveIntIdRule,
     userId: positiveIntIdRule.optional().nullable()
 }).refine(
     (data) => {
@@ -74,7 +73,6 @@ const updateAnnouncementBodySchema = z.object({
     isGlobal: z.boolean().optional().nullable(),
     isActive: z.boolean().optional(),
 
-    preferenceId: positiveIntIdRule.optional(),
     userId: positiveIntIdRule.optional().nullable()
 }).refine(
     (data) => {

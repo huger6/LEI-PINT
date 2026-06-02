@@ -57,14 +57,6 @@ module.exports = function (sequelize, DataTypes) {
         key: 'user_id'
       }
     },
-    preference_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'notification_preferences',
-        key: 'preference_id'
-      }
-    },
     created_by: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -122,12 +114,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "user_slas_fk",
         fields: [
           { name: "user_id" },
-        ]
-      },
-      {
-        name: "notif_slas2_fk",
-        fields: [
-          { name: "preference_id" },
         ]
       },
       {

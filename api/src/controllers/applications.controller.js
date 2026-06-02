@@ -615,8 +615,7 @@ const validateApplication = async (req, res) => {
         await application.update({
             application_state: newState,
             reviewer_notes: reviewerNotes ?? application.reviewer_notes,
-            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {}),
-            ...(awardedBadge ? { awarded_badges_id: awardedBadge.awarded_badges_id } : {})
+            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {})
         }, { transaction });
 
         // Audit log

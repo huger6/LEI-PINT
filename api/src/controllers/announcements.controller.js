@@ -113,7 +113,6 @@ const createAnnouncement = async (req, res) => {
             announcementType,
             targetProfile,
             isGlobal,
-            preferenceId,
             userId: targetUserId
         } = validations.createAnnouncementBodySchema.parse(req.body);
 
@@ -125,7 +124,6 @@ const createAnnouncement = async (req, res) => {
             announcement_type: announcementType ?? null,
             target_profile: targetProfile ?? null,
             is_global: isGlobal ?? null,
-            preference_id: preferenceId,
             user_id: targetUserId ?? null,
             created_by: userId,
             updated_by: userId
@@ -158,7 +156,6 @@ const updateAnnouncement = async (req, res) => {
             targetProfile,
             isGlobal,
             isActive,
-            preferenceId,
             userId: targetUserId
         } = validations.updateAnnouncementBodySchema.parse(req.body);
 
@@ -179,7 +176,6 @@ const updateAnnouncement = async (req, res) => {
             target_profile: targetProfile !== undefined ? targetProfile : announcement.target_profile,
             is_global: isGlobal !== undefined ? isGlobal : announcement.is_global,
             is_active: isActive !== undefined ? isActive : announcement.is_active,
-            preference_id: preferenceId !== undefined ? preferenceId : announcement.preference_id,
             user_id: targetUserId !== undefined ? targetUserId : announcement.user_id,
             updated_by: userId,
             updated_at: new Date()
