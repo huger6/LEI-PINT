@@ -680,7 +680,6 @@ def generate_sql() -> str:
             "badge_type": badge_type,
             "badge_points": int(stage["stage_sequence"]) * 125,
             "expiration_duration_days": 730 if badge_type == "Special" else None,
-            "estimated_time_to_acquire": time(hour=min(23, 2 + int(stage["stage_sequence"]) * 2), minute=0),
             "badge_description": f"Recognizes validated capability in {area['area_name']} at stage {stage['stage_sequence']}.",
             "badge_img_url": None,
             "is_active": True,

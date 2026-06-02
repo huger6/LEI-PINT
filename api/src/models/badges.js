@@ -63,10 +63,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    estimated_time_to_acquire: {
-      type: DataTypes.TIME,
-      allowNull: true
-    },
     badge_description: {
       type: DataTypes.TEXT,
       allowNull: true

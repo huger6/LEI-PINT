@@ -354,7 +354,6 @@ CREATE TABLE IF NOT EXISTS badges (
    badge_points         INTEGER                 NOT NULL DEFAULT 0,
       CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
    expiration_duration_days INTEGER                 NULL,
-   estimated_time_to_acquire TIME                 NULL,
    badge_description    TEXT                 NULL,
    badge_img_url        VARCHAR(512)         NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
