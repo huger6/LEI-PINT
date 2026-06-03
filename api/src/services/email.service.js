@@ -507,10 +507,86 @@ const sendApplicationRejectedEmail = async (email, name, badgeTitle, reviewerNot
     }
 };
 
+const SLA_BREACH_TEMPLATES = {
+    'pt-PT': {
+        subject: 'Alerta de SLA ultrapassado',
+        heading: 'SLA ultrapassado',
+        intro: 'A candidatura de {applicantName} ao badge <strong>{badgeTitle}</strong> ultrapassou o tempo de resposta definido.',
+        details: 'Tempo excedido: <strong>{hoursExceeded} horas</strong>.',
+        profile: 'Perfil responsavel: {targetProfile}.',
+        team: 'A Equipa Softinsa'
+    },
+    'en-GB': {
+        subject: 'SLA breach alert',
+        heading: 'SLA breach detected',
+        intro: "{applicantName}'s application for the badge <strong>{badgeTitle}</strong> has exceeded the configured response time.",
+        details: 'Hours exceeded: <strong>{hoursExceeded}</strong>.',
+        profile: 'Responsible profile: {targetProfile}.',
+        team: 'The Softinsa Team'
+    },
+    'es-ES': {
+        subject: 'Alerta de SLA superado',
+        heading: 'SLA superado',
+        intro: 'La candidatura de {applicantName} al badge <strong>{badgeTitle}</strong> ha superado el tiempo de respuesta configurado.',
+        details: 'Horas excedidas: <strong>{hoursExceeded}</strong>.',
+        profile: 'Perfil responsable: {targetProfile}.',
+        team: 'El Equipo de Softinsa'
+    }
+};
+
+const resolveSlaBreachTemplate = (lang) =>
+    SLA_BREACH_TEMPLATES[lang] || SLA_BREACH_TEMPLATES['en-GB'];
+
+const sendSlaBreachAlert = async (email, emailData) => {
+    const lang = emailData.targetLanguage || emailData.language || 'en-GB';
+    const t = resolveSlaBreachTemplate(lang);
+    const uniqueId = Date.now().toString(36);
+    const safeApplicant = escapeHtml(emailData.applicantName);
+    const safeBadge = escapeHtml(emailData.badgeTitle);
+    const safeTargetProfile = escapeHtml(emailData.targetProfile);
+    const safeHoursExceeded = escapeHtml(emailData.hoursExceeded);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">${t.heading}</p>
+                <p style="margin-bottom:16px;">
+                    ${t.intro
+                        .replace('{applicantName}', safeApplicant)
+                        .replace('{badgeTitle}', safeBadge)}
+                </p>
+                <div style="background-color:#fff8e6;border-left:4px solid #f5a623;padding:16px 20px;
+                            border-radius:0 4px 4px 0;margin:16px 0;">
+                    <p style="font-size:14px;color:#555555;margin:0 0 8px 0;">
+                        ${t.details.replace('{hoursExceeded}', safeHoursExceeded)}
+                    </p>
+                    <p style="font-size:14px;color:#555555;margin:0;">
+                        ${t.profile.replace('{targetProfile}', safeTargetProfile)}
+                    </p>
+                </div>
+                <p style="margin-top:24px;margin-bottom:0;">- ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending SLA breach alert', { error });
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
     sendApplicationSubmittedEmail,
     sendApplicationApprovedEmail,
-    sendApplicationRejectedEmail
+    sendApplicationRejectedEmail,
+    sendSlaBreachAlert
 };
