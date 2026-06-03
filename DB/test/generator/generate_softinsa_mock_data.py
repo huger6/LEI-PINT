@@ -165,6 +165,20 @@ AREA_BASES = [
 ]
 
 TARGET_PROFILES = ["Consultant", "Talent Manager", "Service Line Leader", "Administrator"]
+DEFAULT_GLOBAL_SLAS = [
+    {
+        "sla_name": "Default Talent Manager Validation",
+        "response_time_hours": 48,
+        "target_profile": "Talent Manager",
+        "sla_description": "Default time limit for Talent Managers to review submitted evidences.",
+    },
+    {
+        "sla_name": "Default Service Line Leader Validation",
+        "response_time_hours": 72,
+        "target_profile": "Service Line Leader",
+        "sla_description": "Default time limit for Service Line Leaders to perform final approval on applications.",
+    },
+]
 NOTIFICATION_TYPES = [
     "HOME",
     "BADGES",
@@ -338,6 +352,7 @@ def generate_sql() -> str:
     gdpr_policies: list[dict[str, object]] = []
     notification_definitions: list[dict[str, object]] = []
     slas: list[dict[str, object]] = []
+    default_global_sla_ids: set[int] = set()
     system_announcements: list[dict[str, object]] = []
     goals: list[dict[str, object]] = []
     applications: list[dict[str, object]] = []
@@ -514,6 +529,28 @@ def generate_sql() -> str:
         }
         notification_definitions.append(row)
         sql.insert("notification_definitions", row)
+
+    for default_sla in DEFAULT_GLOBAL_SLAS:
+        row = {
+            "sla_id": ids.next("slas"),
+            "sla_name": default_sla["sla_name"],
+            "response_time_hours": default_sla["response_time_hours"],
+            "start_date": BASE_NOW - timedelta(days=60),
+            "end_date": BASE_NOW + timedelta(days=365),
+            "target_profile": default_sla["target_profile"],
+            "is_global": True,
+            "is_active": True,
+            "sla_description": default_sla["sla_description"],
+            "definition_id": random.choice(notification_definitions)["definition_id"],
+            "user_id": None,
+            "created_by": random.choice(admin_ids),
+            "updated_by": random.choice(admin_ids),
+            "created_at": BASE_NOW - timedelta(days=80),
+            "updated_at": BASE_NOW - timedelta(days=1),
+        }
+        slas.append(row)
+        default_global_sla_ids.add(int(row["sla_id"]))
+        sql.insert("slas", row)
 
     for index in range(NUM_SLAS):
         target_profile = TARGET_PROFILES[index % len(TARGET_PROFILES)]
@@ -761,7 +798,18 @@ def generate_sql() -> str:
                 "service_line_id": service_line["service_line_id"],
             })
 
+    sql.extend([
+        "INSERT INTO sl_slas (service_line_id, sla_id)",
+        "SELECT sl.service_line_id, s.sla_id",
+        "FROM service_lines sl",
+        "CROSS JOIN slas s",
+        "WHERE s.sla_name IN ('Default Talent Manager Validation', 'Default Service Line Leader Validation')",
+        "ON CONFLICT DO NOTHING;",
+    ])
+
     for sla in slas:
+        if int(sla["sla_id"]) in default_global_sla_ids:
+            continue
         sampled_service_lines = random.sample(service_lines, k=min(len(service_lines), random.randint(1, 3)))
         for service_line in sampled_service_lines:
             sql.insert("sl_slas", {
