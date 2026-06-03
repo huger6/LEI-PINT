@@ -140,8 +140,6 @@ function initModels(sequelize) {
   areas.hasMany(consultant_areas, { as: "consultant_areas", foreignKey: "area_id"});
   progression_stages.belongsTo(areas, { as: "area", foreignKey: "area_id"});
   areas.hasMany(progression_stages, { as: "progression_stages", foreignKey: "area_id"});
-  badge_applications.belongsTo(awarded_badges, { as: "awarded_badges_awarded_badge", foreignKey: "awarded_badges_id"});
-  awarded_badges.hasMany(badge_applications, { as: "badge_applications", foreignKey: "awarded_badges_id"});
   application_validation_logs.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
   badge_applications.hasMany(application_validation_logs, { as: "application_validation_logs", foreignKey: "application_id"});
   awarded_badges.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
@@ -170,8 +168,6 @@ function initModels(sequelize) {
   badges.hasMany(skills, { as: "skills", foreignKey: "badge_id"});
   user_badges_interactions.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "badge_id"});
-  badge_applications.belongsTo(certificates, { as: "certificate", foreignKey: "certificate_id"});
-  certificates.hasMany(badge_applications, { as: "badge_applications", foreignKey: "certificate_id"});
   awarded_badges.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
   consultants.hasMany(awarded_badges, { as: "awarded_badges", foreignKey: "user_id"});
   badge_applications.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
@@ -184,8 +180,6 @@ function initModels(sequelize) {
   consultants.hasMany(goals, { as: "goals", foreignKey: "user_id"});
   points_history.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
   consultants.hasMany(points_history, { as: "points_histories", foreignKey: "user_id"});
-  badge_applications.belongsTo(goals, { as: "goal", foreignKey: "goal_id"});
-  goals.hasMany(badge_applications, { as: "badge_applications", foreignKey: "goal_id"});
   badges.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
   learning_paths.hasMany(badges, { as: "badges", foreignKey: "learning_path_id"});
   service_lines.belongsTo(learning_paths, { as: "learning_path", foreignKey: "learning_path_id"});
@@ -198,10 +192,6 @@ function initModels(sequelize) {
   notification_definitions.hasMany(slas, { as: "slas", foreignKey: "definition_id"});
   notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
   notification_definitions.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
-  slas.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(slas, { as: "preference_slas", foreignKey: "preference_id"});
-  system_announcements.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(system_announcements, { as: "system_announcements", foreignKey: "preference_id"});
   users.belongsTo(languages, { as: "language", foreignKey: "language_id"});
   languages.hasMany(users, { as: "users", foreignKey: "language_id"});
   badge_requirements.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});

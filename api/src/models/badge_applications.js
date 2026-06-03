@@ -24,30 +24,6 @@ module.exports = function (sequelize, DataTypes) {
         key: 'user_id'
       }
     },
-    goal_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'goals',
-        key: 'goal_id'
-      }
-    },
-    certificate_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'certificates',
-        key: 'certificate_id'
-      }
-    },
-    awarded_badges_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'awarded_badges',
-        key: 'awarded_badges_id'
-      }
-    },
     application_guid: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -114,24 +90,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "cons_apllications_fk",
         fields: [
           { name: "user_id" },
-        ]
-      },
-      {
-        name: "timelines_applications2_fk",
-        fields: [
-          { name: "goal_id" },
-        ]
-      },
-      {
-        name: "applications_certificates_fk",
-        fields: [
-          { name: "certificate_id" },
-        ]
-      },
-      {
-        name: "awarded_applications_fk",
-        fields: [
-          { name: "awarded_badges_id" },
         ]
       },
       {

@@ -43,8 +43,7 @@ const createSLABodySchema = z.object({
     slaDescription: z.string().trim().max(10000).optional().nullable(),
 
     definitionId: positiveIntIdRule.optional().nullable(),
-    userId: positiveIntIdRule.optional().nullable(),
-    preferenceId: positiveIntIdRule.optional().nullable()
+    userId: positiveIntIdRule.optional().nullable()
 }).refine(
     (data) => data.endDate > data.startDate,
     { message: 'VALIDATION_END_DATE_AFTER_START_DATE', path: ['endDate'] }
@@ -79,8 +78,7 @@ const updateSLABodySchema = z.object({
     slaDescription: z.string().trim().max(10000).optional().nullable(),
 
     definitionId: positiveIntIdRule.optional().nullable(),
-    userId: positiveIntIdRule.optional().nullable(),
-    preferenceId: positiveIntIdRule.optional().nullable()
+    userId: positiveIntIdRule.optional().nullable()
 }).refine(
     (data) => {
         if (data.startDate && data.endDate) return data.endDate > data.startDate;

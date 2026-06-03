@@ -41,14 +41,6 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true
     },
-    preference_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'notification_preferences',
-        key: 'preference_id'
-      }
-    },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -114,12 +106,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "announcements_admin_fk",
         fields: [
           { name: "created_by" },
-        ]
-      },
-      {
-        name: "announc_notif_fk",
-        fields: [
-          { name: "preference_id" },
         ]
       },
       {

@@ -115,8 +115,7 @@ const createSLA = async (req, res) => {
             isGlobal,
             slaDescription,
             definitionId,
-            userId: targetUserId,
-            preferenceId
+            userId: targetUserId
         } = validations.createSLABodySchema.parse(req.body);
 
         const newSLA = await models.slas.create({
@@ -129,7 +128,6 @@ const createSLA = async (req, res) => {
             sla_description: slaDescription ?? null,
             definition_id: definitionId ?? null,
             user_id: targetUserId ?? null,
-            preference_id: preferenceId ?? null,
             created_by: userId,
             updated_by: userId
         });
@@ -162,8 +160,7 @@ const updateSLA = async (req, res) => {
             isActive,
             slaDescription,
             definitionId,
-            userId: targetUserId,
-            preferenceId
+            userId: targetUserId
         } = validations.updateSLABodySchema.parse(req.body);
 
         const sla = await models.slas.findOne({ where: { sla_id: slaId } });
@@ -183,7 +180,6 @@ const updateSLA = async (req, res) => {
             sla_description: slaDescription !== undefined ? slaDescription : sla.sla_description,
             definition_id: definitionId !== undefined ? definitionId : sla.definition_id,
             user_id: targetUserId !== undefined ? targetUserId : sla.user_id,
-            preference_id: preferenceId !== undefined ? preferenceId : sla.preference_id,
             updated_by: userId,
             updated_at: new Date()
         });
