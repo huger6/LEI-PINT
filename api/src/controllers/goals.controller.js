@@ -240,20 +240,20 @@ const getProgressionTimeline = async (req, res) => {
 
         const [rows] = await sequelize.query(
             `SELECT
-                sc.stage_code                       AS code,
-                ps.stage_title                      AS title,
-                ps.stage_sequence,
-                COUNT(b.badge_id)::int              AS total_badges,
-                COUNT(ab.awarded_badges_id)::int    AS earned_badges,
-                MIN(ab.awarded_at)                  AS first_awarded,
-                MAX(ab.awarded_at)                  AS last_awarded
+                sc.stage_code                            AS code,
+                MAX(ps.stage_title)                      AS title,
+                MAX(ps.stage_sequence)                   AS stage_sequence,
+                COUNT(DISTINCT b.badge_id)::int          AS total_badges,
+                COUNT(DISTINCT ab.awarded_badges_id)::int AS earned_badges,
+                MIN(ab.awarded_at)                       AS first_awarded,
+                MAX(ab.awarded_at)                       AS last_awarded
             FROM stage_codes sc
             JOIN progression_stages ps ON ps.stage_code_id = sc.stage_code_id AND ps.is_active = TRUE
             LEFT JOIN badges b ON b.progression_stage_id = ps.progression_stage_id AND b.is_active = TRUE
             LEFT JOIN badge_applications ba ON ba.badge_id = b.badge_id AND ba.user_id = :userId
             LEFT JOIN awarded_badges ab ON ab.application_id = ba.application_id AND ab.user_id = :userId
-            GROUP BY sc.stage_code_id, sc.stage_code, ps.progression_stage_id, ps.stage_title, ps.stage_sequence
-            ORDER BY ps.stage_sequence DESC`,
+            GROUP BY sc.stage_code_id, sc.stage_code
+            ORDER BY MAX(ps.stage_sequence) DESC`,
             { replacements: { userId } }
         );
 
