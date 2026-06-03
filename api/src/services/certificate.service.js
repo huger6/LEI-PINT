@@ -1,4 +1,4 @@
-const { models, sequelize } = require('../config/db');
+const { models } = require('../config/db');
 const { generateCertificatePDF } = require('../utils/certificate.generator');
 const { uploadBuffer } = require('./storage.service');
 const { logger } = require('../utils/logger');
@@ -129,34 +129,21 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
     // Some Supabase instances may restrict mime types; use binary/octet as fallback
     const certificateUrl = await uploadBuffer(CERTIFICATE_BUCKET, storagePath, pdfBuffer, 'application/octet-stream');
 
-    const t = await sequelize.transaction();
-    try {
-        const certificate = await models.certificates.create({
-            application_id: data.application.application_id,
-            certificate_title: data.badge.title,
-            issuing_entity: data.issuingEntity,
-            issue_date: data.dates.conclusionDate,
-            certificate_file_url: certificateUrl
-        }, { transaction: t });
+    const certificate = await models.certificates.create({
+        application_id: data.application.application_id,
+        certificate_title: data.badge.title,
+        issuing_entity: data.issuingEntity,
+        issue_date: data.dates.conclusionDate,
+        certificate_file_url: certificateUrl
+    });
 
-        await data.application.update(
-            { certificate_id: certificate.certificate_id },
-            { transaction: t }
-        );
+    logger.info('Certificate generated and stored', {
+        applicationGuid,
+        certificateId: certificate.certificate_id,
+        lang
+    });
 
-        await t.commit();
-
-        logger.info('Certificate generated and stored', {
-            applicationGuid,
-            certificateId: certificate.certificate_id,
-            lang
-        });
-
-        return { certificateUrl, isNew: true };
-    } catch (err) {
-        await t.rollback();
-        throw err;
-    }
+    return { certificateUrl, isNew: true };
 };
 
 module.exports = { getOrCreateCertificate, fetchCertificateData };

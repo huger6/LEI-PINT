@@ -4,8 +4,7 @@ const sanitizeText = require('../utils/sanitizeText');
 const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const startApplicationSchema = z.object({
-    badgeId: positiveIntIdRule,
-    goalId: positiveIntIdRule.optional().nullable()
+    badgeId: positiveIntIdRule
 });
 
 const applicationGuidParamSchema = z.object({
