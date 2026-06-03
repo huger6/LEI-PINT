@@ -443,6 +443,15 @@
     color: var(--color-outline);
 }
 
+/* Empty state */
+
+.emptyText {
+    font-size: 0.8125rem;
+    color: var(--color-outline);
+    margin: 16px 0 0;
+    text-align: center;
+}
+
 /* Responsive */
 
 @media (max-width: 1200px) {
