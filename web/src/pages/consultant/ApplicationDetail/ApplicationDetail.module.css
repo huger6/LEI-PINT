@@ -1,7 +1,631 @@
-.evidenceBlock {
-	background: var(--color-background);
+/* ─── Page ─────────────────────────────── */
+
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 1100px;
+	width: 100%;
+	min-width: 0;
+	margin: 0 auto;
+	padding-bottom: 48px;
 }
 
-.evidenceBlockSubmitted {
-	background: var(--color-success-container);
+/* ─── Breadcrumb ───────────────────────── */
+
+.breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 0;
+}
+
+.breadcrumbLink {
+	color: var(--color-outline);
+	text-decoration: none;
+	font-size: 0.8125rem;
+}
+
+.breadcrumbLink:hover {
+	color: var(--color-primary);
+}
+
+.breadcrumbSeparator {
+	display: flex;
+	align-items: center;
+}
+
+.breadcrumbActive {
+	color: var(--color-secondary);
+	font-size: 0.8125rem;
+	font-weight: 500;
+}
+
+/* ─── Title ────────────────────────────── */
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+/* ─── Content ──────────────────────────── */
+
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	margin-top: 16px;
+}
+
+/* ─── Cards ────────────────────────────── */
+
+.card {
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	padding: 24px;
+}
+
+.cardLabel {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-outline);
+	margin: 0 0 16px;
+}
+
+/* ─── Error Banner ─────────────────────── */
+
+.errorBanner {
+	background: #fde8e8;
+	color: #b91c1c;
+	border-radius: 12px;
+	padding: 12px 16px;
+	font-size: 0.875rem;
+}
+
+/* ─── Badge Info Card ──────────────────── */
+
+.badgeCard {
+	composes: card;
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+.badgeIcon {
+	flex-shrink: 0;
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badgeIconImg {
+	width: 50px;
+	height: 50px;
+	object-fit: contain;
+}
+
+.badgeBody {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.badgeName {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.chipRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 0.8125rem;
+	font-weight: 500;
+}
+
+.chipGreen {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+.chipBlue {
+	background: var(--color-blue-soft);
+	color: var(--color-blue-on-soft);
+}
+
+.chipPurple {
+	background: var(--color-purple-soft);
+	color: var(--color-purple-on-soft);
+}
+
+.chipOrange {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.badgeDescription {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	line-height: 1.6;
+	margin: 0;
+}
+
+/* ─── Two Column Grid ──────────────────── */
+
+.twoColumn {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	align-items: start;
+}
+
+/* ─── Section Titles ───────────────────── */
+
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0 0 20px;
+}
+
+/* ─── Evidence Card ────────────────────── */
+
+.evidenceCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.dropZone {
+	background: #fafcff;
+	border: 2px dashed rgba(57, 99, 156, 0.4);
+	border-radius: 16px;
+	padding: 34px 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.dropZoneIconWrap {
+	width: 56px;
+	height: 56px;
+	border-radius: 16px;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.dropZoneLabel {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-secondary);
+	margin: 0;
+}
+
+.dropZoneHint {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	margin: 0;
+}
+
+.fileListTitle {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.fileList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.fileRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 13px;
+	background: #f8fafb;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	border-radius: 14px;
+}
+
+.fileIconWrap {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.fileInfo {
+	flex: 1;
+	min-width: 0;
+}
+
+.fileName {
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ─── Requirements Card ────────────────── */
+
+.requirementsCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.requirementsList {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* ─── Requirement Accordion ────────────── */
+
+.reqItem {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.reqHeader {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 24px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.reqIconCircle {
+	width: 28px;
+	height: 28px;
+	border-radius: 10px;
+	background: #dee3e6;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.reqBody {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.reqTitle {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.reqDescription {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	line-height: 1.55;
+	margin: 0;
+}
+
+.reqChevron {
+	flex-shrink: 0;
+	transition: transform 200ms ease;
+	margin-top: 2px;
+}
+
+.reqChevronOpen {
+	transform: rotate(180deg);
+}
+
+.reqContent {
+	padding: 0 24px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.reqEvidenceHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.reqEvidenceCount {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-outline);
+}
+
+.reqInputGroup {
+	display: flex;
+	gap: 8px;
+}
+
+.reqInput {
+	flex: 1;
+	min-width: 0;
+	padding: 8px 12px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	font-size: 0.8125rem;
+	background: #f8fafb;
+	outline: none;
+	transition: border-color 200ms ease;
+}
+
+.reqInput:focus {
+	border-color: var(--color-secondary);
+}
+
+.reqSaveBtn {
+	padding: 8px 16px;
+	border-radius: 10px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: #fff;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-secondary);
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background 150ms ease;
+}
+
+.reqSaveBtn:hover:not(:disabled) {
+	background: var(--color-blue-soft);
+}
+
+.reqSaveBtn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.reqFileInput {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+}
+
+.reqEvidenceStatus {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-green-on-soft);
+	margin: 0;
+}
+
+/* ─── Notes Card ───────────────────────── */
+
+.notesCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.notesTitle {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.notesTextarea {
+	width: 100%;
+	min-height: 120px;
+	padding: 16px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 14px;
+	background: #f8fafb;
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	font-family: 'Inter', sans-serif;
+	resize: vertical;
+	outline: none;
+	transition: border-color 200ms ease;
+	box-sizing: border-box;
+}
+
+.notesTextarea::placeholder {
+	color: var(--color-outline-variant, #bfc8cc);
+}
+
+.notesTextarea:focus {
+	border-color: var(--color-secondary);
+}
+
+/* ─── Terms Card ───────────────────────── */
+
+.termsCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.checkboxRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.checkbox {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--color-secondary);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.checkboxLabel {
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+}
+
+.checkboxLabel a {
+	color: var(--color-secondary);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.checkboxLabel a:hover {
+	text-decoration: underline;
+}
+
+.disclaimer {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	line-height: 1.6;
+	margin: 0;
+	text-align: justify;
+}
+
+/* ─── Action Buttons ───────────────────── */
+
+.actions {
+	display: flex;
+	gap: 16px;
+	justify-content: flex-end;
+	padding: 24px 0;
+}
+
+.cancelBtn {
+	padding: 12px 28px;
+	border-radius: 14px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: #fff;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.cancelBtn:hover {
+	background: #f8fafb;
+	border-color: rgba(0, 0, 0, 0.2);
+}
+
+.submitBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 31px;
+	border-radius: 14px;
+	border: none;
+	background: var(--color-secondary);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: #fff;
+	cursor: pointer;
+	transition: background 150ms ease, opacity 150ms ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+	opacity: 0.9;
+}
+
+.submitBtn:disabled {
+	background: rgba(57, 99, 156, 0.4);
+	cursor: not-allowed;
+}
+
+/* ─── Responsive ───────────────────────── */
+
+@media (max-width: 992px) {
+	.twoColumn {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.content {
+		gap: 16px;
+	}
+
+	.badgeCard {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.chipRow {
+		justify-content: center;
+	}
+
+	.actions {
+		flex-direction: column-reverse;
+	}
+
+	.cancelBtn,
+	.submitBtn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.reqHeader {
+		padding: 16px;
+	}
+
+	.reqContent {
+		padding: 0 16px 16px;
+	}
+
+	.card {
+		padding: 16px;
+	}
+}
+
+@media (max-width: 400px) {
+	.pageTitle {
+		font-size: 1.25rem;
+	}
+
+	.chipRow {
+		gap: 8px;
+	}
+
+	.chip {
+		font-size: 0.75rem;
+		padding: 3px 10px;
+	}
+
+	.reqInputGroup {
+		flex-direction: column;
+	}
 }

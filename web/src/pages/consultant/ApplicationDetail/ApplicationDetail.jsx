@@ -1,75 +1,57 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { getApplicationById, submitApplication, upsertEvidence } from '../../../features/applications/api/applicationsApi';
-import { getBadgeBySlug } from '../../../features/badges/api/badgesApi';
+import { submitApplication, upsertEvidence } from '../../../features/applications/api/applicationsApi';
 import { uploadFileToTemp } from '../../../services/storage';
-import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
-import Button from '../../../components/Button/Button';
+import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationDetail.module.css';
 
-const STATE_BADGE_MAP = {
-	Open: 'badge-open',
-	Submitted: 'badge-submitted',
-	'In validation': 'badge-validation',
-	Closed: 'badge-closed',
-};
+const STEPS = [
+	{ label: 'Select Badge' },
+	{ label: 'Upload Evidence' },
+	{ label: 'Terms & Conditions' },
+	{ label: 'Submit' },
+];
 
-export default function ApplicationDetail() {
+export default function ApplicationDetail({ application, badge }) {
 	const { t } = useTranslation();
-	const { id } = useParams();
-
-	const [application, setApplication] = useState(null);
-	const [badge, setBadge] = useState(null);
-	const [requirements, setRequirements] = useState([]);
-	const [evidences, setEvidences] = useState([]);
-	const [evidenceUrls, setEvidenceUrls] = useState({});
-	const [uploading, setUploading] = useState({});
-	const [loading, setLoading] = useState(true);
-	const [submitting, setSubmitting] = useState(false);
-	const [deleting, setDeleting] = useState(false);
-	const [error, setError] = useState(null);
 	const navigate = useNavigate();
 
+	const requirements = badge?.badge_requirements || badge?.badgeRequirements || [];
+	const evidencesRaw = application?.requirements_evidences || application?.requirementsEvidences || [];
+
+	const [evidenceUrls, setEvidenceUrls] = useState({});
+	const [uploading, setUploading] = useState({});
+	const [expandedReqs, setExpandedReqs] = useState({});
+	const [notes, setNotes] = useState('');
+	const [termsAccepted, setTermsAccepted] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
+	const [error, setError] = useState(null);
+
+	const appGuid = application?.application_guid || application?.applicationGuid;
+
 	useEffect(() => {
-		let ignore = false;
+		const urlMap = {};
+		const expanded = {};
+		evidencesRaw.forEach((ev) => {
+			const reqId = ev.requirement_id || ev.requirementId;
+			urlMap[reqId] = ev.evidence_file_url || ev.evidenceFileUrl || ev.url || '';
+		});
+		requirements.forEach((req, idx) => {
+			const reqId = req.requirement_id || req.requirementId || idx;
+			expanded[reqId] = true;
+		});
+		setEvidenceUrls(urlMap);
+		setExpandedReqs(expanded);
+	}, []);
 
-		async function load() {
-			try {
-				const app = await getApplicationById(id);
-				if (ignore) return;
-				setApplication(app);
-
-				const badgeSlug = app.badge?.badge_slug || app.badge?.badgeSlug;
-				if (badgeSlug) {
-					const badgeData = await getBadgeBySlug(badgeSlug);
-					if (!ignore) {
-						setBadge(badgeData);
-						setRequirements(badgeData?.badge_requirements || badgeData?.badgeRequirements || []);
-					}
-				}
-
-				if (ignore) return;
-				setEvidences(app.requirements_evidences || app.requirementsEvidences || []);
-
-				const urlMap = {};
-				(app.requirements_evidences || app.requirementsEvidences || []).forEach((ev) => {
-					const reqId = ev.requirement_id || ev.requirementId;
-					urlMap[reqId] = ev.evidence_file_url || ev.evidenceFileUrl || ev.url || '';
-				});
-				if (!ignore) setEvidenceUrls(urlMap);
-			} catch (err) {
-				if (!ignore) setError(err.message);
-			} finally {
-				if (!ignore) setLoading(false);
-			}
-		}
-
-		load();
-		return () => { ignore = true; };
-	}, [id]);
+	function getEvidenceForRequirement(reqId) {
+		return evidencesRaw.find(
+			(ev) => String(ev.requirement_id || ev.requirementId) === String(reqId)
+		);
+	}
 
 	function handleUrlChange(requirementId, value) {
 		setEvidenceUrls((prev) => ({ ...prev, [requirementId]: value }));
@@ -78,15 +60,13 @@ export default function ApplicationDetail() {
 	async function handleSaveEvidence(requirementId) {
 		const url = evidenceUrls[requirementId];
 		if (!url?.trim()) return;
+		setUploading((prev) => ({ ...prev, [requirementId]: true }));
 		try {
-			await upsertEvidence(id, {
-				requirementId,
-				evidenceFileUrl: url,
-			});
-			const app = await getApplicationById(id);
-			setEvidences(app.requirements_evidences || app.requirementsEvidences || []);
+			await upsertEvidence(appGuid, { requirementId, evidenceFileUrl: url });
 		} catch (err) {
 			setError(err.message);
+		} finally {
+			setUploading((prev) => ({ ...prev, [requirementId]: false }));
 		}
 	}
 
@@ -96,12 +76,7 @@ export default function ApplicationDetail() {
 		try {
 			const { publicUrl } = await uploadFileToTemp(file);
 			setEvidenceUrls((prev) => ({ ...prev, [requirementId]: publicUrl }));
-			await upsertEvidence(id, {
-				requirementId,
-				evidenceFileUrl: publicUrl,
-			});
-			const app = await getApplicationById(id);
-			setEvidences(app.requirements_evidences || app.requirementsEvidences || []);
+			await upsertEvidence(appGuid, { requirementId, evidenceFileUrl: publicUrl });
 		} catch (err) {
 			setError(err.message);
 		} finally {
@@ -112,8 +87,8 @@ export default function ApplicationDetail() {
 	async function handleSubmit() {
 		setSubmitting(true);
 		try {
-			const updated = await submitApplication(id);
-			setApplication(updated);
+			await submitApplication(appGuid);
+			navigate(SHARED.APPLICATIONS);
 		} catch (err) {
 			setError(err.message);
 		} finally {
@@ -121,206 +96,272 @@ export default function ApplicationDetail() {
 		}
 	}
 
-	async function handleDelete() {
-		if (!window.confirm("Tem a certeza que pretende remover esta candidatura? Esta ação é irreversível.")) return;
-		setDeleting(true);
-		try {
-			await deleteApplication(id);
-			navigate(SHARED.APPLICATIONS);
-		} catch (err) {
-			setError(err.message);
-			setDeleting(false);
-		}
-	}
+	const title = badge?.badge_title || badge?.badgeTitle || `Badge #${application?.badge_id || application?.badgeId}`;
+	const description = badge?.badge_description || badge?.badgeDescription;
+	const points = badge?.badge_points || badge?.badgePoints;
+	const imgUrl = badge?.badge_img_url || badge?.badgeImgUrl;
+	const areaName = badge?.area?.area_name;
+	const expirationDays = badge?.expiration_duration_days ?? badge?.expirationDurationDays;
+	const stageTitle = badge?.progression_stage?.stage_title || badge?.progressionStage?.stageTitle;
+	const stageCode = badge?.progression_stage?.stage_code || badge?.progressionStage?.stageCode;
 
-	function getEvidenceForRequirement(reqId) {
-		return evidences.find(
-			(ev) => String(ev.requirement_id || ev.requirementId) === String(reqId)
-		);
-	}
-
-	if (loading) return <DetailPageSkeleton />;
-
-	if (error) {
-		return (
-			<div className="alert alert-danger m-4" role="alert">
-				{t('shared.error')}: {error}
-			</div>
-		);
-	}
-
-	if (!application) {
-		return (
-			<div className="text-center py-5">
-				<h5 className="text-muted">{t('applicationDetail.notFound')}</h5>
-				<Link to={SHARED.APPLICATIONS}>{t('applicationDetail.backToApplications')}</Link>
-			</div>
-		);
-	}
-
-	const appState = application.application_state || application.state;
-	const isOpen = appState === 'Open';
-	const badgeName = badge?.badge_title || badge?.badgeTitle || `Badge #${application.badge_id || application.badgeId}`;
 	const completedCount = requirements.filter((req) => {
 		const reqId = req.requirement_id || req.requirementId;
 		return !!getEvidenceForRequirement(reqId);
 	}).length;
-	const progressPct = requirements.length > 0 ? Math.round((completedCount / requirements.length) * 100) : 0;
+
+	const activeStep = termsAccepted ? 3 : completedCount === requirements.length && requirements.length > 0 ? 2 : 1;
 
 	return (
-		<>
+		<div className={styles.page}>
 			{/* Breadcrumb */}
-			<nav aria-label={t('shared.breadcrumb')} className="mb-3">
-				<ol className="breadcrumb">
-					<li className="breadcrumb-item"><Link to={SHARED.APPLICATIONS}>{t('applicationDetail.applications')}</Link></li>
-					<li className="breadcrumb-item active" aria-current="page">{badgeName}</li>
-				</ol>
+			<nav className={styles.breadcrumb} aria-label={t('shared.breadcrumb')}>
+				<Link to={SHARED.APPLICATIONS} className={styles.breadcrumbLink}>
+					{t('applicationDetail.applications')}
+				</Link>
+				<span className={styles.breadcrumbSeparator}>
+					<Icon name="chevron_forward" size={14} color="var(--color-outline)" />
+				</span>
+				<span className={styles.breadcrumbActive}>{title}</span>
 			</nav>
 
-			{/* Page Header */}
-			<div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
-				<h1 className="page-title mb-0">{badgeName}</h1>
-				<span
-					className={`badge ${STATE_BADGE_MAP[appState] || 'badge-open'}`}
-					style={{ fontSize: '0.75rem', fontWeight: 600, padding: '5px 14px', borderRadius: 20 }}
-				>
-					{appState}
-				</span>
-			</div>
+			<h1 className={styles.pageTitle}>
+				{t('applicationDetail.submitApplication')}: {title}
+			</h1>
 
-			{/* Badge Info + Progress Card */}
-			{badge && (
-				<div className="card border-0 shadow-sm brand-card mb-4" style={{ borderRadius: 14 }}>
-					<div className="card-body">
-						<h5 className="fw-semibold mb-2">{t('applicationDetail.badgeInfo')}</h5>
-						<p className="text-muted mb-3">
-							{badge.badge_description || badge.badgeDescription || t('shared.noDescription')}
-						</p>
-						<div className="d-flex flex-wrap gap-2">
-							{badge.area?.area_name && <span className="badge bg-info">{badge.area.area_name}</span>}
-							{(badge.badge_points || badge.badgePoints) != null && (
-								<span className="badge bg-warning text-dark">{badge.badge_points || badge.badgePoints} {t('badgeDetail.pointsLabel')}</span>
-							)}
-						</div>
-
-						{/* Progress Bar */}
-						<div className="d-flex align-items-center gap-3">
-							<div className="flex-grow-1">
-								<div style={{ background: '#f0f2f4', borderRadius: 6, height: 8, overflow: 'hidden' }}>
-									<div
-										style={{
-											width: `${progressPct}%`,
-											height: '100%',
-											borderRadius: 6,
-											background: progressPct === 100
-												? 'var(--color-success)'
-												: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary))',
-											transition: 'width 400ms ease',
-										}}
-									/>
-								</div>
-							</div>
-							<span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-outline)', whiteSpace: 'nowrap' }}>
-								{completedCount}/{requirements.length} requisitos
-							</span>
-						</div>
-					</div>
-				</div>
+			{error && (
+				<div className={styles.errorBanner}>{error}</div>
 			)}
 
-			{/* Requirements & Evidences */}
-			<div className="card border-0 shadow-sm brand-card" style={{ borderRadius: 14 }}>
-				<div className="card-body">
-					<h5 className="fw-semibold mb-3">{t('applicationDetail.requirementsAndEvidences')}</h5>
+			<div className={styles.content}>
+				{/* Stepper */}
+				<div className={styles.card}>
+					<p className={styles.cardLabel}>{t('applicationDetail.applicationState', { defaultValue: 'Application State' })}</p>
+					<Stepper steps={STEPS} activeStep={activeStep} />
+				</div>
 
-					{requirements.length === 0 ? (
-						<p className="text-muted small">{t('applicationDetail.noRequirements')}</p>
-					) : (
-						<div className="d-flex flex-column gap-3">
+				{/* Badge Info */}
+				<div className={styles.badgeCard}>
+					<div className={styles.badgeIcon}>
+						{imgUrl ? (
+							<img src={imgUrl} alt={title} className={styles.badgeIconImg} />
+						) : (
+							<Icon name="trophy" size={42} color="var(--color-badge-premium)" />
+						)}
+					</div>
+					<div className={styles.badgeBody}>
+						<h2 className={styles.badgeName}>Badge {title}</h2>
+						<div className={styles.chipRow}>
+							{points != null && (
+								<span className={`${styles.chip} ${styles.chipGreen}`}>
+									<Icon name="star-points" size={16} />
+									+ {points} {t('badgeDetail.pointsLabel')}
+								</span>
+							)}
+							{(stageTitle || stageCode) && (
+								<span className={`${styles.chip} ${styles.chipBlue}`}>
+									<Icon name="evolution" size={16} />
+									{stageTitle || stageCode}
+								</span>
+							)}
+							{areaName && (
+								<span className={`${styles.chip} ${styles.chipPurple}`}>
+									<Icon name="area" size={16} />
+									{areaName}
+								</span>
+							)}
+							{expirationDays && (
+								<span className={`${styles.chip} ${styles.chipOrange}`}>
+									<Icon name="clock" size={16} />
+									{expirationDays} {t('badgeDetail.validDays')}
+								</span>
+							)}
+						</div>
+						{description && <p className={styles.badgeDescription}>{description}</p>}
+					</div>
+				</div>
+
+				{/* Two Column: Evidence + Requirements */}
+				<div className={styles.twoColumn}>
+					{/* Left: Evidence Upload */}
+					<div className={styles.evidenceCard}>
+						<h2 className={styles.sectionTitle}>
+							{t('applicationDetail.evidences', { defaultValue: 'My Evidence' })}
+						</h2>
+						<div className={styles.dropZone}>
+							<div className={styles.dropZoneIconWrap}>
+								<Icon name="download" size={30} color="var(--color-secondary)" />
+							</div>
+							<p className={styles.dropZoneLabel}>
+								{t('applicationDetail.dragFiles', { defaultValue: 'Drag files or browse' })}
+							</p>
+							<p className={styles.dropZoneHint}>
+								{t('applicationDetail.maxSize', { defaultValue: 'Max size: 10MB' })}
+							</p>
+						</div>
+
+						{evidencesRaw.length > 0 && (
+							<>
+								<p className={styles.fileListTitle}>
+									{t('applicationDetail.uploadedFiles', { defaultValue: 'Uploaded files' })} ({evidencesRaw.length})
+								</p>
+								<div className={styles.fileList}>
+									{evidencesRaw.map((ev) => {
+										const url = ev.evidence_file_url || ev.evidenceFileUrl || ev.url || '';
+										const fileName = url.split('/').pop() || 'file';
+										return (
+											<div key={ev.evidence_id || ev.requirementId} className={styles.fileRow}>
+												<div className={styles.fileIconWrap}>
+													<Icon name="paper" size={16} color="var(--color-secondary)" />
+												</div>
+												<div className={styles.fileInfo}>
+													<p className={styles.fileName}>{decodeURIComponent(fileName)}</p>
+												</div>
+											</div>
+										);
+									})}
+								</div>
+							</>
+						)}
+					</div>
+
+					{/* Right: Requirements */}
+					<div className={styles.requirementsCard}>
+						<h2 className={styles.sectionTitle}>
+							{t('applicationDetail.requirementsAndEvidences')}
+						</h2>
+						<div className={styles.requirementsList}>
 							{requirements.map((req, idx) => {
 								const reqId = req.requirement_id || req.requirementId || idx;
+								const reqTitle = req.requirement_title || req.requirementTitle || t('applicationDetail.requirementN', { n: idx + 1 });
+								const reqDesc = req.requirement_description || req.requirementDescription || '';
 								const evidence = getEvidenceForRequirement(reqId);
-								const hasEvidence = !!evidence;
+								const isOpen = !!expandedReqs[reqId];
 
 								return (
-									<div
-										key={reqId}
-										className={`p-3 rounded border ${hasEvidence ? styles.evidenceBlockSubmitted : styles.evidenceBlock}`}
-									>
-										<div className="d-flex align-items-start justify-content-between mb-2">
-											<div>
-												<h6 className="fw-semibold mb-1">
-													{req.requirement_title || req.requirementTitle || t('applicationDetail.requirementN', { n: idx + 1 })}
-												</h6>
-												<p className="text-muted small mb-0">
-													{req.requirement_description || req.requirementDescription || t('shared.noDescription')}
-												</p>
+									<div key={reqId} className={styles.reqItem}>
+										<div
+											className={styles.reqHeader}
+											onClick={() => setExpandedReqs((p) => ({ ...p, [reqId]: !p[reqId] }))}
+											role="button"
+											tabIndex={0}
+											onKeyDown={(e) => e.key === 'Enter' && setExpandedReqs((p) => ({ ...p, [reqId]: !p[reqId] }))}
+											aria-expanded={isOpen}
+										>
+											<div className={styles.reqIconCircle}>
+												<Icon name="certificate" size={16} color="var(--color-outline)" />
 											</div>
-											<span className={`small fw-medium ${hasEvidence ? 'text-success' : 'text-muted'}`}>
-												{hasEvidence ? t('applicationDetail.submitted') : t('applicationDetail.pending')}
-											</span>
+											<div className={styles.reqBody}>
+												<h4 className={styles.reqTitle}>{reqTitle}</h4>
+												<p className={styles.reqDescription}>{reqDesc}</p>
+											</div>
+											<div className={`${styles.reqChevron} ${isOpen ? styles.reqChevronOpen : ''}`}>
+												<Icon name="keyboard_arrow_down" size={16} color="var(--color-outline)" />
+											</div>
 										</div>
 
-										{isOpen ? (
-											<div className="d-flex flex-column gap-2 mt-2 ms-5">
-												<div className="d-flex gap-2">
+										{isOpen && (
+											<div className={styles.reqContent}>
+												<div className={styles.reqEvidenceHeader}>
+													<span className={styles.reqEvidenceCount}>
+														{evidence ? '1' : '0'} {t('applicationDetail.evidenceAssociated', { defaultValue: 'evidence associated' })}
+													</span>
+												</div>
+												<div className={styles.reqInputGroup}>
 													<input
 														type="url"
-														className="form-control form-control-sm"
+														className={styles.reqInput}
 														placeholder={t('applicationDetail.evidenceUrlPlaceholder')}
 														value={evidenceUrls[reqId] || ''}
 														onChange={(e) => handleUrlChange(reqId, e.target.value)}
-														style={{ borderRadius: 8, fontSize: '0.8125rem' }}
 													/>
-													<Button
-														size="sm"
-														variant="outlined"
-														className="text-nowrap"
+													<button
+														type="button"
+														className={styles.reqSaveBtn}
 														onClick={() => handleSaveEvidence(reqId)}
 														disabled={!evidenceUrls[reqId]?.trim() || uploading[reqId]}
 													>
 														{uploading[reqId] ? t('applicationDetail.saving') : t('shared.save')}
-													</Button>
+													</button>
 												</div>
-												<div className="d-flex align-items-center gap-2">
-													<input
-														type="file"
-														className="form-control form-control-sm"
-														onChange={(e) => handleFileUpload(reqId, e.target.files[0])}
-														style={{ borderRadius: 8, fontSize: '0.8125rem' }}
-													/>
-													{uploading[reqId] && (
-														<span className="spinner-border spinner-border-sm text-primary" />
-													)}
-												</div>
+												<input
+													type="file"
+													className={styles.reqFileInput}
+													onChange={(e) => handleFileUpload(reqId, e.target.files[0])}
+												/>
+												{evidence && (
+													<p className={styles.reqEvidenceStatus}>
+														<Icon name="check_circle" size={14} color="var(--color-green-on-soft)" />
+														{t('applicationDetail.submitted')}
+													</p>
+												)}
 											</div>
-										) : hasEvidence ? (
-											<div className="mt-2 ms-5">
-												<a
-													href={evidence.evidence_file_url || evidence.evidenceFileUrl || evidence.url}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="small"
-													style={{ fontWeight: 500 }}
-												>
-													<Icon name="link" size={14} className="me-1" aria-hidden="true" />
-													{evidence.evidence_file_url || evidence.evidenceFileUrl || evidence.url}
-												</a>
-											</div>
-										) : null}
+										)}
 									</div>
 								);
 							})}
 						</div>
-					)}
+					</div>
+				</div>
 
-					{isOpen && (
-						<Button fullWidth className="mt-4" onClick={handleSubmit} loading={submitting}>
-							{t('applicationDetail.submitApplication')}
-						</Button>
-					)}
+				{/* Notes */}
+				<div className={styles.notesCard}>
+					<h2 className={styles.notesTitle}>
+						{t('applicationDetail.additionalNotes', { defaultValue: 'Additional Notes' })}
+					</h2>
+					<textarea
+						className={styles.notesTextarea}
+						placeholder={t('applicationDetail.notesPlaceholder', { defaultValue: 'Add notes for the reviewers...' })}
+						value={notes}
+						onChange={(e) => setNotes(e.target.value)}
+					/>
+				</div>
+
+				{/* Terms */}
+				<div className={styles.termsCard}>
+					<div className={styles.checkboxRow}>
+						<input
+							type="checkbox"
+							id="terms"
+							className={styles.checkbox}
+							checked={termsAccepted}
+							onChange={(e) => setTermsAccepted(e.target.checked)}
+						/>
+						<label htmlFor="terms" className={styles.checkboxLabel}>
+							{t('applicationDetail.acceptTermsPrefix', { defaultValue: 'I accept the ' })}
+							<a href="#terms">{t('applicationDetail.termsLink', { defaultValue: 'terms and conditions' })}</a>
+							{t('applicationDetail.acceptTermsMiddle', { defaultValue: ' and the ' })}
+							<a href="#privacy">{t('applicationDetail.privacyLink', { defaultValue: 'privacy policy' })}</a>
+							{t('applicationDetail.acceptTermsSuffix', { defaultValue: ' of the platform.' })}
+						</label>
+					</div>
+					<p className={styles.disclaimer}>
+						{t('applicationDetail.disclaimer', {
+							defaultValue:
+								'By submitting this application, you declare that all information provided is true and accurate. The platform reserves the right to verify all evidence and may request additional documentation. The evaluation process may take up to 7 business days. Applications with false information will be automatically rejected and may result in account suspension.',
+						})}
+					</p>
+				</div>
+
+				{/* Actions */}
+				<div className={styles.actions}>
+					<button type="button" className={styles.cancelBtn} onClick={() => navigate(SHARED.APPLICATIONS)}>
+						{t('applicationDetail.cancel', { defaultValue: 'Back / Cancel' })}
+					</button>
+					<button
+						type="button"
+						className={styles.submitBtn}
+						disabled={!termsAccepted || submitting}
+						onClick={handleSubmit}
+					>
+						<Icon name="send" size={16} color="#fff" />
+						{submitting
+							? t('applicationDetail.submitting', { defaultValue: 'Submitting...' })
+							: t('applicationDetail.submitApplication')
+						}
+					</button>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 }

@@ -1,26 +1,36 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
-import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';
 
-const STATE_BADGE_MAP = {
-	Open: 'badge-open',
-	Submitted: 'badge-submitted',
-	'In validation': 'badge-validation',
-	Closed: 'badge-closed',
+const STATE_STYLE_MAP = {
+	Open: 'stateOpen',
+	Submitted: 'stateSubmitted',
+	'In validation': 'stateInValidation',
+	Accepted: 'stateAccepted',
+	Rejected: 'stateRejected',
 };
 
-const TABS = [
-	{ key: 'all', label: 'Todas' },
-	{ key: 'Open', label: 'Em Aberto' },
-	{ key: 'Submitted', label: 'Submetidas' },
-	{ key: 'In validation', label: 'Em Validação' },
-	{ key: 'Closed', label: 'Concluídas' },
-];
+function SkeletonCards() {
+	return (
+		<div className={styles.skeletonGrid}>
+			{[0, 1, 2, 3].map((i) => (
+				<div key={i} className={styles.skeletonCard}>
+					<div className={styles.skeletonRow}>
+						<div className={styles.skeletonCircle} />
+						<div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+							<div className={`${styles.skeletonLine} ${styles.skeletonLineMed}`} />
+							<div className={`${styles.skeletonLine} ${styles.skeletonLineShort}`} />
+						</div>
+					</div>
+					<div className={`${styles.skeletonLine} ${styles.skeletonLineFull}`} />
+				</div>
+			))}
+		</div>
+	);
+}
 
 export default function MyApplications() {
 	const { t } = useTranslation();
@@ -45,13 +55,22 @@ export default function MyApplications() {
 		}
 	}
 
+	const tabs = useMemo(() => [
+		{ key: 'all', label: t('myApplications.tabs.all') },
+		{ key: 'Open', label: t('myApplications.tabs.open') },
+		{ key: 'Submitted', label: t('myApplications.tabs.submitted') },
+		{ key: 'In validation', label: t('myApplications.tabs.inValidation') },
+		{ key: 'Accepted', label: t('myApplications.tabs.accepted') },
+		{ key: 'Rejected', label: t('myApplications.tabs.rejected') },
+	], [t]);
+
 	const stats = useMemo(() => {
 		const total = applications.length;
 		const open = applications.filter((a) => (a.application_state || a.state) === 'Open').length;
 		const submitted = applications.filter((a) => (a.application_state || a.state) === 'Submitted').length;
-		const validation = applications.filter((a) => (a.application_state || a.state) === 'In validation').length;
-		const closed = applications.filter((a) => (a.application_state || a.state) === 'Closed').length;
-		return { total, open, submitted, validation, closed };
+		const accepted = applications.filter((a) => (a.application_state || a.state) === 'Accepted').length;
+		const rejected = applications.filter((a) => (a.application_state || a.state) === 'Rejected').length;
+		return { total, open, submitted, accepted, rejected };
 	}, [applications]);
 
 	const filtered = useMemo(() => {
@@ -59,133 +78,145 @@ export default function MyApplications() {
 		return applications.filter((a) => (a.application_state || a.state) === activeTab);
 	}, [applications, activeTab]);
 
-	if (loading) {
-		return (
-			<>
-				<h1 className="h3 mb-4">{t('myApplications.title')}</h1>
-				<div className="card border-0 shadow-sm">
-					<div className="card-body p-0">
-						<TableSkeleton rows={5} columns={4} />
-					</div>
-				</div>
-			</>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="alert alert-danger m-4" role="alert">
-				{t('myApplications.errorLoading', { error })}
-			</div>
-		);
-	}
-
 	const statCards = [
-		{ label: 'Total', value: stats.total, icon: 'bi-layers', color: 'var(--color-on-surface)' },
-		{ label: 'Em Aberto', value: stats.open, icon: 'bi-hourglass-split', color: 'var(--color-primary)' },
-		{ label: 'Submetidas', value: stats.submitted, icon: 'bi-send-check', color: 'var(--color-secondary)' },
-		{ label: 'Concluídas', value: stats.closed, icon: 'bi-check-circle', color: 'var(--color-success)' },
+		{ label: t('myApplications.stats.total'), value: stats.total },
+		{ label: t('myApplications.stats.open'), value: stats.open },
+		{ label: t('myApplications.stats.submitted'), value: stats.submitted },
+		{ label: t('myApplications.stats.accepted'), value: stats.accepted },
 	];
 
-	return (
-		<>
-			<h1 className="h3 mb-4">{t('myApplications.title')}</h1>
+	function formatDate(app) {
+		const dateStr = app.submitted_at || app.submittedAt || app.opened_at || app.createdAt;
+		if (!dateStr) return '—';
+		return new Date(dateStr).toLocaleDateString('pt-PT', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric',
+		});
+	}
 
-			{/* Tab Filters */}
-			<div className="d-flex gap-1 mb-4 flex-wrap" role="tablist">
-				{TABS.map((tab) => (
+	function getStateLabel(state) {
+		const map = {
+			Open: t('myApplications.tabs.open'),
+			Submitted: t('myApplications.tabs.submitted'),
+			'In validation': t('myApplications.tabs.inValidation'),
+			Accepted: t('myApplications.tabs.accepted'),
+			Rejected: t('myApplications.tabs.rejected'),
+		};
+		return map[state] || state;
+	}
+
+	return (
+		<div className={styles.page}>
+			<h1 className={styles.pageTitle}>{t('myApplications.title')}</h1>
+
+			{/* Stats Row */}
+			<div className={styles.statsRow}>
+				{statCards.map((s) => (
+					<div key={s.label} className={styles.statCard}>
+						<span className={styles.statValue}>{s.value}</span>
+						<span className={styles.statLabel}>{s.label}</span>
+					</div>
+				))}
+			</div>
+
+			{/* Tab Bar */}
+			<div className={styles.tabBar} role="tablist">
+				{tabs.map((tab) => (
 					<button
 						key={tab.key}
 						role="tab"
 						aria-selected={activeTab === tab.key}
-						className="btn btn-sm"
+						className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
 						onClick={() => setActiveTab(tab.key)}
-						style={{
-							borderRadius: 20,
-							padding: '5px 16px',
-							fontSize: '0.8125rem',
-							fontWeight: 600,
-							border: activeTab === tab.key ? '1.5px solid var(--color-primary)' : '1.5px solid #DEE3E6',
-							background: activeTab === tab.key ? 'var(--color-primary)' : 'transparent',
-							color: activeTab === tab.key ? '#fff' : 'var(--color-outline)',
-							transition: 'all 200ms ease',
-						}}
 					>
 						{tab.label}
 					</button>
 				))}
 			</div>
 
-			{/* Applications List */}
-			{filtered.length === 0 ? (
-				<div className="card border-0 shadow-sm brand-card" style={{ borderRadius: 14 }}>
-					<div className="card-body text-center py-5">
-						<h5 className="text-muted">{t('myApplications.noApplications')}</h5>
-						<p className="text-muted small">{t('myApplications.noApplicationsDesc')}</p>
-					</div>
+			{loading ? (
+				<SkeletonCards />
+			) : error ? (
+				<div className={styles.errorCard}>
+					{t('myApplications.errorLoading', { error })}
+				</div>
+			) : filtered.length === 0 ? (
+				<div className={styles.emptyCard}>
+					<h5 className={styles.emptyTitle}>{t('myApplications.noApplications')}</h5>
+					<p className={styles.emptyDesc}>{t('myApplications.noApplicationsDesc')}</p>
 				</div>
 			) : (
-				<div className="card border-0 shadow-sm">
-					<div className="table-responsive">
-						<table className="table table-hover align-middle mb-0">
-							<thead className="table-light">
-								<tr>
-									<th>{t('shared.badge')}</th>
-									<th>{t('shared.state')}</th>
-									<th>{t('shared.submissionDate')}</th>
-									<th className="text-end">{t('shared.actions')}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{filtered.map((app) => {
-									const state = app.application_state || app.state;
-									return (
-										<tr
-											key={app.application_guid || app.applicationGuid}
-											className={styles.clickableRow}
-											onClick={() => navigate(`/applications/${app.application_guid || app.applicationGuid}`)}
-										>
-											<td className="fw-medium">
-												{app.badge?.badge_title || app.badge?.badgeTitle || `Badge #${app.badge_id || app.badgeId}`}
-											</td>
-											<td>
-												<span className={`badge ${STATE_BADGE_MAP[state] || 'bg-secondary'}`}>
-													{state}
+				<div className={styles.cardsGrid}>
+					{filtered.map((app) => {
+						const state = app.application_state || app.state;
+						const guid = app.application_guid || app.applicationGuid;
+						const badgeName = app.badge?.badge_title || app.badge?.badgeTitle || `Badge #${app.badge_id || app.badgeId}`;
+						const badgeImg = app.badge?.badge_img_url || app.badge?.badgeImgUrl;
+						const areaName = app.badge?.area?.area_name || app.badge?.area?.areaName;
+						const stateStyle = STATE_STYLE_MAP[state] || '';
+
+						return (
+							<div
+								key={guid}
+								className={styles.appCard}
+								onClick={() => navigate(`/applications/${guid}`)}
+							>
+								<div className={styles.cardHeader}>
+									<div className={styles.cardBadgeIcon}>
+										{badgeImg ? (
+											<img src={badgeImg} alt={badgeName} className={styles.cardBadgeImg} />
+										) : (
+											<Icon name="trophy" size={24} color="var(--color-secondary, #39639c)" />
+										)}
+									</div>
+									<div className={styles.cardInfo}>
+										<div className={styles.cardTitleRow}>
+											<h3 className={styles.cardTitle}>{badgeName}</h3>
+											<span className={`${styles.stateChip} ${styles[stateStyle]}`}>
+												{getStateLabel(state)}
+											</span>
+										</div>
+										<div className={styles.cardMeta}>
+											{areaName && (
+												<span className={styles.metaItem}>
+													<Icon name="area" size={14} color="var(--color-outline, #70787c)" />
+													{areaName}
 												</span>
-											</td>
-											<td className="text-muted">
-												{app.submitted_at || app.submittedAt
-													? new Date(app.submitted_at || app.submittedAt).toLocaleDateString('pt-PT')
-													: app.opened_at || app.createdAt
-														? new Date(app.opened_at || app.createdAt).toLocaleDateString('pt-PT')
-														: '—'}
-											</td>
-											<td className="text-end">
-												<Button
-													size="sm"
-													variant="outlined"
-													title={t('myApplications.viewDetails')}
-													onClick={(e) => {
-														e.stopPropagation();
-														navigate(`/applications/${app.application_guid || app.applicationGuid}`);
-													}}
-												>
-													<Icon
-														name="keyboard_arrow_down"
-														size={16}
-														aria-hidden="true"
-														style={{ transform: 'rotate(-90deg)' }}
-													/>
-												</Button>
-											</td>
-										</tr>
-									);
-								})}
-							</tbody>
-						</table>
-					</div>
+											)}
+											<span className={styles.metaItem}>
+												<Icon name="clock" size={14} color="var(--color-outline, #70787c)" />
+												{formatDate(app)}
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<div className={styles.cardFooter}>
+									<span className={styles.metaItem}>
+										{state === 'Open' && t('myApplications.tabs.open')}
+										{state === 'Submitted' && t('myApplications.tabs.submitted')}
+										{state === 'In validation' && t('myApplications.tabs.inValidation')}
+										{state === 'Accepted' && t('myApplications.tabs.accepted')}
+										{state === 'Rejected' && t('myApplications.tabs.rejected')}
+									</span>
+									<button
+										type="button"
+										className={styles.viewBtn}
+										onClick={(e) => {
+											e.stopPropagation();
+											navigate(`/applications/${guid}`);
+										}}
+									>
+										{t('myApplications.viewDetails')}
+										<Icon name="chevron_forward" size={14} color="var(--color-secondary, #39639c)" />
+									</button>
+								</div>
+							</div>
+						);
+					})}
 				</div>
 			)}
-		</>
+		</div>
 	);
 }

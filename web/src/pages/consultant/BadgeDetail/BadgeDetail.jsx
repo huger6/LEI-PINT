@@ -22,7 +22,7 @@ export default function BadgeDetail() {
 	const [requirements, setRequirements] = useState([]);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [relatedBadges, setRelatedBadges] = useState([]);
-	const [alreadyApplied, setAlreadyApplied] = useState(false);
+	const [existingAppGuid, setExistingAppGuid] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [applying, setApplying] = useState(false);
 	const [error, setError] = useState(null);
@@ -52,12 +52,12 @@ export default function BadgeDetail() {
 			]);
 
 			const appList = apps.data || apps || [];
-			const hasApp = appList.some(
+			const activeApp = appList.find(
 				(a) =>
 					(a.badge_id || a.badgeId) === (badgeData?.badge_id || badgeData?.badgeId) &&
-					(a.application_state || a.state) !== 'Closed'
+					!['Accepted', 'Rejected'].includes(a.application_state || a.state)
 			);
-			setAlreadyApplied(hasApp);
+			setExistingAppGuid(activeApp ? (activeApp.application_guid || activeApp.applicationGuid) : null);
 
 			const relatedList = (related.data || related || []).filter(
 				(b) => (b.badge_slug || b.badgeSlug) !== slug
@@ -223,9 +223,13 @@ export default function BadgeDetail() {
 					</div>
 
 					<div className={styles.actionRow}>
-						{alreadyApplied ? (
-							<Button disabled className={styles.actionBtn}>
-								{t('badgeDetail.alreadyApplied')}
+						{existingAppGuid ? (
+							<Button
+								className={styles.actionBtn}
+								onClick={() => navigate(`${SHARED.APPLICATIONS}/${existingAppGuid}`)}
+							>
+								<Icon name="paper" size={16} />
+								{t('badgeDetail.seeApplication')}
 							</Button>
 						) : (
 							<Button onClick={handleApply} loading={applying} className={styles.actionBtn}>
