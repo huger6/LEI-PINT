@@ -6,6 +6,7 @@ const gdprCtrl = require('../controllers/gdpr.controller');
 
 // ─── Public/User endpoints ──────────────────────────────────────────────────
 router.get('/policies', gdprCtrl.getActivePolicies);
+router.get('/policies/latest/:type', gdprCtrl.getLatestPolicy);
 router.get('/policies/:id', gdprCtrl.getPolicyById);
 router.post('/consent', loginRequired, gdprCtrl.recordConsent);
 router.get('/consent/history', loginRequired, gdprCtrl.getConsentHistory);
@@ -16,5 +17,6 @@ router.delete('/account', loginRequired, gdprCtrl.requestAccountDeletion);
 router.post('/admin/policies', loginRequired, isAdmin, gdprCtrl.adminCreatePolicy);
 router.put('/admin/policies/:id', loginRequired, isAdmin, gdprCtrl.adminUpdatePolicy);
 router.patch('/admin/policies/:id/deactivate', loginRequired, isAdmin, gdprCtrl.adminDeactivatePolicy);
+router.post('/admin/policies/:id/new-version', loginRequired, isAdmin, gdprCtrl.adminNewPolicyVersion);
 
 module.exports = router;
