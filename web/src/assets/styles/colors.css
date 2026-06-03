@@ -86,6 +86,20 @@
 	--color-red-on-soft: #DC2626;
 	--color-primary-soft: #E8F8FC;
 
+	/* Neutral / layout */
+	--color-bg-card: #f9fafb;
+
+	/* Heatmap intensities */
+	--color-heatmap-empty: #ebedf0;
+	--color-heatmap-low: #9be9a8;
+	--color-heatmap-medium: #40c463;
+	--color-heatmap-high: #30a14e;
+	--color-heatmap-max: #216e39;
+
+	/* Purple accent (for special achievements / milestones) */
+	--color-purple-soft: #F3EEFF;
+	--color-purple-on-soft: #6B21A8;
+
 	/* Card shadows */
 	--shadow-card: 0px 2px 4px -2px rgba(0, 0, 0, 0.10), 0px 4px 6px -1px rgba(0, 0, 0, 0.10);
 }
