@@ -12,13 +12,14 @@ const STATE_BADGE_CLASS = {
 	Open: 'bg-secondary',
 	Submitted: 'bg-primary',
 	'In validation': 'bg-warning text-dark',
-	Closed: 'bg-success',
+	Accepted: 'bg-success',
+	Rejected: 'bg-danger',
 };
 
 export default function ConsultantDashboard() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, closed: 0 });
+	const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, accepted: 0 });
 	const [recentApps, setRecentApps] = useState([]);
 
 	useEffect(() => {
@@ -34,9 +35,9 @@ export default function ConsultantDashboard() {
 				const total = appList.length;
 				const open = appList.filter((a) => (a.application_state || a.state) === 'Open').length;
 				const submitted = appList.filter((a) => (a.application_state || a.state) === 'Submitted').length;
-				const closed = appList.filter((a) => (a.application_state || a.state) === 'Closed').length;
+				const accepted = appList.filter((a) => (a.application_state || a.state) === 'Accepted').length;
 
-				setStats({ total, open, submitted, closed });
+				setStats({ total, open, submitted, accepted });
 				setRecentApps(appList.slice(0, 5));
 			} catch (err) {
 				console.error(err);
@@ -80,7 +81,7 @@ export default function ConsultantDashboard() {
 					<div className="card border-0 shadow-sm">
 						<div className="card-body">
 							<h6 className="text-muted mb-2">{t('consultantDashboard.completed')}</h6>
-							<h3 className="mb-0 text-success">{stats.closed}</h3>
+							<h3 className="mb-0 text-success">{stats.accepted}</h3>
 						</div>
 					</div>
 				</div>

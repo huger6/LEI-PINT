@@ -101,6 +101,7 @@
 	background: #fff;
 	border: 1px solid rgba(57, 99, 156, 0.1);
 	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+	overflow: hidden;
 }
 
 .sectionTitle {
@@ -116,10 +117,12 @@
 	display: flex;
 	justify-content: space-between;
 	padding: 16px 0 8px;
+	overflow-x: auto;
 }
 
 .timelineStep {
 	flex: 1;
+	min-width: 120px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

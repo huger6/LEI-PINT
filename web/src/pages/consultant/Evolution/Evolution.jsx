@@ -6,10 +6,10 @@ import ContentCard from '../../../components/ContentCard/ContentCard';
 import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import Icon from '../../../components/Icons/Icons';
-import { getConsultantStats, getEarnedBadges, getPointsHistoryAll, getLearningPathProgress, getRanking } from '../../../services/pointsService';
+import { getConsultantStats, getPointsHistoryAll, getLearningPathProgress, getRanking } from '../../../services/pointsService';
 import { getProgressionTimeline } from '../../../features/goals/api/goalsApi';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
-import { getAcquisitionTimeline, getBadgesPerArea, getApplicationsWithPagination } from '../../../features/evolution/api/evolutionApi';
+import { getBadgesPerArea, getApplicationsWithPagination, getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import {
     ResponsiveContainer,
     RadarChart,
@@ -17,13 +17,16 @@ import {
     PolarGrid,
     PolarAngleAxis,
     PolarRadiusAxis,
+    Tooltip,
 } from 'recharts';
 import styles from './Evolution.module.css';
 
-const MOCK_ACHIEVEMENTS = [
-    { titleKey: 'achievement1', descKey: 'achievementDesc1', color: 'var(--color-warning)' },
-    { titleKey: 'achievement2', descKey: 'achievementDesc2', color: 'var(--color-error)' },
-    { titleKey: 'achievement3', descKey: 'achievementDesc3', color: 'var(--color-success)' },
+const ACHIEVEMENT_COLORS = [
+    'var(--color-warning)',
+    'var(--color-error)',
+    'var(--color-success)',
+    'var(--color-primary)',
+    'var(--color-secondary)',
 ];
 
 const LP_COLORS = [
@@ -168,6 +171,33 @@ function mapNotificationToActivity(notification) {
     return { title, description, icon, iconColor, sentAt: notification.sent_at };
 }
 
+function computeDeltas(earnedBadges, applications, pointsHistory) {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    weekAgo.setHours(0, 0, 0, 0);
+
+    const badgesDelta = earnedBadges.filter(b =>
+        b.awardedDate && new Date(b.awardedDate) >= weekAgo
+    ).length;
+
+    const progressDelta = applications.filter(a =>
+        a.application_state === 'Open' && a.opened_at && new Date(a.opened_at) >= weekAgo
+    ).length;
+
+    const pointsDelta = pointsHistory
+        .filter(p => p.created_at && new Date(p.created_at) >= weekAgo)
+        .reduce((sum, p) => sum + (parseInt(p.points_delta, 10) || 0), 0);
+
+    return { badgesDelta, progressDelta, pointsDelta };
+}
+
+function formatBadgeDate(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('pt-PT', {
+        day: 'numeric', month: 'short', year: 'numeric',
+    });
+}
+
 function formatTimeAgo(dateStr, t) {
     if (!dateStr) return '';
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -203,8 +233,8 @@ export default function Evolution() {
             .then(setStats)
             .catch(() => setStats(null));
 
-        getEarnedBadges({ page: 1, limit: 200 })
-            .then(res => setEarnedBadges(res.badges || []))
+        getEarnedBadgesForEvolution()
+            .then(setEarnedBadges)
             .catch(() => setEarnedBadges([]));
 
         getProgressionTimeline()
@@ -252,6 +282,7 @@ export default function Evolution() {
     const averageLevel = useMemo(() => deriveAverageLevel(timeline), [timeline]);
     const competenciesCount = badgesPerArea.length;
     const appStats = useMemo(() => computeAppStats(applications), [applications]);
+    const deltas = useMemo(() => computeDeltas(earnedBadges, applications, pointsHistory), [earnedBadges, applications, pointsHistory]);
 
     const badgeEvolutionMonthly = useMemo(() => buildBadgeEvolutionMonthly(earnedBadges, t), [earnedBadges, t]);
     const badgeEvolutionAnnual = useMemo(() => buildBadgeEvolutionAnnual(earnedBadges), [earnedBadges]);
@@ -266,7 +297,7 @@ export default function Evolution() {
         return [...timeline]
             .sort((a, b) => (a.stage_sequence ?? 0) - (b.stage_sequence ?? 0))
             .map(s => ({
-                level: `${s.code} - ${s.title}`,
+                level: s.code,
                 value: s.earned_badges || 0,
             }));
     }, [timeline]);
@@ -277,13 +308,14 @@ export default function Evolution() {
     }, [radarData]);
 
     const activities = useMemo(() => notifications.map(mapNotificationToActivity), [notifications]);
+    const recentAchievements = useMemo(() => earnedBadges.slice(0, 3), [earnedBadges]);
 
     const statCards = [
-        { key: 'badgesObtained', icon: 'badge', value: stats?.earnedBadges ?? '—' },
-        { key: 'badgesInProgress', icon: 'progress', value: stats?.badgesInProgress ?? '—' },
-        { key: 'skillsAcquired', icon: 'check_circle', value: competenciesCount || '—' },
-        { key: 'totalPoints', icon: 'star-points', value: stats?.totalPoints != null ? stats.totalPoints.toLocaleString('pt-PT') : '—' },
-        { key: 'averageLevel', icon: 'evolution', value: averageLevel.code, levelTitle: averageLevel.title },
+        { key: 'badgesObtained', icon: 'badge', value: stats?.earnedBadges ?? '—', delta: deltas.badgesDelta },
+        { key: 'badgesInProgress', icon: 'progress', value: stats?.badgesInProgress ?? '—', delta: deltas.progressDelta },
+        { key: 'skillsAcquired', icon: 'check_circle', value: competenciesCount || '—', delta: null },
+        { key: 'totalPoints', icon: 'star-points', value: stats?.totalPoints != null ? stats.totalPoints.toLocaleString('pt-PT') : '—', delta: deltas.pointsDelta },
+        { key: 'averageLevel', icon: 'evolution', value: averageLevel.code, levelTitle: averageLevel.title, delta: null },
     ];
 
     return (
@@ -348,6 +380,7 @@ export default function Evolution() {
                                         tick={false}
                                         axisLine={false}
                                     />
+                                    <Tooltip />
                                     <Radar
                                         dataKey="value"
                                         stroke="var(--color-primary)"
@@ -449,29 +482,34 @@ export default function Evolution() {
                     </div>
                 </ContentCard>
 
-                {/* Achievements: no API endpoint available yet — uses placeholder data */}
                 <ContentCard className={styles.achievementsCard}>
                     <h2 className={styles.cardTitle}>{t('evolution.specialAchievements')}</h2>
                     <div className={styles.achievementsList}>
-                        {MOCK_ACHIEVEMENTS.map((ach, idx) => (
-                            <div
-                                key={idx}
-                                className={styles.achievementItem}
-                                style={{ borderLeftColor: ach.color }}
-                            >
-                                <div className={styles.achievementIcon}>
-                                    <Icon name="trophy" size={18} color={ach.color} />
+                        {recentAchievements.length > 0 ? recentAchievements.map((badge, idx) => {
+                            const color = ACHIEVEMENT_COLORS[idx % ACHIEVEMENT_COLORS.length];
+                            return (
+                                <div
+                                    key={badge.awardedBadgeId}
+                                    className={styles.achievementItem}
+                                    style={{ borderLeftColor: color }}
+                                >
+                                    <div className={styles.achievementIcon}>
+                                        <Icon name={badge.isFeatured ? 'star' : 'trophy'} size={18} color={color} />
+                                    </div>
+                                    <div className={styles.achievementContent}>
+                                        <span className={styles.achievementTitle}>
+                                            {badge.badge?.title || t('evolution.badge')}
+                                        </span>
+                                        <span className={styles.achievementDesc}>
+                                            {formatBadgeDate(badge.awardedDate)}
+                                            {badge.pointsSnapshot ? ` · ${badge.pointsSnapshot} pts` : ''}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className={styles.achievementContent}>
-                                    <span className={styles.achievementTitle}>
-                                        {t(`evolution.${ach.titleKey}`)}
-                                    </span>
-                                    <span className={styles.achievementDesc}>
-                                        {t(`evolution.${ach.descKey}`)}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        }) : (
+                            <p className={styles.emptyText}>{t('evolution.noAchievements')}</p>
+                        )}
                     </div>
                 </ContentCard>
 
@@ -536,6 +574,9 @@ function EvolutionStatCard({ stat, t }) {
                 <div className={styles.statIconWrap}>
                     <Icon name={stat.icon} size={22} color="var(--color-primary)" />
                 </div>
+                {stat.delta > 0 && (
+                    <span className={styles.statDelta}>+{stat.delta}</span>
+                )}
             </div>
             <span className={styles.statLabel}>{t(`evolution.stats.${stat.key}`)}</span>
             <span className={styles.statValue} style={{ color: valueColor }}>
