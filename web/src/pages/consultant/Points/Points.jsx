@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import ContentCard from '../../../components/ContentCard/ContentCard';
 import { CardHeader } from '../../../components/ContentCard/ContentCard';
@@ -6,138 +6,268 @@ import Icon from '../../../components/Icons/Icons';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
 import ActivityHeatmap from '../../../components/Graphs/ActivityHeatmap/ActivityHeatmap';
+import Skeleton from '../../../components/Skeleton/Skeleton';
+import {
+	getConsultantStats,
+	getPointsHistory,
+	getPointsHistoryAll,
+	getEarnedBadges,
+	getRecommendations,
+	getLearningPathProgress,
+	getRanking,
+} from '../../../services/pointsService';
 import styles from './Points.module.css';
 
-const MOCK_POINTS_SUMMARY = {
-	total: 3750,
-	weeklyGain: 125,
-	percentile: 10,
-	monthPoints: 480,
-	monthChange: 12,
-	weeklyAvg: 120,
-	weeklyChange: 8,
-	rankPosition: 14,
-	totalConsultants: 142,
-	motivationalMessage: 'points.motivational',
-	motivationalHint: 'points.motivationalHint',
-};
-
-const MOCK_MILESTONES = [
-	{ id: 1, name: 'Badge Especialista Cloud', current: 7, target: 10, percent: 70, color: 'var(--color-primary)' },
-	{ id: 2, name: 'Certificação AWS Solutions Architect', current: 3, target: 5, percent: 60, color: 'var(--color-warning)' },
-	{ id: 3, name: 'Nível Master Consultant', current: 3750, target: 5000, percent: 75, color: 'var(--color-error)' },
-];
-
-const MOCK_MONTHLY_DATA_RAW = [
-	{ key: 'sep', points: 280 },
-	{ key: 'oct', points: 320 },
-	{ key: 'nov', points: 450 },
-	{ key: 'dec', points: 380 },
-	{ key: 'jan', points: 490 },
-	{ key: 'feb', points: 520 },
-];
-
-const MOCK_WEEKLY_DATA_RAW = [
-	{ key: 'mon', points: 25 },
-	{ key: 'tue', points: 30 },
-	{ key: 'wed', points: 28 },
-	{ key: 'thu', points: 35 },
-	{ key: 'fri', points: 42 },
-	{ key: 'sat', points: 15 },
-	{ key: 'sun', points: 10 },
-];
-
-const MOCK_HEATMAP = [
-	3, 4, 2, 4, 3, 1, 0,
-	2, 3, 4, 3, 2, 2, 0,
-	4, 3, 3, 4, 4, 1, 1,
-	3, 2, 4, 3, 3, 2, 0,
-];
-
-const MOCK_RECOMMENDATIONS = [
-	{
-		id: 1,
-		name: 'IBM Cloud Kubernetes Service',
-		tag: 'points.recommended',
-		description: 'points.recommendDesc1',
-		hours: 4,
-		level: 'points.intermediate',
-		pointsValue: 90,
-	},
-	{
-		id: 2,
-		name: 'Terraform Associate',
-		description: 'points.recommendDesc2',
-		hours: 6,
-		level: 'points.intermediate',
-		pointsValue: 85,
-	},
-	{
-		id: 3,
-		name: 'IBM watsonx.ai Essentials',
-		description: 'points.recommendDesc3',
-		hours: 3,
-		level: 'points.basic',
-		pointsValue: 70,
-	},
-];
-
-const MOCK_ACHIEVEMENTS = [
-	{ id: 1, name: 'AWS Solutions Architect – Associate', type: 'points.paidCert', date: '15 Jan 2026', bonus: 200 },
-	{ id: 2, name: 'Red Hat Certified System Administrator', type: 'points.paidCert', date: '20 Nov 2025', bonus: 250 },
-	{ id: 3, name: 'IBM Cloud Professional Architect', type: 'points.paidCert', date: '05 Set 2025', bonus: 300 },
-];
-
-const MOCK_HISTORY = [
-	{ id: 1, date: '08 Mar 2026', badge: 'IBM Cloud Pak for Data', validator: 'Ana Silva - Talent Manager', serviceLine: 'Hybrid Cloud', area: 'OutSystems', points: 75, status: 'verified' },
-	{ id: 2, date: '03 Mar 2026', badge: 'Red Hat OpenShift Administration', validator: 'Ana Silva - Talent Manager', serviceLine: 'Hybrid Cloud', area: 'Power Platform', points: 100, status: 'verified' },
-	{ id: 3, date: '28 Fev 2026', badge: 'Agile Scrum Foundation', validator: 'Carlos Ferreira - Talent Manager', serviceLine: 'Metodologias', area: 'Python/ML', points: 50, status: 'verified' },
-	{ id: 4, date: '22 Fev 2026', badge: 'Power Platform App Maker', validator: '', serviceLine: 'HybridCloud', area: 'Azure', points: 60, status: 'pending' },
-	{ id: 5, date: '15 Fev 2026', badge: 'AWS Cloud Practitioner', validator: 'Ana Silva - Talent Manager', serviceLine: 'Cloud', area: 'Cloud', points: 80, status: 'verified' },
-	{ id: 6, date: '10 Fev 2026', badge: 'Docker Essentials', validator: '', serviceLine: 'DevOps', area: 'DevSecOps', points: 45, status: 'expired' },
-	{ id: 7, date: '01 Fev 2026', badge: 'Kubernetes Fundamentals', validator: 'Carlos Ferreira - Talent Manager', serviceLine: 'DevOps', area: 'DevSecOps', points: 65, status: 'verified' },
-	{ id: 8, date: '25 Jan 2026', badge: 'IBM Garage Methodology', validator: 'Ana Silva - Talent Manager', serviceLine: 'Metodologias', area: 'Python ML', points: 55, status: 'verified' },
-];
-
 const PAGE_SIZE = 8;
+const LP_PROGRESS_COLORS = [
+	'var(--color-primary)',
+	'var(--color-warning)',
+	'var(--color-error)',
+	'var(--color-secondary)',
+	'var(--color-success)',
+];
+
+function aggregateByMonth(history) {
+	const map = {};
+	const now = new Date();
+	for (let i = 5; i >= 0; i--) {
+		const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+		const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+		map[key] = { key, points: 0, date: d };
+	}
+	for (const entry of history) {
+		const d = new Date(entry.created_at);
+		const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+		if (map[key]) map[key].points += entry.points_delta;
+	}
+	return Object.values(map);
+}
+
+function aggregateByDayOfWeek(history) {
+	const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+	const now = new Date();
+	const startOfWeek = new Date(now);
+	const dayOfWeek = now.getDay();
+	const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+	startOfWeek.setDate(now.getDate() - diff);
+	startOfWeek.setHours(0, 0, 0, 0);
+
+	const result = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+	for (const entry of history) {
+		const d = new Date(entry.created_at);
+		if (d >= startOfWeek) {
+			const k = dayKeys[d.getDay()];
+			result[k] += entry.points_delta;
+		}
+	}
+	return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(key => ({
+		key,
+		points: result[key],
+	}));
+}
+
+function buildHeatmap(history) {
+	const now = new Date();
+	const cells = new Array(28).fill(0);
+	const startDate = new Date(now);
+	startDate.setDate(now.getDate() - 27);
+	startDate.setHours(0, 0, 0, 0);
+
+	for (const entry of history) {
+		const d = new Date(entry.created_at);
+		if (d >= startDate) {
+			const dayDiff = Math.floor((d - startDate) / (1000 * 60 * 60 * 24));
+			if (dayDiff >= 0 && dayDiff < 28) cells[dayDiff] += entry.points_delta;
+		}
+	}
+
+	const max = Math.max(...cells, 1);
+	return cells.map(v => {
+		if (v === 0) return 0;
+		const ratio = v / max;
+		if (ratio <= 0.25) return 1;
+		if (ratio <= 0.5) return 2;
+		if (ratio <= 0.75) return 3;
+		return 4;
+	});
+}
+
+function computeWeekOverWeek(history) {
+	const now = new Date();
+	const thisWeekStart = new Date(now);
+	const dayOfWeek = now.getDay();
+	const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+	thisWeekStart.setDate(now.getDate() - diff);
+	thisWeekStart.setHours(0, 0, 0, 0);
+
+	const lastWeekStart = new Date(thisWeekStart);
+	lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+
+	let thisWeek = 0, lastWeek = 0;
+	for (const entry of history) {
+		const d = new Date(entry.created_at);
+		if (d >= thisWeekStart) thisWeek += entry.points_delta;
+		else if (d >= lastWeekStart) lastWeek += entry.points_delta;
+	}
+	return { thisWeek, lastWeek, change: lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0 };
+}
+
+function computeMonthOverMonth(history) {
+	const now = new Date();
+	const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+	const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+	let thisMonth = 0, lastMonth = 0;
+	for (const entry of history) {
+		const d = new Date(entry.created_at);
+		if (d >= thisMonthStart) thisMonth += entry.points_delta;
+		else if (d >= lastMonthStart) lastMonth += entry.points_delta;
+	}
+	return { thisMonth, lastMonth, change: lastMonth ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : 0 };
+}
+
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 export default function Points() {
 	const { t } = useTranslation();
+	const [loading, setLoading] = useState(true);
+	const [stats, setStats] = useState(null);
+	const [allHistory, setAllHistory] = useState([]);
+	const [totalConsultants, setTotalConsultants] = useState(0);
+	const [earnedBadges, setEarnedBadges] = useState([]);
+	const [recommendations, setRecommendations] = useState([]);
+	const [lpProgress, setLpProgress] = useState([]);
+
+	const [historyPage, setHistoryPage] = useState(1);
 	const [historySearch, setHistorySearch] = useState('');
-	const [currentPage, setCurrentPage] = useState(1);
+	const [historySearchDebounced, setHistorySearchDebounced] = useState('');
+	const [historyData, setHistoryData] = useState({ history: [], pagination: null });
+	const [historyLoading, setHistoryLoading] = useState(false);
 
-	const monthlyData = useMemo(() =>
-		MOCK_MONTHLY_DATA_RAW.map(d => ({ month: t(`shared.months.${d.key}`), points: d.points })),
-		[t]
-	);
-	const weeklyData = useMemo(() =>
-		MOCK_WEEKLY_DATA_RAW.map(d => ({ day: t(`shared.days.${d.key}`), points: d.points })),
-		[t]
-	);
-
-	const summary = MOCK_POINTS_SUMMARY;
-	const milestones = MOCK_MILESTONES;
-	const recommendations = MOCK_RECOMMENDATIONS;
-	const achievements = MOCK_ACHIEVEMENTS;
-	const totalAchievementBonus = achievements.reduce((sum, a) => sum + a.bonus, 0);
-
-	const filteredHistory = useMemo(() => {
-		if (!historySearch.trim()) return MOCK_HISTORY;
-		const q = historySearch.toLowerCase();
-		return MOCK_HISTORY.filter(h =>
-			h.badge.toLowerCase().includes(q) ||
-			h.serviceLine.toLowerCase().includes(q) ||
-			h.area.toLowerCase().includes(q)
-		);
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setHistorySearchDebounced(historySearch);
+			setHistoryPage(1);
+		}, 400);
+		return () => clearTimeout(timer);
 	}, [historySearch]);
 
-	const totalPages = Math.ceil(filteredHistory.length / PAGE_SIZE);
-	const paginatedHistory = filteredHistory.slice(
-		(currentPage - 1) * PAGE_SIZE,
-		currentPage * PAGE_SIZE
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			try {
+				const [statsRes, allHistRes, earnedRes, recsRes, lpRes, rankRes] = await Promise.all([
+					getConsultantStats(),
+					getPointsHistoryAll(),
+					getEarnedBadges({ page: 1, limit: 50 }),
+					getRecommendations({ page: 1, limit: 3 }),
+					getLearningPathProgress(),
+					getRanking({ page: 1, limit: 1 }),
+				]);
+				if (cancelled) return;
+				setStats(statsRes);
+				setAllHistory(allHistRes);
+				setEarnedBadges(earnedRes.badges);
+				setRecommendations(recsRes.recommendations);
+				setLpProgress(lpRes);
+				const firstRanker = rankRes.rankings[0];
+				setTotalConsultants(firstRanker?.total_count ?? rankRes.pagination?.totalItems ?? 0);
+			} catch (err) {
+				console.error('Failed to load points data', err);
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		})();
+		return () => { cancelled = true; };
+	}, []);
+
+	const fetchHistory = useCallback(async () => {
+		setHistoryLoading(true);
+		try {
+			const params = { page: historyPage, limit: PAGE_SIZE };
+			if (historySearchDebounced) params.search = historySearchDebounced;
+			const res = await getPointsHistory(params);
+			setHistoryData(res);
+		} catch (err) {
+			console.error('Failed to load points history', err);
+		} finally {
+			setHistoryLoading(false);
+		}
+	}, [historyPage, historySearchDebounced]);
+
+	useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+	const weekStats = useMemo(() => computeWeekOverWeek(allHistory), [allHistory]);
+	const monthStats = useMemo(() => computeMonthOverMonth(allHistory), [allHistory]);
+	const weeklyAvg = useMemo(() => {
+		if (!allHistory.length) return 0;
+		const oldest = new Date(allHistory[allHistory.length - 1]?.created_at);
+		const weeks = Math.max(1, Math.ceil((Date.now() - oldest) / (7 * 24 * 60 * 60 * 1000)));
+		const total = allHistory.reduce((s, e) => s + e.points_delta, 0);
+		return Math.round(total / weeks);
+	}, [allHistory]);
+
+	const monthlyChartData = useMemo(() =>
+		aggregateByMonth(allHistory).map(d => ({
+			month: t(`shared.months.${MONTH_KEYS[d.date.getMonth()]}`),
+			points: d.points,
+		})),
+		[allHistory, t]
 	);
 
+	const weeklyChartData = useMemo(() =>
+		aggregateByDayOfWeek(allHistory).map(d => ({
+			day: t(`shared.days.${d.key}`),
+			points: d.points,
+		})),
+		[allHistory, t]
+	);
+
+	const heatmapData = useMemo(() => buildHeatmap(allHistory), [allHistory]);
+
+	const percentile = useMemo(() => {
+		if (!stats?.rankingPosition || !totalConsultants) return null;
+		return Math.max(1, Math.round((stats.rankingPosition / totalConsultants) * 100));
+	}, [stats, totalConsultants]);
+
+	const milestones = useMemo(() =>
+		lpProgress.slice(0, 3).map((lp, i) => ({
+			id: lp.learning_path_id,
+			name: lp.path_title,
+			current: Number(lp.earned_badges ?? lp.badges_earned ?? 0),
+			target: Number(lp.total_badges ?? 0),
+			percent: Math.round(Number(lp.progress_pct ?? lp.progress_percentage ?? 0)),
+			color: LP_PROGRESS_COLORS[i % LP_PROGRESS_COLORS.length],
+		})),
+		[lpProgress]
+	);
+
+	const achievementBonus = useMemo(() =>
+		earnedBadges.reduce((sum, b) => sum + (b.badge?.pointsValue ?? 0), 0),
+		[earnedBadges]
+	);
+
+	const totalPoints = stats?.totalPoints ?? 0;
+	const rankPosition = stats?.rankingPosition;
 	const milestoneIcons = ['badge', 'certificate', 'spark'];
+	const historyPagination = historyData.pagination;
+	const totalHistoryPages = historyPagination?.totalPages ?? 1;
+
+	if (loading) {
+		return (
+			<div className={styles.page}>
+				<div className="row g-3 mb-4">
+					<div className="col-12 col-lg-7"><Skeleton height={430} borderRadius="16px" /></div>
+					<div className="col-12 col-lg-5"><Skeleton height={430} borderRadius="16px" /></div>
+				</div>
+				<div className="row g-3 mb-4">
+					<div className="col-12 col-lg-6"><Skeleton height={340} borderRadius="16px" /></div>
+					<div className="col-12 col-lg-6"><Skeleton height={340} borderRadius="16px" /></div>
+				</div>
+				<Skeleton height={400} borderRadius="16px" />
+			</div>
+		);
+	}
 
 	return (
 		<div className={styles.page}>
@@ -150,19 +280,21 @@ export default function Points() {
 								<span className={styles.heroLabel}>{t('points.totalBalance')}</span>
 								<div className={styles.heroValueRow}>
 									<span className={styles.heroValue}>
-										{summary.total.toLocaleString('pt-PT')}
+										{totalPoints.toLocaleString('pt-PT')}
 									</span>
 									<span className={styles.heroBadgeGreen}>
 										<Icon name="evolution" size={14} color="var(--color-green-on-soft)" />
-										+{summary.weeklyGain} {t('points.thisWeek')}
+										+{weekStats.thisWeek} {t('points.thisWeek')}
 									</span>
 								</div>
 							</div>
-							<div className={styles.rankBadge}>
-								<Icon name="star-points" size={30} color="var(--color-orange-on-soft)" />
-								<span className={styles.rankBadgeValue}>Top {summary.percentile}%</span>
-								<span className={styles.rankBadgeSub}>{t('points.consultant')}</span>
-							</div>
+							{percentile != null && (
+								<div className={styles.rankBadge}>
+									<Icon name="star-points" size={30} color="var(--color-orange-on-soft)" />
+									<span className={styles.rankBadgeValue}>Top {percentile}%</span>
+									<span className={styles.rankBadgeSub}>{t('points.consultant')}</span>
+								</div>
+							)}
 						</div>
 
 						<div className={styles.motivationalBanner}>
@@ -170,7 +302,12 @@ export default function Points() {
 								<Icon name="star-points" size={16} color="var(--color-secondary)" />
 							</div>
 							<div className={styles.motivationalText}>
-								<p className={styles.motivationalMain}>{t('points.motivational', { gain: summary.weeklyGain, percent: 89 })}</p>
+								<p className={styles.motivationalMain}>
+									{t('points.motivational', {
+										gain: weekStats.thisWeek,
+										percent: percentile != null ? (100 - percentile) : '—',
+									})}
+								</p>
 								<p className={styles.motivationalHint}>{t('points.motivationalHint')}</p>
 							</div>
 						</div>
@@ -181,9 +318,9 @@ export default function Points() {
 									<span className={styles.miniStatLabel}>{t('points.thisMonth')}</span>
 									<Icon name="evolution" size={14} color="var(--color-green-on-soft)" />
 								</div>
-								<span className={styles.miniStatValue}>{summary.monthPoints}</span>
+								<span className={styles.miniStatValue}>{monthStats.thisMonth}</span>
 								<span className={styles.miniStatChange}>
-									+{summary.monthChange}% {t('points.vsLastMonth')}
+									{monthStats.change >= 0 ? '+' : ''}{monthStats.change}% {t('points.vsLastMonth')}
 								</span>
 							</div>
 							<div className={styles.miniStat}>
@@ -191,9 +328,9 @@ export default function Points() {
 									<span className={styles.miniStatLabel}>{t('points.weeklyAvg')}</span>
 									<Icon name="evolution" size={14} color="var(--color-green-on-soft)" />
 								</div>
-								<span className={styles.miniStatValue}>{summary.weeklyAvg}</span>
+								<span className={styles.miniStatValue}>{weeklyAvg}</span>
 								<span className={styles.miniStatChange}>
-									+{summary.weeklyChange}% {t('points.vsLastWeek')}
+									{weekStats.change >= 0 ? '+' : ''}{weekStats.change}% {t('points.vsLastWeek')}
 								</span>
 							</div>
 							<div className={styles.miniStat}>
@@ -201,9 +338,11 @@ export default function Points() {
 									<span className={styles.miniStatLabel}>{t('points.rankPosition')}</span>
 									<Icon name="trophy" size={14} color="var(--color-orange-on-soft)" />
 								</div>
-								<span className={styles.miniStatValue}>#{summary.rankPosition}</span>
+								<span className={styles.miniStatValue}>
+									{rankPosition != null ? `#${rankPosition}` : '—'}
+								</span>
 								<span className={styles.miniStatSub}>
-									{t('points.outOf', { total: summary.totalConsultants })}
+									{t('points.outOf', { total: totalConsultants })}
 								</span>
 							</div>
 						</div>
@@ -222,6 +361,9 @@ export default function Points() {
 							<button className={styles.viewAllBtn}>{t('points.viewAll')}</button>
 						</div>
 						<div className={styles.milestonesList}>
+							{milestones.length === 0 && (
+								<p className={styles.emptyText}>{t('points.noMilestones')}</p>
+							)}
 							{milestones.map((m, i) => (
 								<div key={m.id} className={styles.milestoneItem}>
 									<div className={styles.milestoneIcon}>
@@ -231,11 +373,7 @@ export default function Points() {
 										<div className={styles.milestoneTop}>
 											<span className={styles.milestoneName}>{m.name}</span>
 											<span className={styles.milestoneCounter}>
-												{typeof m.current === 'number' && m.current > 99
-													? m.current.toLocaleString('pt-PT')
-													: m.current}/{typeof m.target === 'number' && m.target > 99
-													? m.target.toLocaleString('pt-PT')
-													: m.target}
+												{m.current}/{m.target}
 											</span>
 										</div>
 										<div className={styles.progressBarBg}>
@@ -253,7 +391,7 @@ export default function Points() {
 				</div>
 			</div>
 
-			{/* ═══ ROW 2: Charts — Pontos por Mês + Atividade Semanal ═══ */}
+			{/* ═══ ROW 2: Charts ═══ */}
 			<h6 className={styles.sectionTitle}>{t('points.metricsTitle')}</h6>
 			<div className="row g-3 mb-4">
 				<div className="col-12 col-lg-6">
@@ -262,7 +400,7 @@ export default function Points() {
 							<span className={styles.chartTitle}>{t('points.pointsByMonth')}</span>
 						</div>
 						<VerticalBarChart
-							data={monthlyData}
+							data={monthlyChartData}
 							xAxisKey="month"
 							yAxisKey="points"
 							height={250}
@@ -276,14 +414,14 @@ export default function Points() {
 							<span className={styles.chartSubtitle}>{t('points.thisWeekLabel')}</span>
 						</div>
 						<LineAreaChart
-							data={weeklyData}
+							data={weeklyChartData}
 							xAxisKey="day"
 							yAxisKey="points"
 							height={180}
 						/>
 						<div className={styles.heatmapSection}>
 							<ActivityHeatmap
-								data={MOCK_HEATMAP}
+								data={heatmapData}
 								weeks={4}
 								title={t('points.heatmapTitle')}
 							/>
@@ -292,7 +430,7 @@ export default function Points() {
 				</div>
 			</div>
 
-			{/* ═══ ROW 3: Recommendations + Special Achievements ═══ */}
+			{/* ═══ ROW 3: Recommendations + Achievements ═══ */}
 			<div className="row g-3 mb-4">
 				<div className="col-12 col-lg-6">
 					<ContentCard>
@@ -306,26 +444,30 @@ export default function Points() {
 							<span className={styles.chartSubtitle}>{t('points.recommendationSystem')}</span>
 						</div>
 						<div className={styles.recommendList}>
-							{recommendations.map(r => (
-								<div key={r.id} className={styles.recommendItem}>
+							{recommendations.length === 0 && (
+								<p className={styles.emptyText}>{t('points.noRecommendations')}</p>
+							)}
+							{recommendations.map((r, i) => (
+								<div key={r.badge_id ?? i} className={styles.recommendItem}>
 									<div className={styles.recommendIcon}>
 										<Icon name="badge" size={18} color="var(--color-secondary)" />
 									</div>
 									<div className={styles.recommendInfo}>
 										<div className={styles.recommendNameRow}>
-											<span className={styles.recommendName}>{r.name}</span>
-											{r.tag && (
-												<span className={styles.recommendTag}>{t(r.tag)}</span>
+											<span className={styles.recommendName}>{r.badge_title}</span>
+											{i === 0 && (
+												<span className={styles.recommendTag}>{t('points.recommended')}</span>
 											)}
 										</div>
-										<p className={styles.recommendDesc}>{t(r.description)}</p>
-										<div className={styles.recommendMeta}>
-											<span><Icon name="clock" size={12} color="var(--color-outline)" /> ~{r.hours} {t('points.hours')}</span>
-											<span><Icon name="evolution" size={12} color="var(--color-outline)" /> {t(r.level)}</span>
-										</div>
+										<p className={styles.recommendDesc}>
+											{r.area_name && r.service_line_name
+												? `${r.service_line_name} · ${r.area_name}`
+												: r.area_name || r.service_line_name || r.badge_type || ''
+											}
+										</p>
 									</div>
 									<div className={styles.recommendPoints}>
-										<span className={styles.recommendPointsValue}>+{r.pointsValue}</span>
+										<span className={styles.recommendPointsValue}>+{r.badge_points}</span>
 										<span className={styles.recommendPointsLabel}>{t('points.pts')}</span>
 									</div>
 									<Icon name="progress" size={16} color="var(--color-outline)" />
@@ -343,26 +485,35 @@ export default function Points() {
 							title={t('points.specialAchievements')}
 						/>
 						<div className={styles.achievementsList}>
-							{achievements.map(a => (
-								<div key={a.id} className={styles.achievementItem}>
+							{earnedBadges.length === 0 && (
+								<p className={styles.emptyText}>{t('points.noAchievements')}</p>
+							)}
+							{earnedBadges.slice(0, 3).map(a => (
+								<div key={a.awardedBadgeId} className={styles.achievementItem}>
 									<div className={styles.achievementLeft}>
 										<Icon name="certificate" size={16} color="var(--color-secondary)" />
 										<div className={styles.achievementInfo}>
-											<span className={styles.achievementName}>{a.name}</span>
+											<span className={styles.achievementName}>{a.badge?.title ?? '—'}</span>
 											<div className={styles.achievementMeta}>
-												<span className={styles.achievementType}>{t(a.type)}</span>
-												<span className={styles.achievementDate}>{a.date}</span>
+												<span className={styles.achievementType}>{a.badge?.pointsValue ?? 0} pts</span>
+												<span className={styles.achievementDate}>
+													{a.awardedDate ? new Date(a.awardedDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
+												</span>
 											</div>
 										</div>
 									</div>
-									<span className={styles.achievementBonus}>+{a.bonus} pts</span>
+									<span className={styles.achievementBonus}>
+										+{a.badge?.pointsValue ?? 0} pts
+									</span>
 								</div>
 							))}
 						</div>
-						<div className={styles.achievementsTotal}>
-							<span>{t('points.totalCertBonus')}</span>
-							<span className={styles.achievementsTotalValue}>{totalAchievementBonus} pts</span>
-						</div>
+						{earnedBadges.length > 0 && (
+							<div className={styles.achievementsTotal}>
+								<span>{t('points.totalCertBonus')}</span>
+								<span className={styles.achievementsTotalValue}>{achievementBonus} pts</span>
+							</div>
+						)}
 					</ContentCard>
 				</div>
 			</div>
@@ -378,7 +529,7 @@ export default function Points() {
 								type="text"
 								placeholder={t('points.searchBadges')}
 								value={historySearch}
-								onChange={e => { setHistorySearch(e.target.value); setCurrentPage(1); }}
+								onChange={e => setHistorySearch(e.target.value)}
 								className={styles.historySearchInput}
 							/>
 						</div>
@@ -405,43 +556,85 @@ export default function Points() {
 							</tr>
 						</thead>
 						<tbody>
-							{paginatedHistory.map(row => (
-								<tr key={row.id}>
-									<td className={styles.cellDate}>{row.date}</td>
-									<td>
-										<div className={styles.cellBadge}>
-											<span className={styles.cellBadgeName}>{row.badge}</span>
-											{row.validator && (
-												<span className={styles.cellBadgeValidator}>{row.validator}</span>
-											)}
-										</div>
-									</td>
-									<td><span className={styles.cellPill}>{row.serviceLine}</span></td>
-									<td><span className={styles.cellPill}>{row.area}</span></td>
-									<td className={styles.cellPoints}>+{row.points}</td>
-									<td>
-										<span className={`${styles.statusBadge} ${styles[`status_${row.status}`]}`}>
-											{t(`points.statusType.${row.status}`)}
-										</span>
+							{historyLoading ? (
+								Array.from({ length: PAGE_SIZE }).map((_, i) => (
+									<tr key={i}>
+										{Array.from({ length: 6 }).map((_, j) => (
+											<td key={j}><Skeleton height={16} /></td>
+										))}
+									</tr>
+								))
+							) : historyData.history.length === 0 ? (
+								<tr>
+									<td colSpan={6} className={styles.emptyTableCell}>
+										{t('points.noHistoryResults')}
 									</td>
 								</tr>
-							))}
+							) : (
+								historyData.history.map(row => {
+									const badge = row.badge;
+									const slName = badge?.service_line?.service_line_name;
+									const areaName = badge?.area?.area_name;
+									const hasExpiration = badge?.expiration_duration_days != null;
+									const statusKey = row.requirement_id && !row.badge_id
+										? 'pending'
+										: hasExpiration ? 'expired' : 'verified';
+
+									return (
+										<tr key={row.points_history_id}>
+											<td className={styles.cellDate}>
+												{new Date(row.created_at).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })}
+											</td>
+											<td>
+												<div className={styles.cellBadge}>
+													<span className={styles.cellBadgeName}>
+														{badge?.badge_title ?? row.justification ?? '—'}
+													</span>
+													{row.requirement?.requirement_title && (
+														<span className={styles.cellBadgeValidator}>
+															{row.requirement.requirement_title}
+														</span>
+													)}
+												</div>
+											</td>
+											<td>
+												{slName
+													? <span className={styles.cellPill}>{slName}</span>
+													: <span className={styles.cellEmpty}>—</span>
+												}
+											</td>
+											<td>
+												{areaName
+													? <span className={styles.cellPill}>{areaName}</span>
+													: <span className={styles.cellEmpty}>—</span>
+												}
+											</td>
+											<td className={styles.cellPoints}>+{row.points_delta}</td>
+											<td>
+												<span className={`${styles.statusBadge} ${styles[`status_${statusKey}`]}`}>
+													{t(`points.statusType.${statusKey}`)}
+												</span>
+											</td>
+										</tr>
+									);
+								})
+							)}
 						</tbody>
 					</table>
 				</div>
 				<div className={styles.pagination}>
 					<span className={styles.paginationInfo}>
 						{t('points.showing', {
-							count: paginatedHistory.length,
-							total: filteredHistory.length,
+							count: historyData.history.length,
+							total: historyPagination?.totalItems ?? 0,
 						})}
 					</span>
 					<div className={styles.paginationBtns}>
-						{Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+						{Array.from({ length: totalHistoryPages }, (_, i) => i + 1).map(p => (
 							<button
 								key={p}
-								className={`${styles.pageBtn} ${p === currentPage ? styles.pageBtnActive : ''}`}
-								onClick={() => setCurrentPage(p)}
+								className={`${styles.pageBtn} ${p === historyPage ? styles.pageBtnActive : ''}`}
+								onClick={() => setHistoryPage(p)}
 							>
 								{p}
 							</button>
