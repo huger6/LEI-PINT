@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const requestLogger = require('./middlewares/logger.middleware');
 require('./validations/error-map'); // Necessary for validation codes to run
 require('./jobs/sla.worker'); // Starts the SLA breach monitor while the API process is running
+require('./workers/custom_sla.worker'); // Starts the standalone SLA breach monitor while the API process is running
 // Initialize firebase only when not explicitly skipped (useful for local dev without installing firebase-admin)
 if (!process.env.SKIP_FIREBASE || process.env.SKIP_FIREBASE === '0') {
     try {

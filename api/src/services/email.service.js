@@ -582,11 +582,108 @@ const sendSlaBreachAlert = async (email, emailData) => {
     }
 };
 
+const CUSTOM_SLA_BREACH_TEMPLATES = {
+    'pt-PT': {
+        subject: 'Alerta de SLA expirado',
+        heading: 'SLA expirado',
+        greeting: 'Ola, {name}',
+        intro: 'O SLA <strong>{slaName}</strong> expirou.',
+        target: 'Perfil alvo: {targetProfile}.',
+        deadline: 'Prazo: {deadline}.',
+        descriptionLabel: 'Descricao:',
+        team: 'A Equipa Softinsa'
+    },
+    'en-GB': {
+        subject: 'Custom SLA breach alert',
+        heading: 'Custom SLA expired',
+        greeting: 'Hello, {name}',
+        intro: 'The SLA <strong>{slaName}</strong> has expired.',
+        target: 'Target profile: {targetProfile}.',
+        deadline: 'Deadline: {deadline}.',
+        descriptionLabel: 'Description:',
+        team: 'The Softinsa Team'
+    },
+    'es-ES': {
+        subject: 'Alerta de SLA expirado',
+        heading: 'SLA expirado',
+        greeting: 'Hola, {name}',
+        intro: 'El SLA <strong>{slaName}</strong> ha expirado.',
+        target: 'Perfil objetivo: {targetProfile}.',
+        deadline: 'Fecha limite: {deadline}.',
+        descriptionLabel: 'Descripcion:',
+        team: 'El Equipo de Softinsa'
+    }
+};
+
+const resolveCustomSlaBreachTemplate = (lang) =>
+    CUSTOM_SLA_BREACH_TEMPLATES[lang] || CUSTOM_SLA_BREACH_TEMPLATES['en-GB'];
+
+const formatDeadline = (deadline) => {
+    if (!deadline) return '';
+
+    const parsed = new Date(deadline);
+    if (Number.isNaN(parsed.getTime())) return String(deadline);
+
+    return parsed.toISOString();
+};
+
+const sendCustomSlaBreachAlert = async (email, emailData) => {
+    const lang = emailData.targetLanguage || emailData.language || 'en-GB';
+    const t = resolveCustomSlaBreachTemplate(lang);
+    const uniqueId = Date.now().toString(36);
+    const safeName = escapeHtml(emailData.recipientName);
+    const safeSlaName = escapeHtml(emailData.slaName);
+    const safeTargetProfile = escapeHtml(emailData.targetProfile);
+    const safeDeadline = escapeHtml(formatDeadline(emailData.deadline));
+    const safeDescription = escapeHtml(emailData.slaDescription);
+
+    const descriptionBlock = safeDescription
+        ? `<div style="background-color:#f0f7ff;border-left:4px solid #39639C;padding:16px 20px;
+                       border-radius:0 4px 4px 0;margin:16px 0;">
+               <p style="font-size:13px;font-weight:600;color:#39639C;margin:0 0 8px 0;">
+                   ${t.descriptionLabel}
+               </p>
+               <p style="font-size:14px;color:#555555;margin:0;">${safeDescription}</p>
+           </div>`
+        : '';
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">${t.heading}</p>
+                <p style="margin-bottom:16px;">${t.greeting.replace('{name}', safeName)}</p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{slaName}', safeSlaName)}</p>
+                <p style="margin-bottom:8px;color:#555555;">
+                    ${t.target.replace('{targetProfile}', safeTargetProfile)}
+                </p>
+                <p style="margin-bottom:0;color:#555555;">
+                    ${t.deadline.replace('{deadline}', safeDeadline)}
+                </p>
+                ${descriptionBlock}
+                <p style="margin-top:24px;margin-bottom:0;">- ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending custom SLA breach alert', { error });
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
     sendApplicationSubmittedEmail,
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail,
-    sendSlaBreachAlert
+    sendSlaBreachAlert,
+    sendCustomSlaBreachAlert
 };
