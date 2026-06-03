@@ -9,8 +9,8 @@ const listNotificationsQuery = z.object({
     type: z.enum(VALID_NOTIFICATION_TYPES).optional(),
     is_read: z.preprocess(
         (val) => (val === 'true' ? true : val === 'false' ? false : val),
-        z.boolean().optional()
-    )
+        z.boolean()
+    ).optional()
 });
 
 const notificationIdParam = z.object({
