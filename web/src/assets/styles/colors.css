@@ -88,6 +88,8 @@
 
 	/* Neutral / layout */
 	--color-bg-card: #f9fafb;
+	--color-outline-light: #DEE3E6;
+	--color-outline-variant: #BFC8CC;
 
 	/* Heatmap intensities */
 	--color-heatmap-empty: #ebedf0;

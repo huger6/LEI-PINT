@@ -1,0 +1,512 @@
+/* ─── Page ─────────────────────────────── */
+
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 1100px;
+	margin: 0 auto;
+	padding-bottom: 48px;
+}
+
+/* ─── Breadcrumb ───────────────────────── */
+
+.breadcrumb {
+	margin-bottom: 0;
+}
+
+.breadcrumb a {
+	color: var(--color-outline);
+	text-decoration: none;
+	font-size: 0.8125rem;
+}
+
+.breadcrumb a:hover {
+	color: var(--color-primary);
+}
+
+.breadcrumbSeparator {
+	color: var(--color-outline);
+	font-size: 0.8125rem;
+	margin: 0 6px;
+}
+
+.breadcrumbActive {
+	color: var(--color-secondary);
+	font-size: 0.8125rem;
+	font-weight: 500;
+}
+
+/* ─── Title ────────────────────────────── */
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+/* ─── Cards ────────────────────────────── */
+
+.card {
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	padding: 24px;
+}
+
+.cardTitle {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-outline);
+	margin: 0 0 16px;
+}
+
+/* ─── Stepper Card ─────────────────────── */
+
+.stepperCard {
+	composes: card;
+}
+
+/* ─── Badge Info Card ──────────────────── */
+
+.badgeCard {
+	composes: card;
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+.badgeIcon {
+	flex-shrink: 0;
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badgeIconImg {
+	width: 50px;
+	height: 50px;
+	object-fit: contain;
+}
+
+.badgeBody {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.badgeName {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.chipRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 0.8125rem;
+	font-weight: 500;
+}
+
+.chipGreen {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+.chipBlue {
+	background: var(--color-blue-soft);
+	color: var(--color-blue-on-soft);
+}
+
+.chipPurple {
+	background: var(--color-purple-soft);
+	color: var(--color-purple-on-soft);
+}
+
+.chipOrange {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.badgeDescription {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	line-height: 1.6;
+	margin: 0;
+}
+
+/* ─── Two Column Grid ──────────────────── */
+
+.twoColumn {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	align-items: start;
+}
+
+/* ─── Section Titles ───────────────────── */
+
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0 0 20px;
+}
+
+/* ─── Evidence Card ────────────────────── */
+
+.evidenceCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+/* ─── Requirements Card ────────────────── */
+
+.requirementsCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.requirementsList {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* ─── Requirement Accordion ────────────── */
+
+.reqItem {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.reqHeader {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 24px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.reqIconCircle {
+	width: 28px;
+	height: 28px;
+	border-radius: 10px;
+	background: var(--color-outline-light);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.reqBody {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.reqTitle {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.reqDescription {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	line-height: 1.55;
+	margin: 0;
+}
+
+.reqChevron {
+	flex-shrink: 0;
+	transition: transform 200ms ease;
+	margin-top: 2px;
+}
+
+.reqChevronOpen {
+	transform: rotate(180deg);
+}
+
+.reqContent {
+	padding: 0 24px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.reqEvidenceHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.reqEvidenceCount {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-outline);
+}
+
+.reqAddBtn {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-secondary);
+	transition: background 150ms ease;
+}
+
+.reqAddBtn:hover {
+	background: var(--color-blue-soft);
+}
+
+.reqDropZone {
+	border: 2px dashed var(--color-outline-light);
+	border-radius: 14px;
+	padding: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.reqDropZoneText {
+	font-size: 0.8125rem;
+	color: var(--color-outline-variant);
+	margin: 0;
+	text-align: center;
+}
+
+/* ─── Notes Card ───────────────────────── */
+
+.notesCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.notesTitle {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.notesTextarea {
+	width: 100%;
+	min-height: 120px;
+	padding: 16px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 14px;
+	background: var(--color-bg-card);
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	font-family: var(--font-body);
+	resize: vertical;
+	outline: none;
+	transition: border-color 200ms ease;
+}
+
+.notesTextarea::placeholder {
+	color: var(--color-outline-variant);
+}
+
+.notesTextarea:focus {
+	border-color: var(--color-secondary);
+}
+
+/* ─── Terms Card ───────────────────────── */
+
+.termsCard {
+	composes: card;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.checkboxRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.checkbox {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--color-secondary);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.checkboxLabel {
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+}
+
+.checkboxLabel a {
+	color: var(--color-secondary);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.checkboxLabel a:hover {
+	text-decoration: underline;
+}
+
+.disclaimer {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	line-height: 1.6;
+	margin: 0;
+	text-align: justify;
+}
+
+/* ─── Action Buttons ───────────────────── */
+
+.actions {
+	display: flex;
+	gap: 16px;
+	justify-content: flex-end;
+	padding: 24px 0;
+}
+
+.cancelBtn {
+	padding: 12px 28px;
+	border-radius: 14px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: #fff;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.cancelBtn:hover {
+	background: var(--color-bg-card);
+	border-color: rgba(0, 0, 0, 0.2);
+}
+
+.submitBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 31px;
+	border-radius: 14px;
+	border: none;
+	background: var(--color-secondary);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: #fff;
+	cursor: pointer;
+	transition: background 150ms ease, opacity 150ms ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+	opacity: 0.9;
+}
+
+.submitBtn:disabled {
+	background: rgba(57, 99, 156, 0.4);
+	cursor: not-allowed;
+}
+
+/* ─── Responsive ───────────────────────── */
+
+@media (max-width: 992px) {
+	.twoColumn {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.page {
+		gap: 12px;
+	}
+
+	.badgeCard {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.chipRow {
+		justify-content: center;
+	}
+
+	.badgeDescription {
+		text-align: left;
+	}
+
+	.actions {
+		flex-direction: column-reverse;
+	}
+
+	.cancelBtn,
+	.submitBtn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.reqHeader {
+		padding: 16px;
+	}
+
+	.reqContent {
+		padding: 0 16px 16px;
+	}
+
+	.card {
+		padding: 16px;
+	}
+}
+
+@media (max-width: 400px) {
+	.pageTitle {
+		font-size: 1.25rem;
+	}
+
+	.badgeName {
+		font-size: 1.1rem;
+	}
+
+	.chipRow {
+		gap: 8px;
+	}
+
+	.chip {
+		font-size: 0.75rem;
+		padding: 3px 10px;
+	}
+}

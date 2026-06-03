@@ -1011,7 +1011,12 @@
 		"lpTechnicalNext": "Próximos: React Advanced, Node.js Mastery",
 		"lpSoftSkills": "Soft Skills",
 		"lpSoftSkillsStage": "B - Avanzado",
-		"lpSoftSkillsNext": "Próximos: Liderazgo de Equipos"
+		"lpSoftSkillsNext": "Próximos: Liderazgo de Equipos",
+		"minutesAgo": "hace {{count}} min",
+		"hoursAgo": "hace {{count}}h",
+		"daysAgo": "hace {{count}}d",
+		"noData": "Sin datos disponibles.",
+		"noActivity": "Sin actividad reciente."
 	}
 }
 
