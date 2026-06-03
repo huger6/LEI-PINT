@@ -485,18 +485,118 @@ def generate_sql() -> str:
     sll_user_ids = [int(user["user_id"]) for user in sl_leader_users]
 
     sql.section("4. Global Contexts")
+
+    TERMS_TEXT = (
+        "Termos e Condições de Utilização\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "Bem-vindo à Plataforma de Badges da Softinsa. Ao registar-se e utilizar "
+        "esta aplicação (Web e Mobile), o utilizador aceita expressamente os "
+        "seguintes termos:\n\n"
+        "1. Objetivo do Serviço\n"
+        "A plataforma visa a partilha, validação e atribuição de insígnias digitais "
+        "(badges) com base em evidências de competências técnicas e certificações "
+        "obtidas externamente (e.g., Udemy, IBM, AWS, Microsoft).\n\n"
+        "2. Elegibilidade e Registo\n"
+        "O acesso é exclusivo a colaboradores e consultores da Softinsa. O "
+        "utilizador obriga-se a fornecer dados verdadeiros no registo e a proceder "
+        "à alteração obrigatória de palavra-passe no primeiro acesso.\n\n"
+        "3. Submissão de Evidências\n"
+        "Ao submeter candidaturas a um badge, o consultor é responsável pela "
+        "veracidade dos ficheiros carregados (diplomas, relatórios, certificados). "
+        "A submissão intencional de documentos falsos constitui uma infração "
+        "disciplinar.\n\n"
+        "4. Sistema de Gamificação e Pontuação\n"
+        "A plataforma atribui pontos conforme a obtenção de badges. O sistema de "
+        "pontuação é definido pelo Administrador e serve como critério interno de "
+        "avaliação de mérito pelas lideranças (Service Line Leaders). Em caso de "
+        "expiração de um badge, os pontos acumulados pelo consultor mantêm-se.\n\n"
+        "5. Uso de Páginas Públicas\n"
+        "Cada badge conquistado gera uma ligação (link) pública de verificação "
+        "única. O utilizador compreende que este endereço poderá ser acedido "
+        "publicamente e integrado em assinaturas de e-mail corporativas ou perfis "
+        "de redes profissionais (LinkedIn)."
+    )
+
+    PRIVACY_TEXT = (
+        "Política de Privacidade (RGPD)\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "A Softinsa está empenhada em proteger os dados pessoais dos seus "
+        "colaboradores. No âmbito da Plataforma de Badges, o tratamento de dados "
+        "rege-se pelos seguintes pressupostos:\n\n"
+        "1. Responsável pelo Tratamento\n"
+        "Softinsa – Engenharia de Software Avançado, Lda.\n\n"
+        "2. Dados Recolhidos\n"
+        "Nome completo, e-mail corporativo, palavra-passe encriptada, Service "
+        "Line/Área de atuação, histórico de formação, e ficheiros de evidências "
+        "carregados pelo utilizador.\n\n"
+        "3. Finalidade do Tratamento\n"
+        "- Gestão e validação de competências internas.\n"
+        "- Atribuição de incentivos profissionais com base no progresso das "
+        "Learning Paths.\n"
+        "- Disponibilização de uma galeria pública e mecanismos de partilha de "
+        "conquistas no LinkedIn.\n\n"
+        "4. Consentimento (RGPD)\n"
+        "A publicação na galeria pública de badges e a partilha externa dependem "
+        "da aceitação expressa e prévia dos termos do RGPD na plataforma. O "
+        "utilizador tem o direito de revogar o seu consentimento a qualquer "
+        "momento através das definições de perfil.\n\n"
+        "5. Segurança\n"
+        "Toda a comunicação entre o dispositivo do utilizador e os servidores da "
+        "plataforma é obrigatoriamente cifrada através do protocolo HTTPS."
+    )
+
+    COOKIES_TEXT = (
+        "Política de Cookies\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "A Plataforma de Badges da Softinsa utiliza cookies para garantir o "
+        "funcionamento seguro da aplicação. Esta política explica quais cookies "
+        "são utilizados, a sua finalidade e a base legal aplicável.\n\n"
+        "1. O Que São Cookies\n"
+        "Cookies são pequenos ficheiros de texto armazenados no navegador do "
+        "utilizador quando este acede à plataforma. Permitem que o servidor "
+        "reconheça sessões e mantenha o estado de autenticação.\n\n"
+        "2. Cookies Utilizados\n\n"
+        "a) refreshToken (Cookie Estritamente Necessário)\n"
+        "- Finalidade: Armazena o token de atualização (refresh token) que "
+        "permite renovar a sessão do utilizador sem necessidade de repetir o "
+        "início de sessão.\n"
+        "- Tipo: Cookie HTTP-only, não acessível por JavaScript do lado do "
+        "cliente.\n"
+        "- Atributos de segurança: HttpOnly, Secure (em produção), SameSite="
+        "Strict.\n"
+        "- Âmbito (Path): Restrito às rotas de autenticação (/api/auth).\n"
+        "- Duração: Até 30 dias quando a opção \"Lembrar-me\" está ativa; "
+        "1 hora na sessão padrão.\n"
+        "- Base legal: Interesse legítimo e necessidade técnica — este cookie é "
+        "indispensável para o funcionamento da autenticação da plataforma.\n\n"
+        "3. Cookies de Terceiros\n"
+        "A plataforma não utiliza cookies de terceiros, de rastreamento "
+        "publicitário ou de análise comportamental (analytics). Nenhum dado é "
+        "partilhado com redes de publicidade ou plataformas de tracking.\n\n"
+        "4. Gestão de Cookies\n"
+        "Por se tratar de um cookie estritamente necessário ao funcionamento da "
+        "plataforma, o refreshToken não requer consentimento separado nos termos "
+        "do artigo 5.º, n.º 3 da Diretiva ePrivacy (2002/58/CE). O utilizador "
+        "pode, no entanto, eliminar cookies através das definições do seu "
+        "navegador, sendo que tal ação resultará no encerramento da sessão "
+        "ativa.\n\n"
+        "5. Alterações a Esta Política\n"
+        "A Softinsa reserva-se o direito de atualizar esta política de cookies. "
+        "Quaisquer alterações serão comunicadas através da plataforma e "
+        "refletidas na data de revisão indicada no topo deste documento."
+    )
+
     policy_templates = [
-        ("Privacy", "Privacy Policy", "Explains how Softinsa processes profile, progression and certification data."),
-        ("Terms", "Platform Terms", "Defines acceptable use, validation responsibilities and badge lifecycle rules."),
-        ("Cookies", "Cookie Notice", "Documents essential and analytics cookies used by the platform."),
+        ("Privacy", PRIVACY_TEXT),
+        ("Terms", TERMS_TEXT),
+        ("Cookies", COOKIES_TEXT),
     ]
-    for index in range(min(NUM_GDPR_POLICIES, len(policy_templates))):
-        policy_type, title, body = policy_templates[index]
+    for index, (policy_type, policy_text) in enumerate(policy_templates):
         row = {
             "policy_id": ids.next("gdpr_policies"),
             "policy_type": policy_type,
-            "version": f"2026.{index + 1}",
-            "policy_text": f"{title}: {body}",
+            "version": "1.0",
+            "policy_text": policy_text,
             "is_mandatory": policy_type in {"Privacy", "Terms"},
             "is_active": True,
             "updated_by": random.choice(admin_ids),
