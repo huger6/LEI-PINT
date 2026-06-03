@@ -9,7 +9,7 @@ function getBadgeClassLabel(rawType) {
 	return rawType || 'Standard';
 }
 
-export default function BadgeCard({ badge, to }) {
+export default function BadgeCard({ badge, to, isConsultant = true }) {
 	const title = badge.badge_title || badge.badgeTitle;
 	const description = badge.badge_description || badge.badgeDescription || '';
 	const imageUrl = badge.badge_img_url || badge.badgeImgUrl;
@@ -55,22 +55,18 @@ export default function BadgeCard({ badge, to }) {
 
 				<div className={styles.footer}>
 					<div className={styles.metrics}>
-						<span className={styles.metric}>
-							<Icon name="star" size={14} aria-hidden="true" />
-							{points} pts
-						</span>
-						{consultantCount > 0 && (
+						{isConsultant && (
+							<span className={styles.metric}>
+								<Icon name="star" size={14} aria-hidden="true" />
+								{points} pts
+							</span>
+						)}
+						{!isConsultant && consultantCount > 0 && (
 							<span className={styles.metric}>
 								<Icon name="user" size={14} aria-hidden="true" />
 								{consultantCount}
 							</span>
 						)}
-						{expirationDays ? (
-							<span className={styles.metric}>
-								<Icon name="today" size={14} aria-hidden="true" />
-								{expirationDays}d
-							</span>
-						) : null}
 					</div>
 					<span className={styles.viewHint}>
 						View

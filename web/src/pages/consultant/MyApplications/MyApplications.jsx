@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
@@ -137,7 +137,7 @@ export default function MyApplications() {
 								</tr>
 							</thead>
 							<tbody>
-								{applications.map((app) => {
+								{filtered.map((app) => {
 									const state = app.application_state || app.state;
 									return (
 										<tr
@@ -149,7 +149,7 @@ export default function MyApplications() {
 												{app.badge?.badge_title || app.badge?.badgeTitle || `Badge #${app.badge_id || app.badgeId}`}
 											</td>
 											<td>
-												<span className={`badge ${STATE_BADGE_CLASS[state] || 'bg-secondary'}`}>
+												<span className={`badge ${STATE_BADGE_MAP[state] || 'bg-secondary'}`}>
 													{state}
 												</span>
 											</td>

@@ -554,7 +554,7 @@ export default function BadgeCatalog() {
 									const slug = badge.badge_slug || badge.badgeSlug;
 									return (
 										<div className="col-sm-6 col-xl-4" key={slug || badge.badge_id || badge.badgeId}>
-											<BadgeCard badge={badge} to={`/badges/${slug}`} />
+											<BadgeCard badge={badge} to={`/badges/${slug}`} isConsultant={user?.role === 'Consultant'} />
 										</div>
 									);
 								})}
