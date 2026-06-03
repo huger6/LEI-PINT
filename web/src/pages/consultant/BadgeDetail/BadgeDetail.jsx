@@ -10,9 +10,11 @@ import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import RequirementCard from '../../../components/RequirementCard/RequirementCard';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
+import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeDetail.module.css';
 
 export default function BadgeDetail() {
+	const { user } = useUser();
 	const { t } = useTranslation();
 	const { slug } = useParams();
 	const navigate = useNavigate();
@@ -429,6 +431,7 @@ export default function BadgeDetail() {
 								<BadgeCard
 									badge={b}
 									to={`${SHARED.BADGES}/${b.badge_slug || b.badgeSlug}`}
+									isConsultant={user?.role === 'Consultant'}
 								/>
 							</div>
 						))}
