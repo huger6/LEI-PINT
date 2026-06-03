@@ -483,7 +483,8 @@ CREATE TABLE IF NOT EXISTS gdpr_policies (
    created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
    updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
-   CONSTRAINT pk_gdpr_policies PRIMARY KEY (policy_id)
+   CONSTRAINT pk_gdpr_policies PRIMARY KEY (policy_id),
+   CONSTRAINT uq_gdpr_policy_type_version UNIQUE (policy_type, version)
 );
 
 /*==============================================================*/
