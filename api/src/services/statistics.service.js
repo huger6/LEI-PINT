@@ -12,7 +12,7 @@ const getLearningPathProgress = async (userId) => {
     return rows;
 };
 
-const getPointsHistory = async (userId, { page = 1, limit = 20 } = {}) => {
+const getPointsHistory = async (userId, { page = 1, limit = 20, search } = {}) => {
     const offset = (page - 1) * limit;
 
     const [sumRows] = await sequelize.query(
@@ -22,15 +22,39 @@ const getPointsHistory = async (userId, { page = 1, limit = 20 } = {}) => {
     );
     const totalPoints = parseInt(sumRows[0]?.total_points ?? 0, 10);
 
+    const badgeInclude = {
+        model: models.badges,
+        as: 'badge',
+        attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'],
+        required: !!search,
+        include: [
+            { model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'], required: false },
+            { model: models.areas, as: 'area', attributes: ['area_id', 'area_name'], required: false }
+        ]
+    };
+
+    if (search) {
+        const { Op } = require('sequelize');
+        const pattern = `%${search}%`;
+        badgeInclude.where = {
+            [Op.or]: [
+                { badge_title: { [Op.iLike]: pattern } },
+                { '$badge.service_line.service_line_name$': { [Op.iLike]: pattern } },
+                { '$badge.area.area_name$': { [Op.iLike]: pattern } }
+            ]
+        };
+    }
+
     const { count, rows } = await models.points_history.findAndCountAll({
         where: { user_id: userId },
         include: [
-            { model: models.badges, as: 'badge', attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'], required: false },
+            badgeInclude,
             { model: models.badge_requirements, as: 'requirement', attributes: ['requirement_id', 'requirement_title'], required: false }
         ],
         order: [['created_at', 'DESC']],
         limit,
-        offset
+        offset,
+        subQuery: false
     });
 
     return {
