@@ -947,15 +947,10 @@
 			"pending": "Pendiente de Verificación",
 			"expired": "Badge Expirado (Puntos Permanentes)"
 		},
-		"days": {
-			"mon": "Lun",
-			"tue": "Mar",
-			"wed": "Mié",
-			"thu": "Jue",
-			"fri": "Vie",
-			"sat": "Sáb",
-			"sun": "Dom"
-		}
+		"noMilestones": "Sin progreso de learning path todavía.",
+		"noRecommendations": "Sin recomendaciones disponibles por el momento.",
+		"noAchievements": "Sin badges conseguidos todavía.",
+		"noHistoryResults": "No se encontraron registros."
 	},
 	"evolution": {
 		"user": "Usuario",

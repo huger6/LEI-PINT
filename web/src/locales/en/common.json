@@ -948,15 +948,10 @@
 			"pending": "Pending Verification",
 			"expired": "Badge Expired (Permanent Points)"
 		},
-		"days": {
-			"mon": "Mon",
-			"tue": "Tue",
-			"wed": "Wed",
-			"thu": "Thu",
-			"fri": "Fri",
-			"sat": "Sat",
-			"sun": "Sun"
-		}
+		"noMilestones": "No learning path progress yet.",
+		"noRecommendations": "No recommendations available at the moment.",
+		"noAchievements": "No badges earned yet.",
+		"noHistoryResults": "No records found."
 	},
 	"evolution": {
 		"user": "User",
