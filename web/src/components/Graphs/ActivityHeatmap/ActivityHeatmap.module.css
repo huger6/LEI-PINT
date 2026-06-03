@@ -1,0 +1,83 @@
+.wrapper {
+	width: 100%;
+}
+
+.title {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin-bottom: 12px;
+}
+
+.grid {
+	display: flex;
+	gap: 6px;
+}
+
+.weekLabels {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 22px;
+}
+
+.weekLabel {
+	font-size: 0.6875rem;
+	color: var(--color-outline);
+	height: 18px;
+	display: flex;
+	align-items: center;
+}
+
+.cells {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+	min-width: 0;
+}
+
+.dayLabels {
+	display: flex;
+	gap: 4px;
+}
+
+.dayLabel {
+	flex: 1;
+	font-size: 0.6875rem;
+	color: var(--color-outline);
+	text-align: center;
+}
+
+.row {
+	display: flex;
+	gap: 4px;
+}
+
+.cell {
+	flex: 1;
+	aspect-ratio: 1;
+	border-radius: 3px;
+	min-width: 0;
+	max-height: 22px;
+}
+
+.empty {
+	background: var(--color-heatmap-empty);
+}
+
+.low {
+	background: var(--color-heatmap-low);
+}
+
+.medium {
+	background: var(--color-heatmap-medium);
+}
+
+.high {
+	background: var(--color-heatmap-high);
+}
+
+.max {
+	background: var(--color-heatmap-max);
+}

@@ -1,0 +1,498 @@
+/* Page */
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1150px;
+    margin: 0 auto;
+    padding-bottom: 48px;
+}
+
+/* Welcome */
+
+.welcomeSection {
+    padding: 4px 0;
+}
+
+.greeting {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-on-background);
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--color-outline);
+    margin: 6px 0 0;
+}
+
+.subtitle span {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* Stats Row */
+
+.statsRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.statCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px !important;
+}
+
+.statTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.statIconWrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--color-primary-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statDelta {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-success);
+    background: var(--color-success-container);
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.statLabel {
+    font-size: 0.8rem;
+    color: var(--color-outline);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.statValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.statLevelLabel {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-outline);
+}
+
+/* Charts Row */
+
+.chartsRow {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+}
+
+.chartCard {
+    min-height: 320px;
+}
+
+.radarCard {
+    min-height: 320px;
+}
+
+.chartHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.cardTitle {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-on-background);
+}
+
+.radarSubtitle {
+    font-size: 0.8125rem;
+    color: var(--color-outline);
+    margin: -4px 0 8px;
+}
+
+.radarWrapper {
+    width: 100%;
+}
+
+/* Toggle Pill */
+
+.togglePill {
+    display: flex;
+    background: var(--color-surface);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    border: 1px solid rgba(57, 99, 156, 0.1);
+}
+
+.toggleBtn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--color-outline);
+    cursor: pointer;
+    transition: all 150ms ease;
+    white-space: nowrap;
+}
+
+.toggleBtn:hover {
+    color: var(--color-on-background);
+}
+
+.toggleActive {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.toggleActive:hover {
+    color: var(--color-on-primary);
+}
+
+/* Middle Row */
+
+.middleRow {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr;
+    gap: 24px;
+}
+
+.applicationsCard {
+    display: flex;
+    flex-direction: column;
+}
+
+.appStatsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    flex: 1;
+}
+
+.appStatItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.appStatPrimary {
+    background: var(--color-primary-soft);
+}
+
+.appStatSuccess {
+    background: var(--color-green-soft);
+}
+
+.appStatSecondary {
+    background: var(--color-blue-soft);
+}
+
+.appStatIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.appStatContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.appStatLabel {
+    font-size: 0.8rem;
+    color: var(--color-outline);
+    font-weight: 500;
+}
+
+.appStatValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.valuePrimary {
+    color: var(--color-primary);
+}
+
+.valueSuccess {
+    color: var(--color-success);
+}
+
+.valueSecondary {
+    color: var(--color-secondary);
+}
+
+.pointsCard {
+    min-height: 320px;
+}
+
+/* Bottom Row */
+
+.bottomRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+}
+
+/* Activity Card */
+
+.activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+.activityItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    border-bottom: 1px solid rgba(57, 99, 156, 0.06);
+}
+
+.activityItem:last-child {
+    border-bottom: none;
+}
+
+.activityIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activityContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.activityTitle {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-on-background);
+}
+
+.activityDesc {
+    font-size: 0.75rem;
+    color: var(--color-outline);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activityTime {
+    font-size: 0.7rem;
+    color: var(--color-outline);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Achievements Card */
+
+.achievementsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.achievementItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border-left: 4px solid;
+    background: var(--color-surface);
+}
+
+.achievementIcon {
+    flex-shrink: 0;
+}
+
+.achievementContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.achievementTitle {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-on-primary);
+}
+
+.achievementDesc {
+    font-size: 0.75rem;
+    color: var(--color-outline);
+}
+
+/* Learning Paths Card */
+
+.lpList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.lpItem {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(57, 99, 156, 0.08);
+}
+
+.lpItem:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.lpHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lpInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lpIcon {
+    width: 8px;
+    height: 32px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.lpName {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-on-background);
+}
+
+.lpBadges {
+    font-size: 0.75rem;
+    color: var(--color-outline);
+}
+
+.lpPercentage {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.lpProgressTrack {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(57, 99, 156, 0.1);
+    overflow: hidden;
+}
+
+.lpProgressFill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 400ms ease;
+}
+
+.lpNext {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--color-outline);
+}
+
+/* Responsive */
+
+@media (max-width: 1200px) {
+    .statsRow {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bottomRow {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .learningPathsCard {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 992px) {
+    .chartsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .middleRow {
+        grid-template-columns: 1fr;
+    }
+
+    .bottomRow {
+        grid-template-columns: 1fr;
+    }
+
+    .learningPathsCard {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .statsRow {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .greeting {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .page {
+        gap: 16px;
+    }
+}
