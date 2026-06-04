@@ -77,14 +77,38 @@
 
 .statCard {
 	background: #fff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 16px;
 	padding: 20px 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 8px;
 	min-width: 0;
 	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.statCard:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	transform: translateY(-1px);
+}
+
+.statIconRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.statIcon {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
 }
 
 .statValue {
@@ -98,7 +122,7 @@
 
 .statLabel {
 	font-family: 'Inter', sans-serif;
-	font-weight: 400;
+	font-weight: 500;
 	font-size: 13px;
 	line-height: 19.5px;
 	color: var(--color-outline, #70787c);
@@ -134,8 +158,7 @@
 }
 
 .appCard:hover {
-	border-color: var(--color-secondary, #39639c);
-	box-shadow: 0 4px 16px rgba(57, 99, 156, 0.08);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
 }
 
 .cardHeader {
@@ -233,6 +256,52 @@
 	color: #b91c1c;
 }
 
+/* ── Card State Borders & Shadows ── */
+.appCard.cardStateOpen {
+	border-color: var(--color-blue-on-soft, #1e3a5f);
+	box-shadow: 0 2px 10px rgba(30, 58, 95, 0.14);
+}
+
+.appCard.cardStateSubmitted {
+	border-color: var(--color-purple-on-soft, #6b21a8);
+	box-shadow: 0 2px 10px rgba(107, 33, 168, 0.14);
+}
+
+.appCard.cardStateInValidation {
+	border-color: var(--color-orange-on-soft, #f39c12);
+	box-shadow: 0 2px 10px rgba(243, 156, 18, 0.14);
+}
+
+.appCard.cardStateAccepted {
+	border-color: var(--color-green-on-soft, #007a55);
+	box-shadow: 0 2px 10px rgba(0, 122, 85, 0.14);
+}
+
+.appCard.cardStateRejected {
+	border-color: var(--color-red-on-soft, #dc2626);
+	box-shadow: 0 2px 10px rgba(220, 38, 38, 0.14);
+}
+
+.appCard.cardStateOpen:hover {
+	box-shadow: 0 6px 20px rgba(30, 58, 95, 0.18);
+}
+
+.appCard.cardStateSubmitted:hover {
+	box-shadow: 0 6px 20px rgba(107, 33, 168, 0.18);
+}
+
+.appCard.cardStateInValidation:hover {
+	box-shadow: 0 6px 20px rgba(243, 156, 18, 0.18);
+}
+
+.appCard.cardStateAccepted:hover {
+	box-shadow: 0 6px 20px rgba(0, 122, 85, 0.18);
+}
+
+.appCard.cardStateRejected:hover {
+	box-shadow: 0 6px 20px rgba(220, 38, 38, 0.18);
+}
+
 /* ── Card Meta ── */
 .cardMeta {
 	display: flex;
@@ -265,6 +334,14 @@
 	border-top: 1px solid rgba(0, 0, 0, 0.06);
 	margin-top: auto;
 	min-width: 0;
+}
+
+.footerState {
+	font-family: 'Inter', sans-serif;
+	font-weight: 600;
+	font-size: 13px;
+	line-height: 19.5px;
+	white-space: nowrap;
 }
 
 .viewBtn {
@@ -404,6 +481,11 @@
 	}
 	.statCard {
 		padding: 14px 16px;
+	}
+	.statIcon {
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
 	}
 	.statValue {
 		font-size: 22px;

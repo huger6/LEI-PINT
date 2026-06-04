@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getBadges, createBadge, updateBadge, deleteBadge } from '../../../features/badges/api/badgesApi';
-import { getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getAreas, getLevels } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
@@ -24,6 +24,7 @@ export default function AdminBadges() {
 	const { t } = useTranslation();
 	const [badges, setBadges] = useState([]);
 	const [areas, setAreas] = useState([]);
+	const [allLevels, setAllLevels] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [showModal, setShowModal] = useState(false);
 	const [editItem, setEditItem] = useState(null);
@@ -33,9 +34,10 @@ export default function AdminBadges() {
 	async function loadData() {
 		try {
 			setLoading(true);
-			const [badgeData, areaData] = await Promise.all([getBadges(), getAreas()]);
+			const [badgeData, areaData, levelData] = await Promise.all([getBadges(), getAreas(), getLevels()]);
 			setBadges(badgeData.data || badgeData || []);
 			setAreas(areaData.data || areaData || []);
+			setAllLevels(levelData.data || levelData || []);
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -107,9 +109,34 @@ export default function AdminBadges() {
 		}
 	}
 
+	const takenStageIds = badges
+		.filter((b) => {
+			const stageId = b.progression_stage_id || b.progressionStageId;
+			if (!stageId) return false;
+			if (editItem) {
+				const editStageId = editItem.progression_stage_id || editItem.progressionStageId;
+				return stageId !== editStageId;
+			}
+			return true;
+		})
+		.map((b) => b.progression_stage_id || b.progressionStageId);
+
+	const availableLevels = allLevels.filter((l) => {
+		const levelAreaId = l.area_id || l.areaId;
+		if (form.areaId && levelAreaId !== Number(form.areaId)) return false;
+		const stageId = l.progression_stage_id || l.progressionStageId;
+		return !takenStageIds.includes(stageId);
+	});
+
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
-		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+		setForm((prev) => {
+			const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
+			if (name === 'areaId') {
+				next.progressionStageId = '';
+			}
+			return next;
+		});
 	}
 
 	return (
@@ -217,12 +244,24 @@ export default function AdminBadges() {
 								))}
 							</select>
 						</div>
-						<FormInput
-							label={t('adminBadges.progressionStageId')}
-							name="progressionStageId"
-							value={form.progressionStageId}
-							onChange={handleChange}
-						/>
+						<div>
+							<label htmlFor="badge_level" className="form-label">{t('adminBadges.level')}</label>
+							<select
+								id="badge_level"
+								className="form-select"
+								name="progressionStageId"
+								value={form.progressionStageId}
+								onChange={handleChange}
+								required
+							>
+								<option value="">{t('shared.select')}</option>
+								{availableLevels.map((l) => (
+									<option key={l.progression_stage_id || l.progressionStageId} value={l.progression_stage_id || l.progressionStageId}>
+										{l.stage_title || l.stageTitle}{l.stage_code?.stage_code ? ` (${l.stage_code.stage_code})` : ''}
+									</option>
+								))}
+							</select>
+						</div>
 						<div>
 							<label htmlFor="badge_type" className="form-label">{t('shared.type')}</label>
 							<select

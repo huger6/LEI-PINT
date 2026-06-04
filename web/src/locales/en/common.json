@@ -526,7 +526,7 @@
 		"editBadge": "Edit Badge",
 		"noBadges": "No badges",
 		"noBadgesDesc": "No badges found.",
-		"progressionStageId": "Progression Stage (ID)"
+		"level": "Level"
 	},
 	"adminAreas": {
 		"title": "Areas",

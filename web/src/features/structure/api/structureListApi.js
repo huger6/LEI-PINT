@@ -127,7 +127,7 @@ export async function fetchAllLevels({ search } = {}) {
 
 export async function fetchLevelsFilterStats() {
 	const { data } = await api.get('/levels/filter-stats');
-	return data?.data || { maxConsultantCount: 0, maxBadgeCount: 0 };
+	return data?.data || { maxConsultantCount: 0 };
 }
 
 export async function deleteLearningPath(slug) {

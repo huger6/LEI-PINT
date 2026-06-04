@@ -22,8 +22,6 @@ export default function LevelsList() {
 	const [statusFilter, setStatusFilter] = useState('all');
 	const [consultantMax, setConsultantMax] = useState(0);
 	const [consultantRange, setConsultantRange] = useState([0, 0]);
-	const [badgeMax, setBadgeMax] = useState(0);
-	const [badgeRange, setBadgeRange] = useState([0, 0]);
 
 	const [filterStats, setFilterStats] = useState(null);
 
@@ -33,8 +31,6 @@ export default function LevelsList() {
 				setFilterStats(stats);
 				setConsultantMax(stats.maxConsultantCount);
 				setConsultantRange([0, stats.maxConsultantCount]);
-				setBadgeMax(stats.maxBadgeCount);
-				setBadgeRange([0, stats.maxBadgeCount]);
 			})
 			.catch(() => {});
 	}, []);
@@ -79,15 +75,8 @@ export default function LevelsList() {
 			});
 		}
 
-		if (badgeRange[0] > 0 || badgeRange[1] < badgeMax) {
-			result = result.filter((item) => {
-				const count = Number(item.badge_count || 0);
-				return count >= badgeRange[0] && count <= badgeRange[1];
-			});
-		}
-
 		return result;
-	}, [allItems, statusFilter, consultantRange, consultantMax, badgeRange, badgeMax]);
+	}, [allItems, statusFilter, consultantRange, consultantMax]);
 
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
@@ -98,7 +87,7 @@ export default function LevelsList() {
 
 	useEffect(() => {
 		setPage(1);
-	}, [statusFilter, consultantRange, badgeRange]);
+	}, [statusFilter, consultantRange]);
 
 	const statusOptions = useMemo(() => [
 		{ value: 'all', label: t('shared.allStatuses', { defaultValue: 'All Statuses' }) },
@@ -133,18 +122,8 @@ export default function LevelsList() {
 					onChange={setConsultantRange}
 				/>
 			)}
-			{filterStats && badgeMax > 0 && (
-				<RangeSlider
-					id="level_badge_filter"
-					label={t('shared.badges', { defaultValue: 'Badges' })}
-					min={0}
-					max={badgeMax}
-					value={badgeRange}
-					onChange={setBadgeRange}
-				/>
-			)}
 		</>
-	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, badgeMax, badgeRange, t]);
+	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, t]);
 
 	return (
 		<StructureListLayout
@@ -176,7 +155,7 @@ export default function LevelsList() {
 					tone="levels"
 					infoItems={[
 						{ icon: 'tabler_users', value: Number(item.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
-						{ icon: 'badge', value: Number(item.badge_count || 0), label: t('shared.badges', { defaultValue: 'Badges' }) },
+						{ icon: 'badge', value: item.has_badge ? t('shared.yes', { defaultValue: 'Yes' }) : t('shared.no', { defaultValue: 'No' }), label: t('shared.badge', { defaultValue: 'Badge' }) },
 					]}
 				/>
 			)}

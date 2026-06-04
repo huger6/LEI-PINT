@@ -105,8 +105,8 @@ export default function LevelDetail() {
 		},
 		{
 			icon: 'badge',
-			label: t('structureDetail.badges', { defaultValue: 'Badges' }),
-			value: Number(level.badge_count || 0),
+			label: t('structureDetail.badge', { defaultValue: 'Badge' }),
+			value: level.has_badge ? t('shared.yes', { defaultValue: 'Yes' }) : t('shared.no', { defaultValue: 'No' }),
 			accentColor: '#8d640d',
 			accentBg: 'rgba(210, 148, 21, 0.15)',
 		},

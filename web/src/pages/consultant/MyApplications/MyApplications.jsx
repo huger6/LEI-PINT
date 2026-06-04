@@ -13,6 +13,14 @@ const STATE_STYLE_MAP = {
 	Rejected: 'stateRejected',
 };
 
+const STATE_COLOR_MAP = {
+	Open: 'var(--color-blue-on-soft, #1e3a5f)',
+	Submitted: 'var(--color-purple-on-soft, #6b21a8)',
+	'In validation': 'var(--color-orange-on-soft, #f39c12)',
+	Accepted: 'var(--color-green-on-soft, #007a55)',
+	Rejected: 'var(--color-red-on-soft, #dc2626)',
+};
+
 function SkeletonCards() {
 	return (
 		<div className={styles.skeletonGrid}>
@@ -79,10 +87,10 @@ export default function MyApplications() {
 	}, [applications, activeTab]);
 
 	const statCards = [
-		{ label: t('myApplications.stats.total'), value: stats.total },
-		{ label: t('myApplications.stats.open'), value: stats.open },
-		{ label: t('myApplications.stats.submitted'), value: stats.submitted },
-		{ label: t('myApplications.stats.accepted'), value: stats.accepted },
+		{ label: t('myApplications.stats.total'), value: stats.total, icon: 'badge', color: 'var(--color-secondary, #39639c)', bg: 'var(--color-secondary-container, #cee8f1)' },
+		{ label: t('myApplications.stats.open'), value: stats.open, icon: 'paper', color: 'var(--color-blue-on-soft, #1e3a5f)', bg: 'var(--color-blue-soft, #eff6ff)' },
+		{ label: t('myApplications.stats.submitted'), value: stats.submitted, icon: 'send', color: 'var(--color-purple-on-soft, #6b21a8)', bg: 'var(--color-purple-soft, #f3eeff)' },
+		{ label: t('myApplications.stats.accepted'), value: stats.accepted, icon: 'check_circle', color: 'var(--color-green-on-soft, #007a55)', bg: 'var(--color-green-soft, #ecfdf5)' },
 	];
 
 	function formatDate(app) {
@@ -114,7 +122,12 @@ export default function MyApplications() {
 			<div className={styles.statsRow}>
 				{statCards.map((s) => (
 					<div key={s.label} className={styles.statCard}>
-						<span className={styles.statValue}>{s.value}</span>
+						<div className={styles.statIconRow}>
+							<div className={styles.statIcon} style={{ background: s.bg }}>
+								<Icon name={s.icon} size={20} color={s.color} />
+							</div>
+							<span className={styles.statValue}>{s.value}</span>
+						</div>
 						<span className={styles.statLabel}>{s.label}</span>
 					</div>
 				))}
@@ -156,10 +169,12 @@ export default function MyApplications() {
 						const areaName = app.badge?.area?.area_name || app.badge?.area?.areaName;
 						const stateStyle = STATE_STYLE_MAP[state] || '';
 
+						const cardStateClass = stateStyle ? styles[`card${stateStyle.charAt(0).toUpperCase()}${stateStyle.slice(1)}`] : '';
+
 						return (
 							<div
 								key={guid}
-								className={styles.appCard}
+								className={`${styles.appCard} ${cardStateClass || ''}`}
 								onClick={() => navigate(`/applications/${guid}`)}
 							>
 								<div className={styles.cardHeader}>
@@ -167,15 +182,12 @@ export default function MyApplications() {
 										{badgeImg ? (
 											<img src={badgeImg} alt={badgeName} className={styles.cardBadgeImg} />
 										) : (
-											<Icon name="trophy" size={24} color="var(--color-secondary, #39639c)" />
+											<Icon name="paper" size={24} color="var(--color-secondary, #39639c)" />
 										)}
 									</div>
 									<div className={styles.cardInfo}>
 										<div className={styles.cardTitleRow}>
 											<h3 className={styles.cardTitle}>{badgeName}</h3>
-											<span className={`${styles.stateChip} ${styles[stateStyle]}`}>
-												{getStateLabel(state)}
-											</span>
 										</div>
 										<div className={styles.cardMeta}>
 											{areaName && (
@@ -193,12 +205,11 @@ export default function MyApplications() {
 								</div>
 
 								<div className={styles.cardFooter}>
-									<span className={styles.metaItem}>
-										{state === 'Open' && t('myApplications.tabs.open')}
-										{state === 'Submitted' && t('myApplications.tabs.submitted')}
-										{state === 'In validation' && t('myApplications.tabs.inValidation')}
-										{state === 'Accepted' && t('myApplications.tabs.accepted')}
-										{state === 'Rejected' && t('myApplications.tabs.rejected')}
+									<span
+										className={styles.footerState}
+										style={{ color: STATE_COLOR_MAP[state] }}
+									>
+										{getStateLabel(state)}
 									</span>
 									<button
 										type="button"
