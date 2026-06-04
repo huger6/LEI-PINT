@@ -28,6 +28,7 @@ export default function ApplicationStatus({ application, badge }) {
 	const appGuid = application?.application_guid || application?.applicationGuid;
 	const logs = application?.application_validation_logs || [];
 	const evidences = application?.requirements_evidences || application?.requirementsEvidences || [];
+	const consultantNotes = application?.consultant_notes || application?.consultantNotes || '';
 	const requirements = badge?.badge_requirements || badge?.badgeRequirements || [];
 
 	const title = badge?.badge_title || badge?.badgeTitle || `Badge #${application?.badge_id}`;
@@ -232,6 +233,18 @@ export default function ApplicationStatus({ application, badge }) {
 								</div>
 							</div>
 						</div>
+
+						{/* Consultant Notes */}
+						{consultantNotes && (
+							<div>
+								<h2 className={styles.sectionTitle}>
+									{t('applicationDetail.additionalNotes')}
+								</h2>
+								<div className={styles.feedbackItem}>
+									<p className={styles.feedbackText}>{consultantNotes}</p>
+								</div>
+							</div>
+						)}
 
 						{/* Reviewer Feedback */}
 						{sortedLogs.some((l) => l.validations_comments || l.validationsComments) && (

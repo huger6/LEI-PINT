@@ -623,7 +623,13 @@
 			"minPoints": "Pontos Mínimos",
 			"maxPoints": "Pontos Máximos",
 			"expiringOnly": "Mostrar apenas badges com expiração"
-		}
+		},
+		"savedBadges": "Badges guardados",
+		"noSavedBadges": "Ainda não guardou nenhum badge.",
+		"noSavedBadgesDesc": "Toque no ícone de marcador num badge para o guardar aqui.",
+		"saveBadge": "Guardar badge",
+		"removeSaved": "Remover badge guardado",
+		"showingSaved": "A mostrar badges guardados"
 	},
 	"badgeDetail": {
 		"notFound": "Badge não encontrado",
@@ -778,20 +784,22 @@
 		"notFound": "Candidatura não encontrada",
 		"backToApplications": "Voltar às candidaturas",
 		"badgeInfo": "Informação do Badge",
-		"requirementsAndEvidences": "Requisitos",
+		"requirementsAndEvidences": "Requisitos e Evidências",
 		"noRequirements": "Nenhum requisito definido.",
 		"requirementN": "Requisito {{n}}",
+		"completed": "concluídos",
 		"submitted": "Submetido",
 		"pending": "Pendente",
-		"evidenceUrlPlaceholder": "URL do ficheiro de evidência",
+		"evidenceUrlPlaceholder": "Cole o URL da evidência aqui...",
 		"saving": "A guardar...",
 		"submitApplication": "Submeter Candidatura",
 		"applicationState": "Estado da Candidatura",
-		"evidences": "As Minhas Evidências",
-		"dragFiles": "Arrasta ficheiros ou procura",
-		"maxSize": "Tamanho máximo: 10MB",
-		"uploadedFiles": "Ficheiros carregados",
-		"evidenceAssociated": "evidência associada",
+		"addEvidence": "Adicionar evidência",
+		"replaceEvidence": "Substituir evidência",
+		"chooseFile": "Escolher ficheiro",
+		"or": "ou",
+		"maxSize": "Máx: 10MB",
+		"uploading": "A carregar...",
 		"additionalNotes": "Notas Adicionais",
 		"notesPlaceholder": "Adicione notas ou observações para os validadores...",
 		"acceptTermsPrefix": "Aceito os ",
@@ -801,7 +809,16 @@
 		"acceptTermsSuffix": " da plataforma.",
 		"disclaimer": "Ao submeter esta candidatura, você declara que todas as informações fornecidas são verdadeiras e precisas. A plataforma reserva-se o direito de verificar todas as evidências apresentadas e pode solicitar documentação adicional. O processo de avaliação pode levar até 7 dias úteis. Candidaturas com informações falsas serão automaticamente rejeitadas e podem resultar na suspensão da conta.",
 		"cancel": "Voltar / Cancelar",
-		"submitting": "A submeter..."
+		"submitting": "A submeter...",
+		"stepSelectBadge": "Selecionar Badge",
+		"stepUploadEvidence": "Enviar Evidências",
+		"stepTerms": "Termos e Condições",
+		"stepSubmit": "Submissão",
+		"errors": {
+			"noFile": "Nenhum ficheiro foi selecionado. Por favor escolha um ficheiro.",
+			"fileTooLarge": "O ficheiro excede o limite de 10 MB. Por favor escolha um ficheiro mais pequeno.",
+			"uploadFailed": "O carregamento do ficheiro falhou. Por favor tente novamente mais tarde."
+		}
 	},
 	"applicationStatus": {
 		"stateTitle": "Estado da Candidatura",

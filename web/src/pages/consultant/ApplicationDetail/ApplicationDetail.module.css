@@ -167,113 +167,13 @@
 	margin: 0;
 }
 
-/* ─── Two Column Grid ──────────────────── */
-
-.twoColumn {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 24px;
-	align-items: start;
-}
-
 /* ─── Section Titles ───────────────────── */
 
 .sectionTitle {
 	font-size: 1.25rem;
 	font-weight: 500;
 	color: var(--color-on-background);
-	margin: 0 0 20px;
-}
-
-/* ─── Evidence Card ────────────────────── */
-
-.evidenceCard {
-	composes: card;
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-}
-
-.dropZone {
-	background: #fafcff;
-	border: 2px dashed rgba(57, 99, 156, 0.4);
-	border-radius: 16px;
-	padding: 34px 24px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 8px;
-}
-
-.dropZoneIconWrap {
-	width: 56px;
-	height: 56px;
-	border-radius: 16px;
-	background: var(--color-blue-soft);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.dropZoneLabel {
-	font-size: 0.9375rem;
-	font-weight: 500;
-	color: var(--color-secondary);
 	margin: 0;
-}
-
-.dropZoneHint {
-	font-size: 0.75rem;
-	color: var(--color-outline);
-	margin: 0;
-}
-
-.fileListTitle {
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--color-on-background);
-	margin: 0;
-}
-
-.fileList {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.fileRow {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 12px 13px;
-	background: #f8fafb;
-	border: 1px solid rgba(0, 0, 0, 0.06);
-	border-radius: 14px;
-}
-
-.fileIconWrap {
-	width: 32px;
-	height: 32px;
-	border-radius: 10px;
-	background: var(--color-blue-soft);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-}
-
-.fileInfo {
-	flex: 1;
-	min-width: 0;
-}
-
-.fileName {
-	font-size: 0.875rem;
-	color: var(--color-on-background);
-	margin: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 /* ─── Requirements Card ────────────────── */
@@ -285,10 +185,44 @@
 	gap: 20px;
 }
 
+.requirementsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.progressLabel {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.progressTrack {
+	height: 6px;
+	background: rgba(0, 0, 0, 0.06);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.progressFill {
+	height: 100%;
+	background: var(--color-secondary);
+	border-radius: 999px;
+	transition: width 400ms ease;
+}
+
 .requirementsList {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+.noRequirements {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	margin: 0;
 }
 
 /* ─── Requirement Accordion ────────────── */
@@ -298,6 +232,11 @@
 	border-radius: 16px;
 	overflow: hidden;
 	background: #fff;
+	transition: border-color 200ms ease;
+}
+
+.reqItemComplete {
+	border-color: var(--color-green-on-soft);
 }
 
 .reqHeader {
@@ -318,6 +257,11 @@
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
+	transition: background 200ms ease;
+}
+
+.reqIconComplete {
+	background: var(--color-green-on-soft);
 }
 
 .reqBody {
@@ -356,76 +300,141 @@
 	padding: 0 24px 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
 }
 
-.reqEvidenceHeader {
+/* ─── Evidence File Display ────────────── */
+
+.evidenceFile {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 13px;
+	background: var(--color-green-soft);
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	border-radius: 14px;
+}
+
+.evidenceFileIcon {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.evidenceFileInfo {
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-}
-
-.reqEvidenceCount {
-	font-size: 0.75rem;
-	font-weight: 500;
-	color: var(--color-outline);
-}
-
-.reqInputGroup {
-	display: flex;
 	gap: 8px;
 }
 
-.reqInput {
-	flex: 1;
-	min-width: 0;
-	padding: 8px 12px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	border-radius: 10px;
+.evidenceFileName {
 	font-size: 0.8125rem;
-	background: #f8fafb;
-	outline: none;
-	transition: border-color 200ms ease;
+	color: var(--color-on-background);
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.reqInput:focus {
-	border-color: var(--color-secondary);
+.evidenceStatus {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-green-on-soft);
+	white-space: nowrap;
 }
 
-.reqSaveBtn {
-	padding: 8px 16px;
-	border-radius: 10px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	background: #fff;
+/* ─── Upload Section ───────────────────── */
+
+.reqUploadSection {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.reqUploadLabel {
 	font-size: 0.8125rem;
 	font-weight: 500;
-	color: var(--color-secondary);
+	color: var(--color-outline);
+	margin: 0;
+}
+
+.reqFileLabel {
+	display: flex;
+	align-items: center;
+	gap: 12px;
 	cursor: pointer;
-	white-space: nowrap;
-	transition: background 150ms ease;
-}
-
-.reqSaveBtn:hover:not(:disabled) {
-	background: var(--color-blue-soft);
-}
-
-.reqSaveBtn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
 }
 
 .reqFileInput {
+	position: absolute;
+	width: 0;
+	height: 0;
+	opacity: 0;
+	overflow: hidden;
+}
+
+.reqFileLabelBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 16px;
+	border-radius: 10px;
+	border: 1px dashed rgba(57, 99, 156, 0.4);
+	background: #fafcff;
 	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-secondary);
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.reqFileLabel:hover .reqFileLabelBtn {
+	background: var(--color-blue-soft);
+	border-color: var(--color-secondary);
+}
+
+.reqFileLabelHint {
+	font-size: 0.75rem;
 	color: var(--color-outline);
 }
 
-.reqEvidenceStatus {
+/* ─── Upload Feedback ──────────────────── */
+
+.uploadingIndicator {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	font-size: 0.8125rem;
+	color: var(--color-secondary);
 	font-weight: 500;
-	color: var(--color-green-on-soft);
+}
+
+.spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(57, 99, 156, 0.2);
+	border-top-color: var(--color-secondary);
+	border-radius: 50%;
+	animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.reqError {
+	font-size: 0.8125rem;
+	color: #b91c1c;
 	margin: 0;
 }
 
@@ -476,6 +485,18 @@
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+	animation: fadeIn 300ms ease;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .checkboxRow {
@@ -567,12 +588,6 @@
 
 /* ─── Responsive ───────────────────────── */
 
-@media (max-width: 992px) {
-	.twoColumn {
-		grid-template-columns: 1fr;
-	}
-}
-
 @media (max-width: 768px) {
 	.content {
 		gap: 16px;
@@ -609,6 +624,18 @@
 	.card {
 		padding: 16px;
 	}
+
+	.requirementsHeader {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+
+	.evidenceFileInfo {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
 }
 
 @media (max-width: 400px) {
@@ -625,7 +652,9 @@
 		padding: 3px 10px;
 	}
 
-	.reqInputGroup {
+	.reqFileLabel {
 		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 	}
 }

@@ -623,7 +623,13 @@
 			"minPoints": "Min Points",
 			"maxPoints": "Max Points",
 			"expiringOnly": "Show expiring badges only"
-		}
+		},
+		"savedBadges": "Saved badges",
+		"noSavedBadges": "You haven't saved any badges yet.",
+		"noSavedBadgesDesc": "Tap the bookmark icon on a badge to save it here.",
+		"saveBadge": "Save badge",
+		"removeSaved": "Remove saved badge",
+		"showingSaved": "Showing saved badges"
 	},
 	"badgeDetail": {
 		"notFound": "Badge not found",
@@ -778,20 +784,22 @@
 		"notFound": "Application not found",
 		"backToApplications": "Back to applications",
 		"badgeInfo": "Badge Information",
-		"requirementsAndEvidences": "Requirements",
+		"requirementsAndEvidences": "Requirements & Evidence",
 		"noRequirements": "No requirements defined.",
 		"requirementN": "Requirement {{n}}",
+		"completed": "completed",
 		"submitted": "Submitted",
 		"pending": "Pending",
-		"evidenceUrlPlaceholder": "Evidence file URL",
+		"evidenceUrlPlaceholder": "Paste evidence URL here...",
 		"saving": "Saving...",
 		"submitApplication": "Submit Application",
 		"applicationState": "Application State",
-		"evidences": "My Evidence",
-		"dragFiles": "Drag files or browse",
-		"maxSize": "Max size: 10MB",
-		"uploadedFiles": "Uploaded files",
-		"evidenceAssociated": "evidence associated",
+		"addEvidence": "Add evidence",
+		"replaceEvidence": "Replace evidence",
+		"chooseFile": "Choose file",
+		"or": "or",
+		"maxSize": "Max: 10MB",
+		"uploading": "Uploading...",
 		"additionalNotes": "Additional Notes",
 		"notesPlaceholder": "Add notes or observations for the reviewers...",
 		"acceptTermsPrefix": "I accept the ",
@@ -801,7 +809,16 @@
 		"acceptTermsSuffix": " of the platform.",
 		"disclaimer": "By submitting this application, you declare that all information provided is true and accurate. The platform reserves the right to verify all evidence and may request additional documentation. The evaluation process may take up to 7 business days. Applications with false information will be automatically rejected and may result in account suspension.",
 		"cancel": "Back / Cancel",
-		"submitting": "Submitting..."
+		"submitting": "Submitting...",
+		"stepSelectBadge": "Select Badge",
+		"stepUploadEvidence": "Upload Evidence",
+		"stepTerms": "Terms & Conditions",
+		"stepSubmit": "Submit",
+		"errors": {
+			"noFile": "No file was selected. Please choose a file.",
+			"fileTooLarge": "The file exceeds the 10 MB size limit. Please choose a smaller file.",
+			"uploadFailed": "The file upload failed. Please try again later."
+		}
 	},
 	"applicationStatus": {
 		"stateTitle": "Application Status",

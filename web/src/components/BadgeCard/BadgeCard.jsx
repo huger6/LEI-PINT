@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './BadgeCard.module.css';
 
@@ -9,7 +10,8 @@ function getBadgeClassLabel(rawType) {
 	return rawType || 'Standard';
 }
 
-export default function BadgeCard({ badge, to, isConsultant = true }) {
+export default function BadgeCard({ badge, to, isConsultant = true, isFavorited = false, onToggleFavorite }) {
+	const { t } = useTranslation();
 	const title = badge.badge_title || badge.badgeTitle;
 	const description = badge.badge_description || badge.badgeDescription || '';
 	const imageUrl = badge.badge_img_url || badge.badgeImgUrl;
@@ -39,6 +41,21 @@ export default function BadgeCard({ badge, to, isConsultant = true }) {
 					<span className={`${styles.typePill} ${isSpecial ? styles.special : styles.standard}`}>
 						{badgeClass}
 					</span>
+					{onToggleFavorite && (
+						<button
+							type="button"
+							className={`${styles.bookmarkBtn} ${isFavorited ? styles.bookmarkActive : ''}`}
+							onClick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								onToggleFavorite(badge);
+							}}
+							aria-label={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
+							title={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
+						>
+							<Icon name={isFavorited ? 'bookmark-filled' : 'bookmark'} size={18} aria-hidden="true" />
+						</button>
+					)}
 				</div>
 
 				<div className={styles.content}>
