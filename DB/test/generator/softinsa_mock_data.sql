@@ -156,9 +156,72 @@ INSERT INTO talent_managers (user_id, biography) VALUES (55, 'Talent manager res
 
 -- 4. Global Contexts
 
-INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (1, 'Privacy', '2026.1', 'Privacy Policy: Explains how Softinsa processes profile, progression and certification data.', TRUE, TRUE, 1, 2, '2026-01-21T12:00:00+00:00'::timestamptz, '2026-04-21T12:00:00+00:00'::timestamptz);
-INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (2, 'Terms', '2026.2', 'Platform Terms: Defines acceptable use, validation responsibilities and badge lifecycle rules.', TRUE, TRUE, 1, 2, '2026-01-31T12:00:00+00:00'::timestamptz, '2026-04-24T12:00:00+00:00'::timestamptz);
-INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (3, 'Cookies', '2026.3', 'Cookie Notice: Documents essential and analytics cookies used by the platform.', FALSE, TRUE, 2, 1, '2026-02-10T12:00:00+00:00'::timestamptz, '2026-04-27T12:00:00+00:00'::timestamptz);
+INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (1, 'Privacy', '1.0', 'Política de Privacidade (RGPD)
+Última Revisão: Versão 1.0 — Junho 2026
+
+A Softinsa está empenhada em proteger os dados pessoais dos seus colaboradores. No âmbito da Plataforma de Badges, o tratamento de dados rege-se pelos seguintes pressupostos:
+
+1. Responsável pelo Tratamento
+Softinsa – Engenharia de Software Avançado, Lda.
+
+2. Dados Recolhidos
+Nome completo, e-mail corporativo, palavra-passe encriptada, Service Line/Área de atuação, histórico de formação, e ficheiros de evidências carregados pelo utilizador.
+
+3. Finalidade do Tratamento
+- Gestão e validação de competências internas.
+- Atribuição de incentivos profissionais com base no progresso das Learning Paths.
+- Disponibilização de uma galeria pública e mecanismos de partilha de conquistas no LinkedIn.
+
+4. Consentimento (RGPD)
+A publicação na galeria pública de badges e a partilha externa dependem da aceitação expressa e prévia dos termos do RGPD na plataforma. O utilizador tem o direito de revogar o seu consentimento a qualquer momento através das definições de perfil.
+
+5. Segurança
+Toda a comunicação entre o dispositivo do utilizador e os servidores da plataforma é obrigatoriamente cifrada através do protocolo HTTPS.', TRUE, TRUE, 1, 2, '2026-01-21T12:00:00+00:00'::timestamptz, '2026-04-21T12:00:00+00:00'::timestamptz);
+INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (2, 'Terms', '1.0', 'Termos e Condições de Utilização
+Última Revisão: Versão 1.0 — Junho 2026
+
+Bem-vindo à Plataforma de Badges da Softinsa. Ao registar-se e utilizar esta aplicação (Web e Mobile), o utilizador aceita expressamente os seguintes termos:
+
+1. Objetivo do Serviço
+A plataforma visa a partilha, validação e atribuição de insígnias digitais (badges) com base em evidências de competências técnicas e certificações obtidas externamente (e.g., Udemy, IBM, AWS, Microsoft).
+
+2. Elegibilidade e Registo
+O acesso é exclusivo a colaboradores e consultores da Softinsa. O utilizador obriga-se a fornecer dados verdadeiros no registo e a proceder à alteração obrigatória de palavra-passe no primeiro acesso.
+
+3. Submissão de Evidências
+Ao submeter candidaturas a um badge, o consultor é responsável pela veracidade dos ficheiros carregados (diplomas, relatórios, certificados). A submissão intencional de documentos falsos constitui uma infração disciplinar.
+
+4. Sistema de Gamificação e Pontuação
+A plataforma atribui pontos conforme a obtenção de badges. O sistema de pontuação é definido pelo Administrador e serve como critério interno de avaliação de mérito pelas lideranças (Service Line Leaders). Em caso de expiração de um badge, os pontos acumulados pelo consultor mantêm-se.
+
+5. Uso de Páginas Públicas
+Cada badge conquistado gera uma ligação (link) pública de verificação única. O utilizador compreende que este endereço poderá ser acedido publicamente e integrado em assinaturas de e-mail corporativas ou perfis de redes profissionais (LinkedIn).', TRUE, TRUE, 1, 2, '2026-01-31T12:00:00+00:00'::timestamptz, '2026-04-24T12:00:00+00:00'::timestamptz);
+INSERT INTO gdpr_policies (policy_id, policy_type, version, policy_text, is_mandatory, is_active, updated_by, created_by, created_at, updated_at) VALUES (3, 'Cookies', '1.0', 'Política de Cookies
+Última Revisão: Versão 1.0 — Junho 2026
+
+A Plataforma de Badges da Softinsa utiliza cookies para garantir o funcionamento seguro da aplicação. Esta política explica quais cookies são utilizados, a sua finalidade e a base legal aplicável.
+
+1. O Que São Cookies
+Cookies são pequenos ficheiros de texto armazenados no navegador do utilizador quando este acede à plataforma. Permitem que o servidor reconheça sessões e mantenha o estado de autenticação.
+
+2. Cookies Utilizados
+
+a) refreshToken (Cookie Estritamente Necessário)
+- Finalidade: Armazena o token de atualização (refresh token) que permite renovar a sessão do utilizador sem necessidade de repetir o início de sessão.
+- Tipo: Cookie HTTP-only, não acessível por JavaScript do lado do cliente.
+- Atributos de segurança: HttpOnly, Secure (em produção), SameSite=Strict.
+- Âmbito (Path): Restrito às rotas de autenticação (/api/auth).
+- Duração: Até 30 dias quando a opção "Lembrar-me" está ativa; 1 hora na sessão padrão.
+- Base legal: Interesse legítimo e necessidade técnica — este cookie é indispensável para o funcionamento da autenticação da plataforma.
+
+3. Cookies de Terceiros
+A plataforma não utiliza cookies de terceiros, de rastreamento publicitário ou de análise comportamental (analytics). Nenhum dado é partilhado com redes de publicidade ou plataformas de tracking.
+
+4. Gestão de Cookies
+Por se tratar de um cookie estritamente necessário ao funcionamento da plataforma, o refreshToken não requer consentimento separado nos termos do artigo 5.º, n.º 3 da Diretiva ePrivacy (2002/58/CE). O utilizador pode, no entanto, eliminar cookies através das definições do seu navegador, sendo que tal ação resultará no encerramento da sessão ativa.
+
+5. Alterações a Esta Política
+A Softinsa reserva-se o direito de atualizar esta política de cookies. Quaisquer alterações serão comunicadas através da plataforma e refletidas na data de revisão indicada no topo deste documento.', FALSE, TRUE, 2, 1, '2026-02-10T12:00:00+00:00'::timestamptz, '2026-04-27T12:00:00+00:00'::timestamptz);
 INSERT INTO notification_definitions (definition_id, code, name, description, target_route, user_id) VALUES (1, 'HOME_DIGEST', 'Home digest', 'Daily activity summary', '/home', 2);
 INSERT INTO notification_definitions (definition_id, code, name, description, target_route, user_id) VALUES (2, 'BADGE_AVAILABLE', 'Badge available', 'New badge available in an enrolled area', '/badges', 1);
 INSERT INTO notification_definitions (definition_id, code, name, description, target_route, user_id) VALUES (3, 'APPLICATION_SUBMITTED', 'Application submitted', 'Application submitted for validation', '/applications', 1);
