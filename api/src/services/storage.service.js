@@ -81,7 +81,7 @@ const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePat
     try {
         if (!supabase) {
             // Return sensible dummy URLs when Supabase is not configured.
-            const base = process.env.SUPABASE_URL || 'http://localhost';
+            const base = process.env.SUPABASE_STORAGE_URL || 'http://localhost';
             const uploadUrl = `${base}/storage/v1/signed_upload/${bucketName}/${encodeURIComponent(storagePath)}`;
             const finalFileUrl = `${base}/storage/v1/object/authenticated/${bucketName}/${storagePath}`;
             return { uploadUrl, finalFileUrl };
@@ -96,10 +96,10 @@ const generateSignedUploadUrl = async (bucketName = 'private-assets', storagePat
             throw new Error(`Supabase Error: ${error.message}`);
         }
 
-        const uploadUrl = `${process.env.SUPABASE_URL}/storage/v1${data.signedUrl}`;
+        const uploadUrl = data.signedUrl;
 
         // URL after upload
-        const finalFileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/authenticated/${bucketName}/${storagePath}`;
+        const finalFileUrl = `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/authenticated/${bucketName}/${storagePath}`;
 
         return { uploadUrl, finalFileUrl };
 
