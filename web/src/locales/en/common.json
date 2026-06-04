@@ -190,6 +190,22 @@
 	"topBar": {
 		"searchPlaceholder": "Search badges, skills, areas..."
 	},
+	"search": {
+		"resultsFor": "Results for \"{{query}}\"",
+		"resultCount": "{{count}} result found",
+		"resultCount_other": "{{count}} results found",
+		"noResults": "No results found",
+		"noResultsDesc": "Try a different search term.",
+		"enterQuery": "Search the platform",
+		"enterQueryDesc": "Type a term to search for badges, skills, areas and more.",
+		"learningPaths": "Learning Paths",
+		"serviceLines": "Service Lines",
+		"areas": "Areas",
+		"stages": "Progression Stages",
+		"badges": "Badges",
+		"skills": "Skills",
+		"users": "Users"
+	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
 		"brandDescription": "Technology consulting leader, focused on continuous skills recognition and certification through innovative Learning Paths.",

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../routes/paths';
 import styles from './TopBar.module.css';
@@ -12,6 +12,12 @@ import SearchBar from './SearchBar/SearchBar';
 export default function TopBar() {
     const { user, displayName, points } = useUser();
     const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    const handleSearch = (query) => {
+        if (!query) return;
+        navigate(`${SHARED.SEARCH}?q=${encodeURIComponent(query)}`);
+    };
 
     return (
         <header className={styles.topBar}>
@@ -19,7 +25,10 @@ export default function TopBar() {
                 <Logo />
             </Link>
             <div className={styles.searchSection}>
-                <SearchBar placeholder={t('topBar.searchPlaceholder')} />
+                <SearchBar
+                    placeholder={t('topBar.searchPlaceholder')}
+                    onSearch={handleSearch}
+                />
             </div>
             <div className={styles.rightSection}>
                 {
