@@ -126,14 +126,14 @@
 	padding: 0.2rem 0.45rem;
 }
 
-.checkboxRow .form-check-input {
+.checkboxRow :global(.form-check-input) {
 	float: none;
 	margin-left: 0;
 	margin-right: 0.55rem;
 	cursor: pointer;
 }
 
-.checkboxRow .form-check-label {
+.checkboxRow :global(.form-check-label) {
 	cursor: pointer;
 	font-size: 0.88rem;
 }
