@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 7;
+  static const _databaseVersion = 8;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -22,6 +22,7 @@ class LocalDatabase {
   static const skillsTable = 'skills_cache';
   static const rewardsTable = 'rewards_cache';
   static const announcementsTable = 'announcements_cache';
+  static const translationCacheTable = 'translation_cache';
 
   // ── Sync tracking ────────────────────────────────────────────────────────
   static const syncMetadataTable = 'sync_metadata';
@@ -142,6 +143,17 @@ class LocalDatabase {
       await db.execute(
         "ALTER TABLE $notificationsTable ADD COLUMN notification_type TEXT NOT NULL DEFAULT 'SYSTEM'",
       );
+    }
+    if (oldVersion < 8) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $translationCacheTable (
+          source_key  TEXT    NOT NULL,
+          target_lang TEXT    NOT NULL,
+          translated  TEXT    NOT NULL,
+          cached_at   INTEGER NOT NULL,
+          PRIMARY KEY (source_key, target_lang)
+        )
+      ''');
     }
   }
 
@@ -305,6 +317,15 @@ class LocalDatabase {
       )
     ''',
     'CREATE INDEX IF NOT EXISTS idx_ann_active ON $announcementsTable (is_active)',
+    '''
+      CREATE TABLE IF NOT EXISTS $translationCacheTable (
+        source_key  TEXT    NOT NULL,
+        target_lang TEXT    NOT NULL,
+        translated  TEXT    NOT NULL,
+        cached_at   INTEGER NOT NULL,
+        PRIMARY KEY (source_key, target_lang)
+      )
+    ''',
   ];
 
   // ── Own-user tables ───────────────────────────────────────────────────────

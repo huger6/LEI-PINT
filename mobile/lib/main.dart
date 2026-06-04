@@ -23,11 +23,13 @@ import 'data/repositories/ranking_repo.dart';
 import 'data/repositories/goals_repo.dart';
 import 'data/repositories/statistics_repo.dart';
 import 'data/local/current_user_dao.dart';
+import 'data/local/lang_dao.dart';
 import 'data/local/notification_dao.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/sync_service.dart';
+import 'core/services/translation_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,8 +101,16 @@ void main() async {
     return;
   }
 
-  final languageController = LanguageController();
+  final languageController = LanguageController(
+    getIt<TranslationService>(),
+    getIt<LanguageDao>(),
+  );
   await languageController.initialize();
+
+  // Pre-download every supported language model and warm their translation
+  // caches in the background, so the user starts the app with all languages
+  // ready to use (and fully offline) without blocking the first frame.
+  unawaited(languageController.prepareAllLanguages());
 
   runApp(
     MultiProvider(

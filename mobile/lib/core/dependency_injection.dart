@@ -9,6 +9,7 @@ import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
 import '../data/local/current_user_dao.dart';
 import '../data/local/lang_dao.dart';
+import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/local/my_favorite_dao.dart';
 import '../data/local/my_skill_dao.dart';
@@ -28,22 +29,30 @@ import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 import 'services/connectivity_service.dart';
 import 'services/sync_service.dart';
+import 'services/translation_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
   if (!dotenv.isInitialized) {
-    try {
-      await dotenv.load(fileName: 'project.env');
-    } catch (e, stackTrace) {
+    // Client env files only. Each candidate must also be declared under
+    // `flutter > assets` in pubspec.yaml. Never bundle server-secret files.
+    const envCandidates = ['.env', 'project.env'];
+    var envLoaded = false;
+    for (final fileName in envCandidates) {
       try {
-        await dotenv.load(fileName: '.env');
+        await dotenv.load(fileName: fileName);
+        envLoaded = true;
+        break;
       } catch (_) {
-        debugPrint(
-          'Environment file not loaded. Continuing with fallback config: $e',
-        );
+        // Try the next candidate.
       }
-      debugPrintStack(stackTrace: stackTrace);
+    }
+    if (!envLoaded) {
+      debugPrint(
+        'No environment file loaded (expected .env). '
+        'Continuing with fallback config.',
+      );
     }
   }
 
@@ -158,6 +167,20 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<MySkillDao>()) {
     getIt.registerLazySingleton<MySkillDao>(
       () => MySkillDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<TranslationCacheDao>()) {
+    getIt.registerLazySingleton<TranslationCacheDao>(
+      () => TranslationCacheDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  // ── Services ──────────────────────────────────────────────────────────────
+
+  if (!getIt.isRegistered<TranslationService>()) {
+    getIt.registerLazySingleton<TranslationService>(
+      () => TranslationService(getIt<TranslationCacheDao>()),
     );
   }
 

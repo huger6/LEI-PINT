@@ -137,9 +137,9 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Badge partilhado com sucesso!'),
-            backgroundColor: Color(0xFF59C13E),
+          SnackBar(
+            content: Text(LanguageScope.of(context).tr('badgeSharedSuccess')),
+            backgroundColor: const Color(0xFF59C13E),
           ),
         );
       }
@@ -168,7 +168,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Não foi possível abrir a ligação.'),
+          content: Text(LanguageScope.of(context).tr('couldNotOpenLink')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -184,7 +184,9 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Não foi possível identificar a candidatura associada a este badge.'),
+          content: Text(
+            LanguageScope.of(context).tr('couldNotIdentifyApplication'),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -204,10 +206,10 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('A transferir comprovativo...'),
-        duration: Duration(seconds: 30),
-        backgroundColor: Color(0xFF3D5A80),
+      SnackBar(
+        content: Text(LanguageScope.of(context).tr('downloadingProof')),
+        duration: const Duration(seconds: 30),
+        backgroundColor: const Color(0xFF3D5A80),
       ),
     );
 
@@ -235,7 +237,9 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            errorMsg.isNotEmpty ? errorMsg : 'Erro ao transferir comprovativo.',
+            errorMsg.isNotEmpty
+                ? errorMsg
+                : LanguageScope.of(context).tr('proofDownloadError'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -246,6 +250,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   @override
   Widget build(BuildContext context) {
     final badgeStore = context.watch<BadgeStore>();
+    final tr = LanguageScope.of(context);
 
     return DefaultTabController(
       length: 2,
@@ -256,29 +261,29 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
             children: [
               Container(
                 color: Colors.grey[100],
-                child: const TabBar(
+                child: TabBar(
                   tabs: [
-                    Tab(text: 'Badges Obtidos'),
-                    Tab(text: 'Candidaturas'),
+                    Tab(text: tr.tr('tabEarnedBadges')),
+                    Tab(text: tr.tr('tabApplications')),
                   ],
-                  labelColor: Color(0xFF1E2932),
-                  unselectedLabelColor: Color(0xFF1E2932),
-                  labelStyle: TextStyle(
+                  labelColor: const Color(0xFF1E2932),
+                  unselectedLabelColor: const Color(0xFF1E2932),
+                  labelStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
-                  unselectedLabelStyle: TextStyle(
+                  unselectedLabelStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
-                  indicator: UnderlineTabIndicator(
+                  indicator: const UnderlineTabIndicator(
                     borderSide: BorderSide(
                       color: Color(0xFF62B7E4),
                       width: 3.2,
                     ),
                     insets: EdgeInsets.symmetric(horizontal: 10),
                   ),
-                  dividerColor: Color(0xFFDCE3E9),
+                  dividerColor: const Color(0xFFDCE3E9),
                 ),
               ),
               Expanded(
@@ -298,6 +303,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   }
 
   Widget _buildBadgesTab(BadgeStore badgeStore) {
+    final tr = LanguageScope.of(context);
     final query = _badgesSearchController.text.trim().toLowerCase();
     final earned = badgeStore.earnedBadges
         .where((e) => e.badge.title.toLowerCase().contains(query))
@@ -309,7 +315,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
         children: [
           BadgesSearchBar(
             controller: _badgesSearchController,
-            hintText: 'Procure badges',
+            hintText: tr.tr('myBadgesSearchHint'),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
@@ -329,8 +335,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                     const SizedBox(height: 12),
                     Text(
                       query.isNotEmpty
-                          ? 'Nenhum badge encontrado.'
-                          : 'Ainda não obteve nenhum badge.',
+                          ? tr.tr('noBadgesFound')
+                          : tr.tr('noEarnedBadgesYet'),
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],
@@ -364,6 +370,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   }
 
   Widget _buildApplicationsTab() {
+    final tr = LanguageScope.of(context);
     final query = _applicationsSearchController.text.trim().toLowerCase();
 
     final filtered = _applications
@@ -396,7 +403,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                 final filter = ApplicationFilter.values[index];
                 final selected = filter == _selectedFilter;
                 return ChoiceChip(
-                  label: Text(filter.label),
+                  label: Text(tr.tr(filter.labelKey)),
                   selected: selected,
                   onSelected: (_) {
                     setState(() {
@@ -421,7 +428,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
           const SizedBox(height: 12),
           BadgesSearchBar(
             controller: _applicationsSearchController,
-            hintText: 'Procure candidaturas, badges',
+            hintText: tr.tr('applicationsSearchHint'),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
@@ -444,9 +451,9 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFF1CD7A)),
                       ),
-                      child: const Text(
-                        'Não foi possível carregar candidaturas. A mostrar dados locais.',
-                        style: TextStyle(
+                      child: Text(
+                        tr.tr('applicationsLoadFailedLocal'),
+                        style: const TextStyle(
                           color: Color(0xFF695428),
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
@@ -457,7 +464,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                     Expanded(
                       child: Center(
                         child: Text(
-                          'Nenhuma candidatura encontrada.',
+                          tr.tr('noApplicationsFound'),
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],
@@ -516,12 +523,13 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   }
 
   ApplicationStateVisual _stateOf(String status) {
+    final tr = LanguageScope.of(context);
     final normalized = status.toLowerCase();
 
     if (normalized.contains('accepted') || normalized.contains('approved') || normalized.contains('aprov')) {
-      return const ApplicationStateVisual(
-        label: 'Aprovado',
-        color: Color(0xFF59C13E),
+      return ApplicationStateVisual(
+        label: tr.tr('stateApproved'),
+        color: const Color(0xFF59C13E),
         filter: ApplicationFilter.approved,
       );
     }
@@ -529,16 +537,16 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     if (normalized.contains('reject') ||
         normalized.contains('rejeit') ||
         normalized.contains('devolv')) {
-      return const ApplicationStateVisual(
-        label: 'Rejeitado',
-        color: Color(0xFFD94A2A),
+      return ApplicationStateVisual(
+        label: tr.tr('stateRejected'),
+        color: const Color(0xFFD94A2A),
         filter: ApplicationFilter.rejected,
       );
     }
 
-    return const ApplicationStateVisual(
-      label: 'Em validação',
-      color: Color(0xFFC9A625),
+    return ApplicationStateVisual(
+      label: tr.tr('stateInValidation'),
+      color: const Color(0xFFC9A625),
       filter: ApplicationFilter.inReview,
     );
   }
@@ -548,24 +556,26 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       return _approvedRelative(date);
     }
 
+    final tr = LanguageScope.of(context);
     if (state.filter == ApplicationFilter.rejected) {
-      return 'Rejeitado ${_relativeLower(date)}';
+      return '${tr.tr('stateRejected')} ${_relativeLower(date)}';
     }
 
     return _relativeLower(date);
   }
 
   String _approvedRelative(DateTime? date) {
-    if (date == null) return 'Aprovado';
+    final tr = LanguageScope.of(context);
+    if (date == null) return tr.tr('stateApproved');
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateDay = DateTime(date.year, date.month, date.day);
     final days = today.difference(dateDay).inDays;
 
-    if (days <= 0) return 'Aprovado hoje';
-    if (days == 1) return 'Aprovado há 1 dia';
-    return 'Aprovado há $days dias';
+    if (days <= 0) return tr.tr('approvedToday');
+    if (days == 1) return tr.tr('approvedOneDayAgo');
+    return tr.tr('approvedDaysAgo').replaceAll('{days}', '$days');
   }
 
   String _formatDate(DateTime? date) {
@@ -580,21 +590,22 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
   }
 
   String _relativeLower(DateTime? date) {
+    final tr = LanguageScope.of(context);
     if (date == null) {
-      return 'há pouco tempo';
+      return tr.tr('shortTimeAgo');
     }
 
     final diff = DateTime.now().difference(date);
     if (diff.inMinutes < 60) {
       final minutes = diff.inMinutes <= 0 ? 1 : diff.inMinutes;
-      return 'há $minutes minutos';
+      return tr.tr('minutesAgo').replaceAll('{minutes}', '$minutes');
     }
     if (diff.inHours < 24) {
       final hours = diff.inHours;
-      return 'há $hours horas';
+      return tr.tr('hoursAgo').replaceAll('{hours}', '$hours');
     }
 
     final days = diff.inDays;
-    return 'há $days dias';
+    return tr.tr('daysAgo').replaceAll('{days}', '$days');
   }
 }

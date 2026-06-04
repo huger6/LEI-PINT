@@ -58,6 +58,7 @@ dependencies:
   shared_preferences: ^2.5.5
   url_launcher: ^6.3.1
   open_filex: ^4.7.0
+  google_mlkit_translation: ^0.13.0
 
 dev_dependencies:
   flutter_test:
@@ -86,7 +87,6 @@ flutter:
   assets:
     - .env
     - assets/images/logotipo_softinsa.png
-    - assets/translations/
     - assets/icon/icon-softinsa.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -9,6 +9,7 @@ import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/shared/translated_text.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
 import '../../widgets/profile/profile_widgets.dart';
 import '../evolution/points_detail_screen.dart';
@@ -54,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final badgeStore = context.watch<BadgeStore>();
 
@@ -67,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? authStore.currentUser!.fullName.trim()
         : ((authStore.currentUser?.username.trim().isNotEmpty ?? false)
               ? authStore.currentUser!.username.trim()
-              : 'Utilizador');
+              : tr.tr('userFallback'));
 
     final userAreas = authStore.currentUser?.areas ?? const [];
     final primaryArea = userAreas.where((a) => a.isPrimary).firstOrNull;
@@ -75,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? primaryArea!.name.trim()
         : (userAreas.isNotEmpty
               ? userAreas.first.name
-              : 'Área principal não definida');
+              : tr.tr('primaryAreaNotDefined'));
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -112,7 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 3),
               Center(
-                child: Text(
+                child: TranslatedText(
                   userArea,
                   style: const TextStyle(
                     fontSize: 19,
@@ -125,10 +127,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 1),
-              const Center(
+              Center(
                 child: Text(
-                  'Jornada Técnica',
-                  style: TextStyle(
+                  tr.tr('technicalJourney'),
+                  style: const TextStyle(
                     fontSize: 17,
                     color: Color(0xFF7B8692),
                     fontWeight: FontWeight.w500,
@@ -141,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: QuickMetricCard(
                       value: '$badgeCount',
-                      label: 'Badges',
+                      label: tr.tr('badgesMetric'),
                       icon: Icons.workspace_premium_outlined,
                       onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
                     ),
@@ -150,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: QuickMetricCard(
                       value: '$skillsCount',
-                      label: 'Competências',
+                      label: tr.tr('skillsMetric'),
                       icon: Icons.extension_outlined,
                     ),
                   ),
@@ -158,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: QuickMetricCard(
                       value: '$totalPoints',
-                      label: 'Pontos',
+                      label: tr.tr('pointsTitle'),
                       icon: Icons.stars_outlined,
                       onTap: () {
                         Navigator.push(
@@ -204,23 +206,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Color(0xFF4D9ECC),
                     ),
                   ),
-                  title: const Text(
-                    'Galeria de Badges',
-                    style: TextStyle(
+                  title: Text(
+                    tr.tr('badgeGalleryTitle'),
+                    style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1E2932),
                     ),
                   ),
-                  subtitle: const Text(
-                    'View and manage your achievement badges',
-                    style: TextStyle(color: Color(0xFF6E7A86), fontSize: 12),
+                  subtitle: Text(
+                    tr.tr('badgeGallerySubtitle'),
+                    style: const TextStyle(
+                      color: Color(0xFF6E7A86),
+                      fontSize: 12,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
                         child: Text(
-                          'Ver galeria',
+                          tr.tr('viewGallery'),
                           style: const TextStyle(
                             color: Color(0xFF5D9FD1),
                             fontWeight: FontWeight.w700,
@@ -241,9 +248,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
-                'Definições',
-                style: TextStyle(
+              Text(
+                tr.tr('settings'),
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1E2932),
@@ -299,20 +306,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       final messenger = ScaffoldMessenger.of(context);
                       await langCtrl.setLanguageCode(code);
                       if (!mounted) return;
-                      final langId = int.tryParse(langCtrl.languageDatabaseId);
-                      if (langId != null) {
-                        final result = await authStore.changeLanguage(langId);
-                        if (mounted && result['success'] != true) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                result['message']?.toString() ??
-                                    'Erro ao alterar idioma.',
-                              ),
-                              backgroundColor: AppColors.error,
+                      final langId = langCtrl.languageDatabaseId;
+                      final result = await authStore.changeLanguage(langId);
+                      if (mounted && result['success'] != true) {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              result['message']?.toString() ??
+                                  'Erro ao alterar idioma.',
                             ),
-                          );
-                        }
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
                       }
                     },
                   );

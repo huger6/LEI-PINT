@@ -97,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ? authStore.currentUser!.fullName.trim()
         : (authStore.currentUser?.username.trim().isNotEmpty == true
               ? authStore.currentUser!.username.trim()
-              : 'Consultor');
+              : tr.tr('consultantFallback'));
 
     final totalPoints = dashStore.totalPoints > 0
         ? dashStore.totalPoints
