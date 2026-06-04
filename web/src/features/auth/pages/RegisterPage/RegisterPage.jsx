@@ -44,7 +44,11 @@ import {
 } from '../../../../validations';
 import { usePhoneMetadata } from '../../../../services/libphonenumber';
 
-const ROLE_KEYS = ['Consultant', 'Talent Manager', 'Service Line Leader'];
+const ROLE_KEYS = [
+	'Consultant',
+	// 'Talent Manager',
+	// 'Service Line Leader',
+];
 
 const INITIAL_FORM = {
 	full_name: '',
@@ -78,7 +82,7 @@ const HINT_COLORS = {
 export default function RegisterPage() {
 	const { t, i18n } = useTranslation();
 	const [step, setStep] = useState(1);
-	const [role, setRole] = useState('');
+	const [role, setRole] = useState('Consultant');
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
 	const [showPassword, setShowPassword] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -274,7 +278,7 @@ export default function RegisterPage() {
 	}, [applyPhoneValue, clearFeedbackFor, phonePrefix]);
 
 	useEffect(() => {
-		if (step !== 3) return;
+		if (step !== 2) return;
 
 		Promise.all([
 			api.get('/languages').catch(() => ({ data: { data: [] } })),
@@ -340,7 +344,7 @@ export default function RegisterPage() {
 		isCheckPending(usernameCheck.status) || isCheckPending(emailCheck.status);
 
 	const handleNext = () => {
-		if (step === 2) {
+		if (step === 1) {
 			step2Fields.forEach((f) => setFieldTouched(f, true));
 			if (step2HasErrors) return;
 			if (step2HasPending) return;
@@ -362,11 +366,11 @@ export default function RegisterPage() {
 		markAllTouched();
 
 		if (hasErrors(liveErrors)) {
-			if (step2Fields.some((f) => liveErrors[f])) setStep(2);
+			if (step2Fields.some((f) => liveErrors[f])) setStep(1);
 			return;
 		}
 		if (usernameAsyncError || emailAsyncError) {
-			setStep(2);
+			setStep(1);
 			return;
 		}
 		if (biographyAsyncError) return;
@@ -402,8 +406,9 @@ export default function RegisterPage() {
 			if (values.location_id) payload.location_id = Number(values.location_id);
 			if (values.profile_img_url) payload.profile_img_url = values.profile_img_url;
 			if (role === 'Consultant') payload.areas = values.areas;
-			if (role === 'Service Line Leader' && values.service_line_id)
-				payload.service_line_id = Number(values.service_line_id);
+			// SLL registration disabled — only Consultant can self-register.
+			// if (role === 'Service Line Leader' && values.service_line_id)
+			// 	payload.service_line_id = Number(values.service_line_id);
 
 			await register(payload);
 			setSuccess(true);
@@ -417,7 +422,7 @@ export default function RegisterPage() {
 			const backendFields = extractFieldErrors(err);
 			if (Object.keys(backendFields).length) {
 				setServerFieldErrors((prev) => ({ ...prev, ...backendFields }));
-				if (step2Fields.some((f) => backendFields[f])) setStep(2);
+				if (step2Fields.some((f) => backendFields[f])) setStep(1);
 				setApiError(resolveErrorMessage(err));
 				return;
 			}
@@ -507,7 +512,7 @@ export default function RegisterPage() {
 			</Helmet>
 			<AuthCard>
 				<div className={styles.stepBar}>
-					{[1, 2, 3].map((s) => (
+					{[1, 2].map((s) => (
 						<div
 							key={s}
 							className={`${styles.step} ${step >= s ? styles.stepActive : ''}`}
@@ -516,7 +521,9 @@ export default function RegisterPage() {
 					))}
 				</div>
 
-				{step === 1 && (
+				{/* Role selection step commented out — only Consultant can self-register.
+				   TM, SLL, and Admin accounts are created by administrators.
+				{step === 0 && (
 					<div>
 						<h2 className={`text-center mb-1 ${styles.title}`}>{t('register.createAccount')}</h2>
 						<p className={`text-center mb-3 small ${styles.subtitle}`}>{t('register.chooseRole')}</p>
@@ -526,7 +533,7 @@ export default function RegisterPage() {
 									key={r}
 									type="button"
 									className={`${styles.roleCard} ${role === r ? styles.roleCardActive : ''}`}
-									onClick={() => { setRole(r); setStep(2); }}
+									onClick={() => { setRole(r); setStep(1); }}
 								>
 									<span className={styles.roleLabel}>{t(`register.roles.${r}`)}</span>
 									<span className={styles.roleDesc}>{t(`register.roleDescriptions.${r}`)}</span>
@@ -538,13 +545,11 @@ export default function RegisterPage() {
 						</p>
 					</div>
 				)}
+				*/}
 
-				{step === 2 && (
+				{step === 1 && (
 					<form onSubmit={(e) => { e.preventDefault(); handleNext(); }} noValidate>
-						<h2 className={`text-center mb-1 ${styles.title}`}>{t('register.basicInfo')}</h2>
-						<p className={`text-center mb-3 small ${styles.subtitle}`}>
-							<Trans i18nKey="register.registeringAs" values={{ role: t(`register.roles.${role}`) }} components={{ strong: <strong /> }} />
-						</p>
+						<h2 className={`text-center mb-1 ${styles.title}`}>{t('register.createAccount')}</h2>
 						<div className="vstack gap-3">
 							<FormInput
 								{...form.getFieldProps('full_name')}
@@ -599,19 +604,15 @@ export default function RegisterPage() {
 
 							<FormAlert message={apiError} />
 
-							<div className="row g-2 mt-1">
-								<div className="col">
-									<Button type="button" variant="outlined" onClick={() => setStep(1)} fullWidth>{t('register.back')}</Button>
-								</div>
-								<div className="col">
-									<Button type="submit" loading={continueDisabled} fullWidth>{t('register.continue')}</Button>
-								</div>
-							</div>
+							<Button type="submit" loading={continueDisabled} fullWidth className="mt-1">{t('register.continue')}</Button>
+							<p className="text-center mt-1 mb-0 small" style={{ color: 'var(--color-outline)' }}>
+								{t('register.alreadyHaveAccount')} <Link to={AUTH.LOGIN}>{t('register.signIn')}</Link>
+							</p>
 						</div>
 					</form>
 				)}
 
-				{step === 3 && (
+				{step === 2 && (
 					<form onSubmit={handleSubmit} noValidate>
 						<h2 className={`text-center mb-1 ${styles.title}`}>{t('register.additionalDetails')}</h2>
 						<div className="vstack gap-3">
@@ -826,6 +827,7 @@ export default function RegisterPage() {
 										</div>
 									)}
 
+									{/* SLL registration disabled — only Consultant can self-register.
 									{role === 'Service Line Leader' && (
 										<FormInput
 											{...form.getFieldProps('service_line_id')}
@@ -838,6 +840,7 @@ export default function RegisterPage() {
 											error={fieldError('service_line_id')}
 										/>
 									)}
+									*/}
 								</>
 							)}
 
