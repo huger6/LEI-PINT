@@ -259,7 +259,7 @@ def username_from_name(full_name: str, used: set[str]) -> str:
 def make_person(used_usernames: set[str]) -> tuple[str, str, str]:
     full_name = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
     username = username_from_name(full_name, used_usernames)
-    email = f"{username}@softinsa.pt"
+    email = f"{username}@softinsatestplatform.pt"
     return full_name, username, email
 
 
