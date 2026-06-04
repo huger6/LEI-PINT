@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/utils/badge_visuals.dart';
+import 'skill_model.dart';
 
 class BadgeModel {
   const BadgeModel({
@@ -17,7 +18,7 @@ class BadgeModel {
     required this.medalColor,
     required this.ribbonColor,
     required this.description,
-    required this.skills,
+    this.skills = const [],
     required this.attributes,
     required this.requirements,
   });
@@ -92,7 +93,7 @@ class BadgeModel {
         'badge_description',
         'description',
       ]),
-      skills: _extractStringList(json['skills']),
+      skills: _extractSkills(json['skills']),
       attributes: buildAttributes(
         area: area,
         points: points,
@@ -106,7 +107,7 @@ class BadgeModel {
   factory BadgeModel.fromApiDetail(Map<String, dynamic> json) {
     final summary = BadgeModel.fromApiSummary(json);
 
-    final skills = _extractStringList(json['skills']);
+    final skills = _extractSkills(json['skills']);
     final requirements = _extractRequirements(json);
 
     return BadgeModel(
@@ -142,7 +143,7 @@ class BadgeModel {
   final Color medalColor;
   final Color ribbonColor;
   final String description;
-  final List<String> skills;
+  final List<SkillModel> skills;
   final List<BadgeAttribute> attributes;
   final List<BadgeRequirement> requirements;
 
@@ -228,15 +229,17 @@ class BadgeModel {
         .toList();
   }
 
-  static List<String> _extractStringList(dynamic raw) {
-    if (raw is! List) {
-      return const [];
-    }
+  static List<SkillModel> _extractSkills(dynamic raw) {
+    if (raw is! List) return const [];
 
-    return raw
-        .map((item) => item.toString().trim())
-        .where((text) => text.isNotEmpty)
-        .toList();
+    return raw.map((item) {
+      if (item is Map) {
+        return SkillModel.fromJson(Map<String, dynamic>.from(item));
+      }
+      final name = item.toString().trim();
+      if (name.isEmpty) return null;
+      return SkillModel(id: 0, name: name);
+    }).whereType<SkillModel>().toList();
   }
 
   static String _readString(Map<String, dynamic> json, List<String> keys) {
