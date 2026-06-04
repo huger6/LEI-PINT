@@ -35,7 +35,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: "Open"
     },
-    reviewer_notes: {
+    consultant_notes: {
       type: DataTypes.TEXT,
       allowNull: true
     },

@@ -55,6 +55,10 @@ module.exports = function (sequelize, DataTypes) {
     display_order: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    last_expiry_alert_days: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     sequelize,
