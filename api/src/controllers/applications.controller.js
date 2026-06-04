@@ -439,6 +439,7 @@ const submitApplication = async (req, res) => {
 
             await notificationsService.createNotification({
                 userId: application.user_id,
+                definitionId: 3,
                 notificationType: 'APPLICATIONS',
                 title: 'NOTIF_APP_SUBMITTED_TITLE',
                 body: 'NOTIF_APP_SUBMITTED_BODY',
@@ -465,6 +466,7 @@ const submitApplication = async (req, res) => {
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
+                        definitionId: 3,
                         notificationType: 'APPLICATIONS',
                         title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                         body: 'NOTIF_APP_NEW_APPLICATION_BODY',
@@ -480,6 +482,7 @@ const submitApplication = async (req, res) => {
             for (const tm of tms) {
                 await notificationsService.createNotification({
                     userId: tm.user_id,
+                    definitionId: 3,
                     notificationType: 'APPLICATIONS',
                     title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                     body: 'NOTIF_APP_NEW_APPLICATION_BODY',
@@ -646,20 +649,40 @@ const validateApplication = async (req, res) => {
 
         // Post-commit notifications and emails
         try {
-            const badgeMeta = { badgeTitle: application.badge.badge_title };
+            const badgeMeta = {
+                badgeTitle: application.badge.badge_title,
+                badgeType: application.badge.badge_type
+            };
             const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
 
-            const notifCodeMap = {
-                'In validation': { title: 'NOTIF_APP_IN_VALIDATION_TITLE', body: 'NOTIF_APP_IN_VALIDATION_BODY' },
-                'Accepted':      { title: 'NOTIF_APP_ACCEPTED_TITLE',      body: 'NOTIF_APP_ACCEPTED_BODY' },
-                'Rejected':      { title: 'NOTIF_APP_REJECTED_TITLE',      body: 'NOTIF_APP_REJECTED_BODY' }
-            };
-
-            if (notifCodeMap[newState]) {
+            if (newState === 'Accepted') {
+                const isSpecial = application.badge.badge_type === 'Special';
                 await notificationsService.createNotification({
                     userId: application.user_id,
+                    definitionId: 10,
                     notificationType: 'APPLICATIONS',
-                    ...notifCodeMap[newState],
+                    title: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE' : 'NOTIF_APP_BADGE_AWARDED_TITLE',
+                    body: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY' : 'NOTIF_APP_BADGE_AWARDED_BODY',
+                    meta: badgeMeta,
+                    url: `/applications/${application.application_guid}`
+                });
+            } else if (newState === 'Rejected') {
+                await notificationsService.createNotification({
+                    userId: application.user_id,
+                    definitionId: 11,
+                    notificationType: 'APPLICATIONS',
+                    title: 'NOTIF_APP_REJECTED_TITLE',
+                    body: 'NOTIF_APP_REJECTED_BODY',
+                    meta: badgeMeta,
+                    url: `/applications/${application.application_guid}`
+                });
+            } else if (newState === 'In validation') {
+                await notificationsService.createNotification({
+                    userId: application.user_id,
+                    definitionId: 3,
+                    notificationType: 'APPLICATIONS',
+                    title: 'NOTIF_APP_IN_VALIDATION_TITLE',
+                    body: 'NOTIF_APP_IN_VALIDATION_BODY',
                     meta: badgeMeta,
                     url: `/applications/${application.application_guid}`
                 });
@@ -698,6 +721,7 @@ const validateApplication = async (req, res) => {
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
+                        definitionId: 3,
                         notificationType: 'APPLICATIONS',
                         title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
                         body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',

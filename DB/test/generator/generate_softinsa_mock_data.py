@@ -621,6 +621,10 @@ def generate_sql() -> str:
         ("EVOLUTION_UPDATE", "Evolution update", "Progression trend notification", "/evolution", "EVOLUTION"),
         ("ANNOUNCEMENT_PUBLISHED", "Announcement published", "New platform announcement", "/announcements", "ANNOUNCEMENTS"),
         ("SYSTEM_MESSAGE", "System message", "Operational platform message", "/notifications", "SYSTEM"),
+        ("APPLICATION_APPROVED", "Application approved", "Badge application approved", "/applications", "APPLICATIONS"),
+        ("APPLICATION_REJECTED", "Application rejected", "Badge application rejected", "/applications", "APPLICATIONS"),
+        ("BADGE_EXPIRING_SOON", "Badge expiring soon", "An awarded badge is close to expiring", "/badges", "BADGES"),
+        ("BADGE_EXPIRED", "Badge expired", "An awarded badge has expired", "/badges", "BADGES"),
     ]
     for code, name, description, route, _notification_type in definition_templates:
         row = {
@@ -944,6 +948,8 @@ def generate_sql() -> str:
             "event_start_date": start,
             "event_end_date": start + timedelta(days=random.randint(30, 120)),
             "reminder_at": start - timedelta(days=random.choice([3, 7, 14])),
+            "reminder_sent": False,
+            "auto_reminder_sent": False,
         }
         goals.append(row)
         sql.insert("goals", row)
@@ -1036,6 +1042,7 @@ def generate_sql() -> str:
             "is_published": index % 4 != 0,
             "is_featured": index % 10 == 0,
             "display_order": index + 1,
+            "last_expiry_alert_days": None,
         }
         awarded_badges.append(row)
         sql.insert("awarded_badges", row)

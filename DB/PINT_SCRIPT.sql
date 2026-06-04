@@ -338,7 +338,8 @@ CREATE TABLE IF NOT EXISTS awarded_badges (
    is_published         BOOLEAN                 NOT NULL DEFAULT FALSE,
    is_featured          BOOLEAN                 NOT NULL DEFAULT FALSE,
    display_order        INTEGER                 NULL,
-   
+   last_expiry_alert_days INTEGER               NULL,
+
    CONSTRAINT pk_awarded_badges PRIMARY KEY (awarded_badges_id)
 );
 
@@ -537,6 +538,8 @@ CREATE TABLE IF NOT EXISTS goals (
    event_start_date     TIMESTAMPTZ          NULL,
    event_end_date       TIMESTAMPTZ          NULL,
    reminder_at          TIMESTAMPTZ          NULL,
+   reminder_sent        BOOLEAN              NOT NULL DEFAULT FALSE,
+   auto_reminder_sent   BOOLEAN              NOT NULL DEFAULT FALSE,
 
    CONSTRAINT pk_goals PRIMARY KEY (goal_id)
 );
