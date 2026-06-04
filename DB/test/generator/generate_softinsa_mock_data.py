@@ -40,6 +40,8 @@ NUM_SYSTEM_ANNOUNCEMENTS = 8
 NUM_GOALS = 80
 NUM_NOTIFICATIONS = 180
 NUM_USER_BADGE_INTERACTIONS = 220
+NUM_DEVICE_TOKENS = 10
+NUM_USER_NOTIFICATION_PREF_OVERRIDES = 8
 INCLUDE_SEQUENCE_RESETS = True
 # ----------------------------------------------------------------------------
 
@@ -299,6 +301,8 @@ def validate_config() -> None:
         "NUM_GOALS": NUM_GOALS,
         "NUM_NOTIFICATIONS": NUM_NOTIFICATIONS,
         "NUM_USER_BADGE_INTERACTIONS": NUM_USER_BADGE_INTERACTIONS,
+        "NUM_DEVICE_TOKENS": NUM_DEVICE_TOKENS,
+        "NUM_USER_NOTIFICATION_PREF_OVERRIDES": NUM_USER_NOTIFICATION_PREF_OVERRIDES,
     }
     invalid = [name for name, value in minimums.items() if value < 1]
     if invalid:
@@ -1153,6 +1157,36 @@ def generate_sql() -> str:
             "interaction_date": random_past_datetime(0, 180),
         })
 
+    sql.section("12. Device Tokens & User Notification Preferences")
+
+    device_token_platforms = ["android", "ios"]
+    for index in range(NUM_DEVICE_TOKENS):
+        cid = consultant_ids[index % len(consultant_ids)]
+        platform = device_token_platforms[index % len(device_token_platforms)]
+        sql.insert("device_tokens", {
+            "device_token_id": ids.next("device_tokens"),
+            "user_id": cid,
+            "fcm_token": f"fcm_mock_token_user{cid}_device{index + 1}",
+            "device_name": f"{'Pixel 8' if platform == 'android' else 'iPhone 15'} #{index + 1}",
+            "platform": platform,
+            "is_active": index % 5 != 0,
+            "created_at": random_past_datetime(10, 60),
+            "last_used_at": random_past_datetime(0, 10),
+        })
+
+    for index in range(NUM_USER_NOTIFICATION_PREF_OVERRIDES):
+        cid = consultant_ids[index % len(consultant_ids)]
+        definition = notification_definitions[index % len(notification_definitions)]
+        sql.insert("user_notification_preferences", {
+            "user_pref_id": ids.next("user_notification_preferences"),
+            "user_id": cid,
+            "definition_id": definition["definition_id"],
+            "send_push": False if index % 3 == 0 else None,
+            "send_email": False if index % 4 == 0 else None,
+            "is_enabled": None,
+            "updated_at": random_past_datetime(0, 20),
+        })
+
     if INCLUDE_SEQUENCE_RESETS:
         sql.extend(sequence_reset_lines([
             ("languages", "language_id"),
@@ -1180,6 +1214,8 @@ def generate_sql() -> str:
             ("rewards", "reward_id"),
             ("notifications", "notification_id"),
             ("notification_preferences", "preference_id"),
+            ("device_tokens", "device_token_id"),
+            ("user_notification_preferences", "user_pref_id"),
             ("user_badges_interactions", "interaction_id"),
         ]))
 

@@ -11,6 +11,7 @@ var _badges = require("./badges");
 var _certificates = require("./certificates");
 var _consultant_areas = require("./consultant_areas");
 var _consultants = require("./consultants");
+var _device_tokens = require("./device_tokens");
 var _consultants_selected_skills = require("./consultants_selected_skills");
 var _gdpr_policies = require("./gdpr_policies");
 var _goals = require("./goals");
@@ -33,6 +34,7 @@ var _stage_codes = require("./stage_codes");
 var _system_announcements = require("./system_announcements");
 var _talent_managers = require("./talent_managers");
 var _user_account_tokens = require("./user_account_tokens");
+var _user_notification_preferences = require("./user_notification_preferences");
 var _user_badges_interactions = require("./user_badges_interactions");
 var _user_refresh_tokens = require("./user_refresh_tokens");
 var _users = require("./users");
@@ -50,6 +52,7 @@ function initModels(sequelize) {
   var certificates = _certificates(sequelize, DataTypes);
   var consultant_areas = _consultant_areas(sequelize, DataTypes);
   var consultants = _consultants(sequelize, DataTypes);
+  var device_tokens = _device_tokens(sequelize, DataTypes);
   var consultants_selected_skills = _consultants_selected_skills(sequelize, DataTypes);
   var gdpr_policies = _gdpr_policies(sequelize, DataTypes);
   var goals = _goals(sequelize, DataTypes);
@@ -72,6 +75,7 @@ function initModels(sequelize) {
   var system_announcements = _system_announcements(sequelize, DataTypes);
   var talent_managers = _talent_managers(sequelize, DataTypes);
   var user_account_tokens = _user_account_tokens(sequelize, DataTypes);
+  var user_notification_preferences = _user_notification_preferences(sequelize, DataTypes);
   var user_badges_interactions = _user_badges_interactions(sequelize, DataTypes);
   var user_refresh_tokens = _user_refresh_tokens(sequelize, DataTypes);
   var users = _users(sequelize, DataTypes);
@@ -194,6 +198,12 @@ function initModels(sequelize) {
   notification_definitions.hasMany(slas, { as: "slas", foreignKey: "definition_id"});
   notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
   notification_definitions.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
+  device_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(device_tokens, { as: "device_tokens", foreignKey: "user_id"});
+  user_notification_preferences.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(user_notification_preferences, { as: "user_notification_preferences", foreignKey: "user_id"});
+  user_notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
+  notification_definitions.hasMany(user_notification_preferences, { as: "user_notification_preferences", foreignKey: "definition_id"});
   users.belongsTo(languages, { as: "language", foreignKey: "language_id"});
   languages.hasMany(users, { as: "users", foreignKey: "language_id"});
   badge_requirements.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
@@ -255,6 +265,7 @@ function initModels(sequelize) {
     consultant_areas,
     consultants,
     consultants_selected_skills,
+    device_tokens,
     gdpr_policies,
     goals,
     learning_paths,
@@ -277,6 +288,7 @@ function initModels(sequelize) {
     talent_managers,
     user_account_tokens,
     user_badges_interactions,
+    user_notification_preferences,
     user_refresh_tokens,
     users,
   };

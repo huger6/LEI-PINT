@@ -45,7 +45,36 @@ const createNotification = async ({ userId, definitionId, notificationType, titl
     return notification;
 };
 
+const resolvePreferences = async (definitionId, userId) => {
+    const globalPref = await models.notification_preferences.findOne({
+        where: {
+            definition_id: definitionId,
+            sla_id: null,
+            announcement_id: null
+        }
+    });
+
+    const effective = {
+        is_enabled: globalPref ? globalPref.is_enabled : true,
+        send_push: globalPref ? globalPref.send_push : true,
+        send_email: globalPref ? globalPref.send_email : true
+    };
+
+    const userPref = await models.user_notification_preferences.findOne({
+        where: { user_id: userId, definition_id: definitionId }
+    });
+
+    if (userPref) {
+        if (userPref.is_enabled !== null) effective.is_enabled = userPref.is_enabled;
+        if (userPref.send_push !== null) effective.send_push = userPref.send_push;
+        if (userPref.send_email !== null) effective.send_email = userPref.send_email;
+    }
+
+    return effective;
+};
+
 module.exports = {
     createNotification,
+    resolvePreferences,
     VALID_NOTIFICATION_TYPES
 };
