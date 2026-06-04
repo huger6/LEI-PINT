@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
+const notifPrefsController = require('../controllers/notificationPreferences.controller');
 const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
 
 /**
@@ -58,5 +59,8 @@ router.post('/users/:userGuid/reset-password', loginRequired, isAdmin, adminCont
  * @access  Administrator
  */
 router.get('/service-lines/:serviceLineId/sll-count', loginRequired, isAdmin, adminController.getSllCount);
+
+router.get('/notification-preferences', loginRequired, isAdmin, notifPrefsController.listGlobalPreferences);
+router.put('/notification-preferences/:preferenceId', loginRequired, isAdmin, notifPrefsController.updateGlobalPreference);
 
 module.exports = router;

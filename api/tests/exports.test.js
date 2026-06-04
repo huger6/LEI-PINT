@@ -91,7 +91,7 @@ describe('exports controller', () => {
                 opened_at: new Date('2026-05-20T09:00:00Z'),
                 submitted_at: new Date('2026-05-21T09:00:00Z'),
                 closed_at: null,
-                reviewer_notes: null,
+                consultant_notes: null,
                 user_guid: 'u-2',
                 full_name: 'Joao Costa',
                 email_address: 'joao@test.invalid',

@@ -11,6 +11,14 @@ const applicationGuidParamSchema = z.object({
     applicationGuid: z.string().uuid('VALIDATION_APPLICATION_GUID_INVALID')
 });
 
+const submitApplicationSchema = z.object({
+    consultantNotes: z.string().trim()
+        .max(2000, 'VALIDATION_CONSULTANT_NOTES_MAX_LENGTH')
+        .transform(sanitizeText)
+        .optional()
+        .nullable()
+});
+
 const upsertEvidenceBodySchema = z.object({
     requirementId: positiveIntIdRule,
 
@@ -88,6 +96,7 @@ const evidenceIdParamSchema = z.object({
 module.exports = {
     startApplicationSchema,
     applicationGuidParamSchema,
+    submitApplicationSchema,
     upsertEvidenceBodySchema,
     getApplicationsQuerySchema,
     getUploadUrlBodySchema,

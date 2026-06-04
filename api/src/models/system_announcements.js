@@ -28,10 +28,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(128),
       allowNull: true
     },
-    target_profile: {
-      type: DataTypes.STRING(128),
-      allowNull: true
-    },
     is_global: {
       type: DataTypes.BOOLEAN,
       allowNull: true
@@ -40,14 +36,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      }
     },
     created_by: {
       type: DataTypes.INTEGER,
@@ -94,12 +82,6 @@ module.exports = function (sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "announcement_id" },
-        ]
-      },
-      {
-        name: "user_announcements_fk",
-        fields: [
-          { name: "user_id" },
         ]
       },
       {

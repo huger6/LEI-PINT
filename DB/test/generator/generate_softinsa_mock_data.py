@@ -40,6 +40,8 @@ NUM_SYSTEM_ANNOUNCEMENTS = 8
 NUM_GOALS = 80
 NUM_NOTIFICATIONS = 180
 NUM_USER_BADGE_INTERACTIONS = 220
+NUM_DEVICE_TOKENS = 10
+NUM_USER_NOTIFICATION_PREF_OVERRIDES = 8
 INCLUDE_SEQUENCE_RESETS = True
 # ----------------------------------------------------------------------------
 
@@ -299,6 +301,8 @@ def validate_config() -> None:
         "NUM_GOALS": NUM_GOALS,
         "NUM_NOTIFICATIONS": NUM_NOTIFICATIONS,
         "NUM_USER_BADGE_INTERACTIONS": NUM_USER_BADGE_INTERACTIONS,
+        "NUM_DEVICE_TOKENS": NUM_DEVICE_TOKENS,
+        "NUM_USER_NOTIFICATION_PREF_OVERRIDES": NUM_USER_NOTIFICATION_PREF_OVERRIDES,
     }
     invalid = [name for name, value in minimums.items() if value < 1]
     if invalid:
@@ -617,6 +621,10 @@ def generate_sql() -> str:
         ("EVOLUTION_UPDATE", "Evolution update", "Progression trend notification", "/evolution", "EVOLUTION"),
         ("ANNOUNCEMENT_PUBLISHED", "Announcement published", "New platform announcement", "/announcements", "ANNOUNCEMENTS"),
         ("SYSTEM_MESSAGE", "System message", "Operational platform message", "/notifications", "SYSTEM"),
+        ("APPLICATION_APPROVED", "Application approved", "Badge application approved", "/applications", "APPLICATIONS"),
+        ("APPLICATION_REJECTED", "Application rejected", "Badge application rejected", "/applications", "APPLICATIONS"),
+        ("BADGE_EXPIRING_SOON", "Badge expiring soon", "An awarded badge is close to expiring", "/badges", "BADGES"),
+        ("BADGE_EXPIRED", "Badge expired", "An awarded badge has expired", "/badges", "BADGES"),
     ]
     for code, name, description, route, _notification_type in definition_templates:
         row = {
@@ -695,10 +703,8 @@ def generate_sql() -> str:
             "starts_at": starts_at,
             "ends_at": starts_at + timedelta(days=random.randint(14, 45)),
             "announcement_type": announcement_types[index % len(announcement_types)],
-            "target_profile": TARGET_PROFILES[index % len(TARGET_PROFILES)],
             "is_global": index % 3 == 0,
             "is_active": True,
-            "user_id": None if index % 3 == 0 else random.choice(all_user_ids),
             "created_by": random.choice(admin_ids),
             "updated_by": random.choice(admin_ids),
             "created_at": starts_at - timedelta(days=3),
@@ -898,6 +904,16 @@ def generate_sql() -> str:
                 "service_line_id": service_line["service_line_id"],
             })
 
+    for announcement in system_announcements:
+        if announcement["is_global"]:
+            continue
+        role_sample = random.sample(TARGET_PROFILES, k=random.randint(1, 2))
+        for role in role_sample:
+            sql.insert("announc_roles", {
+                "announcement_id": announcement["announcement_id"],
+                "role_name": role,
+            })
+
     sql.extend([
         "INSERT INTO sl_slas (service_line_id, sla_id)",
         "SELECT sl.service_line_id, s.sla_id",
@@ -932,6 +948,8 @@ def generate_sql() -> str:
             "event_start_date": start,
             "event_end_date": start + timedelta(days=random.randint(30, 120)),
             "reminder_at": start - timedelta(days=random.choice([3, 7, 14])),
+            "reminder_sent": False,
+            "auto_reminder_sent": False,
         }
         goals.append(row)
         sql.insert("goals", row)
@@ -953,9 +971,7 @@ def generate_sql() -> str:
             "user_id": consultant_id,
             "application_guid": uuid.uuid5(uuid.NAMESPACE_URL, f"softinsa-application-{index + 1}-{consultant_id}-{badge['badge_id']}"),
             "application_state": state,
-            "reviewer_notes": "Evidence accepted and badge awarded." if state == "Accepted" else (
-                "More detail is required for practical delivery evidence." if state == "Rejected" else None
-            ),
+            "consultant_notes": None,
             "opened_at": opened_at,
             "submitted_at": submitted_at,
             "closed_at": closed_at,
@@ -1026,6 +1042,7 @@ def generate_sql() -> str:
             "is_published": index % 4 != 0,
             "is_featured": index % 10 == 0,
             "display_order": index + 1,
+            "last_expiry_alert_days": None,
         }
         awarded_badges.append(row)
         sql.insert("awarded_badges", row)
@@ -1127,7 +1144,7 @@ def generate_sql() -> str:
             "definition_id": random.choice(notification_definitions)["definition_id"],
             "sla_id": None,
             "announcement_id": announcement["announcement_id"],
-            "send_email": announcement["target_profile"] != "Consultant",
+            "send_email": index % 2 == 0,
             "send_push": True,
             "is_enabled": True,
             "trigger_before_value": 1,
@@ -1145,6 +1162,36 @@ def generate_sql() -> str:
             "badge_id": badges[index % len(badges)]["badge_id"],
             "interaction_type": INTERACTION_TYPES[index % len(INTERACTION_TYPES)],
             "interaction_date": random_past_datetime(0, 180),
+        })
+
+    sql.section("12. Device Tokens & User Notification Preferences")
+
+    device_token_platforms = ["android", "ios"]
+    for index in range(NUM_DEVICE_TOKENS):
+        cid = consultant_ids[index % len(consultant_ids)]
+        platform = device_token_platforms[index % len(device_token_platforms)]
+        sql.insert("device_tokens", {
+            "device_token_id": ids.next("device_tokens"),
+            "user_id": cid,
+            "fcm_token": f"fcm_mock_token_user{cid}_device{index + 1}",
+            "device_name": f"{'Pixel 8' if platform == 'android' else 'iPhone 15'} #{index + 1}",
+            "platform": platform,
+            "is_active": index % 5 != 0,
+            "created_at": random_past_datetime(10, 60),
+            "last_used_at": random_past_datetime(0, 10),
+        })
+
+    for index in range(NUM_USER_NOTIFICATION_PREF_OVERRIDES):
+        cid = consultant_ids[index % len(consultant_ids)]
+        definition = notification_definitions[index % len(notification_definitions)]
+        sql.insert("user_notification_preferences", {
+            "user_pref_id": ids.next("user_notification_preferences"),
+            "user_id": cid,
+            "definition_id": definition["definition_id"],
+            "send_push": False if index % 3 == 0 else None,
+            "send_email": False if index % 4 == 0 else None,
+            "is_enabled": None,
+            "updated_at": random_past_datetime(0, 20),
         })
 
     if INCLUDE_SEQUENCE_RESETS:
@@ -1174,6 +1221,8 @@ def generate_sql() -> str:
             ("rewards", "reward_id"),
             ("notifications", "notification_id"),
             ("notification_preferences", "preference_id"),
+            ("device_tokens", "device_token_id"),
+            ("user_notification_preferences", "user_pref_id"),
             ("user_badges_interactions", "interaction_id"),
         ]))
 
