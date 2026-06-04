@@ -50,12 +50,13 @@ export const validateRegisterStep3 = (form, role, { phoneMetadata } = {}) => {
 	if (role === 'Consultant') {
 		entries.push(['areas', validateConsultantAreas(form.areas)]);
 	}
-	if (role === 'Service Line Leader') {
-		entries.push([
-			'service_line_id',
-			validateRequiredPositiveIntId(form.service_line_id, tl('service_line_id')),
-		]);
-	}
+	// SLL registration disabled — only Consultant can self-register.
+	// if (role === 'Service Line Leader') {
+	// 	entries.push([
+	// 		'service_line_id',
+	// 		validateRequiredPositiveIntId(form.service_line_id, tl('service_line_id')),
+	// 	]);
+	// }
 	return collect(entries);
 };
 
