@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';
 
@@ -57,7 +58,7 @@ export default function MyApplications() {
 			const data = await getApplications();
 			setApplications(data.data || data || []);
 		} catch (err) {
-			setError(err.message);
+			setError(resolveErrorMessage(err));
 		} finally {
 			setLoading(false);
 		}
@@ -152,7 +153,7 @@ export default function MyApplications() {
 				<SkeletonCards />
 			) : error ? (
 				<div className={styles.errorCard}>
-					{t('myApplications.errorLoading', { error })}
+					{error}
 				</div>
 			) : filtered.length === 0 ? (
 				<div className={styles.emptyCard}>

@@ -597,7 +597,7 @@
 		"sortRecent": "Más reciente",
 		"sortAZ": "A-Z",
 		"sortZA": "Z-A",
-		"errorLoading": "Error al cargar badges: {{error}}",
+		"errorLoading": "Error al cargar badges. Por favor, inténtelo de nuevo más tarde.",
 		"filters": {
 			"title": "Filtros",
 			"open": "Abrir filtros",
@@ -762,7 +762,7 @@
 		"noApplications": "Sin candidaturas",
 		"noApplicationsDesc": "Aún no te has candidatado a ningún badge.",
 		"viewDetails": "Ver detalles",
-		"errorLoading": "Error al cargar candidaturas: {{error}}",
+		"errorLoading": "Error al cargar candidaturas. Por favor, inténtelo de nuevo más tarde.",
 		"tabs": {
 			"all": "Todas",
 			"open": "Abiertas",

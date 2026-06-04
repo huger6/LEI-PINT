@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
 import { submitApplication, upsertEvidence, getUploadUrl } from '../../../features/applications/api/applicationsApi';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import { validateEvidenceFile } from '../../../services/storage';
 import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
@@ -107,7 +108,7 @@ export default function ApplicationDetail({ application, onReload }) {
 			await submitApplication(appGuid, notes || null);
 			navigate(SHARED.APPLICATIONS);
 		} catch (err) {
-			setError(err.message);
+			setError(resolveErrorMessage(err));
 			setSubmitting(false);
 		}
 	}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getApplicationById } from '../../features/applications/api/applicationsApi';
+import { resolveErrorMessage } from '../../validations/apiErrors';
 import DetailPageSkeleton from '../../components/Skeleton/DetailPageSkeleton';
 import ApplicationDetail from '../consultant/ApplicationDetail/ApplicationDetail';
 import ApplicationStatus from '../consultant/ApplicationStatus/ApplicationStatus';
@@ -17,7 +18,7 @@ export default function ApplicationDetailPage() {
 			setApplication(app);
 			setError(null);
 		} catch (err) {
-			setError(err.message);
+			setError(resolveErrorMessage(err));
 		} finally {
 			setLoading(false);
 		}

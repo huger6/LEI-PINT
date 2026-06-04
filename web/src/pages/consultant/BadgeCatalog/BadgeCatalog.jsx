@@ -9,6 +9,7 @@ import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
 import { getAreas, getLearningPaths, getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { getFavorites, toggleFavorite } from '../../../features/gamification/api/gamificationApi';
 import { useUser } from '../../../hooks/userContext';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import styles from './BadgeCatalog.module.css';
 
 const PAGE_SIZE = 12;
@@ -92,7 +93,7 @@ export default function BadgeCatalog() {
 				setAreas(areaRows || []);
 			} catch (err) {
 				if (ignore) return;
-				setError(err.message);
+				setError(resolveErrorMessage(err));
 			} finally {
 				if (!ignore) setLoadingPage(false);
 			}
@@ -224,7 +225,7 @@ export default function BadgeCatalog() {
 				setPagination(response.pagination || { totalItems: 0, totalPages: 0, currentPage: 1 });
 			} catch (err) {
 				if (ignore) return;
-				setError(err.message);
+				setError(resolveErrorMessage(err));
 			} finally {
 				if (!ignore) setLoadingBadges(false);
 			}
@@ -361,7 +362,7 @@ export default function BadgeCatalog() {
 	if (error && badges.length === 0) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				{t('badgeCatalog.errorLoading', { error })}
+				{error}
 			</div>
 		);
 	}
