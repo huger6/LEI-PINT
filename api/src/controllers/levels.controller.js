@@ -76,7 +76,7 @@ const getLevels = async (req, res) => {
                 }
             ],
             extraAttributes: [
-                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
                 [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
             ]
         });
@@ -188,7 +188,7 @@ const getLevelByCode = async (req, res) => {
                 include: includeBlock,
                 order: [['stage_sequence', 'ASC']],
                 extraAttributes: [
-                    [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
                     [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
                     [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
                 ]
@@ -203,7 +203,7 @@ const getLevelByCode = async (req, res) => {
             attributes: {
                 exclude: excludeFields,
                 include: [
-                    [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
+                    [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
                     [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
                     [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
                 ]
@@ -525,15 +525,13 @@ const getFilterStats = async (req, res) => {
         const rows = await models.progression_stages.findAll({
             attributes: [
                 [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
-                [literal(`(SELECT COUNT(*) FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id)`), 'badge_count'],
             ],
             raw: true,
         });
 
         const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
-        const maxBadgeCount = Math.max(0, ...rows.map(r => Number(r.badge_count || 0)));
 
-        const payload = { maxConsultantCount, maxBadgeCount };
+        const payload = { maxConsultantCount };
         await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
         return res.status(200).json({ success: true, data: payload });
     } catch (error) {

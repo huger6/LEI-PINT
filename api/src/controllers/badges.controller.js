@@ -558,6 +558,16 @@ const createBadge = async (req, res) => {
             });
         }
 
+        const existingBadge = await models.badges.findOne({
+            where: { progression_stage_id: progressionStageId }
+        });
+        if (existingBadge) {
+            return res.status(409).json({
+                success: false,
+                code: "LEVEL_ALREADY_HAS_BADGE"
+            });
+        }
+
         // Determine and ensure unique slug
         const textToSlugify = badgeSlug ? badgeSlug : badgeTitle;
         const finalUniqueSlug = await generateUniqueSlug(models.badges, 'badge_slug', textToSlugify);
@@ -768,6 +778,16 @@ const updateBadge = async (req, res) => {
         let nextLpId = badge.learning_path_id;
 
         if (progressionStageId !== undefined && progressionStageId !== badge.progression_stage_id) {
+            const existingBadge = await models.badges.findOne({
+                where: { progression_stage_id: progressionStageId }
+            });
+            if (existingBadge) {
+                return res.status(409).json({
+                    success: false,
+                    code: "LEVEL_ALREADY_HAS_BADGE"
+                });
+            }
+
             const newStage = await models.progression_stages.findOne({
                 where: { progression_stage_id: progressionStageId },
                 include: [{
