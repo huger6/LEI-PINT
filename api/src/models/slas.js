@@ -30,7 +30,8 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_global: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     is_active: {
       type: DataTypes.BOOLEAN,
