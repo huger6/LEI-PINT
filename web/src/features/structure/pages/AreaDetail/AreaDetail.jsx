@@ -148,7 +148,7 @@ export default function AreaDetail() {
 		to: ADMIN.LEVEL_DETAIL.replace(':areaSlug', area.area_slug).replace(':stageCode', level.stage_code?.stage_code),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
-			{ icon: 'badge', value: Number(level.badge_count || 0), label: t('shared.badges', { defaultValue: 'Badges' }) },
+			{ icon: 'badge', value: level.has_badge ? t('shared.yes', { defaultValue: 'Yes' }) : t('shared.no', { defaultValue: 'No' }), label: t('shared.badge', { defaultValue: 'Badge' }) },
 		],
 	}));
 
