@@ -42,6 +42,35 @@
 	color: rgba(57, 99, 156, 0.56);
 }
 
+.bookmarkBtn {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	border: 0;
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(4px);
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	color: var(--color-secondary);
+	cursor: pointer;
+	transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+	z-index: 2;
+}
+
+.bookmarkBtn:hover {
+	background: rgba(255, 255, 255, 1);
+	color: var(--color-secondary);
+	transform: scale(1.1);
+}
+
+.bookmarkActive {
+	color: var(--color-secondary);
+}
+
 .typePill {
 	position: absolute;
 	top: 12px;

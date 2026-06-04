@@ -187,6 +187,15 @@
 	color: #2d4a6f;
 }
 
+.savedBanner {
+	padding: 0.5rem 0.85rem;
+	border-radius: 10px;
+	background: rgba(0, 184, 224, 0.1);
+	color: #005b73;
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
 .mobileFilterButton {
 	font-weight: 700;
 	border-radius: 12px;

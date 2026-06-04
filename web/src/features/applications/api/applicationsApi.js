@@ -28,8 +28,8 @@ export async function upsertEvidence(applicationGuid, payload) {
 	return data?.data;
 }
 
-export async function submitApplication(applicationGuid) {
-	const { data } = await api.post(`/applications/${applicationGuid}/submit`);
+export async function submitApplication(applicationGuid, consultantNotes = null) {
+	const { data } = await api.post(`/applications/${applicationGuid}/submit`, { consultantNotes });
 	return data?.data;
 }
 

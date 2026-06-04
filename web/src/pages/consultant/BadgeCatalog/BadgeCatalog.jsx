@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
@@ -7,6 +7,7 @@ import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import Pagination from '../../../components/Pagination/Pagination';
 import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
 import { getAreas, getLearningPaths, getServiceLines } from '../../../features/badges/api/hierarchyApi';
+import { getFavorites, toggleFavorite } from '../../../features/gamification/api/gamificationApi';
 import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeCatalog.module.css';
 
@@ -70,6 +71,9 @@ export default function BadgeCatalog() {
 	const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 	const [defaultAreaApplied, setDefaultAreaApplied] = useState(false);
 
+	const [favoriteSlugs, setFavoriteSlugs] = useState(new Set());
+	const [showingSaved, setShowingSaved] = useState(false);
+
 	useEffect(() => {
 		let ignore = false;
 
@@ -97,6 +101,55 @@ export default function BadgeCatalog() {
 		loadFilterOptions();
 		return () => { ignore = true; };
 	}, []);
+
+	useEffect(() => {
+		if (user?.role !== 'Consultant') return;
+		let ignore = false;
+
+		async function loadFavorites() {
+			try {
+				const rows = await getFavorites();
+				if (ignore) return;
+				const slugs = new Set(rows.map((r) => r.badge?.badge_slug).filter(Boolean));
+				setFavoriteSlugs(slugs);
+			} catch {
+				/* silent — favorites are non-critical */
+			}
+		}
+
+		loadFavorites();
+		return () => { ignore = true; };
+	}, [user?.role]);
+
+	const handleToggleFavorite = useCallback(async (badge) => {
+		const slug = badge.badge_slug || badge.badgeSlug;
+		if (!slug) return;
+
+		const wasFavorited = favoriteSlugs.has(slug);
+		setFavoriteSlugs((prev) => {
+			const next = new Set(prev);
+			if (wasFavorited) next.delete(slug);
+			else next.add(slug);
+			return next;
+		});
+
+		try {
+			const result = await toggleFavorite(slug);
+			setFavoriteSlugs((prev) => {
+				const next = new Set(prev);
+				if (result.favorited) next.add(slug);
+				else next.delete(slug);
+				return next;
+			});
+		} catch {
+			setFavoriteSlugs((prev) => {
+				const next = new Set(prev);
+				if (wasFavorited) next.add(slug);
+				else next.delete(slug);
+				return next;
+			});
+		}
+	}, [favoriteSlugs]);
 
 	const serviceLineById = useMemo(() => {
 		const map = new Map();
@@ -324,6 +377,10 @@ export default function BadgeCatalog() {
 		Number(filters.maxPoints) < MAX_POINTS ||
 		filters.expiringOnly;
 
+	const displayedBadges = showingSaved
+		? badges.filter((b) => favoriteSlugs.has(b.badge_slug || b.badgeSlug))
+		: badges;
+
 	function renderFilterGroups(state, handlers, keyPrefix = 'desktop') {
 		const scopedServiceLines = state.learningPathId
 			? serviceLines.filter((sl) => String(sl.learning_path_id || sl.learningPathId) === String(state.learningPathId))
@@ -491,11 +548,23 @@ export default function BadgeCatalog() {
 		<>
 			<div className="d-flex align-items-center justify-content-between mb-3">
 				<h1 className="h3 mb-0">{t('badgeCatalog.title')}</h1>
-				{hasActiveFilters && (
-					<button type="button" className="btn btn-sm btn-outline-primary d-none d-xl-inline-flex" onClick={resetDesktopFilters}>
-						{t('badgeCatalog.filters.clear')}
-					</button>
-				)}
+				<div className="d-flex align-items-center gap-2">
+					{user?.role === 'Consultant' && (
+						<button
+							type="button"
+							className={`btn btn-sm ${showingSaved ? 'btn-primary' : 'btn-outline-primary'} d-inline-flex align-items-center gap-1`}
+							onClick={() => { setShowingSaved((prev) => !prev); setCurrentPage(1); }}
+						>
+							<Icon name={showingSaved ? 'bookmark-filled' : 'bookmark'} size={15} aria-hidden="true" />
+							{t('badgeCatalog.savedBadges')}
+						</button>
+					)}
+					{hasActiveFilters && (
+						<button type="button" className="btn btn-sm btn-outline-primary d-none d-xl-inline-flex" onClick={resetDesktopFilters}>
+							{t('badgeCatalog.filters.clear')}
+						</button>
+					)}
+				</div>
 			</div>
 
 			<div className={styles.searchWrap}>
@@ -540,35 +609,49 @@ export default function BadgeCatalog() {
 				</aside>
 
 				<section className="col-12 col-xl-9">
+					{showingSaved && (
+						<div className={`d-flex align-items-center gap-2 mb-3 ${styles.savedBanner}`}>
+							<Icon name="bookmark-filled" size={16} aria-hidden="true" />
+							<span>{t('badgeCatalog.showingSaved')}</span>
+						</div>
+					)}
 					{loadingBadges ? (
 						<CardGridSkeleton count={6} columns={3} />
-					) : badges.length === 0 ? (
+					) : displayedBadges.length === 0 ? (
 						<div className="text-center py-5">
-							<h5 className="text-muted">{t('badgeCatalog.noBadges')}</h5>
-							<p className="text-muted small mb-0">{t('badgeCatalog.noBadgesDesc')}</p>
+							<h5 className="text-muted">{showingSaved ? t('badgeCatalog.noSavedBadges') : t('badgeCatalog.noBadges')}</h5>
+							<p className="text-muted small mb-0">{showingSaved ? t('badgeCatalog.noSavedBadgesDesc') : t('badgeCatalog.noBadgesDesc')}</p>
 						</div>
 					) : (
 						<>
 							<div className="row g-3 g-xl-4">
-								{badges.map((badge) => {
+								{displayedBadges.map((badge) => {
 									const slug = badge.badge_slug || badge.badgeSlug;
 									return (
 										<div className="col-sm-6 col-xl-4" key={slug || badge.badge_id || badge.badgeId}>
-											<BadgeCard badge={badge} to={`/badges/${slug}`} isConsultant={user?.role === 'Consultant'} />
+											<BadgeCard
+												badge={badge}
+												to={`/badges/${slug}`}
+												isConsultant={user?.role === 'Consultant'}
+												isFavorited={favoriteSlugs.has(slug)}
+												onToggleFavorite={user?.role === 'Consultant' ? handleToggleFavorite : undefined}
+											/>
 										</div>
 									);
 								})}
 							</div>
 
-							<div className="mt-4">
-								<Pagination
-									currentPage={currentPage}
-									totalPages={pagination.totalPages || 0}
-									totalItems={pagination.totalItems || 0}
-									itemCount={badges.length}
-									onPageChange={(page) => setCurrentPage(page)}
-								/>
-							</div>
+							{!showingSaved && (
+								<div className="mt-4">
+									<Pagination
+										currentPage={currentPage}
+										totalPages={pagination.totalPages || 0}
+										totalItems={pagination.totalItems || 0}
+										itemCount={displayedBadges.length}
+										onPageChange={(page) => setCurrentPage(page)}
+									/>
+								</div>
+							)}
 						</>
 					)}
 				</section>
