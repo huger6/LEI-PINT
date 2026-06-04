@@ -66,6 +66,7 @@ export const TM = {
 
 export const SHARED = {
 	HOME: '/',
+	SEARCH: '/search',
 	BADGES: '/badges',
 	APPLICATIONS: '/applications',
 	BADGE_DETAIL: '/badges/:slug',

@@ -190,6 +190,22 @@
 	"topBar": {
 		"searchPlaceholder": "Busca badges, competencias, áreas..."
 	},
+	"search": {
+		"resultsFor": "Resultados para \"{{query}}\"",
+		"resultCount": "{{count}} resultado encontrado",
+		"resultCount_other": "{{count}} resultados encontrados",
+		"noResults": "No se encontraron resultados",
+		"noResultsDesc": "Intenta con un término de búsqueda diferente.",
+		"enterQuery": "Buscar en la plataforma",
+		"enterQueryDesc": "Escribe un término para buscar badges, competencias, áreas y más.",
+		"learningPaths": "Learning Paths",
+		"serviceLines": "Service Lines",
+		"areas": "Áreas",
+		"stages": "Niveles de Progresión",
+		"badges": "Badges",
+		"skills": "Competencias",
+		"users": "Usuarios"
+	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
 		"brandDescription": "Líder en consultoría tecnológica, enfocada en la valoración y certificación continua de competencias a través de Learning Paths innovadores.",
