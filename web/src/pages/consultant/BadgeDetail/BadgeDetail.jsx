@@ -5,6 +5,7 @@ import { SHARED, CONSULTANT } from '../../../routes/paths';
 import { getBadgeBySlug, getBadges } from '../../../features/badges/api/badgesApi';
 import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import RequirementCard from '../../../components/RequirementCard/RequirementCard';
@@ -64,7 +65,7 @@ export default function BadgeDetail() {
 			);
 			setRelatedBadges(relatedList.slice(0, 8));
 		} catch (err) {
-			setError(err.message);
+			setError(resolveErrorMessage(err));
 		} finally {
 			setLoading(false);
 		}
@@ -77,7 +78,7 @@ export default function BadgeDetail() {
 			const appGuid = newApp.application_guid || newApp.applicationGuid;
 			navigate(`${SHARED.APPLICATIONS}/${appGuid}`);
 		} catch (err) {
-			setError(err.message);
+			setError(resolveErrorMessage(err));
 			setApplying(false);
 		}
 	}
@@ -109,7 +110,7 @@ export default function BadgeDetail() {
 	if (error) {
 		return (
 			<div className="alert alert-danger m-4" role="alert">
-				{t('shared.error')}: {error}
+				{error}
 			</div>
 		);
 	}
