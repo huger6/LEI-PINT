@@ -131,7 +131,13 @@ const getApplicationById = async (req, res) => {
                     as: 'badge',
                     include: [
                         { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                        { model: models.areas, as: 'area', attributes: ['area_name'] }
+                        { model: models.areas, as: 'area', attributes: ['area_name'] },
+                        {
+                            model: models.badge_requirements,
+                            as: 'badge_requirements',
+                            where: { is_active: true },
+                            required: false
+                        }
                     ]
                 },
                 {
@@ -365,6 +371,7 @@ const submitApplication = async (req, res) => {
     try {
         const userId = req.user.sub;
         const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
+        const { consultantNotes } = validations.submitApplicationSchema.parse(req.body);
 
         // Get application info
         const application = await models.badge_applications.findOne({
@@ -419,7 +426,8 @@ const submitApplication = async (req, res) => {
         // State -> Submitted
         await application.update({
             application_state: 'Submitted',
-            submitted_at: new Date()
+            submitted_at: new Date(),
+            consultant_notes: consultantNotes ?? null
         });
 
         await sendTopicUpdate("new_data", 15);
@@ -614,7 +622,6 @@ const validateApplication = async (req, res) => {
 
         await application.update({
             application_state: newState,
-            reviewer_notes: reviewerNotes ?? application.reviewer_notes,
             ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {})
         }, { transaction });
 

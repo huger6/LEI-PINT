@@ -459,6 +459,68 @@ const getEarnedBadges = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  POST /api/gamification/favorites/:badgeSlug
+  Toggles the FAVORITE state for a badge. If already favorited,
+  removes it; otherwise creates the favorite interaction.
+──────────────────────────────────────────────────────────────*/
+const toggleFavorite = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { badgeSlug } = req.params;
+
+        const badge = await models.badges.findOne({
+            where: { badge_slug: badgeSlug, is_active: true },
+            attributes: ['badge_id']
+        });
+
+        if (!badge) {
+            return res.status(404).json({
+                success: false,
+                code: 'APP_BADGE_NOT_FOUND'
+            });
+        }
+
+        const result = await gamificationService.toggleFavorite(userId, badge.badge_id);
+
+        await sendTopicUpdate("new_data", 19);
+
+        return res.status(200).json({
+            success: true,
+            code: result.favorited
+                ? 'GAMIFICATION_FAVORITE_ADDED'
+                : 'GAMIFICATION_FAVORITE_REMOVED',
+            data: result
+        });
+
+    } catch (error) {
+        logger.error('Error toggling badge favorite', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_FAVORITE_TOGGLE_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  GET /api/gamification/favorites
+  Returns the list of badges the authenticated user has favorited.
+──────────────────────────────────────────────────────────────*/
+const getFavorites = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+
+        const rows = await gamificationService.getUserFavorites(userId);
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_FAVORITES_RETRIEVED',
+            data: rows
+        });
+
+    } catch (error) {
+        logger.error('Error fetching favorites', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_FAVORITES_FETCH_FAILED' });
+    }
+};
+
 module.exports = {
     trackInteraction,
     getInteractions,
@@ -466,5 +528,7 @@ module.exports = {
     getConsultantPointsById,
     getRecommendations,
     getConsultantStats,
-    getEarnedBadges
+    getEarnedBadges,
+    toggleFavorite,
+    getFavorites
 };

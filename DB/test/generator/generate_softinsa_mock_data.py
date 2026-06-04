@@ -953,9 +953,7 @@ def generate_sql() -> str:
             "user_id": consultant_id,
             "application_guid": uuid.uuid5(uuid.NAMESPACE_URL, f"softinsa-application-{index + 1}-{consultant_id}-{badge['badge_id']}"),
             "application_state": state,
-            "reviewer_notes": "Evidence accepted and badge awarded." if state == "Accepted" else (
-                "More detail is required for practical delivery evidence." if state == "Rejected" else None
-            ),
+            "consultant_notes": None,
             "opened_at": opened_at,
             "submitted_at": submitted_at,
             "closed_at": closed_at,

@@ -52,4 +52,18 @@ router.get('/consultant-stats', loginRequired, gamificationController.getConsult
  */
 router.get('/earned-badges', loginRequired, gamificationController.getEarnedBadges);
 
+/**
+ * @route   POST /api/gamification/favorites/:badgeSlug
+ * @desc    Toggle favorite state for a badge (add/remove)
+ * @access  Any authenticated user
+ */
+router.post('/favorites/:badgeSlug', loginRequired, gamificationController.toggleFavorite);
+
+/**
+ * @route   GET /api/gamification/favorites
+ * @desc    Get the authenticated user's favorited badges
+ * @access  Any authenticated user
+ */
+router.get('/favorites', loginRequired, gamificationController.getFavorites);
+
 module.exports = router;

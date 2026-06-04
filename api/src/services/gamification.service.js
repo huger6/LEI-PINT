@@ -183,6 +183,63 @@ const trackInteraction = async (userId, badgeId, interactionType) => {
 };
 
 /*──────────────────────────────────────────────────────────────
+  FAVORITES – TOGGLE
+  Adds or removes a FAVORITE interaction for a user+badge pair.
+  Returns { favorited: true/false } to indicate the new state.
+──────────────────────────────────────────────────────────────*/
+const toggleFavorite = async (userId, badgeId) => {
+    const existing = await models.user_badges_interactions.findOne({
+        where: {
+            user_id: userId,
+            badge_id: badgeId,
+            interaction_type: 'FAVORITE'
+        }
+    });
+
+    if (existing) {
+        await models.user_badges_interactions.destroy({
+            where: {
+                user_id: userId,
+                badge_id: badgeId,
+                interaction_type: 'FAVORITE'
+            }
+        });
+        return { favorited: false };
+    }
+
+    await models.user_badges_interactions.create({
+        user_id: userId,
+        badge_id: badgeId,
+        interaction_type: 'FAVORITE'
+    });
+
+    return { favorited: true };
+};
+
+/*──────────────────────────────────────────────────────────────
+  FAVORITES – LIST
+  Returns all badge IDs currently favorited by the user.
+──────────────────────────────────────────────────────────────*/
+const getUserFavorites = async (userId) => {
+    const rows = await models.user_badges_interactions.findAll({
+        attributes: ['badge_id'],
+        where: {
+            user_id: userId,
+            interaction_type: 'FAVORITE'
+        },
+        include: [{
+            model: models.badges,
+            as: 'badge',
+            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'],
+            where: { is_active: true },
+            required: true
+        }]
+    });
+
+    return rows;
+};
+
+/*──────────────────────────────────────────────────────────────
   CONSULTANT STATS DASHBOARD
   Aggregates all dashboard metrics for a consultant in one place:
   total points, earned badges, in-progress badges, ranking
@@ -237,5 +294,7 @@ module.exports = {
     getConsultantPointsSummary,
     getConsultantStats,
     getRecommendations,
-    trackInteraction
+    trackInteraction,
+    toggleFavorite,
+    getUserFavorites
 };
