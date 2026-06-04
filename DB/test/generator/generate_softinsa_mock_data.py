@@ -165,6 +165,20 @@ AREA_BASES = [
 ]
 
 TARGET_PROFILES = ["Consultant", "Talent Manager", "Service Line Leader", "Administrator"]
+DEFAULT_GLOBAL_SLAS = [
+    {
+        "sla_name": "Default Talent Manager Validation",
+        "response_time_hours": 48,
+        "target_profile": "Talent Manager",
+        "sla_description": "Default time limit for Talent Managers to review submitted evidences.",
+    },
+    {
+        "sla_name": "Default Service Line Leader Validation",
+        "response_time_hours": 72,
+        "target_profile": "Service Line Leader",
+        "sla_description": "Default time limit for Service Line Leaders to perform final approval on applications.",
+    },
+]
 NOTIFICATION_TYPES = [
     "HOME",
     "BADGES",
@@ -245,7 +259,7 @@ def username_from_name(full_name: str, used: set[str]) -> str:
 def make_person(used_usernames: set[str]) -> tuple[str, str, str]:
     full_name = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
     username = username_from_name(full_name, used_usernames)
-    email = f"{username}@softinsa.pt"
+    email = f"{username}@softinsatestplatform.pt"
     return full_name, username, email
 
 
@@ -338,6 +352,7 @@ def generate_sql() -> str:
     gdpr_policies: list[dict[str, object]] = []
     notification_definitions: list[dict[str, object]] = []
     slas: list[dict[str, object]] = []
+    default_global_sla_ids: set[int] = set()
     system_announcements: list[dict[str, object]] = []
     goals: list[dict[str, object]] = []
     applications: list[dict[str, object]] = []
@@ -470,18 +485,118 @@ def generate_sql() -> str:
     sll_user_ids = [int(user["user_id"]) for user in sl_leader_users]
 
     sql.section("4. Global Contexts")
+
+    TERMS_TEXT = (
+        "Termos e Condições de Utilização\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "Bem-vindo à Plataforma de Badges da Softinsa. Ao registar-se e utilizar "
+        "esta aplicação (Web e Mobile), o utilizador aceita expressamente os "
+        "seguintes termos:\n\n"
+        "1. Objetivo do Serviço\n"
+        "A plataforma visa a partilha, validação e atribuição de insígnias digitais "
+        "(badges) com base em evidências de competências técnicas e certificações "
+        "obtidas externamente (e.g., Udemy, IBM, AWS, Microsoft).\n\n"
+        "2. Elegibilidade e Registo\n"
+        "O acesso é exclusivo a colaboradores e consultores da Softinsa. O "
+        "utilizador obriga-se a fornecer dados verdadeiros no registo e a proceder "
+        "à alteração obrigatória de palavra-passe no primeiro acesso.\n\n"
+        "3. Submissão de Evidências\n"
+        "Ao submeter candidaturas a um badge, o consultor é responsável pela "
+        "veracidade dos ficheiros carregados (diplomas, relatórios, certificados). "
+        "A submissão intencional de documentos falsos constitui uma infração "
+        "disciplinar.\n\n"
+        "4. Sistema de Gamificação e Pontuação\n"
+        "A plataforma atribui pontos conforme a obtenção de badges. O sistema de "
+        "pontuação é definido pelo Administrador e serve como critério interno de "
+        "avaliação de mérito pelas lideranças (Service Line Leaders). Em caso de "
+        "expiração de um badge, os pontos acumulados pelo consultor mantêm-se.\n\n"
+        "5. Uso de Páginas Públicas\n"
+        "Cada badge conquistado gera uma ligação (link) pública de verificação "
+        "única. O utilizador compreende que este endereço poderá ser acedido "
+        "publicamente e integrado em assinaturas de e-mail corporativas ou perfis "
+        "de redes profissionais (LinkedIn)."
+    )
+
+    PRIVACY_TEXT = (
+        "Política de Privacidade (RGPD)\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "A Softinsa está empenhada em proteger os dados pessoais dos seus "
+        "colaboradores. No âmbito da Plataforma de Badges, o tratamento de dados "
+        "rege-se pelos seguintes pressupostos:\n\n"
+        "1. Responsável pelo Tratamento\n"
+        "Softinsa – Engenharia de Software Avançado, Lda.\n\n"
+        "2. Dados Recolhidos\n"
+        "Nome completo, e-mail corporativo, palavra-passe encriptada, Service "
+        "Line/Área de atuação, histórico de formação, e ficheiros de evidências "
+        "carregados pelo utilizador.\n\n"
+        "3. Finalidade do Tratamento\n"
+        "- Gestão e validação de competências internas.\n"
+        "- Atribuição de incentivos profissionais com base no progresso das "
+        "Learning Paths.\n"
+        "- Disponibilização de uma galeria pública e mecanismos de partilha de "
+        "conquistas no LinkedIn.\n\n"
+        "4. Consentimento (RGPD)\n"
+        "A publicação na galeria pública de badges e a partilha externa dependem "
+        "da aceitação expressa e prévia dos termos do RGPD na plataforma. O "
+        "utilizador tem o direito de revogar o seu consentimento a qualquer "
+        "momento através das definições de perfil.\n\n"
+        "5. Segurança\n"
+        "Toda a comunicação entre o dispositivo do utilizador e os servidores da "
+        "plataforma é obrigatoriamente cifrada através do protocolo HTTPS."
+    )
+
+    COOKIES_TEXT = (
+        "Política de Cookies\n"
+        "Última Revisão: Versão 1.0 — Junho 2026\n\n"
+        "A Plataforma de Badges da Softinsa utiliza cookies para garantir o "
+        "funcionamento seguro da aplicação. Esta política explica quais cookies "
+        "são utilizados, a sua finalidade e a base legal aplicável.\n\n"
+        "1. O Que São Cookies\n"
+        "Cookies são pequenos ficheiros de texto armazenados no navegador do "
+        "utilizador quando este acede à plataforma. Permitem que o servidor "
+        "reconheça sessões e mantenha o estado de autenticação.\n\n"
+        "2. Cookies Utilizados\n\n"
+        "a) refreshToken (Cookie Estritamente Necessário)\n"
+        "- Finalidade: Armazena o token de atualização (refresh token) que "
+        "permite renovar a sessão do utilizador sem necessidade de repetir o "
+        "início de sessão.\n"
+        "- Tipo: Cookie HTTP-only, não acessível por JavaScript do lado do "
+        "cliente.\n"
+        "- Atributos de segurança: HttpOnly, Secure (em produção), SameSite="
+        "Strict.\n"
+        "- Âmbito (Path): Restrito às rotas de autenticação (/api/auth).\n"
+        "- Duração: Até 30 dias quando a opção \"Lembrar-me\" está ativa; "
+        "1 hora na sessão padrão.\n"
+        "- Base legal: Interesse legítimo e necessidade técnica — este cookie é "
+        "indispensável para o funcionamento da autenticação da plataforma.\n\n"
+        "3. Cookies de Terceiros\n"
+        "A plataforma não utiliza cookies de terceiros, de rastreamento "
+        "publicitário ou de análise comportamental (analytics). Nenhum dado é "
+        "partilhado com redes de publicidade ou plataformas de tracking.\n\n"
+        "4. Gestão de Cookies\n"
+        "Por se tratar de um cookie estritamente necessário ao funcionamento da "
+        "plataforma, o refreshToken não requer consentimento separado nos termos "
+        "do artigo 5.º, n.º 3 da Diretiva ePrivacy (2002/58/CE). O utilizador "
+        "pode, no entanto, eliminar cookies através das definições do seu "
+        "navegador, sendo que tal ação resultará no encerramento da sessão "
+        "ativa.\n\n"
+        "5. Alterações a Esta Política\n"
+        "A Softinsa reserva-se o direito de atualizar esta política de cookies. "
+        "Quaisquer alterações serão comunicadas através da plataforma e "
+        "refletidas na data de revisão indicada no topo deste documento."
+    )
+
     policy_templates = [
-        ("Privacy", "Privacy Policy", "Explains how Softinsa processes profile, progression and certification data."),
-        ("Terms", "Platform Terms", "Defines acceptable use, validation responsibilities and badge lifecycle rules."),
-        ("Cookies", "Cookie Notice", "Documents essential and analytics cookies used by the platform."),
+        ("Privacy", PRIVACY_TEXT),
+        ("Terms", TERMS_TEXT),
+        ("Cookies", COOKIES_TEXT),
     ]
-    for index in range(min(NUM_GDPR_POLICIES, len(policy_templates))):
-        policy_type, title, body = policy_templates[index]
+    for index, (policy_type, policy_text) in enumerate(policy_templates):
         row = {
             "policy_id": ids.next("gdpr_policies"),
             "policy_type": policy_type,
-            "version": f"2026.{index + 1}",
-            "policy_text": f"{title}: {body}",
+            "version": "1.0",
+            "policy_text": policy_text,
             "is_mandatory": policy_type in {"Privacy", "Terms"},
             "is_active": True,
             "updated_by": random.choice(admin_ids),
@@ -515,6 +630,28 @@ def generate_sql() -> str:
         notification_definitions.append(row)
         sql.insert("notification_definitions", row)
 
+    for default_sla in DEFAULT_GLOBAL_SLAS:
+        row = {
+            "sla_id": ids.next("slas"),
+            "sla_name": default_sla["sla_name"],
+            "response_time_hours": default_sla["response_time_hours"],
+            "start_date": BASE_NOW - timedelta(days=60),
+            "end_date": BASE_NOW + timedelta(days=365),
+            "target_profile": default_sla["target_profile"],
+            "is_global": True,
+            "is_active": True,
+            "sla_description": default_sla["sla_description"],
+            "definition_id": random.choice(notification_definitions)["definition_id"],
+            "user_id": None,
+            "created_by": random.choice(admin_ids),
+            "updated_by": random.choice(admin_ids),
+            "created_at": BASE_NOW - timedelta(days=80),
+            "updated_at": BASE_NOW - timedelta(days=1),
+        }
+        slas.append(row)
+        default_global_sla_ids.add(int(row["sla_id"]))
+        sql.insert("slas", row)
+
     for index in range(NUM_SLAS):
         target_profile = TARGET_PROFILES[index % len(TARGET_PROFILES)]
         row = {
@@ -529,7 +666,6 @@ def generate_sql() -> str:
             "sla_description": f"Operational response commitment for {target_profile} workflows.",
             "definition_id": random.choice(notification_definitions)["definition_id"],
             "user_id": random.choice(all_user_ids),
-            "preference_id": None,
             "created_by": random.choice(admin_ids),
             "updated_by": random.choice(admin_ids),
             "created_at": BASE_NOW - timedelta(days=80),
@@ -562,7 +698,6 @@ def generate_sql() -> str:
             "target_profile": TARGET_PROFILES[index % len(TARGET_PROFILES)],
             "is_global": index % 3 == 0,
             "is_active": True,
-            "preference_id": None,
             "user_id": None if index % 3 == 0 else random.choice(all_user_ids),
             "created_by": random.choice(admin_ids),
             "updated_by": random.choice(admin_ids),
@@ -763,7 +898,18 @@ def generate_sql() -> str:
                 "service_line_id": service_line["service_line_id"],
             })
 
+    sql.extend([
+        "INSERT INTO sl_slas (service_line_id, sla_id)",
+        "SELECT sl.service_line_id, s.sla_id",
+        "FROM service_lines sl",
+        "CROSS JOIN slas s",
+        "WHERE s.sla_name IN ('Default Talent Manager Validation', 'Default Service Line Leader Validation')",
+        "ON CONFLICT DO NOTHING;",
+    ])
+
     for sla in slas:
+        if int(sla["sla_id"]) in default_global_sla_ids:
+            continue
         sampled_service_lines = random.sample(service_lines, k=min(len(service_lines), random.randint(1, 3)))
         for service_line in sampled_service_lines:
             sql.insert("sl_slas", {
@@ -790,10 +936,6 @@ def generate_sql() -> str:
         goals.append(row)
         sql.insert("goals", row)
 
-    goals_by_user_badge: dict[tuple[int, int], list[int]] = {}
-    for goal in goals:
-        goals_by_user_badge.setdefault((int(goal["user_id"]), int(goal["badge_id"])), []).append(int(goal["goal_id"]))
-
     for index in range(NUM_BADGE_APPLICATIONS):
         state = APPLICATION_STATES[index % len(APPLICATION_STATES)]
         consultant_id = random.choice(consultant_ids)
@@ -805,14 +947,10 @@ def generate_sql() -> str:
             submitted_at = opened_at + timedelta(days=random.randint(1, 14), hours=random.randint(1, 8))
         if state in {"Accepted", "Rejected"}:
             closed_at = submitted_at + timedelta(days=random.randint(1, 12), hours=random.randint(1, 8))  # type: ignore[operator]
-        goal_candidates = goals_by_user_badge.get((consultant_id, int(badge["badge_id"])), [])
         row = {
             "application_id": ids.next("badge_applications"),
             "badge_id": badge["badge_id"],
             "user_id": consultant_id,
-            "goal_id": random.choice(goal_candidates) if goal_candidates and random.random() < 0.35 else None,
-            "certificate_id": None,
-            "awarded_badges_id": None,
             "application_guid": uuid.uuid5(uuid.NAMESPACE_URL, f"softinsa-application-{index + 1}-{consultant_id}-{badge['badge_id']}"),
             "application_state": state,
             "reviewer_notes": "Evidence accepted and badge awarded." if state == "Accepted" else (

@@ -276,3 +276,34 @@ CREATE OR REPLACE TRIGGER trg_set_badge_expiration
 BEFORE INSERT ON awarded_badges
 FOR EACH ROW
 EXECUTE FUNCTION trg_fn_set_badge_expiration();
+
+
+-- ==============================================================
+-- GDPR POLICY IMMUTABILITY
+-- ==============================================================
+-- Prevents direct UPDATE of policy_text on active policies.
+-- The correct workflow is: deactivate the old row, then INSERT
+-- a new row with an incremented version.
+-- ==============================================================
+
+CREATE OR REPLACE FUNCTION fn_prevent_gdpr_policy_overwrite()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF OLD.is_active = TRUE AND NEW.is_active = TRUE THEN
+        IF OLD.policy_text IS DISTINCT FROM NEW.policy_text THEN
+            RAISE EXCEPTION
+                'Cannot overwrite active policy text (policy_id=%). '
+                'Deactivate this row first, then INSERT a new version.',
+                OLD.policy_id;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER trg_prevent_gdpr_policy_overwrite
+BEFORE UPDATE ON gdpr_policies
+FOR EACH ROW
+EXECUTE FUNCTION fn_prevent_gdpr_policy_overwrite();
