@@ -2,9 +2,11 @@ const cron = require('node-cron');
 const { QueryTypes } = require('sequelize');
 const { models } = require('../models');
 const emailService = require('../services/email.service');
+const { createNotification, resolvePreferences } = require('../services/notifications.service');
 const { logger } = require('../utils/logger');
 
 const CUSTOM_SLA_CRON_SCHEDULE = '*/15 * * * *';
+const SLA_BREACH_DEFINITION_ID = 14;
 const DEFAULT_LANGUAGE = 'en-GB';
 const sequelize = models.slas.sequelize;
 
@@ -125,9 +127,19 @@ const buildEmailData = (sla, recipient) => ({
     language: recipient.language_iso || DEFAULT_LANGUAGE
 });
 
-const sendAlert = async (recipient, sla) => {
-    const emailData = buildEmailData(sla, recipient);
-    return emailService.sendCustomSlaBreachAlert(recipient.email_address, emailData);
+const wasAlreadyAlerted = async (slaId, userId) => {
+    const existing = await models.sla_breach_alerts.findOne({
+        where: { sla_id: slaId, application_id: null, user_id: userId }
+    });
+    return !!existing;
+};
+
+const markAlerted = async (slaId, userId) => {
+    await models.sla_breach_alerts.create({
+        sla_id: slaId,
+        application_id: null,
+        user_id: userId
+    });
 };
 
 const processCustomSlaBreaches = async () => {
@@ -146,7 +158,31 @@ const processCustomSlaBreaches = async () => {
 
             for (const recipient of recipients) {
                 try {
-                    await sendAlert(recipient, sla);
+                    if (await wasAlreadyAlerted(sla.sla_id, recipient.user_id)) {
+                        continue;
+                    }
+
+                    await createNotification({
+                        userId: recipient.user_id,
+                        definitionId: SLA_BREACH_DEFINITION_ID,
+                        notificationType: 'SYSTEM',
+                        title: 'NOTIF_CUSTOM_SLA_BREACH_TITLE',
+                        body: 'NOTIF_CUSTOM_SLA_BREACH_BODY',
+                        meta: {
+                            slaName: sla.sla_name,
+                            slaDescription: sla.sla_description,
+                            deadline: sla.end_date
+                        },
+                        url: '/notifications'
+                    });
+
+                    const prefs = await resolvePreferences(SLA_BREACH_DEFINITION_ID, recipient.user_id);
+                    if (prefs.is_enabled && prefs.send_email) {
+                        const emailData = buildEmailData(sla, recipient);
+                        await emailService.sendCustomSlaBreachAlert(recipient.email_address, emailData);
+                    }
+
+                    await markAlerted(sla.sla_id, recipient.user_id);
                 } catch (error) {
                     logger.error('Failed to send custom SLA breach alert', {
                         error,

@@ -2,9 +2,11 @@ const cron = require('node-cron');
 const { QueryTypes } = require('sequelize');
 const { models } = require('../models');
 const emailService = require('../services/email.service');
+const { createNotification, resolvePreferences } = require('../services/notifications.service');
 const { logger } = require('../utils/logger');
 
 const SLA_CRON_SCHEDULE = '*/15 * * * *';
+const SLA_BREACH_DEFINITION_ID = 14;
 const DEFAULT_LANGUAGE = 'en-GB';
 const sequelize = models.badge_applications.sequelize;
 
@@ -114,9 +116,19 @@ const buildEmailData = (breach, recipientLanguage) => ({
     language: recipientLanguage || DEFAULT_LANGUAGE
 });
 
-const sendAlert = async (recipient, breach) => {
-    const emailData = buildEmailData(breach, recipient.language_iso);
-    return emailService.sendSlaBreachAlert(recipient.email_address, emailData);
+const wasAlreadyAlerted = async (slaId, applicationId, userId) => {
+    const existing = await models.sla_breach_alerts.findOne({
+        where: { sla_id: slaId, application_id: applicationId, user_id: userId }
+    });
+    return !!existing;
+};
+
+const markAlerted = async (slaId, applicationId, userId) => {
+    await models.sla_breach_alerts.create({
+        sla_id: slaId,
+        application_id: applicationId,
+        user_id: userId
+    });
 };
 
 const processSlaBreaches = async () => {
@@ -135,7 +147,32 @@ const processSlaBreaches = async () => {
 
             for (const recipient of recipients) {
                 try {
-                    await sendAlert(recipient, breach);
+                    if (await wasAlreadyAlerted(breach.sla_id, breach.application_id, recipient.user_id)) {
+                        continue;
+                    }
+
+                    await createNotification({
+                        userId: recipient.user_id,
+                        definitionId: SLA_BREACH_DEFINITION_ID,
+                        notificationType: 'SYSTEM',
+                        title: 'NOTIF_SLA_BREACH_TITLE',
+                        body: 'NOTIF_SLA_BREACH_BODY',
+                        meta: {
+                            slaName: breach.sla_name,
+                            badgeTitle: breach.badge_title,
+                            applicantName: breach.applicant_name,
+                            hoursExceeded: Number(Number(breach.hours_exceeded || 0).toFixed(2))
+                        },
+                        url: `/admin/applications/${breach.application_guid}`
+                    });
+
+                    const prefs = await resolvePreferences(SLA_BREACH_DEFINITION_ID, recipient.user_id);
+                    if (prefs.is_enabled && prefs.send_email) {
+                        const emailData = buildEmailData(breach, recipient.language_iso);
+                        await emailService.sendSlaBreachAlert(recipient.email_address, emailData);
+                    }
+
+                    await markAlerted(breach.sla_id, breach.application_id, recipient.user_id);
                 } catch (error) {
                     logger.error('Failed to send SLA breach alert', {
                         error,
