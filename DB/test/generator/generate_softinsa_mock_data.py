@@ -625,6 +625,7 @@ def generate_sql() -> str:
         ("APPLICATION_REJECTED", "Application rejected", "Badge application rejected", "/applications", "APPLICATIONS"),
         ("BADGE_EXPIRING_SOON", "Badge expiring soon", "An awarded badge is close to expiring", "/badges", "BADGES"),
         ("BADGE_EXPIRED", "Badge expired", "An awarded badge has expired", "/badges", "BADGES"),
+        ("SLA_BREACH", "SLA breach", "An SLA response time has been exceeded", "/notifications", "SYSTEM"),
     ]
     for code, name, description, route, _notification_type in definition_templates:
         row = {
@@ -1223,6 +1224,7 @@ def generate_sql() -> str:
             ("notification_preferences", "preference_id"),
             ("device_tokens", "device_token_id"),
             ("user_notification_preferences", "user_pref_id"),
+            ("sla_breach_alerts", "alert_id"),
             ("user_badges_interactions", "interaction_id"),
         ]))
 

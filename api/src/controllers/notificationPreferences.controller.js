@@ -75,9 +75,7 @@ const listUserPreferences = async (req, res) => {
             order: [['definition_id', 'ASC']]
         });
 
-        const globalPrefs = await models.notification_preferences.findAll({
-            where: { sla_id: null, announcement_id: null }
-        });
+        const globalPrefs = await models.notification_preferences.findAll();
 
         const userPrefs = await models.user_notification_preferences.findAll({
             where: { user_id: userId }
