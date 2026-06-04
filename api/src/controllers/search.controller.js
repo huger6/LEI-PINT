@@ -26,10 +26,25 @@ const buildSearchSql = (entityTypes) => `
             u.is_active,
             u.created_at,
             u.updated_at,
-            similarity(u.full_name, :q) AS relevance
+            similarity(u.full_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
         FROM users u
         WHERE u.is_active = true
-                    AND (u.full_name ILIKE :likeQuery OR u.username ILIKE :likeQuery OR u.email_address ILIKE :likeQuery)
+            AND (u.full_name ILIKE :likeQuery OR u.username ILIKE :likeQuery OR u.email_address ILIKE :likeQuery)
 
         UNION ALL
 
@@ -43,19 +58,22 @@ const buildSearchSql = (entityTypes) => `
             b.is_active,
             b.created_at,
             b.updated_at,
-                similarity(b.badge_title, :q) AS relevance,
-                a.area_id AS parent_area_id,
-                a.area_name AS parent_area_title,
-                a.area_slug AS parent_area_slug,
-                sl.service_line_id AS parent_service_line_id,
-                sl.service_line_name AS parent_service_line_title,
-                sl.sl_slug AS parent_service_line_slug,
-                lp.learning_path_id AS parent_learning_path_id,
-                lp.path_title AS parent_learning_path_title,
-                lp.path_slug AS parent_learning_path_slug,
-                ps.progression_stage_id AS parent_stage_id,
-                ps.stage_title AS parent_stage_title,
-                sc.stage_code AS parent_stage_code
+            similarity(b.badge_title, :q) AS relevance,
+            a.area_id AS parent_area_id,
+            a.area_name AS parent_area_title,
+            a.area_slug AS parent_area_slug,
+            sl.service_line_id AS parent_service_line_id,
+            sl.service_line_name AS parent_service_line_title,
+            sl.sl_slug AS parent_service_line_slug,
+            lp.learning_path_id AS parent_learning_path_id,
+            lp.path_title AS parent_learning_path_title,
+            lp.path_slug AS parent_learning_path_slug,
+            ps.progression_stage_id AS parent_stage_id,
+            ps.stage_title AS parent_stage_title,
+            sc.stage_code AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
         FROM badges b
             INNER JOIN areas a ON a.area_id = b.area_id
             INNER JOIN service_lines sl ON sl.service_line_id = b.service_line_id
@@ -63,128 +81,230 @@ const buildSearchSql = (entityTypes) => `
             INNER JOIN progression_stages ps ON ps.progression_stage_id = b.progression_stage_id
             INNER JOIN stage_codes sc ON sc.stage_code_id = ps.stage_code_id
         WHERE b.is_active = true
-                    AND (b.badge_title ILIKE :likeQuery OR b.badge_slug ILIKE :likeQuery OR b.badge_type ILIKE :likeQuery OR COALESCE(b.badge_description, '') ILIKE :likeQuery)
+            AND (b.badge_title ILIKE :likeQuery OR b.badge_slug ILIKE :likeQuery OR b.badge_type ILIKE :likeQuery OR COALESCE(b.badge_description, '') ILIKE :likeQuery)
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'learning_path'::text AS entity_type,
-                        lp.learning_path_id AS entity_id,
-                        lp.path_title AS title,
-                        lp.path_slug AS subtitle,
-                        lp.img_url AS image_url,
-                        lp.path_description AS meta,
-                        lp.is_active,
-                        lp.created_at,
-                        lp.updated_at,
-                        similarity(lp.path_title, :q) AS relevance
-                FROM learning_paths lp
-                WHERE lp.is_active = true
-                    AND (lp.path_title ILIKE :likeQuery OR lp.path_slug ILIKE :likeQuery OR COALESCE(lp.path_description, '') ILIKE :likeQuery)
+        SELECT
+            'learning_path'::text AS entity_type,
+            lp.learning_path_id AS entity_id,
+            lp.path_title AS title,
+            lp.path_slug AS subtitle,
+            lp.img_url AS image_url,
+            lp.path_description AS meta,
+            lp.is_active,
+            lp.created_at,
+            lp.updated_at,
+            similarity(lp.path_title, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM learning_paths lp
+        WHERE lp.is_active = true
+            AND (lp.path_title ILIKE :likeQuery OR lp.path_slug ILIKE :likeQuery OR COALESCE(lp.path_description, '') ILIKE :likeQuery)
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'service_line'::text AS entity_type,
-                        sl.service_line_id AS entity_id,
-                        sl.service_line_name AS title,
-                        sl.sl_slug AS subtitle,
-                        sl.img_url AS image_url,
-                        sl.service_line_description AS meta,
-                        sl.is_active,
-                        sl.created_at,
-                        sl.updated_at,
-                        similarity(sl.service_line_name, :q) AS relevance
-                FROM service_lines sl
-                WHERE sl.is_active = true
-                    AND (sl.service_line_name ILIKE :likeQuery OR sl.sl_slug ILIKE :likeQuery OR COALESCE(sl.service_line_description, '') ILIKE :likeQuery)
+        SELECT
+            'service_line'::text AS entity_type,
+            sl.service_line_id AS entity_id,
+            sl.service_line_name AS title,
+            sl.sl_slug AS subtitle,
+            sl.img_url AS image_url,
+            sl.service_line_description AS meta,
+            sl.is_active,
+            sl.created_at,
+            sl.updated_at,
+            similarity(sl.service_line_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM service_lines sl
+        WHERE sl.is_active = true
+            AND (sl.service_line_name ILIKE :likeQuery OR sl.sl_slug ILIKE :likeQuery OR COALESCE(sl.service_line_description, '') ILIKE :likeQuery)
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'area'::text AS entity_type,
-                        a.area_id AS entity_id,
-                        a.area_name AS title,
-                        a.area_slug AS subtitle,
-                        a.img_url AS image_url,
-                        a.area_description AS meta,
-                        a.is_active,
-                        a.created_at,
-                        a.updated_at,
-                        similarity(a.area_name, :q) AS relevance
-                FROM areas a
-                WHERE a.is_active = true
-                    AND (a.area_name ILIKE :likeQuery OR a.area_slug ILIKE :likeQuery OR COALESCE(a.area_description, '') ILIKE :likeQuery)
+        SELECT
+            'area'::text AS entity_type,
+            a.area_id AS entity_id,
+            a.area_name AS title,
+            a.area_slug AS subtitle,
+            a.img_url AS image_url,
+            a.area_description AS meta,
+            a.is_active,
+            a.created_at,
+            a.updated_at,
+            similarity(a.area_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM areas a
+        WHERE a.is_active = true
+            AND (a.area_name ILIKE :likeQuery OR a.area_slug ILIKE :likeQuery OR COALESCE(a.area_description, '') ILIKE :likeQuery)
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'stage'::text AS entity_type,
-                        ps.progression_stage_id AS entity_id,
-                        ps.stage_title AS title,
-                        sc.stage_code AS subtitle,
-                        NULL::text AS image_url,
-                        ps.stage_description AS meta,
-                        ps.is_active,
-                        ps.created_at,
-                        ps.updated_at,
-                        similarity(ps.stage_title, :q) AS relevance
-                FROM progression_stages ps
-                INNER JOIN stage_codes sc ON sc.stage_code_id = ps.stage_code_id
-                WHERE ps.is_active = true
-                    AND (ps.stage_title ILIKE :likeQuery OR sc.stage_code ILIKE :likeQuery OR COALESCE(ps.stage_description, '') ILIKE :likeQuery)
+        SELECT
+            'stage'::text AS entity_type,
+            ps.progression_stage_id AS entity_id,
+            ps.stage_title AS title,
+            sc.stage_code AS subtitle,
+            NULL::text AS image_url,
+            ps.stage_description AS meta,
+            ps.is_active,
+            ps.created_at,
+            ps.updated_at,
+            similarity(ps.stage_title, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM progression_stages ps
+        INNER JOIN stage_codes sc ON sc.stage_code_id = ps.stage_code_id
+        WHERE ps.is_active = true
+            AND (ps.stage_title ILIKE :likeQuery OR sc.stage_code ILIKE :likeQuery OR COALESCE(ps.stage_description, '') ILIKE :likeQuery)
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'skill'::text AS entity_type,
-                        s.skills_id AS entity_id,
-                        s.skill_name AS title,
-                        COALESCE(b.badge_slug, '') AS subtitle,
-                        b.badge_img_url AS image_url,
-                        s.skill_description AS meta,
-                        true AS is_active,
-                        s.created_at,
-                        s.updated_at,
-                    similarity(s.skill_name, :q) AS relevance,
-                    b.badge_id AS parent_badge_id,
-                    b.badge_title AS parent_badge_title,
-                    b.badge_slug AS parent_badge_slug
-                FROM skills s
-                LEFT JOIN badges b ON b.badge_id = s.badge_id
-                WHERE s.skill_name ILIKE :likeQuery OR COALESCE(s.skill_description, '') ILIKE :likeQuery
+        SELECT
+            'skill'::text AS entity_type,
+            s.skills_id AS entity_id,
+            s.skill_name AS title,
+            COALESCE(b.badge_slug, '') AS subtitle,
+            b.badge_img_url AS image_url,
+            s.skill_description AS meta,
+            true AS is_active,
+            s.created_at,
+            s.updated_at,
+            similarity(s.skill_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            b.badge_id AS parent_badge_id,
+            b.badge_title AS parent_badge_title,
+            b.badge_slug AS parent_badge_slug
+        FROM skills s
+        LEFT JOIN badges b ON b.badge_id = s.badge_id
+        WHERE s.skill_name ILIKE :likeQuery OR COALESCE(s.skill_description, '') ILIKE :likeQuery
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'language'::text AS entity_type,
-                        l.language_id AS entity_id,
-                        l.language_name AS title,
-                        l.language_iso AS subtitle,
-                        NULL::text AS image_url,
-                        l.language_iso AS meta,
-                        true AS is_active,
-                        NULL::timestamptz AS created_at,
-                        NULL::timestamptz AS updated_at,
-                        similarity(l.language_name, :q) AS relevance
-                FROM languages l
-                WHERE l.language_name ILIKE :likeQuery OR l.language_iso ILIKE :likeQuery
+        SELECT
+            'language'::text AS entity_type,
+            l.language_id AS entity_id,
+            l.language_name AS title,
+            l.language_iso AS subtitle,
+            NULL::text AS image_url,
+            l.language_iso AS meta,
+            true AS is_active,
+            NULL::timestamptz AS created_at,
+            NULL::timestamptz AS updated_at,
+            similarity(l.language_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM languages l
+        WHERE l.language_name ILIKE :likeQuery OR l.language_iso ILIKE :likeQuery
 
-                UNION ALL
+        UNION ALL
 
-                SELECT
-                        'location'::text AS entity_type,
-                        loc.location_id AS entity_id,
-                        loc.location_name AS title,
-                        NULL::text AS subtitle,
-                        NULL::text AS image_url,
-                        NULL::text AS meta,
-                        true AS is_active,
-                        NULL::timestamptz AS created_at,
-                        NULL::timestamptz AS updated_at,
-                        similarity(loc.location_name, :q) AS relevance
-                FROM locations loc
-                WHERE loc.location_name ILIKE :likeQuery
+        SELECT
+            'location'::text AS entity_type,
+            loc.location_id AS entity_id,
+            loc.location_name AS title,
+            NULL::text AS subtitle,
+            NULL::text AS image_url,
+            NULL::text AS meta,
+            true AS is_active,
+            NULL::timestamptz AS created_at,
+            NULL::timestamptz AS updated_at,
+            similarity(loc.location_name, :q) AS relevance,
+            NULL::int AS parent_area_id,
+            NULL::text AS parent_area_title,
+            NULL::text AS parent_area_slug,
+            NULL::int AS parent_service_line_id,
+            NULL::text AS parent_service_line_title,
+            NULL::text AS parent_service_line_slug,
+            NULL::int AS parent_learning_path_id,
+            NULL::text AS parent_learning_path_title,
+            NULL::text AS parent_learning_path_slug,
+            NULL::int AS parent_stage_id,
+            NULL::text AS parent_stage_title,
+            NULL::text AS parent_stage_code,
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
+        FROM locations loc
+        WHERE loc.location_name ILIKE :likeQuery
     )
     SELECT
         entity_type,
@@ -197,6 +317,21 @@ const buildSearchSql = (entityTypes) => `
         created_at,
         updated_at,
         relevance,
+        parent_area_id,
+        parent_area_title,
+        parent_area_slug,
+        parent_service_line_id,
+        parent_service_line_title,
+        parent_service_line_slug,
+        parent_learning_path_id,
+        parent_learning_path_title,
+        parent_learning_path_slug,
+        parent_stage_id,
+        parent_stage_title,
+        parent_stage_code,
+        parent_badge_id,
+        parent_badge_title,
+        parent_badge_slug,
         COUNT(*) OVER()::int AS total_items
     FROM search_results
     ${buildEntityTypesFilter(entityTypes)}
