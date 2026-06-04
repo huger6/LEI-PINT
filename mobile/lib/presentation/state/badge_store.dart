@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 import '../../core/constants/sync_codes.dart';
+import '../../core/services/celebration_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../data/repositories/badge_repo.dart';
 import '../../models/badge_model.dart';
@@ -20,6 +21,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
   final BadgeRepository _badgeRepository;
   final SyncService _syncService;
+  final CelebrationService _celebrationService = CelebrationService();
   StreamSubscription<int>? _syncSubscription;
 
   final Map<String, BadgeModel> _detailsBySlug = <String, BadgeModel>{};
@@ -29,6 +31,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   bool _isLoading = false;
   bool _isLoadingEarned = false;
   String? _errorMessage;
+  Milestone? _pendingCelebration;
 
   List<BadgeModel> get badges => _badges;
   List<EarnedBadge> get earnedBadges => _earnedBadges;
@@ -36,6 +39,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   bool get isLoading => _isLoading;
   bool get isLoadingEarned => _isLoadingEarned;
   String? get errorMessage => _errorMessage;
+  Milestone? get pendingCelebration => _pendingCelebration;
 
   @override
   void dispose() {
@@ -64,6 +68,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _reloadEarnedFromLocal() async {
     final local = await _badgeRepository.getEarnedBadgesLocal();
     _earnedBadges = local;
+    await _checkCelebration();
     notifyListeners();
   }
 
@@ -117,8 +122,24 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
       }
     } finally {
       _isLoadingEarned = false;
+      await _checkCelebration();
       notifyListeners();
     }
+  }
+
+  Future<void> _checkCelebration() async {
+    final milestone = await _celebrationService.checkForNewMilestone(
+      _earnedBadges.length,
+    );
+    _pendingCelebration = milestone;
+  }
+
+  Future<void> consumeCelebration() async {
+    final milestone = _pendingCelebration;
+    if (milestone == null) return;
+    await _celebrationService.markMilestoneShown(milestone);
+    _pendingCelebration = null;
+    notifyListeners();
   }
 
   Future<BadgeModel?> getBadgeDetail(BadgeModel badge) async {

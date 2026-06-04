@@ -266,5 +266,20 @@
   "downloadingFile": "Downloading file...",
   "fileDownloaded": "File downloaded successfully.",
   "fileDownloadError": "Could not download the file.",
-  "openingLink": "Opening link..."
+  "openingLink": "Opening link...",
+
+  "certifiedCompetences": "Certified Competences",
+  "competenceCount_one": "competence",
+  "competenceCount_other": "competences",
+
+  "celebrationFirstBadgeTitle": "First Badge!",
+  "celebrationFirstBadgeDesc": "Congratulations! You earned your first badge. Your certification journey has begun!",
+  "celebration5BadgesTitle": "Rising Star!",
+  "celebration5BadgesDesc": "Amazing! You've earned 5 badges. You're building an impressive portfolio!",
+  "celebration10BadgesTitle": "Badge Collector!",
+  "celebration10BadgesDesc": "10 badges earned! Your dedication is paying off. Keep it up!",
+  "celebration25BadgesTitle": "Expert Achiever!",
+  "celebration25BadgesDesc": "25 badges! You're a reference in the team. Your commitment is inspiring!",
+  "celebration50BadgesTitle": "Badge Master!",
+  "celebration50BadgesDesc": "50 badges! An extraordinary achievement. You're a true Softinsa specialist!"
 }

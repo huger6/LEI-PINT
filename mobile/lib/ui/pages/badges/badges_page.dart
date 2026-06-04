@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../models/badge_model.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
+import '../../widgets/badges/competences_section.dart';
 import '../applications/application_page.dart';
 
 class BadgeDetailScreen extends StatefulWidget {
@@ -220,34 +221,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       const SizedBox(height: 14),
                     ],
                     if (badge.skills.isNotEmpty) ...[
-                      BadgeSectionCard(
-                        title: 'Competências',
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: badge.skills
-                              .map(
-                                (skill) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 7,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryContainer.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    skill,
-                                    style: const TextStyle(
-                                      color: Color(0xFF1E3A4F),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                      CompetencesSection(
+                        skills: badge.skills,
+                        title: tr.tr('certifiedCompetences'),
                       ),
                       const SizedBox(height: 14),
                     ],

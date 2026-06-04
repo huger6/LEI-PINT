@@ -893,7 +893,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          skill,
+                          skill.name,
                           style: const TextStyle(
                             color: Color(0xFF1E3A4F),
                             fontWeight: FontWeight.w600,
