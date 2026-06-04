@@ -83,11 +83,7 @@ const createNotification = async ({ userId, definitionId, notificationType, titl
 
 const resolvePreferences = async (definitionId, userId) => {
     const globalPref = await models.notification_preferences.findOne({
-        where: {
-            definition_id: definitionId,
-            sla_id: null,
-            announcement_id: null
-        }
+        where: { definition_id: definitionId }
     });
 
     const effective = {

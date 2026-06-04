@@ -447,15 +447,18 @@ const submitApplication = async (req, res) => {
                 url: `/applications/${application.application_guid}`
             });
 
-            const consultantData = await getConsultantEmailData(application.user_id);
-            if (consultantData) {
-                await sendApplicationSubmittedEmail(
-                    consultantData.email,
-                    consultantData.name,
-                    application.badge.badge_title,
-                    appUrl,
-                    consultantData.lang
-                );
+            const submittedPrefs = await notificationsService.resolvePreferences(3, application.user_id);
+            if (submittedPrefs.is_enabled && submittedPrefs.send_email) {
+                const consultantData = await getConsultantEmailData(application.user_id);
+                if (consultantData) {
+                    await sendApplicationSubmittedEmail(
+                        consultantData.email,
+                        consultantData.name,
+                        application.badge.badge_title,
+                        appUrl,
+                        consultantData.lang
+                    );
+                }
             }
 
             if (application.badge && application.badge.service_line_id) {
@@ -690,25 +693,29 @@ const validateApplication = async (req, res) => {
 
             // Email the consultant on terminal state changes
             if (newState === 'Accepted' || newState === 'Rejected') {
-                const consultantData = await getConsultantEmailData(application.user_id);
-                if (consultantData) {
-                    if (newState === 'Accepted') {
-                        await sendApplicationApprovedEmail(
-                            consultantData.email,
-                            consultantData.name,
-                            application.badge.badge_title,
-                            appUrl,
-                            consultantData.lang
-                        );
-                    } else {
-                        await sendApplicationRejectedEmail(
-                            consultantData.email,
-                            consultantData.name,
-                            application.badge.badge_title,
-                            reviewerNotes || null,
-                            appUrl,
-                            consultantData.lang
-                        );
+                const emailDefId = newState === 'Accepted' ? 10 : 11;
+                const emailPrefs = await notificationsService.resolvePreferences(emailDefId, application.user_id);
+                if (emailPrefs.is_enabled && emailPrefs.send_email) {
+                    const consultantData = await getConsultantEmailData(application.user_id);
+                    if (consultantData) {
+                        if (newState === 'Accepted') {
+                            await sendApplicationApprovedEmail(
+                                consultantData.email,
+                                consultantData.name,
+                                application.badge.badge_title,
+                                appUrl,
+                                consultantData.lang
+                            );
+                        } else {
+                            await sendApplicationRejectedEmail(
+                                consultantData.email,
+                                consultantData.name,
+                                application.badge.badge_title,
+                                reviewerNotes || null,
+                                appUrl,
+                                consultantData.lang
+                            );
+                        }
                     }
                 }
             }
