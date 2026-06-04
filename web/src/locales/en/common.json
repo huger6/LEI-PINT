@@ -598,7 +598,7 @@
 		"sortRecent": "Most recent",
 		"sortAZ": "A-Z",
 		"sortZA": "Z-A",
-		"errorLoading": "Error loading badges: {{error}}",
+		"errorLoading": "Error loading badges. Please try again later.",
 		"filters": {
 			"title": "Filters",
 			"open": "Open filters",
@@ -763,7 +763,7 @@
 		"noApplications": "No applications",
 		"noApplicationsDesc": "You haven't applied to any badge yet.",
 		"viewDetails": "View details",
-		"errorLoading": "Error loading applications: {{error}}",
+		"errorLoading": "Error loading applications. Please try again later.",
 		"tabs": {
 			"all": "All",
 			"open": "Open",
