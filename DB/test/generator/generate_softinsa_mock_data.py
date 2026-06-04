@@ -695,10 +695,8 @@ def generate_sql() -> str:
             "starts_at": starts_at,
             "ends_at": starts_at + timedelta(days=random.randint(14, 45)),
             "announcement_type": announcement_types[index % len(announcement_types)],
-            "target_profile": TARGET_PROFILES[index % len(TARGET_PROFILES)],
             "is_global": index % 3 == 0,
             "is_active": True,
-            "user_id": None if index % 3 == 0 else random.choice(all_user_ids),
             "created_by": random.choice(admin_ids),
             "updated_by": random.choice(admin_ids),
             "created_at": starts_at - timedelta(days=3),
@@ -896,6 +894,16 @@ def generate_sql() -> str:
             sql.insert("announc_sl", {
                 "announcement_id": announcement["announcement_id"],
                 "service_line_id": service_line["service_line_id"],
+            })
+
+    for announcement in system_announcements:
+        if announcement["is_global"]:
+            continue
+        role_sample = random.sample(TARGET_PROFILES, k=random.randint(1, 2))
+        for role in role_sample:
+            sql.insert("announc_roles", {
+                "announcement_id": announcement["announcement_id"],
+                "role_name": role,
             })
 
     sql.extend([
@@ -1125,7 +1133,7 @@ def generate_sql() -> str:
             "definition_id": random.choice(notification_definitions)["definition_id"],
             "sla_id": None,
             "announcement_id": announcement["announcement_id"],
-            "send_email": announcement["target_profile"] != "Consultant",
+            "send_email": index % 2 == 0,
             "send_push": True,
             "is_enabled": True,
             "trigger_before_value": 1,

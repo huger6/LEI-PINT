@@ -1,5 +1,6 @@
 var DataTypes = require("sequelize").DataTypes;
 var _administrators = require("./administrators");
+var _announc_roles = require("./announc_roles");
 var _announc_sl = require("./announc_sl");
 var _application_validation_logs = require("./application_validation_logs");
 var _areas = require("./areas");
@@ -38,6 +39,7 @@ var _users = require("./users");
 
 function initModels(sequelize) {
   var administrators = _administrators(sequelize, DataTypes);
+  var announc_roles = _announc_roles(sequelize, DataTypes);
   var announc_sl = _announc_sl(sequelize, DataTypes);
   var application_validation_logs = _application_validation_logs(sequelize, DataTypes);
   var areas = _areas(sequelize, DataTypes);
@@ -216,6 +218,8 @@ function initModels(sequelize) {
   slas.hasMany(sl_slas, { as: "sl_slas", foreignKey: "sla_id"});
   progression_stages.belongsTo(stage_codes, { as: "stage_code", foreignKey: "stage_code_id"});
   stage_codes.hasMany(progression_stages, { as: "progression_stages", foreignKey: "stage_code_id"});
+  announc_roles.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
+  system_announcements.hasMany(announc_roles, { as: "announc_roles", foreignKey: "announcement_id"});
   announc_sl.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
   system_announcements.hasMany(announc_sl, { as: "announc_sls", foreignKey: "announcement_id"});
   notification_preferences.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
@@ -232,8 +236,6 @@ function initModels(sequelize) {
   users.hasOne(service_line_leaders, { as: "service_line_leader", foreignKey: "user_id"});
   slas.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(slas, { as: "slas", foreignKey: "user_id"});
-  system_announcements.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(system_announcements, { as: "system_announcements", foreignKey: "user_id"});
   talent_managers.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(talent_managers, { as: "talent_manager", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(users, { as: "user", foreignKey: "user_id"});
@@ -241,6 +243,7 @@ function initModels(sequelize) {
 
   return {
     administrators,
+    announc_roles,
     announc_sl,
     application_validation_logs,
     areas,

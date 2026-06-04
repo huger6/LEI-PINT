@@ -165,9 +165,10 @@ DROP INDEX IF EXISTS STAGE_CODE_UPDATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS STAGE_CODE_CREATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS STAGE_CODES_PK CASCADE;
 DROP TABLE IF EXISTS stage_codes CASCADE;
+DROP INDEX IF EXISTS ANNOUNC_ROLES_PK CASCADE;
+DROP TABLE IF EXISTS announc_roles CASCADE;
 DROP INDEX IF EXISTS ANNOUNCEMENTS_UPDATEDBY_FK CASCADE;
 DROP INDEX IF EXISTS ANNOUNCEMENTS_ADMIN_FK CASCADE;
-DROP INDEX IF EXISTS USER_ANNOUNCEMENTS_FK CASCADE;
 DROP INDEX IF EXISTS SYSTEM_ANNOUNCEMENTS_PK CASCADE;
 DROP TABLE IF EXISTS system_announcements CASCADE;
 DROP INDEX IF EXISTS TALENT_MANAGERS_PK CASCADE;
@@ -822,11 +823,8 @@ CREATE TABLE IF NOT EXISTS system_announcements (
    ends_at              TIMESTAMPTZ          NULL,
    announcement_type    VARCHAR(128)         NULL,
       CONSTRAINT ckc_announcement_type CHECK(announcement_type IN ('Information', 'Warning', 'New Content', 'Other')),
-   target_profile       VARCHAR(128)         NULL
-      CONSTRAINT ckc_target_profile_system_announcements CHECK (target_profile IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
    is_global            BOOLEAN                 NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
-   user_id              INTEGER                 NULL, -- FK -> users(user_id)
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
    updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
@@ -855,6 +853,22 @@ CREATE TABLE IF NOT EXISTS announc_sl (
 /* INDEX: ANNOUNC_SL_PK                                         */
 /*==============================================================*/
 CREATE UNIQUE INDEX IF NOT EXISTS ANNOUNC_SL_PK ON announc_sl (announcement_id, service_line_id);
+
+/*==============================================================*/
+/* TABLE: announc_roles                                         */
+/*==============================================================*/
+CREATE TABLE IF NOT EXISTS announc_roles (
+   announcement_id      INTEGER                 NOT NULL, -- FK -> system_announcements(announcement_id)
+   role_name            VARCHAR(50)             NOT NULL
+      CONSTRAINT ckc_role_name_announc_roles CHECK (role_name IN ('Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator')),
+
+   CONSTRAINT pk_announc_roles PRIMARY KEY (announcement_id, role_name)
+);
+
+/*==============================================================*/
+/* INDEX: ANNOUNC_ROLES_PK                                      */
+/*==============================================================*/
+CREATE UNIQUE INDEX IF NOT EXISTS ANNOUNC_ROLES_PK ON announc_roles (announcement_id, role_name);
 
 /*==============================================================*/
 /* TABLE: administrators                                        */
@@ -1053,6 +1067,11 @@ ALTER TABLE announc_sl
 ALTER TABLE announc_sl
    ADD CONSTRAINT fk_announc__announc_s_services FOREIGN KEY (service_line_id)
       REFERENCES service_lines (service_line_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE announc_roles
+   ADD CONSTRAINT fk_announc_roles_system_a FOREIGN KEY (announcement_id)
+      REFERENCES system_announcements (announcement_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE application_validation_logs
@@ -1410,11 +1429,6 @@ ALTER TABLE system_announcements
       REFERENCES administrators (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-ALTER TABLE system_announcements
-   ADD CONSTRAINT fk_system_a_user_anno_users FOREIGN KEY (user_id)
-      REFERENCES users (user_id)
-      ON DELETE RESTRICT ON UPDATE RESTRICT;
-
 ALTER TABLE talent_managers
    ADD CONSTRAINT fk_talent_m_users_inh_users FOREIGN KEY (user_id)
       REFERENCES users (user_id)
@@ -1519,7 +1533,6 @@ CREATE INDEX IF NOT EXISTS ADMIN_SLA_FK ON slas (created_by);
 CREATE INDEX IF NOT EXISTS USER_SLAS_FK ON slas (user_id);
 CREATE INDEX IF NOT EXISTS NOT_DEF_SLAS_FK ON slas (definition_id);
 CREATE INDEX IF NOT EXISTS SLAS_UPDATEDBY_FK ON slas (updated_by);
-CREATE INDEX IF NOT EXISTS USER_ANNOUNCEMENTS_FK ON system_announcements (user_id);
 CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_ADMIN_FK ON system_announcements (created_by);
 CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_UPDATEDBY_FK ON system_announcements (updated_by);
 CREATE INDEX IF NOT EXISTS SL_SLL_FK ON service_line_leaders (service_line_id);
