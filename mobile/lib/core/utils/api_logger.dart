@@ -37,8 +37,8 @@ class ApiLoggerInterceptor extends Interceptor {
     if (kDebugMode) {
       final method = options.method.toUpperCase();
       final url = options.uri.toString();
-      final body = _prettyJson(options.data);
-      final headers = _prettyJson(options.headers);
+      final body = _formatForLog(options.data);
+      final headers = _formatForLog(options.headers);
 
       _writeLog(
         'REQUEST',
@@ -53,7 +53,7 @@ class ApiLoggerInterceptor extends Interceptor {
     if (kDebugMode) {
       final url = response.requestOptions.uri.toString();
       final status = response.statusCode;
-      final data = _prettyJson(response.data);
+      final data = _formatForLog(response.data);
 
       _writeLog('RESPONSE', 'Status: $status\nURL: $url\nData: $data');
     }
@@ -65,20 +65,56 @@ class ApiLoggerInterceptor extends Interceptor {
     if (kDebugMode) {
       final url = err.requestOptions.uri.toString();
       final status = err.response?.statusCode ?? 'Sem Status';
-      final errorData = _prettyJson(err.response?.data) ?? err.message;
+      final errorData = _formatForLog(err.response?.data) ?? err.message;
 
       _writeLog('ERROR', 'Status: $status\nURL: $url\nDetalhes: $errorData');
     }
     super.onError(err, handler);
   }
 
-  String? _prettyJson(dynamic data) {
+  String? _formatForLog(dynamic data) {
     if (data == null) return null;
+    final sanitized = _sanitizeForLog(data);
+    if (sanitized is String) {
+      final trimmed = sanitized.trimLeft().toLowerCase();
+      if (trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+        return '[HTML response omitted, length=${sanitized.length}]';
+      }
+    }
+
     try {
       const encoder = JsonEncoder.withIndent('  ');
-      return encoder.convert(data);
+      return encoder.convert(sanitized);
     } catch (e) {
-      return data.toString();
+      return sanitized.toString();
     }
+  }
+
+  dynamic _sanitizeForLog(dynamic data) {
+    if (data is Map) {
+      return data.map((key, value) {
+        final keyText = key.toString();
+        return MapEntry(
+          keyText,
+          _isSensitiveKey(keyText) ? '[REDACTED]' : _sanitizeForLog(value),
+        );
+      });
+    }
+
+    if (data is Iterable && data is! String) {
+      return data.map(_sanitizeForLog).toList();
+    }
+
+    return data;
+  }
+
+  bool _isSensitiveKey(String key) {
+    final normalized = key.toLowerCase();
+    return normalized.contains('password') ||
+        normalized.contains('token') ||
+        normalized.contains('secret') ||
+        normalized == 'authorization' ||
+        normalized == 'cookie' ||
+        normalized == 'set-cookie';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/translation_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/repositories/lang_repo.dart';
 import '../../../injection_container.dart';
@@ -10,33 +11,68 @@ class LanguageOption {
     required this.code,
     required this.label,
     required this.flag,
+    this.modelReady = false,
   });
 
   final String code;
   final String label;
   final String flag;
+  final bool modelReady;
+
+  LanguageOption copyWith({bool? modelReady}) => LanguageOption(
+        code: code,
+        label: label,
+        flag: flag,
+        modelReady: modelReady ?? this.modelReady,
+      );
 }
 
 const _fallbackLanguages = [
-  LanguageOption(code: 'pt', label: 'Português', flag: '\u{1F1F5}\u{1F1F9}'),
+  LanguageOption(
+    code: 'pt',
+    label: 'Português',
+    flag: '\u{1F1F5}\u{1F1F9}',
+    modelReady: true,
+  ),
   LanguageOption(code: 'es', label: 'Español', flag: '\u{1F1EA}\u{1F1F8}'),
   LanguageOption(code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}'),
 ];
 
 String _flagForCode(String code) {
-  final lower = code.toLowerCase();
-  if (lower.startsWith('pt') || lower == '1') return '\u{1F1F5}\u{1F1F9}';
-  if (lower.startsWith('es') || lower == '3') return '\u{1F1EA}\u{1F1F8}';
-  if (lower.startsWith('en') || lower == '2') return '\u{1F1EC}\u{1F1E7}';
-  return '\u{1F30D}';
+  final base = code.toLowerCase().split('-').first;
+  switch (base) {
+    case 'pt':
+      return '\u{1F1F5}\u{1F1F9}';
+    case 'es':
+      return '\u{1F1EA}\u{1F1F8}';
+    case 'en':
+      return '\u{1F1EC}\u{1F1E7}';
+    case 'fr':
+      return '\u{1F1EB}\u{1F1F7}';
+    case 'de':
+      return '\u{1F1E9}\u{1F1EA}';
+    case 'it':
+      return '\u{1F1EE}\u{1F1F9}';
+    default:
+      return '\u{1F30D}';
+  }
 }
 
 String _normalizeToAppCode(LanguageModel lang) {
   final code = lang.code.toLowerCase();
-  if (code == '1' || code.startsWith('pt')) return 'pt';
-  if (code == '2' || code.startsWith('en')) return 'en';
-  if (code == '3' || code.startsWith('es')) return 'es';
-  return 'pt';
+  if (code.contains('-')) return code.split('-').first;
+  final numId = int.tryParse(code);
+  if (numId != null) {
+    switch (numId) {
+      case 2:
+        return 'en';
+      case 3:
+        return 'es';
+      default:
+        return 'pt';
+    }
+  }
+  return code;
 }
 
 class LanguageSelectorSheet extends StatefulWidget {
@@ -70,6 +106,7 @@ class LanguageSelectorSheet extends StatefulWidget {
 
 class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
   List<LanguageOption>? _loadedLanguages;
+  String? _downloadingCode;
 
   @override
   void initState() {
@@ -104,11 +141,57 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
       }
 
       if (loaded.isNotEmpty) {
-        setState(() {
-          _loadedLanguages = loaded;
-        });
+        await _checkModelStatus(loaded);
       }
     } catch (_) {}
+  }
+
+  Future<void> _checkModelStatus(List<LanguageOption> languages) async {
+    final svc = getIt<TranslationService>();
+    final updated = <LanguageOption>[];
+
+    for (final lang in languages) {
+      if (lang.code == TranslationService.sourceLang) {
+        updated.add(lang.copyWith(modelReady: true));
+      } else {
+        final ready = await svc.isModelDownloaded(lang.code);
+        updated.add(lang.copyWith(modelReady: ready));
+      }
+    }
+
+    if (mounted) {
+      setState(() => _loadedLanguages = updated);
+    }
+  }
+
+  Future<void> _handleSelection(LanguageOption lang) async {
+    if (lang.code == TranslationService.sourceLang || lang.modelReady) {
+      widget.onSelected(lang.code);
+      Navigator.pop(context);
+      return;
+    }
+
+    setState(() => _downloadingCode = lang.code);
+
+    final svc = getIt<TranslationService>();
+    final success = await svc.downloadModel(lang.code);
+
+    if (!mounted) return;
+
+    if (success) {
+      widget.onSelected(lang.code);
+      Navigator.pop(context);
+    } else {
+      setState(() => _downloadingCode = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LanguageScope.of(context).tr('modelDownloadFailed'),
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -128,17 +211,17 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFFCDD4DB),
+              color: AppColors.outline.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             LanguageScope.of(context).tr('selectLanguageTitle'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1E2932),
+              color: AppColors.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -146,10 +229,8 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
             (lang) => _LanguageTile(
               option: lang,
               isSelected: lang.code == widget.currentCode,
-              onTap: () {
-                widget.onSelected(lang.code);
-                Navigator.pop(context);
-              },
+              isDownloading: _downloadingCode == lang.code,
+              onTap: () => _handleSelection(lang),
             ),
           ),
         ],
@@ -162,11 +243,13 @@ class _LanguageTile extends StatelessWidget {
   const _LanguageTile({
     required this.option,
     required this.isSelected,
+    required this.isDownloading,
     required this.onTap,
   });
 
   final LanguageOption option;
   final bool isSelected;
+  final bool isDownloading;
   final VoidCallback onTap;
 
   @override
@@ -176,11 +259,11 @@ class _LanguageTile extends StatelessWidget {
       child: Material(
         color: isSelected
             ? AppColors.primaryContainer.withValues(alpha: 0.4)
-            : Colors.grey[50],
+            : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
+          onTap: isDownloading ? null : onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -188,9 +271,7 @@ class _LanguageTile extends StatelessWidget {
                 Icon(
                   Icons.language_rounded,
                   size: 24,
-                  color: isSelected
-                      ? AppColors.secondary
-                      : const Color(0xFF5A6774),
+                  color: isSelected ? AppColors.secondary : AppColors.outline,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -201,14 +282,30 @@ class _LanguageTile extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: isSelected
                           ? AppColors.secondary
-                          : const Color(0xFF2A3540),
+                          : AppColors.onSurface,
                     ),
                   ),
                 ),
-                if (isSelected)
+                if (isDownloading)
+                  const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.primary,
+                    ),
+                  )
+                else if (isSelected)
                   const Icon(
                     Icons.check_circle_rounded,
                     color: AppColors.primary,
+                    size: 22,
+                  )
+                else if (!option.modelReady &&
+                    option.code != TranslationService.sourceLang)
+                  Icon(
+                    Icons.download_rounded,
+                    color: AppColors.outline,
                     size: 22,
                   ),
               ],

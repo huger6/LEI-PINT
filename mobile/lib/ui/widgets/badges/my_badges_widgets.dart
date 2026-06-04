@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
+import '../../../presentation/state/language_controller.dart';
 
 class BadgesSearchBar extends StatelessWidget {
   const BadgesSearchBar({
@@ -122,9 +123,9 @@ class AchievedBadgeCard extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(color: const Color(0xFFD4A843), width: 0.8),
                                   ),
-                                  child: const Text(
-                                    'Special',
-                                    style: TextStyle(
+                                  child: Text(
+                                    LanguageScope.of(context).tr('special'),
+                                    style: const TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFFB08A2E),
@@ -213,7 +214,9 @@ class AchievedBadgeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onDownload,
                   icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const FittedBox(child: Text('Comprovativo')),
+                  label: FittedBox(
+                    child: Text(LanguageScope.of(context).tr('proofDocument')),
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF263542),
                     side: const BorderSide(color: Color(0xFFC2CDD7)),
@@ -229,7 +232,9 @@ class AchievedBadgeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onShare,
                   icon: const Icon(Icons.share_outlined, size: 18),
-                  label: const FittedBox(child: Text('Partilhar')),
+                  label: FittedBox(
+                    child: Text(LanguageScope.of(context).tr('share')),
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF263542),
                     side: const BorderSide(color: Color(0xFFC2CDD7)),
@@ -470,14 +475,15 @@ class BadgeMedalIcon extends StatelessWidget {
 }
 
 enum ApplicationFilter {
-  all('Todos'),
-  approved('Aprovadas'),
-  inReview('Em an\u00e1lise'),
-  rejected('Rejeitadas');
+  all('filterAll'),
+  approved('filterApproved'),
+  inReview('filterInReview'),
+  rejected('filterRejected');
 
-  const ApplicationFilter(this.label);
+  const ApplicationFilter(this.labelKey);
 
-  final String label;
+  /// Source-string key resolved through [LanguageScope] at render time.
+  final String labelKey;
 }
 
 class ApplicationStateVisual {

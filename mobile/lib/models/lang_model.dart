@@ -6,16 +6,22 @@ class LanguageModel {
   LanguageModel({required this.id, required this.code, required this.name});
 
   factory LanguageModel.fromJson(Map<String, dynamic> json) {
-    final id = _toInt(json['id'] ?? json['preferred_lang_id']);
-    final normalizedCode = _normalizeCode(
-      json['code'] ?? json['preferred_lang'],
-      id,
+    // Accepts both the /api/languages shape (language_id/language_iso/
+    // language_name), the /api/me lang shape (id/iso/name) and legacy keys.
+    final id = _toInt(
+      json['id'] ?? json['language_id'] ?? json['preferred_lang_id'],
     );
+    final rawCode =
+        json['code'] ?? json['language_iso'] ?? json['iso'] ?? json['preferred_lang'];
+    final code = _normalizeToBcp(rawCode, id);
 
     return LanguageModel(
       id: id,
-      code: normalizedCode,
-      name: (json['name'] ?? json['preferred_lang_name'] ?? _friendlyName(id))
+      code: code,
+      name: (json['name'] ??
+              json['language_name'] ??
+              json['preferred_lang_name'] ??
+              _friendlyName(code))
           .toString(),
     );
   }
@@ -25,44 +31,48 @@ class LanguageModel {
   }
 
   static int _toInt(dynamic value) {
-    if (value is int) {
-      return value;
-    }
-    if (value is num) {
-      return value.toInt();
-    }
-
+    if (value is int) return value;
+    if (value is num) return value.toInt();
     return int.tryParse(value.toString()) ?? 1;
   }
 
-  static String _normalizeCode(dynamic rawCode, int fallbackId) {
+  static String _normalizeToBcp(dynamic rawCode, int fallbackId) {
     if (rawCode != null) {
       final value = rawCode.toString().trim().toLowerCase();
-      if (value == '1' || value.startsWith('pt')) {
-        return '1';
+      if (value.contains('-')) return value.split('-').first;
+      if (value.length >= 2 && RegExp(r'^[a-z]+$').hasMatch(value)) {
+        return value;
       }
-      if (value == '2' || value.startsWith('en')) {
-        return '2';
-      }
-      if (value == '3' || value.startsWith('es')) {
-        return '3';
-      }
+      final numId = int.tryParse(value);
+      if (numId != null) return _codeFromId(numId);
     }
-
-    if (fallbackId >= 1 && fallbackId <= 4) {
-      return fallbackId.toString();
-    }
-
-    return '1';
+    return _codeFromId(fallbackId);
   }
 
-  static String _friendlyName(int languageId) {
-    switch (languageId) {
+  static String _codeFromId(int id) {
+    switch (id) {
       case 2:
-        return 'English';
+        return 'en';
       case 3:
+        return 'es';
+      default:
+        return 'pt';
+    }
+  }
+
+  static String _friendlyName(String code) {
+    switch (code) {
+      case 'en':
+        return 'English';
+      case 'es':
         return 'Español';
-      case 1:
+      case 'fr':
+        return 'Français';
+      case 'de':
+        return 'Deutsch';
+      case 'it':
+        return 'Italiano';
+      case 'pt':
       default:
         return 'Português';
     }

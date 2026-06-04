@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../models/earned_badge_model.dart';
+import '../../../presentation/state/language_controller.dart';
 
 class QuickMetricCard extends StatelessWidget {
   const QuickMetricCard({
@@ -88,8 +89,18 @@ class BadgesStatsCard extends StatelessWidget {
   final DateTime? userCreatedAt;
 
   static const _monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+    'monthShortJan',
+    'monthShortFeb',
+    'monthShortMar',
+    'monthShortApr',
+    'monthShortMay',
+    'monthShortJun',
+    'monthShortJul',
+    'monthShortAug',
+    'monthShortSep',
+    'monthShortOct',
+    'monthShortNov',
+    'monthShortDec',
   ];
 
   List<_MonthPoint> _buildCumulativeData() {
@@ -133,13 +144,14 @@ class BadgesStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final data = _buildCumulativeData();
 
     final spots = List.generate(data.length, (i) {
       return FlSpot(i.toDouble(), data[i].count.toDouble());
     });
 
-    final labels = data.map((d) => _monthNames[d.month - 1]).toList();
+    final labels = data.map((d) => tr.tr(_monthNames[d.month - 1])).toList();
 
     final maxY = spots.isEmpty
         ? 5.0
@@ -166,8 +178,8 @@ class BadgesStatsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                'Badges Obtidos',
+              Text(
+                tr.tr('tabEarnedBadges'),
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
@@ -176,7 +188,10 @@ class BadgesStatsCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '${earnedBadges.where((e) => !e.award.isExpired).length} ativos',
+                tr.tr('activeBadgesCount').replaceAll(
+                      '{count}',
+                      '${earnedBadges.where((e) => !e.award.isExpired).length}',
+                    ),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -189,9 +204,9 @@ class BadgesStatsCard extends StatelessWidget {
           SizedBox(
             height: 180,
             child: spots.isEmpty || spots.every((s) => s.y == 0)
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'Sem dados de evolu\u00e7\u00e3o.',
+                      tr.tr('noEvolutionData'),
                       style: TextStyle(
                         color: Color(0xFF8CA0B2),
                         fontWeight: FontWeight.w600,
@@ -404,6 +419,8 @@ class ProfileMenuTile extends StatelessWidget {
         ),
         title: Text(
           label,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF1E2932),
             fontWeight: FontWeight.w700,
