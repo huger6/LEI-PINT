@@ -259,8 +259,12 @@
 
 .bottomRow {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
+}
+
+.activityCard {
+    grid-column: 1 / -1;
 }
 
 /* Activity Card */
@@ -356,7 +360,7 @@
 .achievementTitle {
     font-size: 0.8125rem;
     font-weight: 700;
-    color: var(--color-on-primary);
+    color: var(--color-on-background);
 }
 
 .achievementDesc {
@@ -458,14 +462,6 @@
     .statsRow {
         grid-template-columns: repeat(3, 1fr);
     }
-
-    .bottomRow {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .learningPathsCard {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 992px) {
@@ -481,7 +477,7 @@
         grid-template-columns: 1fr;
     }
 
-    .learningPathsCard {
+    .activityCard {
         grid-column: auto;
     }
 }
