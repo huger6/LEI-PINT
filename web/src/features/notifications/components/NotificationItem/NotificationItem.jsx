@@ -45,7 +45,10 @@ export default function NotificationItem({ notification, onRead }) {
 	const payload = parseNotificationPayload(notification?.notification_payload);
 	const notificationType = String(notification?.notification_type || 'SYSTEM').toUpperCase();
 	const iconName = ICONS[notificationType] || ICONS.SYSTEM;
-	const message = payload.title || payload.body || notification?.definition?.name || notificationType;
+	const meta = payload.meta || {};
+	const rawTitle = payload.title || payload.body || notification?.definition?.name || notificationType;
+	const translated = t(rawTitle, { ns: 'api', defaultValue: '', ...meta });
+	const message = translated || rawTitle;
 	const sentAt = notification?.sent_at || notification?.created_at;
 
 	const handleClick = () => {
