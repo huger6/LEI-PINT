@@ -88,16 +88,7 @@ class BadgeDao {
         ? (area['area_name'] ?? area['name'])?.toString() ?? ''
         : (badgeJson['area_name'] ?? '').toString();
 
-    final stage = badgeJson['progression_stage'];
-    String stageCode = '';
-    if (stage is Map) {
-      final sc = stage['stage_code'];
-      if (sc is Map) {
-        stageCode = (sc['stage_code'] ?? '').toString();
-      } else if (sc is String) {
-        stageCode = sc;
-      }
-    }
+    final stageCode = _extractStageLabel(badgeJson);
 
     await db.insert(LocalDatabase.badgesTable, {
       'id': id,
@@ -133,16 +124,7 @@ class BadgeDao {
           ? (area['area_name'] ?? area['name'])?.toString() ?? ''
           : (row['area_name'] ?? '').toString();
 
-      final stage = row['progression_stage'];
-      String stageCode = '';
-      if (stage is Map) {
-        final sc = stage['stage_code'];
-        if (sc is Map) {
-          stageCode = (sc['stage_code'] ?? '').toString();
-        } else if (sc is String) {
-          stageCode = sc;
-        }
-      }
+      final stageCode = _extractStageLabel(row);
 
       batch.insert(LocalDatabase.badgesTable, {
         'id': row['badge_id'] ?? row['id'],
@@ -166,6 +148,29 @@ class BadgeDao {
     }
 
     await batch.commit(noResult: true);
+  }
+
+  /// Resolves the human-readable progression-stage label for a badge (e.g.
+  /// "Júnior"). Prefers the stage title, falling back to the raw stage code
+  /// letter so older payloads without a title still display something useful.
+  static String _extractStageLabel(Map<String, dynamic> json) {
+    final stage = json['progression_stage'];
+    if (stage is Map) {
+      final title = (stage['stage_title'] ?? '').toString().trim();
+      if (title.isNotEmpty) return title;
+
+      final sc = stage['stage_code'];
+      if (sc is Map) {
+        return (sc['stage_code'] ?? '').toString();
+      } else if (sc is String) {
+        return sc;
+      }
+    }
+
+    final flatTitle = (json['stage_title'] ?? '').toString().trim();
+    if (flatTitle.isNotEmpty) return flatTitle;
+
+    return (json['stage_code'] ?? '').toString();
   }
 
   BadgeModel _fromRow(Map<String, dynamic> row) {

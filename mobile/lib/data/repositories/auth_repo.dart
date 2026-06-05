@@ -262,6 +262,43 @@ class AuthRepository {
     }
   }
 
+  /// Replaces the set of areas the authenticated consultant belongs to.
+  /// [areas] entries follow the API contract: `{area_id, is_primary}`.
+  Future<Map<String, dynamic>> updateMyAreas(
+    List<Map<String, dynamic>> areas,
+  ) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.put(
+          ApiEndpoints.updateMyAreas,
+          data: {'areas': areas},
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao atualizar áreas.',
+        ),
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _extractMessage(
+          _asMap(e.response?.data),
+          fallback: 'Erro ao atualizar áreas.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao atualizar áreas: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> changeLanguage(int languageId) async {
     try {
       final responseMap = _asMap(

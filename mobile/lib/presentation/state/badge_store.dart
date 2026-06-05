@@ -114,6 +114,12 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
 
     try {
+      // Earned badges are joined against the local badge catalog to resolve
+      // their area / points / progression-stage. Make sure the catalog is
+      // present first, otherwise those fields come back empty.
+      if (_badges.isEmpty) {
+        await loadBadges();
+      }
       _earnedBadges = await _badgeRepository.getEarnedBadges();
     } catch (_) {
       final local = await _badgeRepository.getEarnedBadgesLocal();

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 3;
+const int sourceStringsVersion = 6;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -10,6 +10,36 @@ final Map<String, String> sourceStrings = Map.unmodifiable(
 const _sourceJson = r'''
 {
   "appTitle": "Plataforma de Badges Softinsa",
+  "evolutionHello": "Olá",
+  "savedBadgesTitle": "Badges Guardados",
+  "savedBadgesEmptyTitle": "Nenhum badge guardado",
+  "savedBadgesEmptySubtitle": "Guarde badges para os encontrar facilmente mais tarde.",
+  "notificationsScreenTitle": "As suas notificações",
+  "notificationsMarkAllShort": "Marcar todas",
+  "notificationsFilterAll": "Todas",
+  "notificationsTabRecent": "Recentes",
+  "notificationsTabAll": "Todas",
+  "notificationsEmpty": "Sem notificações para apresentar.",
+  "termsScreenTitle": "Termos e Condições",
+  "termsSection1Title": "1. Aceitação dos Termos",
+  "termsSection1Body": "Ao aceder e utilizar a plataforma Softinsa Badge Platform, o utilizador concorda em cumprir os presentes Termos e Condições. Caso não concorde com alguma das condições aqui descritas, não deverá utilizar a plataforma.",
+  "termsSection2Title": "2. Descrição do Serviço",
+  "termsSection2Body": "A Softinsa Badge Platform é um sistema de credenciais digitais que permite aos consultores da Softinsa acompanhar, validar e partilhar as suas competências e certificações tecnológicas através de Learning Paths, Service Lines e Áreas.",
+  "termsSection3Title": "3. Registo e Conta",
+  "termsSection3Body": "O utilizador é responsável por manter a confidencialidade das suas credenciais de acesso. Qualquer atividade realizada na conta é da responsabilidade do titular. É proibida a partilha de credenciais com terceiros.",
+  "termsSection4Title": "4. Utilização da Plataforma",
+  "termsSection4Body": "A plataforma destina-se exclusivamente a uso profissional no âmbito das atividades da Softinsa. O utilizador compromete-se a não utilizar a plataforma para fins ilícitos, não carregar conteúdos ofensivos ou inadequados e a respeitar a propriedade intelectual de todos os materiais disponibilizados.",
+  "termsSection5Title": "5. Badges e Certificações",
+  "termsSection5Body": "Os badges obtidos representam competências validadas pela Softinsa. Os pontos acumulados são permanentemente preservados no perfil do consultor, mesmo que o badge atinja a data de expiração. Cada credencial obtida gera um URL público único para verificação externa.",
+  "termsSection6Title": "6. Proteção de Dados (RGPD)",
+  "termsSection6Body": "A Softinsa compromete-se a proteger os dados pessoais dos utilizadores em conformidade com o Regulamento Geral de Proteção de Dados (RGPD). Os dados recolhidos são utilizados exclusivamente para o funcionamento da plataforma e não serão partilhados com terceiros sem o consentimento prévio do utilizador, exceto quando exigido por lei.",
+  "termsSection7Title": "7. Propriedade Intelectual",
+  "termsSection7Body": "Todos os conteúdos, logótipos, design e funcionalidades da plataforma são propriedade da Softinsa. A reprodução, distribuição ou modificação de qualquer conteúdo sem autorização prévia é estritamente proibida.",
+  "termsSection8Title": "8. Alterações aos Termos",
+  "termsSection8Body": "A Softinsa reserva-se o direito de modificar os presentes Termos e Condições a qualquer momento. Os utilizadores serão notificados de alterações significativas através da plataforma.",
+  "termsSection9Title": "9. Contacto",
+  "termsSection9Body": "Para questões relacionadas com estes termos, contacte a equipa de suporte da Softinsa através dos canais internos disponíveis na plataforma.",
+  "termsLastUpdate": "Última atualização: maio de 2026",
   "loading": "A carregar...",
   "back": "Voltar",
   "tryAgain": "Tentar novamente",
@@ -95,6 +125,16 @@ const _sourceJson = r'''
   "mainArea": "Área principal",
   "notDefined": "Não definido",
   "noneSelectedArea": "Nenhuma área selecionada.",
+  "chooseAreasTitle": "Escolher áreas",
+  "chooseAreasMenuLabel": "Escolher áreas",
+  "chooseAreasMainSectionTitle": "Áreas selecionadas",
+  "chooseAreasMainHint": "Toque numa área selecionada para a definir como principal.",
+  "chooseAreasNoneSelected": "Ainda não selecionou nenhuma área.",
+  "chooseAreasAvailableTitle": "Áreas disponíveis",
+  "chooseAreasChooseHint": "Escolha entre 1 e 5 áreas para o seu perfil.",
+  "chooseAreasConfirm": "Confirmar as minhas áreas.",
+  "chooseAreasSavedSuccess": "Áreas atualizadas com sucesso.",
+  "chooseAreasSaveError": "Não foi possível atualizar as áreas.",
   "registerUser": "Registar utilizador",
   "userRegisteredSuccess": "Utilizador {username} registado com sucesso!",
   "registerErrorInvalidData": "Erro ao registar utilizador. Verifica os dados.",

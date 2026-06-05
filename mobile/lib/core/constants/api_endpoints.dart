@@ -42,6 +42,9 @@ class ApiEndpoints {
   static String changeLanguage(int languageId) =>
       '/api/me/language/$languageId';
 
+  // PUT /me/areas - replace the areas the consultant belongs to
+  static const String updateMyAreas = '/api/me/areas';
+
   // === Locations ===
   // GET /locations
   static const String getLocations = '/api/locations';

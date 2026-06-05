@@ -231,7 +231,13 @@ class TranslationService {
     final protected = text.replaceAllMapped(
       RegExp(r'\{[A-Za-z0-9_]+\}'),
       (match) {
-        final token = '@@PH${placeholders.length}@@';
+        // Wrap each placeholder in a letters-only sentinel. The previous
+        // '@@PH0@@' token relied on punctuation, which the on-device
+        // translator reformats (adds spaces / drops the '@'), leaving visible
+        // junk like "@@ PH0 @@" in the UI. A pure-letter token (no symbols,
+        // no real words) is passed through untouched apart from casing, which
+        // [_ProtectedText.restore] tolerates.
+        final token = 'xqz${placeholders.length}zqx';
         placeholders.add(match.group(0)!);
         return token;
       },
@@ -259,8 +265,14 @@ class _ProtectedText {
   String restore(String translatedText) {
     var restored = translatedText;
     for (var i = 0; i < placeholders.length; i++) {
-      restored = restored.replaceAll('@@PH$i@@', placeholders[i]);
-      restored = restored.replaceAll('@@ph$i@@', placeholders[i]);
+      // Case-insensitive and tolerant of any spaces the translator may have
+      // introduced around the sentinel, so "Xqz0zqx" / "xqz 0 zqx" all map
+      // back to the original "{placeholder}".
+      final pattern = RegExp(
+        'xqz\\s*$i\\s*zqx',
+        caseSensitive: false,
+      );
+      restored = restored.replaceAll(pattern, placeholders[i]);
     }
     return restored;
   }

@@ -16,6 +16,7 @@ import '../../ui/pages/evolution/evolucao_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 import '../../ui/pages/profile/email_signature_screen.dart';
 import '../../ui/pages/profile/edit_profile_screen.dart';
+import '../../ui/pages/profile/choose_areas_screen.dart';
 import '../../ui/pages/profile/characteristics_screen.dart';
 import '../../ui/pages/profile/help_screen.dart';
 import '../../ui/pages/profile/badge_gallery_screen.dart';
@@ -41,6 +42,7 @@ class AppRouter {
   static const String profile = '/profile';
   static const String emailSignature = '/email-signature';
   static const String editProfile = '/edit-profile';
+  static const String chooseAreas = '/choose-areas';
   static const String termsConditions = '/terms-conditions';
   static const String changePassword = '/change-password';
   static const String characteristics = '/characteristics';
@@ -63,6 +65,7 @@ class AppRouter {
     profile: (context) => const ProfileScreen(),
     emailSignature: (context) => const EmailSignatureScreen(),
     editProfile: (context) => const EditProfileScreen(),
+    chooseAreas: (context) => const ChooseAreasScreen(),
     termsConditions: (context) => const TermsConditionsScreen(),
     changePassword: (context) => const ChangePasswordScreen(),
     characteristics: (context) => const CharacteristicsScreen(),

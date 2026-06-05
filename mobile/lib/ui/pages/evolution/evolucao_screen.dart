@@ -90,7 +90,10 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                tr.tr('evolutionGreeting').replaceAll('{name}', displayName),
+                // Translate a clean word and append the name outside the
+                // translated string (same pattern as the dashboard greeting),
+                // so the placeholder is never mangled by the translator.
+                '${tr.tr('evolutionHello')}, $displayName!',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/notification_defs.dart';
 import '../../../data/repositories/applications_repo.dart';
 import '../../../models/notification_model.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../../presentation/state/notification_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/notifications/notifications_widgets.dart';
@@ -111,6 +112,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   @override
   Widget build(BuildContext context) {
     final store = context.watch<NotificationStore>();
+    final tr = LanguageScope.of(context);
     final allNotifications = store.all;
     final unreadNotifications = store.unread;
     final types = _availableTypes(allNotifications);
@@ -129,9 +131,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'As suas notificações',
-          style: TextStyle(
+        title: Text(
+          tr.tr('notificationsScreenTitle'),
+          style: const TextStyle(
             color: Color(0xFF212D36),
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -141,9 +143,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           if (store.unreadCount > 0)
             TextButton(
               onPressed: () => store.markAllRead(),
-              child: const Text(
-                'Marcar todas',
-                style: TextStyle(
+              child: Text(
+                tr.tr('notificationsMarkAllShort'),
+                style: const TextStyle(
                   color: Color(0xFF5D9FD1),
                   fontWeight: FontWeight.w600,
                 ),
@@ -161,7 +163,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   NotificationTypeChip(
-                    label: 'Todas',
+                    label: tr.tr('notificationsFilterAll'),
                     icon: Icons.notifications_outlined,
                     color: const Color(0xFF5D9FD1),
                     isSelected: _selectedType == null,
@@ -187,9 +189,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             color: Colors.grey[100],
             child: TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Recentes'),
-                Tab(text: 'Todas'),
+              tabs: [
+                Tab(text: tr.tr('notificationsTabRecent')),
+                Tab(text: tr.tr('notificationsTabAll')),
               ],
               labelColor: const Color(0xFF1E2932),
               unselectedLabelColor: const Color(0xFF1E2932),

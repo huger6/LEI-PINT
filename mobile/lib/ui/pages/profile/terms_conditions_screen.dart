@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/profile/terms_conditions_widgets.dart';
 
 class TermsConditionsScreen extends StatelessWidget {
@@ -7,6 +8,7 @@ class TermsConditionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -21,9 +23,9 @@ class TermsConditionsScreen extends StatelessWidget {
             size: 26,
           ),
         ),
-        title: const Text(
-          'Termos e Condições',
-          style: TextStyle(
+        title: Text(
+          tr.tr('termsScreenTitle'),
+          style: const TextStyle(
             color: Color(0xFF20252B),
             fontSize: 22,
             fontWeight: FontWeight.w700,

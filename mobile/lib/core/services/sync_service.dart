@@ -287,7 +287,12 @@ class SyncService {
 
   Future<bool> _syncBadges() async {
     try {
-      final response = await _apiClient.get(ApiEndpoints.getBadges);
+      // Fetch as many badges as the API allows so the local catalog (the only
+      // local source of area / points / progression-stage) stays complete.
+      final response = await _apiClient.get(
+        ApiEndpoints.getBadges,
+        queryParameters: const {'page': 1, 'limit': 100},
+      );
       debugPrint('───────────────────────────────────────────────────');
       debugPrint('SyncService: API response from ${ApiEndpoints.getBadges}:');
       debugPrint('SyncService: Raw data: $response');
