@@ -130,8 +130,15 @@ const getApplicationById = async (req, res) => {
                     model: models.badges,
                     as: 'badge',
                     include: [
+                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title'] },
                         { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
                         { model: models.areas, as: 'area', attributes: ['area_name'] },
+                        {
+                            model: models.progression_stages,
+                            as: 'progression_stage',
+                            attributes: ['stage_title', 'stage_sequence'],
+                            include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }]
+                        },
                         {
                             model: models.badge_requirements,
                             as: 'badge_requirements',

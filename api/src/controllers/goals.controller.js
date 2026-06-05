@@ -240,6 +240,8 @@ const getProgressionTimeline = async (req, res) => {
 
         const [rows] = await sequelize.query(
             `SELECT
+                a.area_name,
+                a.area_slug,
                 sc.stage_code                            AS code,
                 MAX(ps.stage_title)                      AS title,
                 MAX(ps.stage_sequence)                   AS stage_sequence,
@@ -249,11 +251,12 @@ const getProgressionTimeline = async (req, res) => {
                 MAX(ab.awarded_at)                       AS last_awarded
             FROM stage_codes sc
             JOIN progression_stages ps ON ps.stage_code_id = sc.stage_code_id AND ps.is_active = TRUE
+            JOIN areas a ON a.area_id = ps.area_id AND a.is_active = TRUE
             LEFT JOIN badges b ON b.progression_stage_id = ps.progression_stage_id AND b.is_active = TRUE
             LEFT JOIN badge_applications ba ON ba.badge_id = b.badge_id AND ba.user_id = :userId
             LEFT JOIN awarded_badges ab ON ab.application_id = ba.application_id AND ab.user_id = :userId
-            GROUP BY sc.stage_code_id, sc.stage_code
-            ORDER BY MAX(ps.stage_sequence) DESC`,
+            GROUP BY a.area_id, a.area_name, a.area_slug, sc.stage_code_id, sc.stage_code
+            ORDER BY a.area_name ASC, MAX(ps.stage_sequence) ASC`,
             { replacements: { userId } }
         );
 
