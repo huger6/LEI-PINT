@@ -183,6 +183,13 @@ const getBadges = async (req, res) => {
                 model: models.learning_paths,
                 as: 'learning_path',
                 attributes: ['learning_path_id', 'path_title', 'path_slug']
+            },
+            {
+                model: models.badge_requirements,
+                as: 'badge_requirements',
+                attributes: ['requirement_id', 'requirement_title', 'requirement_description'],
+                where: { is_active: true },
+                required: false
             }
         ];
 
