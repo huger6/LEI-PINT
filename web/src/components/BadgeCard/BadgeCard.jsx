@@ -28,6 +28,7 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 	const stageTitle = badge.progression_stage?.stage_title || badge.progressionStage?.stageTitle;
 
 	const requirements = badge.badge_requirements || badge.badgeRequirements || [];
+	const hasObtained = badge.has_obtained === true || badge.has_obtained === 'true';
 
 	const badgeClass = getBadgeClassLabel(badgeType);
 	const isSpecial = badgeClass.toLowerCase() === 'special';
@@ -114,9 +115,9 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 									return (
 										<span
 											key={req.requirement_id || req.requirementId}
-											className={styles.requirementIcon}
+											className={`${styles.requirementIcon} ${hasObtained ? styles.requirementObtained : ''}`}
 										>
-											<Icon name="check_circle" size={13} aria-hidden="true" />
+											<Icon name={hasObtained ? 'check_circle' : 'requirement'} size={13} aria-hidden="true" />
 											<span className={styles.requirementTooltip}>
 												<strong className={styles.requirementTooltipTitle}>{reqTitle}</strong>
 												{reqDesc}

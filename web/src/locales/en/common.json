@@ -640,7 +640,13 @@
 			"points": "Points Valuation",
 			"minPoints": "Min Points",
 			"maxPoints": "Max Points",
-			"expiringOnly": "Show expiring badges only"
+			"expiringOnly": "Show expiring badges only",
+			"obtainedStatus": "Badge Status",
+			"obtained": {
+				"all": "All",
+				"true": "Obtained",
+				"false": "Not Obtained"
+			}
 		},
 		"savedBadges": "Saved badges",
 		"noSavedBadges": "You haven't saved any badges yet.",
@@ -655,7 +661,7 @@
 		"catalog": "Catalog",
 		"noDescription": "No description available.",
 		"pointsLabel": "points",
-		"requirements": "Requirements to Unlock",
+		"requirements": "Requirements",
 		"noRequirements": "No requirements defined for this badge.",
 		"requirementN": "Requirement {{n}}",
 		"application": "Application",
