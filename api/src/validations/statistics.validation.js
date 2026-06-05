@@ -7,7 +7,11 @@ const dateRule = z.coerce.date();
 const pointsHistoryQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(20),
-    search: z.string().max(100).optional()
+    search: z.string().max(100).optional(),
+    serviceLineId: positiveIntIdRule.optional(),
+    areaId: positiveIntIdRule.optional(),
+    dateFrom: dateRule.optional(),
+    dateTo: dateRule.optional()
 });
 
 const userIdParamSchema = z.object({
