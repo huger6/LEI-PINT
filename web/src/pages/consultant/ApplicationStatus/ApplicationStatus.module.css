@@ -493,7 +493,7 @@
 
 .reqRow {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 14px;
 	padding: 16px 20px;
 	border: 1px solid rgba(0, 0, 0, 0.06);
@@ -528,9 +528,15 @@
 	flex-shrink: 0;
 }
 
-.reqName {
+.reqContent {
 	flex: 1;
 	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.reqName {
 	font-size: 0.875rem;
 	color: var(--color-on-background);
 	overflow: hidden;
@@ -538,21 +544,32 @@
 	white-space: nowrap;
 }
 
-.reqFileChip {
-	display: inline-flex;
+.reqEvidenceFile {
+	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 3px 10px;
-	border-radius: 999px;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: 10px;
 	background: var(--color-green-soft);
-	color: var(--color-green-on-soft);
-	font-size: 0.75rem;
-	font-weight: 500;
-	flex-shrink: 0;
+	border: 1px solid rgba(4, 164, 0, 0.15);
+	width: fit-content;
+	max-width: 100%;
 }
 
-.reqEmpty {
-	width: 24px;
+.reqEvidenceFileName {
+	font-size: 0.8rem;
+	color: var(--color-green-on-soft);
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
+}
+
+.reqNoEvidence {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+	font-style: italic;
 }
 
 /* ─── Responsive ───────────────────────── */

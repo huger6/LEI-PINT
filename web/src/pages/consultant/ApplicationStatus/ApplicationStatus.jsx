@@ -46,7 +46,9 @@ export default function ApplicationStatus({ application, badge }) {
 
 	const activeStep = getActiveStep(state);
 
-	const sortedLogs = [...logs].sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
+	const SYSTEM_FUNCTIONS = ['trg_log_application_state_change', 'System'];
+	const userLogs = logs.filter((l) => !SYSTEM_FUNCTIONS.includes(l.validator_function || l.validatorFunction));
+	const sortedLogs = [...userLogs].sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
 
 	function formatDateTime(dateStr) {
 		if (!dateStr) return '';
@@ -285,49 +287,7 @@ export default function ApplicationStatus({ application, badge }) {
 							</div>
 						)}
 
-						{/* Evidences */}
-						{evidences.length > 0 && (
-							<div>
-								<h2 className={styles.sectionTitle}>
-									{t('applicationStatus.uploadedEvidences', { defaultValue: 'Uploaded Evidence' })}
-								</h2>
-								<div className={styles.evidenceList}>
-									{evidences.map((ev) => {
-										const url = ev.evidence_file_url || ev.evidenceFileUrl || ev.url || '';
-										const fileName = url ? decodeURIComponent(url.split('/').pop()) : 'file';
-										const reqName = ev.requirement?.requirement_title || '';
-										const evId = ev.evidence_id || ev.evidenceId;
-
-										return (
-											<div
-												key={evId}
-												className={styles.evidenceRow}
-											>
-												<div className={styles.evidenceIconWrap}>
-													<Icon name="paper" size={16} color="var(--color-secondary)" />
-												</div>
-												<div className={styles.evidenceInfo}>
-													<p className={styles.evidenceName}>{fileName}</p>
-													{reqName && <p className={styles.evidenceReq}>{reqName}</p>}
-												</div>
-												<Tooltip text={t('applicationDetail.downloadEvidence')}>
-													<button
-														type="button"
-														className={styles.evidenceDownloadBtn}
-														onClick={() => handleDownloadEvidence(evId)}
-														aria-label={t('applicationDetail.downloadEvidence')}
-													>
-														<Icon name="download" size={16} color="var(--color-secondary)" />
-													</button>
-												</Tooltip>
-											</div>
-										);
-									})}
-								</div>
-							</div>
-						)}
-
-						{/* Requirements */}
+						{/* Requirements & Evidence */}
 						{requirements.length > 0 && (
 							<div>
 								<h2 className={styles.sectionTitle}>
@@ -338,21 +298,38 @@ export default function ApplicationStatus({ application, badge }) {
 										const reqId = req.requirement_id || req.requirementId || idx;
 										const reqTitle = req.requirement_title || req.requirementTitle || `Requirement ${idx + 1}`;
 										const evidence = getEvidenceForRequirement(reqId);
+										const evUrl = evidence?.evidence_file_url || evidence?.evidenceFileUrl || '';
+										const evFileName = evUrl ? decodeURIComponent(evUrl.split('/').pop()) : '';
+										const evId = evidence?.evidence_id || evidence?.evidenceId;
 
 										return (
 											<div key={reqId} className={styles.reqRow}>
 												<span className={styles.reqCode}>
 													{req.requirement_code || `A${idx + 1}`}
 												</span>
-												<span className={styles.reqName}>{reqTitle}</span>
-												{evidence ? (
-													<span className={styles.reqFileChip}>
-														<Icon name="check_circle" size={14} color="var(--color-green-on-soft)" />
-														1 {t('applicationStatus.file', { defaultValue: 'file' })}
-													</span>
-												) : (
-													<span className={styles.reqEmpty} />
-												)}
+												<div className={styles.reqContent}>
+													<span className={styles.reqName}>{reqTitle}</span>
+													{evidence ? (
+														<div className={styles.reqEvidenceFile}>
+															<Icon name="paper" size={14} color="var(--color-secondary)" />
+															<span className={styles.reqEvidenceFileName}>{evFileName}</span>
+															<Tooltip text={t('applicationDetail.downloadEvidence')}>
+																<button
+																	type="button"
+																	className={styles.evidenceDownloadBtn}
+																	onClick={() => handleDownloadEvidence(evId)}
+																	aria-label={t('applicationDetail.downloadEvidence')}
+																>
+																	<Icon name="download" size={14} color="var(--color-secondary)" />
+																</button>
+															</Tooltip>
+														</div>
+													) : (
+														<span className={styles.reqNoEvidence}>
+															{t('applicationStatus.noEvidence', { defaultValue: 'No evidence uploaded' })}
+														</span>
+													)}
+												</div>
 											</div>
 										);
 									})}
