@@ -188,7 +188,7 @@ const buildSearchSql = (entityTypes) => `
             sc.stage_code AS subtitle,
             NULL::text AS image_url,
             ps.stage_description AS meta,
-            ps.is_active,
+            true AS is_active,
             ps.created_at,
             ps.updated_at,
             similarity(ps.stage_title, :q) AS relevance,
@@ -209,8 +209,7 @@ const buildSearchSql = (entityTypes) => `
             NULL::text AS parent_badge_slug
         FROM progression_stages ps
         INNER JOIN stage_codes sc ON sc.stage_code_id = ps.stage_code_id
-        WHERE ps.is_active = true
-            AND (ps.stage_title ILIKE :likeQuery OR sc.stage_code ILIKE :likeQuery OR COALESCE(ps.stage_description, '') ILIKE :likeQuery)
+        WHERE ps.stage_title ILIKE :likeQuery OR sc.stage_code ILIKE :likeQuery OR COALESCE(ps.stage_description, '') ILIKE :likeQuery
 
         UNION ALL
 
