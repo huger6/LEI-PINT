@@ -215,12 +215,29 @@ export default function BadgeDetail() {
 								{serviceLineName}
 							</span>
 						)}
-						{expirationDays && (
-							<span className={`${styles.chip} ${styles.chipExpiration}`}>
-								<Icon name="clock" size={16} />
-								{expirationDays} {t('badgeDetail.validDays')}
-							</span>
-						)}
+						{expirationDays && (() => {
+							if (hasObtained && userAward.expiration_at) {
+								const remaining = Math.ceil(
+									(new Date(userAward.expiration_at) - new Date()) / (1000 * 60 * 60 * 24)
+								);
+								const isExpired = remaining <= 0;
+								return (
+									<span className={`${styles.chip} ${isExpired ? styles.chipExpired : styles.chipExpiration}`}>
+										<Icon name="clock" size={16} />
+										{isExpired
+											? t('badgeDetail.expired')
+											: `${remaining} ${t('badgeDetail.remainingDays')}`
+										}
+									</span>
+								);
+							}
+							return (
+								<span className={`${styles.chip} ${styles.chipExpiration}`}>
+									<Icon name="clock" size={16} />
+									{expirationDays} {t('badgeDetail.validDays')}
+								</span>
+							);
+						})()}
 					</div>
 
 					<div className={styles.actionRow}>

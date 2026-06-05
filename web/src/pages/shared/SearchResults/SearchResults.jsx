@@ -87,16 +87,19 @@ export default function SearchResults() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [totalItems, setTotalItems] = useState(0);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
         if (!query.trim()) {
             setResults([]);
             setTotalItems(0);
+            setError(false);
             return;
         }
 
         let cancelled = false;
         setLoading(true);
+        setError(false);
 
         globalSearch(query).then((res) => {
             if (cancelled) return;
@@ -106,6 +109,7 @@ export default function SearchResults() {
             if (cancelled) return;
             setResults([]);
             setTotalItems(0);
+            setError(true);
         }).finally(() => {
             if (!cancelled) setLoading(false);
         });
@@ -152,7 +156,17 @@ export default function SearchResults() {
                 </div>
             )}
 
-            {!loading && grouped.length === 0 && (
+            {!loading && error && (
+                <div className={styles.emptyState}>
+                    <div className={styles.emptyIcon}>
+                        <Icon name="danger" size={48} />
+                    </div>
+                    <h2 className={styles.emptyTitle}>{t('search.error')}</h2>
+                    <p className={styles.emptyText}>{t('search.errorDesc')}</p>
+                </div>
+            )}
+
+            {!loading && !error && grouped.length === 0 && (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyIcon}>
                         <Icon name="search" size={48} />
@@ -162,7 +176,7 @@ export default function SearchResults() {
                 </div>
             )}
 
-            {!loading && grouped.map(({ type, items }) => {
+            {!loading && !error && grouped.map(({ type, items }) => {
                 const config = SECTION_CONFIG[type];
                 return (
                     <section key={type} className={styles.section}>

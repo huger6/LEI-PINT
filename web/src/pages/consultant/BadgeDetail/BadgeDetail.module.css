@@ -121,6 +121,12 @@
 	border-color: rgba(207, 166, 0, 0.3);
 }
 
+.chipExpired {
+	color: var(--color-error);
+	border-color: rgba(179, 38, 30, 0.25);
+	background: rgba(179, 38, 30, 0.05);
+}
+
 /* ─── Action buttons ───────────────────── */
 
 .actionRow {

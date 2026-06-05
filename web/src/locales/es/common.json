@@ -204,7 +204,9 @@
 		"stages": "Niveles de Progresión",
 		"badges": "Badges",
 		"skills": "Competencias",
-		"users": "Usuarios"
+		"users": "Usuarios",
+		"error": "La búsqueda falló",
+		"errorDesc": "Algo salió mal. Por favor, inténtalo de nuevo más tarde."
 	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
@@ -680,6 +682,8 @@
 		"noRelated": "No se encontraron badges relacionados.",
 		"level": "Nivel",
 		"validDays": "días de validez",
+		"remainingDays": "días restantes",
+		"expired": "Expirado",
 		"linkedInShareText": "¡Acabo de obtener el badge \"{{badgeTitle}}\" en la plataforma de badges de Softinsa! 🏆\n\nEste logro valida mis competencias y refuerza mi trayectoria de desarrollo profesional.\n\n{{url}}"
 	},
 	"objectives": {

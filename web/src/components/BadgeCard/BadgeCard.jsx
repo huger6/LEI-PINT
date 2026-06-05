@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
@@ -12,26 +13,60 @@ function getBadgeClassLabel(rawType) {
 
 export default function BadgeCard({ badge, to, isConsultant = true, isFavorited = false, onToggleFavorite }) {
 	const { t } = useTranslation();
+	const linkRef = useRef(null);
+	const [hasAnimated, setHasAnimated] = useState(false);
+
 	const title = badge.badge_title || badge.badgeTitle;
 	const description = badge.badge_description || badge.badgeDescription || '';
 	const imageUrl = badge.badge_img_url || badge.badgeImgUrl;
 	const points = badge.badge_points ?? badge.badgePoints ?? 0;
 	const badgeType = badge.badge_type || badge.badgeType;
 	const consultantCount = Number(badge.consultant_count || badge.consultantCount || 0);
-	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
 
 	const areaName = badge.area?.area_name || badge.area?.areaName;
-	const serviceLineName = badge.service_line?.service_line_name || badge.serviceLine?.serviceLineName;
-	const learningPathName = badge.learning_path?.path_title || badge.learningPath?.pathTitle;
 	const stageCode = badge.progression_stage?.stage_code?.stage_code || badge.progressionStage?.stageCode?.stageCode;
 	const stageTitle = badge.progression_stage?.stage_title || badge.progressionStage?.stageTitle;
+
+	const requirements = badge.badge_requirements || badge.badgeRequirements || [];
 
 	const badgeClass = getBadgeClassLabel(badgeType);
 	const isSpecial = badgeClass.toLowerCase() === 'special';
 
+	useEffect(() => {
+		if (!isSpecial || hasAnimated) return;
+
+		const el = linkRef.current;
+		if (!el) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setHasAnimated(true);
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.3 }
+		);
+
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [isSpecial, hasAnimated]);
+
+	const linkClasses = [
+		'text-decoration-none',
+		styles.link,
+		isSpecial && hasAnimated ? styles.fuseActive : '',
+	].filter(Boolean).join(' ');
+
+	const cardClasses = [
+		styles.card,
+		isSpecial ? styles.specialCard : '',
+		isSpecial && hasAnimated ? styles.specialGlow : '',
+	].filter(Boolean).join(' ');
+
 	return (
-		<Link to={to} className={`text-decoration-none ${styles.link}`}>
-			<article className={styles.card}>
+		<Link ref={linkRef} to={to} className={linkClasses}>
+			<article className={cardClasses}>
 				<div className={styles.imageWrap}>
 					{imageUrl ? (
 						<img src={imageUrl} alt={title} className={styles.image} />
@@ -63,11 +98,35 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 					<p className={styles.description}>{description || 'No description available.'}</p>
 
 					<div className={styles.metaGrid}>
-						{learningPathName && <span className={styles.metaChip}>{learningPathName}</span>}
-						{serviceLineName && <span className={styles.metaChip}>{serviceLineName}</span>}
 						{areaName && <span className={styles.metaChip}>{areaName}</span>}
 						{stageCode && <span className={styles.metaChip}>{stageCode}{stageTitle ? ` - ${stageTitle}` : ''}</span>}
 					</div>
+
+					{requirements.length > 0 && (
+						<div className={styles.requirementsSection}>
+							<span className={styles.requirementsLabel}>
+								{t('badgeDetail.requirements')}
+							</span>
+							<div className={styles.requirementsRow}>
+								{requirements.map((req) => {
+									const reqTitle = req.requirement_title || req.requirementTitle;
+									const reqDesc = req.requirement_description || req.requirementDescription || '';
+									return (
+										<span
+											key={req.requirement_id || req.requirementId}
+											className={styles.requirementIcon}
+										>
+											<Icon name="check_circle" size={13} aria-hidden="true" />
+											<span className={styles.requirementTooltip}>
+												<strong className={styles.requirementTooltipTitle}>{reqTitle}</strong>
+												{reqDesc}
+											</span>
+										</span>
+									);
+								})}
+							</div>
+						</div>
+					)}
 				</div>
 
 				<div className={styles.footer}>
