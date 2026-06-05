@@ -172,8 +172,6 @@ function initModels(sequelize) {
   badges.hasMany(points_history, { as: "points_histories", foreignKey: "badge_id"});
   rewards.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(rewards, { as: "rewards", foreignKey: "badge_id"});
-  skills.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
-  badges.hasMany(skills, { as: "skills", foreignKey: "badge_id"});
   user_badges_interactions.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "badge_id"});
   awarded_badges.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
