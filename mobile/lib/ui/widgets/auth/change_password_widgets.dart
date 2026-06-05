@@ -5,6 +5,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/form_validators.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../shared/password_strength_indicator.dart';
 
 class ChangePasswordForm extends StatefulWidget {
@@ -48,17 +49,17 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     super.dispose();
   }
 
-  String _friendlyError(Map<String, dynamic> result) {
+  String _friendlyError(Map<String, dynamic> result, LanguageController tr) {
     final code = result['code']?.toString() ?? '';
     switch (code) {
       case 'AUTH_CURRENT_PASSWORD_WRONG':
-        return 'A password atual está incorreta. Verifique e tente novamente.';
+        return tr.tr('errorCurrentPasswordWrong');
       case 'AUTH_PASSWORD_FORMAT_INVALID':
-        return 'A nova password não cumpre os requisitos de segurança.';
+        return tr.tr('errorPasswordFormatInvalid');
       case 'AUTH_PASSWORD_SAME_AS_CURRENT':
-        return 'A nova password não pode ser igual à password atual.';
+        return tr.tr('errorPasswordSameAsCurrent');
       default:
-        return result['message']?.toString() ?? 'Erro ao alterar password.';
+        return result['message']?.toString() ?? tr.tr('changePasswordErrorGeneric');
     }
   }
 
@@ -76,10 +77,11 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
+    final tr = LanguageScope.of(context);
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password alterada com sucesso.'),
+        SnackBar(
+          content: Text(tr.tr('changePasswordSuccess')),
           backgroundColor: AppColors.success,
         ),
       );
@@ -92,7 +94,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_friendlyError(result)),
+          content: Text(_friendlyError(result, tr)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -101,6 +103,8 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Form(
@@ -109,18 +113,18 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.isFirstLogin) ...[
-              const Text(
-                'Bem-vindo!',
-                style: TextStyle(
+              Text(
+                tr.tr('welcomeFirstLogin'),
+                style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1E2932),
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Por segurança, defina uma nova password para a sua conta.',
-                style: TextStyle(
+              Text(
+                tr.tr('firstLoginPasswordPrompt'),
+                style: const TextStyle(
                   fontSize: 15,
                   color: Color(0xFF5B6773),
                   fontWeight: FontWeight.w500,
@@ -130,21 +134,21 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               const SizedBox(height: 24),
             ],
             _PasswordField(
-              label: 'Password atual',
+              label: tr.tr('currentPassword'),
               controller: _currentCtrl,
               obscure: _obscureCurrent,
               onToggle: () =>
                   setState(() => _obscureCurrent = !_obscureCurrent),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
-                  return 'Introduza a password atual.';
+                  return tr.tr('enterCurrentPassword');
                 }
                 return null;
               },
             ),
             const SizedBox(height: 14),
             _PasswordField(
-              label: 'Nova password',
+              label: tr.tr('newPassword'),
               controller: _newCtrl,
               obscure: _obscureNew,
               onToggle: () => setState(() => _obscureNew = !_obscureNew),
@@ -153,7 +157,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
             PasswordStrengthIndicator(password: _newPasswordText),
             const SizedBox(height: 14),
             _PasswordField(
-              label: 'Confirmar password',
+              label: tr.tr('confirmPassword'),
               controller: _confirmCtrl,
               obscure: _obscureConfirm,
               onToggle: () =>
@@ -186,9 +190,9 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Alterar Password',
-                        style: TextStyle(
+                    : Text(
+                        tr.tr('changePasswordButton'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),

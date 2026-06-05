@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../models/earned_badge_model.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/email_signature/email_signature_widgets.dart';
 
@@ -19,7 +20,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   final Set<int> _selectedBadgeIds = {};
   bool _showPreview = false;
   final _searchController = TextEditingController();
-  String _filterTab = 'Todos';
+  String _filterTab = 'all';
   bool _isSaving = false;
 
   @override
@@ -40,7 +41,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
     final query = _searchController.text.trim().toLowerCase();
 
     var list = earned;
-    if (_filterTab == 'Recentes') {
+    if (_filterTab == 'recent') {
       final sorted = [...earned]
         ..sort((a, b) => b.award.awardedAt.compareTo(a.award.awardedAt));
       list = sorted.take(6).toList();
@@ -53,11 +54,12 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   }
 
   Future<void> _handleConfirm(List<EarnedBadge> earned) async {
+    final tr = LanguageScope.of(context);
     if (_selectedBadgeIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione pelo menos um badge.'),
-          backgroundColor: Color(0xFFD94827),
+        SnackBar(
+          content: Text(tr.tr('selectAtLeastOneBadge')),
+          backgroundColor: const Color(0xFFD94827),
         ),
       );
       return;
@@ -69,18 +71,20 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (!mounted) return;
+      final trAfter = LanguageScope.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Assinatura de email guardada com sucesso.'),
-          backgroundColor: Color(0xFF2E9E4D),
+        SnackBar(
+          content: Text(trAfter.tr('emailSignatureSaved')),
+          backgroundColor: const Color(0xFF2E9E4D),
         ),
       );
     } catch (_) {
       if (!mounted) return;
+      final trAfter = LanguageScope.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erro ao guardar a assinatura de email.'),
-          backgroundColor: Color(0xFFD94827),
+        SnackBar(
+          content: Text(trAfter.tr('emailSignatureSaveError')),
+          backgroundColor: const Color(0xFFD94827),
         ),
       );
     } finally {
@@ -98,6 +102,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
     final authStore = context.watch<AuthStore>();
     final earned = badgeStore.earnedBadges;
@@ -108,7 +113,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         ? user!.fullName.trim()
         : (user?.username.trim().isNotEmpty ?? false)
             ? user!.username.trim()
-            : 'Utilizador';
+            : tr.tr('userFallback');
     final userEmail = user?.email ?? '';
     final userAreas = user?.areas ?? const [];
     final primaryArea = userAreas.where((a) => a.isPrimary).firstOrNull;
@@ -122,9 +127,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
-          'Assinatura de email',
-          style: TextStyle(
+        title: Text(
+          tr.tr('emailSignature'),
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2932),
@@ -142,9 +147,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const Text(
-                'Selecione os Badges a mostrar',
-                style: TextStyle(
+              Text(
+                tr.tr('selectBadgesToShow'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1E2932),
@@ -156,7 +161,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                 controller: _searchController,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  hintText: 'Procure badges',
+                  hintText: tr.tr('myBadgesSearchHint'),
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: IconButton(
                     onPressed: () {},
@@ -170,11 +175,11 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _filterTab = 'Todos'),
+                      onTap: () => setState(() => _filterTab = 'all'),
                       child: Container(
                         height: 42,
                         decoration: BoxDecoration(
-                          color: _filterTab == 'Todos'
+                          color: _filterTab == 'all'
                               ? const Color(0xFF5D9FD1)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -182,9 +187,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          'Todos',
+                          tr.tr('filterAll'),
                           style: TextStyle(
-                            color: _filterTab == 'Todos'
+                            color: _filterTab == 'all'
                                 ? Colors.white
                                 : const Color(0xFF5D9FD1),
                             fontWeight: FontWeight.w700,
@@ -196,11 +201,11 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _filterTab = 'Recentes'),
+                      onTap: () => setState(() => _filterTab = 'recent'),
                       child: Container(
                         height: 42,
                         decoration: BoxDecoration(
-                          color: _filterTab == 'Recentes'
+                          color: _filterTab == 'recent'
                               ? const Color(0xFF5D9FD1)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -211,15 +216,15 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Recentes',
+                              tr.tr('recentFilter'),
                               style: TextStyle(
-                                color: _filterTab == 'Recentes'
+                                color: _filterTab == 'recent'
                                     ? Colors.white
                                     : const Color(0xFF5D9FD1),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            if (_filterTab == 'Recentes')
+                            if (_filterTab == 'recent')
                               const Padding(
                                 padding: EdgeInsets.only(left: 6),
                                 child: SizedBox(
@@ -255,7 +260,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(40),
                     child: Text(
-                      'Ainda não obteve nenhum badge.',
+                      tr.tr('noEarnedBadgesYet'),
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],
@@ -360,9 +365,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Pré-visualização',
-                    style: TextStyle(
+                  Text(
+                    tr.tr('previewLabel'),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1E2932),
@@ -370,9 +375,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                   ),
                   Row(
                     children: [
-                      const Text(
-                        'Antes',
-                        style: TextStyle(
+                      Text(
+                        tr.tr('previewBefore'),
+                        style: const TextStyle(
                           color: Color(0xFF5B6773),
                           fontWeight: FontWeight.w600,
                         ),
@@ -382,9 +387,9 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                         onChanged: (v) => setState(() => _showPreview = v),
                         activeThumbColor: const Color(0xFF5D9FD1),
                       ),
-                      const Text(
-                        'Depois',
-                        style: TextStyle(
+                      Text(
+                        tr.tr('previewAfter'),
+                        style: const TextStyle(
                           color: Color(0xFF5B6773),
                           fontWeight: FontWeight.w600,
                         ),
@@ -525,7 +530,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: Text(
-                          'Nenhum badge selecionado',
+                          tr.tr('noBadgeSelected'),
                           style: TextStyle(
                             color: Colors.grey[400],
                             fontStyle: FontStyle.italic,
@@ -584,22 +589,22 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                                   ),
                           ),
                           const SizedBox(width: 14),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Confirmar Assinatura de email',
-                                  style: TextStyle(
+                                  tr.tr('confirmEmailSignatureAction'),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF1E2932),
                                     fontSize: 15,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Guardar e enviar a sua assinatura',
-                                  style: TextStyle(
+                                  tr.tr('saveAndSendSignature'),
+                                  style: const TextStyle(
                                     color: Color(0xFF6E7A86),
                                     fontSize: 12,
                                   ),

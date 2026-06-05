@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/help_widgets.dart';
 
@@ -9,80 +10,59 @@ class HelpScreen extends StatelessWidget {
   static const _sections = [
     _HelpEntry(
       icon: Icons.dashboard_outlined,
-      title: 'Dashboard',
-      description:
-          'O Dashboard é a sua página inicial. Aqui pode ver um resumo das suas atividades, '
-          'anúncios recentes, o seu progresso e ranking geral da plataforma.',
+      titleKey: 'helpDashboardTitle',
+      descKey: 'helpDashboardDesc',
     ),
     _HelpEntry(
       icon: Icons.explore_outlined,
-      title: 'Explorar Competências',
-      description:
-          'Nesta secção pode navegar por todos os badges disponíveis na plataforma. '
-          'Utilize os filtros para pesquisar por área, nível, pontos ou data. '
-          'Toque num badge para ver os detalhes e iniciar uma candidatura.',
+      titleKey: 'helpExploreTitle',
+      descKey: 'helpExploreDesc',
     ),
     _HelpEntry(
       icon: Icons.workspace_premium_outlined,
-      title: 'Os Meus Badges',
-      description:
-          'Consulte os badges que já obteve no separador "Badges Obtidos" e '
-          'acompanhe o estado das suas candidaturas no separador "Candidaturas". '
-          'Pode partilhar ou transferir badges obtidos.',
+      titleKey: 'helpMyBadgesTitle',
+      descKey: 'helpMyBadgesDesc',
     ),
     _HelpEntry(
       icon: Icons.trending_up_outlined,
-      title: 'Evolução',
-      description:
-          'A secção de Evolução mostra o seu progresso ao longo do tempo: '
-          'pontos acumulados, badges conquistados e a sua posição no ranking. '
-          'Acompanhe o crescimento da sua jornada técnica.',
+      titleKey: 'helpEvolutionTitle',
+      descKey: 'helpEvolutionDesc',
     ),
     _HelpEntry(
       icon: Icons.person_outline_rounded,
-      title: 'Perfil',
-      description:
-          'No seu perfil pode ver e editar as suas informações pessoais, '
-          'alterar o idioma da aplicação, consultar as suas características, '
-          'gerir a assinatura de email e aceder às definições da conta.',
+      titleKey: 'helpProfileTitle',
+      descKey: 'helpProfileDesc',
     ),
     _HelpEntry(
       icon: Icons.description_outlined,
-      title: 'Candidaturas',
-      description:
-          'Para obter um badge, inicie uma candidatura na página de detalhes do badge. '
-          'Anexe as evidências necessárias (ficheiros, certificados) e submeta. '
-          'A candidatura será avaliada pelo Talent Manager e depois pelo Service Line Leader.',
+      titleKey: 'helpApplicationsTitle',
+      descKey: 'helpApplicationsDesc',
     ),
     _HelpEntry(
       icon: Icons.notifications_none_rounded,
-      title: 'Notificações',
-      description:
-          'Receba alertas sobre o estado das suas candidaturas, badges a expirar, '
-          'e outras atualizações relevantes. Pode marcar notificações como lidas '
-          'individualmente ou todas de uma vez.',
+      titleKey: 'helpNotificationsTitle',
+      descKey: 'helpNotificationsDesc',
     ),
     _HelpEntry(
       icon: Icons.share_outlined,
-      title: 'Partilha de Badges',
-      description:
-          'Após obter um badge, pode partilhá-lo publicamente. '
-          'Na primeira partilha será pedido o consentimento GDPR. '
-          'Os badges partilhados ficam acessíveis através de um link público de verificação.',
+      titleKey: 'helpShareTitle',
+      descKey: 'helpShareDesc',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
-          'Ajuda',
-          style: TextStyle(
+        title: Text(
+          tr.tr('help'),
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2932),
@@ -110,28 +90,27 @@ class HelpScreen extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.help_outline_rounded,
                       color: Colors.white,
                       size: 48,
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
-                      'Como posso ajudá-lo?',
-                      style: TextStyle(
+                      tr.tr('helpQuestionTitle'),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      'Explore as funcionalidades da aplicação '
-                      'e saiba como tirar o melhor partido da plataforma.',
+                      tr.tr('helpQuestionSubtitle'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white70,
                         height: 1.4,
@@ -141,9 +120,9 @@ class HelpScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Funcionalidades',
-                style: TextStyle(
+              Text(
+                tr.tr('helpFeatures'),
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1E2932),
@@ -153,8 +132,8 @@ class HelpScreen extends StatelessWidget {
               ..._sections.map(
                 (entry) => HelpSection(
                   icon: entry.icon,
-                  title: entry.title,
-                  description: entry.description,
+                  title: tr.tr(entry.titleKey),
+                  description: tr.tr(entry.descKey),
                 ),
               ),
             ],
@@ -169,11 +148,11 @@ class HelpScreen extends StatelessWidget {
 class _HelpEntry {
   const _HelpEntry({
     required this.icon,
-    required this.title,
-    required this.description,
+    required this.titleKey,
+    required this.descKey,
   });
 
   final IconData icon;
-  final String title;
-  final String description;
+  final String titleKey;
+  final String descKey;
 }

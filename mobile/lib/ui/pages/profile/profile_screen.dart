@@ -259,26 +259,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.edit_note_rounded,
-                label: 'As minhas características',
+                label: tr.tr('myCharacteristics'),
                 onTap: () => Navigator.pushNamed(
                     context, AppRouter.characteristics),
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.notifications_none_rounded,
-                label: 'Preferências notificações',
+                label: tr.tr('notificationPreferences'),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.person_outline_rounded,
-                label: 'Editar perfil',
+                label: tr.tr('editProfile'),
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.editProfile),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.lock_outline_rounded,
-                label: 'Alterar palavra-passe',
+                label: tr.tr('changePasswordAction'),
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRouter.changePassword,
@@ -288,14 +288,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.email_outlined,
-                label: 'Assinatura de email',
+                label: tr.tr('emailSignature'),
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.emailSignature),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.language_rounded,
-                label: 'Idioma',
+                label: tr.tr('languageLabel'),
                 onTap: () {
                   final langCtrl = LanguageScope.of(context);
                   LanguageSelectorSheet.show(
@@ -313,7 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SnackBar(
                             content: Text(
                               result['message']?.toString() ??
-                                  'Erro ao alterar idioma.',
+                                  langCtrl.tr('languageChangeError'),
                             ),
                             backgroundColor: AppColors.error,
                           ),
@@ -324,30 +324,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
               const SizedBox(height: 14),
-              const Text(
-                'Ajuda e políticas',
-                style: TextStyle(
+              Text(
+                tr.tr('helpAndPolicies'),
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1E2932),
                 ),
               ),
               const SizedBox(height: 8),
-              const ProfileMenuTile(
+              ProfileMenuTile(
                 icon: Icons.privacy_tip_outlined,
-                label: 'Políticas de privacidade',
+                label: tr.tr('privacyPolicies'),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.description_outlined,
-                label: 'Termos e condições',
+                label: tr.tr('termsAndConditions'),
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.termsConditions),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.help_outline_rounded,
-                label: 'Ajuda',
+                label: tr.tr('help'),
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.help),
               ),
@@ -369,9 +369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Icons.logout_rounded,
                     color: Color(0xFF5D9FD1),
                   ),
-                  title: const Text(
-                    'Terminar sessão',
-                    style: TextStyle(
+                  title: Text(
+                    tr.tr('logout'),
+                    style: const TextStyle(
                       color: Color(0xFF1E2932),
                       fontWeight: FontWeight.w700,
                     ),
@@ -384,10 +384,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Center(
+              Center(
                 child: Text(
-                  'Versão 1.3.1',
-                  style: TextStyle(
+                  tr.tr('appVersion').replaceAll('{version}', '1.3.1'),
+                  style: const TextStyle(
                     color: Color(0xFF8D98A3),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

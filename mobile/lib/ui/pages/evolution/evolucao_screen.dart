@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
 import '../../../presentation/state/dashboard_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../../core/routes/app_router.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
@@ -17,7 +18,7 @@ class EvolucaoScreen extends StatefulWidget {
 }
 
 class _EvolucaoScreenState extends State<EvolucaoScreen> {
-  static const List<String> _periodOptions = ['Semanal', 'Mensal', 'Anual'];
+  static const List<String> _periodOptions = ['weekly', 'monthly', 'yearly'];
 
   String _selectedPeriod = _periodOptions.first;
 
@@ -33,6 +34,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final badgeStore = context.watch<BadgeStore>();
     final dashStore = context.watch<DashboardStore>();
@@ -42,7 +44,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
         ? user!.fullName.trim()
         : (user?.username.trim().isNotEmpty == true
               ? user!.username.trim()
-              : 'Consultor');
+              : tr.tr('consultantFallback'));
 
     final earnedBadges = badgeStore.earnedBadges;
     final badgeCount = earnedBadges.length;
@@ -73,7 +75,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
         .map(
           (s) => ActivityItem(
             title: s.badge.title,
-            timeAgo: 'Há ${s.timestamp}',
+            timeAgo: tr.tr('timeAgoValue').replaceAll('{time}', s.timestamp),
             icon: Icons.workspace_premium_rounded,
           ),
         )
@@ -88,7 +90,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Olá, $displayName!',
+                tr.tr('evolutionGreeting').replaceAll('{name}', displayName),
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
@@ -112,26 +114,26 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   MiniStatCard(
-                    title: 'Badges obtidos',
+                    title: tr.tr('badgesObtained'),
                     value: '$badgeCount',
                     icon: Icons.workspace_premium_rounded,
                     accentColor: const Color(0xFF66B6E6),
                     onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
                   ),
                   MiniStatCard(
-                    title: 'Conquistas ativas',
+                    title: tr.tr('activeAchievements'),
                     value: '$activeBadges',
                     icon: Icons.emoji_events_outlined,
                     accentColor: const Color(0xFF83A9E8),
                   ),
                   MiniStatCard(
-                    title: 'Níveis concluídos',
+                    title: tr.tr('levelsCompleted'),
                     value: '$uniqueLevels',
                     icon: Icons.auto_graph_rounded,
                     accentColor: const Color(0xFF8BC4D9),
                   ),
                   MiniStatCard(
-                    title: 'Pontos totais',
+                    title: tr.tr('totalPoints'),
                     value: '${dashStore.totalPoints > 0 ? dashStore.totalPoints : (user?.totalPoints ?? 0)}',
                     icon: Icons.stars_rounded,
                     accentColor: const Color(0xFF96B8CF),

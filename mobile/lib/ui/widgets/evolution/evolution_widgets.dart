@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
+
 class MainBadgesCard extends StatelessWidget {
   const MainBadgesCard({
     super.key,
@@ -17,6 +19,7 @@ class MainBadgesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final isPositive = growthPercent >= 0;
 
     final years = yearlyBadges.keys.toList()..sort();
@@ -47,9 +50,9 @@ class MainBadgesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Badges por ano',
-            style: TextStyle(
+          Text(
+            tr.tr('badgesByYear'),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF2E3A46),
@@ -107,10 +110,10 @@ class MainBadgesCard extends StatelessWidget {
           SizedBox(
             height: 190,
             child: spots.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'Sem dados de evolução.',
-                      style: TextStyle(
+                      tr.tr('noEvolutionData'),
+                      style: const TextStyle(
                         color: Color(0xFF8CA0B2),
                         fontWeight: FontWeight.w600,
                       ),
@@ -310,10 +313,17 @@ class PointsBarCard extends StatefulWidget {
 }
 
 class _PointsBarCardState extends State<PointsBarCard> {
-  static const _monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  static const _monthKeys = [
+    'monthShortJan', 'monthShortFeb', 'monthShortMar', 'monthShortApr',
+    'monthShortMay', 'monthShortJun', 'monthShortJul', 'monthShortAug',
+    'monthShortSep', 'monthShortOct', 'monthShortNov', 'monthShortDec',
   ];
+
+  static const _periodTranslationKeys = {
+    'weekly': 'periodWeekly',
+    'monthly': 'periodMonthly',
+    'yearly': 'periodYearly',
+  };
 
   int _selectedBarIndex = -1;
 
@@ -396,12 +406,14 @@ class _PointsBarCardState extends State<PointsBarCard> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     Map<String, double> aggregated;
     switch (widget.selectedPeriod) {
-      case 'Semanal':
+      case 'weekly':
         aggregated = _aggregateByWeek();
         break;
-      case 'Anual':
+      case 'yearly':
         aggregated = _aggregateByYear();
         break;
       default:
@@ -410,9 +422,9 @@ class _PointsBarCardState extends State<PointsBarCard> {
 
     final rawKeys = aggregated.keys.toList();
     final labels = rawKeys.map((k) {
-      if (widget.selectedPeriod == 'Mensal' && k.contains('-')) {
+      if (widget.selectedPeriod == 'monthly' && k.contains('-')) {
         final m = int.tryParse(k.split('-').last) ?? 0;
-        return (m >= 1 && m <= 12) ? _monthNames[m - 1] : k;
+        return (m >= 1 && m <= 12) ? tr.tr(_monthKeys[m - 1]) : k;
       }
       return k;
     }).toList();
@@ -442,9 +454,9 @@ class _PointsBarCardState extends State<PointsBarCard> {
         children: [
           Row(
             children: [
-              const Text(
-                'Pontos',
-                style: TextStyle(
+              Text(
+                tr.tr('pointsTitle'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF2B3B48),
@@ -465,7 +477,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                         .map(
                           (period) => DropdownMenuItem<String>(
                             value: period,
-                            child: Text(period),
+                            child: Text(tr.tr(_periodTranslationKeys[period] ?? period)),
                           ),
                         )
                         .toList(),
@@ -500,7 +512,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           TextSpan(
-                            text: '${selectedValue.toInt()} pontos',
+                            text: '${selectedValue.toInt()} ${tr.tr('pointsLabel')}',
                             style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF00B8E0)),
                           ),
                         ],
@@ -519,10 +531,10 @@ class _PointsBarCardState extends State<PointsBarCard> {
           SizedBox(
             height: 180,
             child: values.every((v) => v == 0)
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'Sem dados disponíveis.',
-                      style: TextStyle(
+                      tr.tr('noDataAvailable'),
+                      style: const TextStyle(
                         color: Color(0xFF8CA0B2),
                         fontWeight: FontWeight.w600,
                       ),
@@ -583,7 +595,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                                     color: index == _selectedBarIndex
                                         ? const Color(0xFF00B8E0)
                                         : const Color(0xFF7A8FA2),
-                                    fontSize: widget.selectedPeriod == 'Mensal' ? 10 : 12,
+                                    fontSize: widget.selectedPeriod == 'monthly' ? 10 : 12,
                                     fontWeight: index == _selectedBarIndex
                                         ? FontWeight.w800
                                         : FontWeight.w600,
@@ -602,7 +614,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                           barRods: [
                             BarChartRodData(
                               toY: values[index],
-                              width: widget.selectedPeriod == 'Mensal' ? 14 : 18,
+                              width: widget.selectedPeriod == 'monthly' ? 14 : 18,
                               borderRadius: BorderRadius.circular(8),
                               color: isSelected
                                   ? const Color(0xFF00B8E0)
@@ -641,12 +653,14 @@ class RecentActivitySection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (activities.isEmpty) return const SizedBox.shrink();
 
+    final tr = LanguageScope.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Atividade recente',
-          style: TextStyle(
+        Text(
+          tr.tr('recentActivity'),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Color(0xFF2A3A47),
@@ -724,12 +738,14 @@ class ApplicationsMetricsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Candidaturas',
-          style: TextStyle(
+        Text(
+          tr.tr('applications'),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Color(0xFF2A3A47),
@@ -737,14 +753,14 @@ class ApplicationsMetricsSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         ApplicationMetricCard(
-          title: 'Percentagem aprova\u00e7\u00e3o',
+          title: tr.tr('approvalPercentage'),
           value: '$approvalPercent%',
           icon: Icons.check_circle_outline_rounded,
           accentColor: const Color(0xFF6FC391),
         ),
         const SizedBox(height: 8),
         ApplicationMetricCard(
-          title: 'Candidaturas efetuadas',
+          title: tr.tr('submittedApplications'),
           value: '$totalApplications',
           icon: Icons.description_outlined,
           accentColor: const Color(0xFF93A8C8),
@@ -831,6 +847,8 @@ class LevelsRadarCard extends StatelessWidget {
       return title.isNotEmpty;
     }).toList();
 
+    final tr = LanguageScope.of(context);
+
     if (entries.isEmpty) {
       return Container(
         width: double.infinity,
@@ -839,28 +857,28 @@ class LevelsRadarCard extends StatelessWidget {
           color: const Color(0xFFF7FBFF),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Progresso por Learning Path',
-              style: TextStyle(
+              tr.tr('learningPathProgress'),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF2B3B48),
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Center(
               child: Text(
-                'Sem dados dispon\u00edveis.',
-                style: TextStyle(
+                tr.tr('noDataAvailable'),
+                style: const TextStyle(
                   color: Color(0xFF8CA0B2),
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
           ],
         ),
       );
@@ -886,9 +904,9 @@ class LevelsRadarCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Progresso por Learning Path',
-            style: TextStyle(
+          Text(
+            tr.tr('learningPathProgress'),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF2B3B48),
@@ -944,6 +962,8 @@ class BadgesPerAreaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     if (areaCounts.isEmpty) {
       return Container(
         width: double.infinity,
@@ -952,28 +972,28 @@ class BadgesPerAreaCard extends StatelessWidget {
           color: const Color(0xFFF7FBFF),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Badges por área',
-              style: TextStyle(
+              tr.tr('badgesPerArea'),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF2B3B48),
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Center(
               child: Text(
-                'Sem dados disponíveis.',
-                style: TextStyle(
+                tr.tr('noDataAvailable'),
+                style: const TextStyle(
                   color: Color(0xFF8CA0B2),
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
           ],
         ),
       );
@@ -1004,9 +1024,9 @@ class BadgesPerAreaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Badges por área',
-            style: TextStyle(
+          Text(
+            tr.tr('badgesPerArea'),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF2B3B48),

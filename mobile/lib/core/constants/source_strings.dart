@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 2;
+const int sourceStringsVersion = 3;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -342,6 +342,53 @@ const _sourceJson = r'''
   "approvalPercentage": "Percentagem de aprovação",
   "submittedApplications": "Candidaturas efetuadas",
   "learningPathProgress": "Progresso por Learning Path",
-  "badgesPerArea": "Badges por área"
+  "badgesPerArea": "Badges por área",
+
+  "helpQuestionTitle": "Como posso ajudá-lo?",
+  "helpQuestionSubtitle": "Explore as funcionalidades da aplicação e saiba como tirar o melhor partido da plataforma.",
+  "helpFeatures": "Funcionalidades",
+  "helpDashboardTitle": "Dashboard",
+  "helpDashboardDesc": "O Dashboard é a sua página inicial. Aqui pode ver um resumo das suas atividades, anúncios recentes, o seu progresso e ranking geral da plataforma.",
+  "helpExploreTitle": "Explorar Competências",
+  "helpExploreDesc": "Nesta secção pode navegar por todos os badges disponíveis na plataforma. Utilize os filtros para pesquisar por área, nível, pontos ou data. Toque num badge para ver os detalhes e iniciar uma candidatura.",
+  "helpMyBadgesTitle": "Os Meus Badges",
+  "helpMyBadgesDesc": "Consulte os badges que já obteve no separador \"Badges Obtidos\" e acompanhe o estado das suas candidaturas no separador \"Candidaturas\". Pode partilhar ou transferir badges obtidos.",
+  "helpEvolutionTitle": "Evolução",
+  "helpEvolutionDesc": "A secção de Evolução mostra o seu progresso ao longo do tempo: pontos acumulados, badges conquistados e a sua posição no ranking. Acompanhe o crescimento da sua jornada técnica.",
+  "helpProfileTitle": "Perfil",
+  "helpProfileDesc": "No seu perfil pode ver e editar as suas informações pessoais, alterar o idioma da aplicação, consultar as suas características, gerir a assinatura de email e aceder às definições da conta.",
+  "helpApplicationsTitle": "Candidaturas",
+  "helpApplicationsDesc": "Para obter um badge, inicie uma candidatura na página de detalhes do badge. Anexe as evidências necessárias (ficheiros, certificados) e submeta. A candidatura será avaliada pelo Talent Manager e depois pelo Service Line Leader.",
+  "helpNotificationsTitle": "Notificações",
+  "helpNotificationsDesc": "Receba alertas sobre o estado das suas candidaturas, badges a expirar, e outras atualizações relevantes. Pode marcar notificações como lidas individualmente ou todas de uma vez.",
+  "helpShareTitle": "Partilha de Badges",
+  "helpShareDesc": "Após obter um badge, pode partilhá-lo publicamente. Na primeira partilha será pedido o consentimento GDPR. Os badges partilhados ficam acessíveis através de um link público de verificação.",
+
+  "iAmIntro": "Eu {name} sou",
+  "noCharacteristicsDefined": "Ainda sem características definidas.",
+
+  "selectBadgesToShow": "Selecione os Badges a mostrar",
+  "recentFilter": "Recentes",
+  "previewLabel": "Pré-visualização",
+  "previewBefore": "Antes",
+  "previewAfter": "Depois",
+  "noBadgeSelected": "Nenhum badge selecionado",
+  "confirmEmailSignatureAction": "Confirmar Assinatura de email",
+  "saveAndSendSignature": "Guardar e enviar a sua assinatura",
+  "selectAtLeastOneBadge": "Selecione pelo menos um badge.",
+  "emailSignatureSaved": "Assinatura de email guardada com sucesso.",
+  "emailSignatureSaveError": "Erro ao guardar a assinatura de email.",
+
+  "welcomeFirstLogin": "Bem-vindo!",
+  "firstLoginPasswordPrompt": "Por segurança, defina uma nova password para a sua conta.",
+  "currentPassword": "Password atual",
+  "newPassword": "Nova password",
+  "enterCurrentPassword": "Introduza a password atual.",
+  "changePasswordButton": "Alterar Password",
+  "changePasswordSuccess": "Password alterada com sucesso.",
+  "changePasswordErrorGeneric": "Erro ao alterar password.",
+  "errorCurrentPasswordWrong": "A password atual está incorreta. Verifique e tente novamente.",
+  "errorPasswordFormatInvalid": "A nova password não cumpre os requisitos de segurança.",
+  "errorPasswordSameAsCurrent": "A nova password não pode ser igual à password atual."
 }
 ''';
