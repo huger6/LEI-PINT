@@ -183,6 +183,82 @@ class AuthStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Persists the consultant's chosen areas. Following the app's offline-first
+  /// model, the selection is written to the locally cached profile (the source
+  /// of truth for every screen) and pushed to the API best-effort. The areas
+  /// are only sent here, on explicit confirmation; navigating away without
+  /// calling this leaves the previous selection untouched.
+  Future<Map<String, dynamic>> updateMyAreas(
+    List<AreaModel> selectedAreas,
+    AreaModel? mainArea,
+  ) async {
+    final payload = selectedAreas
+        .map(
+          (area) => <String, dynamic>{
+            'area_id': area.id,
+            'is_primary': mainArea != null && area.id == mainArea.id,
+          },
+        )
+        .toList();
+
+    // Best-effort remote push; the local write below is what the UI reads.
+    final result = await _authRepository.updateMyAreas(payload);
+
+    if (_currentUser != null) {
+      if (result['success'] == true) {
+        // Server accepted it: take the canonical profile back from the API.
+        final refreshed =
+            await _authRepository.getMe(accessToken: _accessToken);
+        _currentUser =
+            refreshed ?? _withAreas(_currentUser!, selectedAreas, mainArea);
+      } else {
+        // Offline / endpoint unavailable: keep the choice locally so the
+        // profile and recommendations reflect it immediately.
+        _currentUser = _withAreas(_currentUser!, selectedAreas, mainArea);
+      }
+      await _currentUserDao.save(_currentUser!);
+      notifyListeners();
+    }
+
+    // The selection is always stored locally, so report success to the UI.
+    return {'success': true, if (result['success'] != true) 'localOnly': true};
+  }
+
+  /// Returns a copy of [user] whose areas reflect [selectedAreas], marking
+  /// [mainArea] as primary. The profile only carries area name/slug/isPrimary.
+  UserModel _withAreas(
+    UserModel user,
+    List<AreaModel> selectedAreas,
+    AreaModel? mainArea,
+  ) {
+    final areas = selectedAreas
+        .map(
+          (area) => UserArea(
+            name: area.name,
+            slug: area.slug,
+            isPrimary: mainArea != null && area.id == mainArea.id,
+          ),
+        )
+        .toList();
+
+    return UserModel(
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      profilePicture: user.profilePicture,
+      role: user.role,
+      biography: user.biography,
+      gdprAccepted: user.gdprAccepted,
+      totalPoints: user.totalPoints,
+      preferredLangId: user.preferredLangId,
+      locationId: user.locationId,
+      serviceLineName: user.serviceLineName,
+      learningPathTitle: user.learningPathTitle,
+      areas: areas,
+    );
+  }
+
   Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> data,
   ) async {

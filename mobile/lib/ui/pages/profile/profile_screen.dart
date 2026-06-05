@@ -64,6 +64,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final skillsCount = _skillsCount;
     final totalPoints = authStore.currentUser?.totalPoints ?? 0;
 
+    // Only consultants belong to areas (Talent Managers, Service Line Leaders
+    // and Admins do not), so the area chooser is offered to consultants only.
+    final role = authStore.currentUser?.role;
+    final isConsultant = role == null || role == 'Consultant';
+
     final userName =
         (authStore.currentUser?.fullName.trim().isNotEmpty ?? false)
         ? authStore.currentUser!.fullName.trim()
@@ -275,6 +280,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () =>
                     Navigator.pushNamed(context, AppRouter.editProfile),
               ),
+              if (isConsultant) ...[
+                const SizedBox(height: 8),
+                ProfileMenuTile(
+                  icon: Icons.category_outlined,
+                  label: tr.tr('chooseAreasMenuLabel'),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRouter.chooseAreas),
+                ),
+              ],
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.lock_outline_rounded,

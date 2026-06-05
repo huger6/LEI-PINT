@@ -210,11 +210,13 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         title: tr.tr('description'),
                         child: Text(
                           badge.description,
-                          textAlign: TextAlign.justify,
+                          textAlign: TextAlign.start,
                           style: const TextStyle(
                             fontSize: 15,
-                            height: 1.5,
-                            color: Color(0xFF3A4550),
+                            height: 1.65,
+                            letterSpacing: 0.15,
+                            color: Color(0xFF4A5663),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

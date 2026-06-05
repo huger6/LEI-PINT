@@ -57,8 +57,10 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     final badgeStore = context.read<BadgeStore>();
     final applicationsRepo = context.read<ApplicationsRepository>();
 
+    // Load the catalog first so earned badges and applications can resolve
+    // their area / points / progression-stage against it.
+    await badgeStore.loadBadges(forceRefresh: true);
     await Future.wait([
-      badgeStore.loadBadges(forceRefresh: true),
       badgeStore.loadEarnedBadges(forceRefresh: true),
       badgeStore.loadFavorites(),
     ]);
@@ -77,7 +79,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     });
 
     try {
-      final applications = await applicationsRepo.getApplications(limit: 60);
+      // Pull every request the consultant has ever submitted (all states).
+      final applications = await applicationsRepo.getApplications(limit: 200);
       if (!mounted) {
         return;
       }
@@ -357,6 +360,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                   return AchievedBadgeCard(
                     badge: item.badge,
                     completionDate: item.award.awardedAt,
+                    fallbackLevel: item.badge.level,
+                    fallbackPoints: item.award.pointsSnapshot ?? 0,
                     onTap: () => _handleCardTap(item),
                     onShare: () => _handleShare(item),
                     onDownload: () => _handleDownload(item),
@@ -369,8 +374,33 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     );
   }
 
+  /// The applications list endpoint returns the badge without its area,
+  /// points or progression-stage, so resolve those from the local catalog by
+  /// slug (or id), falling back to whatever the application carried.
+  BadgeModel _resolveApplicationBadge(
+    ApplicationSummaryModel application,
+    List<BadgeModel> catalog,
+  ) {
+    final fromApp = application.badge;
+    if (fromApp == null) {
+      return BadgeModel.empty(title: 'Badge');
+    }
+
+    for (final badge in catalog) {
+      if (fromApp.slug.isNotEmpty && badge.slug == fromApp.slug) {
+        return badge;
+      }
+      if (fromApp.id != 0 && badge.id == fromApp.id) {
+        return badge;
+      }
+    }
+
+    return fromApp;
+  }
+
   Widget _buildApplicationsTab() {
     final tr = LanguageScope.of(context);
+    final catalog = context.read<BadgeStore>().badges;
     final query = _applicationsSearchController.text.trim().toLowerCase();
 
     final filtered = _applications
@@ -481,8 +511,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                           final application = filtered[index];
                           final state = _stateOf(application.applicationState);
                           final badge =
-                              application.badge ??
-                              BadgeModel.empty(title: 'Badge');
+                              _resolveApplicationBadge(application, catalog);
 
                           return ApplicationCard(
                             badge: badge,

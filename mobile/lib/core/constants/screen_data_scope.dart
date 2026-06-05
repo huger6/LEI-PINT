@@ -21,6 +21,7 @@ abstract class ScreenDataScope {
     AppRouter.myBadges: [
       SyncCodes.awardedBadges,
       SyncCodes.badges,
+      SyncCodes.applications,
     ],
     AppRouter.evolucao: [
       SyncCodes.points,
@@ -31,6 +32,10 @@ abstract class ScreenDataScope {
     ],
     AppRouter.editProfile: [
       SyncCodes.userProfile,
+    ],
+    AppRouter.chooseAreas: [
+      SyncCodes.userProfile,
+      SyncCodes.areas,
     ],
     AppRouter.emailSignature: [
       SyncCodes.userProfile,

@@ -29,7 +29,14 @@ class BadgeRepository {
   }
 
   Future<List<BadgeModel>> getBadges() async {
-    final payload = await _apiClient.get(ApiEndpoints.getBadges);
+    // The catalog must be as complete as possible: it is the only local source
+    // of area / points / progression-stage for earned badges and applications,
+    // whose list endpoints don't return those fields. Without a high limit the
+    // API defaults to 32 rows, leaving many badges without an area locally.
+    final payload = await _apiClient.get(
+      ApiEndpoints.getBadges,
+      queryParameters: const {'page': 1, 'limit': 100},
+    );
     debugPrint('BadgeRepo.getBadges: raw payload type=${payload.runtimeType}');
     final list = _extractList(payload);
     debugPrint('BadgeRepo.getBadges: extracted ${list.length} items');

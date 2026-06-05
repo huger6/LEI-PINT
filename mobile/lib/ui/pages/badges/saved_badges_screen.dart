@@ -11,14 +11,15 @@ class SavedBadgesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final badgeStore = context.watch<BadgeStore>();
+    final tr = LanguageScope.of(context);
     final saved = badgeStore.savedBadges;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'Badges Guardados',
-          style: TextStyle(
+        title: Text(
+          tr.tr('savedBadgesTitle'),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: Color(0xFF1E2932),
@@ -42,7 +43,7 @@ class SavedBadgesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Nenhum badge guardado',
+                      tr.tr('savedBadgesEmptyTitle'),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -51,7 +52,7 @@ class SavedBadgesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Guarde badges para os encontrar facilmente mais tarde.',
+                      tr.tr('savedBadgesEmptySubtitle'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

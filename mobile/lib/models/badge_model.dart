@@ -59,14 +59,17 @@ class BadgeModel {
       'area',
       'area_name',
     ], fallback: _readString(json, const ['area_name', 'category']));
+    // "Level" is the progression stage of the area (e.g. "Júnior",
+    // "Intermédio", "Sénior"). We prefer the readable stage title and only
+    // fall back to the raw stage code letter when the title is unavailable.
     final stageCode = _readNestedString(
       json,
-      const ['stage_code', 'stage_code'],
-      fallback: _readNestedString(json, const [
-        'progression_stage',
-        'stage_code',
-        'stage_code',
-      ]),
+      const ['progression_stage', 'stage_title'],
+      fallback: _readNestedString(
+        json,
+        const ['progression_stage', 'stage_code', 'stage_code'],
+        fallback: _readString(json, const ['stage_title', 'stage_code']),
+      ),
     );
 
     final points = _readInt(json, const ['badge_points', 'points']);

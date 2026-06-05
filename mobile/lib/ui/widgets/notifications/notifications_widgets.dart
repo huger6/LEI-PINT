@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/notification_defs.dart';
 import '../../../models/notification_model.dart';
+import '../../../presentation/state/language_controller.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -18,10 +19,10 @@ class NotificationsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notifications.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'Sem notificações para apresentar.',
-          style: TextStyle(
+          LanguageScope.of(context).tr('notificationsEmpty'),
+          style: const TextStyle(
             color: Color(0xFF5E6A75),
             fontSize: 16,
             fontWeight: FontWeight.w500,

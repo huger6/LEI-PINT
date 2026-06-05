@@ -2,35 +2,112 @@ import 'package:dio/dio.dart';
 
 import '../../core/constants/api_endpoints.dart';
 import '../../models/application_summary_model.dart';
+import '../../models/my_application_model.dart';
+import '../local/badge_dao.dart';
+import '../local/my_application_dao.dart';
 import '../remote/api_client.dart';
 
 class ApplicationsRepository {
-  ApplicationsRepository(this._apiClient);
+  ApplicationsRepository(
+    this._apiClient,
+    this._myApplicationDao,
+    this._badgeDao,
+  );
 
   final ApiClient _apiClient;
+  final MyApplicationDao _myApplicationDao;
+  final BadgeDao _badgeDao;
 
   Future<List<ApplicationSummaryModel>> getApplications({
     List<String>? state,
     int page = 1,
     int limit = 20,
   }) async {
-    final payload = await _apiClient.get(
-      ApiEndpoints.getApplications,
-      queryParameters: {
-        if (state != null && state.isNotEmpty) 'state': state,
-        'page': page,
-        'limit': limit,
-      },
-    );
+    // Offline-first: every screen must keep working from the local database
+    // when the network is unavailable. We try the API for the freshest data,
+    // but fall back to the applications already synced into the local store so
+    // the consultant's requests never disappear from "Candidaturas" or the
+    // dashboard's recent submissions.
+    try {
+      final payload = await _apiClient.get(
+        ApiEndpoints.getApplications,
+        queryParameters: {
+          if (state != null && state.isNotEmpty) 'state': state,
+          'page': page,
+          'limit': limit,
+        },
+      );
 
-    final list = _extractList(payload);
-    return list
+      final list = _extractList(payload);
+      final applications = list
+          .whereType<Map>()
+          .map(
+            (item) => ApplicationSummaryModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList();
+
+      // Persist the freshest list locally so an offline reopen still shows it.
+      await _cacheApplications(list);
+
+      if (applications.isNotEmpty) {
+        return applications;
+      }
+
+      // API returned nothing usable – fall through to whatever is cached.
+      return getApplicationsLocal(state: state);
+    } catch (_) {
+      return getApplicationsLocal(state: state);
+    }
+  }
+
+  /// Builds the application summaries straight from the local database,
+  /// joining each request to its badge in the local catalog. Used as the
+  /// offline-first source whenever the API cannot be reached.
+  Future<List<ApplicationSummaryModel>> getApplicationsLocal({
+    List<String>? state,
+  }) async {
+    final locals = await _myApplicationDao.getAll();
+    final result = <ApplicationSummaryModel>[];
+
+    for (final app in locals) {
+      if (state != null && state.isNotEmpty && !state.contains(app.state)) {
+        continue;
+      }
+
+      final badge = await _badgeDao.getById(app.badgeId);
+      result.add(
+        ApplicationSummaryModel(
+          applicationGuid: app.applicationGuid,
+          applicationState: app.state,
+          badge: badge,
+          submittedAt: app.submittedAt,
+          openedAt: app.openedAt,
+          updatedAt: app.closedAt,
+          latestObservation: app.reviewerNotes,
+        ),
+      );
+    }
+
+    return result;
+  }
+
+  /// Mirrors the freshly fetched server applications into the local store so
+  /// the offline fallback stays up to date even on screens whose sync scope
+  /// does not refresh applications on its own.
+  Future<void> _cacheApplications(List<dynamic> rawList) async {
+    final models = rawList
         .whereType<Map>()
-        .map(
-          (item) =>
-              ApplicationSummaryModel.fromJson(Map<String, dynamic>.from(item)),
-        )
+        .map((item) => MyApplicationModel.fromJson(Map<String, dynamic>.from(item)))
+        .where((app) => app.applicationGuid.isNotEmpty)
         .toList();
+
+    if (models.isEmpty) {
+      return;
+    }
+
+    await _myApplicationDao.replaceAll(models);
   }
 
   Future<ApplicationSummaryModel?> getApplicationById(

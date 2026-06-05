@@ -11,6 +11,7 @@ import '../data/local/current_user_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
+import '../data/local/my_application_dao.dart';
 import '../data/local/my_favorite_dao.dart';
 import '../data/local/my_skill_dao.dart';
 import '../data/local/notification_dao.dart';
@@ -158,6 +159,12 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<MyApplicationDao>()) {
+    getIt.registerLazySingleton<MyApplicationDao>(
+      () => MyApplicationDao(getIt<LocalDatabase>()),
+    );
+  }
+
   if (!getIt.isRegistered<MyFavoriteDao>()) {
     getIt.registerLazySingleton<MyFavoriteDao>(
       () => MyFavoriteDao(getIt<LocalDatabase>()),
@@ -223,7 +230,11 @@ Future<void> setupDependencies() async {
 
   if (!getIt.isRegistered<ApplicationsRepository>()) {
     getIt.registerLazySingleton<ApplicationsRepository>(
-      () => ApplicationsRepository(getIt<ApiClient>()),
+      () => ApplicationsRepository(
+        getIt<ApiClient>(),
+        getIt<MyApplicationDao>(),
+        getIt<BadgeDao>(),
+      ),
     );
   }
 
