@@ -33,6 +33,21 @@ function deriveTimelineStatus(stages) {
 	});
 }
 
+function groupByArea(rows) {
+	const map = new Map();
+	for (const row of rows) {
+		const key = row.area_slug;
+		if (!map.has(key)) {
+			map.set(key, { area_name: row.area_name, area_slug: row.area_slug, stages: [] });
+		}
+		map.get(key).stages.push(row);
+	}
+	return Array.from(map.values()).map((group) => ({
+		...group,
+		stages: deriveTimelineStatus(group.stages),
+	}));
+}
+
 function mapGoalToObjective(goal) {
 	const badge = goal.badge_badge;
 	const app = goal.application;
@@ -67,7 +82,7 @@ export default function Objectives() {
 	const [reminders, setReminders] = useState([]);
 	const [stats, setStats] = useState({ activeObjectives: 0, daysToNext: 0, badgesExpiring: 0, completedObjectives: 0 });
 	const [objectives, setObjectives] = useState([]);
-	const [timeline, setTimeline] = useState([]);
+	const [areaTimelines, setAreaTimelines] = useState([]);
 	const [progressData, setProgressData] = useState([]);
 	const greeting = getGreeting(t);
 
@@ -93,8 +108,8 @@ export default function Objectives() {
 			.catch(() => setObjectives([]));
 
 		getProgressionTimeline()
-			.then((data) => setTimeline(deriveTimelineStatus(data)))
-			.catch(() => setTimeline([]));
+			.then((data) => setAreaTimelines(groupByArea(data)))
+			.catch(() => setAreaTimelines([]));
 
 		getLearningPathProgress()
 			.then((data) => {
@@ -165,51 +180,56 @@ export default function Objectives() {
 			{/* ── Professional Timeline ──────────────── */}
 			<section className={styles.section}>
 				<h2 className={styles.sectionTitle}>{t('objectives.professionalTimeline')}</h2>
-				<div className={styles.timeline}>
-					{timeline.map((stage, i) => (
-						<div key={stage.code} className={styles.timelineStep}>
-							<div className={styles.timelineIndicator}>
-								{stage.status === 'complete' && (
-									<div className={`${styles.timelineDot} ${styles.dotComplete}`}>
-										<Icon name="check_circle" size={28} color="var(--color-success)" />
+				{areaTimelines.map((area) => (
+					<div key={area.area_slug} className={styles.areaTimelineGroup}>
+						<h3 className={styles.areaTimelineTitle}>{area.area_name}</h3>
+						<div className={styles.timeline}>
+							{area.stages.map((stage, i) => (
+								<div key={stage.code} className={styles.timelineStep}>
+									<div className={styles.timelineIndicator}>
+										{stage.status === 'complete' && (
+											<div className={`${styles.timelineDot} ${styles.dotComplete}`}>
+												<Icon name="check_circle" size={28} color="var(--color-success)" />
+											</div>
+										)}
+										{stage.status === 'inProgress' && (
+											<div className={`${styles.timelineDot} ${styles.dotInProgress}`} />
+										)}
+										{stage.status === 'locked' && (
+											<div className={`${styles.timelineDot} ${styles.dotLocked}`}>
+												<Icon name="target" size={18} color="var(--color-outline)" />
+											</div>
+										)}
+										{i < area.stages.length - 1 && (
+											<div className={`${styles.timelineLine} ${
+												stage.status === 'complete' ? styles.lineComplete : styles.linePending
+											}`} />
+										)}
 									</div>
-								)}
-								{stage.status === 'inProgress' && (
-									<div className={`${styles.timelineDot} ${styles.dotInProgress}`} />
-								)}
-								{stage.status === 'locked' && (
-									<div className={`${styles.timelineDot} ${styles.dotLocked}`}>
-										<Icon name="target" size={18} color="var(--color-outline)" />
+									<div className={styles.timelineContent}>
+										<span className={`${styles.timelineCode} ${
+											stage.status === 'complete' ? styles.codeComplete :
+											stage.status === 'inProgress' ? styles.codeInProgress : styles.codeLocked
+										}`}>
+											{stage.code} - {stage.title}
+										</span>
+										<strong className={styles.timelineTitle}>{stage.title}</strong>
+										<span className={styles.timelineReqs}>{stage.earned_badges}/{stage.total_badges} {t('objectives.requirements')}</span>
+										<span className={`${styles.timelineDetail} ${
+											stage.status === 'inProgress' ? styles.detailWarning : ''
+										}`}>
+											{stage.status === 'complete' && stage.last_awarded
+												? t('objectives.completedOn', { date: new Date(stage.last_awarded).toLocaleDateString() })
+												: stage.status === 'inProgress'
+													? t('objectives.inProgressLabel')
+													: t('objectives.lockedLabel')}
+										</span>
 									</div>
-								)}
-								{i < timeline.length - 1 && (
-									<div className={`${styles.timelineLine} ${
-										stage.status === 'complete' ? styles.lineComplete : styles.linePending
-									}`} />
-								)}
-							</div>
-							<div className={styles.timelineContent}>
-								<span className={`${styles.timelineCode} ${
-									stage.status === 'complete' ? styles.codeComplete :
-									stage.status === 'inProgress' ? styles.codeInProgress : styles.codeLocked
-								}`}>
-									{stage.code} - {stage.title}
-								</span>
-								<strong className={styles.timelineTitle}>{stage.title}</strong>
-								<span className={styles.timelineReqs}>{stage.earned_badges}/{stage.total_badges} {t('objectives.requirements')}</span>
-								<span className={`${styles.timelineDetail} ${
-									stage.status === 'inProgress' ? styles.detailWarning : ''
-								}`}>
-									{stage.status === 'complete' && stage.last_awarded
-										? t('objectives.completedOn', { date: new Date(stage.last_awarded).toLocaleDateString() })
-										: stage.status === 'inProgress'
-											? t('objectives.inProgressLabel')
-											: t('objectives.lockedLabel')}
-								</span>
-							</div>
+								</div>
+							))}
 						</div>
-					))}
-				</div>
+					</div>
+				))}
 			</section>
 
 			{/* ── Two-column: Objectives + Reminders ── */}

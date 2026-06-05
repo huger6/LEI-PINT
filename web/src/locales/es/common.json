@@ -1087,6 +1087,22 @@
 		"noActivity": "Sin actividad reciente.",
 		"noAchievements": "Sin logros todavía.",
 		"badge": "Badge"
+	},
+	"ranking": {
+		"title": "Ranking de Consultores",
+		"subtitleSll": "Clasificación de tu Service Line",
+		"subtitleGeneral": "Clasificación general",
+		"subtitleArea": "Clasificación de tu Área",
+		"areaPlaceholder": "Área",
+		"filter": "Filtrar",
+		"top3Title": "Top 3 Consultores",
+		"fullRankingTitle": "Ranking Completo",
+		"position": "Posición",
+		"consultant": "Consultor",
+		"area": "Área",
+		"badgesObtained": "Badges Obtenidos",
+		"points": "Puntos",
+		"noResults": "No se encontraron resultados."
 	}
 }
 

@@ -1088,5 +1088,21 @@
 		"noActivity": "No recent activity.",
 		"noAchievements": "No achievements yet.",
 		"badge": "Badge"
+	},
+	"ranking": {
+		"title": "Consultant Ranking",
+		"subtitleSll": "Ranking within your Service Line",
+		"subtitleGeneral": "Overall ranking",
+		"subtitleArea": "Ranking within your Area",
+		"areaPlaceholder": "Area",
+		"filter": "Filter",
+		"top3Title": "Top 3 Consultants",
+		"fullRankingTitle": "Full Ranking",
+		"position": "Position",
+		"consultant": "Consultant",
+		"area": "Area",
+		"badgesObtained": "Badges Obtained",
+		"points": "Points",
+		"noResults": "No results found."
 	}
 }
