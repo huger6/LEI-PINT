@@ -37,12 +37,14 @@ export default function ApplicationStatus({ application, badge }) {
 	const description = badge?.badge_description || badge?.badgeDescription;
 	const points = badge?.badge_points || badge?.badgePoints;
 	const imgUrl = badge?.badge_img_url || badge?.badgeImgUrl;
+	const badgeType = badge?.badge_type || badge?.badgeType;
 	const areaName = badge?.area?.area_name;
 	const stageTitle = badge?.progression_stage?.stage_title || badge?.progressionStage?.stageTitle;
-	const stageCode = badge?.progression_stage?.stage_code || badge?.progressionStage?.stageCode;
+	const stageCode = badge?.progression_stage?.stage_code?.stage_code || badge?.progressionStage?.stageCode?.stageCode;
 	const serviceLineName = badge?.service_line?.service_line_name || badge?.serviceLine?.serviceLineName;
 	const learningPathName = badge?.learning_path?.path_title || badge?.learningPath?.pathTitle;
 	const expirationDays = badge?.expiration_duration_days ?? badge?.expirationDurationDays;
+	const requirementsCount = requirements.length;
 
 	const activeStep = getActiveStep(state);
 
@@ -152,14 +154,30 @@ export default function ApplicationStatus({ application, badge }) {
 										<div className={styles.infoRow}>
 											<Icon name="badge" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>{t('badgeDetail.level', { defaultValue: 'Level' })}</span>
-											<span className={styles.infoValue}>{stageTitle || stageCode}</span>
+											<span className={styles.infoValue}>
+												{stageCode ? `${stageCode} — ${stageTitle}` : stageTitle}
+											</span>
+										</div>
+									)}
+									{badgeType && (
+										<div className={styles.infoRow}>
+											<Icon name="badge" size={18} color="var(--color-outline)" />
+											<span className={styles.infoLabel}>{t('shared.type', { defaultValue: 'Type' })}</span>
+											<span className={styles.infoValue}>{badgeType}</span>
 										</div>
 									)}
 									{points != null && (
 										<div className={styles.infoRow}>
 											<Icon name="star-points" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>{t('shared.points')}</span>
-											<span className={styles.infoValue}>{points}</span>
+											<span className={styles.infoValue}>{points} pts</span>
+										</div>
+									)}
+									{requirementsCount > 0 && (
+										<div className={styles.infoRow}>
+											<Icon name="requirement" size={18} color="var(--color-outline)" />
+											<span className={styles.infoLabel}>{t('badgeDetail.requirements')}</span>
+											<span className={styles.infoValue}>{requirementsCount}</span>
 										</div>
 									)}
 									{expirationDays && (
