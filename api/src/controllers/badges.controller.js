@@ -273,11 +273,6 @@ const getBadgeBySlug = async (req, res) => {
                 attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
             },
             {
-                model: models.skills,
-                as: 'skills',
-                attributes: ['skills_id', 'skill_name', 'skill_description']
-            },
-            {
                 model: models.rewards,
                 as: 'rewards',
                 attributes: ['reward_id', 'special_title', 'special_portrait_svg']

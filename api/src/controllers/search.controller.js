@@ -182,43 +182,11 @@ const buildSearchSql = (entityTypes) => `
         UNION ALL
 
         SELECT
-            'stage'::text AS entity_type,
-            ps.progression_stage_id AS entity_id,
-            ps.stage_title AS title,
-            sc.stage_code AS subtitle,
-            NULL::text AS image_url,
-            ps.stage_description AS meta,
-            true AS is_active,
-            ps.created_at,
-            ps.updated_at,
-            similarity(ps.stage_title, :q) AS relevance,
-            NULL::int AS parent_area_id,
-            NULL::text AS parent_area_title,
-            NULL::text AS parent_area_slug,
-            NULL::int AS parent_service_line_id,
-            NULL::text AS parent_service_line_title,
-            NULL::text AS parent_service_line_slug,
-            NULL::int AS parent_learning_path_id,
-            NULL::text AS parent_learning_path_title,
-            NULL::text AS parent_learning_path_slug,
-            NULL::int AS parent_stage_id,
-            NULL::text AS parent_stage_title,
-            NULL::text AS parent_stage_code,
-            NULL::int AS parent_badge_id,
-            NULL::text AS parent_badge_title,
-            NULL::text AS parent_badge_slug
-        FROM progression_stages ps
-        INNER JOIN stage_codes sc ON sc.stage_code_id = ps.stage_code_id
-        WHERE ps.stage_title ILIKE :likeQuery OR sc.stage_code ILIKE :likeQuery OR COALESCE(ps.stage_description, '') ILIKE :likeQuery
-
-        UNION ALL
-
-        SELECT
             'skill'::text AS entity_type,
             s.skills_id AS entity_id,
             s.skill_name AS title,
-            COALESCE(b.badge_slug, '') AS subtitle,
-            b.badge_img_url AS image_url,
+            NULL::text AS subtitle,
+            NULL::text AS image_url,
             s.skill_description AS meta,
             true AS is_active,
             s.created_at,
@@ -236,11 +204,10 @@ const buildSearchSql = (entityTypes) => `
             NULL::int AS parent_stage_id,
             NULL::text AS parent_stage_title,
             NULL::text AS parent_stage_code,
-            b.badge_id AS parent_badge_id,
-            b.badge_title AS parent_badge_title,
-            b.badge_slug AS parent_badge_slug
+            NULL::int AS parent_badge_id,
+            NULL::text AS parent_badge_title,
+            NULL::text AS parent_badge_slug
         FROM skills s
-        LEFT JOIN badges b ON b.badge_id = s.badge_id
         WHERE s.skill_name ILIKE :likeQuery OR COALESCE(s.skill_description, '') ILIKE :likeQuery
 
         UNION ALL

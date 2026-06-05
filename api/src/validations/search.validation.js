@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const sanitizeText = require('../utils/sanitizeText');
 
-const searchEntityTypes = ['user', 'badge', 'learning_path', 'service_line', 'area', 'stage', 'skill', 'language', 'location'];
+const searchEntityTypes = ['user', 'badge', 'learning_path', 'service_line', 'area', 'skill', 'language', 'location'];
 
 const entityTypesRule = z.any().optional().transform((value) => {
     if (value === undefined || value === null || value === '') {
@@ -17,7 +17,7 @@ const entityTypesRule = z.any().optional().transform((value) => {
     return values.map((item) => item.trim()).filter(Boolean);
 }).refine((value) => value === undefined || value.every((item) => searchEntityTypes.includes(item)), {
     message: 'VALIDATION_SEARCH_ENTITY_TYPES_INVALID'
-}).refine((value) => value === undefined || value.length <= 9, {
+}).refine((value) => value === undefined || value.length <= 8, {
     message: 'VALIDATION_SEARCH_ENTITY_TYPES_MAX_9'
 });
 
