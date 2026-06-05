@@ -204,7 +204,9 @@
 		"stages": "Progression Stages",
 		"badges": "Badges",
 		"skills": "Skills",
-		"users": "Users"
+		"users": "Users",
+		"error": "Search failed",
+		"errorDesc": "Something went wrong. Please try again later."
 	},
 	"footer": {
 		"brandTitle": "Softinsa Badges",
@@ -681,6 +683,8 @@
 		"noRelated": "No related badges found.",
 		"level": "Level",
 		"validDays": "days validity",
+		"remainingDays": "days remaining",
+		"expired": "Expired",
 		"linkedInShareText": "I just earned the \"{{badgeTitle}}\" badge on the Softinsa badge platform! 🏆\n\nThis achievement validates my skills and strengthens my professional development journey.\n\n{{url}}"
 	},
 	"objectives": {

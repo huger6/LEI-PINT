@@ -1,6 +1,14 @@
+/* ─── Link wrapper ─── */
+
 .link {
 	color: inherit;
+	display: block;
+	position: relative;
+	height: 100%;
+	border-radius: 18px;
 }
+
+/* ─── Card ─── */
 
 .card {
 	height: 100%;
@@ -10,8 +18,9 @@
 	border-radius: 18px;
 	background: linear-gradient(160deg, #ffffff 0%, #f2fbff 100%);
 	box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08);
-	overflow: hidden;
 	transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+	position: relative;
+	z-index: 1;
 }
 
 .card:hover {
@@ -20,6 +29,158 @@
 	box-shadow: 0 14px 30px rgba(19, 36, 66, 0.14);
 }
 
+/* ─── Special card: persistent golden styling ─── */
+
+.specialCard {
+	border-color: rgba(255, 193, 7, 0.45);
+	box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 12px 2px rgba(255, 193, 7, 0.15);
+}
+
+.specialCard:hover {
+	border-color: rgba(255, 193, 7, 0.65);
+	box-shadow: 0 14px 30px rgba(19, 36, 66, 0.14), 0 0 16px 3px rgba(255, 193, 7, 0.22);
+}
+
+/* ─── Special card: glow animation (plays once on enter) ─── */
+
+.specialGlow {
+	animation: cardGlow 3.6s ease-out forwards;
+}
+
+@keyframes cardGlow {
+	0% {
+		border-color: rgba(255, 193, 7, 0.15);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08);
+	}
+	30% {
+		border-color: rgba(255, 170, 0, 0.55);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 18px 4px rgba(255, 180, 0, 0.28);
+	}
+	55% {
+		border-color: rgba(255, 150, 0, 0.7);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 26px 6px rgba(255, 170, 0, 0.35);
+	}
+	75% {
+		border-color: rgba(255, 180, 0, 0.55);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 16px 3px rgba(255, 193, 7, 0.2);
+	}
+	100% {
+		border-color: rgba(255, 193, 7, 0.45);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 12px 2px rgba(255, 193, 7, 0.15);
+	}
+}
+
+/* ─── Fuse trace animation (border reveal from top center both ways) ─── */
+
+@property --fuse-spread {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false;
+}
+
+/* Trail: full sweep revealed, but opacity fades quickly so it dissolves behind the tip */
+.fuseActive::before {
+	content: '';
+	position: absolute;
+	inset: -2.5px;
+	border-radius: 20px;
+	background: conic-gradient(
+		from 0deg at 50% 5%,
+		#ff8c00, #ffb300 40deg, #ffc107 90deg,
+		#ffb300 135deg, #ff8c00 180deg,
+		#ffb300 225deg, #ffc107 270deg,
+		#ffb300 320deg, #ff8c00 360deg
+	);
+	pointer-events: none;
+	z-index: 0;
+	--fuse-spread: 0deg;
+	-webkit-mask: conic-gradient(
+		from 0deg at 50% 5%,
+		black 0deg, black var(--fuse-spread),
+		transparent var(--fuse-spread),
+		transparent calc(360deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)), black 360deg
+	);
+	mask: conic-gradient(
+		from 0deg at 50% 5%,
+		black 0deg, black var(--fuse-spread),
+		transparent var(--fuse-spread),
+		transparent calc(360deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)), black 360deg
+	);
+	animation:
+		fuseTrace 2.8s ease-in-out forwards,
+		trailFade 2.8s ease-in forwards;
+}
+
+/* Tip: tight bright dot at each leading edge, blurred into a round spark */
+.fuseActive::after {
+	content: '';
+	position: absolute;
+	inset: -6px;
+	border-radius: 24px;
+	pointer-events: none;
+	z-index: 0;
+	--fuse-spread: 0deg;
+	background: conic-gradient(
+		from 0deg at 50% 5%,
+		#ffdd44, #ffe88a 40deg, #fff3b0 90deg,
+		#ffe88a 135deg, #ffdd44 180deg,
+		#ffe88a 225deg, #fff3b0 270deg,
+		#ffe88a 320deg, #ffdd44 360deg
+	);
+	filter: blur(8px);
+	-webkit-mask: conic-gradient(
+		from 0deg at 50% 5%,
+		transparent 0deg,
+		transparent calc(var(--fuse-spread) - 8deg),
+		black calc(var(--fuse-spread) - 1deg),
+		black var(--fuse-spread),
+		transparent calc(var(--fuse-spread) + 1deg),
+		transparent calc(359deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)),
+		black calc(361deg - var(--fuse-spread)),
+		transparent calc(368deg - var(--fuse-spread)),
+		transparent 360deg
+	);
+	mask: conic-gradient(
+		from 0deg at 50% 5%,
+		transparent 0deg,
+		transparent calc(var(--fuse-spread) - 8deg),
+		black calc(var(--fuse-spread) - 1deg),
+		black var(--fuse-spread),
+		transparent calc(var(--fuse-spread) + 1deg),
+		transparent calc(359deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)),
+		black calc(361deg - var(--fuse-spread)),
+		transparent calc(368deg - var(--fuse-spread)),
+		transparent 360deg
+	);
+	animation:
+		fuseTrace 2.8s ease-in-out forwards,
+		tipFadeOut 0.6s 2.8s ease-out forwards;
+}
+
+@keyframes fuseTrace {
+	from { --fuse-spread: 0deg; }
+	to { --fuse-spread: 180deg; }
+}
+
+@keyframes trailFade {
+	0% { opacity: 0.7; }
+	25% { opacity: 0.5; }
+	55% { opacity: 0.25; }
+	85% { opacity: 0.08; }
+	100% { opacity: 0; }
+}
+
+@keyframes tipFadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+/* ─── Image section ─── */
+
 .imageWrap {
 	position: relative;
 	min-height: 130px;
@@ -27,6 +188,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: 18px 18px 0 0;
+	overflow: hidden;
 	background: radial-gradient(circle at top right, rgba(0, 184, 224, 0.17), transparent 62%),
 		radial-gradient(circle at left bottom, rgba(57, 99, 156, 0.16), transparent 68%),
 		linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(232, 247, 255, 0.9));
@@ -93,6 +256,8 @@
 	color: #7f5900;
 }
 
+/* ─── Content ─── */
+
 .content {
 	padding: 16px 16px 12px;
 	display: flex;
@@ -113,10 +278,10 @@
 	font-size: 0.84rem;
 	line-height: 1.45;
 	display: -webkit-box;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-	min-height: 2.45rem;
+	min-height: 3.65rem;
 }
 
 .metaGrid {
@@ -135,6 +300,93 @@
 	background: rgba(57, 99, 156, 0.1);
 	color: #28497a;
 }
+
+/* ─── Requirements ─── */
+
+.requirementsSection {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 2px;
+}
+
+.requirementsLabel {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.requirementsRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.requirementIcon {
+	position: relative;
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 7px;
+	background: rgba(4, 206, 0, 0.08);
+	color: #1b6e19;
+	border: 1px solid rgba(4, 206, 0, 0.18);
+	cursor: default;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.requirementIcon:hover {
+	background: rgba(4, 206, 0, 0.16);
+	border-color: rgba(4, 206, 0, 0.35);
+}
+
+.requirementTooltip {
+	display: none;
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--color-secondary);
+	color: var(--color-on-secondary);
+	font-size: 0.72rem;
+	font-weight: 500;
+	line-height: 1.4;
+	padding: 8px 12px;
+	border-radius: 10px;
+	white-space: normal;
+	max-width: 220px;
+	min-width: 120px;
+	width: max-content;
+	z-index: 20;
+	box-shadow: 0 4px 16px rgba(57, 99, 156, 0.25);
+	pointer-events: none;
+	text-align: left;
+}
+
+.requirementTooltipTitle {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 3px;
+}
+
+.requirementTooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 6px solid transparent;
+	border-top-color: var(--color-secondary);
+}
+
+.requirementIcon:hover .requirementTooltip {
+	display: block;
+}
+
+/* ─── Footer ─── */
 
 .footer {
 	margin-top: auto;
