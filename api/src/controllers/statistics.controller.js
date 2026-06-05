@@ -78,11 +78,11 @@ const getLearningPathProgress = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getPointsHistory = async (req, res) => {
     try {
-        const { page, limit, search } = validations.pointsHistoryQuerySchema.parse(req.query);
+        const { page, limit, search, serviceLineId, areaId, dateFrom, dateTo } = validations.pointsHistoryQuerySchema.parse(req.query);
         const targetUserId = await resolveTargetUserId(req);
         if (!await assertConsultantExists(res, targetUserId)) return;
 
-        const result = await statsService.getPointsHistory(targetUserId, { page, limit, search });
+        const result = await statsService.getPointsHistory(targetUserId, { page, limit, search, serviceLineId, areaId, dateFrom, dateTo });
         return res.status(200).json({
             success: true,
             code: 'STATS_POINTS_HISTORY_RETRIEVED',

@@ -409,8 +409,8 @@ const getEarnedBadges = async (req, res) => {
                 title: badge.application.badge.badge_title,
                 slug: badge.application.badge.badge_slug,
                 imageUrl: badge.application.badge.badge_img_url,
-                description: badge.application.badge.description,
-                pointsValue: badge.application.badge.points_value
+                description: badge.application.badge.badge_description,
+                pointsValue: badge.application.badge.badge_points
             } : null,
             awardedDate: badge.awarded_at,
             expirationDate: badge.expiration_at,

@@ -12,7 +12,8 @@ const getLearningPathProgress = async (userId) => {
     return rows;
 };
 
-const getPointsHistory = async (userId, { page = 1, limit = 20, search } = {}) => {
+const getPointsHistory = async (userId, { page = 1, limit = 20, search, serviceLineId, areaId, dateFrom, dateTo } = {}) => {
+    const { Op } = require('sequelize');
     const offset = (page - 1) * limit;
 
     const [sumRows] = await sequelize.query(
@@ -22,31 +23,49 @@ const getPointsHistory = async (userId, { page = 1, limit = 20, search } = {}) =
     );
     const totalPoints = parseInt(sumRows[0]?.total_points ?? 0, 10);
 
+    const needsBadgeFilter = !!(search || serviceLineId || areaId);
+
     const badgeInclude = {
         model: models.badges,
         as: 'badge',
         attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'],
-        required: !!search,
+        required: needsBadgeFilter,
         include: [
-            { model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'], required: false },
-            { model: models.areas, as: 'area', attributes: ['area_id', 'area_name'], required: false }
+            { model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'], required: !!serviceLineId },
+            { model: models.areas, as: 'area', attributes: ['area_id', 'area_name'], required: !!areaId }
         ]
     };
 
+    const badgeWhere = [];
     if (search) {
-        const { Op } = require('sequelize');
         const pattern = `%${search}%`;
-        badgeInclude.where = {
+        badgeWhere.push({
             [Op.or]: [
                 { badge_title: { [Op.iLike]: pattern } },
                 { '$badge.service_line.service_line_name$': { [Op.iLike]: pattern } },
                 { '$badge.area.area_name$': { [Op.iLike]: pattern } }
             ]
-        };
+        });
+    }
+    if (serviceLineId) {
+        badgeWhere.push({ '$badge.service_line.service_line_id$': serviceLineId });
+    }
+    if (areaId) {
+        badgeWhere.push({ '$badge.area.area_id$': areaId });
+    }
+    if (badgeWhere.length) {
+        badgeInclude.where = badgeWhere.length === 1 ? badgeWhere[0] : { [Op.and]: badgeWhere };
+    }
+
+    const historyWhere = { user_id: userId };
+    if (dateFrom || dateTo) {
+        historyWhere.created_at = {};
+        if (dateFrom) historyWhere.created_at[Op.gte] = dateFrom;
+        if (dateTo) historyWhere.created_at[Op.lte] = dateTo;
     }
 
     const { count, rows } = await models.points_history.findAndCountAll({
-        where: { user_id: userId },
+        where: historyWhere,
         include: [
             badgeInclude,
             { model: models.badge_requirements, as: 'requirement', attributes: ['requirement_id', 'requirement_title'], required: false }
