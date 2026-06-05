@@ -549,6 +549,94 @@
 	background: var(--color-bg-card);
 }
 
+.historyBtnActive {
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	border-color: var(--color-primary);
+}
+
+.historyBtnActive:hover {
+	background: var(--color-primary-hover-solid);
+}
+
+/* ═══ Filter Dropdown ═══ */
+.filterContainer {
+	position: relative;
+}
+
+.filterBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: var(--color-on-primary);
+	color: var(--color-primary);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	margin-left: 2px;
+}
+
+.filterDropdown {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 20;
+	background: var(--color-surface);
+	border: 1px solid var(--color-heatmap-empty);
+	border-radius: 12px;
+	padding: 16px;
+	min-width: 240px;
+	box-shadow: var(--shadow-card);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.filterGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.filterLabel {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-outline);
+}
+
+.filterSelect,
+.filterInput {
+	border: 1px solid var(--color-heatmap-empty);
+	border-radius: 8px;
+	padding: 6px 10px;
+	font-size: 0.8125rem;
+	color: var(--color-on-background);
+	background: var(--color-bg-card);
+	outline: none;
+}
+
+.filterSelect:focus,
+.filterInput:focus {
+	border-color: var(--color-primary);
+}
+
+.filterClearBtn {
+	background: none;
+	border: none;
+	color: var(--color-error);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	cursor: pointer;
+	padding: 4px 0;
+	text-align: left;
+}
+
+.filterClearBtn:hover {
+	text-decoration: underline;
+}
+
 .tableWrapper {
 	overflow-x: auto;
 }

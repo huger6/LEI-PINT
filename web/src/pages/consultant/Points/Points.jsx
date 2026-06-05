@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import ContentCard from '../../../components/ContentCard/ContentCard';
 import { CardHeader } from '../../../components/ContentCard/ContentCard';
 import Icon from '../../../components/Icons/Icons';
@@ -16,6 +17,8 @@ import {
 	getLearningPathProgress,
 	getRanking,
 } from '../../../services/pointsService';
+import { getServiceLines, getAreas } from '../../../services/hierarchyService';
+import { CONSULTANT, SHARED } from '../../../routes/paths';
 import styles from './Points.module.css';
 
 const PAGE_SIZE = 8;
@@ -109,7 +112,7 @@ function computeWeekOverWeek(history) {
 		if (d >= thisWeekStart) thisWeek += entry.points_delta;
 		else if (d >= lastWeekStart) lastWeek += entry.points_delta;
 	}
-	return { thisWeek, lastWeek, change: lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0 };
+	return { thisWeek, lastWeek, change: lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : (thisWeek > 0 ? 100 : 0) };
 }
 
 function computeMonthOverMonth(history) {
@@ -123,13 +126,14 @@ function computeMonthOverMonth(history) {
 		if (d >= thisMonthStart) thisMonth += entry.points_delta;
 		else if (d >= lastMonthStart) lastMonth += entry.points_delta;
 	}
-	return { thisMonth, lastMonth, change: lastMonth ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : 0 };
+	return { thisMonth, lastMonth, change: lastMonth ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : (thisMonth > 0 ? 100 : 0) };
 }
 
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 export default function Points() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const [loading, setLoading] = useState(true);
 	const [stats, setStats] = useState(null);
 	const [allHistory, setAllHistory] = useState([]);
@@ -144,6 +148,15 @@ export default function Points() {
 	const [historyData, setHistoryData] = useState({ history: [], pagination: null });
 	const [historyLoading, setHistoryLoading] = useState(false);
 
+	const [filterOpen, setFilterOpen] = useState(false);
+	const [filterServiceLine, setFilterServiceLine] = useState('');
+	const [filterArea, setFilterArea] = useState('');
+	const [filterDateFrom, setFilterDateFrom] = useState('');
+	const [filterDateTo, setFilterDateTo] = useState('');
+	const [serviceLines, setServiceLines] = useState([]);
+	const [areas, setAreas] = useState([]);
+	const filterRef = useRef(null);
+
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setHistorySearchDebounced(historySearch);
@@ -153,30 +166,104 @@ export default function Points() {
 	}, [historySearch]);
 
 	useEffect(() => {
-		let cancelled = false;
 		(async () => {
 			try {
-				const [statsRes, allHistRes, earnedRes, recsRes, lpRes, rankRes] = await Promise.all([
-					getConsultantStats(),
-					getPointsHistoryAll(),
-					getEarnedBadges({ page: 1, limit: 50 }),
-					getRecommendations({ page: 1, limit: 3 }),
-					getLearningPathProgress(),
-					getRanking({ page: 1, limit: 1 }),
-				]);
-				if (cancelled) return;
-				setStats(statsRes);
-				setAllHistory(allHistRes);
-				setEarnedBadges(earnedRes.badges);
-				setRecommendations(recsRes.recommendations);
-				setLpProgress(lpRes);
-				const firstRanker = rankRes.rankings[0];
-				setTotalConsultants(firstRanker?.total_count ?? rankRes.pagination?.totalItems ?? 0);
-			} catch (err) {
-				console.error('Failed to load points data', err);
-			} finally {
-				if (!cancelled) setLoading(false);
+				const [sl, ar] = await Promise.all([getServiceLines(), getAreas()]);
+				setServiceLines(sl);
+				setAreas(ar);
+			} catch { /* non-blocking */ }
+		})();
+	}, []);
+
+	useEffect(() => {
+		const handleClickOutside = (e) => {
+			if (filterRef.current && !filterRef.current.contains(e.target)) {
+				setFilterOpen(false);
 			}
+		};
+		if (filterOpen) document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [filterOpen]);
+
+	const activeFilterCount = [filterServiceLine, filterArea, filterDateFrom, filterDateTo].filter(Boolean).length;
+
+	const clearFilters = () => {
+		setFilterServiceLine('');
+		setFilterArea('');
+		setFilterDateFrom('');
+		setFilterDateTo('');
+		setHistoryPage(1);
+	};
+
+	const handleExport = async () => {
+		try {
+			const params = { page: 1, limit: 100 };
+			if (historySearchDebounced) params.search = historySearchDebounced;
+			if (filterServiceLine) params.serviceLineId = filterServiceLine;
+			if (filterArea) params.areaId = filterArea;
+			if (filterDateFrom) params.dateFrom = filterDateFrom;
+			if (filterDateTo) params.dateTo = filterDateTo;
+			const res = await getPointsHistory(params);
+
+			const header = [t('points.date'), t('points.badgeRequirement'), t('points.serviceLine'), t('points.area'), t('points.pointsCol')].join(',');
+			const rows = res.history.map(row => {
+				const badge = row.badge;
+				const date = new Date(row.created_at).toLocaleDateString('pt-PT');
+				const name = badge?.badge_title ?? row.justification ?? '';
+				const sl = badge?.service_line?.service_line_name ?? '';
+				const area = badge?.area?.area_name ?? '';
+				const csvEscape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+				return [csvEscape(date), csvEscape(name), csvEscape(sl), csvEscape(area), row.points_delta].join(',');
+			});
+			const csv = [header, ...rows].join('\n');
+			const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `points_history_${new Date().toISOString().slice(0, 10)}.csv`;
+			link.click();
+			URL.revokeObjectURL(url);
+		} catch (err) {
+			console.error('Failed to export points history', err);
+		}
+	};
+
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			const results = await Promise.allSettled([
+				getConsultantStats(),
+				getPointsHistoryAll(),
+				getEarnedBadges({ page: 1, limit: 50 }),
+				getRecommendations({ page: 1, limit: 3 }),
+				getLearningPathProgress(),
+				getRanking({ page: 1, limit: 1 }),
+			]);
+			if (cancelled) return;
+
+			const [statsRes, allHistRes, earnedRes, recsRes, lpRes, rankRes] = results;
+
+			if (statsRes.status === 'fulfilled') setStats(statsRes.value);
+			else console.error('Failed to load consultant stats', statsRes.reason);
+
+			if (allHistRes.status === 'fulfilled') setAllHistory(allHistRes.value);
+			else console.error('Failed to load points history', allHistRes.reason);
+
+			if (earnedRes.status === 'fulfilled') setEarnedBadges(earnedRes.value.badges);
+			else console.error('Failed to load earned badges', earnedRes.reason);
+
+			if (recsRes.status === 'fulfilled') setRecommendations(recsRes.value.recommendations);
+			else console.error('Failed to load recommendations', recsRes.reason);
+
+			if (lpRes.status === 'fulfilled') setLpProgress(lpRes.value);
+			else console.error('Failed to load learning path progress', lpRes.reason);
+
+			if (rankRes.status === 'fulfilled') {
+				const firstRanker = rankRes.value.rankings[0];
+				setTotalConsultants(firstRanker?.total_count ?? rankRes.value.pagination?.totalItems ?? 0);
+			} else console.error('Failed to load ranking', rankRes.reason);
+
+			setLoading(false);
 		})();
 		return () => { cancelled = true; };
 	}, []);
@@ -186,6 +273,10 @@ export default function Points() {
 		try {
 			const params = { page: historyPage, limit: PAGE_SIZE };
 			if (historySearchDebounced) params.search = historySearchDebounced;
+			if (filterServiceLine) params.serviceLineId = filterServiceLine;
+			if (filterArea) params.areaId = filterArea;
+			if (filterDateFrom) params.dateFrom = filterDateFrom;
+			if (filterDateTo) params.dateTo = filterDateTo;
 			const res = await getPointsHistory(params);
 			setHistoryData(res);
 		} catch (err) {
@@ -193,7 +284,7 @@ export default function Points() {
 		} finally {
 			setHistoryLoading(false);
 		}
-	}, [historyPage, historySearchDebounced]);
+	}, [historyPage, historySearchDebounced, filterServiceLine, filterArea, filterDateFrom, filterDateTo]);
 
 	useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
@@ -358,7 +449,7 @@ export default function Points() {
 								iconColor="var(--color-primary)"
 								title={t('points.progressMilestones')}
 							/>
-							<button className={styles.viewAllBtn}>{t('points.viewAll')}</button>
+							<button className={styles.viewAllBtn} onClick={() => navigate(CONSULTANT.EVOLUTION)}>{t('points.viewAll')}</button>
 						</div>
 						<div className={styles.milestonesList}>
 							{milestones.length === 0 && (
@@ -448,7 +539,12 @@ export default function Points() {
 								<p className={styles.emptyText}>{t('points.noRecommendations')}</p>
 							)}
 							{recommendations.map((r, i) => (
-								<div key={r.badge_id ?? i} className={styles.recommendItem}>
+								<div
+									key={r.badge_id ?? i}
+									className={styles.recommendItem}
+									onClick={() => r.badge_slug && navigate(SHARED.BADGE_DETAIL.replace(':slug', r.badge_slug))}
+									style={{ cursor: r.badge_slug ? 'pointer' : 'default' }}
+								>
 									<div className={styles.recommendIcon}>
 										<Icon name="badge" size={18} color="var(--color-secondary)" />
 									</div>
@@ -533,11 +629,76 @@ export default function Points() {
 								className={styles.historySearchInput}
 							/>
 						</div>
-						<button className={styles.historyBtn}>
-							<Icon name="filter" size={14} color="var(--color-secondary)" />
-							{t('points.filter')}
-						</button>
-						<button className={styles.historyBtn}>
+						<div className={styles.filterContainer} ref={filterRef}>
+							<button
+								className={`${styles.historyBtn} ${activeFilterCount > 0 ? styles.historyBtnActive : ''}`}
+								onClick={() => setFilterOpen(prev => !prev)}
+							>
+								<Icon name="filter" size={14} color={activeFilterCount > 0 ? 'var(--color-on-primary)' : 'var(--color-secondary)'} />
+								{t('points.filter')}
+								{activeFilterCount > 0 && (
+									<span className={styles.filterBadge}>{activeFilterCount}</span>
+								)}
+							</button>
+							{filterOpen && (
+								<div className={styles.filterDropdown}>
+									<div className={styles.filterGroup}>
+										<label className={styles.filterLabel}>{t('points.serviceLine')}</label>
+										<select
+											className={styles.filterSelect}
+											value={filterServiceLine}
+											onChange={e => { setFilterServiceLine(e.target.value); setHistoryPage(1); }}
+										>
+											<option value="">{t('shared.all')}</option>
+											{serviceLines.map(sl => (
+												<option key={sl.service_line_id} value={sl.service_line_id}>
+													{sl.service_line_name}
+												</option>
+											))}
+										</select>
+									</div>
+									<div className={styles.filterGroup}>
+										<label className={styles.filterLabel}>{t('points.area')}</label>
+										<select
+											className={styles.filterSelect}
+											value={filterArea}
+											onChange={e => { setFilterArea(e.target.value); setHistoryPage(1); }}
+										>
+											<option value="">{t('shared.all')}</option>
+											{areas.map(a => (
+												<option key={a.area_id} value={a.area_id}>
+													{a.area_name}
+												</option>
+											))}
+										</select>
+									</div>
+									<div className={styles.filterGroup}>
+										<label className={styles.filterLabel}>{t('points.dateFrom')}</label>
+										<input
+											type="date"
+											className={styles.filterInput}
+											value={filterDateFrom}
+											onChange={e => { setFilterDateFrom(e.target.value); setHistoryPage(1); }}
+										/>
+									</div>
+									<div className={styles.filterGroup}>
+										<label className={styles.filterLabel}>{t('points.dateTo')}</label>
+										<input
+											type="date"
+											className={styles.filterInput}
+											value={filterDateTo}
+											onChange={e => { setFilterDateTo(e.target.value); setHistoryPage(1); }}
+										/>
+									</div>
+									{activeFilterCount > 0 && (
+										<button className={styles.filterClearBtn} onClick={clearFilters}>
+											{t('shared.clearAll')}
+										</button>
+									)}
+								</div>
+							)}
+						</div>
+						<button className={styles.historyBtn} onClick={handleExport}>
 							<Icon name="download" size={14} color="var(--color-secondary)" />
 							{t('points.export')}
 						</button>

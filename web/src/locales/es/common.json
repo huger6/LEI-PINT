@@ -1043,7 +1043,9 @@
 		"noMilestones": "Sin progreso de learning path todavía.",
 		"noRecommendations": "Sin recomendaciones disponibles por el momento.",
 		"noAchievements": "Sin badges conseguidos todavía.",
-		"noHistoryResults": "No se encontraron registros."
+		"noHistoryResults": "No se encontraron registros.",
+		"dateFrom": "Desde",
+		"dateTo": "Hasta"
 	},
 	"evolution": {
 		"user": "Usuario",

@@ -1044,7 +1044,9 @@
 		"noMilestones": "No learning path progress yet.",
 		"noRecommendations": "No recommendations available at the moment.",
 		"noAchievements": "No badges earned yet.",
-		"noHistoryResults": "No records found."
+		"noHistoryResults": "No records found.",
+		"dateFrom": "From",
+		"dateTo": "To"
 	},
 	"evolution": {
 		"user": "User",

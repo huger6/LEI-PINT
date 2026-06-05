@@ -109,33 +109,23 @@ function buildBadgeEvolutionAnnual(earnedBadges) {
 
 function buildPointsWeekly(pointsHistory, t) {
     const counts = new Array(7).fill(0);
-    const now = new Date();
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - 6);
-    weekAgo.setHours(0, 0, 0, 0);
-
     pointsHistory.forEach(p => {
         const d = new Date(p.created_at);
-        if (d >= weekAgo) {
-            counts[d.getDay()] += parseInt(p.points_delta, 10) || 0;
-        }
+        counts[d.getDay()] += parseInt(p.points_delta, 10) || 0;
     });
     return counts.map((val, i) => ({ name: t(`shared.days.${DAY_KEYS[i]}`), value: val }));
 }
 
 function buildPointsMonthly(pointsHistory, t) {
     const counts = new Array(12).fill(0);
-    const currentYear = new Date().getFullYear();
     pointsHistory.forEach(p => {
         const d = new Date(p.created_at);
-        if (d.getFullYear() === currentYear) {
-            counts[d.getMonth()] += parseInt(p.points_delta, 10) || 0;
-        }
+        counts[d.getMonth()] += parseInt(p.points_delta, 10) || 0;
     });
     return counts.map((val, i) => ({ name: t(`shared.months.${MONTH_KEYS[i]}`), value: val }));
 }
 
-function mapNotificationToActivity(notification) {
+function mapNotificationToActivity(notification, t) {
     const defName = notification.definition?.name || notification.definition?.code || '';
     const defCode = (notification.definition?.code || '').toLowerCase();
 
@@ -144,8 +134,14 @@ function mapNotificationToActivity(notification) {
         try { payload = JSON.parse(notification.notification_payload); } catch { /* ignore */ }
     }
 
-    const title = payload.title || defName;
-    const description = payload.message || payload.badge_title || notification.definition?.description || '';
+    const meta = payload.meta || {};
+    const rawTitle = payload.title || defName;
+    const translatedTitle = t(rawTitle, { ns: 'api', defaultValue: rawTitle, ...meta });
+    const title = translatedTitle || rawTitle;
+
+    const rawBody = payload.body || '';
+    const translatedBody = rawBody ? t(rawBody, { ns: 'api', defaultValue: '', ...meta }) : '';
+    const description = translatedBody || notification.definition?.description || '';
 
     let icon = 'bell';
     let iconColor = 'var(--color-outline)';
@@ -303,11 +299,11 @@ export default function Evolution() {
     }, [timeline]);
 
     const radarMax = useMemo(() => {
-        if (radarData.length === 0) return 10;
-        return Math.max(10, ...radarData.map(r => r.value));
+        if (radarData.length === 0) return 1;
+        return Math.max(1, ...radarData.map(r => r.value));
     }, [radarData]);
 
-    const activities = useMemo(() => notifications.map(mapNotificationToActivity), [notifications]);
+    const activities = useMemo(() => notifications.map(n => mapNotificationToActivity(n, t)), [notifications, t]);
     const recentAchievements = useMemo(() => earnedBadges.slice(0, 3), [earnedBadges]);
 
     const statCards = [

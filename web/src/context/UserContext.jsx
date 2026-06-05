@@ -3,6 +3,7 @@ import { useAuth } from '../features/auth';
 import { getMe, updateUserLanguage } from '../features/auth/api/authApi';
 import { connectSocket, disconnectSocket } from '../services/socket';
 import * as notificationsApi from '../features/notifications/api/notificationsApi';
+import { getPointsSummary } from '../services/pointsService';
 import { firstAndLastName } from '../utils/utils';
 import i18next from 'i18next';
 
@@ -44,6 +45,7 @@ export function UserProvider({ children }) {
 	const [user, setUser] = useState(null);
 	const [lang, setLang] = useState(null);
 	const [isUserLoading, setIsUserLoading] = useState(true);
+	const [points, setPoints] = useState(0);
 
 	// ── Notification state ────────────────────────────────────────
 	const [notificationsList, setNotificationsList] = useState([]);
@@ -85,12 +87,20 @@ export function UserProvider({ children }) {
 	}, []);
 
 	// ── User profile ──────────────────────────────────────────────
+	const refreshPoints = useCallback(async () => {
+		try {
+			const data = await getPointsSummary();
+			setPoints(data?.totalPoints ?? 0);
+		} catch { /* non-blocking */ }
+	}, []);
+
 	const refreshUser = useCallback(async () => {
 		const { data } = await getMe();
 		const { lang: langData, ...userProfile } = data.data;
 		setUser(userProfile);
 		setLang(langData ?? null);
-	}, []);
+		if (userProfile.role === 'Consultant') refreshPoints();
+	}, [refreshPoints]);
 
 	useEffect(() => {
 		if (isAuthLoading) {
@@ -173,6 +183,9 @@ export function UserProvider({ children }) {
 					[notificationType]: (prev[notificationType] || 0) + 1,
 				}));
 			}
+			if (notificationType === 'POINTS' || notificationType === 'ACHIEVEMENTS') {
+				refreshPoints();
+			}
 		});
 
 		socket.on('notification:read', ({ notification_id }) => {
@@ -197,7 +210,7 @@ export function UserProvider({ children }) {
 			disconnectSocket();
 			socketRef.current = null;
 		};
-	}, [isAuthenticated, token, fetchUnreadByTypeSummary]);
+	}, [isAuthenticated, token, fetchUnreadByTypeSummary, refreshPoints]);
 
 	// ── Actions ───────────────────────────────────────────────────
 
@@ -226,6 +239,8 @@ export function UserProvider({ children }) {
 				lang,
 				displayName,
 				isUserLoading,
+				points,
+				refreshPoints,
 				handleLanguageChange,
 				notifications: {
 					list: notificationsList,
