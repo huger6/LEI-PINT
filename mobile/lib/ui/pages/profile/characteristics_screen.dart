@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../data/local/my_skill_dao.dart';
 import '../../../models/skill_model.dart';
 import '../../../presentation/state/auth_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/characteristics_widgets.dart';
 
@@ -31,6 +32,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final user = authStore.currentUser;
 
@@ -38,7 +40,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
         ? user!.fullName.trim()
         : (user?.username.trim().isNotEmpty ?? false)
             ? user!.username.trim()
-            : 'Utilizador';
+            : tr.tr('userFallback');
 
     final skills = _skills;
 
@@ -54,9 +56,9 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
-          'As minhas características',
-          style: TextStyle(
+        title: Text(
+          tr.tr('myCharacteristics'),
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2932),
@@ -97,7 +99,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Eu $userName sou',
+                      tr.tr('iAmIntro').replaceAll('{name}', userName),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 24,
@@ -131,8 +133,8 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               ),
 
               if (biography != null && biography.trim().isNotEmpty) ...[
-                const CharacteristicSectionHeader(
-                  title: 'Biografia',
+                CharacteristicSectionHeader(
+                  title: tr.tr('biography'),
                   icon: Icons.info_outline_rounded,
                 ),
                 Container(
@@ -183,8 +185,8 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               ],
 
               if (areas.isNotEmpty) ...[
-                const CharacteristicSectionHeader(
-                  title: 'Áreas',
+                CharacteristicSectionHeader(
+                  title: tr.tr('areas'),
                   icon: Icons.category_outlined,
                 ),
                 ...areas.map(
@@ -197,8 +199,8 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               ],
 
               if (skills.isNotEmpty) ...[
-                const CharacteristicSectionHeader(
-                  title: 'Competências',
+                CharacteristicSectionHeader(
+                  title: tr.tr('skills'),
                   icon: Icons.extension_outlined,
                 ),
                 Wrap(
@@ -245,7 +247,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Ainda sem características definidas.',
+                          tr.tr('noCharacteristicsDefined'),
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[500],
