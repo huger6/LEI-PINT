@@ -44,7 +44,6 @@ export default function ApplicationStatus({ application, badge }) {
 	const serviceLineName = badge?.service_line?.service_line_name || badge?.serviceLine?.serviceLineName;
 	const learningPathName = badge?.learning_path?.path_title || badge?.learningPath?.pathTitle;
 	const expirationDays = badge?.expiration_duration_days ?? badge?.expirationDurationDays;
-	const requirementsCount = requirements.length;
 
 	const activeStep = getActiveStep(state);
 
@@ -171,13 +170,6 @@ export default function ApplicationStatus({ application, badge }) {
 											<Icon name="star-points" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>{t('shared.points')}</span>
 											<span className={styles.infoValue}>{points} pts</span>
-										</div>
-									)}
-									{requirementsCount > 0 && (
-										<div className={styles.infoRow}>
-											<Icon name="requirement" size={18} color="var(--color-outline)" />
-											<span className={styles.infoLabel}>{t('badgeDetail.requirements')}</span>
-											<span className={styles.infoValue}>{requirementsCount}</span>
 										</div>
 									)}
 									{expirationDays && (
