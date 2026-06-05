@@ -11,6 +11,7 @@ import UserFilters, { EMPTY_FILTERS } from '../../../components/UserFilters/User
 import Pagination from '../../../components/Pagination/Pagination';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import Modal from '../../../components/Modal/Modal';
+import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './AdminUsers.module.css';
 
 const ROLE_CLASS = {
@@ -122,7 +123,7 @@ export default function AdminUsers() {
 					<h1 className="h3 mb-0">{t('adminUsers.title')}</h1>
 					<p className={styles.headerSubtitle}>{t('adminUsers.subtitle')}</p>
 				</div>
-				<Button onClick={openCreate} title={t('adminUsers.newUser')} aria-label={t('adminUsers.newUser')}>
+				<Button onClick={openCreate} aria-label={t('adminUsers.newUser')}>
 					<Icon name="add" size={14} aria-hidden="true" className="me-1" color="var(--color-on-primary)" aria-label={t('adminUsers.newUser')} />
 					{t('adminUsers.newUser')}
 				</Button>
@@ -222,17 +223,23 @@ export default function AdminUsers() {
 												</td>
 
 												<td className="text-end" style={{ paddingRight: '1.25rem' }}>
-													<Button as={Link} to={profilePath} size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')}>
-														<Icon name="pencil" size={14} aria-hidden="true" />
-													</Button>
+													<Tooltip text={t('shared.edit')}>
+														<Button as={Link} to={profilePath} size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')}>
+															<Icon name="pencil" size={14} aria-hidden="true" />
+														</Button>
+													</Tooltip>
 													{isActive ? (
-														<Button size="sm" variant="outlined" color="danger" title={t('shared.deactivate')} aria-label={t('shared.deactivate')} onClick={() => setConfirmTarget(u)}>
-															<Icon name="trash" size={14} aria-hidden="true" />
-														</Button>
+														<Tooltip text={t('shared.deactivate')}>
+															<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => setConfirmTarget(u)}>
+																<Icon name="trash" size={14} aria-hidden="true" />
+															</Button>
+														</Tooltip>
 													) : (
-														<Button size="sm" variant="outlined" color="success" title={t('shared.reactivate')} aria-label={t('shared.reactivate')} onClick={() => setConfirmTarget(u)}>
-															<Icon name="activate" size={14} aria-hidden="true" />
-														</Button>
+														<Tooltip text={t('shared.reactivate')}>
+															<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => setConfirmTarget(u)}>
+																<Icon name="activate" size={14} aria-hidden="true" />
+															</Button>
+														</Tooltip>
 													)}
 												</td>
 											</tr>

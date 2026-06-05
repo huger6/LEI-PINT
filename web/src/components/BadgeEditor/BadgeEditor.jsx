@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Canvas, Circle, Rect, Polygon, IText } from 'fabric';
+import Tooltip from '../Tooltip/Tooltip';
 import styles from './BadgeEditor.module.css';
 
 const CANVAS_W = 450;
@@ -255,22 +256,24 @@ export default function BadgeEditor() {
 				<div className={styles.panel}>
 					<p className={styles.panelTitle}>Actions</p>
 					<div className={styles.actionRow}>
-						<button
-							className={styles.actionBtn}
-							onClick={bringToFront}
-							disabled={!selected}
-							title="Bring to Front"
-						>
-							<i className="bi bi-front" /> Front
-						</button>
-						<button
-							className={styles.actionBtn}
-							onClick={sendToBack}
-							disabled={!selected}
-							title="Send to Back"
-						>
-							<i className="bi bi-back" /> Back
-						</button>
+						<Tooltip text="Bring to Front">
+							<button
+								className={styles.actionBtn}
+								onClick={bringToFront}
+								disabled={!selected}
+							>
+								<i className="bi bi-front" /> Front
+							</button>
+						</Tooltip>
+						<Tooltip text="Send to Back">
+							<button
+								className={styles.actionBtn}
+								onClick={sendToBack}
+								disabled={!selected}
+							>
+								<i className="bi bi-back" /> Back
+							</button>
+						</Tooltip>
 					</div>
 					<div className={styles.actionRow}>
 						<button

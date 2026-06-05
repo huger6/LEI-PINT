@@ -46,3 +46,8 @@ export async function downloadEvidence(applicationGuid, evidenceId) {
 	const { data } = await api.get(`/applications/${applicationGuid}/evidences/${evidenceId}/download`);
 	return data?.data;
 }
+
+export async function generateCertificate(applicationGuid, lang = 'en') {
+	const { data } = await api.post(`/applications/${applicationGuid}/certificate`, { lang });
+	return data?.data;
+}

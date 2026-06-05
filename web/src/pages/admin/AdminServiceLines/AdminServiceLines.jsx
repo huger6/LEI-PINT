@@ -5,6 +5,7 @@ import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
+import Tooltip from '../../../components/Tooltip/Tooltip';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 
 const emptyForm = {
@@ -139,12 +140,16 @@ export default function AdminServiceLines() {
 												</span>
 											</td>
 											<td className="text-end">
-												<Button size="sm" variant="outlined" className="me-2" title={t('shared.edit')} aria-label={t('shared.edit')} onClick={() => openEdit(s)}>
-													<Icon name="pencil" size={14} aria-hidden="true" />
-												</Button>
-												<Button size="sm" variant="outlined" color="danger" title={t('shared.delete')} aria-label={t('shared.delete')} onClick={() => handleDelete(s)}>
-													<Icon name="trash" size={14} aria-hidden="true" />
-												</Button>
+												<Tooltip text={t('shared.edit')}>
+													<Button size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')} onClick={() => openEdit(s)}>
+														<Icon name="pencil" size={14} aria-hidden="true" />
+													</Button>
+												</Tooltip>
+												<Tooltip text={t('shared.delete')}>
+													<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(s)}>
+														<Icon name="trash" size={14} aria-hidden="true" />
+													</Button>
+												</Tooltip>
 											</td>
 										</tr>
 									))}

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
+import Tooltip from '../../../../components/Tooltip/Tooltip';
 import Button from '../../../../components/Button/Button';
 import Pagination from '../../../../components/Pagination/Pagination';
 import StructureStatCard from '../../components/StructureStatCard/StructureStatCard';
@@ -63,47 +64,51 @@ export default function StructureDetailLayout({
 					</div>
 
 					<div className={styles.toolbar}>
-						<button
-							type="button"
-							className={styles.toolbarBtn}
-							onClick={onEdit}
-							data-tooltip={t('shared.edit')}
-						>
-							<Icon name="pencil" size={16} aria-hidden="true" />
-						</button>
-						<button
-							type="button"
-							className={styles.toolbarBtn}
-							onClick={onExport}
-							data-tooltip={t('structureDetail.export', { defaultValue: 'Export' })}
-						>
-							<Icon name="download" size={16} aria-hidden="true" />
-						</button>
+						<Tooltip text={t('shared.edit')}>
+							<button
+								type="button"
+								className={styles.toolbarBtn}
+								onClick={onEdit}
+							>
+								<Icon name="pencil" size={16} aria-hidden="true" />
+							</button>
+						</Tooltip>
+						<Tooltip text={t('structureDetail.export', { defaultValue: 'Export' })}>
+							<button
+								type="button"
+								className={styles.toolbarBtn}
+								onClick={onExport}
+							>
+								<Icon name="download" size={16} aria-hidden="true" />
+							</button>
+						</Tooltip>
 						{onActivate ? (
-							<button
-								type="button"
-								className={`${styles.toolbarBtn} ${styles.toolbarBtnSuccess}`}
-								onClick={onActivate}
-								disabled={isActivating}
-								data-tooltip={t('shared.activate', { defaultValue: 'Activate' })}
-							>
-								<Icon
-									name="activate"
-									size={16}
-									className={isActivating ? styles.spinning : ''}
-									aria-hidden="true"
-								/>
-							</button>
+							<Tooltip text={t('shared.activate', { defaultValue: 'Activate' })}>
+								<button
+									type="button"
+									className={`${styles.toolbarBtn} ${styles.toolbarBtnSuccess}`}
+									onClick={onActivate}
+									disabled={isActivating}
+								>
+									<Icon
+										name="activate"
+										size={16}
+										className={isActivating ? styles.spinning : ''}
+										aria-hidden="true"
+									/>
+								</button>
+							</Tooltip>
 						) : (
-							<button
-								type="button"
-								className={`${styles.toolbarBtn} ${styles.toolbarBtnDanger}`}
-								onClick={onDelete}
-								disabled={!onDelete}
-								data-tooltip={t('shared.delete')}
-							>
-								<Icon name="trash" size={16} aria-hidden="true" />
-							</button>
+							<Tooltip text={t('shared.delete')}>
+								<button
+									type="button"
+									className={`${styles.toolbarBtn} ${styles.toolbarBtnDanger}`}
+									onClick={onDelete}
+									disabled={!onDelete}
+								>
+									<Icon name="trash" size={16} aria-hidden="true" />
+								</button>
+							</Tooltip>
 						)}
 					</div>
 				</aside>
@@ -140,17 +145,18 @@ export default function StructureDetailLayout({
 			<section className={styles.subSection}>
 				<div className={styles.subSectionHeader}>
 					<h2 className={styles.sectionTitle}>{subStructureLabel}</h2>
-					<Button
-						variant="outlined"
-						size="sm"
-						className={styles.addSubBtn}
-						onClick={onAddSub}
-						disabled={isActive === false}
-						title={isActive === false ? t('structureDetail.inactiveCannotAdd', { defaultValue: 'Cannot add substructures to an inactive structure' }) : undefined}
-					>
-						<Icon name="add" size={15} aria-hidden="true" />
-						<span>{addSubLabel}</span>
-					</Button>
+					<Tooltip text={isActive === false ? t('structureDetail.inactiveCannotAdd', { defaultValue: 'Cannot add substructures to an inactive structure' }) : null}>
+						<Button
+							variant="outlined"
+							size="sm"
+							className={styles.addSubBtn}
+							onClick={onAddSub}
+							disabled={isActive === false}
+						>
+							<Icon name="add" size={15} aria-hidden="true" />
+							<span>{addSubLabel}</span>
+						</Button>
+					</Tooltip>
 				</div>
 				{subStructures && subStructures.length > 0 && (
 					<div className={styles.subGrid}>

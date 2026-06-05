@@ -11,22 +11,49 @@
 
 /* ─── Breadcrumb ───────────────────────── */
 
-.breadcrumb {
+.breadcrumbNav {
 	margin-bottom: 0;
 }
 
-.breadcrumb .breadcrumb-item a {
+.breadcrumbList {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8125rem;
+}
+
+.breadcrumbItem {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.breadcrumbItem:not(:first-child)::before {
+	content: '›';
 	color: var(--color-outline);
+	font-size: 0.9rem;
+	margin-right: 0.15rem;
+}
+
+.breadcrumbLink {
+	color: var(--color-outline);
+	font-weight: 500;
 	text-decoration: none;
-	font-size: 0.875rem;
+	transition: color 0.15s;
 }
 
-.breadcrumb .breadcrumb-item a:hover {
-	color: var(--color-primary);
+.breadcrumbLink:hover {
+	color: var(--color-primary-hover-solid);
+	text-decoration: underline;
 }
 
-.breadcrumb .breadcrumb-item.active {
+.breadcrumbCurrent {
 	color: var(--color-secondary);
+	font-weight: 500;
 }
 
 /* ─── Hero Card ────────────────────────── */
@@ -161,6 +188,15 @@
 	background: rgba(10, 102, 194, 0.06) !important;
 }
 
+.actionBtnCertificate {
+	border-color: var(--color-secondary) !important;
+	color: var(--color-secondary) !important;
+}
+
+.actionBtnCertificate:hover {
+	background: rgba(57, 99, 156, 0.06) !important;
+}
+
 .obtainedIndicator {
 	display: flex;
 	align-items: center;
@@ -236,6 +272,11 @@
 	margin: 2px 0 0;
 }
 
+.rewardObtained {
+	border-color: rgba(4, 206, 0, 0.2);
+	background: rgba(4, 206, 0, 0.03);
+}
+
 .rewardIcon {
 	flex-shrink: 0;
 	width: 40px;
@@ -245,6 +286,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.rewardIconObtained {
+	background: rgba(4, 206, 0, 0.1);
 }
 
 .badgePreview {
@@ -280,7 +325,7 @@
 	display: grid;
 	grid-template-columns: 1fr 320px;
 	gap: 24px;
-	align-items: start;
+	align-items: stretch;
 }
 
 /* ─── Competencies ─────────────────────── */
@@ -310,6 +355,9 @@
 	background: #fff;
 	border: 1px solid rgba(57, 99, 156, 0.1);
 	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .serviceLineTitle {
@@ -452,7 +500,7 @@
 	overflow-x: auto;
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
-	padding-bottom: 8px;
+	padding: .6rem .3rem;
 }
 
 .carousel::-webkit-scrollbar {
@@ -462,6 +510,10 @@
 .carouselItem {
 	flex: 0 0 240px;
 	scroll-snap-align: start;
+}
+
+.carouselItem article {
+	box-shadow: none !important;
 }
 
 /* ─── Responsive ───────────────────────── */
@@ -493,7 +545,9 @@
 	}
 
 	.actionBtn,
-	.actionBtnObjective {
+	.actionBtnObjective,
+	.actionBtnLinkedIn,
+	.actionBtnCertificate {
 		width: 100%;
 		min-width: unset;
 	}

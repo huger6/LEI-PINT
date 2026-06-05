@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
+import Tooltip from '../Tooltip/Tooltip';
 import styles from './BadgeCard.module.css';
 
 function getBadgeClassLabel(rawType) {
@@ -78,19 +79,20 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 						{badgeClass}
 					</span>
 					{onToggleFavorite && (
-						<button
-							type="button"
-							className={`${styles.bookmarkBtn} ${isFavorited ? styles.bookmarkActive : ''}`}
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onToggleFavorite(badge);
-							}}
-							aria-label={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
-							title={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
-						>
-							<Icon name={isFavorited ? 'bookmark-filled' : 'bookmark'} size={18} aria-hidden="true" />
-						</button>
+						<Tooltip text={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}>
+							<button
+								type="button"
+								className={`${styles.bookmarkBtn} ${isFavorited ? styles.bookmarkActive : ''}`}
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									onToggleFavorite(badge);
+								}}
+								aria-label={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
+							>
+								<Icon name={isFavorited ? 'bookmark-filled' : 'bookmark'} size={18} aria-hidden="true" />
+							</button>
+						</Tooltip>
 					)}
 				</div>
 
@@ -116,6 +118,7 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 										<span
 											key={req.requirement_id || req.requirementId}
 											className={`${styles.requirementIcon} ${hasObtained ? styles.requirementObtained : ''}`}
+											aria-label={reqTitle}
 										>
 											<Icon name={hasObtained ? 'check_circle' : 'requirement'} size={13} aria-hidden="true" />
 											<span className={styles.requirementTooltip}>

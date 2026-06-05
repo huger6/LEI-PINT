@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
+import Tooltip from '../../../../components/Tooltip/Tooltip';
 import styles from './StructureItemCard.module.css';
 
 export default function StructureItemCard({ to, icon, title, description, imageUrl, isActive, meta, tone, infoItems }) {
@@ -36,10 +37,12 @@ export default function StructureItemCard({ to, icon, title, description, imageU
 					{infoItems && infoItems.length > 0 && (
 						<div className={styles.infoStrip}>
 							{infoItems.map((info) => (
-								<span key={info.label} className={styles.infoItem} title={info.label}>
-									<Icon name={info.icon} size={16} />
-									<span className={styles.infoValue}>{info.value ?? 0}</span>
-								</span>
+								<Tooltip key={info.label} text={info.label}>
+									<span className={styles.infoItem}>
+										<Icon name={info.icon} size={16} />
+										<span className={styles.infoValue}>{info.value ?? 0}</span>
+									</span>
+								</Tooltip>
 							))}
 						</div>
 					)}

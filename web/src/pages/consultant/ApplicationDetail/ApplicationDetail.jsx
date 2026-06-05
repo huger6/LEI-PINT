@@ -8,6 +8,7 @@ import { validateEvidenceFile, EVIDENCE_ACCEPT_STRING } from '../../../services/
 import Stepper from '../../../components/Stepper/Stepper';
 import SaveToast from '../../../components/SaveToast/SaveToast';
 import Icon from '../../../components/Icons/Icons';
+import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './ApplicationDetail.module.css';
 
 export default function ApplicationDetail({ application, onReload }) {
@@ -289,14 +290,7 @@ export default function ApplicationDetail({ application, onReload }) {
 										{isOpen && (
 											<div className={styles.reqContent}>
 												{evidence && (
-													<div
-														className={styles.evidenceFileClickable}
-														onClick={() => handleDownloadEvidence(evidence.evidence_id || evidence.evidenceId)}
-														role="button"
-														tabIndex={0}
-														onKeyDown={(e) => e.key === 'Enter' && handleDownloadEvidence(evidence.evidence_id || evidence.evidenceId)}
-														title={t('applicationDetail.downloadEvidence')}
-													>
+													<div className={styles.evidenceFile}>
 														<div className={styles.evidenceFileIcon}>
 															<Icon name="paper" size={16} color="var(--color-secondary)" />
 														</div>
@@ -311,9 +305,16 @@ export default function ApplicationDetail({ application, onReload }) {
 																{t('applicationDetail.submitted')}
 															</span>
 														</div>
-														<div className={styles.evidenceDownloadIcon}>
-															<Icon name="download" size={16} color="var(--color-secondary)" />
-														</div>
+														<Tooltip text={t('applicationDetail.downloadEvidence')}>
+															<button
+																type="button"
+																className={styles.evidenceDownloadBtn}
+																onClick={() => handleDownloadEvidence(evidence.evidence_id || evidence.evidenceId)}
+																aria-label={t('applicationDetail.downloadEvidence')}
+															>
+																<Icon name="download" size={16} color="var(--color-secondary)" />
+															</button>
+														</Tooltip>
 													</div>
 												)}
 
