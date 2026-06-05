@@ -894,7 +894,6 @@ def generate_sql() -> str:
     for index, (skill_name, skill_description) in enumerate(SKILL_CATALOG):
         row = {
             "skills_id": ids.next("skills"),
-            "badge_id": badges[index % len(badges)]["badge_id"],
             "skill_name": skill_name,
             "skill_description": skill_description,
             "created_by": random.choice(admin_ids),
