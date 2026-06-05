@@ -156,12 +156,6 @@
     margin: 0;
 }
 
-.loading {
-    display: flex;
-    justify-content: center;
-    padding: 3rem 0;
-}
-
 .separator {
     height: 1px;
     background: var(--color-outline-light);

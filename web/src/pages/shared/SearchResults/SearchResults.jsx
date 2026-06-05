@@ -4,19 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { globalSearch } from '../../../services/searchService';
 import { SHARED } from '../../../routes/paths';
 import Icon from '../../../components/Icons/Icons';
+import Spinner from '../../../components/Spinner/Spinner';
 import styles from './SearchResults.module.css';
 
 const SECTION_CONFIG = {
     learning_path: { icon: 'learning-path', labelKey: 'search.learningPaths' },
     service_line: { icon: 'service-line', labelKey: 'search.serviceLines' },
     area: { icon: 'area', labelKey: 'search.areas' },
-    stage: { icon: 'structure', labelKey: 'search.stages' },
     badge: { icon: 'badge', labelKey: 'search.badges' },
     skill: { icon: 'skills', labelKey: 'search.skills' },
     user: { icon: 'user', labelKey: 'search.users' },
 };
 
-const SECTION_ORDER = ['learning_path', 'service_line', 'area', 'stage', 'badge', 'skill', 'user'];
+const SECTION_ORDER = ['learning_path', 'service_line', 'area', 'badge', 'skill', 'user'];
 
 function buildBreadcrumb(item) {
     const parts = [];
@@ -35,7 +35,6 @@ function getResultLink(item) {
         case 'learning_path':
         case 'service_line':
         case 'area':
-        case 'stage':
         case 'skill':
         case 'user':
         default:
@@ -44,7 +43,7 @@ function getResultLink(item) {
 }
 
 function ResultRow({ item }) {
-    const breadcrumb = buildBreadcrumb(item);
+    const breadcrumb = item.entity_type === 'badge' ? null : buildBreadcrumb(item);
     const link = getResultLink(item);
 
     const content = (
@@ -148,13 +147,7 @@ export default function SearchResults() {
                 )}
             </div>
 
-            {loading && (
-                <div className={styles.loading}>
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">{t('loading')}</span>
-                    </div>
-                </div>
-            )}
+            {loading && <Spinner />}
 
             {!loading && error && (
                 <div className={styles.emptyState}>
