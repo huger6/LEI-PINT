@@ -188,8 +188,8 @@ EXECUTE FUNCTION trg_fn_capitalize_user_full_name();
 -- ==============================================================
 -- Safety-net trigger: automatically logs every application state
 -- transition into application_validation_logs. Avoids duplicating
--- rows the API already wrote by checking for a matching log
--- within the last 5 seconds.
+-- rows the API already wrote by checking for ANY log on the same
+-- application within the last 5 seconds.
 -- ==============================================================
 
 CREATE OR REPLACE FUNCTION trg_fn_log_application_state_change()
@@ -205,9 +205,8 @@ BEGIN
     SELECT EXISTS (
         SELECT 1
         FROM application_validation_logs
-        WHERE application_id   = NEW.application_id
-          AND validator_action = v_action
-          AND validated_at     >= NOW() - INTERVAL '5 seconds'
+        WHERE application_id = NEW.application_id
+          AND validated_at   >= NOW() - INTERVAL '5 seconds'
     ) INTO v_already_logged;
 
     IF NOT v_already_logged THEN
@@ -222,9 +221,9 @@ BEGIN
         VALUES (
             NEW.application_id,
             NULL,
-            'trg_log_application_state_change',
+            'System',
             v_action,
-            'Auto-logged by database trigger',
+            NULL,
             NOW()
         );
     END IF;

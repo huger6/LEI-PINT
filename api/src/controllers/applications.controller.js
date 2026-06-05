@@ -431,6 +431,15 @@ const submitApplication = async (req, res) => {
             });
         }
 
+        // Audit log (before state update so the DB trigger dedup skips)
+        await models.application_validation_logs.create({
+            application_id: application.application_id,
+            user_id: userId,
+            validator_function: 'Consultant',
+            validator_action: 'Open -> Submitted',
+            validations_comments: null
+        });
+
         // State -> Submitted
         await application.update({
             application_state: 'Submitted',
@@ -634,12 +643,7 @@ const validateApplication = async (req, res) => {
             }, { transaction });
         }
 
-        await application.update({
-            application_state: newState,
-            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {})
-        }, { transaction });
-
-        // Audit log
+        // Audit log (before state update so the DB trigger dedup skips)
         const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject' }[action];
         await models.application_validation_logs.create({
             application_id: application.application_id,
@@ -647,6 +651,11 @@ const validateApplication = async (req, res) => {
             validator_function: role,
             validator_action: actionLabel,
             validations_comments: reviewerNotes ?? null
+        }, { transaction });
+
+        await application.update({
+            application_state: newState,
+            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {})
         }, { transaction });
 
         if (newState === 'Accepted') {
