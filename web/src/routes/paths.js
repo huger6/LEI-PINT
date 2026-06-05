@@ -79,4 +79,5 @@ export const SHARED = {
 	PRIVACY: '/privacy',
 	SECURITY: '/security',
 	UNAUTHORIZED: '/unauthorized',
+	RANKING: '/ranking',
 };

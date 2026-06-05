@@ -113,6 +113,22 @@
 
 /* ─── Professional Timeline ───────────── */
 
+.areaTimelineGroup {
+	margin-bottom: 24px;
+}
+
+.areaTimelineGroup:last-child {
+	margin-bottom: 0;
+}
+
+.areaTimelineTitle {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--color-primary);
+	margin: 0 0 8px;
+	padding-left: 4px;
+}
+
 .timeline {
 	display: flex;
 	justify-content: space-between;

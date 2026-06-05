@@ -290,12 +290,17 @@ export default function Evolution() {
 
     const radarData = useMemo(() => {
         if (!timeline || timeline.length === 0) return [];
-        return [...timeline]
-            .sort((a, b) => (a.stage_sequence ?? 0) - (b.stage_sequence ?? 0))
-            .map(s => ({
-                level: s.code,
-                value: s.earned_badges || 0,
-            }));
+        const codeMap = new Map();
+        for (const s of timeline) {
+            const existing = codeMap.get(s.code);
+            if (existing) {
+                existing.value += (s.earned_badges || 0);
+                existing.stage_sequence = Math.min(existing.stage_sequence, s.stage_sequence ?? 0);
+            } else {
+                codeMap.set(s.code, { level: s.code, value: s.earned_badges || 0, stage_sequence: s.stage_sequence ?? 0 });
+            }
+        }
+        return Array.from(codeMap.values()).sort((a, b) => a.stage_sequence - b.stage_sequence);
     }, [timeline]);
 
     const radarMax = useMemo(() => {
