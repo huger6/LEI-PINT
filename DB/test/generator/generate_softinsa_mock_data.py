@@ -611,6 +611,35 @@ def generate_sql() -> str:
         gdpr_policies.append(row)
         sql.insert("gdpr_policies", row)
 
+    for consultant in consultants:
+        for policy in gdpr_policies:
+            if not policy["is_mandatory"]:
+                continue
+            sql.insert("gdpr_consent_history", {
+                "consent_id": ids.next("gdpr_consent_history"),
+                "user_id": consultant["user_id"],
+                "policy_id": policy["policy_id"],
+                "action": "ACCEPTED",
+                "ip_address": f"10.0.{random.randint(1, 254)}.{random.randint(1, 254)}",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SoftinsaMock/1.0",
+                "consented_at": consultant["created_at"] + timedelta(minutes=random.randint(1, 30)),
+            })
+
+    for index in range(min(4, len(admin_ids))):
+        admin_id = admin_ids[index % len(admin_ids)]
+        platform = "teams" if index % 2 == 0 else "slack"
+        sql.insert("integration_webhooks", {
+            "webhook_id": ids.next("integration_webhooks"),
+            "platform": platform,
+            "webhook_url": f"https://hooks.{platform}.example.com/softinsa/channel-{index + 1}",
+            "channel_name": f"#badges-alerts-{index + 1}",
+            "is_active": index < 3,
+            "created_by": admin_id,
+            "updated_by": admin_id,
+            "created_at": BASE_NOW - timedelta(days=60),
+            "updated_at": BASE_NOW - timedelta(days=random.randint(1, 15)),
+        })
+
     definition_templates = [
         ("HOME_DIGEST", "Home digest", "Daily activity summary", "/home", "HOME"),
         ("BADGE_AVAILABLE", "Badge available", "New badge available in an enrolled area", "/badges", "BADGES"),
@@ -1076,6 +1105,23 @@ def generate_sql() -> str:
         points_history.append(row)
         sql.insert("points_history", row)
 
+    sla_breach_seen: set[tuple[int, int, int]] = set()
+    for sla in slas:
+        sampled_apps = random.sample(applications, k=min(len(applications), 3))
+        for app in sampled_apps:
+            recipient = random.choice(reviewer_pool)
+            key = (int(sla["sla_id"]), int(app["application_id"]), recipient)
+            if key in sla_breach_seen:
+                continue
+            sla_breach_seen.add(key)
+            sql.insert("sla_breach_alerts", {
+                "alert_id": ids.next("sla_breach_alerts"),
+                "sla_id": sla["sla_id"],
+                "application_id": app["application_id"],
+                "user_id": recipient,
+                "alerted_at": (app["submitted_at"] or app["opened_at"]) + timedelta(hours=int(sla["response_time_hours"]) + random.randint(1, 12)),
+            })
+
     special_badges = [badge for badge in badges if badge["badge_type"] == "Special"]
     for index, badge in enumerate(special_badges[: max(1, min(len(special_badges), 20))]):
         sql.insert("rewards", {
@@ -1109,8 +1155,6 @@ def generate_sql() -> str:
         sql.insert("notification_preferences", {
             "preference_id": ids.next("notification_preferences"),
             "definition_id": definition["definition_id"],
-            "sla_id": None,
-            "announcement_id": None,
             "send_email": True,
             "send_push": True,
             "is_enabled": True,
@@ -1126,8 +1170,6 @@ def generate_sql() -> str:
         sql.insert("notification_preferences", {
             "preference_id": ids.next("notification_preferences"),
             "definition_id": sla["definition_id"],
-            "sla_id": sla["sla_id"],
-            "announcement_id": None,
             "send_email": True,
             "send_push": False,
             "is_enabled": True,
@@ -1143,8 +1185,6 @@ def generate_sql() -> str:
         sql.insert("notification_preferences", {
             "preference_id": ids.next("notification_preferences"),
             "definition_id": random.choice(notification_definitions)["definition_id"],
-            "sla_id": None,
-            "announcement_id": announcement["announcement_id"],
             "send_email": index % 2 == 0,
             "send_push": True,
             "is_enabled": True,
@@ -1202,6 +1242,8 @@ def generate_sql() -> str:
             ("stage_codes", "stage_code_id"),
             ("users", "user_id"),
             ("gdpr_policies", "policy_id"),
+            ("gdpr_consent_history", "consent_id"),
+            ("integration_webhooks", "webhook_id"),
             ("notification_definitions", "definition_id"),
             ("slas", "sla_id"),
             ("system_announcements", "announcement_id"),

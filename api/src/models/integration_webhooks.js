@@ -36,6 +36,14 @@ module.exports = function (sequelize, DataTypes) {
         key: 'user_id'
       }
     },
+    updated_by: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'administrators',
+        key: 'user_id'
+      }
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
