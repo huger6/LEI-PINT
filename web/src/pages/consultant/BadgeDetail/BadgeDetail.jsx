@@ -412,7 +412,7 @@ export default function BadgeDetail() {
 									title={reqTitle}
 									description={reqDesc}
 									status={reqStatus}
-									icon="area"
+									icon="requirement"
 								/>
 							);
 						})}

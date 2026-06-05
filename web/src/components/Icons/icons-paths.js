@@ -717,6 +717,22 @@ export const PATHS = {
             stroke: "none",
         },
     ],
+    'requirement': [
+        {
+            d: "M16 18L22 12L16 6",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+        },
+        {
+            d: "M8 6L2 12L8 18",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+        },
+    ],
     'user': [
         {
             d: "M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z",

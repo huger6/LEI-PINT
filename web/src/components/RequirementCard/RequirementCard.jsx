@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './RequirementCard.module.css';
 
-export default function RequirementCard({ title, description, status = 'pending', icon = 'area' }) {
+export default function RequirementCard({ title, description, status = 'pending', icon = 'requirement' }) {
 	const { t } = useTranslation();
 	const isComplete = status === 'complete';
 

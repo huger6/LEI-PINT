@@ -639,7 +639,13 @@
 			"points": "Valoración de Puntos",
 			"minPoints": "Puntos Mínimos",
 			"maxPoints": "Puntos Máximos",
-			"expiringOnly": "Mostrar solo badges con expiración"
+			"expiringOnly": "Mostrar solo badges con expiración",
+			"obtainedStatus": "Estado del Badge",
+			"obtained": {
+				"all": "Todos",
+				"true": "Obtenido",
+				"false": "No Obtenido"
+			}
 		},
 		"savedBadges": "Badges guardados",
 		"noSavedBadges": "Aún no has guardado ningún badge.",
@@ -654,7 +660,7 @@
 		"catalog": "Catálogo",
 		"noDescription": "Sin descripción disponible.",
 		"pointsLabel": "puntos",
-		"requirements": "Requisitos para Desbloquear",
+		"requirements": "Requisitos",
 		"noRequirements": "No hay requisitos definidos para este badge.",
 		"requirementN": "Requisito {{n}}",
 		"application": "Candidatura",

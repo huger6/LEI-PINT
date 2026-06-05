@@ -33,6 +33,7 @@ const EMPTY_FILTERS = {
 	minPoints: 0,
 	maxPoints: MAX_POINTS,
 	expiringOnly: false,
+	obtained: 'all',
 };
 
 function normalizeNumericInput(value) {
@@ -217,6 +218,7 @@ export default function BadgeCatalog() {
 				if (Number(filters.minPoints) > 0) params.minPoints = Number(filters.minPoints);
 				if (Number(filters.maxPoints) < MAX_POINTS) params.maxPoints = Number(filters.maxPoints);
 				if (filters.expiringOnly) params.expiringOnly = true;
+				if (filters.obtained && filters.obtained !== 'all') params.obtained = filters.obtained;
 
 				const response = await getBadgesCatalog(params);
 
@@ -319,6 +321,10 @@ export default function BadgeCatalog() {
 		updateFilters((prev) => ({ ...prev, expiringOnly: checked }));
 	}
 
+	function handleDesktopObtainedChange(value) {
+		updateFilters((prev) => ({ ...prev, obtained: value }));
+	}
+
 	function resetDesktopFilters() {
 		updateFilters(EMPTY_FILTERS);
 	}
@@ -376,7 +382,8 @@ export default function BadgeCatalog() {
 		filters.badgeClass !== 'all' ||
 		Number(filters.minPoints) > 0 ||
 		Number(filters.maxPoints) < MAX_POINTS ||
-		filters.expiringOnly;
+		filters.expiringOnly ||
+		(filters.obtained && filters.obtained !== 'all');
 
 	const displayedBadges = showingSaved
 		? badges.filter((b) => favoriteSlugs.has(b.badge_slug || b.badgeSlug))
@@ -541,6 +548,24 @@ export default function BadgeCatalog() {
 						<span className="form-check-label">{t('badgeCatalog.filters.expiringOnly')}</span>
 					</label>
 				</section>
+
+				{user?.role === 'Consultant' && (
+					<section>
+						<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.obtainedStatus')}</h3>
+						<div className={styles.segmented}>
+							{['all', 'true', 'false'].map((value) => (
+								<button
+									type="button"
+									key={`${keyPrefix}-obtained-${value}`}
+									className={`${styles.segmentedBtn} ${state.obtained === value ? styles.segmentedBtnActive : ''}`}
+									onClick={() => handlers.onObtainedChange(value)}
+								>
+									{t(`badgeCatalog.filters.obtained.${value}`)}
+								</button>
+							))}
+						</div>
+					</section>
+				)}
 			</div>
 		);
 	}
@@ -604,6 +629,7 @@ export default function BadgeCatalog() {
 								onBadgeClassChange: handleDesktopBadgeClassChange,
 								onPointsChange: handleDesktopPointsChange,
 								onExpiringToggle: handleDesktopExpiringToggle,
+								onObtainedChange: handleDesktopObtainedChange,
 							})}
 						</div>
 					</div>
@@ -719,6 +745,7 @@ export default function BadgeCatalog() {
 									};
 								}),
 								onExpiringToggle: (checked) => updateMobileFilters((prev) => ({ ...prev, expiringOnly: checked })),
+								onObtainedChange: (value) => updateMobileFilters((prev) => ({ ...prev, obtained: value })),
 							}, 'mobile')}
 						</div>
 
