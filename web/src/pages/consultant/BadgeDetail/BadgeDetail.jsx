@@ -4,28 +4,31 @@ import { useTranslation } from 'react-i18next';
 import { SHARED, CONSULTANT } from '../../../routes/paths';
 import { getBadgeBySlug, getBadges } from '../../../features/badges/api/badgesApi';
 import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
-import { startApplication, getApplications } from '../../../features/applications/api/applicationsApi';
+import { startApplication, generateCertificate } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import RequirementCard from '../../../components/RequirementCard/RequirementCard';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
+import Tooltip from '../../../components/Tooltip/Tooltip';
 import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeDetail.module.css';
 
+const SERVICE_LINES_LIMIT = 5;
+
 export default function BadgeDetail() {
 	const { user } = useUser();
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const [badge, setBadge] = useState(null);
 	const [requirements, setRequirements] = useState([]);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [relatedBadges, setRelatedBadges] = useState([]);
-	const [existingAppGuid, setExistingAppGuid] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [applying, setApplying] = useState(false);
+	const [downloading, setDownloading] = useState(false);
 	const [error, setError] = useState(null);
 	const carouselRef = useRef(null);
 
@@ -47,18 +50,7 @@ export default function BadgeDetail() {
 
 			const serviceLineId = badgeData?.service_line_id || badgeData?.serviceLineId;
 
-			const [apps, related] = await Promise.all([
-				getApplications().catch(() => []),
-				getBadges(serviceLineId ? { serviceLineId, limit: 8 } : { limit: 8 }).catch(() => []),
-			]);
-
-			const appList = apps.data || apps || [];
-			const activeApp = appList.find(
-				(a) =>
-					(a.badge_id || a.badgeId) === (badgeData?.badge_id || badgeData?.badgeId) &&
-					!['Accepted', 'Rejected'].includes(a.application_state || a.state)
-			);
-			setExistingAppGuid(activeApp ? (activeApp.application_guid || activeApp.applicationGuid) : null);
+			const related = await getBadges(serviceLineId ? { serviceLineId, limit: 8 } : { limit: 8 }).catch(() => []);
 
 			const relatedList = (related.data || related || []).filter(
 				(b) => (b.badge_slug || b.badgeSlug) !== slug
@@ -80,6 +72,26 @@ export default function BadgeDetail() {
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 			setApplying(false);
+		}
+	}
+
+	async function handleDownloadCertificate() {
+		setDownloading(true);
+		try {
+			const appGuid = badge?.user_award?.application_guid || badge?.user_application?.application_guid;
+			if (!appGuid) return;
+
+			const langMap = { 'pt-PT': 'pt', 'es-ES': 'es', 'en-GB': 'en' };
+			const lang = langMap[i18n.language] || 'en';
+
+			const result = await generateCertificate(appGuid, lang);
+			if (result?.certificateUrl) {
+				window.open(result.certificateUrl, '_blank', 'noopener,noreferrer');
+			}
+		} catch (err) {
+			setError(resolveErrorMessage(err));
+		} finally {
+			setDownloading(false);
 		}
 	}
 
@@ -143,10 +155,18 @@ export default function BadgeDetail() {
 	const userAward = badge.user_award;
 	const hasObtained = !!userAward;
 
+	const userApplication = badge.user_application;
+	const appState = userApplication?.application_state;
+	const appGuid = userApplication?.application_guid;
+	const fulfilledReqIds = new Set(userApplication?.fulfilled_requirement_ids || []);
+	const hasGoal = badge.has_goal === true;
+
+	const isActiveApp = appState && !['Accepted', 'Rejected'].includes(appState);
+
 	const specialTitleReward = rewards.find((r) => r.special_title);
 
 	const completedCount = requirements.filter(
-		(r) => r.status === 'complete' || r.status === 'completed' || r.is_completed
+		(r) => fulfilledReqIds.has(r.requirement_id || r.requirementId)
 	).length;
 
 	const progressPercent = requirements.length > 0
@@ -154,26 +174,33 @@ export default function BadgeDetail() {
 		: 0;
 
 	const breadcrumbItems = [
-		{ label: t('navbar.consultant.home'), to: SHARED.HOME },
+		{ label: t('sidebar.consultant.home'), to: SHARED.HOME },
 		...(learningPathName ? [{ label: learningPathName, to: SHARED.BADGES }] : []),
 		...(serviceLineName ? [{ label: serviceLineName }] : []),
 		{ label: title, active: true },
 	];
 
+	const limitedServiceLines = serviceLines.slice(0, SERVICE_LINES_LIMIT);
+
 	return (
 		<div className={styles.page}>
 			{/* Breadcrumb */}
-			<nav aria-label={t('shared.breadcrumb')} className={styles.breadcrumb}>
-				<ol className="breadcrumb mb-0">
-					{breadcrumbItems.map((item, i) => (
-						<li
-							key={i}
-							className={`breadcrumb-item${item.active ? ' active fw-semibold' : ''}`}
-							{...(item.active ? { 'aria-current': 'page' } : {})}
-						>
-							{item.to ? <Link to={item.to}>{item.label}</Link> : item.label}
-						</li>
-					))}
+			<nav aria-label={t('shared.breadcrumb')} className={styles.breadcrumbNav}>
+				<ol className={styles.breadcrumbList}>
+					{breadcrumbItems.map((item, i) => {
+						const isLast = item.active;
+						return (
+							<li key={i} className={styles.breadcrumbItem}>
+								{isLast ? (
+									<span className={styles.breadcrumbCurrent}>{item.label}</span>
+								) : item.to ? (
+									<Link to={item.to} className={styles.breadcrumbLink}>{item.label}</Link>
+								) : (
+									<span className={styles.breadcrumbLink}>{item.label}</span>
+								)}
+							</li>
+						);
+					})}
 				</ol>
 			</nav>
 
@@ -209,12 +236,6 @@ export default function BadgeDetail() {
 								{stageCode && stageTitle ? ` (${stageCode})` : ''}
 							</span>
 						)}
-						{serviceLineName && (
-							<span className={styles.chip}>
-								<Icon name="service-line" size={16} />
-								{serviceLineName}
-							</span>
-						)}
 						{expirationDays && (() => {
 							if (hasObtained && userAward.expiration_at) {
 								const remaining = Math.ceil(
@@ -241,36 +262,61 @@ export default function BadgeDetail() {
 					</div>
 
 					<div className={styles.actionRow}>
-						{existingAppGuid ? (
+						{/* Application button: hidden when obtained or rejected */}
+						{!hasObtained && appState !== 'Rejected' && (
+							isActiveApp ? (
+								<Button
+									className={styles.actionBtn}
+									onClick={() => navigate(`${SHARED.APPLICATIONS}/${appGuid}`)}
+								>
+									<Icon name="paper" size={16} />
+									{t('badgeDetail.seeApplication')}
+								</Button>
+							) : (
+								<Button onClick={handleApply} loading={applying} className={styles.actionBtn}>
+									<Icon name="send" size={16} />
+									{t('badgeDetail.applyNow')}
+								</Button>
+							)
+						)}
+
+						{/* Objective button: hidden when obtained */}
+						{!hasObtained && (
 							<Button
-								className={styles.actionBtn}
-								onClick={() => navigate(`${SHARED.APPLICATIONS}/${existingAppGuid}`)}
+								variant="filled"
+								className={styles.actionBtnObjective}
+								onClick={() => navigate(CONSULTANT.OBJECTIVES)}
 							>
-								<Icon name="paper" size={16} />
-								{t('badgeDetail.seeApplication')}
-							</Button>
-						) : (
-							<Button onClick={handleApply} loading={applying} className={styles.actionBtn}>
-								<Icon name="send" size={16} />
-								{t('badgeDetail.applyNow')}
+								<Icon name="target" size={16} />
+								{hasGoal ? t('badgeDetail.checkObjective') : t('badgeDetail.addObjective')}
 							</Button>
 						)}
-						<Button
-							variant="filled"
-							className={styles.actionBtnObjective}
-							onClick={() => navigate(CONSULTANT.OBJECTIVES)}
-						>
-							<Icon name="target" size={16} />
-							{t('badgeDetail.addObjective')}
-						</Button>
-						<Button variant="outlined" className={styles.actionBtnLinkedIn} onClick={handleShareLinkedIn}>
-							<Icon name="linkedin" size={16} />
-							{t('badgeDetail.shareLinkedIn')}
-						</Button>
+
+						{/* LinkedIn + Download Certificate: only when obtained */}
 						{hasObtained && (
-							<div className={styles.obtainedIndicator} title={t('badgeDetail.complete')}>
-								<Icon name="trophy" size={28} color="var(--color-badge-premium)" />
-							</div>
+							<>
+								<Button variant="outlined" className={styles.actionBtnLinkedIn} onClick={handleShareLinkedIn}>
+									<Icon name="linkedin" size={16} />
+									{t('badgeDetail.shareLinkedIn')}
+								</Button>
+								<Button
+									variant="outlined"
+									className={styles.actionBtnCertificate}
+									onClick={handleDownloadCertificate}
+									loading={downloading}
+								>
+									<Icon name="download" size={16} />
+									{t('badgeDetail.downloadCertificate')}
+								</Button>
+							</>
+						)}
+
+						{hasObtained && (
+							<Tooltip text={t('badgeDetail.complete')}>
+								<div className={styles.obtainedIndicator}>
+									<Icon name="trophy" size={28} color="var(--color-badge-premium)" />
+								</div>
+							</Tooltip>
 						)}
 					</div>
 				</div>
@@ -283,9 +329,13 @@ export default function BadgeDetail() {
 
 				<div className={styles.rewardsGrid}>
 					<div className={styles.rewardsList}>
-						<div className={styles.rewardItem}>
-							<div className={styles.rewardIcon}>
-								<Icon name="certificate" size={20} color="var(--color-secondary)" />
+						<div className={`${styles.rewardItem} ${hasObtained ? styles.rewardObtained : ''}`}>
+							<div className={`${styles.rewardIcon} ${hasObtained ? styles.rewardIconObtained : ''}`}>
+								{hasObtained ? (
+									<Icon name="check_circle" size={20} color="var(--color-success)" />
+								) : (
+									<Icon name="lock" size={20} color="var(--color-outline)" />
+								)}
 							</div>
 							<div>
 								<strong>{t('badgeDetail.certificatePdf')}</strong>
@@ -293,9 +343,13 @@ export default function BadgeDetail() {
 							</div>
 						</div>
 						{specialTitleReward && (
-							<div className={styles.rewardItem}>
-								<div className={styles.rewardIcon}>
-									<Icon name="badge-premium" size={20} color="var(--color-secondary)" />
+							<div className={`${styles.rewardItem} ${hasObtained ? styles.rewardObtained : ''}`}>
+								<div className={`${styles.rewardIcon} ${hasObtained ? styles.rewardIconObtained : ''}`}>
+									{hasObtained ? (
+										<Icon name="check_circle" size={20} color="var(--color-success)" />
+									) : (
+										<Icon name="lock" size={20} color="var(--color-outline)" />
+									)}
 								</div>
 								<div>
 									<strong>{t('badgeDetail.specialTitle')}</strong>
@@ -304,9 +358,13 @@ export default function BadgeDetail() {
 							</div>
 						)}
 						{!specialTitleReward && rewards.length === 0 && (
-							<div className={styles.rewardItem}>
-								<div className={styles.rewardIcon}>
-									<Icon name="badge-premium" size={20} color="var(--color-secondary)" />
+							<div className={`${styles.rewardItem} ${hasObtained ? styles.rewardObtained : ''}`}>
+								<div className={`${styles.rewardIcon} ${hasObtained ? styles.rewardIconObtained : ''}`}>
+									{hasObtained ? (
+										<Icon name="check_circle" size={20} color="var(--color-success)" />
+									) : (
+										<Icon name="lock" size={20} color="var(--color-outline)" />
+									)}
 								</div>
 								<div>
 									<strong>{t('badgeDetail.specialTitle')}</strong>
@@ -339,13 +397,13 @@ export default function BadgeDetail() {
 						{skills.length > 0
 							? skills.map((s) => (
 								<li key={s.skills_id} className={styles.competencyItem}>
-									<Icon name="check_circle" size={18} color="var(--color-primary)" />
+									<Icon name="skills" size={18} color="var(--color-primary)" />
 									{s.skill_name}
 								</li>
 							))
 							: (
 								<li className={styles.competencyItem}>
-									<Icon name="check_circle" size={18} color="var(--color-primary)" />
+									<Icon name="skills" size={18} color="var(--color-primary)" />
 									{serviceLineName || title}
 								</li>
 							)
@@ -356,7 +414,7 @@ export default function BadgeDetail() {
 				<aside className={styles.serviceLinesCard}>
 					<h3 className={styles.serviceLineTitle}>{t('badgeDetail.exploreServiceLines')}</h3>
 					<ul className={styles.serviceLineList}>
-						{serviceLines.map((sl) => (
+						{limitedServiceLines.map((sl) => (
 							<li key={sl.service_line_id || sl.serviceLineId} className={styles.serviceLineItem}>
 								<Icon name="service-line" size={18} color="var(--color-outline)" />
 								<span>{sl.service_line_name || sl.serviceLineName}</span>
@@ -376,7 +434,7 @@ export default function BadgeDetail() {
 					</div>
 					{hasObtained && userAward.expiration_at && (
 						<span className={styles.expirationBadge}>
-							<Icon name="clock" size={18} color="var(--color-warning)" />
+							<Icon name="evolution" size={18} color="var(--color-warning)" />
 							{t('badgeDetail.expiresOn')}: {new Date(userAward.expiration_at).toLocaleDateString('pt-PT', {
 								day: 'numeric', month: 'short', year: 'numeric'
 							})}
@@ -401,18 +459,16 @@ export default function BadgeDetail() {
 				) : (
 					<div className={styles.requirementsGrid}>
 						{requirements.map((req, idx) => {
+							const reqId = req.requirement_id || req.requirementId;
 							const reqTitle = req.requirement_title || req.requirementTitle || t('badgeDetail.requirementN', { n: idx + 1 });
 							const reqDesc = req.requirement_description || req.requirementDescription || '';
-							const reqStatus = req.status === 'complete' || req.status === 'completed' || req.is_completed
-								? 'complete'
-								: 'pending';
+							const isFulfilled = fulfilledReqIds.has(reqId);
 							return (
 								<RequirementCard
-									key={req.requirement_id || req.requirementId || idx}
+									key={reqId || idx}
 									title={reqTitle}
 									description={reqDesc}
-									status={reqStatus}
-									icon="requirement"
+									status={isFulfilled ? 'complete' : 'pending'}
 								/>
 							);
 						})}

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
+import Tooltip from '../Tooltip/Tooltip';
 import styles from './AreaPickerList.module.css';
 
 const ITEMS_PER_PAGE = 5;
@@ -110,15 +111,16 @@ export default function AreaPickerList({
 								</div>
 								<span className={styles.rowName}>{areaName}</span>
 								{sel && (
-									<button
-										type="button"
-										className={`${styles.starBtn} ${pri ? styles.starBtnActive : ''}`}
-										onClick={(e) => { e.stopPropagation(); setPrimary(areaId); }}
-										title={t('adminUsers.setPrimary')}
-										aria-label={t('adminUsers.setPrimary')}
-									>
-										<Icon name="star" size={14} color="currentColor" fill={pri ? 'currentColor' : 'none'} aria-hidden="true" />
-									</button>
+									<Tooltip text={t('adminUsers.setPrimary')}>
+										<button
+											type="button"
+											className={`${styles.starBtn} ${pri ? styles.starBtnActive : ''}`}
+											onClick={(e) => { e.stopPropagation(); setPrimary(areaId); }}
+											aria-label={t('adminUsers.setPrimary')}
+										>
+											<Icon name="star" size={14} color="currentColor" fill={pri ? 'currentColor' : 'none'} aria-hidden="true" />
+										</button>
+									</Tooltip>
 								)}
 							</div>
 						);

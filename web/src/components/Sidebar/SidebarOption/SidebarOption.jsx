@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../../Icons/Icons';
+import Tooltip from '../../Tooltip/Tooltip';
 import styles from './SidebarOption.module.css';
 
 export default function SidebarOption({
@@ -27,13 +28,12 @@ export default function SidebarOption({
         className,
     ].filter(Boolean).join(' ');
 
-    return (
+    const element = (
         <Component
             type={Component === 'button' ? 'button' : undefined}
             className={buttonClassName}
             onClick={onClick}
             aria-label={translatedLabel}
-            title={collapsed ? translatedLabel : undefined}
             {...rest}
         >
             <div className={styles.content}>
@@ -50,4 +50,14 @@ export default function SidebarOption({
             </div>
         </Component>
     );
+
+    if (collapsed) {
+        return (
+            <Tooltip text={translatedLabel} position="right">
+                {element}
+            </Tooltip>
+        );
+    }
+
+    return element;
 }

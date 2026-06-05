@@ -5,6 +5,7 @@ import { SHARED } from '../../../routes/paths';
 import { downloadEvidence } from '../../../features/applications/api/applicationsApi';
 import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
+import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './ApplicationStatus.module.css';
 
 const WORKFLOW_STEPS = [
@@ -300,12 +301,7 @@ export default function ApplicationStatus({ application, badge }) {
 										return (
 											<div
 												key={evId}
-												className={styles.evidenceRowClickable}
-												onClick={() => handleDownloadEvidence(evId)}
-												role="button"
-												tabIndex={0}
-												onKeyDown={(e) => e.key === 'Enter' && handleDownloadEvidence(evId)}
-												title={t('applicationDetail.downloadEvidence')}
+												className={styles.evidenceRow}
 											>
 												<div className={styles.evidenceIconWrap}>
 													<Icon name="paper" size={16} color="var(--color-secondary)" />
@@ -314,9 +310,16 @@ export default function ApplicationStatus({ application, badge }) {
 													<p className={styles.evidenceName}>{fileName}</p>
 													{reqName && <p className={styles.evidenceReq}>{reqName}</p>}
 												</div>
-												<div className={styles.evidenceDownloadIcon}>
-													<Icon name="download" size={16} color="var(--color-secondary)" />
-												</div>
+												<Tooltip text={t('applicationDetail.downloadEvidence')}>
+													<button
+														type="button"
+														className={styles.evidenceDownloadBtn}
+														onClick={() => handleDownloadEvidence(evId)}
+														aria-label={t('applicationDetail.downloadEvidence')}
+													>
+														<Icon name="download" size={16} color="var(--color-secondary)" />
+													</button>
+												</Tooltip>
 											</div>
 										);
 									})}

@@ -460,6 +460,25 @@
 	transition: background 150ms ease;
 }
 
+.evidenceDownloadBtn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	flex-shrink: 0;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	padding: 0;
+	transition: background 150ms ease;
+}
+
+.evidenceDownloadBtn:hover {
+	background: rgba(255, 255, 255, 0.6);
+}
+
 .evidenceRowClickable:hover .evidenceDownloadIcon {
 	background: rgba(255, 255, 255, 0.6);
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Icon from '../../../../components/Icons/Icons';
+import Tooltip from '../../../../components/Tooltip/Tooltip';
 import styles from './SubStructureCard.module.css';
 
 export default function SubStructureCard({ icon, title, description, count, isActive, tone, to, infoItems }) {
@@ -27,10 +28,12 @@ export default function SubStructureCard({ icon, title, description, count, isAc
 				{infoItems && infoItems.length > 0 && (
 					<div className={styles.infoStrip}>
 						{infoItems.map((info) => (
-							<span key={info.label} className={styles.infoItem} title={info.label}>
-								<Icon name={info.icon} size={15} />
-								<span className={styles.infoValue}>{info.value ?? 0}</span>
-							</span>
+							<Tooltip key={info.label} text={info.label}>
+								<span className={styles.infoItem}>
+									<Icon name={info.icon} size={15} />
+									<span className={styles.infoValue}>{info.value ?? 0}</span>
+								</span>
+							</Tooltip>
 						))}
 					</div>
 				)}

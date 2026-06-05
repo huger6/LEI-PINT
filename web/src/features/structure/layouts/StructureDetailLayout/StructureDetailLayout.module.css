@@ -146,28 +146,6 @@
 	display: block;
 }
 
-/* Tooltip */
-.toolbarBtn::after {
-	content: attr(data-tooltip);
-	position: absolute;
-	bottom: calc(100% + 6px);
-	left: 50%;
-	transform: translateX(-50%);
-	padding: 0.25rem 0.5rem;
-	border-radius: 6px;
-	background: var(--color-on-background, #1a1a1a);
-	color: #fff;
-	font-size: 0.72rem;
-	font-weight: 600;
-	white-space: nowrap;
-	pointer-events: none;
-	opacity: 0;
-	transition: opacity 150ms ease;
-}
-
-.toolbarBtn:hover::after {
-	opacity: 1;
-}
 
 /* Right Panel */
 .rightPanel {
