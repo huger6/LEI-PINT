@@ -819,6 +819,9 @@
 		"chooseFile": "Escolher ficheiro",
 		"or": "ou",
 		"maxSize": "Máx: 10MB",
+		"allowedFormats": "PDF, JPG, PNG, ZIP — Máx: 10MB",
+		"changesSaved": "Alterações guardadas",
+		"downloadEvidence": "Descarregar evidência",
 		"uploading": "A carregar...",
 		"additionalNotes": "Notas Adicionais",
 		"notesPlaceholder": "Adicione notas ou observações para os validadores...",
@@ -836,8 +839,10 @@
 		"stepSubmit": "Submissão",
 		"errors": {
 			"noFile": "Nenhum ficheiro foi selecionado. Por favor escolha um ficheiro.",
+			"invalidFormat": "Formato de ficheiro não suportado. Permitidos: PDF, JPG, PNG, ZIP.",
 			"fileTooLarge": "O ficheiro excede o limite de 10 MB. Por favor escolha um ficheiro mais pequeno.",
-			"uploadFailed": "O carregamento do ficheiro falhou. Por favor tente novamente mais tarde."
+			"uploadFailed": "O carregamento do ficheiro falhou. Por favor tente novamente mais tarde.",
+			"downloadFailed": "Não foi possível descarregar o ficheiro. Por favor tente novamente mais tarde."
 		}
 	},
 	"applicationStatus": {

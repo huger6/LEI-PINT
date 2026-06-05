@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
+import { downloadEvidence } from '../../../features/applications/api/applicationsApi';
 import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationStatus.module.css';
@@ -58,6 +59,15 @@ export default function ApplicationStatus({ application, badge }) {
 		return evidences.find(
 			(ev) => String(ev.requirement_id || ev.requirementId) === String(reqId)
 		);
+	}
+
+	async function handleDownloadEvidence(evidenceId) {
+		try {
+			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
+			window.open(downloadUrl, '_blank');
+		} catch {
+			// silent
+		}
 	}
 
 	return (
@@ -285,9 +295,18 @@ export default function ApplicationStatus({ application, badge }) {
 										const url = ev.evidence_file_url || ev.evidenceFileUrl || ev.url || '';
 										const fileName = url ? decodeURIComponent(url.split('/').pop()) : 'file';
 										const reqName = ev.requirement?.requirement_title || '';
+										const evId = ev.evidence_id || ev.evidenceId;
 
 										return (
-											<div key={ev.evidence_id || ev.requirementId} className={styles.evidenceRow}>
+											<div
+												key={evId}
+												className={styles.evidenceRowClickable}
+												onClick={() => handleDownloadEvidence(evId)}
+												role="button"
+												tabIndex={0}
+												onKeyDown={(e) => e.key === 'Enter' && handleDownloadEvidence(evId)}
+												title={t('applicationDetail.downloadEvidence')}
+											>
 												<div className={styles.evidenceIconWrap}>
 													<Icon name="paper" size={16} color="var(--color-secondary)" />
 												</div>
@@ -295,11 +314,9 @@ export default function ApplicationStatus({ application, badge }) {
 													<p className={styles.evidenceName}>{fileName}</p>
 													{reqName && <p className={styles.evidenceReq}>{reqName}</p>}
 												</div>
-												{url && (
-													<a href={url} target="_blank" rel="noopener noreferrer" className={styles.evidenceLink}>
-														<Icon name="link" size={16} color="var(--color-secondary)" />
-													</a>
-												)}
+												<div className={styles.evidenceDownloadIcon}>
+													<Icon name="download" size={16} color="var(--color-secondary)" />
+												</div>
 											</div>
 										);
 									})}

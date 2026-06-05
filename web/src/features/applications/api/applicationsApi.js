@@ -36,3 +36,13 @@ export async function submitApplication(applicationGuid, consultantNotes = null)
 export async function deleteApplication(applicationGuid) {
 	await api.delete(`/applications/${applicationGuid}`);
 }
+
+export async function updateApplication(applicationGuid, payload) {
+	const { data } = await api.patch(`/applications/${applicationGuid}`, payload);
+	return data?.data;
+}
+
+export async function downloadEvidence(applicationGuid, evidenceId) {
+	const { data } = await api.get(`/applications/${applicationGuid}/evidences/${evidenceId}/download`);
+	return data?.data;
+}

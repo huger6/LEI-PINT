@@ -155,14 +155,37 @@ export const PROFILE_IMAGE_MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_BYTES;
 
 const MAX_GENERIC_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
+const ALLOWED_EVIDENCE_MIME_TYPES = new Set([
+	'application/pdf',
+	'image/jpeg',
+	'image/jpg',
+	'image/png',
+	'application/zip',
+]);
+
+const ALLOWED_EVIDENCE_EXTENSIONS = new Set([
+	'pdf', 'jpg', 'jpeg', 'png', 'zip',
+]);
+
 export const validateEvidenceFile = (file) => {
 	if (!file) {
 		throw createUploadError('No file was selected.', 'EVIDENCE_FILE_MISSING');
 	}
+
+	const mimeType = asString(file?.type).toLowerCase();
+	const extension = getExtension(file?.name);
+	const isAllowed = ALLOWED_EVIDENCE_MIME_TYPES.has(mimeType) || ALLOWED_EVIDENCE_EXTENSIONS.has(extension);
+
+	if (!isAllowed) {
+		throw createUploadError('Unsupported file format.', 'EVIDENCE_FILE_INVALID_FORMAT');
+	}
+
 	if (file.size > MAX_GENERIC_FILE_SIZE_BYTES) {
 		throw createUploadError('File size exceeds the 10 MB limit.', 'EVIDENCE_FILE_TOO_LARGE');
 	}
 };
+
+export const EVIDENCE_ACCEPT_STRING = '.pdf,.jpg,.jpeg,.png,.zip';
 
 export const uploadFileToTemp = async (file, options = {}) => {
 	const { baseUrl, apiKey } = getStorageConfig();
