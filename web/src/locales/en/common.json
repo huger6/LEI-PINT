@@ -819,6 +819,9 @@
 		"chooseFile": "Choose file",
 		"or": "or",
 		"maxSize": "Max: 10MB",
+		"allowedFormats": "PDF, JPG, PNG, ZIP — Max: 10MB",
+		"changesSaved": "Changes saved",
+		"downloadEvidence": "Download evidence",
 		"uploading": "Uploading...",
 		"additionalNotes": "Additional Notes",
 		"notesPlaceholder": "Add notes or observations for the reviewers...",
@@ -836,8 +839,10 @@
 		"stepSubmit": "Submit",
 		"errors": {
 			"noFile": "No file was selected. Please choose a file.",
+			"invalidFormat": "Unsupported file format. Allowed: PDF, JPG, PNG, ZIP.",
 			"fileTooLarge": "The file exceeds the 10 MB size limit. Please choose a smaller file.",
-			"uploadFailed": "The file upload failed. Please try again later."
+			"uploadFailed": "The file upload failed. Please try again later.",
+			"downloadFailed": "Could not download the file. Please try again later."
 		}
 	},
 	"applicationStatus": {

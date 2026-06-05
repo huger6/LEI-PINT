@@ -315,6 +315,32 @@
 	border-radius: 14px;
 }
 
+.evidenceFileClickable {
+	composes: evidenceFile;
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.evidenceFileClickable:hover {
+	background: #d9f0df;
+	border-color: var(--color-green-on-soft);
+}
+
+.evidenceDownloadIcon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	transition: background 150ms ease;
+}
+
+.evidenceFileClickable:hover .evidenceDownloadIcon {
+	background: rgba(255, 255, 255, 0.6);
+}
+
 .evidenceFileIcon {
 	width: 32px;
 	height: 32px;

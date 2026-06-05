@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { submitApplication, upsertEvidence, getUploadUrl } from '../../../features/applications/api/applicationsApi';
+import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
-import { validateEvidenceFile } from '../../../services/storage';
+import { validateEvidenceFile, EVIDENCE_ACCEPT_STRING } from '../../../services/storage';
 import Stepper from '../../../components/Stepper/Stepper';
+import SaveToast from '../../../components/SaveToast/SaveToast';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ApplicationDetail.module.css';
 
@@ -26,6 +27,9 @@ export default function ApplicationDetail({ application, onReload }) {
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState(null);
 	const [uploadErrors, setUploadErrors] = useState({});
+	const [showSaveToast, setShowSaveToast] = useState(false);
+	const [savingNotes, setSavingNotes] = useState(false);
+	const notesRef = useRef(application?.consultant_notes || application?.consultantNotes || '');
 	const fileInputRefs = useRef({});
 
 	useEffect(() => {
@@ -58,6 +62,7 @@ export default function ApplicationDetail({ application, onReload }) {
 	function getUploadErrorMessage(err) {
 		const code = err.code;
 		if (code === 'EVIDENCE_FILE_MISSING') return t('applicationDetail.errors.noFile');
+		if (code === 'EVIDENCE_FILE_INVALID_FORMAT') return t('applicationDetail.errors.invalidFormat');
 		if (code === 'EVIDENCE_FILE_TOO_LARGE') return t('applicationDetail.errors.fileTooLarge');
 		if (code === 'SUPABASE_UPLOAD_FAILED') return t('applicationDetail.errors.uploadFailed');
 		if (code === 'SUPABASE_CONFIG_MISSING') return t('applicationDetail.errors.uploadFailed');
@@ -91,6 +96,7 @@ export default function ApplicationDetail({ application, onReload }) {
 				evidenceFileType: file.type || null,
 			});
 			setEvidenceMap((prev) => ({ ...prev, [requirementId]: evidence }));
+			setShowSaveToast(true);
 		} catch (err) {
 			setUploadErrors((prev) => ({ ...prev, [requirementId]: getUploadErrorMessage(err) }));
 		} finally {
@@ -110,6 +116,29 @@ export default function ApplicationDetail({ application, onReload }) {
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 			setSubmitting(false);
+		}
+	}
+
+	async function handleNotesSave() {
+		if (notes === notesRef.current || savingNotes) return;
+		setSavingNotes(true);
+		try {
+			await updateApplication(appGuid, { consultantNotes: notes || null });
+			notesRef.current = notes;
+			setShowSaveToast(true);
+		} catch {
+			// silent — notes will still be sent on submit
+		} finally {
+			setSavingNotes(false);
+		}
+	}
+
+	async function handleDownloadEvidence(evidenceId) {
+		try {
+			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
+			window.open(downloadUrl, '_blank');
+		} catch {
+			setError(t('applicationDetail.errors.downloadFailed'));
 		}
 	}
 
@@ -260,7 +289,14 @@ export default function ApplicationDetail({ application, onReload }) {
 										{isOpen && (
 											<div className={styles.reqContent}>
 												{evidence && (
-													<div className={styles.evidenceFile}>
+													<div
+														className={styles.evidenceFileClickable}
+														onClick={() => handleDownloadEvidence(evidence.evidence_id || evidence.evidenceId)}
+														role="button"
+														tabIndex={0}
+														onKeyDown={(e) => e.key === 'Enter' && handleDownloadEvidence(evidence.evidence_id || evidence.evidenceId)}
+														title={t('applicationDetail.downloadEvidence')}
+													>
 														<div className={styles.evidenceFileIcon}>
 															<Icon name="paper" size={16} color="var(--color-secondary)" />
 														</div>
@@ -274,6 +310,9 @@ export default function ApplicationDetail({ application, onReload }) {
 																<Icon name="check_circle" size={14} color="var(--color-green-on-soft)" />
 																{t('applicationDetail.submitted')}
 															</span>
+														</div>
+														<div className={styles.evidenceDownloadIcon}>
+															<Icon name="download" size={16} color="var(--color-secondary)" />
 														</div>
 													</div>
 												)}
@@ -289,6 +328,7 @@ export default function ApplicationDetail({ application, onReload }) {
 													<label className={styles.reqFileLabel}>
 														<input
 															type="file"
+															accept={EVIDENCE_ACCEPT_STRING}
 															className={styles.reqFileInput}
 															ref={(el) => { fileInputRefs.current[reqId] = el; }}
 															onChange={(e) => handleFileUpload(reqId, e.target.files[0])}
@@ -299,7 +339,7 @@ export default function ApplicationDetail({ application, onReload }) {
 															{t('applicationDetail.chooseFile')}
 														</span>
 														<span className={styles.reqFileLabelHint}>
-															{t('applicationDetail.maxSize')}
+															{t('applicationDetail.allowedFormats')}
 														</span>
 													</label>
 												</div>
@@ -333,6 +373,7 @@ export default function ApplicationDetail({ application, onReload }) {
 						placeholder={t('applicationDetail.notesPlaceholder')}
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}
+						onBlur={handleNotesSave}
 					/>
 				</div>
 
@@ -378,6 +419,12 @@ export default function ApplicationDetail({ application, onReload }) {
 					</button>
 				</div>
 			</div>
+
+			<SaveToast
+				open={showSaveToast}
+				message={t('applicationDetail.changesSaved')}
+				onClose={() => setShowSaveToast(false)}
+			/>
 		</div>
 	);
 }
