@@ -51,6 +51,18 @@ router.post('/:applicationGuid/submit', loginRequired, applicationController.sub
 router.put('/:applicationGuid/validate', loginRequired, applicationController.validateApplication);
 
 /**
+ * @route   PATCH /api/applications/:applicationGuid
+ * @desc    Partially update an Open application (e.g. consultant notes)
+ */
+router.patch('/:applicationGuid', loginRequired, applicationController.updateApplication);
+
+/**
+ * @route   GET /api/applications/:applicationGuid/evidences/:evidenceId/download
+ * @desc    Generate a signed download URL for an evidence file
+ */
+router.get('/:applicationGuid/evidences/:evidenceId/download', loginRequired, applicationController.downloadEvidence);
+
+/**
  * @route   PUT /api/applications/:applicationGuid/evidences/:evidenceId/review
  * @desc    Approve or reject a single evidence; awards requirement points when approved
  * @access  Talent Manager, Service Line Leader

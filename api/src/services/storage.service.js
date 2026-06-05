@@ -156,9 +156,33 @@ const uploadBuffer = async (bucketName, storagePath, buffer, contentType = 'appl
     }
 };
 
+const generateSignedDownloadUrl = async (bucketName = 'private-assets', filePath, expiresInSeconds = 300) => {
+    try {
+        if (!supabase) {
+            const base = process.env.SUPABASE_STORAGE_URL || 'http://localhost';
+            return `${base}/storage/v1/object/authenticated/${bucketName}/${filePath}`;
+        }
+
+        const { data, error } = await supabase
+            .storage
+            .from(bucketName)
+            .createSignedUrl(filePath, expiresInSeconds, { download: true });
+
+        if (error) {
+            throw new Error(`Supabase Error: ${error.message}`);
+        }
+
+        return data.signedUrl;
+    } catch (error) {
+        logger.error('Failed to generate signed download URL', { error, bucketName, filePath });
+        throw error;
+    }
+};
+
 module.exports = {
     moveImageToPermanent,
     moveStructureImageToPermanent,
     generateSignedUploadUrl,
+    generateSignedDownloadUrl,
     uploadBuffer
 };
