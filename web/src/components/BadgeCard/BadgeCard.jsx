@@ -64,6 +64,7 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 		styles.card,
 		isSpecial ? styles.specialCard : '',
 		isSpecial && hasAnimated ? styles.specialGlow : '',
+		hasObtained ? styles.obtainedCard : '',
 	].filter(Boolean).join(' ');
 
 	return (
@@ -78,22 +79,31 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 					<span className={`${styles.typePill} ${isSpecial ? styles.special : styles.standard}`}>
 						{badgeClass}
 					</span>
-					{onToggleFavorite && (
-						<Tooltip text={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}>
-							<button
-								type="button"
-								className={`${styles.bookmarkBtn} ${isFavorited ? styles.bookmarkActive : ''}`}
-								onClick={(e) => {
-									e.preventDefault();
-									e.stopPropagation();
-									onToggleFavorite(badge);
-								}}
-								aria-label={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
-							>
-								<Icon name={isFavorited ? 'bookmark-filled' : 'bookmark'} size={18} aria-hidden="true" />
-							</button>
-						</Tooltip>
-					)}
+					<span className={styles.topLeftIcons}>
+						{hasObtained && (
+							<Tooltip text={t('badgeCatalog.obtained.true')}>
+								<span className={styles.obtainedIcon} aria-label={t('badgeCatalog.obtained.true')}>
+									<Icon name="check_circle" size={18} aria-hidden="true" />
+								</span>
+							</Tooltip>
+						)}
+						{onToggleFavorite && (
+							<Tooltip text={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}>
+								<button
+									type="button"
+									className={`${styles.bookmarkBtn} ${isFavorited ? styles.bookmarkActive : ''}`}
+									onClick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										onToggleFavorite(badge);
+									}}
+									aria-label={isFavorited ? t('badgeCatalog.removeSaved') : t('badgeCatalog.saveBadge')}
+								>
+									<Icon name={isFavorited ? 'bookmark-filled' : 'bookmark'} size={18} aria-hidden="true" />
+								</button>
+							</Tooltip>
+						)}
+					</span>
 				</div>
 
 				<div className={styles.content}>

@@ -44,6 +44,16 @@
 	box-shadow: 0 14px 30px rgba(19, 36, 66, 0.14), 0 0 16px 3px rgba(255, 193, 7, 0.22);
 }
 
+/* ─── Obtained card: subtle green border ─── */
+
+.obtainedCard {
+	border-color: rgba(4, 206, 0, 0.35);
+}
+
+.obtainedCard:hover {
+	border-color: rgba(4, 206, 0, 0.55);
+}
+
 /* ─── Special card: glow animation (plays once on enter) ─── */
 
 .specialGlow {
@@ -196,7 +206,7 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 18px 18px 0 0;
-	overflow: hidden;
+	overflow: visible;
 	background: radial-gradient(circle at top right, rgba(0, 184, 224, 0.17), transparent 62%),
 		radial-gradient(circle at left bottom, rgba(57, 99, 156, 0.16), transparent 68%),
 		linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(232, 247, 255, 0.9));
@@ -212,10 +222,29 @@
 	color: rgba(57, 99, 156, 0.56);
 }
 
-.bookmarkBtn {
+.topLeftIcons {
 	position: absolute;
 	top: 12px;
 	left: 12px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.obtainedIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(4px);
+	color: var(--color-success);
+}
+
+.bookmarkBtn {
 	border: 0;
 	background: rgba(255, 255, 255, 0.85);
 	backdrop-filter: blur(4px);
@@ -228,7 +257,6 @@
 	color: var(--color-secondary);
 	cursor: pointer;
 	transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
-	z-index: 2;
 }
 
 .bookmarkBtn:hover {
