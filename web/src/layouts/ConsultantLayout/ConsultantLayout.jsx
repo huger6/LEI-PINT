@@ -9,6 +9,7 @@ const MENU_ITEMS = [
     { to: CONSULTANT.POINTS, icon: 'star-points', label: 'sidebar.consultant.points', notificationType: 'POINTS' },
     { to: CONSULTANT.OBJECTIVES, icon: 'target', label: 'sidebar.consultant.objectives', notificationType: 'OBJECTIVES' },
     { to: CONSULTANT.EVOLUTION, icon: 'evolution', label: 'sidebar.consultant.evolution', notificationType: 'EVOLUTION' },
+    { to: CONSULTANT.RANKING, icon: 'ranking', label: 'sidebar.consultant.ranking' },
     { to: CONSULTANT.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.consultant.announcements', notificationType: 'ANNOUNCEMENTS' },
 ];
 

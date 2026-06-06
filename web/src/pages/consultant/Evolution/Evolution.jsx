@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import ContentCard from '../../../components/ContentCard/ContentCard';
@@ -7,6 +8,7 @@ import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import Icon from '../../../components/Icons/Icons';
 import { getConsultantStats, getPointsHistoryAll, getLearningPathProgress, getRanking } from '../../../services/pointsService';
+import { CONSULTANT } from '../../../routes/paths';
 import { getProgressionTimeline } from '../../../features/goals/api/goalsApi';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
 import { getBadgesPerArea, getApplicationsWithPagination, getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
@@ -329,7 +331,7 @@ export default function Evolution() {
                         <Trans
                             i18nKey="evolution.subtitle"
                             values={{ percentage: String(rankPercentile) }}
-                            components={{ highlight: <span /> }}
+                            components={{ highlight: <Link to={CONSULTANT.RANKING} /> }}
                         />
                     </p>
                 )}

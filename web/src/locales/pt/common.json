@@ -257,6 +257,7 @@
 			"points": "Pontos",
 			"objectives": "Objetivos",
 			"evolution": "Evolução",
+			"ranking": "Ranking",
 			"announcements": "Comunicados",
 			"browse": "Estrutura"
 		},
@@ -865,6 +866,15 @@
 		"expiration": "Expira em",
 		"file": "ficheiro"
 	},
+	"submissionConfirmation": {
+		"title": "Candidatura Submetida",
+		"heading": "Candidatura Submetida com Sucesso!",
+		"message": "A sua candidatura foi submetida e está agora pendente de avaliação por um Talent Manager. Será notificado quando o estado for atualizado.",
+		"submittedOn": "Submetida em {{date}}",
+		"nextSteps": "A sua candidatura será primeiro avaliada por um Talent Manager, que verificará as suas evidências. Depois será encaminhada para um Service Line Leader para aprovação final. Este processo pode demorar até 7 dias úteis.",
+		"viewStatus": "Ver Estado da Candidatura",
+		"backToApplications": "Voltar às Minhas Candidaturas"
+	},
 	"notFound": {
 		"title": "Página não encontrada",
 		"description": "A página que procura não existe ou foi movida.",
@@ -1095,6 +1105,7 @@
 		"subtitleGeneral": "Classificação geral",
 		"subtitleArea": "Classificação da tua Área",
 		"areaPlaceholder": "Área",
+		"serviceLinePlaceholder": "Service Line",
 		"filter": "Filtrar",
 		"top3Title": "Top 3 Consultores",
 		"fullRankingTitle": "Ranking Completo",
@@ -1103,6 +1114,10 @@
 		"area": "Área",
 		"badgesObtained": "Badges Obtidos",
 		"points": "Pontos",
-		"noResults": "Nenhum resultado encontrado."
+		"noResults": "Nenhum resultado encontrado.",
+		"scopeMyArea": "Minha Área",
+		"scopeMyServiceLine": "Minha Service Line",
+		"scopeGeneral": "Geral",
+		"myPosition": "A Minha Posição"
 	}
 }
