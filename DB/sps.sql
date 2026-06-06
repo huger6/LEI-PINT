@@ -31,13 +31,14 @@ CREATE OR REPLACE FUNCTION get_ranking(
     p_area_id          INTEGER DEFAULT NULL
 )
 RETURNS TABLE (
-    user_id         INTEGER,
-    user_guid       UUID,
-    full_name       VARCHAR,
-    profile_img_url VARCHAR,
-    total_points    BIGINT,
-    total_badges    BIGINT,
-    total_count     BIGINT
+    user_id           INTEGER,
+    user_guid         UUID,
+    full_name         VARCHAR,
+    profile_img_url   VARCHAR,
+    total_points      BIGINT,
+    total_badges      BIGINT,
+    primary_area_name VARCHAR,
+    total_count       BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -71,6 +72,13 @@ BEGIN
                   AND (p_service_line_id  IS NULL OR b.service_line_id  = p_service_line_id)
                   AND (p_area_id          IS NULL OR b.area_id          = p_area_id)
             ) AS total_badges,
+            (
+                SELECT a.area_name
+                FROM consultant_areas ca
+                JOIN areas a ON a.area_id = ca.area_id
+                WHERE ca.user_id = u.user_id AND ca.is_primary = TRUE
+                LIMIT 1
+            ) AS primary_area_name,
             COUNT(*) OVER () AS total_count
         FROM users u
         WHERE u.user_role = 'Consultant'
@@ -84,6 +92,7 @@ BEGIN
         ranked.profile_img_url,
         ranked.total_points,
         ranked.total_badges,
+        ranked.primary_area_name,
         ranked.total_count
     FROM ranked
     LIMIT p_limit OFFSET v_offset;
