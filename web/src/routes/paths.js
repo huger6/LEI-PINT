@@ -40,6 +40,7 @@ export const CONSULTANT = {
 	POINTS: '/points',
 	OBJECTIVES: '/objectives',
 	EVOLUTION: '/evolution',
+	RANKING: '/ranking',
 	ANNOUNCEMENTS: '/announcements',
 };
 
@@ -71,6 +72,7 @@ export const SHARED = {
 	APPLICATIONS: '/applications',
 	BADGE_DETAIL: '/badges/:slug',
 	APPLICATION_DETAIL: '/applications/:id',
+	APPLICATION_SUBMITTED: '/applications/:id/submitted',
 	PROFILE: '/profile',
 	PROFILE_EDIT: '/profile/edit',
 	MAIL_SIGNATURE: '/mail-signature',

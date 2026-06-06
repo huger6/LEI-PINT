@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
 import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence } from '../../../features/applications/api/applicationsApi';
@@ -112,8 +112,17 @@ export default function ApplicationDetail({ application, onReload }) {
 		setSubmitting(true);
 		setError(null);
 		try {
-			await submitApplication(appGuid, notes || null);
-			navigate(SHARED.APPLICATIONS);
+			const result = await submitApplication(appGuid, notes || null);
+			navigate(
+				generatePath(SHARED.APPLICATION_SUBMITTED, { id: appGuid }),
+				{
+					state: {
+						applicationGuid: appGuid,
+						badgeTitle: title,
+						submittedAt: result?.submittedAt || new Date().toISOString(),
+					},
+				}
+			);
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 			setSubmitting(false);

@@ -257,6 +257,7 @@
 			"points": "Points",
 			"objectives": "Objectives",
 			"evolution": "Evolution",
+			"ranking": "Ranking",
 			"announcements": "Announcements",
 			"browse": "Structure"
 		},
@@ -865,6 +866,15 @@
 		"expiration": "Expiration",
 		"file": "file"
 	},
+	"submissionConfirmation": {
+		"title": "Application Submitted",
+		"heading": "Application Submitted Successfully!",
+		"message": "Your application has been submitted and is now pending review by a Talent Manager. You will be notified when the status changes.",
+		"submittedOn": "Submitted on {{date}}",
+		"nextSteps": "Your application will first be reviewed by a Talent Manager, who will verify your evidence. It will then be forwarded to a Service Line Leader for final approval. This process may take up to 7 business days.",
+		"viewStatus": "View Application Status",
+		"backToApplications": "Back to My Applications"
+	},
 	"notFound": {
 		"title": "Page not found",
 		"description": "The page you are looking for does not exist or has been moved.",
@@ -1095,6 +1105,7 @@
 		"subtitleGeneral": "Overall ranking",
 		"subtitleArea": "Ranking within your Area",
 		"areaPlaceholder": "Area",
+		"serviceLinePlaceholder": "Service Line",
 		"filter": "Filter",
 		"top3Title": "Top 3 Consultants",
 		"fullRankingTitle": "Full Ranking",
@@ -1103,6 +1114,10 @@
 		"area": "Area",
 		"badgesObtained": "Badges Obtained",
 		"points": "Points",
-		"noResults": "No results found."
+		"noResults": "No results found.",
+		"scopeMyArea": "My Area",
+		"scopeMyServiceLine": "My Service Line",
+		"scopeGeneral": "General",
+		"myPosition": "My Position"
 	}
 }

@@ -54,3 +54,8 @@ export async function getRanking(params = {}) {
 		pagination: data?.pagination,
 	};
 }
+
+export async function getMyRankingPosition(params = {}) {
+	const { data } = await api.get('/ranking/my-position', { params });
+	return data?.data;
+}

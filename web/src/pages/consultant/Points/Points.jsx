@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import ContentCard from '../../../components/ContentCard/ContentCard';
 import { CardHeader } from '../../../components/ContentCard/ContentCard';
 import Icon from '../../../components/Icons/Icons';
@@ -380,11 +380,11 @@ export default function Points() {
 								</div>
 							</div>
 							{percentile != null && (
-								<div className={styles.rankBadge}>
+								<Link to={CONSULTANT.RANKING} className={styles.rankBadge}>
 									<Icon name="star-points" size={30} color="var(--color-orange-on-soft)" />
 									<span className={styles.rankBadgeValue}>Top {percentile}%</span>
 									<span className={styles.rankBadgeSub}>{t('points.consultant')}</span>
-								</div>
+								</Link>
 							)}
 						</div>
 
@@ -424,7 +424,7 @@ export default function Points() {
 									{weekStats.change >= 0 ? '+' : ''}{weekStats.change}% {t('points.vsLastWeek')}
 								</span>
 							</div>
-							<div className={styles.miniStat}>
+							<Link to={CONSULTANT.RANKING} className={styles.miniStat} style={{ textDecoration: 'none', color: 'inherit' }}>
 								<div className={styles.miniStatHeader}>
 									<span className={styles.miniStatLabel}>{t('points.rankPosition')}</span>
 									<Icon name="trophy" size={14} color="var(--color-orange-on-soft)" />
@@ -435,7 +435,7 @@ export default function Points() {
 								<span className={styles.miniStatSub}>
 									{t('points.outOf', { total: totalConsultants })}
 								</span>
-							</div>
+							</Link>
 						</div>
 					</ContentCard>
 				</div>
