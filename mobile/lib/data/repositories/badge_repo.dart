@@ -35,7 +35,7 @@ class BadgeRepository {
     // API defaults to 32 rows, leaving many badges without an area locally.
     final payload = await _apiClient.get(
       ApiEndpoints.getBadges,
-      queryParameters: const {'page': 1, 'limit': 100},
+      queryParameters: const {'page': 1, 'limit': 500},
     );
     debugPrint('BadgeRepo.getBadges: raw payload type=${payload.runtimeType}');
     final list = _extractList(payload);
@@ -74,6 +74,8 @@ class BadgeRepository {
       final badge = await _badgeDao.getById(award.badgeId);
       if (badge != null) {
         result.add(EarnedBadge(badge: badge, award: award));
+      } else {
+        debugPrint('BadgeRepo: awarded badge id=${award.id} has badge_id=${award.badgeId} NOT found in catalog — dropped');
       }
     }
 
@@ -82,7 +84,9 @@ class BadgeRepository {
 
   Future<List<EarnedBadge>> getEarnedBadges() async {
     final payload = await _apiClient.get(ApiEndpoints.getEarnedBadges);
+    debugPrint('BadgeRepo.getEarnedBadges: payload type=${payload.runtimeType}');
     final list = _extractList(payload);
+    debugPrint('BadgeRepo.getEarnedBadges: extracted ${list.length} items');
 
     final rawMaps = list
         .whereType<Map>()
@@ -91,18 +95,18 @@ class BadgeRepository {
 
     for (final json in rawMaps) {
       final badgeData = json['badge'];
+      debugPrint('BadgeRepo.getEarnedBadges: badge=${badgeData != null}, badgeId=${badgeData is Map ? badgeData['id'] : 'N/A'}');
       if (badgeData is Map) {
         await _badgeDao.insertIfMissing(Map<String, dynamic>.from(badgeData));
       }
     }
 
-    for (final raw in rawMaps) {
-      debugPrint('EarnedBadge API raw: applicationGuid=${raw['applicationGuid']}, application_guid=${raw['application_guid']}');
-    }
-
     final awarded = rawMaps.map(_parseAwardedFromApi).toList();
+    debugPrint('BadgeRepo.getEarnedBadges: parsed ${awarded.length} awarded badges');
     await _awardedBadgeDao.replaceAll(awarded);
-    return getEarnedBadgesLocal();
+    final result = await getEarnedBadgesLocal();
+    debugPrint('BadgeRepo.getEarnedBadges: joined ${result.length} earned badges from local DB');
+    return result;
   }
 
   Future<void> shareBadge(int badgeId) async {

@@ -51,9 +51,13 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      loadBadges(forceRefresh: true);
-      loadEarnedBadges(forceRefresh: true);
+      _refreshAll();
     }
+  }
+
+  Future<void> _refreshAll() async {
+    await loadBadges(forceRefresh: true);
+    await loadEarnedBadges(forceRefresh: true);
   }
 
   Future<void> _reloadFromLocal() async {
@@ -121,7 +125,9 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
         await loadBadges();
       }
       _earnedBadges = await _badgeRepository.getEarnedBadges();
-    } catch (_) {
+      debugPrint('BadgeStore: loaded ${_earnedBadges.length} earned badges');
+    } catch (e) {
+      debugPrint('BadgeStore: loadEarnedBadges FAILED: $e');
       final local = await _badgeRepository.getEarnedBadgesLocal();
       if (local.isNotEmpty) {
         _earnedBadges = local;

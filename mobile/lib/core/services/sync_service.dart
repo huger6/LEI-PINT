@@ -291,7 +291,7 @@ class SyncService {
       // local source of area / points / progression-stage) stays complete.
       final response = await _apiClient.get(
         ApiEndpoints.getBadges,
-        queryParameters: const {'page': 1, 'limit': 100},
+        queryParameters: const {'page': 1, 'limit': 500},
       );
       debugPrint('───────────────────────────────────────────────────');
       debugPrint('SyncService: API response from ${ApiEndpoints.getBadges}:');
@@ -343,6 +343,8 @@ class SyncService {
                     json['id'],
                 'application_id':
                     json['applicationId'] ?? json['application_id'] ?? 0,
+                'application_guid':
+                    json['applicationGuid'] ?? json['application_guid'],
                 'badge_id': json['badge']?['id'] ??
                     json['badge']?['badge_id'] ??
                     json['badge_id'] ??

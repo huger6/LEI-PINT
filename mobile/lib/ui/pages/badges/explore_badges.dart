@@ -235,7 +235,6 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         category: badge.category,
                         points: badge.points,
                         level: badge.level,
-                        duration: badge.duration,
                         medalColor: badge.medalColor,
                         ribbonColor: badge.ribbonColor,
                         isSaved: badgeStore.isFavorite(badge.id),

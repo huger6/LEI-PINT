@@ -100,7 +100,7 @@ class BadgeDao {
       'estimated_time':
           badgeJson['estimated_time_to_acquire'] ?? badgeJson['estimated_duration'],
       'description': badgeJson['badge_description'] ?? badgeJson['description'],
-      'img_url': badgeJson['badge_img_url'] ?? badgeJson['img_url'],
+      'img_url': badgeJson['badge_img_url'] ?? badgeJson['img_url'] ?? badgeJson['imageUrl'],
       'area_id': badgeJson['area_id'] ?? 0,
       'area_name': areaName,
       'stage_code': stageCode,

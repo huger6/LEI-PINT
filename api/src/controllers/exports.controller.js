@@ -181,7 +181,7 @@ const fetchApplicationRows = async ({ from, to, state, userId, role }) => {
             ba.opened_at,
             ba.submitted_at,
             ba.closed_at,
-            ba.reviewer_notes,
+            ba.consultant_notes,
             u.user_guid,
             u.full_name,
             u.email_address,
@@ -291,7 +291,7 @@ const applicationColumns = [
     { key: 'email_address', header: 'email_address', accessor: (row) => row.email_address, width: 34 },
     { key: 'badge_title', header: 'badge_title', accessor: (row) => row.badge_title, width: 34 },
     { key: 'badge_slug', header: 'badge_slug', accessor: (row) => row.badge_slug, width: 28 },
-    { key: 'reviewer_notes', header: 'reviewer_notes', accessor: (row) => row.reviewer_notes, width: 44 }
+    { key: 'consultant_notes', header: 'consultant_notes', accessor: (row) => row.consultant_notes, width: 44 }
 ];
 
 const pointsHistoryColumns = [

@@ -73,7 +73,6 @@ class SavedBadgesScreen extends StatelessWidget {
                   category: badge.category,
                   points: badge.points,
                   level: badge.level,
-                  duration: badge.duration,
                   medalColor: badge.medalColor,
                   ribbonColor: badge.ribbonColor,
                   isSaved: true,
