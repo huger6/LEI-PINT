@@ -935,12 +935,15 @@ class _AttributeChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: ApplicationDetailColors.primaryAction),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: ApplicationDetailColors.primaryText,
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: ApplicationDetailColors.primaryText,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

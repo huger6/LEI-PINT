@@ -7,7 +7,6 @@ class ExploreBadgeCard extends StatelessWidget {
     required this.category,
     required this.points,
     required this.level,
-    required this.duration,
     required this.medalColor,
     required this.ribbonColor,
     this.onTap,
@@ -19,7 +18,6 @@ class ExploreBadgeCard extends StatelessWidget {
   final String category;
   final int points;
   final String level;
-  final String duration;
   final Color medalColor;
   final Color ribbonColor;
   final VoidCallback? onTap;
@@ -99,21 +97,9 @@ class ExploreBadgeCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _DetailItem(
-                          icon: Icons.schedule_rounded,
-                          value: duration,
-                        ),
-                      ),
-                      Expanded(
-                        child: _DetailItem(
-                          icon: Icons.stars_rounded,
-                          value: points.toString(),
-                        ),
-                      ),
-                    ],
+                  _DetailItem(
+                    icon: Icons.stars_rounded,
+                    value: points.toString(),
                   ),
                   const SizedBox(height: 6),
                   const Align(

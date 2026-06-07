@@ -376,7 +376,7 @@ const getEarnedBadges = async (req, res) => {
                 {
                     model: models.badge_applications,
                     as: 'application',
-                    attributes: ['application_id', 'badge_id'],
+                    attributes: ['application_id', 'application_guid', 'badge_id'],
                     include: [
                         {
                             model: models.badges,
@@ -404,13 +404,15 @@ const getEarnedBadges = async (req, res) => {
         // Transform response
         const transformedRows = rows.map(badge => ({
             awardedBadgeId: badge.awarded_badges_id,
+            applicationId: badge.application?.application_id ?? null,
+            applicationGuid: badge.application?.application_guid ?? null,
             badge: badge.application?.badge ? {
                 id: badge.application.badge.badge_id,
                 title: badge.application.badge.badge_title,
                 slug: badge.application.badge.badge_slug,
                 imageUrl: badge.application.badge.badge_img_url,
-                description: badge.application.badge.description,
-                pointsValue: badge.application.badge.points_value
+                description: badge.application.badge.badge_description,
+                pointsValue: badge.application.badge.badge_points
             } : null,
             awardedDate: badge.awarded_at,
             expirationDate: badge.expiration_at,

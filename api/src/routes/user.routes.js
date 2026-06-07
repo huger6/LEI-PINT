@@ -21,6 +21,13 @@ router.get('/', loginRequired, userController.me);
 router.put('/', loginRequired, userController.updateProfile);
 
 /**
+ * @route   PUT /api/me/areas
+ * @desc    Replace the authenticated consultant's area selections
+ * @access  Authenticated (Consultant)
+ */
+router.put('/areas', loginRequired, userController.updateMyAreas);
+
+/**
  * @route   PATCH /api/me/language/:id
  * @desc    Change the authenticated user's preferred language
  * @access  Authenticated

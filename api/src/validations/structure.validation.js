@@ -89,7 +89,7 @@ const getBadgesQuerySchema = z.object({
 	expiringOnly: booleanQueryRule.optional(),
 	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(32)
+	limit: z.coerce.number().int().positive().max(500).default(32)
 }).refine(
 	({ minPoints, maxPoints }) => {
 		if (minPoints === undefined || maxPoints === undefined) {
