@@ -8,14 +8,6 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
-    badge_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'badges',
-        key: 'badge_id'
-      }
-    },
     skill_name: {
       type: DataTypes.STRING(150),
       allowNull: false
@@ -69,12 +61,6 @@ module.exports = function (sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "skills_id" },
-        ]
-      },
-      {
-        name: "badges_skills_fk",
-        fields: [
-          { name: "badge_id" },
         ]
       },
       {

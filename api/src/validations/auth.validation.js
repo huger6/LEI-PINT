@@ -75,10 +75,6 @@ const updateProfileSchema = z.object({
     biography: biographyRule.optional()
 });
 
-const updateMyAreasSchema = z.object({
-    areas: consultantAreasSchema
-});
-
 module.exports = {
     emailRule,
     passwordRule,
@@ -86,5 +82,4 @@ module.exports = {
     registerSchema,
     loginSchema,
     updateProfileSchema,
-    updateMyAreasSchema,
 };

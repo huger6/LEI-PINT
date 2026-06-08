@@ -28,6 +28,7 @@ const getBadges = async (req, res) => {
             badgeClass,
             stageCodes,
             expiringOnly,
+            obtained,
             areaId,
             serviceLineId,
             learningPathId,
@@ -183,10 +184,34 @@ const getBadges = async (req, res) => {
                 model: models.learning_paths,
                 as: 'learning_path',
                 attributes: ['learning_path_id', 'path_title', 'path_slug']
+            },
+            {
+                model: models.badge_requirements,
+                as: 'badge_requirements',
+                attributes: ['requirement_id', 'requirement_title', 'requirement_description'],
+                where: { is_active: true },
+                required: false
             }
         ];
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+
+        const userId = req.user?.sub;
+        const hasObtainedLiteral = userId && !isAdmin
+            ? literal(`(SELECT COUNT(*) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id AND ab.user_id = ${parseInt(userId, 10)}) > 0`)
+            : literal('false');
+
+        if (obtained === 'true' && userId && !isAdmin) {
+            where[Op.and] = [
+                ...(where[Op.and] || []),
+                literal(`(SELECT COUNT(*) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id AND ab.user_id = ${parseInt(userId, 10)}) > 0`)
+            ];
+        } else if (obtained === 'false' && userId && !isAdmin) {
+            where[Op.and] = [
+                ...(where[Op.and] || []),
+                literal(`(SELECT COUNT(*) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id AND ab.user_id = ${parseInt(userId, 10)}) = 0`)
+            ];
+        }
 
         const { rows, count } = await models.badges.findAndCountAll({
             where,
@@ -198,6 +223,7 @@ const getBadges = async (req, res) => {
             attributes: {
                 include: [
                     [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
+                    [hasObtainedLiteral, 'has_obtained'],
                 ],
                 exclude: excludedFields
             }
@@ -263,110 +289,41 @@ const getBadgeBySlug = async (req, res) => {
             {
                 model: models.badge_requirements,
                 as: 'badge_requirements',
+                where: { is_active: true },
+                required: false,
                 attributes: { exclude: isAdmin ? [] : ["is_active", "created_by", "updated_by"] }
-            },
-            {
-                model: models.skills,
-                as: 'skills',
-                attributes: ['skills_id', 'skill_name', 'skill_description']
             },
             {
                 model: models.rewards,
                 as: 'rewards',
                 attributes: ['reward_id', 'special_title', 'special_portrait_svg']
-            }
-        ];
-
-        if (stageCode) {
-            const levelInclude = {
+            },
+            {
                 model: models.progression_stages,
                 as: 'progression_stage',
-                include: [
-                    {
-                        model: models.stage_codes,
-                        as: 'stage_code',
-                        where: { stage_code: stageCode }
-                    }
-                ]
-            };
-
-            if (areaSlug) {
-                const areaInclude = {
-                    model: models.areas,
-                    as: 'area',
-                    where: { area_slug: areaSlug },
-                    attributes: []
-                };
-
-                if (slSlug) {
-                    const slInclude = {
-                        model: models.service_lines,
-                        as: 'service_line',
-                        where: { sl_slug: slSlug },
-                        attributes: []
-                    };
-
-                    if (pathSlug) {
-                        slInclude.include = [{
-                            model: models.learning_paths,
-                            as: 'learning_path',
-                            where: { path_slug: pathSlug },
-                            attributes: []
-                        }];
-                    }
-
-                    areaInclude.include = [slInclude];
-                }
-
-                levelInclude.include.push(areaInclude);
-            }
-
-            includeBlock.push(levelInclude);
-        } else if (areaSlug) {
-            const areaInclude = {
+                attributes: ['progression_stage_id', 'stage_title', 'stage_sequence'],
+                include: [{
+                    model: models.stage_codes,
+                    as: 'stage_code',
+                    attributes: ['stage_code']
+                }]
+            },
+            {
                 model: models.areas,
                 as: 'area',
-                where: { area_slug: areaSlug },
-                attributes: []
-            };
-
-            if (slSlug) {
-                const slInclude = {
-                    model: models.service_lines,
-                    as: 'service_line',
-                    where: { sl_slug: slSlug },
-                    attributes: []
-                };
-
-                if (pathSlug) {
-                    slInclude.include = [{
-                        model: models.learning_paths,
-                        as: 'learning_path',
-                        where: { path_slug: pathSlug },
-                        attributes: []
-                    }];
-                }
-                areaInclude.include = [slInclude];
-            }
-            includeBlock.push(areaInclude);
-        } else if (slSlug) {
-            const slInclude = {
+                attributes: ['area_id', 'area_name', 'area_slug']
+            },
+            {
                 model: models.service_lines,
                 as: 'service_line',
-                where: { sl_slug: slSlug },
-                attributes: []
-            };
-
-            if (pathSlug) {
-                slInclude.include = [{
-                    model: models.learning_paths,
-                    as: 'learning_path',
-                    where: { path_slug: pathSlug },
-                    attributes: []
-                }];
+                attributes: ['service_line_id', 'service_line_name', 'sl_slug']
+            },
+            {
+                model: models.learning_paths,
+                as: 'learning_path',
+                attributes: ['learning_path_id', 'path_title', 'path_slug']
             }
-            includeBlock.push(slInclude);
-        }
+        ];
 
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
 
@@ -387,27 +344,56 @@ const getBadgeBySlug = async (req, res) => {
 
         const userId = req.user?.sub;
         if (userId && !isAdmin) {
-            const awardedBadge = await models.awarded_badges.findOne({
-                where: { user_id: userId },
-                include: [{
-                    model: models.badge_applications,
-                    as: 'application',
-                    where: { badge_id: badge.badge_id },
-                    attributes: []
-                }],
-                attributes: ['awarded_badges_id', 'awarded_at', 'expiration_at', 'public_verification_link'],
-                order: [['awarded_at', 'DESC']]
-            });
+            const [awardedBadge, userApplication, userGoal] = await Promise.all([
+                models.awarded_badges.findOne({
+                    where: { user_id: userId },
+                    include: [{
+                        model: models.badge_applications,
+                        as: 'application',
+                        where: { badge_id: badge.badge_id },
+                        attributes: ['application_guid']
+                    }],
+                    attributes: ['awarded_badges_id', 'awarded_at', 'expiration_at', 'public_verification_link'],
+                    order: [['awarded_at', 'DESC']]
+                }),
+                models.badge_applications.findOne({
+                    where: { badge_id: badge.badge_id, user_id: userId },
+                    include: [{
+                        model: models.requirements_evidences,
+                        as: 'requirements_evidences',
+                        attributes: ['requirement_id']
+                    }],
+                    attributes: ['application_id', 'application_guid', 'application_state', 'opened_at'],
+                    order: [['opened_at', 'DESC']]
+                }),
+                models.goals.findOne({
+                    where: { user_id: userId, badge_id: badge.badge_id },
+                    attributes: ['goal_id']
+                })
+            ]);
 
             if (awardedBadge) {
                 badgeData.user_award = {
                     awarded_at: awardedBadge.awarded_at,
                     expiration_at: awardedBadge.expiration_at,
                     public_verification_link: awardedBadge.public_verification_link,
+                    application_guid: awardedBadge.application?.application_guid || null,
                 };
             } else {
                 badgeData.user_award = null;
             }
+
+            if (userApplication) {
+                badgeData.user_application = {
+                    application_guid: userApplication.application_guid,
+                    application_state: userApplication.application_state,
+                    fulfilled_requirement_ids: (userApplication.requirements_evidences || []).map(e => e.requirement_id),
+                };
+            } else {
+                badgeData.user_application = null;
+            }
+
+            badgeData.has_goal = !!userGoal;
         }
 
         return res.status(200).json({
@@ -555,6 +541,16 @@ const createBadge = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 code: "BADGE_PARENT_HIERARCHY_MISSING"
+            });
+        }
+
+        const existingBadge = await models.badges.findOne({
+            where: { progression_stage_id: progressionStageId }
+        });
+        if (existingBadge) {
+            return res.status(409).json({
+                success: false,
+                code: "LEVEL_ALREADY_HAS_BADGE"
             });
         }
 
@@ -768,6 +764,16 @@ const updateBadge = async (req, res) => {
         let nextLpId = badge.learning_path_id;
 
         if (progressionStageId !== undefined && progressionStageId !== badge.progression_stage_id) {
+            const existingBadge = await models.badges.findOne({
+                where: { progression_stage_id: progressionStageId }
+            });
+            if (existingBadge) {
+                return res.status(409).json({
+                    success: false,
+                    code: "LEVEL_ALREADY_HAS_BADGE"
+                });
+            }
+
             const newStage = await models.progression_stages.findOne({
                 where: { progression_stage_id: progressionStageId },
                 include: [{

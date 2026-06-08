@@ -39,6 +39,12 @@ module.exports = function(sequelize, DataTypes) {
           { name: "token_id" },
         ]
       },
+      {
+        name: "idx_refresh_tokens_user",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
     ]
   });
 };

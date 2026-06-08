@@ -1,7 +1,7 @@
 const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
-const { consentBodySchema, policyIdParam, createPolicyBody, updatePolicyBody } = require('../validations/gdpr.validation');
+const { consentBodySchema, policyIdParam, createPolicyBody, updatePolicyBody, newPolicyVersionBody, policyTypeParam } = require('../validations/gdpr.validation');
 
 // ─── User-facing endpoints ──────────────────────────────────────────────────
 
@@ -210,6 +210,32 @@ const requestAccountDeletion = async (req, res) => {
     }
 };
 
+const getLatestPolicy = async (req, res) => {
+    try {
+        let validated;
+        try { validated = policyTypeParam.parse(req.params); }
+        catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error);
+            throw error;
+        }
+
+        const policy = await models.gdpr_policies.findOne({
+            where: { policy_type: validated.type, is_active: true },
+            attributes: ['policy_id', 'policy_type', 'version', 'policy_text', 'is_mandatory', 'created_at'],
+            order: [['created_at', 'DESC']]
+        });
+
+        if (!policy) {
+            return res.status(404).json({ success: false, code: 'GDPR_POLICY_NOT_FOUND' });
+        }
+
+        return res.status(200).json({ success: true, data: policy });
+    } catch (error) {
+        logger.error('Error fetching latest GDPR policy', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICY_FETCH_FAILED' });
+    }
+};
+
 // ─── Admin endpoints ────────────────────────────────────────────────────────
 
 const adminCreatePolicy = async (req, res) => {
@@ -290,14 +316,70 @@ const adminDeactivatePolicy = async (req, res) => {
     }
 };
 
+const adminNewPolicyVersion = async (req, res) => {
+    const transaction = await models.gdpr_policies.sequelize.transaction();
+    try {
+        let paramValidated;
+        try { paramValidated = policyIdParam.parse(req.params); }
+        catch (error) {
+            await transaction.rollback();
+            if (error.name === 'ZodError') return handleZodError(res, error);
+            throw error;
+        }
+
+        let bodyValidated;
+        try { bodyValidated = newPolicyVersionBody.parse(req.body); }
+        catch (error) {
+            await transaction.rollback();
+            if (error.name === 'ZodError') return handleZodError(res, error);
+            throw error;
+        }
+
+        const oldPolicy = await models.gdpr_policies.findByPk(paramValidated.id, { transaction });
+        if (!oldPolicy) {
+            await transaction.rollback();
+            return res.status(404).json({ success: false, code: 'GDPR_POLICY_NOT_FOUND' });
+        }
+
+        if (!oldPolicy.is_active) {
+            await transaction.rollback();
+            return res.status(400).json({ success: false, code: 'GDPR_POLICY_ALREADY_INACTIVE' });
+        }
+
+        const adminId = req.user.sub;
+
+        await oldPolicy.update({ is_active: false, updated_by: adminId }, { transaction });
+
+        const newPolicy = await models.gdpr_policies.create({
+            policy_type: oldPolicy.policy_type,
+            version: bodyValidated.version,
+            policy_text: bodyValidated.policy_text,
+            is_mandatory: bodyValidated.is_mandatory !== undefined ? bodyValidated.is_mandatory : oldPolicy.is_mandatory,
+            is_active: true,
+            created_by: adminId,
+            updated_by: adminId
+        }, { transaction });
+
+        await transaction.commit();
+
+        return res.status(201).json({ success: true, data: newPolicy });
+    } catch (error) {
+        await transaction.rollback();
+        logger.error('Error creating new GDPR policy version', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICY_VERSION_FAILED' });
+    }
+};
+
 module.exports = {
     getActivePolicies,
     getPolicyById,
+    getLatestPolicy,
     recordConsent,
     getConsentHistory,
     requestDataExport,
     requestAccountDeletion,
     adminCreatePolicy,
     adminUpdatePolicy,
-    adminDeactivatePolicy
+    adminDeactivatePolicy,
+    adminNewPolicyVersion
 };

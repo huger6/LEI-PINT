@@ -488,88 +488,8 @@ const changeLanguage = async (req, res) => {
     }
 };
 
-const updateMyAreas = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const userId = req.user.sub;
-    const t = await sequelize.transaction();
-
-    try {
-        const { updateMyAreasSchema } = require('../validations/auth.validation');
-        const { areas } = updateMyAreasSchema.parse(req.body);
-
-        const consultant = await models.consultants.findByPk(userId, {
-            attributes: ['user_id'],
-            transaction: t
-        });
-
-        if (!consultant) {
-            await t.rollback();
-            return res.status(403).json({
-                success: false,
-                code: 'AUTH_NOT_CONSULTANT'
-            });
-        }
-
-        const areaIds = areas.map((a) => a.area_id);
-        const existingAreas = await models.areas.findAll({
-            where: { area_id: { [Op.in]: areaIds }, is_active: true },
-            attributes: ['area_id'],
-            transaction: t,
-            raw: true
-        });
-
-        if (existingAreas.length !== areaIds.length) {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'AREA_INVALID_SELECTION'
-            });
-        }
-
-        await models.consultant_areas.destroy({
-            where: { user_id: userId },
-            transaction: t
-        });
-
-        await models.consultant_areas.bulkCreate(
-            areas.map((a) => ({
-                user_id: userId,
-                area_id: a.area_id,
-                is_primary: a.is_primary
-            })),
-            { transaction: t }
-        );
-
-        await t.commit();
-
-        const cacheKey = `user:profile:${userId}`;
-        await redis.del(cacheKey);
-        await sendTopicUpdate("new_data", 1);
-
-        logger.info('Consultant areas updated', { requestId, userId });
-
-        return res.status(200).json({
-            success: true,
-            code: 'AUTH_AREAS_UPDATED'
-        });
-    } catch (error) {
-        await t.rollback();
-
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
-
-        logger.error('Error updating consultant areas', { requestId, userId, error });
-
-        return res.status(500).json({
-            success: false,
-            code: 'AUTH_AREAS_UPDATE_FAILED',
-            requestId
-        });
-    }
-};
-
 module.exports = {
     me,
     updateProfile,
-    changeLanguage,
-    updateMyAreas
+    changeLanguage
 };
