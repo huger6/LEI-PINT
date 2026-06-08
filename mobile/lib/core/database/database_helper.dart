@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 8;
+  static const _databaseVersion = 9;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -155,6 +155,11 @@ class LocalDatabase {
         )
       ''');
     }
+    if (oldVersion < 9) {
+      await db.execute(
+        'ALTER TABLE $badgesTable ADD COLUMN created_at INTEGER',
+      );
+    }
   }
 
   Future<void> _createAllTables(Database db) async {
@@ -267,6 +272,7 @@ class LocalDatabase {
         service_line_id      INTEGER NOT NULL,
         learning_path_id     INTEGER NOT NULL,
         progression_stage_id INTEGER NOT NULL,
+        created_at           INTEGER,
         synced_at            INTEGER NOT NULL
       )
     ''',

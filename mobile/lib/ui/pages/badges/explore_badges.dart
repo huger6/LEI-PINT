@@ -98,6 +98,11 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
       if (filter.maxPoints != null) {
         result = result.where((b) => b.points <= filter.maxPoints!).toList();
       }
+      if (filter.badgeType != null) {
+        result = result
+            .where((b) => b.badgeType.toLowerCase() == filter.badgeType!)
+            .toList();
+      }
 
       if (filter.sort == 'points') {
         result.sort((a, b) => b.points.compareTo(a.points));
@@ -237,6 +242,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         level: badge.level,
                         medalColor: badge.medalColor,
                         ribbonColor: badge.ribbonColor,
+                        isSpecial: badge.isSpecial,
                         isSaved: badgeStore.isFavorite(badge.id),
                         onSaveToggle: () {
                           badgeStore.toggleFavorite(badge.id);

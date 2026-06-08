@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -54,12 +55,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
 
         Future.delayed(const Duration(seconds: 1), () {
           if (!mounted) return;
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRouter.emailConfirmation,
-            (route) => false,
-            arguments: pendingEmail,
-          );
+          context.go(AppRouter.emailConfirmation, extra: pendingEmail);
         });
       } else {
         final errorMessage =

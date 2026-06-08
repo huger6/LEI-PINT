@@ -365,6 +365,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                     onTap: () => _handleCardTap(item),
                     onShare: () => _handleShare(item),
                     onDownload: () => _handleDownload(item),
+                    expirationDate: item.award.expirationAt,
                   );
                 },
               ),

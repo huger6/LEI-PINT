@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
@@ -29,7 +30,7 @@ class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
     if (authStore.isAuthenticated) {
       await langCtrl.setLanguageFromId(authStore.currentUser?.preferredLangId);
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(AppRouter.dashboard);
+      context.go(AppRouter.dashboard);
       return;
     }
 
@@ -42,7 +43,7 @@ class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
     }
 
     final targetRoute = restored ? AppRouter.dashboard : AppRouter.login;
-    Navigator.of(context).pushReplacementNamed(targetRoute);
+    context.go(targetRoute);
   }
 
   @override

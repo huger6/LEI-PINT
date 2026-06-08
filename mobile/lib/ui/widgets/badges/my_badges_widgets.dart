@@ -39,6 +39,7 @@ class AchievedBadgeCard extends StatelessWidget {
     this.onTap,
     this.onShare,
     this.onDownload,
+    this.expirationDate,
   });
 
   final BadgeModel badge;
@@ -48,6 +49,7 @@ class AchievedBadgeCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onShare;
   final VoidCallback? onDownload;
+  final DateTime? expirationDate;
 
   @override
   Widget build(BuildContext context) {
@@ -179,6 +181,13 @@ class AchievedBadgeCard extends StatelessWidget {
                                 label: _formatDate(completionDate),
                                 maxWidth: maxChipWidth,
                               ),
+                              if (expirationDate != null)
+                                _BadgeMetaChip(
+                                  icon: Icons.event_busy_rounded,
+                                  label: '${tr.tr('expiresOn')} ${_formatDate(expirationDate!)}',
+                                  iconColor: const Color(0xFFB05B2E),
+                                  maxWidth: maxChipWidth,
+                                ),
                             ],
                           );
                         },

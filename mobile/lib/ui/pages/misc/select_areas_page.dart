@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/area_model.dart';
@@ -279,7 +280,7 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
     }
 
     authStore.saveSelectedAreas(selectedAreas, mainArea);
-    Navigator.pushNamed(context, AppRouter.newUserConfirm);
+    context.push(AppRouter.newUserConfirm);
   }
 
   Widget _buildAreaChip(AreaModel area, ThemeData theme) {

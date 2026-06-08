@@ -14,6 +14,7 @@ import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/shared/nav_link.dart';
 import '../../widgets/shared/password_strength_indicator.dart';
 import '../../widgets/shared/modern_date_picker.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/lang_model.dart';
@@ -175,49 +176,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      _populateFormWithPreviousData(args);
-    }
-  }
-
-  void _populateFormWithPreviousData(Map<String, dynamic> data) {
-    if (mounted) {
-      _nameController.text = data['name'] ?? '';
-      _usernameController.text = data['username'] ?? '';
-      _emailController.text = data['email'] ?? '';
-      _passwordController.text = data['password'] ?? '';
-      _confirmPasswordController.text = data['password'] ?? '';
-      _phoneController.text = data['phone'] ?? '';
-      _phonePrefix = data['phonePrefix'] ?? '+351';
-      _birthdateController.text = data['birthdate'] ?? '';
-      _profileImgUrlController.text = data['profileImgUrl'] ?? '';
-      _bioController.text = data['bio'] ?? '';
-
-      if (data['location'] != null) {
-        try {
-          _selectedLocation = _availableLocations.firstWhere(
-            (loc) => loc.id == data['location'].id,
-          );
-        } catch (_) {}
-      }
-
-      if (data['preferredLanguage'] != null) {
-        try {
-          _preferredLanguage = _availableLanguages.firstWhere(
-            (lang) => lang.id == data['preferredLanguage'].id,
-          );
-          LanguageScope.of(context).setLanguageCode(_preferredLanguage!.code);
-          FormValidators.setLanguageCode(_preferredLanguage!.code);
-        } catch (_) {}
-      }
-    }
-  }
-
   void _resetForm() {
     _nameController.clear();
     _usernameController.clear();
@@ -300,13 +258,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _goBackToLogin() {
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
       return;
     }
 
-    navigator.pushReplacementNamed(AppRouter.login);
+    context.go(AppRouter.login);
   }
 
   void _debounceValidation(String field) {
@@ -437,7 +394,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       authStore.saveRegistrationDraft(registrationData);
 
-      Navigator.pushNamed(context, AppRouter.selectArea);
+      context.push(AppRouter.selectArea);
     } else if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

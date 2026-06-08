@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/sync_manager.dart';
 
@@ -82,19 +83,19 @@ class AppBottomNavBar extends StatelessWidget {
 
     switch (target) {
       case AppTab.explore:
-        Navigator.pushReplacementNamed(context, '/explore-competencies');
+        context.go('/explore-competencies');
         break;
       case AppTab.home:
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        context.go('/dashboard');
         break;
       case AppTab.progress:
-        Navigator.pushReplacementNamed(context, '/evolucao');
+        context.go('/evolucao');
         break;
       case AppTab.profile:
-        Navigator.pushReplacementNamed(context, '/profile');
+        context.go('/profile');
         break;
       case AppTab.badges:
-        Navigator.pushReplacementNamed(context, '/my-badges');
+        context.go('/my-badges');
         break;
     }
   }

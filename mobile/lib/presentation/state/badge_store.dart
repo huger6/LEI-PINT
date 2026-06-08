@@ -62,6 +62,9 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _reloadFromLocal() async {
     final local = await _badgeRepository.getBadgesLocal();
+    // Never blank the in-memory catalog on a transient empty read: earned
+    // badges and detail lookups join against it, and an empty catalog yields
+    // summary-only rows (empty slug / missing attributes).
     if (local.isNotEmpty) {
       _badges = local;
       _errorMessage = null;
@@ -216,6 +219,15 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       await _badgeRepository.addFavorite(badgeId);
     }
+  }
+
+  void clear() {
+    // Keep _badges and _detailsBySlug — badge catalog is global, not user-specific.
+    _earnedBadges = [];
+    _favoriteBadgeIds = {};
+    _isLoadingEarned = false;
+    _pendingCelebration = null;
+    notifyListeners();
   }
 
   void _replaceBadge(BadgeModel detail) {

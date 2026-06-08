@@ -206,6 +206,18 @@ class SyncService {
     return const [];
   }
 
+  int _extractTotalPages(dynamic payload) {
+    if (payload is Map) {
+      final pagination = payload['pagination'];
+      if (pagination is Map) {
+        final totalPages = pagination['totalPages'];
+        if (totalPages is int) return totalPages;
+        return int.tryParse(totalPages?.toString() ?? '') ?? 1;
+      }
+    }
+    return 1;
+  }
+
   Future<bool> _syncList<T>({
     required String endpoint,
     required T Function(Map<String, dynamic>) fromJson,
@@ -287,22 +299,30 @@ class SyncService {
 
   Future<bool> _syncBadges() async {
     try {
-      // Fetch as many badges as the API allows so the local catalog (the only
-      // local source of area / points / progression-stage) stays complete.
-      final response = await _apiClient.get(
-        ApiEndpoints.getBadges,
-        queryParameters: const {'page': 1, 'limit': 500},
-      );
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint('SyncService: API response from ${ApiEndpoints.getBadges}:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
-      final list = _extractList(response);
-      final rows = list
-          .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
-          .toList();
-      await _badgeDao.replaceAllFromJson(rows);
+      // Fetch the whole catalog so the local copy (the only local source of
+      // area / points / progression-stage) stays complete. The API caps
+      // `limit` at 100, so page through every page rather than requesting an
+      // oversized limit (which is rejected with 400, leaving the catalog empty).
+      final rows = <Map<String, dynamic>>[];
+      var page = 1;
+      while (true) {
+        final response = await _apiClient.get(
+          ApiEndpoints.getBadges,
+          queryParameters: {'page': page, 'limit': 100},
+        );
+        final pageRows = _extractList(response)
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        rows.addAll(pageRows);
+        final totalPages = _extractTotalPages(response);
+        if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
+        page++;
+      }
+      debugPrint('SyncService: fetched ${rows.length} badges across $page page(s)');
+      if (rows.isNotEmpty) {
+        await _badgeDao.replaceAllFromJson(rows);
+      }
       return true;
     } on SocketException {
       return false;

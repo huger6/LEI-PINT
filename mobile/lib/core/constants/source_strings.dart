@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 6;
+const int sourceStringsVersion = 7;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -333,6 +333,7 @@ const _sourceJson = r'''
   "proofDocument": "Comprovativo",
   "share": "Partilhar",
   "special": "Especial",
+  "expiresOn": "Expira em",
   "badgeSharedSuccess": "Badge partilhado com sucesso!",
   "couldNotOpenLink": "Não foi possível abrir a ligação.",
   "couldNotIdentifyApplication": "Não foi possível identificar a candidatura associada a este badge.",
@@ -362,6 +363,7 @@ const _sourceJson = r'''
   "languageChangeError": "Erro ao alterar idioma.",
   "helpAndPolicies": "Ajuda e políticas",
   "privacyPolicies": "Políticas de privacidade",
+  "termsAndConditionsTitle": "Termos e condições",
   "help": "Ajuda",
   "logout": "Terminar sessão",
   "appVersion": "Versão {version}",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
@@ -8,12 +9,12 @@ import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/auth_content_card.dart';
 
 class EmailConfirmationScreen extends StatelessWidget {
-  const EmailConfirmationScreen({super.key});
+  const EmailConfirmationScreen({super.key, required this.email});
+
+  final String email;
 
   @override
   Widget build(BuildContext context) {
-    final email =
-        ModalRoute.of(context)?.settings.arguments as String? ?? '';
     final authStore = context.read<AuthStore>();
 
     return Scaffold(
@@ -30,11 +31,7 @@ class EmailConfirmationScreen extends StatelessWidget {
                   onSendConfirmation: () =>
                       authStore.resendConfirmation(email),
                   onGoToLogin: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRouter.login,
-                      (route) => false,
-                    );
+                    context.go(AppRouter.login);
                   },
                 ),
               ),

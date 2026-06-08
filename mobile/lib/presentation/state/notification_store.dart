@@ -50,6 +50,12 @@ class NotificationStore extends ChangeNotifier {
     }
   }
 
+  void clear() {
+    _all = [];
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> markAllRead() async {
     await _dao.markAllRead();
     _all = _all.map((n) => n.copyWith(isRead: true)).toList();

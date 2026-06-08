@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
+
 class ExploreBadgeCard extends StatelessWidget {
   const ExploreBadgeCard({
     super.key,
@@ -12,6 +14,7 @@ class ExploreBadgeCard extends StatelessWidget {
     this.onTap,
     this.isSaved = false,
     this.onSaveToggle,
+    this.isSpecial = false,
   });
 
   final String title;
@@ -23,9 +26,11 @@ class ExploreBadgeCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isSaved;
   final VoidCallback? onSaveToggle;
+  final bool isSpecial;
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(15),
       onTap: onTap,
@@ -35,11 +40,16 @@ class ExploreBadgeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: const [
+          border: isSpecial
+              ? Border.all(color: const Color(0xFFD4A843), width: 1.6)
+              : null,
+          boxShadow: [
             BoxShadow(
-              color: Color(0x14000000),
+              color: isSpecial
+                  ? const Color(0x20D4A843)
+                  : const Color(0x14000000),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -68,7 +78,32 @@ class ExploreBadgeCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      if (isSpecial) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3D6),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: const Color(0xFFD4A843),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            tr.tr('special'),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFB08A2E),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                       GestureDetector(
                         onTap: onSaveToggle,
                         child: Icon(

@@ -23,15 +23,23 @@ class MainBadgesCard extends StatelessWidget {
     final isPositive = growthPercent >= 0;
 
     final years = yearlyBadges.keys.toList()..sort();
-    final spots = List.generate(years.length, (i) {
-      return FlSpot(i.toDouble(), (yearlyBadges[years[i]] ?? 0).toDouble());
-    });
-    final labels = years.map((y) => '$y').toList();
+    final hasData = years.isNotEmpty;
+    final currentYear = DateTime.now().year;
+    // With no badges yet, show a flat zero baseline across the last two years
+    // instead of a "no data" placeholder.
+    final spots = hasData
+        ? List.generate(years.length, (i) {
+            return FlSpot(i.toDouble(), (yearlyBadges[years[i]] ?? 0).toDouble());
+          })
+        : const [FlSpot(0, 0), FlSpot(1, 0)];
+    final labels = hasData
+        ? years.map((y) => '$y').toList()
+        : ['${currentYear - 1}', '$currentYear'];
 
-    final maxY = spots.isEmpty
-        ? 40.0
-        : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
-            .ceilToDouble().clamp(1.0, 100000.0);
+    final maxY = hasData
+        ? (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
+            .ceilToDouble().clamp(1.0, 100000.0)
+        : 5.0;
 
     return Container(
       width: double.infinity,
@@ -109,17 +117,7 @@ class MainBadgesCard extends StatelessWidget {
           const SizedBox(height: 6),
           SizedBox(
             height: 190,
-            child: spots.isEmpty
-                ? Center(
-                    child: Text(
-                      tr.tr('noEvolutionData'),
-                      style: const TextStyle(
-                        color: Color(0xFF8CA0B2),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : LineChart(
+            child: LineChart(
                     LineChartData(
                       minX: 0,
                       maxX: (spots.length - 1).toDouble(),
@@ -420,6 +418,12 @@ class _PointsBarCardState extends State<PointsBarCard> {
         aggregated = _aggregateByMonth();
     }
 
+    // Keep a single zero bucket so the chart renders a "0" baseline rather than
+    // a blank / "no data" placeholder when there is no points history yet.
+    if (aggregated.isEmpty) {
+      aggregated = {'${DateTime.now().year}': 0};
+    }
+
     final rawKeys = aggregated.keys.toList();
     final labels = rawKeys.map((k) {
       if (widget.selectedPeriod == 'monthly' && k.contains('-')) {
@@ -530,17 +534,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
           const SizedBox(height: 12),
           SizedBox(
             height: 180,
-            child: values.every((v) => v == 0)
-                ? Center(
-                    child: Text(
-                      tr.tr('noDataAvailable'),
-                      style: const TextStyle(
-                        color: Color(0xFF8CA0B2),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : BarChart(
+            child: BarChart(
                     BarChartData(
                       maxY: chartMax.toDouble(),
                       alignment: BarChartAlignment.spaceAround,
@@ -869,12 +863,13 @@ class LevelsRadarCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            Center(
+            const Center(
               child: Text(
-                tr.tr('noDataAvailable'),
-                style: const TextStyle(
+                '0',
+                style: TextStyle(
                   color: Color(0xFF8CA0B2),
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 40,
                 ),
               ),
             ),
@@ -984,12 +979,13 @@ class BadgesPerAreaCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            Center(
+            const Center(
               child: Text(
-                tr.tr('noDataAvailable'),
-                style: const TextStyle(
+                '0',
+                style: TextStyle(
                   color: Color(0xFF8CA0B2),
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 40,
                 ),
               ),
             ),

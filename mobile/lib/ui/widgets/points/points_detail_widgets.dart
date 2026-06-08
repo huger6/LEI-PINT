@@ -397,17 +397,7 @@ class WeeklyPointsChart extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 170,
-            child: maxY == 0
-                ? Center(
-                    child: Text(
-                      tr.tr('noDataAvailable'),
-                      style: const TextStyle(
-                        color: Color(0xFF8CA0B2),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : LineChart(
+            child: LineChart(
                     LineChartData(
                       minX: 0,
                       maxX: 6,
@@ -620,17 +610,7 @@ class MonthlyPointsChart extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 170,
-            child: maxVal == 0
-                ? Center(
-                    child: Text(
-                      tr.tr('noDataAvailable'),
-                      style: const TextStyle(
-                        color: Color(0xFF8CA0B2),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : BarChart(
+            child: BarChart(
                     BarChartData(
                       maxY: maxY,
                       alignment: BarChartAlignment.spaceAround,

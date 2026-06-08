@@ -10,6 +10,7 @@ class BadgeFilterResult {
     this.date,
     this.minPoints,
     this.maxPoints,
+    this.badgeType,
   });
 
   final String sort;
@@ -18,6 +19,7 @@ class BadgeFilterResult {
   final String? date;
   final int? minPoints;
   final int? maxPoints;
+  final String? badgeType;
 
   static const empty = BadgeFilterResult();
 }
@@ -41,6 +43,7 @@ Future<BadgeFilterResult?> showFilterModal(
   String? areaSelected;
   String? levelSelected;
   String? dateSelected;
+  String? badgeTypeSelected;
   double minPointsValue = 0;
   double maxPointsValue = 1000;
 
@@ -219,6 +222,37 @@ Future<BadgeFilterResult?> showFilterModal(
                   const Divider(color: sectionDivider, height: 1),
                   ExpansionTile(
                     title: Text(
+                      tr.tr('badgeType'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: textPrimary,
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                    children: [
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: [
+                          buildChip(
+                            optionValue: 'standard',
+                            optionLabel: tr.tr('badgeTypeNormal'),
+                            selectedValue: badgeTypeSelected,
+                            onSelect: (v) => badgeTypeSelected = v,
+                          ),
+                          buildChip(
+                            optionValue: 'special',
+                            optionLabel: tr.tr('badgeTypeSpecial'),
+                            selectedValue: badgeTypeSelected,
+                            onSelect: (v) => badgeTypeSelected = v,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(color: sectionDivider, height: 1),
+                  ExpansionTile(
+                    title: Text(
                       tr.tr('date'),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
@@ -386,6 +420,7 @@ Future<BadgeFilterResult?> showFilterModal(
                             date: dateSelected,
                             minPoints: minPts,
                             maxPoints: maxPts,
+                            badgeType: badgeTypeSelected,
                           ),
                         );
                       },

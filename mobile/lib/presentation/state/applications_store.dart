@@ -20,6 +20,13 @@ class ApplicationsStore extends ChangeNotifier {
     return _latestByBadgeSlug[badgeSlug];
   }
 
+  void clear() {
+    _isLoading = false;
+    _errorMessage = null;
+    _latestByBadgeSlug.clear();
+    notifyListeners();
+  }
+
   Future<ApplicationSummaryModel?> loadLatestForBadgeSlug(
     String badgeSlug,
   ) async {

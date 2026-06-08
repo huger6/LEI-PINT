@@ -89,6 +89,26 @@ class DashboardStore extends ChangeNotifier {
   List<Map<String, dynamic>> get pointsHistory => _pointsHistory;
   List<MonthBadgeCount> get monthlyBadgeCounts => _monthlyBadgeCounts;
 
+  void clear() {
+    _isLoading = false;
+    _errorMessage = null;
+    _recommendedBadges = [];
+    _recentSubmissions = [];
+    _areaMetrics = [];
+    _totalPoints = 0;
+    _completedBadges = 0;
+    _totalApplications = 0;
+    _growthPercent = 0;
+    _selectedMonth = '-';
+    _recentMonths = [];
+    _topPercent = 0;
+    _timeline = [];
+    _lpProgress = [];
+    _pointsHistory = [];
+    _monthlyBadgeCounts = [];
+    notifyListeners();
+  }
+
   Future<void> loadDashboard(UserModel? currentUser) async {
     _isLoading = true;
     _errorMessage = null;
