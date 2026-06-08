@@ -153,11 +153,12 @@ class BadgesStatsCard extends StatelessWidget {
 
     final labels = data.map((d) => tr.tr(_monthNames[d.month - 1])).toList();
 
-    final maxY = spots.isEmpty
-        ? 5.0
-        : (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
+    final hasValues = spots.any((s) => s.y > 0);
+    final maxY = hasValues
+        ? (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
             .ceilToDouble()
-            .clamp(1, 1000);
+            .clamp(1, 1000)
+        : 5.0;
 
     return Container(
       width: double.infinity,
@@ -203,17 +204,7 @@ class BadgesStatsCard extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             height: 180,
-            child: spots.isEmpty || spots.every((s) => s.y == 0)
-                ? Center(
-                    child: Text(
-                      tr.tr('noEvolutionData'),
-                      style: TextStyle(
-                        color: Color(0xFF8CA0B2),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : LineChart(
+            child: LineChart(
                     LineChartData(
                       minX: 0,
                       maxX: (spots.length - 1).toDouble(),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'package:go_router/go_router.dart';
 import 'core/routes/app_router.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/theme/app_theme.dart';
@@ -30,6 +31,14 @@ import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/services/translation_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// Created once here. NEVER call criarRouter() inside a build method —
+// GoRouter resets the entire navigation stack to "/" on every instantiation,
+// which causes an infinite splash-screen loop whenever the language controller
+// calls notifyListeners().
+final GoRouter _appRouter = criarRouter(navigatorKey);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -218,7 +227,7 @@ class MyApp extends StatelessWidget {
       child: AnimatedBuilder(
         animation: languageController,
         builder: (context, _) {
-          return MaterialApp(
+          return MaterialApp.router(
             title: languageController.tr('appTitle'),
             theme: AppTheme.lightTheme,
             debugShowCheckedModeBanner: false,
@@ -229,8 +238,7 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
-            initialRoute: AppRouter.initial,
-            onGenerateRoute: AppRouter.generateRoute,
+            routerConfig: _appRouter,
           );
         },
       ),

@@ -35,6 +35,9 @@ class ApplicationDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasCategory = badge.category.trim().isNotEmpty;
+    final hasLevel = badge.level.trim().isNotEmpty;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -50,6 +53,8 @@ class ApplicationDetailHeader extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           BadgeMedalIcon(
             medalColor: badge.medalColor,
@@ -67,56 +72,22 @@ class ApplicationDetailHeader extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          if (badge.category.trim().isNotEmpty ||
-              badge.level.trim().isNotEmpty) ...[
-            const SizedBox(height: 6),
+          if (hasCategory || hasLevel) ...[
+            const SizedBox(height: 10),
             Wrap(
               alignment: WrapAlignment.center,
-              spacing: 14,
-              runSpacing: 6,
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                if (badge.category.trim().isNotEmpty)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.category_outlined,
-                        size: 16,
-                        color: ApplicationDetailColors.secondaryText,
-                      ),
-                      const SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          badge.category,
-                          style: const TextStyle(
-                            color: ApplicationDetailColors.secondaryText,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                if (hasCategory)
+                  _HeaderMetaChip(
+                    icon: Icons.category_outlined,
+                    label: badge.category,
                   ),
-                if (badge.level.trim().isNotEmpty)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.stairs_outlined,
-                        size: 16,
-                        color: ApplicationDetailColors.secondaryText,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        badge.level,
-                        style: const TextStyle(
-                          color: ApplicationDetailColors.secondaryText,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                if (hasLevel)
+                  _HeaderMetaChip(
+                    icon: Icons.stairs_outlined,
+                    label: badge.level,
                   ),
               ],
             ),
@@ -143,18 +114,68 @@ class ApplicationDetailHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  stateLabel,
-                  style: TextStyle(
-                    color: stateColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                Flexible(
+                  child: Text(
+                    stateLabel,
+                    style: TextStyle(
+                      color: stateColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeaderMetaChip extends StatelessWidget {
+  const _HeaderMetaChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 220),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEDF1F5),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: ApplicationDetailColors.secondaryText,
+            ),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: ApplicationDetailColors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

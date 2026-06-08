@@ -7,6 +7,8 @@ import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/nav_link.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/routes/app_router.dart';
 import '../../../injection_container.dart';
 
@@ -124,24 +126,16 @@ class _LoginScreenState extends State<LoginScreen> {
           );
 
           if (forcePasswordChange || firstLogin) {
-            Navigator.pushReplacementNamed(
-              context,
-              AppRouter.changePassword,
-              arguments: true,
-            );
+            context.go(AppRouter.changePassword, extra: true);
           } else {
-            Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+            context.go(AppRouter.dashboard);
           }
         } else if (result['emailNotConfirmed'] == true) {
           final identifier = _loginController.text.trim();
           final email = identifier.contains('@') ? identifier : '';
 
           if (email.isNotEmpty) {
-            Navigator.pushNamed(
-              context,
-              AppRouter.emailConfirmation,
-              arguments: email,
-            );
+            context.push(AppRouter.emailConfirmation, extra: email);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -294,10 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRouter.forgotPassword,
-                            );
+                            context.push(AppRouter.forgotPassword);
                           },
                           child: Text(
                             tr.tr('forgotPassword'),
@@ -324,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: tr.tr('noAccount'),
                         linkText: tr.tr('register'),
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRouter.register);
+                          context.push(AppRouter.register);
                         },
                       ),
 

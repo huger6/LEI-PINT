@@ -24,6 +24,14 @@ class GoalsStore extends ChangeNotifier {
   List<GoalModel> get completedGoals =>
       _goals.where((g) => g.isCompleted).toList(growable: false);
 
+  void clear() {
+    _goals = [];
+    _isLoading = false;
+    _errorMessage = null;
+    _completingGoalId = null;
+    notifyListeners();
+  }
+
   Future<void> loadGoals() async {
     _isLoading = true;
     _errorMessage = null;

@@ -31,19 +31,25 @@ class BadgeRepository {
   Future<List<BadgeModel>> getBadges() async {
     // The catalog must be as complete as possible: it is the only local source
     // of area / points / progression-stage for earned badges and applications,
-    // whose list endpoints don't return those fields. Without a high limit the
-    // API defaults to 32 rows, leaving many badges without an area locally.
-    final payload = await _apiClient.get(
-      ApiEndpoints.getBadges,
-      queryParameters: const {'page': 1, 'limit': 500},
-    );
-    debugPrint('BadgeRepo.getBadges: raw payload type=${payload.runtimeType}');
-    final list = _extractList(payload);
-    debugPrint('BadgeRepo.getBadges: extracted ${list.length} items');
-    final rows = list
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    // whose list endpoints don't return those fields. The API caps `limit` at
+    // 100, so page through the whole catalog instead of requesting it in one
+    // oversized call (which is rejected with 400 and leaves the catalog empty).
+    final rows = <Map<String, dynamic>>[];
+    var page = 1;
+    while (true) {
+      final payload = await _apiClient.get(
+        ApiEndpoints.getBadges,
+        queryParameters: {'page': page, 'limit': 100},
+      );
+      final pageRows = _extractList(payload)
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      rows.addAll(pageRows);
+      final totalPages = _extractTotalPages(payload);
+      if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
+      page++;
+    }
     debugPrint('BadgeRepo.getBadges: parsed ${rows.length} badge rows');
     if (rows.isNotEmpty) {
       await _badgeDao.replaceAllFromJson(rows);
@@ -260,5 +266,17 @@ class BadgeRepository {
     }
 
     return <String, dynamic>{};
+  }
+
+  int _extractTotalPages(dynamic payload) {
+    if (payload is Map) {
+      final pagination = payload['pagination'];
+      if (pagination is Map) {
+        final totalPages = pagination['totalPages'];
+        if (totalPages is int) return totalPages;
+        return int.tryParse(totalPages?.toString() ?? '') ?? 1;
+      }
+    }
+    return 1;
   }
 }

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/local/my_skill_dao.dart';
+import '../../../presentation/state/applications_store.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
+import '../../../presentation/state/dashboard_store.dart';
+import '../../../presentation/state/goals_store.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../../../presentation/state/notification_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/shared/translated_text.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
@@ -40,17 +45,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleLogout() async {
+    context.read<BadgeStore>().clear();
+    context.read<DashboardStore>().clear();
+    context.read<ApplicationsStore>().clear();
+    context.read<NotificationStore>().clear();
+    context.read<GoalsStore>().clear();
     await context.read<AuthStore>().clearSession();
 
     if (!mounted) {
       return;
     }
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRouter.login,
-      (route) => false,
-    );
+    context.go(AppRouter.login);
   }
 
   @override
@@ -150,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: '$badgeCount',
                       label: tr.tr('badgesMetric'),
                       icon: Icons.workspace_premium_outlined,
-                      onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
+                      onTap: () => context.go(AppRouter.myBadges),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -248,8 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  onTap: () => Navigator.pushNamed(
-                    context, AppRouter.badgeGallery),
+                  onTap: () => context.push(AppRouter.badgeGallery),
                 ),
               ),
               const SizedBox(height: 14),
@@ -265,8 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileMenuTile(
                 icon: Icons.edit_note_rounded,
                 label: tr.tr('myCharacteristics'),
-                onTap: () => Navigator.pushNamed(
-                    context, AppRouter.characteristics),
+                onTap: () => context.push(AppRouter.characteristics),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
@@ -277,34 +281,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileMenuTile(
                 icon: Icons.person_outline_rounded,
                 label: tr.tr('editProfile'),
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRouter.editProfile),
+                onTap: () => context.push(AppRouter.editProfile),
               ),
               if (isConsultant) ...[
                 const SizedBox(height: 8),
                 ProfileMenuTile(
                   icon: Icons.category_outlined,
                   label: tr.tr('chooseAreasMenuLabel'),
-                  onTap: () =>
-                      Navigator.pushNamed(context, AppRouter.chooseAreas),
+                  onTap: () => context.push(AppRouter.chooseAreas),
                 ),
               ],
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.lock_outline_rounded,
                 label: tr.tr('changePasswordAction'),
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRouter.changePassword,
-                  arguments: false,
-                ),
+                onTap: () => context.push(AppRouter.changePassword, extra: false),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.email_outlined,
                 label: tr.tr('emailSignature'),
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRouter.emailSignature),
+                onTap: () => context.push(AppRouter.emailSignature),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
@@ -354,16 +351,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.description_outlined,
-                label: tr.tr('termsAndConditions'),
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRouter.termsConditions),
+                label: tr.tr('termsAndConditionsTitle'),
+                onTap: () => context.push(AppRouter.termsConditions),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
                 icon: Icons.help_outline_rounded,
                 label: tr.tr('help'),
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRouter.help),
+                onTap: () => context.push(AppRouter.help),
               ),
               const SizedBox(height: 10),
               Container(
@@ -379,9 +374,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 child: ListTile(
-                  leading: const Icon(
-                    Icons.logout_rounded,
-                    color: Color(0xFF5D9FD1),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFD5EAF6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.logout_rounded,
+                      color: Color(0xFF4D9ECC),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     tr.tr('logout'),

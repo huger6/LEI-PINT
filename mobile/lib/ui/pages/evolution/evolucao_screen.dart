@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../presentation/state/auth_store.dart';
@@ -121,7 +122,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                     value: '$badgeCount',
                     icon: Icons.workspace_premium_rounded,
                     accentColor: const Color(0xFF66B6E6),
-                    onTap: () => Navigator.pushNamed(context, AppRouter.myBadges),
+                    onTap: () => context.go(AppRouter.myBadges),
                   ),
                   MiniStatCard(
                     title: tr.tr('activeAchievements'),

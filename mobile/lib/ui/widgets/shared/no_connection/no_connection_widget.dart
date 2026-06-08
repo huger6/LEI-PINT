@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -32,7 +33,7 @@ class _NoConnectionWidgetState extends State<NoConnectionWidget> {
 
   void _onConnectivityChanged() {
     if (_connectivity.isOnline && mounted) {
-      Navigator.of(context).pushReplacementNamed(widget.targetRoute);
+      context.go(widget.targetRoute);
     }
   }
 
@@ -40,7 +41,7 @@ class _NoConnectionWidgetState extends State<NoConnectionWidget> {
     setState(() => _retrying = true);
     await _connectivity.recheckNow();
     if (mounted && _connectivity.isOnline) {
-      Navigator.of(context).pushReplacementNamed(widget.targetRoute);
+      context.go(widget.targetRoute);
     } else if (mounted) {
       setState(() => _retrying = false);
     }

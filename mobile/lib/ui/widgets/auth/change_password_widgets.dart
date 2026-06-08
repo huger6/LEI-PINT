@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
@@ -87,7 +88,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
       );
 
       if (widget.isFirstLogin) {
-        Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+        context.go(AppRouter.dashboard);
       } else {
         Navigator.pop(context);
       }

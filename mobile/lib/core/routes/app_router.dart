@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../injection_container.dart';
 import '../../ui/pages/auth/auth_loading_screen.dart';
@@ -49,56 +50,144 @@ class AppRouter {
   static const String help = '/help';
   static const String badgeGallery = '/badge-gallery';
   static const String goals = '/goals';
+}
 
-  static final Map<String, WidgetBuilder> _builders = {
-    initial: (context) => const AuthLoadingScreen(),
-    login: (context) => const LoginScreen(),
-    register: (context) => const RegisterScreen(),
-    forgotPassword: (context) => const ForgotPasswordScreen(),
-    selectArea: (context) => const SelectAreaScreen(),
-    newUserConfirm: (context) => const NewUserConfirmScreen(),
-    emailConfirmation: (context) => const EmailConfirmationScreen(),
-    dashboard: (context) => const DashboardScreen(),
-    exploreCompetencies: (context) => const ExploreCompetenciesScreen(),
-    myBadges: (context) => const MyBadgesScreen(),
-    evolucao: (context) => const EvolucaoScreen(),
-    profile: (context) => const ProfileScreen(),
-    emailSignature: (context) => const EmailSignatureScreen(),
-    editProfile: (context) => const EditProfileScreen(),
-    chooseAreas: (context) => const ChooseAreasScreen(),
-    termsConditions: (context) => const TermsConditionsScreen(),
-    changePassword: (context) => const ChangePasswordScreen(),
-    characteristics: (context) => const CharacteristicsScreen(),
-    help: (context) => const HelpScreen(),
-    badgeGallery: (context) => const BadgeGalleryScreen(),
-    goals: (context) => const GoalsScreen(),
-  };
-
-  static Route<dynamic>? generateRoute(RouteSettings settings) {
-    final name = settings.name;
-    if (name == null) return null;
-
-    final builder = _builders[name];
-    if (builder == null) return null;
-
-    if (ScreenDataScope.isAuthRoute(name) || ScreenDataScope.isStaticRoute(name)) {
-      return MaterialPageRoute(settings: settings, builder: builder);
-    }
-
-    final connectivity = getIt<ConnectivityService>();
-    if (!connectivity.isOnline) {
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => NoConnectionWidget(targetRoute: name),
-      );
-    }
-
-    return MaterialPageRoute(
-      settings: settings,
-      builder: (context) => ScreenScope(
-        route: name,
-        child: builder(context),
+GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
+  return GoRouter(
+    navigatorKey: navigatorKey,
+    initialLocation: AppRouter.initial,
+    routes: [
+      GoRoute(
+        path: AppRouter.initial,
+        builder: (context, state) => const AuthLoadingScreen(),
       ),
-    );
+      GoRoute(
+        path: AppRouter.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.register,
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.selectArea,
+        builder: (context, state) => const SelectAreaScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.newUserConfirm,
+        builder: (context, state) => const NewUserConfirmScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.emailConfirmation,
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return EmailConfirmationScreen(email: email);
+        },
+      ),
+      GoRoute(
+        path: AppRouter.changePassword,
+        builder: (context, state) {
+          final isFirstLogin = state.extra as bool? ?? false;
+          return ChangePasswordScreen(isFirstLogin: isFirstLogin);
+        },
+      ),
+      GoRoute(
+        path: AppRouter.dashboard,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.dashboard,
+          const DashboardScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.exploreCompetencies,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.exploreCompetencies,
+          const ExploreCompetenciesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.myBadges,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.myBadges,
+          const MyBadgesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.evolucao,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.evolucao,
+          const EvolucaoScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.profile,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.profile,
+          const ProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.emailSignature,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.emailSignature,
+          const EmailSignatureScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.editProfile,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.editProfile,
+          const EditProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.chooseAreas,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.chooseAreas,
+          const ChooseAreasScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.termsConditions,
+        builder: (context, state) => const TermsConditionsScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.characteristics,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.characteristics,
+          const CharacteristicsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.help,
+        builder: (context, state) => const HelpScreen(),
+      ),
+      GoRoute(
+        path: AppRouter.badgeGallery,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.badgeGallery,
+          const BadgeGalleryScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.goals,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.goals,
+          const GoalsScreen(),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildWithScope(String route, Widget child) {
+  final connectivity = getIt<ConnectivityService>();
+  if (!connectivity.isOnline && !ScreenDataScope.isStaticRoute(route)) {
+    return NoConnectionWidget(targetRoute: route);
   }
+  return ScreenScope(route: route, child: child);
 }

@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import '../../widgets/auth/change_password_widgets.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
-  const ChangePasswordScreen({super.key});
+  const ChangePasswordScreen({super.key, required this.isFirstLogin});
+
+  final bool isFirstLogin;
 
   @override
   Widget build(BuildContext context) {
-    final isFirstLogin =
-        ModalRoute.of(context)?.settings.arguments as bool? ?? false;
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: isFirstLogin
