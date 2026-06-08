@@ -130,7 +130,8 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "stages_badges2_fk",
+        name: "uk_badges_stage",
+        unique: true,
         fields: [
           { name: "progression_stage_id" },
         ]

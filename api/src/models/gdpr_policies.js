@@ -10,11 +10,13 @@ module.exports = function (sequelize, DataTypes) {
     },
     policy_type: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
+      unique: 'uq_gdpr_policy_type_version'
     },
     version: {
       type: DataTypes.STRING(30),
-      allowNull: false
+      allowNull: false,
+      unique: 'uq_gdpr_policy_type_version'
     },
     policy_text: {
       type: DataTypes.TEXT,
@@ -87,6 +89,14 @@ module.exports = function (sequelize, DataTypes) {
         name: "gdpr_createdby_fk",
         fields: [
           { name: "created_by" },
+        ]
+      },
+      {
+        name: "uq_gdpr_policy_type_version",
+        unique: true,
+        fields: [
+          { name: "policy_type" },
+          { name: "version" },
         ]
       },
     ]

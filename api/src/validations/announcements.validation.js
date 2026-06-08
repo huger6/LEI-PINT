@@ -15,10 +15,11 @@ const booleanQueryRule = z.preprocess(
     z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
 ).transform((v) => v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true'));
 
+const validRoles = ['Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'];
+
 const getAnnouncementsQuerySchema = z.object({
     isActive: booleanQueryRule,
     isGlobal: booleanQueryRule,
-    targetProfile: z.string().trim().max(128).optional(),
     announcementType: z.string().trim().max(128).optional(),
     search: z.string().trim().max(255).optional().transform((v) => (v === '' ? undefined : v)),
     page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
@@ -42,17 +43,22 @@ const createAnnouncementBodySchema = z.object({
     endsAt: optionalDateRule,
 
     announcementType: z.string().trim().max(128).optional().nullable(),
-    targetProfile: z.string().trim().max(128).optional().nullable(),
     isGlobal: z.boolean().optional().nullable(),
 
-    preferenceId: positiveIntIdRule,
-    userId: positiveIntIdRule.optional().nullable()
+    roleNames: z.array(z.enum(validRoles)).optional().default([]),
+    serviceLineIds: z.array(positiveIntIdRule).optional().default([])
 }).refine(
     (data) => {
         if (data.startsAt && data.endsAt) return data.endsAt > data.startsAt;
         return true;
     },
     { message: 'VALIDATION_ENDS_AT_AFTER_STARTS_AT', path: ['endsAt'] }
+).refine(
+    (data) => {
+        if (data.isGlobal) return true;
+        return (data.roleNames && data.roleNames.length > 0) || (data.serviceLineIds && data.serviceLineIds.length > 0);
+    },
+    { message: 'VALIDATION_TARGETING_REQUIRED', path: ['roleNames'] }
 );
 
 const updateAnnouncementBodySchema = z.object({
@@ -70,12 +76,11 @@ const updateAnnouncementBodySchema = z.object({
     endsAt: optionalDateRule,
 
     announcementType: z.string().trim().max(128).optional().nullable(),
-    targetProfile: z.string().trim().max(128).optional().nullable(),
     isGlobal: z.boolean().optional().nullable(),
     isActive: z.boolean().optional(),
 
-    preferenceId: positiveIntIdRule.optional(),
-    userId: positiveIntIdRule.optional().nullable()
+    roleNames: z.array(z.enum(validRoles)).optional(),
+    serviceLineIds: z.array(positiveIntIdRule).optional()
 }).refine(
     (data) => {
         if (data.startsAt && data.endsAt) return data.endsAt > data.startsAt;

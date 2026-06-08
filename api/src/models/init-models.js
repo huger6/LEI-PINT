@@ -1,5 +1,6 @@
 var DataTypes = require("sequelize").DataTypes;
 var _administrators = require("./administrators");
+var _announc_roles = require("./announc_roles");
 var _announc_sl = require("./announc_sl");
 var _application_validation_logs = require("./application_validation_logs");
 var _areas = require("./areas");
@@ -10,6 +11,7 @@ var _badges = require("./badges");
 var _certificates = require("./certificates");
 var _consultant_areas = require("./consultant_areas");
 var _consultants = require("./consultants");
+var _device_tokens = require("./device_tokens");
 var _consultants_selected_skills = require("./consultants_selected_skills");
 var _gdpr_policies = require("./gdpr_policies");
 var _goals = require("./goals");
@@ -27,17 +29,20 @@ var _service_line_leaders = require("./service_line_leaders");
 var _service_lines = require("./service_lines");
 var _skills = require("./skills");
 var _sl_slas = require("./sl_slas");
+var _sla_breach_alerts = require("./sla_breach_alerts");
 var _slas = require("./slas");
 var _stage_codes = require("./stage_codes");
 var _system_announcements = require("./system_announcements");
 var _talent_managers = require("./talent_managers");
 var _user_account_tokens = require("./user_account_tokens");
+var _user_notification_preferences = require("./user_notification_preferences");
 var _user_badges_interactions = require("./user_badges_interactions");
 var _user_refresh_tokens = require("./user_refresh_tokens");
 var _users = require("./users");
 
 function initModels(sequelize) {
   var administrators = _administrators(sequelize, DataTypes);
+  var announc_roles = _announc_roles(sequelize, DataTypes);
   var announc_sl = _announc_sl(sequelize, DataTypes);
   var application_validation_logs = _application_validation_logs(sequelize, DataTypes);
   var areas = _areas(sequelize, DataTypes);
@@ -48,6 +53,7 @@ function initModels(sequelize) {
   var certificates = _certificates(sequelize, DataTypes);
   var consultant_areas = _consultant_areas(sequelize, DataTypes);
   var consultants = _consultants(sequelize, DataTypes);
+  var device_tokens = _device_tokens(sequelize, DataTypes);
   var consultants_selected_skills = _consultants_selected_skills(sequelize, DataTypes);
   var gdpr_policies = _gdpr_policies(sequelize, DataTypes);
   var goals = _goals(sequelize, DataTypes);
@@ -65,11 +71,13 @@ function initModels(sequelize) {
   var service_lines = _service_lines(sequelize, DataTypes);
   var skills = _skills(sequelize, DataTypes);
   var sl_slas = _sl_slas(sequelize, DataTypes);
+  var sla_breach_alerts = _sla_breach_alerts(sequelize, DataTypes);
   var slas = _slas(sequelize, DataTypes);
   var stage_codes = _stage_codes(sequelize, DataTypes);
   var system_announcements = _system_announcements(sequelize, DataTypes);
   var talent_managers = _talent_managers(sequelize, DataTypes);
   var user_account_tokens = _user_account_tokens(sequelize, DataTypes);
+  var user_notification_preferences = _user_notification_preferences(sequelize, DataTypes);
   var user_badges_interactions = _user_badges_interactions(sequelize, DataTypes);
   var user_refresh_tokens = _user_refresh_tokens(sequelize, DataTypes);
   var users = _users(sequelize, DataTypes);
@@ -164,8 +172,6 @@ function initModels(sequelize) {
   badges.hasMany(points_history, { as: "points_histories", foreignKey: "badge_id"});
   rewards.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(rewards, { as: "rewards", foreignKey: "badge_id"});
-  skills.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
-  badges.hasMany(skills, { as: "skills", foreignKey: "badge_id"});
   user_badges_interactions.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "badge_id"});
   awarded_badges.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
@@ -192,16 +198,18 @@ function initModels(sequelize) {
   notification_definitions.hasMany(slas, { as: "slas", foreignKey: "definition_id"});
   notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
   notification_definitions.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "definition_id"});
-  slas.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(slas, { as: "preference_slas", foreignKey: "preference_id"});
-  system_announcements.belongsTo(notification_preferences, { as: "preference", foreignKey: "preference_id"});
-  notification_preferences.hasMany(system_announcements, { as: "system_announcements", foreignKey: "preference_id"});
+  device_tokens.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(device_tokens, { as: "device_tokens", foreignKey: "user_id"});
+  user_notification_preferences.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(user_notification_preferences, { as: "user_notification_preferences", foreignKey: "user_id"});
+  user_notification_preferences.belongsTo(notification_definitions, { as: "definition", foreignKey: "definition_id"});
+  notification_definitions.hasMany(user_notification_preferences, { as: "user_notification_preferences", foreignKey: "definition_id"});
   users.belongsTo(languages, { as: "language", foreignKey: "language_id"});
   languages.hasMany(users, { as: "users", foreignKey: "language_id"});
   badge_requirements.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
   progression_stages.hasMany(badge_requirements, { as: "badge_requirements", foreignKey: "progression_stage_id"});
   badges.belongsTo(progression_stages, { as: "progression_stage", foreignKey: "progression_stage_id"});
-  progression_stages.hasMany(badges, { as: "badges", foreignKey: "progression_stage_id"});
+  progression_stages.hasOne(badges, { as: "badge", foreignKey: "progression_stage_id"});
   announc_sl.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
   service_lines.hasMany(announc_sl, { as: "announc_sls", foreignKey: "service_line_id"});
   areas.belongsTo(service_lines, { as: "service_line", foreignKey: "service_line_id"});
@@ -214,16 +222,20 @@ function initModels(sequelize) {
   service_lines.hasMany(sl_slas, { as: "sl_slas", foreignKey: "service_line_id"});
   consultants_selected_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
   skills.hasMany(consultants_selected_skills, { as: "consultants_selected_skills", foreignKey: "skills_id"});
-  notification_preferences.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
-  slas.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "sla_id"});
   sl_slas.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
   slas.hasMany(sl_slas, { as: "sl_slas", foreignKey: "sla_id"});
+  sla_breach_alerts.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
+  slas.hasMany(sla_breach_alerts, { as: "sla_breach_alerts", foreignKey: "sla_id"});
+  sla_breach_alerts.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
+  badge_applications.hasMany(sla_breach_alerts, { as: "sla_breach_alerts", foreignKey: "application_id"});
+  sla_breach_alerts.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(sla_breach_alerts, { as: "sla_breach_alerts", foreignKey: "user_id"});
   progression_stages.belongsTo(stage_codes, { as: "stage_code", foreignKey: "stage_code_id"});
   stage_codes.hasMany(progression_stages, { as: "progression_stages", foreignKey: "stage_code_id"});
+  announc_roles.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
+  system_announcements.hasMany(announc_roles, { as: "announc_roles", foreignKey: "announcement_id"});
   announc_sl.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
   system_announcements.hasMany(announc_sl, { as: "announc_sls", foreignKey: "announcement_id"});
-  notification_preferences.belongsTo(system_announcements, { as: "announcement", foreignKey: "announcement_id"});
-  system_announcements.hasMany(notification_preferences, { as: "notification_preferences", foreignKey: "announcement_id"});
   administrators.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(administrators, { as: "administrator", foreignKey: "user_id"});
   application_validation_logs.belongsTo(users, { as: "user", foreignKey: "user_id"});
@@ -236,8 +248,6 @@ function initModels(sequelize) {
   users.hasOne(service_line_leaders, { as: "service_line_leader", foreignKey: "user_id"});
   slas.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(slas, { as: "slas", foreignKey: "user_id"});
-  system_announcements.belongsTo(users, { as: "user", foreignKey: "user_id"});
-  users.hasMany(system_announcements, { as: "system_announcements", foreignKey: "user_id"});
   talent_managers.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(talent_managers, { as: "talent_manager", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(users, { as: "user", foreignKey: "user_id"});
@@ -245,6 +255,7 @@ function initModels(sequelize) {
 
   return {
     administrators,
+    announc_roles,
     announc_sl,
     application_validation_logs,
     areas,
@@ -256,6 +267,7 @@ function initModels(sequelize) {
     consultant_areas,
     consultants,
     consultants_selected_skills,
+    device_tokens,
     gdpr_policies,
     goals,
     learning_paths,
@@ -272,12 +284,14 @@ function initModels(sequelize) {
     service_lines,
     skills,
     sl_slas,
+    sla_breach_alerts,
     slas,
     stage_codes,
     system_announcements,
     talent_managers,
     user_account_tokens,
     user_badges_interactions,
+    user_notification_preferences,
     user_refresh_tokens,
     users,
   };

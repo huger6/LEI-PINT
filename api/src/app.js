@@ -4,6 +4,10 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const requestLogger = require('./middlewares/logger.middleware');
 require('./validations/error-map'); // Necessary for validation codes to run
+require('./workers/sla.worker'); // Starts the SLA breach monitor while the API process is running
+require('./workers/custom_sla.worker'); // Starts the standalone SLA breach monitor while the API process is running
+require('./workers/badge_expiration.worker'); // Starts the badge expiration alert monitor (30/7/1 day + expired)
+require('./workers/goal_reminder.worker'); // Starts the goal deadline reminder monitor
 // Initialize firebase only when not explicitly skipped (useful for local dev without installing firebase-admin)
 if (!process.env.SKIP_FIREBASE || process.env.SKIP_FIREBASE === '0') {
     try {

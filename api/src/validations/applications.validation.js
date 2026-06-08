@@ -11,6 +11,14 @@ const applicationGuidParamSchema = z.object({
     applicationGuid: z.string().uuid('VALIDATION_APPLICATION_GUID_INVALID')
 });
 
+const submitApplicationSchema = z.object({
+    consultantNotes: z.string().trim()
+        .max(2000, 'VALIDATION_CONSULTANT_NOTES_MAX_LENGTH')
+        .transform(sanitizeText)
+        .optional()
+        .nullable()
+});
+
 const upsertEvidenceBodySchema = z.object({
     requirementId: positiveIntIdRule,
 
@@ -85,13 +93,26 @@ const evidenceIdParamSchema = z.object({
     evidenceId: positiveIntIdRule
 });
 
+const updateApplicationSchema = z.object({
+    consultantNotes: z.string().trim()
+        .max(2000, 'VALIDATION_CONSULTANT_NOTES_MAX_LENGTH')
+        .transform(sanitizeText)
+        .optional()
+        .nullable()
+});
+
+const ALLOWED_EVIDENCE_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png', 'zip']);
+
 module.exports = {
     startApplicationSchema,
     applicationGuidParamSchema,
+    submitApplicationSchema,
     upsertEvidenceBodySchema,
     getApplicationsQuerySchema,
     getUploadUrlBodySchema,
     reviewApplicationSchema,
     reviewEvidenceSchema,
-    evidenceIdParamSchema
+    evidenceIdParamSchema,
+    updateApplicationSchema,
+    ALLOWED_EVIDENCE_EXTENSIONS
 };
