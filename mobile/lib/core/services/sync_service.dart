@@ -222,9 +222,20 @@ class SyncService {
     required String endpoint,
     required T Function(Map<String, dynamic>) fromJson,
     required Future<void> Function(List<T>) replaceAll,
+    Future<void> Function(List<T>)? upsertAll,
+    DateTime? lastSync,
   }) async {
     try {
-      final response = await _apiClient.get(endpoint);
+      final isIncremental = lastSync != null && upsertAll != null;
+      final queryParams = <String, dynamic>{};
+      if (isIncremental) {
+        queryParams['synced_at'] = lastSync.toUtc().toIso8601String();
+      }
+
+      final response = await _apiClient.get(
+        endpoint,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       debugPrint('───────────────────────────────────────────────────');
       debugPrint('SyncService: API response from $endpoint:');
       debugPrint('SyncService: Raw data: $response');
@@ -235,7 +246,14 @@ class SyncService {
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
       debugPrint('SyncService: Parsed ${items.length} items from $endpoint');
-      await replaceAll(items);
+
+      if (isIncremental) {
+        if (items.isNotEmpty) {
+          await upsertAll(items);
+        }
+      } else {
+        await replaceAll(items);
+      }
       return true;
     } on SocketException {
       return false;
@@ -273,36 +291,74 @@ class SyncService {
     }
   }
 
-  Future<bool> _syncLearningPaths() => _syncList(
-    endpoint: ApiEndpoints.getLearningPaths,
-    fromJson: LearningPathModel.fromJson,
-    replaceAll: _learningPathDao.replaceAll,
-  );
+  Future<bool> _syncLearningPaths() async {
+    final lastSync = await _syncDao.getLastSync(SyncCodes.learningPaths);
+    return _syncList(
+      endpoint: ApiEndpoints.getLearningPaths,
+      fromJson: LearningPathModel.fromJson,
+      replaceAll: _learningPathDao.replaceAll,
+      upsertAll: _learningPathDao.upsertAll,
+      lastSync: lastSync,
+    );
+  }
 
-  Future<bool> _syncServiceLines() => _syncList(
-    endpoint: ApiEndpoints.getServiceLines,
-    fromJson: ServiceLineModel.fromJson,
-    replaceAll: _serviceLineDao.replaceAll,
-  );
+  Future<bool> _syncServiceLines() async {
+    final lastSync = await _syncDao.getLastSync(SyncCodes.serviceLines);
+    return _syncList(
+      endpoint: ApiEndpoints.getServiceLines,
+      fromJson: ServiceLineModel.fromJson,
+      replaceAll: _serviceLineDao.replaceAll,
+      upsertAll: _serviceLineDao.upsertAll,
+      lastSync: lastSync,
+    );
+  }
 
-  Future<bool> _syncAreas() => _syncList(
-    endpoint: ApiEndpoints.getAreas,
-    fromJson: AreaModel.fromJson,
-    replaceAll: _areaDao.replaceAll,
-  );
+  Future<bool> _syncAreas() async {
+    final lastSync = await _syncDao.getLastSync(SyncCodes.areas);
+    return _syncList(
+      endpoint: ApiEndpoints.getAreas,
+      fromJson: AreaModel.fromJson,
+      replaceAll: _areaDao.replaceAll,
+      upsertAll: _areaDao.upsertAll,
+      lastSync: lastSync,
+    );
+  }
 
-  Future<bool> _syncProgressionStages() => _syncList(
-    endpoint: ApiEndpoints.getLevels,
-    fromJson: ProgressionStageModel.fromJson,
-    replaceAll: _progressionStageDao.replaceAll,
-  );
+  Future<bool> _syncProgressionStages() async {
+    final lastSync = await _syncDao.getLastSync(SyncCodes.progressionStages);
+    return _syncList(
+      endpoint: ApiEndpoints.getLevels,
+      fromJson: ProgressionStageModel.fromJson,
+      replaceAll: _progressionStageDao.replaceAll,
+      upsertAll: _progressionStageDao.upsertAll,
+      lastSync: lastSync,
+    );
+  }
 
   Future<bool> _syncBadges() async {
     try {
-      // Fetch the whole catalog so the local copy (the only local source of
-      // area / points / progression-stage) stays complete. The API caps
-      // `limit` at 100, so page through every page rather than requesting an
-      // oversized limit (which is rejected with 400, leaving the catalog empty).
+      final lastSync = await _syncDao.getLastSync(SyncCodes.badges);
+
+      if (lastSync != null) {
+        final response = await _apiClient.get(
+          ApiEndpoints.getBadges,
+          queryParameters: {
+            'synced_at': lastSync.toUtc().toIso8601String(),
+          },
+        );
+        final rows = _extractList(response)
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        debugPrint(
+            'SyncService: incremental badge sync got ${rows.length} changed badges');
+        if (rows.isNotEmpty) {
+          await _badgeDao.upsertAllFromJson(rows);
+        }
+        return true;
+      }
+
+      // Full sync: page through everything
       final rows = <Map<String, dynamic>>[];
       var page = 1;
       while (true) {
@@ -319,7 +375,8 @@ class SyncService {
         if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
         page++;
       }
-      debugPrint('SyncService: fetched ${rows.length} badges across $page page(s)');
+      debugPrint(
+          'SyncService: fetched ${rows.length} badges across $page page(s)');
       if (rows.isNotEmpty) {
         await _badgeDao.replaceAllFromJson(rows);
       }
@@ -433,11 +490,16 @@ class SyncService {
     }
   }
 
-  Future<bool> _syncAnnouncements() => _syncList(
-    endpoint: ApiEndpoints.getAnnouncements,
-    fromJson: AnnouncementModel.fromJson,
-    replaceAll: _announcementDao.replaceAll,
-  );
+  Future<bool> _syncAnnouncements() async {
+    final lastSync = await _syncDao.getLastSync(SyncCodes.announcements);
+    return _syncList(
+      endpoint: ApiEndpoints.getAnnouncements,
+      fromJson: AnnouncementModel.fromJson,
+      replaceAll: _announcementDao.replaceAll,
+      upsertAll: _announcementDao.upsertAll,
+      lastSync: lastSync,
+    );
+  }
 
   Future<bool> _syncNotifications() => _syncList(
     endpoint: ApiEndpoints.getNotifications,

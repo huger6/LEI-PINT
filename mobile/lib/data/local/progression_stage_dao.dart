@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/progression_stage_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -45,6 +47,30 @@ class ProgressionStageDao {
         'description': stage.description,
         'synced_at': now,
       });
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> upsertAll(List<ProgressionStageModel> stages) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final stage in stages) {
+      batch.insert(
+        LocalDatabase.progressionStagesTable,
+        {
+          'id': stage.id,
+          'area_id': stage.areaId,
+          'stage_code_id': stage.stageCodeId,
+          'title': stage.title,
+          'sequence': stage.sequence,
+          'description': stage.description,
+          'synced_at': now,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);

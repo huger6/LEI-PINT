@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/learning_path_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -42,6 +44,29 @@ class LearningPathDao {
         'img_url': lp.imgUrl,
         'synced_at': now,
       });
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> upsertAll(List<LearningPathModel> paths) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final lp in paths) {
+      batch.insert(
+        LocalDatabase.learningPathsTable,
+        {
+          'id': lp.id,
+          'title': lp.title,
+          'slug': lp.slug,
+          'description': lp.description,
+          'img_url': lp.imgUrl,
+          'synced_at': now,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);
