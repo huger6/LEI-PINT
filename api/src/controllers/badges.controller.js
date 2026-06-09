@@ -23,6 +23,7 @@ const getBadges = async (req, res) => {
             page,
             limit,
             search,
+            synced_at,
             minPoints,
             maxPoints,
             badgeClass,
@@ -141,6 +142,10 @@ const getBadges = async (req, res) => {
             where.badge_type = { [Op.iLike]: 'Special' };
         }
 
+        if (synced_at) {
+            where.updated_at = { [Op.gt]: synced_at };
+        }
+
         if (search) {
             where[Op.or] = [
                 { badge_title: { [Op.iLike]: `%${search}%` } },
@@ -213,6 +218,29 @@ const getBadges = async (req, res) => {
             ];
         }
 
+        const queryAttributes = {
+            include: [
+                [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
+                [hasObtainedLiteral, 'has_obtained'],
+            ],
+            exclude: excludedFields
+        };
+
+        if (synced_at) {
+            const rows = await models.badges.findAll({
+                where,
+                include,
+                order: [['badge_points', 'DESC'], ['badge_title', 'ASC']],
+                attributes: queryAttributes
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: rows,
+                pagination: { totalItems: rows.length, totalPages: 1, currentPage: 1 }
+            });
+        }
+
         const { rows, count } = await models.badges.findAndCountAll({
             where,
             include,
@@ -220,13 +248,7 @@ const getBadges = async (req, res) => {
             offset,
             order: [['badge_points', 'DESC'], ['badge_title', 'ASC']],
             distinct: true,
-            attributes: {
-                include: [
-                    [literal(`(SELECT COUNT(DISTINCT ab.user_id) FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id WHERE ba.badge_id = "badges".badge_id)`), 'consultant_count'],
-                    [hasObtainedLiteral, 'has_obtained'],
-                ],
-                exclude: excludedFields
-            }
+            attributes: queryAttributes
         });
 
         const totalPages = Math.ceil(count / limit);
