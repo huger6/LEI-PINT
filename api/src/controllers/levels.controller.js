@@ -502,6 +502,7 @@ const deleteLevel = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
+        await sendTopicUpdate("new_data", 13);
 
         return res.status(200).json({ success: true, code: "LEVEL_DEACTIVATED" });
 
@@ -566,6 +567,7 @@ const reactivateLevel = async (req, res) => {
         await invalidateCacheByPrefix('areas:list');
         await redis.del('areas:filter-stats');
         await sendTopicUpdate("new_data", 12);
+        await sendTopicUpdate("new_data", 13);
 
         return res.status(200).json({ success: true, code: "LEVEL_ACTIVATED" });
 

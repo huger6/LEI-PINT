@@ -38,7 +38,7 @@ const getAnnouncements = async (req, res) => {
     try {
         const isAdmin = req.user?.role === 'Administrator';
 
-        const { page, limit, search, isActive, isGlobal, announcementType } = validations.getAnnouncementsQuerySchema.parse(req.query);
+        const { page, limit, search, synced_at, isActive, isGlobal, announcementType } = validations.getAnnouncementsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const cacheParams = { isActive, isGlobal, announcementType, search, isAdmin, page, limit };
@@ -104,6 +104,7 @@ const getAnnouncements = async (req, res) => {
         if (isGlobal !== undefined) where.is_global = isGlobal;
         if (announcementType) where.announcement_type = announcementType;
         if (search) where.announcement_title = { [Op.iLike]: `%${search}%` };
+        if (synced_at) where.updated_at = { [Op.gt]: synced_at };
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
 
@@ -116,6 +117,21 @@ const getAnnouncements = async (req, res) => {
                     include: [{ model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'] }]
                 }
             );
+        }
+
+        if (synced_at) {
+            const rows = await models.system_announcements.findAll({
+                where,
+                order: [['created_at', 'DESC']],
+                attributes: { exclude: excludedFields },
+                include: includeConfig
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: rows,
+                pagination: { totalItems: rows.length, totalPages: 1, currentPage: 1 }
+            });
         }
 
         const { rows, count } = await models.system_announcements.findAndCountAll({

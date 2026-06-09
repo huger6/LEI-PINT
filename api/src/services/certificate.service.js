@@ -1,6 +1,6 @@
 const { models } = require('../config/db');
 const { generateCertificatePDF } = require('../utils/certificate.generator');
-const { uploadBuffer } = require('./storage.service');
+const { uploadBuffer, deleteFile } = require('./storage.service');
 const { logger } = require('../utils/logger');
 
 const ISSUING_ENTITY = process.env.CERTIFICATE_ISSUING_ENTITY || 'Organization';
@@ -85,6 +85,14 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null) =>
     };
 };
 
+const extractStoragePath = (url) => {
+    if (!url) return null;
+    const marker = `/${CERTIFICATE_BUCKET}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+};
+
 /**
  * Generates a PDF certificate, uploads it to Supabase, persists the record in DB,
  * and links it to the application.
@@ -106,9 +114,19 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         throw err;
     }
 
-    // Return existing certificate without regenerating
     if (data.existingCertificate?.certificate_file_url) {
-        return { certificateUrl: data.existingCertificate.certificate_file_url, isNew: false };
+        if (data.existingCertificate.language_code === lang) {
+            return { certificateUrl: data.existingCertificate.certificate_file_url, isNew: false };
+        }
+        await models.certificates.destroy({
+            where: { certificate_id: data.existingCertificate.certificate_id }
+        });
+        try {
+            const oldPath = extractStoragePath(data.existingCertificate.certificate_file_url);
+            if (oldPath) await deleteFile(CERTIFICATE_BUCKET, oldPath);
+        } catch (e) {
+            logger.warn('Could not delete old certificate file from storage', { error: e });
+        }
     }
 
     const verificationUrl = `${(process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '')}/public/certificate/${applicationGuid}`;
@@ -134,7 +152,8 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         certificate_title: data.badge.title,
         issuing_entity: data.issuingEntity,
         issue_date: data.dates.conclusionDate,
-        certificate_file_url: certificateUrl
+        certificate_file_url: certificateUrl,
+        language_code: lang
     });
 
     logger.info('Certificate generated and stored', {

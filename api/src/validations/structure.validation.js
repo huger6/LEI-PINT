@@ -1,6 +1,6 @@
 const { z } = require('zod');
 require('./error-map');
-const { positiveIntIdRule, imgUrlRule, imgUrlExistingRule } = require('./shared-rules');
+const { positiveIntIdRule, syncedAtRule, imgUrlRule, imgUrlExistingRule } = require('./shared-rules');
 const sanitizeText = require('../utils/sanitizeText');
 
 const optionalSearchRule = z
@@ -29,6 +29,7 @@ const getAvailableLearningPathsQuerySchema = z.object({
 	search: optionalSearchRule,
 	serviceLineId: positiveIntIdRule.optional(),
 	is_active: booleanQueryRule.optional(),
+	synced_at: syncedAtRule,
 	page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
 	limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(32)
 });
@@ -37,6 +38,7 @@ const getServiceLinesQuerySchema = z.object({
 	learningPathId: positiveIntIdRule.optional(),
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
+	synced_at: syncedAtRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(32)
 });
@@ -45,6 +47,7 @@ const getAreasQuerySchema = z.object({
 	serviceLineId: positiveIntIdRule.optional(),
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
+	synced_at: syncedAtRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(32)
 });
@@ -53,6 +56,7 @@ const getLevelsQuerySchema = z.object({
 	areaId: positiveIntIdRule.optional(),
 	search: optionalSearchRule,
 	is_active: booleanQueryRule.optional(),
+	synced_at: syncedAtRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(32)
 });
@@ -62,6 +66,7 @@ const getBadgesQuerySchema = z.object({
 	progressionStageId: positiveIntIdRule.optional(),
 	serviceLineId: positiveIntIdRule.optional(),
 	learningPathId: positiveIntIdRule.optional(),
+	synced_at: syncedAtRule,
 	stageCodes: z.preprocess((value) => {
 		if (value === undefined || value === null || value === '') {
 			return undefined;

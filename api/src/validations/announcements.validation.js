@@ -1,6 +1,6 @@
 const { z } = require('zod');
 require('./error-map');
-const { positiveIntIdRule } = require('./shared-rules');
+const { positiveIntIdRule, syncedAtRule } = require('./shared-rules');
 
 const optionalDateRule = z.preprocess(
     (arg) => {
@@ -22,6 +22,7 @@ const getAnnouncementsQuerySchema = z.object({
     isGlobal: booleanQueryRule,
     announcementType: z.string().trim().max(128).optional(),
     search: z.string().trim().max(255).optional().transform((v) => (v === '' ? undefined : v)),
+    synced_at: syncedAtRule,
     page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
     limit: z.coerce.number().int().positive('VALIDATION_LIMIT_POSITIVE_INTEGER').max(100, 'VALIDATION_LIMIT_MAX_100').default(12)
 });
