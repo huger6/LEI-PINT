@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const QRCode = require('qrcode');
 
 const SUPPORTED_LANGS = ['pt', 'en', 'es'];
 
@@ -64,21 +65,6 @@ const hLine = (doc, y, cx) => {
  * @param {string} data.issuingEntity
  * @returns {Promise<Buffer>}
  */
-const https = require('https');
-
-const fetchImageBuffer = (url) => new Promise((resolve, reject) => {
-    try {
-        https.get(url, (res) => {
-            const chunks = [];
-            res.on('data', (c) => chunks.push(c));
-            res.on('end', () => resolve(Buffer.concat(chunks)));
-            res.on('error', reject);
-        }).on('error', reject);
-    } catch (err) {
-        reject(err);
-    }
-});
-
 /**
  * data.verificationUrl (optional) - public URL to verify the certificate/badge
  */
@@ -183,12 +169,15 @@ const generateCertificatePDF = async (data) => {
         (async () => {
             try {
                 if (data.verificationUrl) {
-                    const qrUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(data.verificationUrl)}`;
                     try {
-                        const qrBuf = await fetchImageBuffer(qrUrl);
+                        const qrBuf = await QRCode.toBuffer(data.verificationUrl, {
+                            type: 'png',
+                            width: 180,
+                            margin: 1
+                        });
                         const qrSize = 110;
                         const qrX = W - margin - qrSize;
-                        const qrY = H - margin - qrSize - 12; // leave space for footer
+                        const qrY = H - margin - qrSize - 12;
                         doc.image(qrBuf, qrX, qrY, { width: qrSize, height: qrSize });
                     } catch (err) {
                         // ignore QR failures and continue

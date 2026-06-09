@@ -153,7 +153,7 @@ function initModels(sequelize) {
   awarded_badges.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
   badge_applications.hasMany(awarded_badges, { as: "awarded_badges", foreignKey: "application_id"});
   certificates.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
-  badge_applications.hasMany(certificates, { as: "application_certificates", foreignKey: "application_id"});
+  badge_applications.hasOne(certificates, { as: "certificate", foreignKey: "application_id"});
   goals.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
   badge_applications.hasMany(goals, { as: "application_goals", foreignKey: "application_id"});
   requirements_evidences.belongsTo(badge_applications, { as: "application", foreignKey: "application_id"});
