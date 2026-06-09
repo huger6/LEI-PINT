@@ -113,6 +113,12 @@ class ApiEndpoints {
   // GET /gamification/consultant-stats - get comprehensive consultant stats
   static const String getConsultantStats = '/api/gamification/consultant-stats';
 
+  // === Device Tokens (FCM push notifications) ===
+  static const String registerDeviceToken =
+      '/api/notifications/device-tokens';
+  static const String unregisterDeviceToken =
+      '/api/notifications/device-tokens/unregister';
+
   // === Sync-only endpoints (used by SyncService) ===
   static const String getLearningPaths = '/api/learning-paths';
   static const String getServiceLines = '/api/service-lines';

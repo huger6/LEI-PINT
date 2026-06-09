@@ -67,7 +67,7 @@ class AuthStore extends ChangeNotifier {
       }
 
       notifyListeners();
-      await FCMService.subscribe();
+      await FCMService.subscribe(_apiClient);
     }
 
     return result;
@@ -115,7 +115,7 @@ class AuthStore extends ChangeNotifier {
       }
 
       notifyListeners();
-      await FCMService.subscribe();
+      await FCMService.subscribe(_apiClient);
       debugPrint('tryRestoreSession: SUCCESS');
       return true;
     } catch (e) {
@@ -333,7 +333,7 @@ class AuthStore extends ChangeNotifier {
   }
 
   Future<void> clearSession() async {
-    await FCMService.unsubscribe();
+    await FCMService.unsubscribe(_apiClient);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_rememberKey);
