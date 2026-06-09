@@ -162,6 +162,14 @@ const getApplicationById = async (req, res) => {
                     model: models.application_validation_logs,
                     as: 'application_validation_logs',
                     include: [{ model: models.users, as: 'user', attributes: ['full_name', 'user_role'] }]
+                },
+                {
+                    model: models.awarded_badges,
+                    as: 'awarded_badges'
+                },
+                {
+                    model: models.certificates,
+                    as: 'certificate'
                 }
             ]
         });

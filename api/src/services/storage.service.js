@@ -179,10 +179,26 @@ const generateSignedDownloadUrl = async (bucketName = 'private-assets', filePath
     }
 };
 
+const deleteFile = async (bucketName, storagePath) => {
+    if (!supabase) {
+        logger.warn('Supabase not configured; skipping file deletion', { bucketName, storagePath });
+        return;
+    }
+    try {
+        const { error } = await supabase.storage.from(bucketName).remove([storagePath]);
+        if (error) {
+            logger.warn('Failed to delete file from storage', { bucketName, storagePath, error: error.message });
+        }
+    } catch (err) {
+        logger.warn('Error during storage file deletion', { bucketName, storagePath, err });
+    }
+};
+
 module.exports = {
     moveImageToPermanent,
     moveStructureImageToPermanent,
     generateSignedUploadUrl,
     generateSignedDownloadUrl,
-    uploadBuffer
+    uploadBuffer,
+    deleteFile
 };

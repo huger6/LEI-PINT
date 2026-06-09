@@ -2,6 +2,7 @@ const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const { publicBadgeLinkParam, publicCertificateParam } = require('../validations/public.validation');
+const QRCode = require('qrcode');
 
 const viewPublicBadge = async (req, res) => {
     try {
@@ -16,7 +17,7 @@ const viewPublicBadge = async (req, res) => {
         const { link } = validated;
 
         const awarded = await models.awarded_badges.findOne({
-            where: { public_verification_link: link },
+            where: { public_verification_link: link, is_published: true },
             include: [
                 { model: models.badge_applications, as: 'application', include: [{ model: models.badges, as: 'badge' }] },
                 { model: models.consultants, as: 'user', include: [{ model: models.users, as: 'user', attributes: ['full_name', 'user_guid'] }] }
@@ -35,7 +36,7 @@ const viewPublicBadge = async (req, res) => {
 
         const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
         const verifyUrl = `${appUrl.replace(/\/$/, '')}/public/badge/${encodeURIComponent(awarded.public_verification_link)}`;
-        const qrUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(verifyUrl)}`;
+        const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 300, margin: 1 });
 
         if (req.query.format === 'json' || req.get('accept') === 'application/json') {
             const payload = {
@@ -91,7 +92,7 @@ const viewPublicBadge = async (req, res) => {
                             <p class="muted">Badge type: <strong>${badge.badge_type || '—'}</strong> &nbsp; • &nbsp; Points: <strong>${badge.badge_points || 0}</strong></p>
                         </div>
                         <div>
-                            <img class="qr" src="${qrUrl}" alt="QR code to verify badge" />
+                            <img class="qr" src="${qrDataUrl}" alt="QR code to verify badge" />
                         </div>
                     </div>
 
@@ -151,7 +152,7 @@ const viewPublicCertificate = async (req, res) => {
 
         const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
         const verifyUrl = `${appUrl.replace(/\/$/, '')}/public/certificate/${encodeURIComponent(applicationGuid)}`;
-        const qrUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(verifyUrl)}`;
+        const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 300, margin: 1 });
 
         if (req.query.format === 'json' || req.get('accept') === 'application/json') {
             return res.json({
@@ -163,7 +164,7 @@ const viewPublicCertificate = async (req, res) => {
             });
         }
 
-        const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Certificate - ${badge.badge_title || 'Certificate'}</title></head><body><div style="max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:8px;font-family:Arial,Helvetica,sans-serif;color:#222"><h1>${badge.badge_title || 'Certificate'}</h1><p>Awarded to <strong>${user.full_name || 'Unknown'}</strong></p><p>Issued: ${application.closed_at ? new Date(application.closed_at).toLocaleString() : '—'}</p><p><img src="${qrUrl}" alt="QR" style="width:160px"></p><p>Verify: <a href="${verifyUrl}">${verifyUrl}</a></p></div></body></html>`;
+        const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Certificate - ${badge.badge_title || 'Certificate'}</title></head><body><div style="max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:8px;font-family:Arial,Helvetica,sans-serif;color:#222"><h1>${badge.badge_title || 'Certificate'}</h1><p>Awarded to <strong>${user.full_name || 'Unknown'}</strong></p><p>Issued: ${application.closed_at ? new Date(application.closed_at).toLocaleString() : '—'}</p><p><img src="${qrDataUrl}" alt="QR" style="width:160px"></p><p>Verify: <a href="${verifyUrl}">${verifyUrl}</a></p></div></body></html>`;
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.status(200).send(html);
