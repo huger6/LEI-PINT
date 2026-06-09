@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/area_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -62,6 +64,30 @@ class AreaDao {
         'img_url': area.imgUrl,
         'synced_at': now,
       });
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> upsertAll(List<AreaModel> areas) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final area in areas) {
+      batch.insert(
+        LocalDatabase.areasTable,
+        {
+          'id': area.id,
+          'service_line_id': area.serviceLineId,
+          'name': area.name,
+          'slug': area.slug,
+          'description': area.description,
+          'img_url': area.imgUrl,
+          'synced_at': now,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);

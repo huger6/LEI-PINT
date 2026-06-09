@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/announcement_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -52,6 +54,32 @@ class AnnouncementDao {
         'is_active': ann.isActive ? 1 : 0,
         'synced_at': now,
       });
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> upsertAll(List<AnnouncementModel> announcements) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final ann in announcements) {
+      batch.insert(
+        LocalDatabase.announcementsTable,
+        {
+          'id': ann.id,
+          'title': ann.title,
+          'message': ann.message,
+          'starts_at': ann.startsAt?.millisecondsSinceEpoch,
+          'ends_at': ann.endsAt?.millisecondsSinceEpoch,
+          'type': ann.type,
+          'is_global': ann.isGlobal ? 1 : 0,
+          'is_active': ann.isActive ? 1 : 0,
+          'synced_at': now,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);

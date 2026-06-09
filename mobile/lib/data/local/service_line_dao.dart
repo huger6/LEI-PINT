@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/service_line_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -44,6 +46,30 @@ class ServiceLineDao {
         'img_url': sl.imgUrl,
         'synced_at': now,
       });
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> upsertAll(List<ServiceLineModel> serviceLines) async {
+    final db = await _database.database;
+    final batch = db.batch();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final sl in serviceLines) {
+      batch.insert(
+        LocalDatabase.serviceLinesTable,
+        {
+          'id': sl.id,
+          'learning_path_id': sl.learningPathId,
+          'name': sl.name,
+          'slug': sl.slug,
+          'description': sl.description,
+          'img_url': sl.imgUrl,
+          'synced_at': now,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);
