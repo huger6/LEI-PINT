@@ -11,6 +11,7 @@ module.exports = function (sequelize, DataTypes) {
     application_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: "uk_certificate_application",
       references: {
         model: 'badge_applications',
         key: 'application_id'
@@ -30,6 +31,10 @@ module.exports = function (sequelize, DataTypes) {
     },
     certificate_file_url: {
       type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    language_code: {
+      type: DataTypes.STRING(5),
       allowNull: true
     },
     created_at: {
@@ -64,7 +69,8 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "applications_certificates2_fk",
+        name: "uk_certificate_application",
+        unique: true,
         fields: [
           { name: "application_id" },
         ]

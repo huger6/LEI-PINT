@@ -324,11 +324,13 @@ CREATE TABLE IF NOT EXISTS certificates (
    issuing_entity       VARCHAR(150)         NULL,
    issue_date           DATE                 NULL,
    certificate_file_url VARCHAR(500)         NULL,
+   language_code        VARCHAR(5)           NULL,
 
    created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
    updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
-   CONSTRAINT pk_certificates PRIMARY KEY (certificate_id)
+   CONSTRAINT pk_certificates PRIMARY KEY (certificate_id),
+   CONSTRAINT uk_certificate_application UNIQUE (application_id)
 );
 
 /*==============================================================*/
