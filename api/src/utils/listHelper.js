@@ -27,17 +27,20 @@ const handleListRequest = async ({
         throw error;
     }
 
-    const { page, limit, search, ...filters } = validatedQuery;
+    const { page, limit, search, synced_at, ...filters } = validatedQuery;
     const offset = (page - 1) * limit;
+    const isIncremental = !!synced_at;
 
     const cacheKey = `${cachePrefix}:${Buffer.from(JSON.stringify({ ...filters, search, isAdmin, page, limit })).toString('base64')}`;
 
     try {
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({
-            success: true,
-            ...JSON.parse(cached)
-        });
+        if (!isIncremental) {
+            const cached = await redis.get(cacheKey);
+            if (cached) return res.status(200).json({
+                success: true,
+                ...JSON.parse(cached)
+            });
+        }
 
         const where = { ...baseWhere };
 
@@ -52,6 +55,10 @@ const handleListRequest = async ({
                 where[key] = value;
             }
         });
+
+        if (synced_at) {
+            where.updated_at = { [Op.gt]: synced_at };
+        }
 
         if (search) {
             const searchFields = {
@@ -71,6 +78,19 @@ const handleListRequest = async ({
             include: extraAttributes,
             exclude: excludedFields
         };
+
+        if (isIncremental) {
+            const rows = await models[modelName].findAll({
+                where, include, order, distinct: true,
+                attributes: finalAttributes
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: rows,
+                pagination: { totalItems: rows.length, totalPages: 1, currentPage: 1 }
+            });
+        }
 
         const { rows, count } = await models[modelName].findAndCountAll({
             where, include, limit, offset, order, distinct: true,

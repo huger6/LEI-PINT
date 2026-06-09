@@ -65,6 +65,8 @@ const birthdateRule = z.preprocess(
     }, 'VALIDATION_BIRTHDATE_MINIMUM_AGE')
 );
 
+const syncedAtRule = z.coerce.date().optional();
+
 const imgUrlRule = z.string()
     .url('VALIDATION_URL_INVALID')
     .startsWith(
@@ -103,6 +105,7 @@ module.exports = {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
+    syncedAtRule,
     uuidRule,
     imgUrlRule,
     imgUrlExistingRule,
