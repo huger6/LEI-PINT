@@ -5,6 +5,12 @@ export async function getApplications(params = {}) {
 	return data?.data || [];
 }
 
+// Same endpoint as getApplications but preserves the pagination metadata.
+export async function getApplicationsPaged(params = {}) {
+	const { data } = await api.get('/applications', { params });
+	return { data: data?.data || [], pagination: data?.pagination || null };
+}
+
 export async function getApplicationById(guid) {
 	const { data } = await api.get(`/applications/${guid}`);
 	return data?.data;
@@ -44,6 +50,20 @@ export async function updateApplication(applicationGuid, payload) {
 
 export async function downloadEvidence(applicationGuid, evidenceId) {
 	const { data } = await api.get(`/applications/${applicationGuid}/evidences/${evidenceId}/download`);
+	return data?.data;
+}
+
+// Reviewer actions (Talent Manager / Service Line Leader / Administrator)
+export async function validateApplication(applicationGuid, action, reviewerNotes = null) {
+	const { data } = await api.put(`/applications/${applicationGuid}/validate`, { action, reviewerNotes });
+	return data?.data;
+}
+
+export async function reviewEvidence(applicationGuid, evidenceId, approved, reviewNotes = null) {
+	const { data } = await api.put(
+		`/applications/${applicationGuid}/evidences/${evidenceId}/review`,
+		{ approved, reviewNotes }
+	);
 	return data?.data;
 }
 

@@ -85,5 +85,12 @@
 	"NOTIF_GOAL_REMINDER_TITLE": "Goal reminder",
 	"NOTIF_GOAL_REMINDER_BODY": "Don't forget about your goal \"{{goalTitle}}\".",
 	"NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Goal deadline approaching",
-	"NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Your goal \"{{goalTitle}}\" is due in {{daysRemaining}} days."
+	"NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Your goal \"{{goalTitle}}\" is due in {{daysRemaining}} days.",
+	"APP_NOT_FOUND": "Application not found.",
+	"APP_ACCESS_DENIED": "You don't have permission to perform this action.",
+	"APP_ACCESS_DENIED_SL": "This application does not belong to your Service Line.",
+	"APP_ACTION_INVALID_STATE": "This action cannot be performed in the application's current state.",
+	"APP_TM_CANNOT_ACCEPT": "The Talent Manager cannot accept directly; forward it to the Service Line Leader.",
+	"APP_FETCH_LIST_FAILED": "Could not load applications.",
+	"APP_EVIDENCE_NOT_FOUND": "Evidence not found."
 }

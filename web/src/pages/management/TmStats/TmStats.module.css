@@ -1,0 +1,81 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.kpiRow {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 1rem;
+}
+
+.kpiCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 1.1rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	background: var(--color-bg-card);
+}
+
+.kpiIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+}
+
+.kpiValue {
+	font-size: 1.6rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	line-height: 1.1;
+}
+
+.kpiLabel {
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.chartsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 1rem;
+}
+
+.chartCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.chartCardWide {
+	grid-column: 1 / -1;
+}
+
+.emptyChart {
+	margin: 0;
+	padding: 2rem 0;
+	text-align: center;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+.errorCard {
+	padding: 1rem;
+	border: 1px solid var(--color-error);
+	border-radius: 12px;
+	color: var(--color-error);
+	background: var(--color-bg-card);
+}

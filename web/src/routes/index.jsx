@@ -13,6 +13,7 @@ import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 
 import adminRoutes from './adminRoutes';
 import consultantRoutes from './consultantRoutes';
+import tmRoutes from './tmRoutes';
 import sharedRoutes from './sharedRoutes';
 
 export default function AppRoutes() {
@@ -46,6 +47,14 @@ export default function AppRoutes() {
 				<Route element={<RoleRoute allowedRoles={['Consultant']} />}>
 					<Route element={<RoleLayout />}>
 						{consultantRoutes.map(({ path, element }) => (
+							<Route key={path} path={path} element={element} />
+						))}
+					</Route>
+				</Route>
+
+				<Route element={<RoleRoute allowedRoles={['Talent Manager']} />}>
+					<Route element={<RoleLayout />}>
+						{tmRoutes.map(({ path, element }) => (
 							<Route key={path} path={path} element={element} />
 						))}
 					</Route>

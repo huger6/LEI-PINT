@@ -1,0 +1,45 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 1rem;
+	padding: 2.5rem 1.5rem;
+}
+
+.iconCircle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	background: var(--color-primary-soft);
+}
+
+.description {
+	max-width: 38rem;
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+	.card {
+		padding: 1.75rem 1rem;
+	}
+}

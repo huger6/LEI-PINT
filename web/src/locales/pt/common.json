@@ -855,6 +855,7 @@
 		}
 	},
 	"applicationStatus": {
+		"downloadCertificate": "Descarregar certificado",
 		"stateTitle": "Estado da Candidatura",
 		"applicationState": "Estado da Candidatura",
 		"badgeInfo": "Informações sobre o Badge",
@@ -1119,5 +1120,77 @@
 		"scopeMyServiceLine": "Minha Service Line",
 		"scopeGeneral": "Geral",
 		"myPosition": "A Minha Posição"
+	},
+	"tmSections": {
+		"consultantsDesc": "A listagem detalhada de consultores estará disponível em breve nesta secção.",
+		"statsDesc": "As estatísticas e relatórios da plataforma estarão disponíveis em breve nesta secção.",
+		"announcementsDesc": "Os comunicados da plataforma estarão disponíveis em breve nesta secção."
+	},
+	"tmDashboard": {
+		"summaryTitle": "Resumo de Validações",
+		"goToValidations": "Ir para Validações",
+		"topConsultants": "Top Consultores",
+		"seeRanking": "Ver ranking",
+		"noConsultants": "Sem consultores para apresentar.",
+		"badgesShort": "badges"
+	},
+	"tmValidations": {
+		"title": "Validações",
+		"subtitle": "Reveja as candidaturas submetidas e encaminhe-as ou rejeite-as.",
+		"searchPlaceholder": "Pesquisar por badge ou consultor...",
+		"refresh": "Atualizar",
+		"empty": "Sem candidaturas",
+		"emptyDesc": "Não existem candidaturas neste estado de momento.",
+		"tabs": {
+			"submitted": "Submetidas",
+			"inValidation": "Em Validação",
+			"accepted": "Aceites",
+			"rejected": "Rejeitadas"
+		}
+	},
+	"applicationReview": {
+		"title": "Revisão de Candidatura",
+		"consultantNotes": "Notas do consultor",
+		"evidencesTitle": "Requisitos e Evidências",
+		"reviewedCount": "{{reviewed}} de {{total}} revistas",
+		"noRequirements": "Este badge não tem requisitos definidos.",
+		"noEvidence": "Sem evidência submetida",
+		"evidenceNotePlaceholder": "Nota sobre esta evidência (opcional)",
+		"approve": "Aprovar",
+		"reject": "Rejeitar",
+		"status": {
+			"pending": "Por rever",
+			"approved": "Aprovada",
+			"rejected": "Rejeitada"
+		},
+		"decisionTitle": "Decisão",
+		"decisionHint": "Ao encaminhar, a candidatura segue para o Service Line Leader. Ao rejeitar, a candidatura é encerrada.",
+		"reviewerNotes": "Notas para o consultor",
+		"reviewerNotesPlaceholder": "Adicione um comentário (opcional)",
+		"forward": "Encaminhar para o Service Line Leader",
+		"rejectApplication": "Rejeitar candidatura",
+		"confirmForward": "Encaminhar esta candidatura para o Service Line Leader?",
+		"confirmReject": "Rejeitar esta candidatura? Esta ação encerra a candidatura.",
+		"backToList": "Voltar às candidaturas",
+		"toast": {
+			"evidenceApproved": "Evidência aprovada.",
+			"evidenceRejected": "Evidência rejeitada.",
+			"forwarded": "Candidatura encaminhada para o Service Line Leader.",
+			"rejected": "Candidatura rejeitada."
+		}
+	},
+	"tmStats": {
+		"noData": "Sem dados para apresentar.",
+		"kpi": {
+			"badgesAwarded": "Badges atribuídos",
+			"consultants": "Consultores",
+			"pending": "A aguardar validação",
+			"activeUsers": "Utilizadores ativos"
+		},
+		"charts": {
+			"byServiceLine": "Badges por Service Line",
+			"byLevel": "Distribuição por Nível",
+			"byLearningPath": "Badges por Learning Path"
+		}
 	}
 }

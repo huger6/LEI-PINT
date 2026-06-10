@@ -855,6 +855,7 @@
 		}
 	},
 	"applicationStatus": {
+		"downloadCertificate": "Download certificate",
 		"stateTitle": "Application Status",
 		"applicationState": "Application State",
 		"badgeInfo": "Badge Information",
@@ -1119,5 +1120,77 @@
 		"scopeMyServiceLine": "My Service Line",
 		"scopeGeneral": "General",
 		"myPosition": "My Position"
+	},
+	"tmSections": {
+		"consultantsDesc": "A detailed list of consultants will be available soon in this section.",
+		"statsDesc": "Platform statistics and reports will be available soon in this section.",
+		"announcementsDesc": "Platform announcements will be available soon in this section."
+	},
+	"tmDashboard": {
+		"summaryTitle": "Validations Summary",
+		"goToValidations": "Go to Validations",
+		"topConsultants": "Top Consultants",
+		"seeRanking": "See ranking",
+		"noConsultants": "No consultants to display.",
+		"badgesShort": "badges"
+	},
+	"tmValidations": {
+		"title": "Validations",
+		"subtitle": "Review submitted applications and forward or reject them.",
+		"searchPlaceholder": "Search by badge or consultant...",
+		"refresh": "Refresh",
+		"empty": "No applications",
+		"emptyDesc": "There are no applications in this state right now.",
+		"tabs": {
+			"submitted": "Submitted",
+			"inValidation": "In Validation",
+			"accepted": "Accepted",
+			"rejected": "Rejected"
+		}
+	},
+	"applicationReview": {
+		"title": "Application Review",
+		"consultantNotes": "Consultant notes",
+		"evidencesTitle": "Requirements & Evidence",
+		"reviewedCount": "{{reviewed}} of {{total}} reviewed",
+		"noRequirements": "This badge has no defined requirements.",
+		"noEvidence": "No evidence submitted",
+		"evidenceNotePlaceholder": "Note about this evidence (optional)",
+		"approve": "Approve",
+		"reject": "Reject",
+		"status": {
+			"pending": "Pending",
+			"approved": "Approved",
+			"rejected": "Rejected"
+		},
+		"decisionTitle": "Decision",
+		"decisionHint": "Forwarding sends the application to the Service Line Leader. Rejecting closes the application.",
+		"reviewerNotes": "Notes for the consultant",
+		"reviewerNotesPlaceholder": "Add a comment (optional)",
+		"forward": "Forward to Service Line Leader",
+		"rejectApplication": "Reject application",
+		"confirmForward": "Forward this application to the Service Line Leader?",
+		"confirmReject": "Reject this application? This action closes the application.",
+		"backToList": "Back to applications",
+		"toast": {
+			"evidenceApproved": "Evidence approved.",
+			"evidenceRejected": "Evidence rejected.",
+			"forwarded": "Application forwarded to the Service Line Leader.",
+			"rejected": "Application rejected."
+		}
+	},
+	"tmStats": {
+		"noData": "No data to display.",
+		"kpi": {
+			"badgesAwarded": "Badges awarded",
+			"consultants": "Consultants",
+			"pending": "Awaiting validation",
+			"activeUsers": "Active users"
+		},
+		"charts": {
+			"byServiceLine": "Badges by Service Line",
+			"byLevel": "Distribution by Level",
+			"byLearningPath": "Badges by Learning Path"
+		}
 	}
 }
