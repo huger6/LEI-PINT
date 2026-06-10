@@ -63,6 +63,16 @@ class CurrentUserDao {
     );
   }
 
+  /// Mirrors the server-side RGPD consent state locally so the offline-first UI
+  /// stops re-prompting once the consent has been recorded on the API.
+  Future<void> setGdprAccepted(bool accepted) async {
+    final db = await _database.database;
+    await db.update(
+      LocalDatabase.currentUserTable,
+      {'gdpr_accepted': accepted ? 1 : 0},
+    );
+  }
+
   Future<void> clear() async {
     final db = await _database.database;
     await db.delete(LocalDatabase.currentUserTable);
