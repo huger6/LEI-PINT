@@ -10,10 +10,12 @@ import {
 	getExpiringBadges,
 } from '../../../features/statistics/api/statisticsApi';
 import { downloadExport } from '../../../features/statistics/api/exportsApi';
+import { getBadges } from '../../../features/badges/api/badgesApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
+import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import Button from '../../../components/Button/Button';
 import FormAlert from '../../../components/FormAlert/FormAlert';
 import Icon from '../../../components/Icons/Icons';
@@ -61,15 +63,17 @@ export default function TmStats() {
 			setLoading(true);
 			setError(null);
 			try {
-				const [bySl, byLp, levels, enrollment, pending, teamBadges] = await Promise.all([
+				const [bySl, byLp, levels, enrollment, pending, teamBadges, badgePoints, special] = await Promise.all([
 					getBadgesByServiceLine(),
 					getBadgesByLearningPath(),
 					getLevelDistribution(),
 					getUserEnrollment(),
 					getPendingApplicationsCount(),
 					getTeamBadgesCount(),
+					getBadges({ page: 1, limit: 100 }).catch(() => []),
+					getBadges({ badgeClass: 'special', page: 1, limit: 50 }).catch(() => []),
 				]);
-				if (active) setData({ bySl, byLp, levels, enrollment, pending, teamBadges });
+				if (active) setData({ bySl, byLp, levels, enrollment, pending, teamBadges, badgePoints, special });
 			} catch (err) {
 				if (active) setError(resolveErrorMessage(err));
 			} finally {
@@ -272,6 +276,58 @@ export default function TmStats() {
 								))}
 							</tbody>
 						</table>
+					</div>
+				)}
+			</ContentCard>
+
+			{/* Points system per badge (req 15) */}
+			<ContentCard className={styles.chartCard}>
+				<CardHeader icon="star-points" iconBg="var(--color-orange-soft)" iconColor="var(--color-orange-on-soft)" title={t('tmStats.points.title')} />
+				<p className={styles.sectionNote}>{t('tmStats.points.note')}</p>
+				{(!data.badgePoints || data.badgePoints.length === 0) ? (
+					<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
+				) : (
+					<div className={`table-responsive ${styles.scrollTable}`}>
+						<table className="table table-hover align-middle mb-0">
+							<thead>
+								<tr>
+									<th>{t('tmStats.points.badge')}</th>
+									<th>{t('tmStats.points.area')}</th>
+									<th className="text-end">{t('tmStats.points.value')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{data.badgePoints.map((b) => (
+									<tr key={b.badge_slug || b.badge_id}>
+										<td>{b.badge_title}</td>
+										<td className="text-muted">{b.service_line?.service_line_name || b.area?.area_name || '—'}</td>
+										<td className="text-end">
+											<span className={styles.pointsValue}>{b.badge_points ?? 0} pts</span>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
+			</ContentCard>
+
+			{/* Special / Premium achievement badges (req 16) */}
+			<ContentCard className={styles.chartCard}>
+				<CardHeader icon="badge-premium" iconBg="var(--color-purple-soft)" iconColor="var(--color-purple-on-soft)" title={t('tmStats.special.title')} />
+				<p className={styles.sectionNote}>{t('tmStats.special.note')}</p>
+				{(!data.special || data.special.length === 0) ? (
+					<p className={styles.emptyChart}>{t('tmStats.special.empty')}</p>
+				) : (
+					<div className={styles.specialGrid}>
+						{data.special.map((b) => (
+							<BadgeCard
+								key={b.badge_slug || b.badge_id}
+								badge={b}
+								to={`/badges/${b.badge_slug}`}
+								isConsultant={false}
+							/>
+						))}
 					</div>
 				)}
 			</ContentCard>
