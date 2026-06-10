@@ -110,14 +110,30 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
       final accepted = await showRgpdConsentSheet(context);
       if (!accepted || !mounted) return;
 
+      // The consent must be registered on the server (consent history +
+      // gdpr_accepted flag) before sharing — it is not a local-only toggle.
+      // If the API call fails we abort the share rather than silently treating
+      // the consent as given.
+      try {
+        await context.read<BadgeRepository>().acceptShareGdpr();
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(LanguageScope.of(context).tr('gdprConsentError')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+
+      // Mirror the recorded consent into the local DB so future shares (incl.
+      // offline) don't re-prompt.
+      await getIt<CurrentUserDao>().setGdprAccepted(true);
+      if (!mounted) return;
       setState(() {
         _localGdprAccepted = true;
       });
-
-      try {
-        final badgeRepo = context.read<BadgeRepository>();
-        await badgeRepo.acceptShareGdpr();
-      } catch (_) {}
     }
 
     if (!mounted) return;
@@ -178,10 +194,39 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
     }
   }
 
+  /// The earned-badges endpoint doesn't carry the application guid, which the
+  /// certificate endpoint needs. Resolve it from the applications loaded in the
+  /// applications tab by matching the awarded badge to its (preferably
+  /// Accepted) application for the same consultant.
+  String? _resolveApplicationGuid(EarnedBadge earned) {
+    final direct = earned.award.applicationGuid;
+    if (direct != null && direct.isNotEmpty) {
+      return direct;
+    }
+
+    final badgeId = earned.badge.id;
+    if (badgeId == 0) {
+      return null;
+    }
+
+    ApplicationSummaryModel? fallback;
+    for (final app in _applications) {
+      if (app.badge?.id != badgeId || app.applicationGuid.isEmpty) {
+        continue;
+      }
+      if (app.applicationState.toLowerCase().contains('accept')) {
+        return app.applicationGuid;
+      }
+      fallback ??= app;
+    }
+
+    return fallback?.applicationGuid;
+  }
+
   Future<void> _handleDownload(EarnedBadge earned) async {
     final badge = earned.badge;
     final award = earned.award;
-    final applicationGuid = award.applicationGuid;
+    final applicationGuid = _resolveApplicationGuid(earned);
 
     if (applicationGuid == null || applicationGuid.isEmpty) {
       if (!mounted) return;

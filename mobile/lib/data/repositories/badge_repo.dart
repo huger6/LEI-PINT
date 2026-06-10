@@ -176,10 +176,26 @@ class BadgeRepository {
     } catch (_) {}
   }
 
+  /// Records the consultant's RGPD consent for badge sharing on the server.
+  ///
+  /// Instead of locally flipping a flag, this persists the decision through the
+  /// dedicated GDPR consent endpoint: it logs an entry in the consent history
+  /// and (server-side) sets the consultant's `gdpr_accepted` flag. The consent
+  /// is recorded against the active "Privacy" policy. Throws if no active
+  /// policy is available or the request fails, so callers can avoid proceeding
+  /// with the share when consent was not actually registered.
   Future<void> acceptShareGdpr() async {
-    await _apiClient.put(
-      ApiEndpoints.updateProfile,
-      data: {'gdpr_accepted': true},
+    final policyPayload =
+        await _apiClient.get(ApiEndpoints.latestGdprPolicy('Privacy'));
+    final policy = _extractMap(_extractMap(policyPayload)['data']);
+    final policyId = policy['policy_id'];
+    if (policyId == null) {
+      throw Exception('No active GDPR policy available.');
+    }
+
+    await _apiClient.post(
+      ApiEndpoints.recordGdprConsent,
+      data: {'policy_id': policyId, 'action': 'ACCEPTED'},
     );
   }
 

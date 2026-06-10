@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/local/current_user_dao.dart';
 import '../../../data/repositories/applications_repo.dart';
 import '../../../injection_container.dart';
 import '../../../models/application_summary_model.dart';
@@ -26,6 +27,10 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
 
   List<ApplicationSummaryModel> _applications = const [];
 
+  /// Lowercased names of the areas the consultant belongs to, used to order the
+  /// consultant's own areas first in the default (unfiltered) listing.
+  Set<String> _userAreaNames = const {};
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +40,21 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
       store.loadEarnedBadges(forceRefresh: true);
       store.loadFavorites();
       _loadApplications();
+      _loadUserAreas();
     });
+  }
+
+  Future<void> _loadUserAreas() async {
+    try {
+      final user = await getIt<CurrentUserDao>().get();
+      final names = (user?.areas ?? const [])
+          .map((a) => a.name.trim().toLowerCase())
+          .where((name) => name.isNotEmpty)
+          .toSet();
+      if (mounted && names.isNotEmpty) {
+        setState(() => _userAreaNames = names);
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadApplications() async {
@@ -109,6 +128,16 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
       } else if (filter.sort == 'oldest') {
         result = result.reversed.toList();
       }
+    } else {
+      // Default (unfiltered) ordering: badges in the consultant's own area(s)
+      // come first, everything else after, each group sorted alphabetically by
+      // title.
+      result.sort((a, b) {
+        final aMine = _userAreaNames.contains(a.category.trim().toLowerCase());
+        final bMine = _userAreaNames.contains(b.category.trim().toLowerCase());
+        if (aMine != bMine) return aMine ? -1 : 1;
+        return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      });
     }
 
     return result;

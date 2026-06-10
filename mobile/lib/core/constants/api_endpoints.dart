@@ -95,6 +95,14 @@ class ApiEndpoints {
   static String resendBadgeConfirmation(String applicationGuid) =>
       '/api/applications/$applicationGuid/resend-confirmation';
 
+  // === GDPR ===
+  // GET /gdpr/policies/latest/:type - latest active policy of a given type
+  static String latestGdprPolicy(String type) =>
+      '/api/gdpr/policies/latest/$type';
+
+  // POST /gdpr/consent - record the user's consent/revocation for a policy
+  static const String recordGdprConsent = '/api/gdpr/consent';
+
   // === Ranking ===
   // GET /ranking
   static const String getRanking = '/api/ranking';

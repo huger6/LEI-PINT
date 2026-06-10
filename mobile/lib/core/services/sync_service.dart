@@ -10,10 +10,12 @@ import '../../data/local/badge_dao.dart';
 import '../../data/local/current_user_dao.dart';
 import '../../data/local/learning_path_dao.dart';
 import '../../data/local/my_application_dao.dart';
+import '../../data/local/my_skill_dao.dart';
 import '../../data/local/notification_dao.dart';
 import '../../data/local/points_history_dao.dart';
 import '../../data/local/progression_stage_dao.dart';
 import '../../data/local/service_line_dao.dart';
+import '../../data/local/skill_dao.dart';
 import '../../data/local/sync_metadata_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../models/announcement_model.dart';
@@ -25,6 +27,7 @@ import '../../models/notification_model.dart';
 import '../../models/points_history_model.dart';
 import '../../models/progression_stage_model.dart';
 import '../../models/service_line_model.dart';
+import '../../models/skill_model.dart';
 import '../../models/user_model.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/screen_data_scope.dart';
@@ -49,6 +52,8 @@ class SyncService {
   late final _pointsHistoryDao = PointsHistoryDao(_database);
   late final _myApplicationDao = MyApplicationDao(_database);
   late final _currentUserDao = CurrentUserDao(_database);
+  late final _skillDao = SkillDao(_database);
+  late final _mySkillDao = MySkillDao(_database);
 
   String? _activeRoute;
 
@@ -278,8 +283,10 @@ class SyncService {
           ? (response['data'] ?? response)
           : response;
       if (data is! Map) return false;
-      final user = UserModel.fromJson(Map<String, dynamic>.from(data));
+      final map = Map<String, dynamic>.from(data);
+      final user = UserModel.fromJson(map);
       await _currentUserDao.save(user);
+      await _syncSelectedSkills(map);
       return true;
     } on SocketException {
       return false;
@@ -289,6 +296,26 @@ class SyncService {
       debugPrint('SyncService: user profile failed: $e');
       return false;
     }
+  }
+
+  /// Mirrors the consultant's selected skills (their "competências") from the
+  /// profile payload into the local skill tables that the profile UI reads
+  /// from. The profile endpoint may expose them under `skills` or
+  /// `selected_skills`; when neither is present this is a no-op, so the UI
+  /// stays empty until the API provides the data and lights up automatically
+  /// once it does.
+  Future<void> _syncSelectedSkills(Map<String, dynamic> profile) async {
+    final raw = profile['skills'] ?? profile['selected_skills'];
+    if (raw is! List) return;
+
+    final skills = raw
+        .whereType<Map>()
+        .map((e) => SkillModel.fromJson(Map<String, dynamic>.from(e)))
+        .where((s) => s.id != 0 && s.name.trim().isNotEmpty)
+        .toList();
+
+    await _skillDao.replaceAll(skills);
+    await _mySkillDao.replaceAll(skills.map((s) => s.id).toList());
   }
 
   Future<bool> _syncLearningPaths() async {

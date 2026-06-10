@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 7;
+const int sourceStringsVersion = 8;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -339,6 +339,7 @@ const _sourceJson = r'''
   "couldNotIdentifyApplication": "Não foi possível identificar a candidatura associada a este badge.",
   "downloadingProof": "A transferir comprovativo...",
   "proofDownloadError": "Erro ao transferir comprovativo.",
+  "gdprConsentError": "Não foi possível registar o consentimento RGPD. Tente novamente.",
   "approvedToday": "Aprovado hoje",
   "approvedOneDayAgo": "Aprovado há 1 dia",
   "approvedDaysAgo": "Aprovado há {days} dias",
