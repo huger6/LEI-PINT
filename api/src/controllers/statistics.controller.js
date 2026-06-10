@@ -323,6 +323,24 @@ const getBadgesPerArea = async (req, res) => {
 };
 
 /*──────────────────────────────────────────────────────────────
+  GET /api/statistics/reports/expiring-badges
+  Awarded badges whose expiration_at falls within the next N days.
+──────────────────────────────────────────────────────────────*/
+const getExpiringBadges = async (req, res) => {
+    try {
+        const { withinDays } = validations.expiringBadgesQuerySchema.parse(req.query);
+        const data = await statsService.getExpiringBadges({ withinDays });
+        return res.status(200).json({ success: true, code: 'STATS_EXPIRING_BADGES_RETRIEVED', data, meta: { withinDays } });
+
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+
+        logger.error('Error fetching expiring badges', { error });
+        return res.status(500).json({ success: false, code: 'STATS_EXPIRING_BADGES_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
   POST /api/statistics/admin/reconcile-points
   Runs sp_reconcile_badge_points() to fix missing points records.
 ──────────────────────────────────────────────────────────────*/
@@ -352,5 +370,6 @@ module.exports = {
     getLevelDistribution,
     getUserEnrollment,
     getBadgesPerArea,
+    getExpiringBadges,
     reconcilePoints
 };
