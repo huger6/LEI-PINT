@@ -79,3 +79,62 @@
 	color: var(--color-error);
 	background: var(--color-bg-card);
 }
+
+/* Section header with inline control (format / window selector) */
+.sectionHeaderRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.inlineSelect {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+}
+
+.inlineSelectLabel {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.inlineSelect select {
+	width: auto;
+	min-width: 92px;
+}
+
+/* Export buttons */
+.exportButtons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+/* Expiring badges days chip */
+.daysChip {
+	display: inline-block;
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+
+.daysCritical {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.daysWarning {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.daysNeutral {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}

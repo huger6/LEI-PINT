@@ -6,6 +6,7 @@ import SubmissionConfirmation from '../pages/consultant/SubmissionConfirmation/S
 import UserProfile from '../pages/shared/UserProfile/UserProfile';
 import SearchResults from '../pages/shared/SearchResults/SearchResults';
 import Ranking from '../pages/shared/Ranking/Ranking';
+import MailSignature from '../pages/shared/MailSignature/MailSignature';
 
 const sharedRoutes = [
 	{ path: SHARED.SEARCH, element: <SearchResults /> },
@@ -15,6 +16,7 @@ const sharedRoutes = [
 	{ path: SHARED.APPLICATION_DETAIL, element: <ApplicationDetailPage /> },
 	{ path: SHARED.PROFILE, element: <UserProfile /> },
 	{ path: SHARED.PROFILE_EDIT, element: <UserProfile /> },
+	{ path: SHARED.MAIL_SIGNATURE, element: <MailSignature /> },
 	{ path: SHARED.RANKING, element: <Ranking /> },
 ];
 

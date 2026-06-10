@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	getBadgesByServiceLine,
@@ -7,20 +7,53 @@ import {
 	getUserEnrollment,
 	getPendingApplicationsCount,
 	getTeamBadgesCount,
+	getExpiringBadges,
 } from '../../../features/statistics/api/statisticsApi';
+import { downloadExport } from '../../../features/statistics/api/exportsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
+import Button from '../../../components/Button/Button';
+import FormAlert from '../../../components/FormAlert/FormAlert';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './TmStats.module.css';
+
+const EXPORT_FORMATS = ['csv', 'xlsx', 'pdf'];
+const EXPIRING_WINDOWS = [30, 90, 180, 365];
+
+const EXPORT_BUTTONS = [
+	{ key: 'consultants', type: 'consultants', labelKey: 'tmStats.exports.consultants' },
+	{ key: 'applications', type: 'applications', labelKey: 'tmStats.exports.applications' },
+	{ key: 'accepted', type: 'applications', params: { state: 'Accepted' }, labelKey: 'tmStats.exports.accepted' },
+	{ key: 'rejected', type: 'applications', params: { state: 'Rejected' }, labelKey: 'tmStats.exports.rejected' },
+	{ key: 'badges', type: 'badges', labelKey: 'tmStats.exports.badges' },
+	{ key: 'pointsHistory', type: 'pointsHistory', labelKey: 'tmStats.exports.pointsHistory' },
+	{ key: 'applicationLogs', type: 'applicationLogs', labelKey: 'tmStats.exports.applicationLogs' },
+];
+
+function expiringClass(days) {
+	if (days <= 30) return styles.daysCritical;
+	if (days <= 90) return styles.daysWarning;
+	return styles.daysNeutral;
+}
 
 export default function TmStats() {
 	const { t } = useTranslation();
 	const [data, setData] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+
+	// Exports
+	const [exportFormat, setExportFormat] = useState('xlsx');
+	const [exportBusy, setExportBusy] = useState(null);
+	const [exportError, setExportError] = useState(null);
+
+	// Expiring badges
+	const [expiring, setExpiring] = useState([]);
+	const [expiringWindow, setExpiringWindow] = useState(90);
+	const [expiringLoading, setExpiringLoading] = useState(true);
 
 	useEffect(() => {
 		let active = true;
@@ -45,6 +78,34 @@ export default function TmStats() {
 		})();
 		return () => { active = false; };
 	}, []);
+
+	const loadExpiring = useCallback(async (withinDays) => {
+		setExpiringLoading(true);
+		try {
+			const rows = await getExpiringBadges(withinDays);
+			setExpiring(rows);
+		} catch {
+			setExpiring([]);
+		} finally {
+			setExpiringLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		loadExpiring(expiringWindow);
+	}, [loadExpiring, expiringWindow]);
+
+	async function handleExport(btn) {
+		setExportError(null);
+		setExportBusy(btn.key);
+		try {
+			await downloadExport(btn.type, { format: exportFormat, ...(btn.params || {}) });
+		} catch (err) {
+			setExportError(resolveErrorMessage(err));
+		} finally {
+			setExportBusy(null);
+		}
+	}
 
 	if (loading) {
 		return (
@@ -121,6 +182,99 @@ export default function TmStats() {
 					)}
 				</ContentCard>
 			</div>
+
+			{/* Exports */}
+			<ContentCard className={styles.chartCard}>
+				<div className={styles.sectionHeaderRow}>
+					<CardHeader icon="download" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('tmStats.exports.title')} />
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.exports.format')}</span>
+						<select
+							className="form-select form-select-sm"
+							value={exportFormat}
+							onChange={(e) => setExportFormat(e.target.value)}
+							aria-label={t('tmStats.exports.format')}
+						>
+							{EXPORT_FORMATS.map((f) => (
+								<option key={f} value={f}>{f.toUpperCase()}</option>
+							))}
+						</select>
+					</label>
+				</div>
+
+				<div className={styles.exportButtons}>
+					{EXPORT_BUTTONS.map((btn) => (
+						<Button
+							key={btn.key}
+							variant="outlined"
+							color="primary"
+							size="sm"
+							loading={exportBusy === btn.key}
+							disabled={Boolean(exportBusy)}
+							onClick={() => handleExport(btn)}
+						>
+							<Icon name="download" size={14} /> {t(btn.labelKey)}
+						</Button>
+					))}
+				</div>
+
+				<FormAlert message={exportError} variant="danger" className="mt-2" />
+			</ContentCard>
+
+			{/* Expiring badges */}
+			<ContentCard className={styles.chartCard}>
+				<div className={styles.sectionHeaderRow}>
+					<CardHeader icon="clock" iconBg="var(--color-orange-soft)" iconColor="var(--color-orange-on-soft)" title={t('tmStats.expiring.title')} />
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.expiring.window')}</span>
+						<select
+							className="form-select form-select-sm"
+							value={expiringWindow}
+							onChange={(e) => setExpiringWindow(Number(e.target.value))}
+							aria-label={t('tmStats.expiring.window')}
+						>
+							{EXPIRING_WINDOWS.map((d) => (
+								<option key={d} value={d}>{t('tmStats.expiring.days', { count: d })}</option>
+							))}
+						</select>
+					</label>
+				</div>
+
+				{expiringLoading ? (
+					<p className={styles.emptyChart}>—</p>
+				) : expiring.length === 0 ? (
+					<p className={styles.emptyChart}>{t('tmStats.expiring.empty')}</p>
+				) : (
+					<div className="table-responsive">
+						<table className="table table-hover align-middle mb-0">
+							<thead>
+								<tr>
+									<th>{t('tmStats.expiring.consultant')}</th>
+									<th>{t('tmStats.expiring.badge')}</th>
+									<th>{t('tmStats.expiring.expiresOn')}</th>
+									<th className="text-end">{t('tmStats.expiring.daysRemaining')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{expiring.map((row, idx) => (
+									<tr key={`${row.user_guid}-${row.badge_slug}-${idx}`}>
+										<td>{row.full_name}</td>
+										<td>{row.badge_title}</td>
+										<td className="text-muted">
+											{new Date(row.expiration_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })}
+										</td>
+										<td className="text-end">
+											<span className={`${styles.daysChip} ${expiringClass(row.days_remaining)}`}>
+												{row.days_remaining} {t('tmStats.expiring.daysShort')}
+											</span>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
+			</ContentCard>
 		</div>
 	);
 }

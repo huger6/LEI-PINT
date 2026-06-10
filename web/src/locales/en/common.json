@@ -1191,6 +1191,39 @@
 			"byServiceLine": "Badges by Service Line",
 			"byLevel": "Distribution by Level",
 			"byLearningPath": "Badges by Learning Path"
+		},
+		"exports": {
+			"title": "Exports",
+			"format": "Format",
+			"consultants": "Consultants",
+			"applications": "Applications",
+			"accepted": "Approvals",
+			"rejected": "Rejections",
+			"badges": "Badges",
+			"pointsHistory": "Points history",
+			"applicationLogs": "Validation logs"
+		},
+		"expiring": {
+			"title": "Expiring badges",
+			"window": "Window",
+			"days": "{{count}} days",
+			"daysShort": "days",
+			"empty": "No badges expiring in this window.",
+			"consultant": "Consultant",
+			"badge": "Badge",
+			"expiresOn": "Expires on",
+			"daysRemaining": "Days remaining"
 		}
+	},
+	"mailSignature": {
+		"title": "Email signature",
+		"subtitle": "Select the badges to include and copy the signature into your email client.",
+		"selectBadges": "Select badges",
+		"preview": "Preview",
+		"copyHtml": "Copy signature",
+		"showHtml": "Show HTML",
+		"copied": "Signature copied.",
+		"copyFailed": "Could not copy. Copy the HTML manually.",
+		"empty": "You don't have any badges with a public link to include in the signature yet."
 	}
 }

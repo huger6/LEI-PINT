@@ -1190,7 +1190,40 @@
 			"byServiceLine": "Badges por Service Line",
 			"byLevel": "Distribución por Nivel",
 			"byLearningPath": "Badges por Learning Path"
+		},
+		"exports": {
+			"title": "Exportaciones",
+			"format": "Formato",
+			"consultants": "Consultores",
+			"applications": "Candidaturas",
+			"accepted": "Aprobaciones",
+			"rejected": "Rechazos",
+			"badges": "Badges",
+			"pointsHistory": "Historial de puntos",
+			"applicationLogs": "Registros de validación"
+		},
+		"expiring": {
+			"title": "Badges por caducar",
+			"window": "Ventana",
+			"days": "{{count}} días",
+			"daysShort": "días",
+			"empty": "Sin badges por caducar en esta ventana.",
+			"consultant": "Consultor",
+			"badge": "Badge",
+			"expiresOn": "Caduca el",
+			"daysRemaining": "Días restantes"
 		}
+	},
+	"mailSignature": {
+		"title": "Firma de correo",
+		"subtitle": "Seleccione los badges a incluir y copie la firma en su cliente de correo.",
+		"selectBadges": "Seleccionar badges",
+		"preview": "Vista previa",
+		"copyHtml": "Copiar firma",
+		"showHtml": "Ver HTML",
+		"copied": "Firma copiada.",
+		"copyFailed": "No se pudo copiar. Copie el HTML manualmente.",
+		"empty": "Aún no tiene badges con enlace público para incluir en la firma."
 	}
 }
 

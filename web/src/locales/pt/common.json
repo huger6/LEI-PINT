@@ -1191,6 +1191,39 @@
 			"byServiceLine": "Badges por Service Line",
 			"byLevel": "Distribuição por Nível",
 			"byLearningPath": "Badges por Learning Path"
+		},
+		"exports": {
+			"title": "Exportações",
+			"format": "Formato",
+			"consultants": "Consultores",
+			"applications": "Pedidos",
+			"accepted": "Aprovações",
+			"rejected": "Rejeições",
+			"badges": "Badges",
+			"pointsHistory": "Histórico de pontos",
+			"applicationLogs": "Logs de validação"
+		},
+		"expiring": {
+			"title": "Badges a expirar",
+			"window": "Janela",
+			"days": "{{count}} dias",
+			"daysShort": "dias",
+			"empty": "Sem badges a expirar nesta janela.",
+			"consultant": "Consultor",
+			"badge": "Badge",
+			"expiresOn": "Expira em",
+			"daysRemaining": "Dias restantes"
 		}
+	},
+	"mailSignature": {
+		"title": "Assinatura de email",
+		"subtitle": "Selecione os badges a incluir e copie a assinatura para o seu cliente de email.",
+		"selectBadges": "Selecionar badges",
+		"preview": "Pré-visualização",
+		"copyHtml": "Copiar assinatura",
+		"showHtml": "Ver HTML",
+		"copied": "Assinatura copiada.",
+		"copyFailed": "Não foi possível copiar. Copie manualmente o HTML.",
+		"empty": "Ainda não tem badges com link público para incluir na assinatura."
 	}
 }

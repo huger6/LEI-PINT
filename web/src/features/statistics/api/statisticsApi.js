@@ -34,3 +34,9 @@ export async function getTeamBadgesCount(params = {}) {
 		distinctConsultants: data?.data?.distinct_consultants ?? 0,
 	};
 }
+
+// Awarded badges expiring within `withinDays` (Talent Manager / Administrator)
+export async function getExpiringBadges(withinDays = 90) {
+	const { data } = await api.get('/statistics/reports/expiring-badges', { params: { withinDays } });
+	return data?.data || [];
+}
