@@ -138,3 +138,27 @@
 	background: var(--color-green-soft);
 	color: var(--color-green-on-soft);
 }
+
+/* Points-per-badge + special badges sections */
+.sectionNote {
+	margin: 0;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.scrollTable {
+	max-height: 360px;
+	overflow-y: auto;
+}
+
+.pointsValue {
+	font-weight: 700;
+	color: var(--color-orange-on-soft);
+	white-space: nowrap;
+}
+
+.specialGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 1rem;
+}

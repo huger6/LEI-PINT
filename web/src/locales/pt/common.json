@@ -1213,6 +1213,18 @@
 			"badge": "Badge",
 			"expiresOn": "Expira em",
 			"daysRemaining": "Dias restantes"
+		},
+		"points": {
+			"title": "Sistema de pontos por badge",
+			"note": "O Administrador define os pontos de cada badge; um badge pode não ter pontos.",
+			"badge": "Badge",
+			"area": "Service Line / Área",
+			"value": "Pontos"
+		},
+		"special": {
+			"title": "Badges de conquistas especiais (Premium)",
+			"note": "Badges especiais atribuídos por conquistas (ex.: certificações pagas, marcos alcançados).",
+			"empty": "Sem badges especiais definidos."
 		}
 	},
 	"mailSignature": {

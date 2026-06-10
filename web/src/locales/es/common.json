@@ -1212,6 +1212,18 @@
 			"badge": "Badge",
 			"expiresOn": "Caduca el",
 			"daysRemaining": "Días restantes"
+		},
+		"points": {
+			"title": "Sistema de puntos por badge",
+			"note": "El Administrador define los puntos de cada badge; un badge puede no tener puntos.",
+			"badge": "Badge",
+			"area": "Service Line / Área",
+			"value": "Puntos"
+		},
+		"special": {
+			"title": "Badges de logros especiales (Premium)",
+			"note": "Badges especiales otorgados por logros (p. ej. certificaciones pagas, hitos alcanzados).",
+			"empty": "Sin badges especiales definidos."
 		}
 	},
 	"mailSignature": {
