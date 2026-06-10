@@ -119,6 +119,13 @@ router.get('/reports/level-distribution', loginRequired, leadership, ctrl.getLev
  */
 router.get('/reports/user-enrollment', loginRequired, leadership, ctrl.getUserEnrollment);
 
+/**
+ * @route   GET /api/statistics/reports/expiring-badges
+ * @desc    Awarded badges expiring within the next N days (?withinDays=30)
+ * @access  Talent Manager, Administrator (global, unscoped dataset)
+ */
+router.get('/reports/expiring-badges', loginRequired, checkRole('Talent Manager', 'Administrator'), ctrl.getExpiringBadges);
+
 /*──────────────────────────────────────────────────────────────
   Admin maintenance
 ──────────────────────────────────────────────────────────────*/
