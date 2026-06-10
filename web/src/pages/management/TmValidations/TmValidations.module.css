@@ -1,0 +1,180 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.headerRow {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.subtitle {
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+.toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.searchWrap {
+	flex: 1;
+	max-width: 420px;
+}
+
+.cardsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 1rem;
+}
+
+.appCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+	padding: 1rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	background: var(--color-bg-card);
+	text-align: left;
+	cursor: pointer;
+	transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+
+.appCard:hover {
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+	transform: translateY(-2px);
+	border-color: var(--color-primary-border-soft);
+}
+
+.appCard:focus-visible {
+	outline: 2px solid var(--color-primary-focus-ring);
+	outline-offset: 2px;
+}
+
+.cardHeader {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.cardBadgeIcon {
+	flex-shrink: 0;
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	background: var(--color-secondary-container);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.cardBadgeImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.cardInfo {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.cardTitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.consultantRow {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+.consultantName {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cardFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding-top: 0.6rem;
+	border-top: 1px solid var(--color-outline-variant);
+}
+
+.footerDate {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.78rem;
+	color: var(--color-outline);
+}
+
+.footerState {
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.emptyCard,
+.errorCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.5rem;
+	padding: 2.5rem 1.5rem;
+	border: 1px dashed var(--color-outline-variant);
+	border-radius: 16px;
+	background: var(--color-bg-card);
+}
+
+.errorCard {
+	border-style: solid;
+	border-color: var(--color-error);
+	color: var(--color-error);
+}
+
+.emptyTitle {
+	margin: 0;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.emptyDesc {
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.88rem;
+}
+
+@media (max-width: 380px) {
+	.cardsGrid {
+		grid-template-columns: 1fr;
+	}
+}

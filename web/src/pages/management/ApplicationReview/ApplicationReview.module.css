@@ -1,0 +1,402 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.breadcrumbLink {
+	color: var(--color-secondary);
+	text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+	text-decoration: underline;
+}
+
+.breadcrumbActive {
+	color: var(--color-on-surface);
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 50vw;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 320px;
+	gap: 1.25rem;
+	align-items: start;
+}
+
+.mainColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	min-width: 0;
+}
+
+.card {
+	background: var(--color-bg-card);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+/* Badge header */
+.badgeHeader {
+	display: flex;
+	gap: 0.85rem;
+	align-items: center;
+}
+
+.badgeIcon {
+	flex-shrink: 0;
+	width: 56px;
+	height: 56px;
+	border-radius: 14px;
+	background: var(--color-secondary-container);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.badgeImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.badgeHeaderInfo {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.badgeTitle {
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.consultantRow {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	min-width: 0;
+}
+
+.consultantName {
+	font-size: 0.85rem;
+	color: var(--color-outline);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Info grid */
+.infoGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 0.5rem 1rem;
+}
+
+.infoRow {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.85rem;
+}
+
+.infoLabel {
+	color: var(--color-outline);
+	flex-shrink: 0;
+}
+
+.infoValue {
+	color: var(--color-on-surface);
+	font-weight: 600;
+	margin-left: auto;
+	text-align: right;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.notesBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--color-outline-variant);
+}
+
+.notesLabel {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--color-outline);
+}
+
+.notesText {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--color-on-surface);
+	white-space: pre-wrap;
+}
+
+/* Section header */
+.sectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.sectionTitle {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.reviewedCounter {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+.emptyText {
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+/* Requirements list */
+.reqList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+
+.reqRow {
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 12px;
+	padding: 0.85rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+
+.reqTop {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.reqInfo {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.reqName {
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.evidenceFile {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+.evidenceFileName {
+	font-size: 0.8rem;
+	color: var(--color-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.downloadBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: var(--color-secondary-container);
+	border-radius: 8px;
+	width: 26px;
+	height: 26px;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.downloadBtn:hover {
+	background: var(--color-secondary-container-hover);
+}
+
+.noEvidence {
+	font-size: 0.8rem;
+	color: var(--color-error);
+}
+
+.statusChip {
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 600;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+
+.statusPending {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.statusApproved {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+.statusRejected {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.reqActions {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.evidenceNoteInput {
+	flex: 1 1 180px;
+	min-width: 0;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 8px;
+	padding: 0.4rem 0.6rem;
+	font-size: 0.82rem;
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+}
+
+.evidenceNoteInput:focus {
+	outline: none;
+	border-color: var(--color-primary);
+}
+
+.evidenceBtns {
+	display: flex;
+	gap: 0.4rem;
+}
+
+/* Decision sidebar */
+.decisionCard {
+	position: sticky;
+	top: 1rem;
+	background: var(--color-bg-card);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.decisionHint {
+	margin: 0;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.decisionLabel {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	margin-top: 0.25rem;
+}
+
+.decisionTextarea {
+	width: 100%;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 10px;
+	padding: 0.6rem;
+	font-size: 0.85rem;
+	resize: vertical;
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+}
+
+.decisionTextarea:focus {
+	outline: none;
+	border-color: var(--color-primary);
+}
+
+.decisionButtons {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.backLink {
+	text-align: center;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+	text-decoration: none;
+	margin-top: 0.25rem;
+}
+
+.backLink:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.decisionCard {
+		position: static;
+	}
+}
+
+@media (max-width: 380px) {
+	.reqTop {
+		flex-direction: column;
+	}
+
+	.evidenceBtns {
+		width: 100%;
+	}
+}

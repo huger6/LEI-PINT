@@ -2,12 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getApplicationById } from '../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
+import { useUser } from '../../hooks/userContext';
 import DetailPageSkeleton from '../../components/Skeleton/DetailPageSkeleton';
 import ApplicationDetail from '../consultant/ApplicationDetail/ApplicationDetail';
 import ApplicationStatus from '../consultant/ApplicationStatus/ApplicationStatus';
+import ApplicationReview from '../management/ApplicationReview/ApplicationReview';
 
 export default function ApplicationDetailPage() {
 	const { id } = useParams();
+	const { user } = useUser();
 	const [application, setApplication] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -50,6 +53,11 @@ export default function ApplicationDetailPage() {
 
 	if (state === 'Open') {
 		return <ApplicationDetail application={application} onReload={loadApplication} />;
+	}
+
+	// Talent Manager reviews submitted applications: forward to SLL or reject.
+	if (user?.role === 'Talent Manager' && state === 'Submitted') {
+		return <ApplicationReview application={application} onReload={loadApplication} />;
 	}
 
 	return <ApplicationStatus application={application} badge={application.badge} />;

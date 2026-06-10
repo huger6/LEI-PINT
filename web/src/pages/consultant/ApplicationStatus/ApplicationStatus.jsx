@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { downloadEvidence } from '../../../features/applications/api/applicationsApi';
+import { downloadEvidence, generateCertificate } from '../../../features/applications/api/applicationsApi';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
+import Button from '../../../components/Button/Button';
+import FormAlert from '../../../components/FormAlert/FormAlert';
 import styles from './ApplicationStatus.module.css';
+
+const CERT_LANG_MAP = { pt: 'pt', en: 'en', es: 'es' };
 
 const WORKFLOW_STEPS = [
 	{ label: 'Open', key: 'Open' },
@@ -23,8 +28,10 @@ function getActiveStep(state) {
 }
 
 export default function ApplicationStatus({ application, badge }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [badgeInfoOpen, setBadgeInfoOpen] = useState(true);
+	const [certLoading, setCertLoading] = useState(false);
+	const [certError, setCertError] = useState(null);
 
 	const state = application?.application_state || application?.state;
 	const appGuid = application?.application_guid || application?.applicationGuid;
@@ -74,6 +81,20 @@ export default function ApplicationStatus({ application, badge }) {
 		}
 	}
 
+	async function handleDownloadCertificate() {
+		setCertError(null);
+		setCertLoading(true);
+		try {
+			const lang = CERT_LANG_MAP[(i18n.language || 'pt').slice(0, 2)] || 'pt';
+			const { certificateUrl } = await generateCertificate(appGuid, lang);
+			if (certificateUrl) window.open(certificateUrl, '_blank');
+		} catch (err) {
+			setCertError(resolveErrorMessage(err));
+		} finally {
+			setCertLoading(false);
+		}
+	}
+
 	return (
 		<div className={styles.page}>
 			{/* Breadcrumb */}
@@ -98,6 +119,21 @@ export default function ApplicationStatus({ application, badge }) {
 						{t('applicationStatus.applicationState', { defaultValue: 'Application State' })}
 					</p>
 					<Stepper steps={WORKFLOW_STEPS} activeStep={activeStep} />
+
+					{state === 'Accepted' && (
+						<div className={styles.certificateRow}>
+							<Button
+								variant="filled"
+								color="primary"
+								size="sm"
+								loading={certLoading}
+								onClick={handleDownloadCertificate}
+							>
+								<Icon name="download" size={16} /> {t('applicationStatus.downloadCertificate', { defaultValue: 'Download certificate' })}
+							</Button>
+							<FormAlert message={certError} variant="danger" className="mt-2" />
+						</div>
+					)}
 				</div>
 
 				{/* Two Column: Badge Info + Timeline */}

@@ -85,5 +85,12 @@
 	"NOTIF_GOAL_REMINDER_TITLE": "Lembrete de objetivo",
 	"NOTIF_GOAL_REMINDER_BODY": "Não se esqueça do seu objetivo \"{{goalTitle}}\".",
 	"NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Prazo de objetivo a aproximar-se",
-	"NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias."
+	"NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias.",
+	"APP_NOT_FOUND": "Candidatura não encontrada.",
+	"APP_ACCESS_DENIED": "Não tem permissão para realizar esta ação.",
+	"APP_ACCESS_DENIED_SL": "Esta candidatura não pertence à sua Service Line.",
+	"APP_ACTION_INVALID_STATE": "Não é possível executar esta ação no estado atual da candidatura.",
+	"APP_TM_CANNOT_ACCEPT": "O Talent Manager não pode aceitar diretamente; encaminhe para o Service Line Leader.",
+	"APP_FETCH_LIST_FAILED": "Não foi possível carregar as candidaturas.",
+	"APP_EVIDENCE_NOT_FOUND": "Evidência não encontrada."
 }
