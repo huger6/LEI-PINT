@@ -242,6 +242,28 @@ const getBadgesPerArea = async (userId) => {
     return rows;
 };
 
+const getExpiringBadges = async ({ withinDays = 30 } = {}) => {
+    const [rows] = await sequelize.query(
+        `SELECT u.user_guid,
+                u.full_name,
+                b.badge_title,
+                b.badge_slug,
+                ab.awarded_at,
+                ab.expiration_at,
+                (ab.expiration_at::date - CURRENT_DATE)::int AS days_remaining
+         FROM awarded_badges ab
+         JOIN badge_applications ba ON ba.application_id = ab.application_id
+         JOIN badges b             ON b.badge_id = ba.badge_id
+         JOIN users u              ON u.user_id = ab.user_id
+         WHERE ab.expiration_at IS NOT NULL
+           AND ab.expiration_at >= NOW()
+           AND ab.expiration_at <= NOW() + make_interval(days => :withinDays)
+         ORDER BY ab.expiration_at ASC`,
+        { replacements: { withinDays } }
+    );
+    return rows;
+};
+
 const reconcileBadgePoints = async () => {
     await sequelize.query(`CALL sp_reconcile_badge_points()`);
 };
@@ -261,5 +283,6 @@ module.exports = {
     getLevelDistribution,
     getUserEnrollment,
     getBadgesPerArea,
+    getExpiringBadges,
     reconcileBadgePoints
 };

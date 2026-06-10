@@ -48,11 +48,16 @@ const badgesByRangeQuerySchema = z.object({
     { message: 'VALIDATION_DATE_RANGE_INVALID', path: ['dateFrom'] }
 );
 
+const expiringBadgesQuerySchema = z.object({
+    withinDays: z.coerce.number().int().positive().max(1825).default(90)
+});
+
 module.exports = {
     pointsHistoryQuerySchema,
     userIdParamSchema,
     peerComparisonQuerySchema,
     applicationsCountQuerySchema,
     badgeDistributionQuerySchema,
-    badgesByRangeQuerySchema
+    badgesByRangeQuerySchema,
+    expiringBadgesQuerySchema
 };
