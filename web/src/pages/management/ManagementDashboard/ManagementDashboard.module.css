@@ -51,9 +51,11 @@
 	transition: box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.statCard:hover {
+.statCard:hover,
+.statCard:focus {
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 	transform: translateY(-2px);
+	text-decoration: none;
 }
 
 .statIcon {

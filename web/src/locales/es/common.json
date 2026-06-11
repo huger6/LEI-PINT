@@ -1149,6 +1149,9 @@
 		"subtitleSll": "Revise las candidaturas en validación y acéptelas o recházelas.",
 		"searchPlaceholder": "Buscar por badge o consultor...",
 		"refresh": "Actualizar",
+		"sortBy": "Ordenar",
+		"sortNewest": "Más recientes",
+		"sortOldest": "Más antiguas",
 		"empty": "Sin candidaturas",
 		"emptyDesc": "No hay candidaturas en este estado en este momento.",
 		"tabs": {

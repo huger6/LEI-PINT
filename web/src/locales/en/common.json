@@ -1150,6 +1150,9 @@
 		"subtitleSll": "Review applications in validation and accept or reject them.",
 		"searchPlaceholder": "Search by badge or consultant...",
 		"refresh": "Refresh",
+		"sortBy": "Sort",
+		"sortNewest": "Newest first",
+		"sortOldest": "Oldest first",
 		"empty": "No applications",
 		"emptyDesc": "There are no applications in this state right now.",
 		"tabs": {

@@ -3,14 +3,15 @@ import BadgeCatalog from '../pages/consultant/BadgeCatalog/BadgeCatalog';
 import Objectives from '../pages/consultant/Objectives/Objectives';
 import Points from '../pages/consultant/Points/Points';
 import Evolution from '../pages/consultant/Evolution/Evolution';
-import Ranking from '../pages/shared/Ranking/Ranking';
 
+// /ranking is served by the shared (ungated) block so every role can reach it.
+// It must NOT also live here, or this Consultant-gated route would shadow the
+// shared one and 403 for Talent Manager / Service Line Leader.
 const consultantRoutes = [
 	{ path: CONSULTANT.CATALOG, element: <BadgeCatalog /> },
 	{ path: CONSULTANT.OBJECTIVES, element: <Objectives /> },
 	{ path: CONSULTANT.POINTS, element: <Points /> },
 	{ path: CONSULTANT.EVOLUTION, element: <Evolution /> },
-	{ path: CONSULTANT.RANKING, element: <Ranking /> },
 ];
 
 export default consultantRoutes;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
-import BadgeOverview from '../../../components/BadgeOverview/BadgeOverview';
 import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
@@ -66,12 +65,11 @@ export default function SllStats() {
 				) : report.length === 0 ? (
 					<p className={styles.empty}>{t('sllStats.noData')}</p>
 				) : (
-					<VerticalBarChart data={report} xAxisKey="label" yAxisKey="count" barColor="#04CE00" />
+					<VerticalBarChart data={report} xAxisKey="label" yAxisKey="count" barColor="#04CE00" valueName={t('tmStats.kpi.badgesAwarded')} />
 				)}
 			</ContentCard>
 
 			<ExportsPanel />
-			<BadgeOverview />
 		</div>
 	);
 }
