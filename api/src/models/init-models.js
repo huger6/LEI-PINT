@@ -136,10 +136,10 @@ function initModels(sequelize) {
   administrators.hasMany(stage_codes, { as: "stage_codes", foreignKey: "created_by"});
   stage_codes.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
   administrators.hasMany(stage_codes, { as: "updated_by_stage_codes", foreignKey: "updated_by"});
-  system_announcements.belongsTo(administrators, { as: "created_by_administrator", foreignKey: "created_by"});
-  administrators.hasMany(system_announcements, { as: "system_announcements", foreignKey: "created_by"});
-  system_announcements.belongsTo(administrators, { as: "updated_by_administrator", foreignKey: "updated_by"});
-  administrators.hasMany(system_announcements, { as: "updated_by_system_announcements", foreignKey: "updated_by"});
+  system_announcements.belongsTo(users, { as: "creator", foreignKey: "created_by"});
+  users.hasMany(system_announcements, { as: "created_announcements", foreignKey: "created_by"});
+  system_announcements.belongsTo(users, { as: "updater", foreignKey: "updated_by"});
+  users.hasMany(system_announcements, { as: "updated_announcements", foreignKey: "updated_by"});
   users.belongsTo(administrators, { as: "approved_by_administrator", foreignKey: "approved_by"});
   administrators.hasMany(users, { as: "approved_by_users", foreignKey: "approved_by"});
   badges.belongsTo(areas, { as: "area", foreignKey: "area_id"});
