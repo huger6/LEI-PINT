@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
+import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Tabs from '../../../components/Tabs/Tabs';
 import Button from '../../../components/Button/Button';
@@ -10,7 +11,7 @@ import Pagination from '../../../components/Pagination/Pagination';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
-import styles from './TmValidations.module.css';
+import styles from './ValidationsBoard.module.css';
 
 const PAGE_SIZE = 12;
 
@@ -21,13 +22,19 @@ const STATE_COLOR_MAP = {
 	Rejected: 'var(--color-red-on-soft, #dc2626)',
 };
 
-const TAB_STATES = ['Submitted', 'In validation', 'Accepted', 'Rejected'];
+// Talent Manager acts on Submitted; Service Line Leader acts on In validation.
+const TM_TABS = ['Submitted', 'In validation', 'Accepted', 'Rejected'];
+const SLL_TABS = ['In validation', 'Accepted', 'Rejected'];
 
-export default function TmValidations() {
+export default function ValidationsBoard() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { user } = useUser();
 
-	const [activeTab, setActiveTab] = useState('Submitted');
+	const isSll = user?.role === 'Service Line Leader';
+	const tabStates = isSll ? SLL_TABS : TM_TABS;
+
+	const [activeTab, setActiveTab] = useState(tabStates[0]);
 	const [page, setPage] = useState(1);
 	const [items, setItems] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -71,11 +78,11 @@ export default function TmValidations() {
 	}, [load]);
 
 	const tabs = useMemo(
-		() => TAB_STATES.map((s) => ({
+		() => tabStates.map((s) => ({
 			key: s,
 			label: t(`tmValidations.tabs.${s === 'In validation' ? 'inValidation' : s.toLowerCase()}`),
 		})),
-		[t]
+		[t, tabStates]
 	);
 
 	function handleTabChange(key) {
@@ -110,7 +117,7 @@ export default function TmValidations() {
 		<div className={styles.page}>
 			<div className={styles.headerRow}>
 				<h1 className={styles.pageTitle}>{t('tmValidations.title')}</h1>
-				<p className={styles.subtitle}>{t('tmValidations.subtitle')}</p>
+				<p className={styles.subtitle}>{t(isSll ? 'tmValidations.subtitleSll' : 'tmValidations.subtitle')}</p>
 			</div>
 
 			<Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />

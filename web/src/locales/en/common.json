@@ -1126,6 +1126,11 @@
 		"statsDesc": "Platform statistics and reports will be available soon in this section.",
 		"announcementsDesc": "Platform announcements will be available soon in this section."
 	},
+	"sllSections": {
+		"teamDesc": "Your team listing (consultants in your Service Line) will be available soon in this section.",
+		"badgeHistoryDesc": "The badge history for your Service Line will be available soon in this section.",
+		"statsDesc": "Statistics and reports for your Service Line will be available soon in this section."
+	},
 	"tmDashboard": {
 		"summaryTitle": "Validations Summary",
 		"goToValidations": "Go to Validations",
@@ -1137,6 +1142,7 @@
 	"tmValidations": {
 		"title": "Validations",
 		"subtitle": "Review submitted applications and forward or reject them.",
+		"subtitleSll": "Review applications in validation and accept or reject them.",
 		"searchPlaceholder": "Search by badge or consultant...",
 		"refresh": "Refresh",
 		"empty": "No applications",
@@ -1165,17 +1171,21 @@
 		},
 		"decisionTitle": "Decision",
 		"decisionHint": "Forwarding sends the application to the Service Line Leader. Rejecting closes the application.",
+		"decisionHintSll": "Accepting generates and publishes the badge. Rejecting closes the application.",
 		"reviewerNotes": "Notes for the consultant",
 		"reviewerNotesPlaceholder": "Add a comment (optional)",
 		"forward": "Forward to Service Line Leader",
+		"acceptApplication": "Accept application",
 		"rejectApplication": "Reject application",
 		"confirmForward": "Forward this application to the Service Line Leader?",
+		"confirmAccept": "Accept this application? The badge will be generated and published.",
 		"confirmReject": "Reject this application? This action closes the application.",
 		"backToList": "Back to applications",
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",
 			"forwarded": "Application forwarded to the Service Line Leader.",
+			"accepted": "Application accepted. Badge generated.",
 			"rejected": "Application rejected."
 		}
 	},

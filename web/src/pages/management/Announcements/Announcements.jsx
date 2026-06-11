@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import PlaceholderPage from '../../../components/PlaceholderPage/PlaceholderPage';
 
-export default function TmAnnouncements() {
+// Shared announcements view for management roles (Talent Manager / Service Line Leader).
+export default function Announcements() {
 	const { t } = useTranslation();
 	return (
 		<PlaceholderPage

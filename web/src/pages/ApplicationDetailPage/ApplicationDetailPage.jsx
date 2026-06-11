@@ -55,8 +55,13 @@ export default function ApplicationDetailPage() {
 		return <ApplicationDetail application={application} onReload={loadApplication} />;
 	}
 
-	// Talent Manager reviews submitted applications: forward to SLL or reject.
+	// Reviewers act on the application at their workflow stage:
+	// Talent Manager forwards 'Submitted' apps; Service Line Leader is the final
+	// gatekeeper for 'In validation' apps (accept/reject).
 	if (user?.role === 'Talent Manager' && state === 'Submitted') {
+		return <ApplicationReview application={application} onReload={loadApplication} />;
+	}
+	if (user?.role === 'Service Line Leader' && state === 'In validation') {
 		return <ApplicationReview application={application} onReload={loadApplication} />;
 	}
 
