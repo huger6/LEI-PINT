@@ -1126,6 +1126,16 @@
 		"statsDesc": "Platform statistics and reports will be available soon in this section.",
 		"announcementsDesc": "Platform announcements will be available soon in this section."
 	},
+	"sllSections": {
+		"teamDesc": "Your team listing (consultants in your Service Line) will be available soon in this section.",
+		"badgeHistoryDesc": "The badge history for your Service Line will be available soon in this section.",
+		"statsDesc": "Statistics and reports for your Service Line will be available soon in this section."
+	},
+	"sllStats": {
+		"reportsTitle": "Report — Badges awarded per month",
+		"total": "{{count}} total",
+		"noData": "No badges awarded in your Service Line."
+	},
 	"tmDashboard": {
 		"summaryTitle": "Validations Summary",
 		"goToValidations": "Go to Validations",
@@ -1137,6 +1147,7 @@
 	"tmValidations": {
 		"title": "Validations",
 		"subtitle": "Review submitted applications and forward or reject them.",
+		"subtitleSll": "Review applications in validation and accept or reject them.",
 		"searchPlaceholder": "Search by badge or consultant...",
 		"refresh": "Refresh",
 		"empty": "No applications",
@@ -1165,18 +1176,25 @@
 		},
 		"decisionTitle": "Decision",
 		"decisionHint": "Forwarding sends the application to the Service Line Leader. Rejecting closes the application.",
+		"decisionHintSll": "Accepting generates and publishes the badge. Rejecting closes the application.",
 		"reviewerNotes": "Notes for the consultant",
 		"reviewerNotesPlaceholder": "Add a comment (optional)",
 		"forward": "Forward to Service Line Leader",
+		"acceptApplication": "Accept application",
 		"rejectApplication": "Reject application",
+		"sendBack": "Return to consultant",
 		"confirmForward": "Forward this application to the Service Line Leader?",
+		"confirmAccept": "Accept this application? The badge will be generated and published.",
 		"confirmReject": "Reject this application? This action closes the application.",
+		"confirmSendBack": "Return this application to the consultant for correction? It goes back to the Open state.",
 		"backToList": "Back to applications",
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",
 			"forwarded": "Application forwarded to the Service Line Leader.",
-			"rejected": "Application rejected."
+			"accepted": "Application accepted. Badge generated.",
+			"rejected": "Application rejected.",
+			"returned": "Application returned to the consultant."
 		}
 	},
 	"tmStats": {
