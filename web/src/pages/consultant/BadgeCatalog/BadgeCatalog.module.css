@@ -36,6 +36,9 @@
 .filterCard {
 	position: sticky;
 	top: calc(var(--topbar-height, 64px) + 16px);
+	max-height: calc(100dvh - var(--topbar-height, 64px) - 32px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	border: 1px solid rgba(57, 99, 156, 0.16);
 	border-radius: 16px;
 	background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
