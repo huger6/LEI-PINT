@@ -11,9 +11,13 @@ const optionalDateRule = z.preprocess(
 );
 
 const booleanQueryRule = z.preprocess(
-    (v) => typeof v === 'string' ? v.trim().toLowerCase() : v,
-    z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
-).transform((v) => v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true'));
+    (v) => {
+        if (v === undefined || v === null) return undefined;
+        return typeof v === 'string' ? v.trim().toLowerCase() : v;
+    },
+    z.union([z.literal('true'), z.literal('false'), z.boolean()])
+        .transform((v) => typeof v === 'boolean' ? v : v === 'true')
+).optional();
 
 const validRoles = ['Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'];
 

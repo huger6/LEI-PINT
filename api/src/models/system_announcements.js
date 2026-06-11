@@ -41,7 +41,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'administrators',
+        model: 'users',
         key: 'user_id'
       }
     },
@@ -49,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'administrators',
+        model: 'users',
         key: 'user_id'
       }
     },
@@ -85,7 +85,7 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "announcements_admin_fk",
+        name: "announcements_createdby_fk",
         fields: [
           { name: "created_by" },
         ]
