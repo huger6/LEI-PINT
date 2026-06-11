@@ -290,7 +290,8 @@
 			"warnings": "Gerir Avisos",
 			"notifications": "Gerir Notificações",
 			"stats": "Estatísticas/Relatórios",
-			"rgpd": "Configurações RGPD"
+			"rgpd": "Configurações RGPD",
+			"announcements": "Comunicados"
 		}
 	},
 	"icons": {
@@ -312,6 +313,11 @@
 		"nextMonth": "Mês seguinte",
 		"selectMonth": "Selecionar mês",
 		"selectYear": "Selecionar ano"
+	},
+	"dateTimePicker": {
+		"hours": "Horas",
+		"minutes": "Minutos",
+		"clear": "Limpar"
 	},
 	"pagination": {
 		"previous": "Anterior",
@@ -1258,5 +1264,67 @@
 		"copied": "Assinatura copiada.",
 		"copyFailed": "Não foi possível copiar. Copie manualmente o HTML.",
 		"empty": "Ainda não tem badges com link público para incluir na assinatura."
+	},
+	"announcements": {
+		"title": "Comunicados",
+		"createAnnouncement": "Criar Comunicado",
+		"editAnnouncement": "Editar Comunicado",
+		"table": {
+			"title": "Título",
+			"type": "Tipo",
+			"target": "Destino",
+			"dates": "Datas",
+			"status": "Estado",
+			"createdBy": "Criado Por",
+			"actions": "Ações"
+		},
+		"types": {
+			"Information": "Informação",
+			"Warning": "Aviso",
+			"New Content": "Novo Conteúdo",
+			"Other": "Outro"
+		},
+		"status": {
+			"active": "Ativo",
+			"inactive": "Inativo"
+		},
+		"target": {
+			"global": "Global",
+			"allRoles": "Todos os Perfis"
+		},
+		"form": {
+			"title": "Título",
+			"titlePlaceholder": "Título do comunicado...",
+			"message": "Mensagem",
+			"messagePlaceholder": "Escreva a mensagem do comunicado...",
+			"type": "Tipo",
+			"typePlaceholder": "Selecionar tipo...",
+			"startDate": "Data de Início",
+			"endDate": "Data de Fim",
+			"global": "Global (visível para todos os utilizadores)",
+			"targetRoles": "Perfis de Destino",
+			"targetServiceLines": "Service Lines de Destino",
+			"selectAll": "Selecionar Tudo",
+			"deselectAll": "Desselecionar Tudo",
+			"validation": {
+				"titleRequired": "O título é obrigatório.",
+				"titleMax": "O título deve ter no máximo 150 caracteres.",
+				"messageRequired": "A mensagem é obrigatória.",
+				"endDateAfterStart": "A data de fim deve ser posterior à data de início.",
+				"targetRequired": "Selecione pelo menos um perfil ou service line quando não é global."
+			}
+		},
+		"confirmDelete": "Tem a certeza que pretende desativar o comunicado \"{{name}}\"?",
+		"empty": "Nenhum comunicado encontrado.",
+		"consultantEmpty": "Não existem comunicados de momento.",
+		"noExpiry": "Sem expiração",
+		"postedOn": "Publicado em",
+		"readMore": "Ler mais",
+		"readLess": "Ler menos",
+		"noLimit": "Sem limite",
+		"filterByType": "Filtrar por tipo",
+		"filterByStatus": "Filtrar por estado",
+		"allTypes": "Todos os tipos",
+		"allStatuses": "Todos os estados"
 	}
 }

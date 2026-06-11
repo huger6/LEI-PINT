@@ -761,8 +761,8 @@ CREATE TABLE IF NOT EXISTS system_announcements (
    is_global            BOOLEAN                 NULL,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
 
-   created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
-   updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
+   created_by           INTEGER                 NULL, -- FK -> users(user_id)
+   updated_by           INTEGER                 NULL, -- FK -> users(user_id)
    created_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
    updated_at           TIMESTAMPTZ          NOT NULL DEFAULT now(),
 
@@ -1375,13 +1375,13 @@ ALTER TABLE stage_codes
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE system_announcements
-   ADD CONSTRAINT fk_system_a_announcem_administ FOREIGN KEY (created_by)
-      REFERENCES administrators (user_id)
+   ADD CONSTRAINT fk_system_a_announcem_users FOREIGN KEY (created_by)
+      REFERENCES users (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE system_announcements
-   ADD CONSTRAINT fk_system_a_announc_u_administ FOREIGN KEY (updated_by)
-      REFERENCES administrators (user_id)
+   ADD CONSTRAINT fk_system_a_announc_u_users FOREIGN KEY (updated_by)
+      REFERENCES users (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE talent_managers
@@ -1486,7 +1486,7 @@ CREATE INDEX IF NOT EXISTS ADMIN_SLA_FK ON slas (created_by);
 CREATE INDEX IF NOT EXISTS USER_SLAS_FK ON slas (user_id);
 CREATE INDEX IF NOT EXISTS NOT_DEF_SLAS_FK ON slas (definition_id);
 CREATE INDEX IF NOT EXISTS SLAS_UPDATEDBY_FK ON slas (updated_by);
-CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_ADMIN_FK ON system_announcements (created_by);
+CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_CREATEDBY_FK ON system_announcements (created_by);
 CREATE INDEX IF NOT EXISTS ANNOUNCEMENTS_UPDATEDBY_FK ON system_announcements (updated_by);
 CREATE INDEX IF NOT EXISTS SL_SLL_FK ON service_line_leaders (service_line_id);
 CREATE INDEX IF NOT EXISTS LANG_USER_FK ON users (language_id);

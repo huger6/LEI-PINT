@@ -289,7 +289,8 @@
 			"warnings": "Gestionar Avisos",
 			"notifications": "Gestionar Notificaciones",
 			"stats": "Estadísticas/Informes",
-			"rgpd": "Configuración RGPD"
+			"rgpd": "Configuración RGPD",
+			"announcements": "Comunicados"
 		}
 	},
 	"icons": {
@@ -311,6 +312,11 @@
 		"nextMonth": "Mes siguiente",
 		"selectMonth": "Seleccionar mes",
 		"selectYear": "Seleccionar año"
+	},
+	"dateTimePicker": {
+		"hours": "Horas",
+		"minutes": "Minutos",
+		"clear": "Limpiar"
 	},
 	"pagination": {
 		"previous": "Anterior",
@@ -1257,6 +1263,68 @@
 		"copied": "Firma copiada.",
 		"copyFailed": "No se pudo copiar. Copie el HTML manualmente.",
 		"empty": "Aún no tiene badges con enlace público para incluir en la firma."
+	},
+	"announcements": {
+		"title": "Comunicados",
+		"createAnnouncement": "Crear Comunicado",
+		"editAnnouncement": "Editar Comunicado",
+		"table": {
+			"title": "Título",
+			"type": "Tipo",
+			"target": "Destino",
+			"dates": "Fechas",
+			"status": "Estado",
+			"createdBy": "Creado Por",
+			"actions": "Acciones"
+		},
+		"types": {
+			"Information": "Información",
+			"Warning": "Aviso",
+			"New Content": "Nuevo Contenido",
+			"Other": "Otro"
+		},
+		"status": {
+			"active": "Activo",
+			"inactive": "Inactivo"
+		},
+		"target": {
+			"global": "Global",
+			"allRoles": "Todos los Roles"
+		},
+		"form": {
+			"title": "Título",
+			"titlePlaceholder": "Título del comunicado...",
+			"message": "Mensaje",
+			"messagePlaceholder": "Escriba el mensaje del comunicado...",
+			"type": "Tipo",
+			"typePlaceholder": "Seleccionar tipo...",
+			"startDate": "Fecha de Inicio",
+			"endDate": "Fecha de Fin",
+			"global": "Global (visible para todos los usuarios)",
+			"targetRoles": "Roles de Destino",
+			"targetServiceLines": "Service Lines de Destino",
+			"selectAll": "Seleccionar Todo",
+			"deselectAll": "Deseleccionar Todo",
+			"validation": {
+				"titleRequired": "El título es obligatorio.",
+				"titleMax": "El título debe tener como máximo 150 caracteres.",
+				"messageRequired": "El mensaje es obligatorio.",
+				"endDateAfterStart": "La fecha de fin debe ser posterior a la fecha de inicio.",
+				"targetRequired": "Seleccione al menos un rol o service line cuando no es global."
+			}
+		},
+		"confirmDelete": "¿Está seguro de que desea desactivar el comunicado \"{{name}}\"?",
+		"empty": "No se encontraron comunicados.",
+		"consultantEmpty": "No hay comunicados en este momento.",
+		"noExpiry": "Sin expiración",
+		"postedOn": "Publicado el",
+		"readMore": "Leer más",
+		"readLess": "Leer menos",
+		"noLimit": "Sin límite",
+		"filterByType": "Filtrar por tipo",
+		"filterByStatus": "Filtrar por estado",
+		"allTypes": "Todos los tipos",
+		"allStatuses": "Todos los estados"
 	}
 }
 
