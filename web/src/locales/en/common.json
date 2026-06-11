@@ -1177,16 +1177,19 @@
 		"forward": "Forward to Service Line Leader",
 		"acceptApplication": "Accept application",
 		"rejectApplication": "Reject application",
+		"sendBack": "Return to consultant",
 		"confirmForward": "Forward this application to the Service Line Leader?",
 		"confirmAccept": "Accept this application? The badge will be generated and published.",
 		"confirmReject": "Reject this application? This action closes the application.",
+		"confirmSendBack": "Return this application to the consultant for correction? It goes back to the Open state.",
 		"backToList": "Back to applications",
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",
 			"forwarded": "Application forwarded to the Service Line Leader.",
 			"accepted": "Application accepted. Badge generated.",
-			"rejected": "Application rejected."
+			"rejected": "Application rejected.",
+			"returned": "Application returned to the consultant."
 		}
 	},
 	"tmStats": {

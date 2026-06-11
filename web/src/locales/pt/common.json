@@ -1177,16 +1177,19 @@
 		"forward": "Encaminhar para o Service Line Leader",
 		"acceptApplication": "Aceitar candidatura",
 		"rejectApplication": "Rejeitar candidatura",
+		"sendBack": "Devolver ao consultor",
 		"confirmForward": "Encaminhar esta candidatura para o Service Line Leader?",
 		"confirmAccept": "Aceitar esta candidatura? O badge será gerado e publicado.",
 		"confirmReject": "Rejeitar esta candidatura? Esta ação encerra a candidatura.",
+		"confirmSendBack": "Devolver esta candidatura ao consultor para correção? Volta ao estado Aberto.",
 		"backToList": "Voltar às candidaturas",
 		"toast": {
 			"evidenceApproved": "Evidência aprovada.",
 			"evidenceRejected": "Evidência rejeitada.",
 			"forwarded": "Candidatura encaminhada para o Service Line Leader.",
 			"accepted": "Candidatura aceite. Badge gerado.",
-			"rejected": "Candidatura rejeitada."
+			"rejected": "Candidatura rejeitada.",
+			"returned": "Candidatura devolvida ao consultor."
 		}
 	},
 	"tmStats": {
