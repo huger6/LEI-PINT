@@ -9,30 +9,17 @@ import {
 	getTeamBadgesCount,
 	getExpiringBadges,
 } from '../../../features/statistics/api/statisticsApi';
-import { downloadExport } from '../../../features/statistics/api/exportsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import BadgeOverview from '../../../components/BadgeOverview/BadgeOverview';
-import Button from '../../../components/Button/Button';
-import FormAlert from '../../../components/FormAlert/FormAlert';
+import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './TmStats.module.css';
 
-const EXPORT_FORMATS = ['csv', 'xlsx', 'pdf'];
 const EXPIRING_WINDOWS = [30, 90, 180, 365];
-
-const EXPORT_BUTTONS = [
-	{ key: 'consultants', type: 'consultants', labelKey: 'tmStats.exports.consultants' },
-	{ key: 'applications', type: 'applications', labelKey: 'tmStats.exports.applications' },
-	{ key: 'accepted', type: 'applications', params: { state: 'Accepted' }, labelKey: 'tmStats.exports.accepted' },
-	{ key: 'rejected', type: 'applications', params: { state: 'Rejected' }, labelKey: 'tmStats.exports.rejected' },
-	{ key: 'badges', type: 'badges', labelKey: 'tmStats.exports.badges' },
-	{ key: 'pointsHistory', type: 'pointsHistory', labelKey: 'tmStats.exports.pointsHistory' },
-	{ key: 'applicationLogs', type: 'applicationLogs', labelKey: 'tmStats.exports.applicationLogs' },
-];
 
 function expiringClass(days) {
 	if (days <= 30) return styles.daysCritical;
@@ -45,11 +32,6 @@ export default function TmStats() {
 	const [data, setData] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-
-	// Exports
-	const [exportFormat, setExportFormat] = useState('xlsx');
-	const [exportBusy, setExportBusy] = useState(null);
-	const [exportError, setExportError] = useState(null);
 
 	// Expiring badges
 	const [expiring, setExpiring] = useState([]);
@@ -95,18 +77,6 @@ export default function TmStats() {
 	useEffect(() => {
 		loadExpiring(expiringWindow);
 	}, [loadExpiring, expiringWindow]);
-
-	async function handleExport(btn) {
-		setExportError(null);
-		setExportBusy(btn.key);
-		try {
-			await downloadExport(btn.type, { format: exportFormat, ...(btn.params || {}) });
-		} catch (err) {
-			setExportError(resolveErrorMessage(err));
-		} finally {
-			setExportBusy(null);
-		}
-	}
 
 	if (loading) {
 		return (
@@ -185,42 +155,7 @@ export default function TmStats() {
 			</div>
 
 			{/* Exports */}
-			<ContentCard className={styles.chartCard}>
-				<div className={styles.sectionHeaderRow}>
-					<CardHeader icon="download" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('tmStats.exports.title')} />
-					<label className={styles.inlineSelect}>
-						<span className={styles.inlineSelectLabel}>{t('tmStats.exports.format')}</span>
-						<select
-							className="form-select form-select-sm"
-							value={exportFormat}
-							onChange={(e) => setExportFormat(e.target.value)}
-							aria-label={t('tmStats.exports.format')}
-						>
-							{EXPORT_FORMATS.map((f) => (
-								<option key={f} value={f}>{f.toUpperCase()}</option>
-							))}
-						</select>
-					</label>
-				</div>
-
-				<div className={styles.exportButtons}>
-					{EXPORT_BUTTONS.map((btn) => (
-						<Button
-							key={btn.key}
-							variant="outlined"
-							color="primary"
-							size="sm"
-							loading={exportBusy === btn.key}
-							disabled={Boolean(exportBusy)}
-							onClick={() => handleExport(btn)}
-						>
-							<Icon name="download" size={14} /> {t(btn.labelKey)}
-						</Button>
-					))}
-				</div>
-
-				<FormAlert message={exportError} variant="danger" className="mt-2" />
-			</ContentCard>
+			<ExportsPanel />
 
 			{/* Expiring badges */}
 			<ContentCard className={styles.chartCard}>
