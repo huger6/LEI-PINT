@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const exportsCtrl = require('../controllers/exports.controller');
-const { loginRequired, checkRole } = require('../middlewares/auth.middleware');
+const { loginRequired, leadership } = require('../middlewares/auth.middleware');
 
-// Talent Manager is a global reviewer (sees every consultant/badge/application,
-// independent of Service Line), so it may export the full datasets like an Admin.
-// Service Line Leader is intentionally excluded here: the consultants/badges/
-// points/logs exports are not Service-Line-scoped yet, so granting SLL would leak
-// data from other Service Lines.
-const exportAccess = checkRole('Talent Manager', 'Administrator');
+// Talent Manager / Administrator see the full datasets (global). Service Line
+// Leader is also allowed, but every export is scoped to their Service Line in
+// the controller (resolveExportScope) so no cross-Service-Line data leaks.
+const exportAccess = leadership;
 
 // GET /api/exports/consultants?from=2026-01-01&to=2026-05-22
 router.get('/consultants', loginRequired, exportAccess, exportsCtrl.exportConsultants);
