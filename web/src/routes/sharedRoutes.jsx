@@ -7,6 +7,7 @@ import UserProfile from '../pages/shared/UserProfile/UserProfile';
 import SearchResults from '../pages/shared/SearchResults/SearchResults';
 import Ranking from '../pages/shared/Ranking/Ranking';
 import MailSignature from '../pages/shared/MailSignature/MailSignature';
+import AnnouncementsPage from '../pages/shared/AnnouncementsPage/AnnouncementsPage';
 
 const sharedRoutes = [
 	{ path: SHARED.SEARCH, element: <SearchResults /> },
@@ -18,6 +19,7 @@ const sharedRoutes = [
 	{ path: SHARED.PROFILE_EDIT, element: <UserProfile /> },
 	{ path: SHARED.MAIL_SIGNATURE, element: <MailSignature /> },
 	{ path: SHARED.RANKING, element: <Ranking /> },
+	{ path: SHARED.ANNOUNCEMENTS, element: <AnnouncementsPage /> },
 ];
 
 export default sharedRoutes;

@@ -19,7 +19,6 @@ import sharedRoutes from './sharedRoutes';
 import { TM } from './paths';
 import ValidationsBoard from '../pages/management/ValidationsBoard/ValidationsBoard';
 import StatsPage from '../pages/management/StatsPage/StatsPage';
-import Announcements from '../pages/management/Announcements/Announcements';
 import BadgeCatalog from '../pages/consultant/BadgeCatalog/BadgeCatalog';
 
 export default function AppRoutes() {
@@ -81,7 +80,6 @@ export default function AppRoutes() {
 						<Route path={TM.VALIDATIONS} element={<ValidationsBoard />} />
 						<Route path={TM.STATS} element={<StatsPage />} />
 						<Route path={TM.BADGES} element={<BadgeCatalog />} />
-						<Route path={TM.ANNOUNCEMENTS} element={<Announcements />} />
 					</Route>
 				</Route>
 

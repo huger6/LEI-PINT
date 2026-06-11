@@ -26,6 +26,7 @@ export const ADMIN = {
 	NOTIFICATIONS: '/admin/notifications',
 	STATS: '/admin/stats',
 	RGPD: '/admin/rgpd',
+	ANNOUNCEMENTS: '/admin/announcements',
 	LEARNING_PATH_DETAIL: '/admin/structure/learning-paths/:slug',
 	SERVICE_LINE_DETAIL: '/admin/structure/service-lines/:slug',
 	AREA_DETAIL: '/admin/structure/areas/:slug',
@@ -82,4 +83,5 @@ export const SHARED = {
 	SECURITY: '/security',
 	UNAUTHORIZED: '/unauthorized',
 	RANKING: '/ranking',
+	ANNOUNCEMENTS: '/announcements',
 };

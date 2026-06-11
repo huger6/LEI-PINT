@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, optionalAuth, leadership } = require('../middlewares/auth.middleware');
 
 const announcementController = require('../controllers/announcements.controller');
 
@@ -21,22 +21,22 @@ router.get('/:announcementId', loginRequired, announcementController.getAnnounce
 /**
  * @route   POST /api/announcements
  * @desc    Create a new announcement
- * @access  Administrator
+ * @access  Administrator, Talent Manager, Service Line Leader
  */
-router.post('/', loginRequired, isAdmin, announcementController.createAnnouncement);
+router.post('/', loginRequired, leadership, announcementController.createAnnouncement);
 
 /**
  * @route   PUT /api/announcements/:announcementId
  * @desc    Update an existing announcement
- * @access  Administrator
+ * @access  Administrator (any), Talent Manager / Service Line Leader (own only)
  */
-router.put('/:announcementId', loginRequired, isAdmin, announcementController.updateAnnouncement);
+router.put('/:announcementId', loginRequired, leadership, announcementController.updateAnnouncement);
 
 /**
  * @route   DELETE /api/announcements/:announcementId
  * @desc    Deactivate an announcement (soft delete)
- * @access  Administrator
+ * @access  Administrator (any), Talent Manager / Service Line Leader (own only)
  */
-router.delete('/:announcementId', loginRequired, isAdmin, announcementController.deleteAnnouncement);
+router.delete('/:announcementId', loginRequired, leadership, announcementController.deleteAnnouncement);
 
 module.exports = router;
