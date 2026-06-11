@@ -29,38 +29,46 @@ const sendAttachment = (res, filename, contentType, body) => {
 };
 
 const buildPdf = async (title, columns, rows) => new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    // Wide tables (many columns) use landscape so cells don't get crushed.
+    const landscape = columns.length > 6;
+    const margin = 40;
+    const doc = new PDFDocument({ size: 'A4', layout: landscape ? 'landscape' : 'portrait', margin });
     const chunks = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    doc.fontSize(18).text(title, { align: 'center' });
-    doc.moveDown(1);
+    const usableWidth = doc.page.width - margin * 2;
+    const columnWidth = usableWidth / columns.length;
+    const fontSize = columns.length > 9 ? 7 : (columns.length > 6 ? 8 : 9);
+    const rowHeight = fontSize + 7;
+    const bottomLimit = doc.page.height - margin - rowHeight;
 
-    const columnWidth = 515 / columns.length;
-    const startY = doc.y;
-
-    doc.fontSize(9).font('Helvetica-Bold');
-    columns.forEach((column, index) => {
-        doc.text(column.header, 40 + (index * columnWidth), startY, { width: columnWidth - 6 });
-    });
-
-    doc.moveDown(0.5);
-    doc.font('Helvetica');
+    doc.fontSize(16).text(title, { align: 'center' });
+    doc.moveDown(0.8);
     let rowY = doc.y;
 
-    rows.forEach((row) => {
-        columns.forEach((column, index) => {
-            doc.text(String(column.accessor(row) ?? ''), 40 + (index * columnWidth), rowY, { width: columnWidth - 6 });
+    // Each cell is clipped to a single line (ellipsis) so rows never overlap.
+    const drawRow = (cells, bold) => {
+        doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(fontSize);
+        cells.forEach((text, index) => {
+            doc.text(String(text ?? ''), margin + (index * columnWidth), rowY, {
+                width: columnWidth - 4,
+                height: rowHeight,
+                ellipsis: true,
+                lineBreak: false,
+            });
         });
-        rowY += 18;
-        if (rowY > doc.page.height - 70) {
+        rowY += rowHeight;
+        if (rowY > bottomLimit) {
             doc.addPage();
-            rowY = 40;
+            rowY = margin;
         }
-    });
+    };
+
+    drawRow(columns.map((c) => c.header), true);
+    rows.forEach((row) => drawRow(columns.map((c) => c.accessor(row)), false));
 
     doc.end();
 });
@@ -154,23 +162,23 @@ const fetchConsultantRows = async ({ from, to, serviceLineId = null }) => {
 };
 
 const fetchApplicationLogRows = async ({ from, to, serviceLineId = null }) => {
-    const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'created_at' });
+    const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'validated_at' });
     if (serviceLineId) replacements.serviceLineId = serviceLineId;
     const scopeSql = serviceLineId
         ? ` AND application_id IN (SELECT ba.application_id FROM badge_applications ba JOIN badges b ON b.badge_id = ba.badge_id WHERE b.service_line_id = :serviceLineId)`
         : '';
     const sql = `
         SELECT
-            application_validation_log_id,
+            validation_log_id AS application_validation_log_id,
             application_id,
             validator_function,
             validator_action,
-            comments,
-            created_at,
+            validations_comments AS comments,
+            validated_at AS created_at,
             user_id
         FROM application_validation_logs
         WHERE 1=1${whereSql}${scopeSql}
-        ORDER BY created_at DESC, application_validation_log_id DESC
+        ORDER BY validated_at DESC, validation_log_id DESC
     `;
 
     return sequelize.query(sql, {
