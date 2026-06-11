@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SHARED, TM } from '../../../routes/paths';
+import { SHARED, TM, SLL } from '../../../routes/paths';
 import {
 	downloadEvidence,
 	reviewEvidence,
 	validateApplication,
 } from '../../../features/applications/api/applicationsApi';
+import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -24,6 +25,16 @@ function evidenceForRequirement(evidences, reqId) {
 export default function ApplicationReview({ application, onReload }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { user } = useUser();
+
+	const isSll = user?.role === 'Service Line Leader';
+	// SLL is the final gatekeeper (accept/reject); TM forwards to the SLL.
+	const reviewField = isSll ? 'sll_reviewed' : 'tm_reviewed';
+	const validationsPath = isSll ? SLL.VALIDATIONS : TM.VALIDATIONS;
+	const validationsLabel = isSll ? t('sidebar.sll.validations') : t('sidebar.tm.validations');
+	const primary = isSll
+		? { action: 'accept', labelKey: 'applicationReview.acceptApplication', icon: 'check', confirmKey: 'applicationReview.confirmAccept', toastKey: 'applicationReview.toast.accepted' }
+		: { action: 'review', labelKey: 'applicationReview.forward', icon: 'send', confirmKey: 'applicationReview.confirmForward', toastKey: 'applicationReview.toast.forwarded' };
 
 	const appGuid = application?.application_guid;
 	const badge = application?.badge || {};
@@ -49,13 +60,13 @@ export default function ApplicationReview({ application, onReload }) {
 	// Final decision state
 	const [reviewerNotes, setReviewerNotes] = useState('');
 	const [submitting, setSubmitting] = useState(false);
-	const [confirmAction, setConfirmAction] = useState(null); // 'review' | 'reject'
+	const [confirmAction, setConfirmAction] = useState(null); // primary.action | 'reject'
 	const [error, setError] = useState(null);
 	const [toast, setToast] = useState('');
 
 	const reviewedCount = useMemo(
-		() => evidences.filter((ev) => ev.tm_reviewed != null).length,
-		[evidences]
+		() => evidences.filter((ev) => ev[reviewField] != null).length,
+		[evidences, reviewField]
 	);
 
 	async function handleDownload(evidenceId) {
@@ -73,7 +84,7 @@ export default function ApplicationReview({ application, onReload }) {
 		try {
 			await reviewEvidence(appGuid, evidenceId, approved, evidenceNotes[evidenceId] || null);
 			setEvidences((prev) =>
-				prev.map((ev) => (ev.evidence_id === evidenceId ? { ...ev, tm_reviewed: approved } : ev))
+				prev.map((ev) => (ev.evidence_id === evidenceId ? { ...ev, [reviewField]: approved } : ev))
 			);
 			setToast(t(approved ? 'applicationReview.toast.evidenceApproved' : 'applicationReview.toast.evidenceRejected'));
 		} catch (err) {
@@ -89,20 +100,20 @@ export default function ApplicationReview({ application, onReload }) {
 		setSubmitting(true);
 		try {
 			await validateApplication(appGuid, action, reviewerNotes.trim() || null);
-			setToast(t(action === 'review' ? 'applicationReview.toast.forwarded' : 'applicationReview.toast.rejected'));
+			setToast(t(action === 'reject' ? 'applicationReview.toast.rejected' : primary.toastKey));
 			onReload?.();
-			navigate(TM.VALIDATIONS);
+			navigate(validationsPath);
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 			setSubmitting(false);
 		}
 	}
 
-	function renderEvidenceStatus(tmReviewed) {
-		if (tmReviewed == null) {
+	function renderEvidenceStatus(reviewed) {
+		if (reviewed == null) {
 			return <span className={`${styles.statusChip} ${styles.statusPending}`}>{t('applicationReview.status.pending')}</span>;
 		}
-		if (tmReviewed) {
+		if (reviewed) {
 			return <span className={`${styles.statusChip} ${styles.statusApproved}`}>{t('applicationReview.status.approved')}</span>;
 		}
 		return <span className={`${styles.statusChip} ${styles.statusRejected}`}>{t('applicationReview.status.rejected')}</span>;
@@ -112,8 +123,8 @@ export default function ApplicationReview({ application, onReload }) {
 		<div className={styles.page}>
 			{/* Breadcrumb */}
 			<nav className={styles.breadcrumb} aria-label={t('shared.breadcrumb', { defaultValue: 'Breadcrumb' })}>
-				<Link to={TM.VALIDATIONS} className={styles.breadcrumbLink}>
-					{t('sidebar.tm.validations')}
+				<Link to={validationsPath} className={styles.breadcrumbLink}>
+					{validationsLabel}
 				</Link>
 				<Icon name="chevron_forward" size={14} color="var(--color-outline)" />
 				<span className={styles.breadcrumbActive}>{title}</span>
@@ -234,7 +245,7 @@ export default function ApplicationReview({ application, onReload }) {
 														<span className={styles.noEvidence}>{t('applicationReview.noEvidence')}</span>
 													)}
 												</div>
-												{evidence && renderEvidenceStatus(evidence.tm_reviewed)}
+												{evidence && renderEvidenceStatus(evidence[reviewField])}
 											</div>
 
 											{evidence && (
@@ -284,7 +295,7 @@ export default function ApplicationReview({ application, onReload }) {
 				{/* Decision sidebar */}
 				<aside className={styles.decisionCard}>
 					<h2 className={styles.sectionTitle}>{t('applicationReview.decisionTitle')}</h2>
-					<p className={styles.decisionHint}>{t('applicationReview.decisionHint')}</p>
+					<p className={styles.decisionHint}>{t(isSll ? 'applicationReview.decisionHintSll' : 'applicationReview.decisionHint')}</p>
 
 					<label className={styles.decisionLabel} htmlFor="reviewerNotes">
 						{t('applicationReview.reviewerNotes')}
@@ -304,12 +315,12 @@ export default function ApplicationReview({ application, onReload }) {
 					<div className={styles.decisionButtons}>
 						<Button
 							variant="filled"
-							color="primary"
+							color={isSll ? 'success' : 'primary'}
 							fullWidth
 							loading={submitting}
-							onClick={() => setConfirmAction('review')}
+							onClick={() => setConfirmAction(primary.action)}
 						>
-							<Icon name="send" size={16} /> {t('applicationReview.forward')}
+							<Icon name={primary.icon} size={16} /> {t(primary.labelKey)}
 						</Button>
 						<Button
 							variant="outlined"
@@ -331,9 +342,9 @@ export default function ApplicationReview({ application, onReload }) {
 			<ConfirmToast
 				open={confirmAction != null}
 				message={
-					confirmAction === 'review'
-						? t('applicationReview.confirmForward')
-						: t('applicationReview.confirmReject')
+					confirmAction === 'reject'
+						? t('applicationReview.confirmReject')
+						: t(primary.confirmKey)
 				}
 				confirmLabel={t('shared.yes', { defaultValue: 'Yes' })}
 				cancelLabel={t('shared.no', { defaultValue: 'No' })}

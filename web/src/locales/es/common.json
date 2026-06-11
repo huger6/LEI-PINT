@@ -1125,6 +1125,11 @@
 		"statsDesc": "Las estadísticas e informes de la plataforma estarán disponibles próximamente en esta sección.",
 		"announcementsDesc": "Los comunicados de la plataforma estarán disponibles próximamente en esta sección."
 	},
+	"sllSections": {
+		"teamDesc": "El listado de su equipo (consultores de su Service Line) estará disponible próximamente en esta sección.",
+		"badgeHistoryDesc": "El historial de badges de su Service Line estará disponible próximamente en esta sección.",
+		"statsDesc": "Las estadísticas e informes de su Service Line estarán disponibles próximamente en esta sección."
+	},
 	"tmDashboard": {
 		"summaryTitle": "Resumen de Validaciones",
 		"goToValidations": "Ir a Validaciones",
@@ -1136,6 +1141,7 @@
 	"tmValidations": {
 		"title": "Validaciones",
 		"subtitle": "Revise las candidaturas enviadas y reenvíelas o recházelas.",
+		"subtitleSll": "Revise las candidaturas en validación y acéptelas o recházelas.",
 		"searchPlaceholder": "Buscar por badge o consultor...",
 		"refresh": "Actualizar",
 		"empty": "Sin candidaturas",
@@ -1164,17 +1170,21 @@
 		},
 		"decisionTitle": "Decisión",
 		"decisionHint": "Al reenviar, la candidatura pasa al Service Line Leader. Al rechazar, la candidatura se cierra.",
+		"decisionHintSll": "Al aceptar, el badge se genera y publica. Al rechazar, la candidatura se cierra.",
 		"reviewerNotes": "Notas para el consultor",
 		"reviewerNotesPlaceholder": "Añada un comentario (opcional)",
 		"forward": "Reenviar al Service Line Leader",
+		"acceptApplication": "Aceptar candidatura",
 		"rejectApplication": "Rechazar candidatura",
 		"confirmForward": "¿Reenviar esta candidatura al Service Line Leader?",
+		"confirmAccept": "¿Aceptar esta candidatura? El badge se generará y publicará.",
 		"confirmReject": "¿Rechazar esta candidatura? Esta acción cierra la candidatura.",
 		"backToList": "Volver a las candidaturas",
 		"toast": {
 			"evidenceApproved": "Evidencia aprobada.",
 			"evidenceRejected": "Evidencia rechazada.",
 			"forwarded": "Candidatura reenviada al Service Line Leader.",
+			"accepted": "Candidatura aceptada. Badge generado.",
 			"rejected": "Candidatura rechazada."
 		}
 	},
