@@ -1,5 +1,5 @@
-import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
+import ManagementDashboard from '../ManagementDashboard/ManagementDashboard';
 
 export default function SllDashboard() {
-	return <WelcomeCard />;
+	return <ManagementDashboard />;
 }

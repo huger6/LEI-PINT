@@ -109,8 +109,31 @@ const getDateFilter = ({ from, to, columnName }) => {
     };
 };
 
-const fetchConsultantRows = async ({ from, to }) => {
+// Resolve the data scope for an export request. Talent Manager / Administrator
+// get the full (global) dataset; Service Line Leader is scoped to their own
+// Service Line so no cross-Service-Line data is ever exported.
+const resolveExportScope = async (req) => {
+    const role = req.user?.role;
+    const userId = req.user?.sub;
+    if (role !== 'Service Line Leader') {
+        return { role, userId, serviceLineId: null };
+    }
+    const rows = await sequelize.query(
+        'SELECT service_line_id FROM service_line_leaders WHERE user_id = :userId',
+        { replacements: { userId }, type: QueryTypes.SELECT }
+    );
+    return { role, userId, serviceLineId: rows[0]?.service_line_id ?? null };
+};
+
+// Subquery (as SQL string) selecting the user_ids of consultants that belong to
+// a Service Line, via their assigned areas. Used to scope consultant/points data.
+const CONSULTANTS_IN_SL_SUBQUERY =
+    '(SELECT ca.user_id FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = :serviceLineId)';
+
+const fetchConsultantRows = async ({ from, to, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'ph.created_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId ? ` AND c.user_id IN ${CONSULTANTS_IN_SL_SUBQUERY}` : '';
     const sql = `
         SELECT
             u.user_guid,
@@ -119,6 +142,7 @@ const fetchConsultantRows = async ({ from, to }) => {
         FROM consultants c
         INNER JOIN users u ON u.user_id = c.user_id
         LEFT JOIN points_history ph ON ph.user_id = c.user_id${whereSql}
+        WHERE 1=1${scopeSql}
         GROUP BY u.user_guid, u.full_name
         ORDER BY total_points DESC, u.full_name ASC
     `;
@@ -129,8 +153,12 @@ const fetchConsultantRows = async ({ from, to }) => {
     });
 };
 
-const fetchApplicationLogRows = async ({ from, to }) => {
+const fetchApplicationLogRows = async ({ from, to, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'created_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId
+        ? ` AND application_id IN (SELECT ba.application_id FROM badge_applications ba JOIN badges b ON b.badge_id = ba.badge_id WHERE b.service_line_id = :serviceLineId)`
+        : '';
     const sql = `
         SELECT
             application_validation_log_id,
@@ -141,7 +169,7 @@ const fetchApplicationLogRows = async ({ from, to }) => {
             created_at,
             user_id
         FROM application_validation_logs
-        WHERE 1=1${whereSql}
+        WHERE 1=1${whereSql}${scopeSql}
         ORDER BY created_at DESC, application_validation_log_id DESC
     `;
 
@@ -201,8 +229,10 @@ const fetchApplicationRows = async ({ from, to, state, userId, role }) => {
     });
 };
 
-const fetchPointsHistoryRows = async ({ from, to }) => {
+const fetchPointsHistoryRows = async ({ from, to, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'ph.created_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId ? ` AND ph.user_id IN ${CONSULTANTS_IN_SL_SUBQUERY}` : '';
     const sql = `
         SELECT
             ph.points_history_id,
@@ -214,7 +244,7 @@ const fetchPointsHistoryRows = async ({ from, to }) => {
         FROM points_history ph
         INNER JOIN consultants c ON c.user_id = ph.user_id
         INNER JOIN users u ON u.user_id = c.user_id
-        WHERE 1=1${whereSql}
+        WHERE 1=1${whereSql}${scopeSql}
         ORDER BY ph.created_at DESC, ph.points_history_id DESC
     `;
 
@@ -224,9 +254,14 @@ const fetchPointsHistoryRows = async ({ from, to }) => {
     });
 };
 
-const fetchBadgeRows = async ({ from, to, q, active }) => {
+const fetchBadgeRows = async ({ from, to, q, active, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'b.created_at' });
     const searchFilters = [];
+
+    if (serviceLineId) {
+        searchFilters.push('b.service_line_id = :serviceLineId');
+        replacements.serviceLineId = serviceLineId;
+    }
 
     if (typeof active === 'boolean') {
         searchFilters.push('b.is_active = :active');
@@ -248,8 +283,8 @@ const fetchBadgeRows = async ({ from, to, q, active }) => {
             b.is_active,
             b.created_at,
             b.updated_at,
-            sl.service_line_title,
-            a.area_title
+            sl.service_line_name AS service_line_title,
+            a.area_name AS area_title
         FROM badges b
         INNER JOIN service_lines sl ON sl.service_line_id = b.service_line_id
         INNER JOIN areas a ON a.area_id = b.area_id
@@ -339,13 +374,14 @@ const exportDataset = async ({ req, res, title, fileStem, columns, fetchRows, sc
 
 const exportConsultants = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Consultants export',
             fileStem: 'consultants_export',
             columns: consultantColumns,
-            fetchRows: fetchConsultantRows
+            fetchRows: ({ from, to }) => fetchConsultantRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -357,13 +393,14 @@ const exportConsultants = async (req, res) => {
 
 const exportApplicationLogs = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Application validation logs export',
             fileStem: 'application_validation_logs',
             columns: applicationLogColumns,
-            fetchRows: fetchApplicationLogRows
+            fetchRows: ({ from, to }) => fetchApplicationLogRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -397,13 +434,14 @@ const exportApplications = async (req, res) => {
 
 const exportPointsHistory = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Points history export',
             fileStem: 'points_history',
             columns: pointsHistoryColumns,
-            fetchRows: fetchPointsHistoryRows
+            fetchRows: ({ from, to }) => fetchPointsHistoryRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -415,13 +453,14 @@ const exportPointsHistory = async (req, res) => {
 
 const exportBadges = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Badges export',
             fileStem: 'badges',
             columns: badgeColumns,
-            fetchRows: fetchBadgeRows,
+            fetchRows: ({ from, to }) => fetchBadgeRows({ from, to, serviceLineId }),
             schema: exportBadgesQuerySchema
         });
     } catch (error) {

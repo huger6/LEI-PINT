@@ -36,7 +36,10 @@ function buildSignatureHtml(name, badges) {
 
 export default function MailSignature() {
 	const { t } = useTranslation();
-	const { displayName } = useUser();
+	const { user, displayName } = useUser();
+	// Only consultants earn badges; other roles (TM/SLL) get a clean empty state
+	// instead of the earned-badges 403.
+	const isConsultant = user?.role === 'Consultant';
 
 	const [badges, setBadges] = useState([]);
 	const [selected, setSelected] = useState(() => new Set());
@@ -50,6 +53,11 @@ export default function MailSignature() {
 			setLoading(true);
 			setError(null);
 			try {
+				// Only consultants earn badges; other roles get a clean empty state.
+				if (!isConsultant) {
+					if (active) setBadges([]);
+					return;
+				}
 				const { badges: rows } = await getEarnedBadges({ page: 1, limit: 50 });
 				if (!active) return;
 				setBadges(rows);
@@ -61,7 +69,7 @@ export default function MailSignature() {
 			}
 		})();
 		return () => { active = false; };
-	}, []);
+	}, [isConsultant]);
 
 	const selectedBadges = useMemo(
 		() => badges.filter((b) => selected.has(b.awardedBadgeId)),

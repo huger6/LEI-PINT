@@ -14,7 +14,13 @@ import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 import adminRoutes from './adminRoutes';
 import consultantRoutes from './consultantRoutes';
 import tmRoutes from './tmRoutes';
+import sllRoutes from './sllRoutes';
 import sharedRoutes from './sharedRoutes';
+import { TM } from './paths';
+import ValidationsBoard from '../pages/management/ValidationsBoard/ValidationsBoard';
+import StatsPage from '../pages/management/StatsPage/StatsPage';
+import Announcements from '../pages/management/Announcements/Announcements';
+import BadgeCatalog from '../pages/consultant/BadgeCatalog/BadgeCatalog';
 
 export default function AppRoutes() {
 	return (
@@ -57,6 +63,25 @@ export default function AppRoutes() {
 						{tmRoutes.map(({ path, element }) => (
 							<Route key={path} path={path} element={element} />
 						))}
+					</Route>
+				</Route>
+
+				<Route element={<RoleRoute allowedRoles={['Service Line Leader']} />}>
+					<Route element={<RoleLayout />}>
+						{sllRoutes.map(({ path, element }) => (
+							<Route key={path} path={path} element={element} />
+						))}
+					</Route>
+				</Route>
+
+				{/* Shared management paths (Talent Manager + Service Line Leader).
+				    Role-specific content is dispatched inside the elements. */}
+				<Route element={<RoleRoute allowedRoles={['Talent Manager', 'Service Line Leader']} />}>
+					<Route element={<RoleLayout />}>
+						<Route path={TM.VALIDATIONS} element={<ValidationsBoard />} />
+						<Route path={TM.STATS} element={<StatsPage />} />
+						<Route path={TM.BADGES} element={<BadgeCatalog />} />
+						<Route path={TM.ANNOUNCEMENTS} element={<Announcements />} />
 					</Route>
 				</Route>
 
