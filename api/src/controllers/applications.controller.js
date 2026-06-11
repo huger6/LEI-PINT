@@ -613,7 +613,8 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({ success: false, code: 'APP_TM_CANNOT_ACCEPT' });
             }
-            newState = action === 'review' ? 'In validation' : 'Rejected';
+            // 'send_back' returns the application to the consultant for correction (Open)
+            newState = action === 'review' ? 'In validation' : (action === 'send_back' ? 'Open' : 'Rejected');
 
         } else if (role === 'Service Line Leader') {
             // SLL only acts on In validation applications (after TM approval)
@@ -626,7 +627,8 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({ success: false, code: 'APP_SLL_CANNOT_REVIEW' });
             }
-            newState = action === 'accept' ? 'Accepted' : 'Rejected';
+            // 'send_back' returns the application to the consultant for correction (Open)
+            newState = action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected');
 
         } else {
             // Administrator: full flexibility
@@ -634,11 +636,13 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(400).json({ success: false, code: 'APP_REVIEW_INVALID_STATE', data: { currentState: state } });
             }
-            if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
+            if ((action === 'accept' || action === 'reject' || action === 'send_back') && !['Submitted', 'In validation'].includes(state)) {
                 await transaction.rollback();
                 return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
             }
-            newState = action === 'review' ? 'In validation' : (action === 'accept' ? 'Accepted' : 'Rejected');
+            newState = action === 'review'
+                ? 'In validation'
+                : (action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected'));
         }
 
         // Create awarded_badge record when application is accepted
@@ -659,7 +663,7 @@ const validateApplication = async (req, res) => {
         }
 
         // Audit log (before state update so the DB trigger dedup skips)
-        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject' }[action];
+        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject', send_back: 'Send Back' }[action];
         await models.application_validation_logs.create({
             application_id: application.application_id,
             user_id: reviewerId,
@@ -718,6 +722,17 @@ const validateApplication = async (req, res) => {
                     notificationType: 'APPLICATIONS',
                     title: 'NOTIF_APP_IN_VALIDATION_TITLE',
                     body: 'NOTIF_APP_IN_VALIDATION_BODY',
+                    meta: badgeMeta,
+                    url: `/applications/${application.application_guid}`
+                });
+            } else if (newState === 'Open') {
+                // Reviewer sent the application back to the consultant for correction
+                await notificationsService.createNotification({
+                    userId: application.user_id,
+                    definitionId: 3,
+                    notificationType: 'APPLICATIONS',
+                    title: 'NOTIF_APP_RETURNED_TITLE',
+                    body: 'NOTIF_APP_RETURNED_BODY',
                     meta: badgeMeta,
                     url: `/applications/${application.application_guid}`
                 });

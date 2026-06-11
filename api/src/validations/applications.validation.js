@@ -69,7 +69,7 @@ const getUploadUrlBodySchema = z.object({
 });
 
 const reviewApplicationSchema = z.object({
-    action: z.enum(['accept', 'reject', 'review'], {
+    action: z.enum(['accept', 'reject', 'review', 'send_back'], {
         errorMap: () => ({ message: 'VALIDATION_REVIEW_ACTION_INVALID' })
     }),
     reviewerNotes: z.string().trim()
