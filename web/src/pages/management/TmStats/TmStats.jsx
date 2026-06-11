@@ -13,13 +13,13 @@ import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
-import BadgeOverview from '../../../components/BadgeOverview/BadgeOverview';
 import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './TmStats.module.css';
 
-const EXPIRING_WINDOWS = [30, 90, 180, 365];
+const EXPIRING_WINDOWS = [30, 90, 180, 365, 730];
 
 function expiringClass(days) {
 	if (days <= 30) return styles.daysCritical;
@@ -129,7 +129,7 @@ export default function TmStats() {
 				<ContentCard className={styles.chartCard}>
 					<CardHeader icon="service-line" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('tmStats.charts.byServiceLine')} />
 					{hasSl ? (
-						<VerticalBarChart data={data.bySl} xAxisKey="service_line_name" yAxisKey="awarded_count" />
+						<VerticalBarChart data={data.bySl} xAxisKey="service_line_name" yAxisKey="awarded_count" valueName={t('tmStats.kpi.badgesAwarded')} />
 					) : (
 						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
 					)}
@@ -138,7 +138,7 @@ export default function TmStats() {
 				<ContentCard className={styles.chartCard}>
 					<CardHeader icon="badge" iconBg="var(--color-green-soft)" iconColor="var(--color-green-on-soft)" title={t('tmStats.charts.byLevel')} />
 					{hasLevels ? (
-						<PieDonutChart data={data.levels} nameKey="stage_code" valueKey="awarded_count" isDonut />
+						<PieDonutChart data={data.levels} nameKey="stage_code" valueKey="awarded_count" valueName={t('tmStats.kpi.badgesAwarded')} isDonut />
 					) : (
 						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
 					)}
@@ -147,7 +147,7 @@ export default function TmStats() {
 				<ContentCard className={`${styles.chartCard} ${styles.chartCardWide}`}>
 					<CardHeader icon="learning-path" iconBg="var(--color-purple-soft)" iconColor="var(--color-purple-on-soft)" title={t('tmStats.charts.byLearningPath')} />
 					{hasLp ? (
-						<VerticalBarChart data={data.byLp} xAxisKey="path_title" yAxisKey="awarded_count" barColor="#39639C" />
+						<VerticalBarChart data={data.byLp} xAxisKey="path_title" yAxisKey="awarded_count" barColor="#39639C" valueName={t('tmStats.kpi.badgesAwarded')} />
 					) : (
 						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
 					)}
@@ -163,16 +163,14 @@ export default function TmStats() {
 					<CardHeader icon="clock" iconBg="var(--color-orange-soft)" iconColor="var(--color-orange-on-soft)" title={t('tmStats.expiring.title')} />
 					<label className={styles.inlineSelect}>
 						<span className={styles.inlineSelectLabel}>{t('tmStats.expiring.window')}</span>
-						<select
-							className="form-select form-select-sm"
-							value={expiringWindow}
-							onChange={(e) => setExpiringWindow(Number(e.target.value))}
-							aria-label={t('tmStats.expiring.window')}
-						>
-							{EXPIRING_WINDOWS.map((d) => (
-								<option key={d} value={d}>{t('tmStats.expiring.days', { count: d })}</option>
-							))}
-						</select>
+						<CustomSelect
+								name="expiringWindow"
+								value={String(expiringWindow)}
+								onChange={(e) => setExpiringWindow(Number(e.target.value))}
+								options={EXPIRING_WINDOWS.map((d) => ({ value: String(d), label: t("tmStats.expiring.days", { count: d }) }))}
+								ariaLabel={t("tmStats.expiring.window")}
+								compact
+							/>
 					</label>
 				</div>
 
@@ -212,8 +210,6 @@ export default function TmStats() {
 				)}
 			</ContentCard>
 
-			{/* Points system per badge (req 15) + special/premium badges (req 16) */}
-			<BadgeOverview />
 		</div>
 	);
 }

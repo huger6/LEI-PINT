@@ -3,12 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { downloadExport } from '../../features/statistics/api/exportsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../ContentCard/ContentCard';
+import CustomSelect from '../CustomSelect/CustomSelect';
 import Button from '../Button/Button';
 import FormAlert from '../FormAlert/FormAlert';
-import Icon from '../Icons/Icons';
 import styles from './ExportsPanel.module.css';
 
-const EXPORT_FORMATS = ['csv', 'xlsx', 'pdf'];
+const FORMAT_OPTIONS = [
+	{ value: 'csv', label: 'CSV' },
+	{ value: 'xlsx', label: 'XLSX' },
+	{ value: 'pdf', label: 'PDF' },
+];
 
 const EXPORT_BUTTONS = [
 	{ key: 'consultants', type: 'consultants', labelKey: 'tmStats.exports.consultants' },
@@ -49,16 +53,14 @@ export default function ExportsPanel() {
 				<CardHeader icon="download" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('tmStats.exports.title')} />
 				<label className={styles.inlineSelect}>
 					<span className={styles.inlineSelectLabel}>{t('tmStats.exports.format')}</span>
-					<select
-						className="form-select form-select-sm"
+					<CustomSelect
+						name="exportFormat"
 						value={format}
 						onChange={(e) => setFormat(e.target.value)}
-						aria-label={t('tmStats.exports.format')}
-					>
-						{EXPORT_FORMATS.map((f) => (
-							<option key={f} value={f}>{f.toUpperCase()}</option>
-						))}
-					</select>
+						options={FORMAT_OPTIONS}
+						ariaLabel={t('tmStats.exports.format')}
+						compact
+					/>
 				</label>
 			</div>
 
@@ -69,11 +71,12 @@ export default function ExportsPanel() {
 						variant="outlined"
 						color="primary"
 						size="sm"
+						fullWidth
 						loading={busy === btn.key}
 						disabled={Boolean(busy)}
 						onClick={() => handleExport(btn)}
 					>
-						<Icon name="download" size={14} /> {t(btn.labelKey)}
+						{t(btn.labelKey)}
 					</Button>
 				))}
 			</div>

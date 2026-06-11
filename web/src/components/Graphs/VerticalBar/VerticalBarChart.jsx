@@ -13,6 +13,7 @@ export default function VerticalBarChart({
 	data = [],
 	xAxisKey,
 	yAxisKey,
+	valueName,
 	barColor = '#00B8E0',
 	height = 300,
 	onClick,
@@ -31,6 +32,7 @@ export default function VerticalBarChart({
 					<Tooltip />
 					<Bar
 						dataKey={yAxisKey}
+						name={valueName || yAxisKey}
 						fill={barColor}
 						radius={[6, 6, 0, 0]}
 						maxBarSize={48}

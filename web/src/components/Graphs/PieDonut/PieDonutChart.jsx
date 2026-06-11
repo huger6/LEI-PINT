@@ -14,6 +14,7 @@ export default function PieDonutChart({
 	data = [],
 	nameKey,
 	valueKey,
+	valueName,
 	colors = DEFAULT_COLORS,
 	isDonut = false,
 	height = 300,
@@ -41,7 +42,9 @@ export default function PieDonutChart({
 							/>
 						))}
 					</Pie>
-					<Tooltip />
+					<Tooltip
+						formatter={(value, _name, entry) => [value, entry?.payload?.[nameKey] ?? valueName]}
+					/>
 					<Legend
 						verticalAlign="bottom"
 						align="center"

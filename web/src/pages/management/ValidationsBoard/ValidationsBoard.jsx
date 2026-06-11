@@ -6,6 +6,7 @@ import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Tabs from '../../../components/Tabs/Tabs';
 import Button from '../../../components/Button/Button';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
 import Pagination from '../../../components/Pagination/Pagination';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -41,6 +42,7 @@ export default function ValidationsBoard() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [search, setSearch] = useState('');
+	const [sortDir, setSortDir] = useState('desc'); // 'desc' = newest first
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -94,13 +96,19 @@ export default function ValidationsBoard() {
 
 	const filtered = useMemo(() => {
 		const term = search.trim().toLowerCase();
-		if (!term) return items;
-		return items.filter((app) => {
+		const base = !term ? items : items.filter((app) => {
 			const badgeName = (app.badge?.badge_title || '').toLowerCase();
 			const consultant = (app.user?.user?.full_name || '').toLowerCase();
 			return badgeName.includes(term) || consultant.includes(term);
 		});
-	}, [items, search]);
+		const dateOf = (app) => new Date(app.submitted_at || app.opened_at || 0).getTime();
+		return [...base].sort((a, b) => (sortDir === 'asc' ? dateOf(a) - dateOf(b) : dateOf(b) - dateOf(a)));
+	}, [items, search, sortDir]);
+
+	const sortOptions = useMemo(() => [
+		{ value: 'desc', label: t('tmValidations.sortNewest') },
+		{ value: 'asc', label: t('tmValidations.sortOldest') },
+	], [t]);
 
 	function formatDate(app) {
 		const dateStr = app.submitted_at || app.opened_at;
@@ -132,6 +140,14 @@ export default function ValidationsBoard() {
 						ariaLabel={t('tmValidations.searchPlaceholder')}
 					/>
 				</div>
+				<CustomSelect
+					name="sortDir"
+					value={sortDir}
+					onChange={(e) => setSortDir(e.target.value)}
+					options={sortOptions}
+					ariaLabel={t('tmValidations.sortBy')}
+					compact
+				/>
 				<Button
 					variant="outlined"
 					color="primary"
