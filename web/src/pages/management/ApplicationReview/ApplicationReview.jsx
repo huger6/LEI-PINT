@@ -36,6 +36,10 @@ export default function ApplicationReview({ application, onReload }) {
 		? { action: 'accept', labelKey: 'applicationReview.acceptApplication', icon: 'check', confirmKey: 'applicationReview.confirmAccept', toastKey: 'applicationReview.toast.accepted' }
 		: { action: 'review', labelKey: 'applicationReview.forward', icon: 'send', confirmKey: 'applicationReview.confirmForward', toastKey: 'applicationReview.toast.forwarded' };
 
+	// Confirm message + success toast per decision action ('send_back' returns to the consultant).
+	const ACTION_CONFIRM = { [primary.action]: primary.confirmKey, reject: 'applicationReview.confirmReject', send_back: 'applicationReview.confirmSendBack' };
+	const ACTION_TOAST = { [primary.action]: primary.toastKey, reject: 'applicationReview.toast.rejected', send_back: 'applicationReview.toast.returned' };
+
 	const appGuid = application?.application_guid;
 	const badge = application?.badge || {};
 	const [evidences, setEvidences] = useState(application?.requirements_evidences || []);
@@ -100,7 +104,7 @@ export default function ApplicationReview({ application, onReload }) {
 		setSubmitting(true);
 		try {
 			await validateApplication(appGuid, action, reviewerNotes.trim() || null);
-			setToast(t(action === 'reject' ? 'applicationReview.toast.rejected' : primary.toastKey));
+			setToast(t(ACTION_TOAST[action] || primary.toastKey));
 			onReload?.();
 			navigate(validationsPath);
 		} catch (err) {
@@ -324,6 +328,15 @@ export default function ApplicationReview({ application, onReload }) {
 						</Button>
 						<Button
 							variant="outlined"
+							color="primary"
+							fullWidth
+							disabled={submitting}
+							onClick={() => setConfirmAction('send_back')}
+						>
+							<Icon name="chevron_backward" size={16} /> {t('applicationReview.sendBack')}
+						</Button>
+						<Button
+							variant="outlined"
 							color="danger"
 							fullWidth
 							disabled={submitting}
@@ -344,7 +357,7 @@ export default function ApplicationReview({ application, onReload }) {
 				message={
 					confirmAction === 'reject'
 						? t('applicationReview.confirmReject')
-						: t(primary.confirmKey)
+						: t(ACTION_CONFIRM[confirmAction] || primary.confirmKey)
 				}
 				confirmLabel={t('shared.yes', { defaultValue: 'Yes' })}
 				cancelLabel={t('shared.no', { defaultValue: 'No' })}
