@@ -290,7 +290,8 @@
 			"warnings": "Manage Warnings",
 			"notifications": "Manage Notifications",
 			"stats": "Statistics/Reports",
-			"rgpd": "GDPR Settings"
+			"rgpd": "GDPR Settings",
+			"announcements": "Announcements"
 		}
 	},
 	"icons": {
@@ -312,6 +313,11 @@
 		"nextMonth": "Next month",
 		"selectMonth": "Select month",
 		"selectYear": "Select year"
+	},
+	"dateTimePicker": {
+		"hours": "Hours",
+		"minutes": "Minutes",
+		"clear": "Clear"
 	},
 	"pagination": {
 		"previous": "Previous",
@@ -1255,5 +1261,67 @@
 		"copied": "Signature copied.",
 		"copyFailed": "Could not copy. Copy the HTML manually.",
 		"empty": "You don't have any badges with a public link to include in the signature yet."
+	},
+	"announcements": {
+		"title": "Announcements",
+		"createAnnouncement": "Create Announcement",
+		"editAnnouncement": "Edit Announcement",
+		"table": {
+			"title": "Title",
+			"type": "Type",
+			"target": "Target",
+			"dates": "Dates",
+			"status": "Status",
+			"createdBy": "Created By",
+			"actions": "Actions"
+		},
+		"types": {
+			"Information": "Information",
+			"Warning": "Warning",
+			"New Content": "New Content",
+			"Other": "Other"
+		},
+		"status": {
+			"active": "Active",
+			"inactive": "Inactive"
+		},
+		"target": {
+			"global": "Global",
+			"allRoles": "All Roles"
+		},
+		"form": {
+			"title": "Title",
+			"titlePlaceholder": "Announcement title...",
+			"message": "Message",
+			"messagePlaceholder": "Write the announcement message...",
+			"type": "Type",
+			"typePlaceholder": "Select type...",
+			"startDate": "Start Date",
+			"endDate": "End Date",
+			"global": "Global (visible to all users)",
+			"targetRoles": "Target Roles",
+			"targetServiceLines": "Target Service Lines",
+			"selectAll": "Select All",
+			"deselectAll": "Deselect All",
+			"validation": {
+				"titleRequired": "Title is required.",
+				"titleMax": "Title must be at most 150 characters.",
+				"messageRequired": "Message is required.",
+				"endDateAfterStart": "End date must be after start date.",
+				"targetRequired": "Select at least one role or service line when not global."
+			}
+		},
+		"confirmDelete": "Are you sure you want to deactivate the announcement \"{{name}}\"?",
+		"empty": "No announcements found.",
+		"consultantEmpty": "There are no announcements at this time.",
+		"noExpiry": "No expiry",
+		"postedOn": "Posted on",
+		"readMore": "Read more",
+		"readLess": "Read less",
+		"noLimit": "No limit",
+		"filterByType": "Filter by type",
+		"filterByStatus": "Filter by status",
+		"allTypes": "All types",
+		"allStatuses": "All statuses"
 	}
 }

@@ -15,6 +15,7 @@ import {
 	AreasList,
 	LevelsList,
 } from '../features/structure';
+import Announcements from '../pages/management/Announcements/Announcements';
 
 const adminRoutes = [
 	{ path: ADMIN.DASHBOARD, element: <AdminDashboard /> },
@@ -31,6 +32,7 @@ const adminRoutes = [
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },
 	{ path: ADMIN.AREA_DETAIL, element: <AreaDetail /> },
 	{ path: ADMIN.LEVEL_DETAIL, element: <LevelDetail /> },
+	{ path: ADMIN.ANNOUNCEMENTS, element: <Announcements /> },
 ];
 
 export default adminRoutes;
