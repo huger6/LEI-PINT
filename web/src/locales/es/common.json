@@ -1130,6 +1130,11 @@
 		"badgeHistoryDesc": "El historial de badges de su Service Line estará disponible próximamente en esta sección.",
 		"statsDesc": "Las estadísticas e informes de su Service Line estarán disponibles próximamente en esta sección."
 	},
+	"sllStats": {
+		"reportsTitle": "Informe — Badges otorgados por mes",
+		"total": "{{count}} en total",
+		"noData": "Sin badges otorgados en su Service Line."
+	},
 	"tmDashboard": {
 		"summaryTitle": "Resumen de Validaciones",
 		"goToValidations": "Ir a Validaciones",
