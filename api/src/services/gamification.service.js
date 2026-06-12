@@ -127,6 +127,48 @@ const getConsultantPointsSummary = async (userId) => {
 };
 
 /*──────────────────────────────────────────────────────────────
+  POINTS + GLOBAL RANK FOR A SINGLE CONSULTANT
+  Lightweight lookup (no history rows) used to enrich views that
+  already gate access to the consultant, e.g. application detail.
+  Ordering matches the global ranking (getMyPosition with no filters).
+──────────────────────────────────────────────────────────────*/
+const getConsultantPointsAndRank = async (userId) => {
+    const rows = await sequelize.query(
+        `WITH computed AS (
+            SELECT
+                u.user_id,
+                COALESCE((
+                    SELECT SUM(ph.points_delta) FROM points_history ph WHERE ph.user_id = u.user_id
+                ), 0) AS total_points,
+                (
+                    SELECT COUNT(ab.awarded_badges_id) FROM awarded_badges ab WHERE ab.user_id = u.user_id
+                ) AS total_badges,
+                u.full_name
+            FROM users u
+            WHERE u.user_role = 'Consultant' AND u.is_active = TRUE
+        ),
+        ranked AS (
+            SELECT
+                user_id,
+                total_points,
+                ROW_NUMBER() OVER (
+                    ORDER BY total_points DESC, total_badges DESC, full_name ASC
+                ) AS position
+            FROM computed
+        )
+        SELECT total_points, position FROM ranked WHERE user_id = :userId`,
+        { replacements: { userId }, type: sequelize.QueryTypes.SELECT }
+    );
+
+    if (!rows.length) return { totalPoints: 0, rankingPosition: null };
+
+    return {
+        totalPoints: parseInt(rows[0].total_points ?? 0, 10),
+        rankingPosition: rows[0].position != null ? Number(rows[0].position) : null
+    };
+};
+
+/*──────────────────────────────────────────────────────────────
   RECOMMENDATIONS
   Delegates to the get_badge_recommendations stored procedure.
 ──────────────────────────────────────────────────────────────*/
@@ -292,6 +334,7 @@ module.exports = {
     awardRequirementPoints,
     awardBadgeCompletionPoints,
     getConsultantPointsSummary,
+    getConsultantPointsAndRank,
     getConsultantStats,
     getRecommendations,
     trackInteraction,

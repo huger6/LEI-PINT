@@ -202,9 +202,23 @@ const getApplicationById = async (req, res) => {
             }
         }
 
+        // Enrich with the consultant's total points and global ranking position.
+        // Access to this application is already RBAC-gated above, so exposing the
+        // applicant's gamification stats here is safe and avoids extra client calls.
+        const data = application.toJSON();
+        try {
+            const stats = await gamificationService.getConsultantPointsAndRank(application.user_id);
+            data.consultant_total_points = stats.totalPoints;
+            data.consultant_ranking_position = stats.rankingPosition;
+        } catch (statsError) {
+            logger.warn('Failed to compute consultant points/rank for application detail', { error: statsError });
+            data.consultant_total_points = null;
+            data.consultant_ranking_position = null;
+        }
+
         return res.status(200).json({
             success: true,
-            data: application
+            data
         });
 
     } catch (error) {
