@@ -3,3 +3,4 @@
 *.log
 firebase.json
 mobile/
+.mcp.json
