@@ -369,6 +369,32 @@ const APPLICATION_EMAIL_TEMPLATES = {
             cta: 'Ver Candidatura',
             team: 'El Equipo de Softinsa'
         }
+    },
+    pendingSllReview: {
+        'pt-PT': {
+            subject: 'Candidatura para validação final',
+            greeting: 'Olá, {name}',
+            intro: 'A candidatura de <strong>{consultant}</strong> ao badge <strong>{badgeTitle}</strong> foi validada pelo Talent Manager e aguarda a tua decisão final.',
+            body: 'Acede à plataforma para rever as evidências e aprovar, rejeitar ou devolver a candidatura ao consultor.',
+            cta: 'Rever Candidatura',
+            team: 'A Equipa Softinsa'
+        },
+        'en-GB': {
+            subject: 'Application awaiting final validation',
+            greeting: 'Hello, {name}',
+            intro: 'The application from <strong>{consultant}</strong> for the badge <strong>{badgeTitle}</strong> has been validated by the Talent Manager and awaits your final decision.',
+            body: 'Open the platform to review the evidence and approve, reject or return the application to the consultant.',
+            cta: 'Review Application',
+            team: 'The Softinsa Team'
+        },
+        'es-ES': {
+            subject: 'Candidatura para validación final',
+            greeting: 'Hola, {name}',
+            intro: 'La candidatura de <strong>{consultant}</strong> al badge <strong>{badgeTitle}</strong> ha sido validada por el Talent Manager y espera tu decisión final.',
+            body: 'Accede a la plataforma para revisar las evidencias y aprobar, rechazar o devolver la candidatura al consultor.',
+            cta: 'Revisar Candidatura',
+            team: 'El Equipo de Softinsa'
+        }
     }
 };
 
@@ -411,6 +437,50 @@ const sendApplicationSubmittedEmail = async (email, name, badgeTitle, applicatio
         return { success: true };
     } catch (error) {
         logger.error('Error sending application submitted email', { error });
+        return { success: false, error };
+    }
+};
+
+/**
+ * Notifies a Service Line Leader that an application reached their queue
+ * ("In validation") and awaits final decision.
+ * @param {string} email
+ * @param {string} name        Service Line Leader name
+ * @param {string} consultant  Applicant consultant name
+ * @param {string} badgeTitle
+ * @param {string} applicationUrl
+ * @param {string} lang
+ */
+const sendApplicationPendingSllReviewEmail = async (email, name, consultant, badgeTitle, applicationUrl, lang) => {
+    const t = resolveApplicationTemplate('pendingSllReview', lang);
+    const safeName = escapeHtml(name);
+    const safeConsultant = escapeHtml(consultant);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{consultant}', safeConsultant).replace('{badgeTitle}', safeBadge)}</p>
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, applicationUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending application pending SLL review email', { error });
         return { success: false, error };
     }
 };
@@ -682,6 +752,7 @@ module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
     sendApplicationSubmittedEmail,
+    sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail,
     sendSlaBreachAlert,

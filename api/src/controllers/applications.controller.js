@@ -9,6 +9,7 @@ const notificationsService = require('../services/notifications.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const {
     sendApplicationSubmittedEmail,
+    sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail
 } = require('../services/email.service');
@@ -790,6 +791,9 @@ const validateApplication = async (req, res) => {
                 const slls = await models.service_line_leaders.findAll({
                     where: { service_line_id: application.badge.service_line_id }
                 });
+                // Applicant name for the SLL email body.
+                const applicantData = await getConsultantEmailData(application.user_id);
+                const applicantName = applicantData?.name || '';
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
@@ -800,6 +804,23 @@ const validateApplication = async (req, res) => {
                         meta: badgeMeta,
                         url: `/admin/applications/${application.application_guid}`
                     });
+
+                    // Email the SLL too (req: SLL receives application/validation emails),
+                    // honouring their notification preferences.
+                    const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
+                    if (sllPrefs.is_enabled && sllPrefs.send_email) {
+                        const sllData = await getConsultantEmailData(sll.user_id);
+                        if (sllData) {
+                            await sendApplicationPendingSllReviewEmail(
+                                sllData.email,
+                                sllData.name,
+                                applicantName,
+                                application.badge.badge_title,
+                                appUrl,
+                                sllData.lang
+                            );
+                        }
+                    }
                 }
             }
         } catch (notifErr) {
