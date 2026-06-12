@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Permits cleartext (HTTP) traffic only to local development hosts so the app
+  can reach a locally-running API over http://. All other domains keep the
+  secure default (HTTPS only).
+    - localhost / 127.0.0.1 : iOS simulator and direct host runs
+    - 10.0.2.2              : Android emulator loopback to the host machine
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
