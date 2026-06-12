@@ -461,6 +461,82 @@ const getConsultantsOverview = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  Badges summary KPIs (leadership): total awarded, standard vs
+  premium (Special), and the approval rate. SLL scoped to own SL.
+  Filterable by service line / area / awarded date range.
+──────────────────────────────────────────────────────────────*/
+const getBadgesSummary = async (req, res) => {
+    try {
+        let q;
+        try { q = validations.badgesSummaryQuerySchema.parse(req.query); }
+        catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+            throw error;
+        }
+
+        let scopeServiceLineId = q.serviceLineId ?? null;
+        if (req.user.role === 'Service Line Leader') {
+            const slRows = await sequelize.query(
+                'SELECT service_line_id FROM service_line_leaders WHERE user_id = :userId',
+                { replacements: { userId: req.user.sub }, type: QueryTypes.SELECT }
+            );
+            scopeServiceLineId = slRows[0]?.service_line_id ?? -1;
+        }
+
+        const repl = {};
+        const badgeFilters = [];
+        if (scopeServiceLineId != null) { repl.serviceLineId = scopeServiceLineId; badgeFilters.push('b.service_line_id = :serviceLineId'); }
+        if (q.areaId) { repl.areaId = q.areaId; badgeFilters.push('b.area_id = :areaId'); }
+        const badgeWhere = badgeFilters.length ? ` AND ${badgeFilters.join(' AND ')}` : '';
+
+        const awardedDate = [];
+        if (q.dateFrom) { repl.dateFrom = q.dateFrom; awardedDate.push('ab.awarded_at >= :dateFrom'); }
+        if (q.dateTo) { repl.dateTo = q.dateTo; awardedDate.push('ab.awarded_at <= :dateTo'); }
+        const awardedWhere = awardedDate.length ? ` AND ${awardedDate.join(' AND ')}` : '';
+
+        const [badgeRows] = await sequelize.query(
+            `SELECT
+                COUNT(*)::int AS total,
+                COUNT(*) FILTER (WHERE b.badge_type = 'Special')::int AS premium
+             FROM awarded_badges ab
+             JOIN badge_applications ba ON ba.application_id = ab.application_id
+             JOIN badges b ON b.badge_id = ba.badge_id
+             WHERE 1=1${badgeWhere}${awardedWhere}`,
+            { replacements: repl }
+        );
+
+        const appDate = [];
+        if (q.dateFrom) appDate.push('ba.validated_at >= :dateFrom');
+        if (q.dateTo) appDate.push('ba.validated_at <= :dateTo');
+        const appWhere = appDate.length ? ` AND ${appDate.join(' AND ')}` : '';
+
+        const [appRows] = await sequelize.query(
+            `SELECT
+                COUNT(*) FILTER (WHERE ba.application_state = 'Accepted')::int AS accepted,
+                COUNT(*) FILTER (WHERE ba.application_state = 'Rejected')::int AS rejected
+             FROM badge_applications ba
+             JOIN badges b ON b.badge_id = ba.badge_id
+             WHERE 1=1${badgeWhere}${appWhere}`,
+            { replacements: repl }
+        );
+
+        const total = Number(badgeRows[0]?.total || 0);
+        const premium = Number(badgeRows[0]?.premium || 0);
+        const accepted = Number(appRows[0]?.accepted || 0);
+        const rejected = Number(appRows[0]?.rejected || 0);
+        const approvalRate = accepted + rejected > 0 ? Math.round((accepted / (accepted + rejected)) * 100) : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: { total, standard: total - premium, premium, accepted, rejected, approvalRate }
+        });
+    } catch (error) {
+        logger.error('Error fetching badges summary', { error });
+        return res.status(500).json({ success: false, code: 'STATISTICS_BADGES_SUMMARY_FAILED' });
+    }
+};
+
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
@@ -478,5 +554,6 @@ module.exports = {
     getBadgesPerArea,
     getExpiringBadges,
     getConsultantsOverview,
+    getBadgesSummary,
     reconcilePoints
 };
