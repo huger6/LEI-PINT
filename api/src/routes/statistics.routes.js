@@ -51,6 +51,15 @@ router.get('/consultant/badges-per-area', loginRequired, ctrl.getBadgesPerArea);
 router.get('/consultants/comparison', loginRequired, leadership, ctrl.getPeerComparison);
 
 /**
+ * @route   GET /api/statistics/consultants
+ * @desc    Consultants overview (points, badges, applications, last login, SL, area).
+ *          SLL scoped to own Service Line. Supports search/serviceLineId/areaId/
+ *          pointsMin/pointsMax/sort/page/limit.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/consultants', loginRequired, leadership, ctrl.getConsultantsOverview);
+
+/**
  * @route   GET /api/statistics/team/badges-count
  * @desc    Number of badges acquired in scope (SLL: own SL; TM/Admin: optional ?serviceLineId)
  * @access  Service Line Leader, Talent Manager, Administrator
