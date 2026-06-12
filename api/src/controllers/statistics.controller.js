@@ -1,4 +1,5 @@
-const { models } = require('../config/db');
+const { models, sequelize } = require('../config/db');
+const { QueryTypes } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/statistics.validation');
@@ -355,6 +356,111 @@ const reconcilePoints = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  Consultants overview (leadership): one row per consultant with
+  progress columns (points, badges, applications, last login,
+  service line, primary area). SLL is scoped to their Service Line.
+  Supports search, service line / area / points filters and sort.
+──────────────────────────────────────────────────────────────*/
+const CONSULTANTS_IN_SL_SUBQUERY =
+    '(SELECT ca.user_id FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = :serviceLineId)';
+
+const getConsultantsOverview = async (req, res) => {
+    try {
+        let q;
+        try { q = validations.consultantsOverviewQuerySchema.parse(req.query); }
+        catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+            throw error;
+        }
+
+        // Service Line Leaders are scoped to their own Service Line.
+        let scopeServiceLineId = q.serviceLineId ?? null;
+        if (req.user.role === 'Service Line Leader') {
+            const slRows = await sequelize.query(
+                'SELECT service_line_id FROM service_line_leaders WHERE user_id = :userId',
+                { replacements: { userId: req.user.sub }, type: QueryTypes.SELECT }
+            );
+            scopeServiceLineId = slRows[0]?.service_line_id ?? -1; // -1 => no SL, returns nothing
+        }
+
+        const replacements = {};
+        const baseFilters = ["u.user_role = 'Consultant'", 'u.is_active = TRUE'];
+
+        if (scopeServiceLineId != null) {
+            replacements.serviceLineId = scopeServiceLineId;
+            baseFilters.push(`u.user_id IN ${CONSULTANTS_IN_SL_SUBQUERY}`);
+        }
+        if (q.areaId) {
+            replacements.areaId = q.areaId;
+            baseFilters.push('EXISTS (SELECT 1 FROM consultant_areas ca WHERE ca.user_id = u.user_id AND ca.area_id = :areaId)');
+        }
+        if (q.search) {
+            replacements.search = `%${q.search}%`;
+            baseFilters.push('u.full_name ILIKE :search');
+        }
+
+        const sql = `
+            WITH consultant_base AS (
+                SELECT
+                    u.user_guid,
+                    u.full_name,
+                    u.profile_img_url,
+                    u.last_login_at,
+                    (SELECT a.area_name FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id
+                        WHERE ca.user_id = u.user_id AND ca.is_primary = TRUE LIMIT 1) AS primary_area_name,
+                    (SELECT sl.service_line_name FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id
+                        JOIN service_lines sl ON sl.service_line_id = a.service_line_id
+                        WHERE ca.user_id = u.user_id AND ca.is_primary = TRUE LIMIT 1) AS service_line_name,
+                    COALESCE((SELECT SUM(ph.points_delta) FROM points_history ph WHERE ph.user_id = u.user_id), 0) AS total_points,
+                    (SELECT COUNT(*) FROM awarded_badges ab WHERE ab.user_id = u.user_id) AS total_badges,
+                    (SELECT COUNT(*) FROM badge_applications ba WHERE ba.user_id = u.user_id) AS applications_count,
+                    (SELECT COUNT(*) FROM badge_applications ba WHERE ba.user_id = u.user_id
+                        AND ba.application_state NOT IN ('Accepted', 'Rejected')) AS open_applications_count
+                FROM users u
+                INNER JOIN consultants c ON c.user_id = u.user_id
+                WHERE ${baseFilters.join(' AND ')}
+            )
+            SELECT * FROM consultant_base WHERE 1=1
+            ${q.pointsMin != null ? 'AND total_points >= :pointsMin' : ''}
+            ${q.pointsMax != null ? 'AND total_points <= :pointsMax' : ''}
+        `;
+        if (q.pointsMin != null) replacements.pointsMin = q.pointsMin;
+        if (q.pointsMax != null) replacements.pointsMax = q.pointsMax;
+
+        let rows = await sequelize.query(sql, { replacements, type: QueryTypes.SELECT });
+
+        // Sort (computed columns) then paginate in app — consultant counts are small.
+        const sorters = {
+            points_desc: (a, b) => b.total_points - a.total_points || a.full_name.localeCompare(b.full_name),
+            points_asc: (a, b) => a.total_points - b.total_points || a.full_name.localeCompare(b.full_name),
+            name: (a, b) => a.full_name.localeCompare(b.full_name),
+            last_login: (a, b) => new Date(b.last_login_at || 0) - new Date(a.last_login_at || 0),
+        };
+        rows.sort(sorters[q.sort] || sorters.points_desc);
+
+        const totalItems = rows.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / q.limit));
+        const start = (q.page - 1) * q.limit;
+        const pageRows = rows.slice(start, start + q.limit).map((r) => ({
+            ...r,
+            total_points: Number(r.total_points),
+            total_badges: Number(r.total_badges),
+            applications_count: Number(r.applications_count),
+            open_applications_count: Number(r.open_applications_count),
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: pageRows,
+            pagination: { totalItems, totalPages, currentPage: q.page, limit: q.limit }
+        });
+    } catch (error) {
+        logger.error('Error fetching consultants overview', { error });
+        return res.status(500).json({ success: false, code: 'STATISTICS_CONSULTANTS_OVERVIEW_FAILED' });
+    }
+};
+
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
@@ -371,5 +477,6 @@ module.exports = {
     getUserEnrollment,
     getBadgesPerArea,
     getExpiringBadges,
+    getConsultantsOverview,
     reconcilePoints
 };
