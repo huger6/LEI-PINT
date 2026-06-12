@@ -5,6 +5,7 @@ import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
+import StatsOverview from '../StatsOverview/StatsOverview';
 import styles from './SllStats.module.css';
 
 // Awarded badges (Accepted applications) grouped by month. getApplications is
@@ -53,6 +54,9 @@ export default function SllStats() {
 	return (
 		<div className={styles.page}>
 			<h1 className={styles.pageTitle}>{t('sidebar.sll.stats')}</h1>
+
+			{/* Advanced filters + KPI cards */}
+			<StatsOverview />
 
 			{/* Report: awarded badges per month (Service Line scoped) */}
 			<ContentCard className={styles.reportCard}>

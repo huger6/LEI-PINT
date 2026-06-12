@@ -15,7 +15,7 @@ import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBar
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
-import Icon from '../../../components/Icons/Icons';
+import StatsOverview from '../StatsOverview/StatsOverview';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './TmStats.module.css';
 
@@ -96,13 +96,6 @@ export default function TmStats() {
 		);
 	}
 
-	const kpis = [
-		{ icon: 'badge', label: t('tmStats.kpi.badgesAwarded'), value: data.teamBadges.totalBadges, color: 'var(--color-green-on-soft)', bg: 'var(--color-green-soft)' },
-		{ icon: 'user', label: t('tmStats.kpi.consultants'), value: data.enrollment?.consultants ?? 0, color: 'var(--color-secondary)', bg: 'var(--color-secondary-container)' },
-		{ icon: 'send', label: t('tmStats.kpi.pending'), value: data.pending, color: 'var(--color-purple-on-soft)', bg: 'var(--color-purple-soft)' },
-		{ icon: 'check_circle', label: t('tmStats.kpi.activeUsers'), value: data.enrollment?.active_users ?? 0, color: 'var(--color-blue-on-soft)', bg: 'var(--color-blue-soft)' },
-	];
-
 	const hasSl = data.bySl.some((r) => r.awarded_count > 0);
 	const hasLp = data.byLp.some((r) => r.awarded_count > 0);
 	const hasLevels = data.levels.some((r) => r.awarded_count > 0);
@@ -111,18 +104,8 @@ export default function TmStats() {
 		<div className={styles.page}>
 			<h1 className={styles.pageTitle}>{t('sidebar.tm.stats')}</h1>
 
-			{/* KPI row */}
-			<div className={styles.kpiRow}>
-				{kpis.map((k) => (
-					<div key={k.label} className={styles.kpiCard}>
-						<div className={styles.kpiIcon} style={{ background: k.bg }}>
-							<Icon name={k.icon} size={20} color={k.color} />
-						</div>
-						<span className={styles.kpiValue}>{k.value}</span>
-						<span className={styles.kpiLabel}>{k.label}</span>
-					</div>
-				))}
-			</div>
+			{/* Advanced filters + KPI cards */}
+			<StatsOverview />
 
 			{/* Charts */}
 			<div className={styles.chartsGrid}>

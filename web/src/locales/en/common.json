@@ -1189,6 +1189,21 @@
 			"clear": "Clear"
 		}
 	},
+	"statsOverview": {
+		"title": "Overview",
+		"filters": "Filters",
+		"serviceLine": "Service Line",
+		"area": "Area",
+		"from": "From",
+		"to": "To",
+		"clear": "Clear",
+		"allServiceLines": "All Service Lines",
+		"allAreas": "All areas",
+		"totalBadges": "Total Badges",
+		"standard": "Standard",
+		"premium": "Premium",
+		"approvalRate": "Approval Rate"
+	},
 	"consultantsList": {
 		"title": "Consultants",
 		"teamTitle": "My team",

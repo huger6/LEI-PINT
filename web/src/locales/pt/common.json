@@ -1189,6 +1189,21 @@
 			"clear": "Limpar"
 		}
 	},
+	"statsOverview": {
+		"title": "Visão Geral",
+		"filters": "Filtros",
+		"serviceLine": "Service Line",
+		"area": "Área",
+		"from": "De",
+		"to": "Até",
+		"clear": "Limpar",
+		"allServiceLines": "Todas as Service Lines",
+		"allAreas": "Todas as áreas",
+		"totalBadges": "Total de Badges",
+		"standard": "Standard",
+		"premium": "Premium",
+		"approvalRate": "Taxa de Aprovação"
+	},
 	"consultantsList": {
 		"title": "Consultores",
 		"teamTitle": "A minha equipa",

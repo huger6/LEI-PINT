@@ -47,3 +47,10 @@ export async function getConsultantsOverview(params = {}) {
 	const { data } = await api.get('/statistics/consultants', { params });
 	return { rows: data?.data || [], pagination: data?.pagination || null };
 }
+
+// Badge KPI summary (leadership). SLL scoped server-side.
+// params: serviceLineId, areaId, dateFrom, dateTo
+export async function getBadgesSummary(params = {}) {
+	const { data } = await api.get('/statistics/badges-summary', { params });
+	return data?.data || { total: 0, standard: 0, premium: 0, accepted: 0, rejected: 0, approvalRate: 0 };
+}
