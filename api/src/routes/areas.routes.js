@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { loginRequired, optionalAuth, isAdmin } = require('../middlewares/auth.middleware');
+const { loginRequired, isAdmin } = require('../middlewares/auth.middleware');
 
 const areaController = require('../controllers/areas.controller');
 
@@ -11,23 +11,9 @@ const badgesRoutes = require('./badges.routes');
  * @route   GET /api/areas
  *          GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas
  * @desc    List all areas, optionally scoped to a service line
- * @access  Public (enriched when authenticated)
+ * @access  Public
  */
-router.get('/', optionalAuth, areaController.getAreas);
-
-/**
- * @route   GET /api/areas/filter-stats
- * @desc    Get max consultant and level counts for filter bounds
- * @access  Administrator
- */
-router.get('/filter-stats', loginRequired, isAdmin, areaController.getFilterStats);
-
-/**
- * @route   GET /api/areas/count
- * @desc    Get total number of active areas
- * @access  Administrator
- */
-router.get('/count', loginRequired, isAdmin, areaController.getAreasCount);
+router.get('/', areaController.getAreas);
 
 /**
  * @route   GET /api/areas/check-slug?slug=mySlug
@@ -67,13 +53,6 @@ router.put('/:areaSlug', loginRequired, isAdmin, areaController.updateArea);
  * @access  Administrator
  */
 router.delete('/:areaSlug', loginRequired, isAdmin, areaController.deleteArea);
-
-/**
- * @route   PATCH /api/areas/:areaSlug/activate
- * @desc    Reactivate an inactive area
- * @access  Administrator
- */
-router.patch('/:areaSlug/activate', loginRequired, isAdmin, areaController.reactivateArea);
 
 router.use('/:areaSlug/levels', levelsRoutes);
 router.use('/:areaSlug/badges', badgesRoutes);

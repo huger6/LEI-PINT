@@ -13,13 +13,6 @@ const badgeController = require('../controllers/badges.controller');
 router.get('/', loginRequired, badgeController.getBadges);
 
 /**
- * @route   GET /api/badges/count
- * @desc    Get total number of active badges
- * @access  Administrator
- */
-router.get('/count', loginRequired, isAdmin, badgeController.getBadgesCount);
-
-/**
  * @route   GET /api/badges/check-slug?slug=mySlug
  * @desc    Check whether a given badge slug is available
  * @access  Administrator

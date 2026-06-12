@@ -1,53 +1,40 @@
 const { z } = require('zod');
-require('./error-map');
 const filter = require('leo-profanity');
 const sanitizeText = require('../utils/sanitizeText');
-const formatFullName = require('../utils/formatFullName');
 const loadEnvironment = require('../config/loadEnv');
 
 loadEnvironment();
 
-filter.addDictionary('pt', require('./dictionaries/pt.json'));
-filter.addDictionary('es', require('./dictionaries/es.json'));
 filter.loadDictionary('en');
 filter.add(filter.getDictionary('pt'));
 filter.add(filter.getDictionary('es'));
 
-const positiveIntIdRule = z.coerce.number().int().positive('VALIDATION_IDENTIFIER_POSITIVE_INTEGER');
-
-const uuidRule = z.string().uuid('VALIDATION_IDENTIFIER_UUID_INVALID');
+const positiveIntIdRule = z.coerce.number().int().positive("Identifier must be a positive integer.");
 
 const fullNameRule = z.string().trim()
-    .min(2, 'VALIDATION_FULL_NAME_MIN_LENGTH')
-    .max(255, 'VALIDATION_FULL_NAME_MAX_LENGTH')
-    .transform(sanitizeText)
-    .transform(formatFullName);
-
-// Variant used for profile updates where we should not change user's casing
-const fullNameNoFormat = z.string().trim()
     .min(2, 'Name must have a minimum of 2 characters.')
     .max(255, 'Name must have a maximum of 255 characters.')
     .transform(sanitizeText);
 
 const usernameRule = z.string().trim()
-    .min(3, 'VALIDATION_USERNAME_MIN_LENGTH')
-    .max(50, 'VALIDATION_USERNAME_MAX_LENGTH')
-    .regex(/^[a-zA-Z0-9._]+$/, 'VALIDATION_USERNAME_INVALID_FORMAT');
+    .min(3, 'Username must have a minimum of 3 characters.')
+    .max(50, 'Username must have a maximum of 50 characters.')
+    .regex(/^[a-zA-Z0-9._]+$/, 'Username can only contain letters, numbers, dots and underscores.');
 
 const emailRule = z.string().trim()
-    .email('VALIDATION_EMAIL_INVALID_FORMAT')
-    .max(255, 'VALIDATION_EMAIL_MAX_LENGTH');
+    .email('Invalid e-mail format.')
+    .max(255, 'E-mail is too long.');
 
 const passwordRule = z.string()
-    .min(8, 'VALIDATION_PASSWORD_MIN_LENGTH')
-    .max(100, 'VALIDATION_PASSWORD_MAX_LENGTH')
-    .regex(/[A-Z]/, 'VALIDATION_PASSWORD_MISSING_UPPERCASE')
-    .regex(/[a-z]/, 'VALIDATION_PASSWORD_MISSING_LOWERCASE')
-    .regex(/[0-9]/, 'VALIDATION_PASSWORD_MISSING_NUMBER')
-    .regex(/[^a-zA-Z0-9]/, 'VALIDATION_PASSWORD_MISSING_SPECIAL_CHAR');
+    .min(8, 'Password must have a minimum of 8 characters.')
+    .max(100, 'Password must have a maximum of 100 characters.')
+    .regex(/[A-Z]/, 'Password must have at least 1 capital letter.')
+    .regex(/[a-z]/, 'Password must have at least 1 lowercase letter.')
+    .regex(/[0-9]/, 'Password must have at least 1 number.')
+    .regex(/[^a-zA-Z0-9]/, 'Password must have at least 1 special character (!@#$%^&*)');
 
 const phoneNumberRule = z.string()
-    .regex(/^\+\d{7,15}$/, 'VALIDATION_PHONE_INVALID_FORMAT')
+    .regex(/^\+\d{7,15}$/, 'Invalid format. Use the international standart (must include prefix).')
     .transform(val => val.replace(/\s+/g, ''));
 
 const birthdateRule = z.preprocess(
@@ -62,38 +49,29 @@ const birthdateRule = z.preprocess(
         }
 
         return age >= 16;
-    }, 'VALIDATION_BIRTHDATE_MINIMUM_AGE')
+    }, 'You must be at least 16 years old to register.')
 );
 
-const syncedAtRule = z.coerce.date().optional();
-
 const imgUrlRule = z.string()
-    .url('VALIDATION_URL_INVALID')
+    .url('Invalid URL format')
     .startsWith(
         `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/public/public-assets/temp/`,
-        'VALIDATION_IMAGE_MUST_BE_IN_TEMP_STORAGE'
-    );
-
-const imgUrlExistingRule = z.string()
-    .url('VALIDATION_URL_INVALID')
-    .startsWith(
-        `${process.env.SUPABASE_STORAGE_URL}/storage/v1/object/public/public-assets/`,
-        'VALIDATION_IMAGE_MUST_BE_IN_STORAGE'
+        "The image must be uploaded to the temporary storage first"
     );
 
 const biographyRule = z.string().trim()
-    .max(5000, 'VALIDATION_BIOGRAPHY_MAX_LENGTH')
+    .max(5000, "Biography is technically too long")
     .transform(sanitizeText)
     .refine((val) => {
         const wordCount = val.trim().split(/\s+/).filter(Boolean).length;
         return wordCount <= 500;
     }, {
-        message: 'VALIDATION_BIOGRAPHY_MAX_WORDS'
+        message: "Biography cannot exceed 500 words"
     })
     .refine((val) => {
         return !filter.check(val);
     }, {
-        message: 'VALIDATION_BIOGRAPHY_INAPPROPRIATE_LANGUAGE'
+        message: "Biography contains inappropriate language"
     });
 
 module.exports = {
@@ -101,13 +79,9 @@ module.exports = {
     birthdateRule,
     emailRule,
     fullNameRule,
-    fullNameNoFormat,
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
-    syncedAtRule,
-    uuidRule,
     imgUrlRule,
-    imgUrlExistingRule,
     usernameRule
 };

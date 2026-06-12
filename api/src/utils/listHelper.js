@@ -2,7 +2,6 @@ const { Op } = require('sequelize');
 const { models } = require('../config/db');
 const redis = require('../config/redis');
 const { logger } = require('./logger');
-const { handleZodError } = require('./responseHelper');
 
 const handleListRequest = async ({
     req,
@@ -13,34 +12,28 @@ const handleListRequest = async ({
     baseWhere = {},
     include = [],
     order = [['created_at', 'DESC']],
-    attributes = null,
-    extraAttributes = []
+    attributes = null
 }) => {
     const requestId = req.headers['x-request-id'] || null;
     const isAdmin = req.user?.role === 'Administrator';
 
-    let validatedQuery;
-    try {
-        validatedQuery = schema.parse(req.query);
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
-        throw error;
-    }
+    const queryValidation = schema.safeParse(req.query);
+    if (!queryValidation.success) return res.status(400).json({
+        success: false,
+        errors: queryValidation.error.issues
+    });
 
-    const { page, limit, search, synced_at, ...filters } = validatedQuery;
+    const { page, limit, search, ...filters } = queryValidation.data;
     const offset = (page - 1) * limit;
-    const isIncremental = !!synced_at;
 
     const cacheKey = `${cachePrefix}:${Buffer.from(JSON.stringify({ ...filters, search, isAdmin, page, limit })).toString('base64')}`;
 
     try {
-        if (!isIncremental) {
-            const cached = await redis.get(cacheKey);
-            if (cached) return res.status(200).json({
-                success: true,
-                ...JSON.parse(cached)
-            });
-        }
+        const cached = await redis.get(cacheKey);
+        if (cached) return res.status(200).json({
+            success: true,
+            ...JSON.parse(cached)
+        });
 
         const where = { ...baseWhere };
 
@@ -51,14 +44,9 @@ const handleListRequest = async ({
         Object.keys(filters).forEach(key => {
             const value = filters[key];
             if (value !== undefined && value !== null && value !== '') {
-                if (key === 'is_active' && !isAdmin) return;
                 where[key] = value;
             }
         });
-
-        if (synced_at) {
-            where.updated_at = { [Op.gt]: synced_at };
-        }
 
         if (search) {
             const searchFields = {
@@ -75,22 +63,8 @@ const handleListRequest = async ({
 
         const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
         const finalAttributes = attributes || {
-            include: extraAttributes,
             exclude: excludedFields
         };
-
-        if (isIncremental) {
-            const rows = await models[modelName].findAll({
-                where, include, order, distinct: true,
-                attributes: finalAttributes
-            });
-
-            return res.status(200).json({
-                success: true,
-                data: rows,
-                pagination: { totalItems: rows.length, totalPages: 1, currentPage: 1 }
-            });
-        }
 
         const { rows, count } = await models[modelName].findAndCountAll({
             where, include, limit, offset, order, distinct: true,

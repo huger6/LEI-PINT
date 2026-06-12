@@ -51,26 +51,6 @@ module.exports = function (sequelize, DataTypes) {
     reminder_at: {
       type: DataTypes.DATE,
       allowNull: true
-    },
-    reminder_sent: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-    auto_reminder_sent: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.fn('now')
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.fn('now')
     }
   }, {
     sequelize,

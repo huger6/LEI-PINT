@@ -1,11 +1,7 @@
-const { literal } = require('sequelize');
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
-const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
-const { handleZodError } = require('../utils/responseHelper');
-const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/levels
 // OR
@@ -14,7 +10,6 @@ const getLevels = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug } = req.params;
         let cachePrefix = 'levels:list:all';
-        let baseWhere = {};
 
         if (areaSlug) {
             const includeBlock = [];
@@ -52,7 +47,7 @@ const getLevels = async (req, res) => {
                 });
             }
 
-            baseWhere = { area_id: area.area_id };
+            req.query.area_id = area.area_id;
             cachePrefix = `levels:list:area:${areaSlug}`;
         }
 
@@ -61,24 +56,7 @@ const getLevels = async (req, res) => {
             schema: validations.getLevelsQuerySchema,
             modelName: 'progression_stages',
             cachePrefix: cachePrefix,
-            baseWhere,
-            order: [['stage_sequence', 'ASC']],
-            include: [
-                {
-                    model: models.stage_codes,
-                    as: 'stage_code',
-                    attributes: ['stage_code']
-                },
-                {
-                    model: models.areas,
-                    as: 'area',
-                    attributes: ['area_name', 'area_slug']
-                }
-            ],
-            extraAttributes: [
-                [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
-            ]
+            order: [['stage_sequence', 'ASC']]
         });
 
     } catch (error) {
@@ -90,42 +68,6 @@ const getLevels = async (req, res) => {
     }
 };
 
-// GET /api/levels/count
-const getLevelsCount = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'levels:count:all';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({
-                success: true,
-                data: JSON.parse(cached)
-            });
-        }
-
-        const [active, inactive] = await Promise.all([
-            models.progression_stages.count({ where: { is_active: true } }),
-            models.progression_stages.count({ where: { is_active: false } })
-        ]);
-
-        const payload = { count: active + inactive, active, inactive };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-
-        return res.status(200).json({
-            success: true,
-            data: payload
-        });
-    } catch (error) {
-        logger.error('Error fetching Levels count', { error, requestId });
-        return res.status(500).json({
-            success: false,
-            code: "LEVEL_COUNT_FAILED",
-            requestId
-        });
-    }
-};
-
 // GET /api/levels/:stageCode
 // OR
 // GET /api/learning-paths/:pathSlug/service-lines/:slSlug/areas/:areaSlug/levels/:stageCode
@@ -133,81 +75,61 @@ const getLevelByCode = async (req, res) => {
     try {
         const { pathSlug, slSlug, areaSlug, stageCode } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
-        const isNumeric = /^\d+$/.test(stageCode);
 
         // JOIN stage_codes to filter
         const includeBlock = [
             {
                 model: models.stage_codes,
                 as: 'stage_code',
-                ...(isNumeric ? {} : { where: { stage_code: stageCode } })
+                where: { stage_code: stageCode }
             }
         ];
 
-        const lpInclude = {
-            model: models.learning_paths,
-            as: 'learning_path',
-            attributes: ['path_title', 'path_slug'],
-        };
-        if (pathSlug) {
-            lpInclude.where = { path_slug: pathSlug };
-        }
-
-        const slInclude = {
-            model: models.service_lines,
-            as: 'service_line',
-            attributes: ['service_line_name', 'sl_slug'],
-            include: [lpInclude],
-        };
-        if (slSlug) {
-            slInclude.where = { sl_slug: slSlug };
-        }
-
-        const areaInclude = {
-            model: models.areas,
-            as: 'area',
-            attributes: ['area_name', 'area_slug'],
-            include: [slInclude],
-        };
-        if (areaSlug) {
-            areaInclude.where = { area_slug: areaSlug };
-        }
-        includeBlock.push(areaInclude);
-
         // /api/levels/:stageCode
         if (!areaSlug) {
-            const userId = req.user?.sub;
-            const baseWhere = isNumeric ? { progression_stage_id: parseInt(stageCode, 10) } : {};
-
             return handleListRequest({
                 req, res,
-                baseWhere,
                 schema: validations.getLevelsQuerySchema,
                 modelName: 'progression_stages',
                 cachePrefix: `levels:list:code:${stageCode}`,
                 include: includeBlock,
-                order: [['stage_sequence', 'ASC']],
-                extraAttributes: [
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
-                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
-                ]
+                order: [['stage_sequence', 'ASC']]
             });
         }
 
+        // /api/.../areas/.../levels/:stageCode
+        const areaInclude = {
+            model: models.areas,
+            as: 'area',
+            where: { area_slug: areaSlug },
+            attributes: []
+        };
+
+        if (slSlug) {
+            const slInclude = {
+                model: models.service_lines,
+                as: 'service_line',
+                where: { sl_slug: slSlug },
+                attributes: []
+            };
+
+            if (pathSlug) {
+                slInclude.include = [{
+                    model: models.learning_paths,
+                    as: 'learning_path',
+                    where: { path_slug: pathSlug },
+                    attributes: []
+                }];
+            }
+            areaInclude.include = [slInclude];
+        }
+        includeBlock.push(areaInclude);
+
         const excludeFields = isAdmin ? [] : ["created_by", "updated_by"];
-        const userId = req.user?.sub;
 
         const level = await models.progression_stages.findOne({
             include: includeBlock,
-            attributes: {
-                exclude: excludeFields,
-                include: [
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM badges b WHERE b.progression_stage_id = "progression_stages".progression_stage_id))`), 'has_badge'],
-                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
-                ]
-            }
+            attributes: { exclude: excludeFields }
         });
 
         if (!level) {
@@ -323,12 +245,6 @@ const createLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
-        await invalidateCacheByPrefix('levels:count');
-        await redis.del('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await redis.del('areas:filter-stats');
-        await sendTopicUpdate("new_data", 12);
-        await sendTopicUpdate("new_data", 13);
 
         return res.status(201).json({
             success: true,
@@ -337,7 +253,13 @@ const createLevel = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error creating Level', { error });
         return res.status(500).json({
@@ -434,12 +356,6 @@ const updateLevel = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('levels:list');
-        await invalidateCacheByPrefix('levels:count');
-        await redis.del('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await redis.del('areas:filter-stats');
-        await sendTopicUpdate("new_data", 12);
-        await sendTopicUpdate("new_data", 13);
 
         return res.status(200).json({
             success: true,
@@ -448,7 +364,13 @@ const updateLevel = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error updating Level', { error });
         return res.status(500).json({
@@ -478,36 +400,31 @@ const deleteLevel = async (req, res) => {
         }
 
         if (!level.is_active) {
-            return res.status(400).json({ success: false, code: "LEVEL_ALREADY_INACTIVE" });
-        }
-
-        const activeApplications = await models.badge_applications.count({
-            where: { application_state: ['Open', 'Submitted', 'In validation'] },
-            include: [{ model: models.badges, as: 'badge', where: { progression_stage_id: level.progression_stage_id }, required: true, attributes: [] }]
-        });
-
-        if (activeApplications > 0) {
-            return res.status(409).json({
+            return res.status(400).json({
                 success: false,
-                code: "LEVEL_HAS_DEPENDENCIES",
-                data: { activeApplications }
+                code: "LEVEL_ALREADY_INACTIVE"
             });
         }
 
-        await level.update({ is_active: false, updated_by: userId });
+        await level.update({
+            is_active: false,
+            updated_by: userId
+        });
 
         await invalidateCacheByPrefix('levels:list');
-        await invalidateCacheByPrefix('levels:count');
-        await redis.del('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await redis.del('areas:filter-stats');
-        await sendTopicUpdate("new_data", 12);
-        await sendTopicUpdate("new_data", 13);
 
-        return res.status(200).json({ success: true, code: "LEVEL_DEACTIVATED" });
+        return res.status(200).json({
+            success: true,
+            code: "LEVEL_DEACTIVATED"
+        });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_URL_PARAM"
+            });
+        }
 
         logger.error('Error deleting Level', { error });
         return res.status(500).json({
@@ -517,74 +434,10 @@ const deleteLevel = async (req, res) => {
     }
 };
 
-const getFilterStats = async (req, res) => {
-    const cacheKey = 'levels:filter-stats';
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
-
-        const rows = await models.progression_stages.findAll({
-            attributes: [
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.area_id = "progression_stages".area_id)`), 'consultant_count'],
-            ],
-            raw: true,
-        });
-
-        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
-
-        const payload = { maxConsultantCount };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching levels filter stats', { error });
-        return res.status(500).json({ success: false, code: 'LEVEL_FILTER_STATS_FAILED' });
-    }
-};
-
-// PATCH /api/areas/:areaSlug/levels/:stageCode/activate
-const reactivateLevel = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { pathSlug, slSlug, areaSlug } = req.params;
-
-        const { stageCode } = validations.stageCodeParamSchema.parse(req.params);
-
-        const level = await findLevelInHierarchy({ stageCode, areaSlug, slSlug, pathSlug });
-
-        if (!level) {
-            return res.status(404).json({ success: false, code: "LEVEL_NOT_FOUND" });
-        }
-
-        if (level.is_active) {
-            return res.status(400).json({ success: false, code: "LEVEL_ALREADY_ACTIVE" });
-        }
-
-        await level.update({ is_active: true, updated_by: userId });
-
-        await invalidateCacheByPrefix('levels:list');
-        await invalidateCacheByPrefix('levels:count');
-        await redis.del('levels:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await redis.del('areas:filter-stats');
-        await sendTopicUpdate("new_data", 12);
-        await sendTopicUpdate("new_data", 13);
-
-        return res.status(200).json({ success: true, code: "LEVEL_ACTIVATED" });
-
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-        logger.error('Error reactivating Level', { error });
-        return res.status(500).json({ success: false, code: "LEVEL_ACTIVATE_FAILED" });
-    }
-};
-
 module.exports = {
     getLevels,
-    getFilterStats,
-    getLevelsCount,
     getLevelByCode,
     createLevel,
     updateLevel,
-    deleteLevel,
-    reactivateLevel,
+    deleteLevel
 };

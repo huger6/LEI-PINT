@@ -1,5 +1,4 @@
 const { z } = require('zod');
-require('./error-map');
 const {
     biographyRule,
     birthdateRule,
@@ -8,7 +7,6 @@ const {
     passwordRule,
     phoneNumberRule,
     positiveIntIdRule,
-    uuidRule,
     imgUrlRule,
     usernameRule
 } = require('./shared-rules');
@@ -30,61 +28,34 @@ const consultantAreasSchema = z.array(z.object({
     area_id: positiveIntIdRule,
     is_primary: z.boolean()
 }))
-    .min(1, 'VALIDATION_AREAS_MIN_SELECTION')
-    .max(5, 'VALIDATION_AREAS_MAX_SELECTION')
+    .min(1, 'You must select at least 1 area.')
+    .max(5, "You can't select more than 5 areas.")
     .refine((areas) => areas.filter((area) => area.is_primary).length === 1, {
-        message: 'VALIDATION_AREAS_PRIMARY_REQUIRED_EXACTLY_ONE'
+        message: 'Exactly one area must be defined as primary.'
     })
     .refine((areas) => new Set(areas.map((area) => area.area_id)).size === areas.length, {
-        message: 'VALIDATION_AREAS_DUPLICATED'
+        message: "You can't select the same area more than once."
     });
 
 const userIdParamSchema = z.object({
-    // Accept either a UUID or a numeric ID (tests send numeric user_id)
-    userGuid: z.string().min(1)
+    userId: positiveIntIdRule
 });
-
-const optionalBoolQuery = z.preprocess(
-    (v) => (v === '' || v === undefined ? undefined : (typeof v === 'string' ? v.trim().toLowerCase() : v)),
-    z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
-).optional()
-.transform((v) => (v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true')));
 
 const listUsersQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().max(100).default(32),
+    limit: z.coerce.number().int().positive().max(100).default(20),
     user_role: userRoleRule.optional(),
     role: userRoleRule.optional(),
     location_id: positiveIntIdRule.optional(),
     locationId: positiveIntIdRule.optional(),
     is_active: booleanQueryRule.optional(),
-    isActive: booleanQueryRule.optional(),
-    search: z.string().trim().optional(),
-    emailConfirmed: optionalBoolQuery,
-    email_confirmed: optionalBoolQuery,
-    gdprAccepted: optionalBoolQuery,
-    serviceLine: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()).optional(),
-    area: z.preprocess((v) => (v === '' ? undefined : v), positiveIntIdRule.optional()).optional(),
-    dateFrom: z.preprocess(
-        (v) => (v === '' || v === undefined ? undefined : v),
-        z.string().regex(/^\d{2}-\d{2}-\d{4}$/, 'VALIDATION_DATE_FORMAT_INVALID').optional()
-    ).optional(),
-    pointsMin: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()).optional(),
-    pointsMax: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().nonnegative().optional()).optional()
+    isActive: booleanQueryRule.optional()
 }).transform((data) => ({
     page: data.page,
     limit: data.limit,
-    role: data.user_role ?? data.role,
+    user_role: data.user_role ?? data.role,
     location_id: data.location_id ?? data.locationId,
-    isActive: data.is_active ?? data.isActive,
-    search: data.search || undefined,
-    emailConfirmed: data.emailConfirmed ?? data.email_confirmed,
-    gdprAccepted: data.gdprAccepted,
-    serviceLine: data.serviceLine,
-    area: data.area,
-    dateFrom: data.dateFrom,
-    pointsMin: data.pointsMin,
-    pointsMax: data.pointsMax
+    is_active: data.is_active ?? data.isActive
 }));
 
 const baseUserDataSchema = z.object({
@@ -95,7 +66,7 @@ const baseUserDataSchema = z.object({
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
     profile_img_url: imgUrlRule.optional(),
-    language_id: positiveIntIdRule.default(1),
+    preferred_lang_id: positiveIntIdRule.default(1),
     location_id: positiveIntIdRule.optional()
 });
 
@@ -126,27 +97,25 @@ const updateUserBodySchema = z.object({
     email_address: emailRule.optional(),
     phone_number: phoneNumberRule.optional(),
     birthdate: birthdateRule.optional(),
-    profile_img_url: imgUrlRule.nullable().optional(),
-    language_id: positiveIntIdRule.optional(),
+    profile_img_url: imgUrlRule.optional(),
+    preferred_lang_id: positiveIntIdRule.optional(),
     location_id: positiveIntIdRule.optional(),
     user_role: userRoleRule.optional(),
     biography: biographyRule.optional(),
     areas: consultantAreasSchema.optional(),
     service_line_id: positiveIntIdRule.optional(),
-    approve_member: z.boolean().optional(),
-    email_confirmed: z.boolean().optional(),
-    gdpr_accepted: z.boolean().optional()
+    approve_member: z.boolean().optional()
 })
     .refine(
         (data) => Object.values(data).some((value) => value !== undefined),
-        { message: 'VALIDATION_UPDATE_AT_LEAST_ONE_FIELD_REQUIRED' }
+        { message: 'At least one field must be provided.' }
     )
     .superRefine((data, ctx) => {
         if (data.user_role === 'Consultant' && !data.areas) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['areas'],
-                message: 'VALIDATION_CONSULTANT_AREAS_REQUIRED'
+                message: 'Consultant users must include at least one area with one primary area.'
             });
         }
 
@@ -154,7 +123,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['service_line_id'],
-                message: 'VALIDATION_SLL_SERVICE_LINE_REQUIRED'
+                message: 'Service Line Leader users must include service_line_id.'
             });
         }
 
@@ -162,7 +131,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['areas'],
-                message: 'VALIDATION_AREAS_ONLY_FOR_CONSULTANT'
+                message: 'areas can only be sent for Consultant users.'
             });
         }
 
@@ -170,7 +139,7 @@ const updateUserBodySchema = z.object({
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['service_line_id'],
-                message: 'VALIDATION_SERVICE_LINE_ONLY_FOR_SLL'
+                message: 'service_line_id can only be sent for Service Line Leader users.'
             });
         }
     });
@@ -182,4 +151,3 @@ module.exports = {
     userIdParamSchema,
     userRoleRule
 };
-

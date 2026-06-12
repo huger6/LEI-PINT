@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
-const { Op, literal } = require('sequelize');
 module.exports = function (sequelize, DataTypes) {
-  const Users = sequelize.define('users', {
+  return sequelize.define('users', {
     user_id: {
       autoIncrement: true,
       autoIncrementIdentity: true,
@@ -49,13 +48,13 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(512),
       allowNull: true
     },
-    language_id: {
+    preferred_lang_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 1,
       references: {
-        model: 'languages',
-        key: 'language_id'
+        model: 'preferred_lang',
+        key: 'preferred_lang_id'
       }
     },
     location_id: {
@@ -97,17 +96,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
-    current_streak_days: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0
-    },
     created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.fn('now')
-    },
-    updated_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('now')
@@ -150,7 +139,7 @@ module.exports = function (sequelize, DataTypes) {
       {
         name: "lang_user_fk",
         fields: [
-          { name: "language_id" },
+          { name: "preferred_lang_id" },
         ]
       },
       {
@@ -206,92 +195,4 @@ module.exports = function (sequelize, DataTypes) {
       },
     ]
   });
-
-  Users.buildUserFilter = function (params, models) {
-    const where = {};
-
-    if (params.search) {
-      where[Op.or] = [
-        { full_name: { [Op.iLike]: `%${params.search}%` } },
-        { email_address: { [Op.iLike]: `%${params.search}%` } }
-      ];
-    }
-
-    if (params.role !== undefined) where.user_role = params.role;
-    if (params.isActive !== undefined) where.is_active = params.isActive;
-    if (params.emailConfirmed !== undefined) where.email_confirmed = params.emailConfirmed;
-    if (params.location_id !== undefined) where.location_id = params.location_id;
-
-    if (params.dateFrom) {
-      const [dd, mm, yyyy] = params.dateFrom.split('-');
-      where.created_at = { [Op.gte]: new Date(`${yyyy}-${mm}-${dd}T00:00:00.000Z`) };
-    }
-
-    const pointsClauses = [];
-    if (params.pointsMin !== undefined) {
-      pointsClauses.push(
-        literal(`(SELECT COALESCE(SUM(ph.points_delta), 0) FROM points_history ph WHERE ph.user_id = "users"."user_id") >= ${Number(params.pointsMin)}`)
-      );
-    }
-    if (params.pointsMax !== undefined) {
-      pointsClauses.push(
-        literal(`(SELECT COALESCE(SUM(ph.points_delta), 0) FROM points_history ph WHERE ph.user_id = "users"."user_id") <= ${Number(params.pointsMax)}`)
-      );
-    }
-    if (pointsClauses.length) {
-      where[Op.and] = pointsClauses;
-    }
-
-    const consultantAreaInclude = {
-      model: models.consultant_areas,
-      as: 'consultant_areas',
-      attributes: ['area_id', 'is_primary'],
-      include: [{ model: models.areas, as: 'area', attributes: ['area_id', 'area_name'] }]
-    };
-    if (params.area !== undefined) {
-      consultantAreaInclude.where = { area_id: params.area };
-      consultantAreaInclude.required = true;
-    }
-
-    const consultantInclude = {
-      model: models.consultants,
-      as: 'consultant',
-      attributes: ['biography'],
-      include: [consultantAreaInclude]
-    };
-    if (params.gdprAccepted !== undefined) {
-      consultantInclude.where = { gdpr_accepted: params.gdprAccepted };
-    }
-    if (params.gdprAccepted !== undefined || params.area !== undefined) {
-      consultantInclude.required = true;
-    }
-
-    const sllInclude = {
-      model: models.service_line_leaders,
-      as: 'service_line_leader',
-      attributes: ['service_line_id', 'biography'],
-      include: [{
-        model: models.service_lines,
-        as: 'service_line',
-        attributes: ['service_line_id', 'service_line_name']
-      }]
-    };
-    if (params.serviceLine !== undefined) {
-      sllInclude.where = { service_line_id: params.serviceLine };
-      sllInclude.required = true;
-    }
-
-    return {
-      where,
-      include: [
-        { model: models.locations, as: 'location', attributes: ['location_id', 'location_name'] },
-        consultantInclude,
-        { model: models.talent_managers, as: 'talent_manager', attributes: ['biography'] },
-        sllInclude
-      ]
-    };
-  };
-
-  return Users;
 };
-
