@@ -52,6 +52,17 @@ const expiringBadgesQuerySchema = z.object({
     withinDays: z.coerce.number().int().positive().max(1825).default(90)
 });
 
+const consultantsOverviewQuerySchema = z.object({
+    search: z.string().trim().max(120).optional(),
+    serviceLineId: z.coerce.number().int().positive().optional(),
+    areaId: z.coerce.number().int().positive().optional(),
+    pointsMin: z.coerce.number().int().min(0).optional(),
+    pointsMax: z.coerce.number().int().min(0).optional(),
+    sort: z.enum(['points_desc', 'points_asc', 'name', 'last_login']).default('points_desc'),
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(12)
+});
+
 module.exports = {
     pointsHistoryQuerySchema,
     userIdParamSchema,
@@ -59,5 +70,6 @@ module.exports = {
     applicationsCountQuerySchema,
     badgeDistributionQuerySchema,
     badgesByRangeQuerySchema,
-    expiringBadgesQuerySchema
+    expiringBadgesQuerySchema,
+    consultantsOverviewQuerySchema
 };
