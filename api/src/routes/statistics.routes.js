@@ -60,6 +60,14 @@ router.get('/consultants/comparison', loginRequired, leadership, ctrl.getPeerCom
 router.get('/consultants', loginRequired, leadership, ctrl.getConsultantsOverview);
 
 /**
+ * @route   GET /api/statistics/badges-summary
+ * @desc    KPI summary: total awarded, standard vs premium, approval rate.
+ *          SLL scoped to own SL. Filters: serviceLineId, areaId, dateFrom/dateTo.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/badges-summary', loginRequired, leadership, ctrl.getBadgesSummary);
+
+/**
  * @route   GET /api/statistics/team/badges-count
  * @desc    Number of badges acquired in scope (SLL: own SL; TM/Admin: optional ?serviceLineId)
  * @access  Service Line Leader, Talent Manager, Administrator
