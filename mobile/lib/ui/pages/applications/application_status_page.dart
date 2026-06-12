@@ -69,7 +69,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
                   children: [
                     ApplicationDetailHeader(
                       badge: badge,
-                      stateLabel: _stateLabel(),
+                      stateLabel: _stateLabel(tr),
                       stateColor: _stateColor(),
                     ),
                     const SizedBox(height: 14),
@@ -169,21 +169,21 @@ class CandidaturaStatusScreen extends StatelessWidget {
     );
   }
 
-  String _stateLabel() {
+  String _stateLabel(LanguageController tr) {
     final n = applicationState.toLowerCase();
     if (n.contains('accepted') || n.contains('approved') || n.contains('aprov')) {
-      return 'Aprovada';
+      return tr.tr('stateApprovedF');
     }
     if (n.contains('reject') || n.contains('rejeit') || n.contains('devolv')) {
-      return 'Rejeitada';
+      return tr.tr('stateRejectedF');
     }
     if (n.contains('validation') || n.contains('valida')) {
-      return 'Em validação';
+      return tr.tr('stateInValidationF');
     }
     if (n.contains('submitted') || n.contains('submet')) {
-      return 'Submetida';
+      return tr.tr('stateSubmittedF');
     }
-    return 'Em análise';
+    return tr.tr('stateInAnalysis');
   }
 
   Color _stateColor() {

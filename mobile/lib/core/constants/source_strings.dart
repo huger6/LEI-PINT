@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 8;
+const int sourceStringsVersion = 9;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -432,6 +432,62 @@ const _sourceJson = r'''
   "changePasswordErrorGeneric": "Erro ao alterar password.",
   "errorCurrentPasswordWrong": "A password atual está incorreta. Verifique e tente novamente.",
   "errorPasswordFormatInvalid": "A nova password não cumpre os requisitos de segurança.",
-  "errorPasswordSameAsCurrent": "A nova password não pode ser igual à password atual."
+  "errorPasswordSameAsCurrent": "A nova password não pode ser igual à password atual.",
+
+  "applicationStartError": "Erro ao iniciar candidatura.",
+  "applicationExistsInState": "Já existe uma candidatura em estado \"{state}\" para este badge.",
+  "applicationGuidError": "Erro: GUID da candidatura não recebido.",
+  "applicationSubmitError": "Erro ao submeter candidatura.",
+  "submitting": "A submeter...",
+
+  "applicationSubmitted": "Candidatura submetida",
+  "applicationReceivedSuccess": "A sua candidatura foi recebida com sucesso!",
+  "badgeTypeLabel": "Tipo de Badge",
+  "submittedAtLabel": "Submetida a",
+  "confirmationSentTo": "Confirmação enviada para",
+  "nextSteps": "Próximos passos",
+  "nextStepEvaluation": "Candidatura será avaliada",
+  "nextStepResult": "Receberá um resultado em cerca de 5 dias",
+  "viewApplicationStatus": "Ver estado da candidatura",
+  "backToMenu": "Voltar ao Menu",
+
+  "confirmYourApplication": "Confirme a sua candidatura",
+  "applicationSubmittedSuccess": "A sua candidatura foi submetida com sucesso!",
+  "sendConfirmationInstruction": "Para finalizar, envie o email de confirmação da sua candidatura para a badge:",
+  "sending": "A enviar...",
+  "sendConfirmationEmail": "Enviar email de confirmação",
+  "emailResendUnavailable": "O reenvio de email não está disponível de momento. O email original foi enviado com a submissão.",
+  "emailSendError": "Erro ao enviar email de confirmação.",
+  "emailResendFailed": "Não foi possível reenviar o email. Tente novamente mais tarde.",
+  "confirmationEmailSentTo": "Enviámos um email de confirmação para:",
+  "applicationWillBeEvaluated": "A sua candidatura será avaliada pelo Talent Manager e pelo Service Line Leader. Receberá uma notificação com o resultado.",
+  "resendEmailCooldown": "Reenviar email ({seconds} s)",
+  "resendEmail": "Reenviar email",
+  "emailNotReceived": "Não recebeu o email? Verifique a sua pasta de spam ou tente reenviar.",
+
+  "applicationApprovedSuccess": "Candidatura aprovada com sucesso!",
+  "inReviewBySLL": "Em revisão pelo Service Line Leader",
+  "inReviewByTM": "Em revisão pelo Talent Manager",
+  "applicationOpen": "Candidatura em aberto",
+  "progress": "Progresso",
+  "stepSubmittedLabel": "Submetido",
+  "stepApprovedLabel": "Aprovado",
+  "details": "Detalhes",
+  "openedAt": "Aberta a",
+  "observation": "Observação",
+  "badgeInformation": "Informação do badge",
+  "createdAt": "Criado a",
+  "validityDays": "Validade: {days} dias",
+  "applicationDetails": "Detalhes da candidatura",
+  "applicationSubmittedDialog": "Candidatura submetida!",
+  "applicationSubmittedDialogDesc": "A sua candidatura foi submetida com sucesso e será avaliada em breve.",
+  "viewApplication": "Ver candidatura",
+  "viewBadges": "Ver badges",
+
+  "stateApprovedF": "Aprovada",
+  "stateRejectedF": "Rejeitada",
+  "stateInValidationF": "Em validação",
+  "stateSubmittedF": "Submetida",
+  "stateInAnalysis": "Em análise"
 }
 ''';

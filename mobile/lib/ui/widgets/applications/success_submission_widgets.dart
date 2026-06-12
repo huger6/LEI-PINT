@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
+
 class SuccessHeader extends StatelessWidget {
   const SuccessHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       color: const Color(0xFFE7F5ED),
       padding: const EdgeInsets.fromLTRB(20, 26, 20, 28),
@@ -26,10 +30,10 @@ class SuccessHeader extends StatelessWidget {
           const SizedBox(height: 16),
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: const Text(
-              'Candidatura submetida',
+            child: Text(
+              tr.tr('applicationSubmitted'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF20252B),
@@ -37,10 +41,10 @@ class SuccessHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'A sua candidatura foi recebida com sucesso!',
+          Text(
+            tr.tr('applicationReceivedSuccess'),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF6A737D),
               fontWeight: FontWeight.w500,
@@ -68,6 +72,8 @@ class SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -97,19 +103,19 @@ class SummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           DetailRow(
             icon: Icons.sync_rounded,
-            label: 'Tipo de Badge',
+            label: tr.tr('badgeTypeLabel'),
             value: badgeType,
           ),
           const SizedBox(height: 10),
           DetailRow(
             icon: Icons.access_time_outlined,
-            label: 'Submetida a',
+            label: tr.tr('submittedAtLabel'),
             value: submittedAtLabel,
           ),
           const SizedBox(height: 10),
           DetailRow(
             icon: Icons.mail_outline,
-            label: 'Confirma\u00e7\u00e3o enviada para',
+            label: tr.tr('confirmationSentTo'),
             value: confirmationEmail,
           ),
         ],
@@ -174,6 +180,8 @@ class NextStepsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
@@ -182,23 +190,23 @@ class NextStepsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFD7DEE6)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pr\u00f3ximos passos',
-            style: TextStyle(
+            tr.tr('nextSteps'),
+            style: const TextStyle(
               color: Color(0xFF21262C),
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 10),
-          NextStepItem(number: 1, text: 'Candidatura ser\u00e1 avaliada'),
-          SizedBox(height: 8),
+          const SizedBox(height: 10),
+          NextStepItem(number: 1, text: tr.tr('nextStepEvaluation')),
+          const SizedBox(height: 8),
           NextStepItem(
             number: 2,
-            text: 'Receber\u00e1 um resultado em cerca de 5 dias',
+            text: tr.tr('nextStepResult'),
           ),
         ],
       ),

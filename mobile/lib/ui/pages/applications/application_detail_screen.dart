@@ -69,8 +69,9 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badge = _detailedBadge ?? _application.badge ?? BadgeModel.empty(title: 'Badge');
-    final stateVisual = _resolveState(_application.applicationState);
+    final stateVisual = _resolveState(tr, _application.applicationState);
 
     return Scaffold(
       backgroundColor: ApplicationDetailColors.pageBackground,
@@ -86,10 +87,10 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
                     icon: const Icon(Icons.arrow_back, size: 24),
                   ),
                   const SizedBox(width: 4),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Detalhes da candidatura',
-                      style: TextStyle(
+                      tr.tr('applicationDetails'),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: ApplicationDetailColors.primaryText,
@@ -155,37 +156,37 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
     );
   }
 
-  _StateVisual _resolveState(String status) {
+  _StateVisual _resolveState(LanguageController tr, String status) {
     final normalized = status.toLowerCase();
 
     if (normalized.contains('accepted') ||
         normalized.contains('approved') ||
         normalized.contains('aprov')) {
-      return const _StateVisual(label: 'Aprovada', color: Color(0xFF59C13E));
+      return _StateVisual(label: tr.tr('stateApprovedF'), color: const Color(0xFF59C13E));
     }
 
     if (normalized.contains('reject') ||
         normalized.contains('rejeit') ||
         normalized.contains('devolv')) {
-      return const _StateVisual(label: 'Rejeitada', color: Color(0xFFD94A2A));
+      return _StateVisual(label: tr.tr('stateRejectedF'), color: const Color(0xFFD94A2A));
     }
 
     if (normalized.contains('validation') ||
         normalized.contains('valida')) {
-      return const _StateVisual(
-        label: 'Em validacao',
-        color: Color(0xFFC9A625),
+      return _StateVisual(
+        label: tr.tr('stateInValidationF'),
+        color: const Color(0xFFC9A625),
       );
     }
 
     if (normalized.contains('submitted') ||
         normalized.contains('submet')) {
-      return const _StateVisual(label: 'Submetida', color: Color(0xFF4E6CA2));
+      return _StateVisual(label: tr.tr('stateSubmittedF'), color: const Color(0xFF4E6CA2));
     }
 
-    return const _StateVisual(
-      label: 'Em analise',
-      color: Color(0xFFC9A625),
+    return _StateVisual(
+      label: tr.tr('stateInAnalysis'),
+      color: const Color(0xFFC9A625),
     );
   }
 }
