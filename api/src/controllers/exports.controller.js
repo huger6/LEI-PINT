@@ -29,38 +29,46 @@ const sendAttachment = (res, filename, contentType, body) => {
 };
 
 const buildPdf = async (title, columns, rows) => new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    // Wide tables (many columns) use landscape so cells don't get crushed.
+    const landscape = columns.length > 6;
+    const margin = 40;
+    const doc = new PDFDocument({ size: 'A4', layout: landscape ? 'landscape' : 'portrait', margin });
     const chunks = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    doc.fontSize(18).text(title, { align: 'center' });
-    doc.moveDown(1);
+    const usableWidth = doc.page.width - margin * 2;
+    const columnWidth = usableWidth / columns.length;
+    const fontSize = columns.length > 9 ? 7 : (columns.length > 6 ? 8 : 9);
+    const rowHeight = fontSize + 7;
+    const bottomLimit = doc.page.height - margin - rowHeight;
 
-    const columnWidth = 515 / columns.length;
-    const startY = doc.y;
-
-    doc.fontSize(9).font('Helvetica-Bold');
-    columns.forEach((column, index) => {
-        doc.text(column.header, 40 + (index * columnWidth), startY, { width: columnWidth - 6 });
-    });
-
-    doc.moveDown(0.5);
-    doc.font('Helvetica');
+    doc.fontSize(16).text(title, { align: 'center' });
+    doc.moveDown(0.8);
     let rowY = doc.y;
 
-    rows.forEach((row) => {
-        columns.forEach((column, index) => {
-            doc.text(String(column.accessor(row) ?? ''), 40 + (index * columnWidth), rowY, { width: columnWidth - 6 });
+    // Each cell is clipped to a single line (ellipsis) so rows never overlap.
+    const drawRow = (cells, bold) => {
+        doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(fontSize);
+        cells.forEach((text, index) => {
+            doc.text(String(text ?? ''), margin + (index * columnWidth), rowY, {
+                width: columnWidth - 4,
+                height: rowHeight,
+                ellipsis: true,
+                lineBreak: false,
+            });
         });
-        rowY += 18;
-        if (rowY > doc.page.height - 70) {
+        rowY += rowHeight;
+        if (rowY > bottomLimit) {
             doc.addPage();
-            rowY = 40;
+            rowY = margin;
         }
-    });
+    };
+
+    drawRow(columns.map((c) => c.header), true);
+    rows.forEach((row) => drawRow(columns.map((c) => c.accessor(row)), false));
 
     doc.end();
 });
@@ -109,8 +117,31 @@ const getDateFilter = ({ from, to, columnName }) => {
     };
 };
 
-const fetchConsultantRows = async ({ from, to }) => {
+// Resolve the data scope for an export request. Talent Manager / Administrator
+// get the full (global) dataset; Service Line Leader is scoped to their own
+// Service Line so no cross-Service-Line data is ever exported.
+const resolveExportScope = async (req) => {
+    const role = req.user?.role;
+    const userId = req.user?.sub;
+    if (role !== 'Service Line Leader') {
+        return { role, userId, serviceLineId: null };
+    }
+    const rows = await sequelize.query(
+        'SELECT service_line_id FROM service_line_leaders WHERE user_id = :userId',
+        { replacements: { userId }, type: QueryTypes.SELECT }
+    );
+    return { role, userId, serviceLineId: rows[0]?.service_line_id ?? null };
+};
+
+// Subquery (as SQL string) selecting the user_ids of consultants that belong to
+// a Service Line, via their assigned areas. Used to scope consultant/points data.
+const CONSULTANTS_IN_SL_SUBQUERY =
+    '(SELECT ca.user_id FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = :serviceLineId)';
+
+const fetchConsultantRows = async ({ from, to, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'ph.created_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId ? ` AND c.user_id IN ${CONSULTANTS_IN_SL_SUBQUERY}` : '';
     const sql = `
         SELECT
             u.user_guid,
@@ -119,6 +150,7 @@ const fetchConsultantRows = async ({ from, to }) => {
         FROM consultants c
         INNER JOIN users u ON u.user_id = c.user_id
         LEFT JOIN points_history ph ON ph.user_id = c.user_id${whereSql}
+        WHERE 1=1${scopeSql}
         GROUP BY u.user_guid, u.full_name
         ORDER BY total_points DESC, u.full_name ASC
     `;
@@ -129,20 +161,24 @@ const fetchConsultantRows = async ({ from, to }) => {
     });
 };
 
-const fetchApplicationLogRows = async ({ from, to }) => {
-    const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'created_at' });
+const fetchApplicationLogRows = async ({ from, to, serviceLineId = null }) => {
+    const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'validated_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId
+        ? ` AND application_id IN (SELECT ba.application_id FROM badge_applications ba JOIN badges b ON b.badge_id = ba.badge_id WHERE b.service_line_id = :serviceLineId)`
+        : '';
     const sql = `
         SELECT
-            application_validation_log_id,
+            validation_log_id AS application_validation_log_id,
             application_id,
             validator_function,
             validator_action,
-            comments,
-            created_at,
+            validations_comments AS comments,
+            validated_at AS created_at,
             user_id
         FROM application_validation_logs
-        WHERE 1=1${whereSql}
-        ORDER BY created_at DESC, application_validation_log_id DESC
+        WHERE 1=1${whereSql}${scopeSql}
+        ORDER BY validated_at DESC, validation_log_id DESC
     `;
 
     return sequelize.query(sql, {
@@ -201,8 +237,10 @@ const fetchApplicationRows = async ({ from, to, state, userId, role }) => {
     });
 };
 
-const fetchPointsHistoryRows = async ({ from, to }) => {
+const fetchPointsHistoryRows = async ({ from, to, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'ph.created_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId ? ` AND ph.user_id IN ${CONSULTANTS_IN_SL_SUBQUERY}` : '';
     const sql = `
         SELECT
             ph.points_history_id,
@@ -214,7 +252,7 @@ const fetchPointsHistoryRows = async ({ from, to }) => {
         FROM points_history ph
         INNER JOIN consultants c ON c.user_id = ph.user_id
         INNER JOIN users u ON u.user_id = c.user_id
-        WHERE 1=1${whereSql}
+        WHERE 1=1${whereSql}${scopeSql}
         ORDER BY ph.created_at DESC, ph.points_history_id DESC
     `;
 
@@ -224,9 +262,14 @@ const fetchPointsHistoryRows = async ({ from, to }) => {
     });
 };
 
-const fetchBadgeRows = async ({ from, to, q, active }) => {
+const fetchBadgeRows = async ({ from, to, q, active, serviceLineId = null }) => {
     const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'b.created_at' });
     const searchFilters = [];
+
+    if (serviceLineId) {
+        searchFilters.push('b.service_line_id = :serviceLineId');
+        replacements.serviceLineId = serviceLineId;
+    }
 
     if (typeof active === 'boolean') {
         searchFilters.push('b.is_active = :active');
@@ -248,8 +291,8 @@ const fetchBadgeRows = async ({ from, to, q, active }) => {
             b.is_active,
             b.created_at,
             b.updated_at,
-            sl.service_line_title,
-            a.area_title
+            sl.service_line_name AS service_line_title,
+            a.area_name AS area_title
         FROM badges b
         INNER JOIN service_lines sl ON sl.service_line_id = b.service_line_id
         INNER JOIN areas a ON a.area_id = b.area_id
@@ -339,13 +382,14 @@ const exportDataset = async ({ req, res, title, fileStem, columns, fetchRows, sc
 
 const exportConsultants = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Consultants export',
             fileStem: 'consultants_export',
             columns: consultantColumns,
-            fetchRows: fetchConsultantRows
+            fetchRows: ({ from, to }) => fetchConsultantRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -357,13 +401,14 @@ const exportConsultants = async (req, res) => {
 
 const exportApplicationLogs = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Application validation logs export',
             fileStem: 'application_validation_logs',
             columns: applicationLogColumns,
-            fetchRows: fetchApplicationLogRows
+            fetchRows: ({ from, to }) => fetchApplicationLogRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -397,13 +442,14 @@ const exportApplications = async (req, res) => {
 
 const exportPointsHistory = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Points history export',
             fileStem: 'points_history',
             columns: pointsHistoryColumns,
-            fetchRows: fetchPointsHistoryRows
+            fetchRows: ({ from, to }) => fetchPointsHistoryRows({ from, to, serviceLineId })
         });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
@@ -415,13 +461,14 @@ const exportPointsHistory = async (req, res) => {
 
 const exportBadges = async (req, res) => {
     try {
+        const { serviceLineId } = await resolveExportScope(req);
         await exportDataset({
             req,
             res,
             title: 'Badges export',
             fileStem: 'badges',
             columns: badgeColumns,
-            fetchRows: fetchBadgeRows,
+            fetchRows: ({ from, to }) => fetchBadgeRows({ from, to, serviceLineId }),
             schema: exportBadgesQuerySchema
         });
     } catch (error) {

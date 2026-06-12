@@ -51,6 +51,23 @@ router.get('/consultant/badges-per-area', loginRequired, ctrl.getBadgesPerArea);
 router.get('/consultants/comparison', loginRequired, leadership, ctrl.getPeerComparison);
 
 /**
+ * @route   GET /api/statistics/consultants
+ * @desc    Consultants overview (points, badges, applications, last login, SL, area).
+ *          SLL scoped to own Service Line. Supports search/serviceLineId/areaId/
+ *          pointsMin/pointsMax/sort/page/limit.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/consultants', loginRequired, leadership, ctrl.getConsultantsOverview);
+
+/**
+ * @route   GET /api/statistics/badges-summary
+ * @desc    KPI summary: total awarded, standard vs premium, approval rate.
+ *          SLL scoped to own SL. Filters: serviceLineId, areaId, dateFrom/dateTo.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/badges-summary', loginRequired, leadership, ctrl.getBadgesSummary);
+
+/**
  * @route   GET /api/statistics/team/badges-count
  * @desc    Number of badges acquired in scope (SLL: own SL; TM/Admin: optional ?serviceLineId)
  * @access  Service Line Leader, Talent Manager, Administrator
@@ -118,6 +135,13 @@ router.get('/reports/level-distribution', loginRequired, leadership, ctrl.getLev
  * @access  Service Line Leader, Talent Manager, Administrator
  */
 router.get('/reports/user-enrollment', loginRequired, leadership, ctrl.getUserEnrollment);
+
+/**
+ * @route   GET /api/statistics/reports/expiring-badges
+ * @desc    Awarded badges expiring within the next N days (?withinDays=30)
+ * @access  Talent Manager, Administrator (global, unscoped dataset)
+ */
+router.get('/reports/expiring-badges', loginRequired, checkRole('Talent Manager', 'Administrator'), ctrl.getExpiringBadges);
 
 /*──────────────────────────────────────────────────────────────
   Admin maintenance

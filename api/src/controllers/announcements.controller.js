@@ -7,6 +7,10 @@ const validations = require('../validations/announcements.validation');
 const { handleZodError } = require('../utils/responseHelper');
 
 const VALID_ROLES = ['Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'];
+const MANAGEMENT_ROLES = ['Administrator', 'Talent Manager', 'Service Line Leader'];
+
+// Flush stale cache from prior response format (creator.user_id → creator.user_guid)
+invalidateCacheByPrefix('announcements:list').catch(() => {});
 
 async function getUserServiceLineIds(userId, role) {
     if (role === 'Service Line Leader') {
@@ -36,13 +40,14 @@ async function getUserServiceLineIds(userId, role) {
 // GET /api/announcements
 const getAnnouncements = async (req, res) => {
     try {
-        const isAdmin = req.user?.role === 'Administrator';
+        const userRole = req.user?.role;
+        const isManagement = MANAGEMENT_ROLES.includes(userRole);
 
         const { page, limit, search, synced_at, isActive, isGlobal, announcementType } = validations.getAnnouncementsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
-        const cacheParams = { isActive, isGlobal, announcementType, search, isAdmin, page, limit };
-        if (!isAdmin && req.user) {
+        const cacheParams = { isActive, isGlobal, announcementType, search, isManagement, page, limit };
+        if (!isManagement && req.user) {
             cacheParams.userId = req.user.sub;
         }
         const cacheKey = `announcements:list:${Buffer.from(JSON.stringify(cacheParams)).toString('base64')}`;
@@ -55,7 +60,7 @@ const getAnnouncements = async (req, res) => {
         const where = {};
         const now = new Date();
 
-        if (!isAdmin) {
+        if (!isManagement) {
             where.is_active = true;
 
             where[Op.and] = [
@@ -74,7 +79,6 @@ const getAnnouncements = async (req, res) => {
             ];
 
             if (req.user) {
-                const userRole = req.user.role;
                 const userSlIds = await getUserServiceLineIds(req.user.sub, userRole);
 
                 const visibilityClauses = [
@@ -106,16 +110,17 @@ const getAnnouncements = async (req, res) => {
         if (search) where.announcement_title = { [Op.iLike]: `%${search}%` };
         if (synced_at) where.updated_at = { [Op.gt]: synced_at };
 
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+        const excludedFields = isManagement ? [] : ['is_active', 'created_by', 'updated_by'];
 
         const includeConfig = [];
-        if (isAdmin) {
+        if (isManagement) {
             includeConfig.push(
                 { model: models.announc_roles, as: 'announc_roles', attributes: ['role_name'] },
                 {
                     model: models.announc_sl, as: 'announc_sls', attributes: ['service_line_id'],
                     include: [{ model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'] }]
-                }
+                },
+                { model: models.users, as: 'creator', attributes: ['user_guid', 'full_name'] }
             );
         }
 
@@ -155,7 +160,27 @@ const getAnnouncements = async (req, res) => {
             pagination: { totalItems: count, totalPages, currentPage: page }
         };
 
-        await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
+        let cacheTtl = 7200;
+        if (!isManagement) {
+            try {
+                const [[{ next_change }]] = await sequelize.query(`
+                    SELECT LEAST(
+                        COALESCE(MIN(starts_at) FILTER (WHERE starts_at > NOW()), 'infinity'::timestamptz),
+                        COALESCE(MIN(ends_at)   FILTER (WHERE ends_at   > NOW()), 'infinity'::timestamptz)
+                    ) AS next_change
+                    FROM system_announcements
+                    WHERE is_active = true
+                `);
+                if (next_change && isFinite(new Date(next_change))) {
+                    const secsUntil = Math.floor((new Date(next_change) - now) / 1000);
+                    cacheTtl = Math.max(60, Math.min(secsUntil, 7200));
+                }
+            } catch (e) {
+                logger.warn('Smart TTL query failed, using default', { error: e });
+            }
+        }
+
+        await redis.set(cacheKey, JSON.stringify(responseData), 'EX', cacheTtl);
 
         return res.status(200).json({ success: true, ...responseData });
 
@@ -171,12 +196,13 @@ const getAnnouncements = async (req, res) => {
 const getAnnouncementById = async (req, res) => {
     try {
         const { announcementId } = validations.announcementIdParamSchema.parse(req.params);
-        const isAdmin = req.user?.role === 'Administrator';
+        const userRole = req.user?.role;
+        const isManagement = MANAGEMENT_ROLES.includes(userRole);
         const now = new Date();
 
         const where = { announcement_id: announcementId };
 
-        if (!isAdmin) {
+        if (!isManagement) {
             where.is_active = true;
             where[Op.and] = [
                 { [Op.or]: [{ starts_at: null }, { starts_at: { [Op.lte]: now } }] },
@@ -184,26 +210,33 @@ const getAnnouncementById = async (req, res) => {
             ];
         }
 
-        const excludedFields = isAdmin ? [] : ['is_active', 'created_by', 'updated_by'];
+        const excludedFields = isManagement ? [] : ['is_active', 'created_by', 'updated_by'];
+
+        const includeConfig = [
+            { model: models.announc_roles, as: 'announc_roles', attributes: ['role_name'] },
+            { model: models.announc_sl, as: 'announc_sls', attributes: ['service_line_id'] }
+        ];
+
+        if (isManagement) {
+            includeConfig.push(
+                { model: models.users, as: 'creator', attributes: ['user_guid', 'full_name'] }
+            );
+        }
 
         const announcement = await models.system_announcements.findOne({
             where,
             attributes: { exclude: excludedFields },
-            include: [
-                { model: models.announc_roles, as: 'announc_roles', attributes: ['role_name'] },
-                { model: models.announc_sl, as: 'announc_sls', attributes: ['service_line_id'] }
-            ]
+            include: includeConfig
         });
 
         if (!announcement) {
             return res.status(404).json({ success: false, code: 'ANNOUNCEMENT_NOT_FOUND' });
         }
 
-        if (!isAdmin) {
+        if (!isManagement) {
             const isGlobal = announcement.is_global;
 
             if (!isGlobal) {
-                const userRole = req.user.role;
                 const userSlIds = await getUserServiceLineIds(req.user.sub, userRole);
 
                 const roleNames = announcement.announc_roles.map(r => r.role_name);
@@ -290,7 +323,8 @@ const createAnnouncement = async (req, res) => {
 // PUT /api/announcements/:announcementId
 const updateAnnouncement = async (req, res) => {
     try {
-        const adminUserId = req.user.sub;
+        const userId = req.user.sub;
+        const userRole = req.user.role;
         const { announcementId } = validations.announcementIdParamSchema.parse(req.params);
 
         const {
@@ -317,6 +351,12 @@ const updateAnnouncement = async (req, res) => {
                 throw err;
             }
 
+            if (userRole !== 'Administrator' && announcement.created_by !== userId) {
+                const err = new Error('NOT_OWNER');
+                err.statusCode = 403;
+                throw err;
+            }
+
             await announcement.update({
                 announcement_title: announcementTitle !== undefined ? announcementTitle : announcement.announcement_title,
                 announcement_message: announcementMessage !== undefined ? announcementMessage : announcement.announcement_message,
@@ -325,7 +365,7 @@ const updateAnnouncement = async (req, res) => {
                 announcement_type: announcementType !== undefined ? announcementType : announcement.announcement_type,
                 is_global: isGlobal !== undefined ? isGlobal : announcement.is_global,
                 is_active: isActive !== undefined ? isActive : announcement.is_active,
-                updated_by: adminUserId,
+                updated_by: userId,
                 updated_at: new Date()
             }, { transaction: t });
 
@@ -366,6 +406,9 @@ const updateAnnouncement = async (req, res) => {
         if (error.statusCode === 404) {
             return res.status(404).json({ success: false, code: 'ANNOUNCEMENT_NOT_FOUND' });
         }
+        if (error.statusCode === 403) {
+            return res.status(403).json({ success: false, code: 'ANNOUNCEMENT_NOT_OWNER' });
+        }
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating announcement', { error });
@@ -377,6 +420,7 @@ const updateAnnouncement = async (req, res) => {
 const deleteAnnouncement = async (req, res) => {
     try {
         const userId = req.user.sub;
+        const userRole = req.user.role;
         const { announcementId } = validations.announcementIdParamSchema.parse(req.params);
 
         const announcement = await models.system_announcements.findOne({
@@ -385,6 +429,10 @@ const deleteAnnouncement = async (req, res) => {
 
         if (!announcement) {
             return res.status(404).json({ success: false, code: 'ANNOUNCEMENT_NOT_FOUND' });
+        }
+
+        if (userRole !== 'Administrator' && announcement.created_by !== userId) {
+            return res.status(403).json({ success: false, code: 'ANNOUNCEMENT_NOT_OWNER' });
         }
 
         if (!announcement.is_active) {
