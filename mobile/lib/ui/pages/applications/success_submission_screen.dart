@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/routes/app_router.dart';
+import '../../../core/sync_manager.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/applications/success_submission_widgets.dart';
@@ -24,6 +25,8 @@ class SuccessSubmissionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
@@ -39,7 +42,7 @@ class SuccessSubmissionScreen extends StatelessWidget {
                     SummaryCard(
                       badgeTitle: badge.title,
                       badgeType: badgeType,
-                      submittedAtLabel: _formatSubmittedDate(submittedAt),
+                      submittedAtLabel: _formatSubmittedDate(submittedAt, tr),
                       confirmationEmail: confirmationEmail,
                     ),
                     const SizedBox(height: 14),
@@ -72,7 +75,7 @@ class SuccessSubmissionScreen extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('Ver estado da candidatura'),
+                        child: Text(tr.tr('viewApplicationStatus')),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -93,7 +96,7 @@ class SuccessSubmissionScreen extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('Voltar ao Menu'),
+                        child: Text(tr.tr('backToMenu')),
                       ),
                     ),
                   ],
@@ -106,20 +109,20 @@ class SuccessSubmissionScreen extends StatelessWidget {
     );
   }
 
-  String _formatSubmittedDate(DateTime date) {
-    const months = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
+  String _formatSubmittedDate(DateTime date, LanguageController tr) {
+    final months = [
+      tr.tr('monthJanuary'),
+      tr.tr('monthFebruary'),
+      tr.tr('monthMarch'),
+      tr.tr('monthApril'),
+      tr.tr('monthMay'),
+      tr.tr('monthJune'),
+      tr.tr('monthJuly'),
+      tr.tr('monthAugust'),
+      tr.tr('monthSeptember'),
+      tr.tr('monthOctober'),
+      tr.tr('monthNovember'),
+      tr.tr('monthDecember'),
     ];
 
     final monthName = months[date.month - 1];

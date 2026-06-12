@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/sync_manager.dart';
 import '../../../core/theme/app_colors.dart';
 
 class BadgeEmailConfirmationBody extends StatefulWidget {
@@ -51,6 +52,8 @@ class _BadgeEmailConfirmationBodyState
 
     setState(() => _isSending = true);
 
+    final tr = LanguageScope.of(context);
+
     try {
       final result = await widget.onSendConfirmation();
 
@@ -62,8 +65,8 @@ class _BadgeEmailConfirmationBodyState
       } else {
         final msg = result['message']?.toString() ?? '';
         final friendlyMsg = msg.contains('DioException') || msg.contains('404') || msg.contains('status code')
-            ? 'O reenvio de email não está disponível de momento. O email original foi enviado com a submissão.'
-            : (msg.isNotEmpty ? msg : 'Erro ao enviar email de confirmação.');
+            ? tr.tr('emailResendUnavailable')
+            : (msg.isNotEmpty ? msg : tr.tr('emailSendError'));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(friendlyMsg),
@@ -74,8 +77,8 @@ class _BadgeEmailConfirmationBodyState
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível reenviar o email. Tente novamente mais tarde.'),
+        SnackBar(
+          content: Text(tr.tr('emailResendFailed')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -110,6 +113,7 @@ class _BadgeEmailConfirmationBodyState
 
   Widget _buildInitialState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tr = LanguageScope.of(context);
 
     return Column(
       children: [
@@ -129,7 +133,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 24),
         Text(
-          'Confirme a sua candidatura',
+          tr.tr('confirmYourApplication'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -138,7 +142,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 12),
         Text(
-          'A sua candidatura foi submetida com sucesso!',
+          tr.tr('applicationSubmittedSuccess'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.7),
@@ -146,8 +150,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 6),
         Text(
-          'Para finalizar, envie o email de confirmação '
-          'da sua candidatura para a badge:',
+          tr.tr('sendConfirmationInstruction'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.7),
@@ -202,7 +205,7 @@ class _BadgeEmailConfirmationBodyState
                   )
                 : const Icon(Icons.send_rounded, size: 20),
             label: Text(
-              _isSending ? 'A enviar...' : 'Enviar email de confirmação',
+              _isSending ? tr.tr('sending') : tr.tr('sendConfirmationEmail'),
               style:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
@@ -227,6 +230,7 @@ class _BadgeEmailConfirmationBodyState
 
   Widget _buildSentState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tr = LanguageScope.of(context);
 
     return Column(
       children: [
@@ -246,7 +250,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 24),
         Text(
-          'Email enviado!',
+          tr.tr('emailSent'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
@@ -254,7 +258,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 12),
         Text(
-          'Enviámos um email de confirmação para:',
+          tr.tr('confirmationEmailSentTo'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.7),
@@ -311,9 +315,7 @@ class _BadgeEmailConfirmationBodyState
             ),
           ),
           child: Text(
-            'A sua candidatura será avaliada pelo Talent Manager '
-            'e pelo Service Line Leader. Receberá uma notificação '
-            'com o resultado.',
+            tr.tr('applicationWillBeEvaluated'),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurface.withValues(alpha: 0.8),
@@ -335,9 +337,9 @@ class _BadgeEmailConfirmationBodyState
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Ver estado da candidatura',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            child: Text(
+              tr.tr('viewApplicationStatus'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -370,8 +372,8 @@ class _BadgeEmailConfirmationBodyState
                   )
                 : Text(
                     _cooldownSeconds > 0
-                        ? 'Reenviar email ($_cooldownSeconds s)'
-                        : 'Reenviar email',
+                        ? tr.tr('resendEmailCooldown').replaceAll('{seconds}', '$_cooldownSeconds')
+                        : tr.tr('resendEmail'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -389,7 +391,7 @@ class _BadgeEmailConfirmationBodyState
           child: TextButton(
             onPressed: widget.onGoToDashboard,
             child: Text(
-              'Voltar ao Menu',
+              tr.tr('backToMenu'),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -408,8 +410,7 @@ class _BadgeEmailConfirmationBodyState
         ),
         const SizedBox(height: 6),
         Text(
-          'Não recebeu o email? Verifique a sua pasta de spam '
-          'ou tente reenviar.',
+          tr.tr('emailNotReceived'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.5),

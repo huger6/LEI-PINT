@@ -286,7 +286,7 @@ class _ApplicationProgressStepperState
     Color statusColor;
     IconData statusIcon;
     if (isAccepted) {
-      statusMessage = 'Candidatura aprovada com sucesso!';
+      statusMessage = tr.tr('applicationApprovedSuccess');
       statusColor = ApplicationDetailColors.stepAccepted;
       statusIcon = Icons.check_circle_rounded;
     } else if (isRejected) {
@@ -298,15 +298,15 @@ class _ApplicationProgressStepperState
       statusColor = ApplicationDetailColors.stepRejected;
       statusIcon = Icons.cancel_rounded;
     } else if (isInValidation) {
-      statusMessage = 'Em revisão pelo Service Line Leader';
+      statusMessage = tr.tr('inReviewBySLL');
       statusColor = ApplicationDetailColors.stepCurrent;
       statusIcon = Icons.hourglass_top_rounded;
     } else if (isSubmitted) {
-      statusMessage = 'Em revisão pelo Talent Manager';
+      statusMessage = tr.tr('inReviewByTM');
       statusColor = ApplicationDetailColors.stepCurrent;
       statusIcon = Icons.hourglass_top_rounded;
     } else {
-      statusMessage = 'Candidatura em aberto';
+      statusMessage = tr.tr('applicationOpen');
       statusColor = ApplicationDetailColors.mutedText;
       statusIcon = Icons.edit_note_rounded;
     }
@@ -331,9 +331,9 @@ class _ApplicationProgressStepperState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Progresso',
-            style: TextStyle(
+          Text(
+            tr.tr('progress'),
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               color: ApplicationDetailColors.primaryText,
@@ -412,7 +412,7 @@ class _ApplicationProgressStepperState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _StepLabel(
-                      text: 'Submetido',
+                      text: tr.tr('stepSubmittedLabel'),
                       isActive: currentStep >= 1,
                       isCurrent: currentStep == 1,
                     ),
@@ -429,7 +429,7 @@ class _ApplicationProgressStepperState
                       isRejected: rejAtStep3,
                     ),
                     _StepLabel(
-                      text: 'Aprovado',
+                      text: tr.tr('stepApprovedLabel'),
                       isActive: isAccepted,
                       isCurrent: isAccepted,
                       isAccepted: isAccepted,
@@ -625,6 +625,8 @@ class ApplicationInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -642,9 +644,9 @@ class ApplicationInfoSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Detalhes',
-            style: TextStyle(
+          Text(
+            tr.tr('details'),
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               color: ApplicationDetailColors.primaryText,
@@ -654,14 +656,14 @@ class ApplicationInfoSection extends StatelessWidget {
           if (openedAt != null)
             _InfoRow(
               icon: Icons.folder_open_outlined,
-              label: 'Aberta a',
+              label: tr.tr('openedAt'),
               value: _formatDate(openedAt!),
             ),
           if (openedAt != null) const SizedBox(height: 10),
           if (submittedAt != null)
             _InfoRow(
               icon: Icons.send_outlined,
-              label: 'Submetida a',
+              label: tr.tr('submittedAtLabel'),
               value: _formatDate(submittedAt!),
             ),
           if (latestObservation != null &&
@@ -685,9 +687,9 @@ class ApplicationInfoSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Observacao',
-                        style: TextStyle(
+                      Text(
+                        tr.tr('observation'),
+                        style: const TextStyle(
                           color: ApplicationDetailColors.mutedText,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -785,6 +787,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final chips = <_AttributeChipData>[];
 
     if (badge.category.trim().isNotEmpty) {
@@ -814,7 +817,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
     if (badge.expirationDays != null && badge.expirationDays! > 0) {
       chips.add(_AttributeChipData(
         icon: Icons.event_available_rounded,
-        label: 'Validade: ${badge.expirationDays} dias',
+        label: tr.tr('validityDays').replaceAll('{days}', '${badge.expirationDays}'),
       ));
     }
 
@@ -835,9 +838,9 @@ class ApplicationBadgeAttributes extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Informação do badge',
-            style: TextStyle(
+          Text(
+            tr.tr('badgeInformation'),
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               color: ApplicationDetailColors.primaryText,
@@ -859,7 +862,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
                 const Icon(Icons.calendar_today_rounded, size: 14, color: ApplicationDetailColors.mutedText),
                 const SizedBox(width: 6),
                 Text(
-                  'Criado a ${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
+                  '${tr.tr('createdAt')} ${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
                   style: const TextStyle(
                     color: ApplicationDetailColors.mutedText,
                     fontSize: 12,
@@ -894,9 +897,9 @@ class ApplicationBadgeAttributes extends StatelessWidget {
               height: 1,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Competências',
-              style: TextStyle(
+            Text(
+              tr.tr('skills'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: ApplicationDetailColors.primaryText,
@@ -1012,6 +1015,8 @@ class ApplicationRequirementsList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (requirements.isEmpty) return const SizedBox.shrink();
 
+    final tr = LanguageScope.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -1029,9 +1034,9 @@ class ApplicationRequirementsList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Requisitos',
-            style: TextStyle(
+          Text(
+            tr.tr('requirements'),
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               color: ApplicationDetailColors.primaryText,
@@ -1176,6 +1181,8 @@ class SuccessSubmissionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 8,
@@ -1199,20 +1206,20 @@ class SuccessSubmissionDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'Candidatura submetida!',
+            Text(
+              tr.tr('applicationSubmittedDialog'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF1D2A35),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'A sua candidatura foi submetida com sucesso e sera avaliada em breve.',
+            Text(
+              tr.tr('applicationSubmittedDialogDesc'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF6A737D),
                 fontWeight: FontWeight.w500,
@@ -1237,7 +1244,7 @@ class SuccessSubmissionDialog extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: const Text('Ver candidatura'),
+                child: Text(tr.tr('viewApplication')),
               ),
             ),
             const SizedBox(height: 10),
@@ -1257,7 +1264,7 @@ class SuccessSubmissionDialog extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: const Text('Ver badges'),
+                child: Text(tr.tr('viewBadges')),
               ),
             ),
           ],

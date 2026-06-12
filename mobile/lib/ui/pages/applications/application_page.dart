@@ -113,11 +113,13 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final badge = widget.badge;
 
+    final tr = LanguageScope.of(context);
+
     try {
       final startResult = await appStore.startApplication(badgeId: badge.id);
       final isExisting = startResult['code'] == 'APP_ALREADY_EXISTS';
       if (startResult['success'] != true && !isExisting) {
-        final msg = startResult['message']?.toString() ?? 'Erro ao iniciar candidatura.';
+        final msg = startResult['message']?.toString() ?? tr.tr('applicationStartError');
         messenger.showSnackBar(SnackBar(
           content: Text(msg),
           backgroundColor: const Color(0xFFD94A2A),
@@ -131,7 +133,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         final existingState = (appData is Map ? appData['currentState'] : null)?.toString() ?? '';
         if (existingState.isNotEmpty && existingState != 'Open') {
           messenger.showSnackBar(SnackBar(
-            content: Text('Já existe uma candidatura em estado "$existingState" para este badge.'),
+            content: Text(tr.tr('applicationExistsInState').replaceAll('{state}', existingState)),
             backgroundColor: const Color(0xFFD94A2A),
           ));
           return;
@@ -153,9 +155,9 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       }
 
       if (applicationGuid.isEmpty) {
-        messenger.showSnackBar(const SnackBar(
-          content: Text('Erro: GUID da candidatura não recebido.'),
-          backgroundColor: Color(0xFFD94A2A),
+        messenger.showSnackBar(SnackBar(
+          content: Text(tr.tr('applicationGuidError')),
+          backgroundColor: const Color(0xFFD94A2A),
         ));
         return;
       }
@@ -188,7 +190,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
       if (!mounted) return;
 
       if (submitResult['success'] != true) {
-        final msg = submitResult['message']?.toString() ?? 'Erro ao submeter candidatura.';
+        final msg = submitResult['message']?.toString() ?? tr.tr('applicationSubmitError');
         messenger.showSnackBar(SnackBar(
           content: Text(msg),
           backgroundColor: const Color(0xFFD94A2A),
@@ -482,7 +484,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                         ),
                       )
                     : const Icon(Icons.check_circle_outline_rounded),
-                label: Text(_isSubmitting ? 'A submeter...' : tr.tr('submit')),
+                label: Text(_isSubmitting ? tr.tr('submitting') : tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   backgroundColor: ApplicationColors.primaryAction,
