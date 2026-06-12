@@ -1,0 +1,37 @@
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.headerRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.inlineSelect {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+}
+
+.inlineSelectLabel {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.inlineSelect select {
+	width: auto;
+	min-width: 92px;
+}
+
+.buttons {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}

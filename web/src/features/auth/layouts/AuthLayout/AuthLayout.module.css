@@ -1,0 +1,8 @@
+.layout {
+	min-height: 100dvh;
+	background: linear-gradient(135deg,
+			var(--color-background) 0%,
+			var(--color-primary-container) 50%,
+			var(--color-secondary-container) 100%);
+	position: relative;
+}

@@ -1,0 +1,25 @@
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { AuthProvider } from './features/auth';
+import { UserProvider } from './context/UserContext';
+import { LanguageProvider } from './context/LanguageContext';
+import AppRoutes from './routes';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+
+export default function App() {
+	return (
+		<HelmetProvider>
+			<BrowserRouter>
+				<AuthProvider>
+					<UserProvider>
+						<LanguageProvider>
+							<ErrorBoundary>
+								<AppRoutes />
+							</ErrorBoundary>
+						</LanguageProvider>
+					</UserProvider>
+				</AuthProvider>
+			</BrowserRouter>
+		</HelmetProvider>
+	);
+}

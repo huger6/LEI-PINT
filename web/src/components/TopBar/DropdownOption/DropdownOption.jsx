@@ -1,0 +1,46 @@
+import { useTranslation } from 'react-i18next';
+import Icon from '../../Icons/Icons';
+import styles from './DropdownOption.module.css';
+
+const FILLED_ICONS = new Set(['moon', 'privacy', 'security', 'close', 'asterisk']);
+
+export default function DropdownOption({
+    as = 'button',
+    icon,
+    iconSize = 20,
+    label,
+    onClick,
+    className = '',
+    ...rest
+}) {
+    const { t } = useTranslation();
+    const Component = as;
+    const isTranslationKey = typeof label === 'string' && label.includes('.');
+    const translatedLabel = label
+        ? (isTranslationKey ? t(label, { defaultValue: label }) : label)
+        : '';
+    const shouldRenderFilled = typeof icon === 'string' && FILLED_ICONS.has(icon);
+
+    return (
+        <Component
+            type={Component === 'button' ? 'button' : undefined}
+            className={`${styles.dropdownOption} ${className}`.trim()}
+            onClick={onClick}
+            aria-label={translatedLabel}
+            {...rest}
+        >
+            <span className={styles.icon}>
+                {icon ? (
+                    <Icon
+                        name={icon}
+                        size={iconSize}
+                        color="var(--color-on-background)"
+                        aria-label={translatedLabel}
+                        {...(shouldRenderFilled ? { fill: 'currentColor', stroke: 'none' } : {})}
+                    />
+                ) : null}
+            </span>
+            <span className={styles.label}>{translatedLabel}</span>
+        </Component>
+    );
+}

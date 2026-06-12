@@ -1,0 +1,75 @@
+.card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	max-width: var(--stat-card-size, 160px);
+	max-height: var(--stat-card-size, 160px);
+	gap: 0.4rem;
+	padding: 1.5rem 1rem;
+	border-radius: 16px;
+	background: linear-gradient(180deg, #ffffff 0%, #f8fcfe 100%);
+	border: 1px solid var(--color-primary-border-soft);
+	box-shadow: var(--shadow-card);
+	aspect-ratio: 1;
+	justify-self: start;
+	min-width: 0;
+	text-align: center;
+	transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(14, 25, 36, 0.08);
+}
+
+.topRow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+}
+
+.iconWrap {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	display: grid;
+	place-items: center;
+}
+
+.value {
+	font-size: 1.5rem;
+	font-weight: 800;
+	line-height: 1.1;
+	white-space: nowrap;
+}
+
+.label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--color-outline);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+@media (max-width: 576px) {
+	.card {
+		padding: 0.6rem;
+	}
+
+	.iconWrap {
+		width: 36px;
+		height: 36px;
+	}
+
+	.value {
+		font-size: 1.25rem;
+	}
+
+	.label {
+		font-size: 0.72rem;
+	}
+}

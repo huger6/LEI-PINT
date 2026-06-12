@@ -1,0 +1,29 @@
+.avatar {
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+.avatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, var(--color-primary, #00B8E0) 0%, var(--color-secondary, #39639C) 100%);
+    color: var(--color-on-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    user-select: none;
+    font-size: inherit;
+}
