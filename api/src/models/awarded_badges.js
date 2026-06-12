@@ -11,6 +11,7 @@ module.exports = function (sequelize, DataTypes) {
     application_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: "uk_awarded_application",
       references: {
         model: 'badge_applications',
         key: 'application_id'
@@ -55,6 +56,10 @@ module.exports = function (sequelize, DataTypes) {
     display_order: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    last_expiry_alert_days: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     sequelize,
@@ -91,7 +96,8 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "awarded_applications2_fk",
+        name: "uk_awarded_application",
+        unique: true,
         fields: [
           { name: "application_id" },
         ]

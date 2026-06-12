@@ -1,4 +1,5 @@
 const express = require('express');
+const { optionalAuth } = require('../middlewares/auth.middleware');
 const langController = require('../controllers/language.controller');
 
 const router = express.Router();
@@ -8,6 +9,6 @@ const router = express.Router();
  * @desc    List all available i18n languages
  * @access  Public
  */
-router.get('/', langController.getAvailableLanguages);
+router.get('/', optionalAuth, langController.getAvailableLanguages);
 
 module.exports = router;
