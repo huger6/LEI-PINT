@@ -47,7 +47,11 @@ const getApplications = async (req, res) => {
         const badgeInclude = {
             model: models.badges,
             as: 'badge',
-            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id']
+            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id'],
+            include: [
+                { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
+                { model: models.areas, as: 'area', attributes: ['area_name'] }
+            ]
         };
 
         // --- Filter by role ---
