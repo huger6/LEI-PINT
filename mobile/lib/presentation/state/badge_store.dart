@@ -1,0 +1,241 @@
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
+
+import '../../core/constants/sync_codes.dart';
+import '../../core/services/celebration_service.dart';
+import '../../core/services/sync_service.dart';
+import '../../data/repositories/badge_repo.dart';
+import '../../models/badge_model.dart';
+import '../../models/earned_badge_model.dart';
+
+class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
+  BadgeStore(this._badgeRepository, this._syncService) {
+    WidgetsBinding.instance.addObserver(this);
+
+    _syncSubscription = _syncService.onSyncComplete.listen((code) {
+      if (code == SyncCodes.badges) _reloadFromLocal();
+      if (code == SyncCodes.awardedBadges) _reloadEarnedFromLocal();
+    });
+  }
+
+  final BadgeRepository _badgeRepository;
+  final SyncService _syncService;
+  final CelebrationService _celebrationService = CelebrationService();
+  StreamSubscription<int>? _syncSubscription;
+
+  final Map<String, BadgeModel> _detailsBySlug = <String, BadgeModel>{};
+  List<BadgeModel> _badges = [];
+  List<EarnedBadge> _earnedBadges = [];
+  Set<int> _favoriteBadgeIds = {};
+  bool _isLoading = false;
+  bool _isLoadingEarned = false;
+  String? _errorMessage;
+  Milestone? _pendingCelebration;
+
+  List<BadgeModel> get badges => _badges;
+  List<EarnedBadge> get earnedBadges => _earnedBadges;
+  Set<int> get favoriteBadgeIds => _favoriteBadgeIds;
+  bool get isLoading => _isLoading;
+  bool get isLoadingEarned => _isLoadingEarned;
+  String? get errorMessage => _errorMessage;
+  Milestone? get pendingCelebration => _pendingCelebration;
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _syncSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshAll();
+    }
+  }
+
+  Future<void> _refreshAll() async {
+    await loadBadges(forceRefresh: true);
+    await loadEarnedBadges(forceRefresh: true);
+  }
+
+  Future<void> _reloadFromLocal() async {
+    final local = await _badgeRepository.getBadgesLocal();
+    // Never blank the in-memory catalog on a transient empty read: earned
+    // badges and detail lookups join against it, and an empty catalog yields
+    // summary-only rows (empty slug / missing attributes).
+    if (local.isNotEmpty) {
+      _badges = local;
+      _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _reloadEarnedFromLocal() async {
+    final local = await _badgeRepository.getEarnedBadgesLocal();
+    _earnedBadges = local;
+    await _checkCelebration();
+    notifyListeners();
+  }
+
+  Future<void> loadBadges({bool forceRefresh = false}) async {
+    if (_isLoading) {
+      return;
+    }
+    if (!forceRefresh && _badges.isNotEmpty) {
+      return;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _badges = await _badgeRepository.getBadges();
+      debugPrint('BadgeStore: loaded ${_badges.length} badges');
+    } catch (e) {
+      debugPrint('BadgeStore: loadBadges failed: $e');
+      final local = await _badgeRepository.getBadgesLocal();
+      if (local.isNotEmpty) {
+        _badges = local;
+      } else {
+        _errorMessage =
+            'Não foi possível carregar os badges. Verifique a sua ligação.';
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadEarnedBadges({bool forceRefresh = false}) async {
+    if (_isLoadingEarned) {
+      return;
+    }
+    if (!forceRefresh && _earnedBadges.isNotEmpty) {
+      return;
+    }
+
+    _isLoadingEarned = true;
+    notifyListeners();
+
+    try {
+      // Earned badges are joined against the local badge catalog to resolve
+      // their area / points / progression-stage. Make sure the catalog is
+      // present first, otherwise those fields come back empty.
+      if (_badges.isEmpty) {
+        await loadBadges();
+      }
+      _earnedBadges = await _badgeRepository.getEarnedBadges();
+      debugPrint('BadgeStore: loaded ${_earnedBadges.length} earned badges');
+    } catch (e) {
+      debugPrint('BadgeStore: loadEarnedBadges FAILED: $e');
+      final local = await _badgeRepository.getEarnedBadgesLocal();
+      if (local.isNotEmpty) {
+        _earnedBadges = local;
+      }
+    } finally {
+      _isLoadingEarned = false;
+      await _checkCelebration();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _checkCelebration() async {
+    final milestone = await _celebrationService.checkForNewMilestone(
+      _earnedBadges.length,
+    );
+    _pendingCelebration = milestone;
+  }
+
+  Future<void> consumeCelebration() async {
+    final milestone = _pendingCelebration;
+    if (milestone == null) return;
+    await _celebrationService.markMilestoneShown(milestone);
+    _pendingCelebration = null;
+    notifyListeners();
+  }
+
+  Future<BadgeModel?> getBadgeDetail(BadgeModel badge) async {
+    final slug = badge.slug.trim();
+    if (slug.isEmpty) {
+      return badge;
+    }
+
+    final cached = _detailsBySlug[slug];
+    if (cached != null) {
+      return cached;
+    }
+
+    try {
+      final detail = await _badgeRepository.getBadgeBySlug(slug);
+      if (detail != null) {
+        _detailsBySlug[slug] = detail;
+        _replaceBadge(detail);
+        notifyListeners();
+        return detail;
+      }
+    } catch (_) {}
+
+    return badge;
+  }
+
+  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+    try {
+      await _badgeRepository.toggleBadgeGallery(awardedBadgeId, featured);
+      await _reloadEarnedFromLocal();
+    } catch (_) {}
+  }
+
+  List<BadgeModel> similarTo(BadgeModel badge, {int limit = 3}) {
+    return _badges
+        .where((item) => item.slug != badge.slug && item.title != badge.title)
+        .take(limit)
+        .toList(growable: false);
+  }
+
+  List<BadgeModel> get savedBadges {
+    return _badges
+        .where((b) => _favoriteBadgeIds.contains(b.id))
+        .toList(growable: false);
+  }
+
+  bool isFavorite(int badgeId) => _favoriteBadgeIds.contains(badgeId);
+
+  Future<void> loadFavorites() async {
+    final ids = await _badgeRepository.getFavorites();
+    _favoriteBadgeIds = ids.toSet();
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(int badgeId) async {
+    if (_favoriteBadgeIds.contains(badgeId)) {
+      _favoriteBadgeIds.remove(badgeId);
+      notifyListeners();
+      await _badgeRepository.removeFavorite(badgeId);
+    } else {
+      _favoriteBadgeIds.add(badgeId);
+      notifyListeners();
+      await _badgeRepository.addFavorite(badgeId);
+    }
+  }
+
+  void clear() {
+    // Keep _badges and _detailsBySlug — badge catalog is global, not user-specific.
+    _earnedBadges = [];
+    _favoriteBadgeIds = {};
+    _isLoadingEarned = false;
+    _pendingCelebration = null;
+    notifyListeners();
+  }
+
+  void _replaceBadge(BadgeModel detail) {
+    final index = _badges.indexWhere((item) => item.slug == detail.slug);
+    if (index < 0) {
+      return;
+    }
+
+    _badges[index] = detail;
+  }
+}
