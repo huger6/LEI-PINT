@@ -1,7 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { annonymousUsersOnly, loginRequired } = require('../middlewares/auth.middleware');
+const { annonymousUsersOnly, loginRequired, optionalAuth } = require('../middlewares/auth.middleware');
 const authController = require('../controllers/auth.controller');
+const me = require('./user.routes');
 
 const router = express.Router();
 
@@ -52,7 +53,7 @@ router.post('/login', loginLimiter, annonymousUsersOnly, authController.login);
  * @desc    Issue a new access token using a valid refresh token
  * @access  Public
  */
-router.post('/refresh', authController.refresh);
+router.post('/refresh', optionalAuth, authController.refresh);
 
 /**
  * @route   POST /api/auth/logout
@@ -60,20 +61,6 @@ router.post('/refresh', authController.refresh);
  * @access  Authenticated
  */
 router.post('/logout', loginRequired, authController.logout);
-
-/**
- * @route   GET /api/auth/me
- * @desc    Return the authenticated user's profile
- * @access  Authenticated
- */
-router.get('/me', loginRequired, authController.me);
-
-/**
- * @route   PUT /api/auth/me
- * @desc    Update the authenticated user's profile
- * @access  Authenticated
- */
-router.put('/me', loginRequired, authController.updateProfile);
 
 /**
  * @route   GET /api/auth/verify-session
@@ -89,14 +76,14 @@ router.get('/verify-session', loginRequired, authController.verifySession);
  * @desc    Confirm a user's email address via token from confirmation email
  * @access  Public
  */
-router.get('/confirm-email', authController.confirmEmail);
+router.get('/confirm-email', optionalAuth, authController.confirmEmail);
 
 /**
  * @route   POST /api/auth/resend-confirmation
  * @desc    Resend the email confirmation link
  * @access  Public
  */
-router.post('/resend-confirmation', authController.resendConfirmation);
+router.post('/resend-confirmation', optionalAuth, authController.resendConfirmation);
 
 // --- Password Recovery ---
 
@@ -130,5 +117,7 @@ router.post('/reset-password', annonymousUsersOnly, authController.resetPassword
  */
 router.post('/change-password', loginRequired, authController.changePassword);
 
-
 module.exports = router;
+
+// Backwards-compatibility: expose `/auth/me` by mounting user routes here
+router.use('/me', me);

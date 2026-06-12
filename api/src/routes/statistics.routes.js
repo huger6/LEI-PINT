@@ -3,6 +3,8 @@ const router = express.Router();
 const { loginRequired, checkRole, leadership } = require('../middlewares/auth.middleware');
 const ctrl = require('../controllers/statistics.controller');
 
+const adminOnly = checkRole('Administrator');
+
 /*──────────────────────────────────────────────────────────────
   Individual consultant statistics
 ──────────────────────────────────────────────────────────────*/
@@ -29,6 +31,13 @@ router.get('/consultant/points-history', loginRequired, ctrl.getPointsHistory);
  */
 router.get('/consultant/timeline', loginRequired, ctrl.getAcquisitionTimeline);
 
+/**
+ * @route   GET /api/statistics/consultant/badges-per-area
+ * @desc    Per-area breakdown of earned badges and points for a consultant
+ * @access  Authenticated
+ */
+router.get('/consultant/badges-per-area', loginRequired, ctrl.getBadgesPerArea);
+
 /*──────────────────────────────────────────────────────────────
   Service Line Leader / Talent Manager
 ──────────────────────────────────────────────────────────────*/
@@ -40,6 +49,23 @@ router.get('/consultant/timeline', loginRequired, ctrl.getAcquisitionTimeline);
  * @access  Service Line Leader, Talent Manager, Administrator
  */
 router.get('/consultants/comparison', loginRequired, leadership, ctrl.getPeerComparison);
+
+/**
+ * @route   GET /api/statistics/consultants
+ * @desc    Consultants overview (points, badges, applications, last login, SL, area).
+ *          SLL scoped to own Service Line. Supports search/serviceLineId/areaId/
+ *          pointsMin/pointsMax/sort/page/limit.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/consultants', loginRequired, leadership, ctrl.getConsultantsOverview);
+
+/**
+ * @route   GET /api/statistics/badges-summary
+ * @desc    KPI summary: total awarded, standard vs premium, approval rate.
+ *          SLL scoped to own SL. Filters: serviceLineId, areaId, dateFrom/dateTo.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/badges-summary', loginRequired, leadership, ctrl.getBadgesSummary);
 
 /**
  * @route   GET /api/statistics/team/badges-count
@@ -109,5 +135,23 @@ router.get('/reports/level-distribution', loginRequired, leadership, ctrl.getLev
  * @access  Service Line Leader, Talent Manager, Administrator
  */
 router.get('/reports/user-enrollment', loginRequired, leadership, ctrl.getUserEnrollment);
+
+/**
+ * @route   GET /api/statistics/reports/expiring-badges
+ * @desc    Awarded badges expiring within the next N days (?withinDays=30)
+ * @access  Talent Manager, Administrator (global, unscoped dataset)
+ */
+router.get('/reports/expiring-badges', loginRequired, checkRole('Talent Manager', 'Administrator'), ctrl.getExpiringBadges);
+
+/*──────────────────────────────────────────────────────────────
+  Admin maintenance
+──────────────────────────────────────────────────────────────*/
+
+/**
+ * @route   POST /api/statistics/admin/reconcile-points
+ * @desc    Run sp_reconcile_badge_points() to insert missing badge-completion points
+ * @access  Administrator
+ */
+router.post('/admin/reconcile-points', loginRequired, adminOnly, ctrl.reconcilePoints);
 
 module.exports = router;

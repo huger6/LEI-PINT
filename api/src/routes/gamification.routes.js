@@ -25,11 +25,11 @@ router.get('/interactions', loginRequired, gamificationController.getInteraction
 router.get('/points', loginRequired, gamificationController.getPointsSummary);
 
 /**
- * @route   GET /api/gamification/points/:userId
+ * @route   GET /api/gamification/points/:userGuid
  * @desc    Get a specific consultant's points summary (Admin / TM only)
  * @access  Administrator, Talent Manager
  */
-router.get('/points/:userId', loginRequired, gamificationController.getConsultantPointsById);
+router.get('/points/:userGuid', loginRequired, gamificationController.getConsultantPointsById);
 
 /**
  * @route   GET /api/gamification/recommendations
@@ -51,5 +51,19 @@ router.get('/consultant-stats', loginRequired, gamificationController.getConsult
  * @access  Consultant only
  */
 router.get('/earned-badges', loginRequired, gamificationController.getEarnedBadges);
+
+/**
+ * @route   POST /api/gamification/favorites/:badgeSlug
+ * @desc    Toggle favorite state for a badge (add/remove)
+ * @access  Any authenticated user
+ */
+router.post('/favorites/:badgeSlug', loginRequired, gamificationController.toggleFavorite);
+
+/**
+ * @route   GET /api/gamification/favorites
+ * @desc    Get the authenticated user's favorited badges
+ * @access  Any authenticated user
+ */
+router.get('/favorites', loginRequired, gamificationController.getFavorites);
 
 module.exports = router;

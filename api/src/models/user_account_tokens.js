@@ -58,6 +58,12 @@ module.exports = function (sequelize, DataTypes) {
           is_used: false
         }
       },
+      {
+        name: "idx_account_tokens_value",
+        fields: [
+          { name: "token_value" },
+        ]
+      },
     ]
   });
 };

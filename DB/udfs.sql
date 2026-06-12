@@ -2,6 +2,37 @@
 /* User Defined Functions (UDFs)                                */
 /*==============================================================*/
 
+/*--------------------------------------------------------------*/
+/* FULL NAME NORMALIZATION                                      */
+/*--------------------------------------------------------------*/
+
+DROP FUNCTION IF EXISTS fn_capitalize_full_name(VARCHAR);
+
+CREATE OR REPLACE FUNCTION fn_capitalize_full_name(p_full_name VARCHAR)
+RETURNS VARCHAR
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+    v_clean_name VARCHAR;
+BEGIN
+    IF p_full_name IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    v_clean_name := regexp_replace(trim(p_full_name), '\s+', ' ', 'g');
+
+    IF v_clean_name = '' THEN
+        RETURN v_clean_name;
+    END IF;
+
+    RETURN (
+        SELECT string_agg(initcap(lower(name_part)), ' ' ORDER BY ordinality)
+        FROM unnest(string_to_array(v_clean_name, ' ')) WITH ORDINALITY AS t(name_part, ordinality)
+    );
+END;
+$$;
+
 
 /*==============================================================*/
 /* Badge Recommendation Engine                                  */
@@ -182,4 +213,44 @@ AS $$
     ORDER BY s.recommendation_score DESC, s.badge_points DESC
     LIMIT  p_limit
     OFFSET p_offset;
+$$;
+
+
+/*==============================================================*/
+/* Consultant Badges Per Area                                   */
+/*                                                              */
+/* Given a user ID, returns one row per area where the          */
+/* consultant has earned at least one badge, including the      */
+/* area name, service line name, badges earned, and total       */
+/* points accumulated in that area.                             */
+/*==============================================================*/
+
+CREATE OR REPLACE FUNCTION fn_consultant_badges_per_area(p_user_id INTEGER)
+RETURNS TABLE (
+    area_id           INTEGER,
+    area_name         VARCHAR,
+    service_line_name VARCHAR,
+    badges_earned     BIGINT,
+    total_points      BIGINT
+)
+LANGUAGE plpgsql STABLE
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        a.area_id,
+        a.area_name,
+        sl.service_line_name,
+        COUNT(ab.awarded_badges_id)::BIGINT AS badges_earned,
+        COALESCE(SUM(ab.points_snapshot), 0)::BIGINT AS total_points
+    FROM awarded_badges ab
+    JOIN badge_applications ba ON ba.application_id = ab.application_id
+    JOIN badges b              ON b.badge_id        = ba.badge_id
+    JOIN areas a               ON a.area_id         = b.area_id
+    JOIN service_lines sl      ON sl.service_line_id = b.service_line_id
+    WHERE ab.user_id = p_user_id
+    GROUP BY a.area_id, a.area_name, sl.service_line_name
+    HAVING COUNT(ab.awarded_badges_id) > 0
+    ORDER BY badges_earned DESC, a.area_name;
+END;
 $$;
