@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/language_controller.dart';
 
 class MainBadgesCard extends StatelessWidget {
@@ -999,22 +1000,13 @@ class BadgesPerAreaCard extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
     final maxVal = sorted.first.value;
 
-    const barColors = [
-      Color(0xFF5B9ED2),
-      Color(0xFF83A9E8),
-      Color(0xFF66B6E6),
-      Color(0xFF8BC4D9),
-      Color(0xFF96B8CF),
-      Color(0xFF6FC391),
-      Color(0xFFC9A625),
-      Color(0xFFE57D97),
-    ];
+    final barColors = AppColors.chartBarPalette;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FBFF),
+        color: AppColors.chartBackground,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -1022,10 +1014,10 @@ class BadgesPerAreaCard extends StatelessWidget {
         children: [
           Text(
             tr.tr('badgesPerArea'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF2B3B48),
+              color: AppColors.chartBarTitle,
             ),
           ),
           const SizedBox(height: 14),

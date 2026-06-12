@@ -54,10 +54,11 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
       setState(() {
         _isFavorite = store.isFavorite(widget.badge.id);
       });
+      final tr = LanguageScope.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isFavorite ? 'Badge guardado!' : 'Badge removido dos guardados.'),
-          backgroundColor: _isFavorite ? AppColors.success : const Color(0xFF5A6872),
+          content: Text(_isFavorite ? tr.tr('badgeSaved') : tr.tr('badgeUnsaved')),
+          backgroundColor: _isFavorite ? AppColors.success : AppColors.snackBarNeutral,
           duration: const Duration(seconds: 1),
         ),
       );
@@ -72,11 +73,12 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
         '\n\n$baseUrl/badges/${badge.slug}';
     Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
+      final tr = LanguageScope.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link copiado para a área de transferência!'),
-          backgroundColor: Color(0xFF4E6CA2),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(tr.tr('linkCopied')),
+          backgroundColor: AppColors.snackBarInfo,
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -88,7 +90,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
     final badge = _badge;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: AppColors.pageBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -99,7 +101,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back_rounded, size: 26),
-                    color: const Color(0xFF1E2932),
+                    color: AppColors.navIcon,
                   ),
                   const Spacer(),
                   IconButton(
@@ -108,12 +110,12 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       _isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                       size: 28,
                     ),
-                    color: _isFavorite ? AppColors.primary : const Color(0xFF4A545B),
+                    color: _isFavorite ? AppColors.primary : AppColors.iconMuted,
                   ),
                   IconButton(
                     onPressed: _shareBadge,
                     icon: const Icon(Icons.share_rounded, size: 26),
-                    color: const Color(0xFF4A545B),
+                    color: AppColors.iconMuted,
                   ),
                 ],
               ),
@@ -138,7 +140,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1A1F25),
+                          color: AppColors.titleDark,
                         ),
                       ),
                     ),
@@ -215,7 +217,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                             fontSize: 15,
                             height: 1.65,
                             letterSpacing: 0.15,
-                            color: Color(0xFF4A5663),
+                            color: AppColors.bodyText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -264,7 +266,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                                       entry.value.text,
                                       style: const TextStyle(
                                         fontSize: 14,
-                                        color: Color(0xFF2A3540),
+                                        color: AppColors.detailRowText,
                                         height: 1.4,
                                       ),
                                     ),
@@ -278,25 +280,25 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       const SizedBox(height: 14),
                     ],
                     BadgeSectionCard(
-                      title: 'Detalhes',
+                      title: tr.tr('details'),
                       child: Column(
                         children: [
                           if (badge.category.trim().isNotEmpty)
-                            BadgeDetailRow(label: 'Área', value: badge.category),
+                            BadgeDetailRow(label: tr.tr('area'), value: badge.category),
                           if (badge.level.trim().isNotEmpty)
-                            BadgeDetailRow(label: 'Nível', value: badge.level),
+                            BadgeDetailRow(label: tr.tr('level'), value: badge.level),
                           if (badge.points > 0)
-                            BadgeDetailRow(label: 'Pontos', value: '${badge.points}'),
+                            BadgeDetailRow(label: tr.tr('points'), value: '${badge.points}'),
                           if (badge.duration.trim().isNotEmpty)
-                            BadgeDetailRow(label: 'Tempo estimado', value: badge.duration),
+                            BadgeDetailRow(label: tr.tr('estimatedDuration'), value: badge.duration),
                           if (badge.expirationDays != null && badge.expirationDays! > 0)
                             BadgeDetailRow(
-                              label: 'Validade',
-                              value: '${badge.expirationDays} dias',
+                              label: tr.tr('validity'),
+                              value: tr.tr('validityDays').replaceAll('{days}', '${badge.expirationDays}'),
                             ),
                           if (badge.createdAt != null)
                             BadgeDetailRow(
-                              label: 'Criado a',
+                              label: tr.tr('createdAt'),
                               value: '${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
                             ),
                         ],

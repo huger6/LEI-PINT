@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../injection_container.dart';
 import '../widgets/shared/app_bottom_nav_bar.dart';
 import '../widgets/dashboard/certification_donut_card.dart';
@@ -105,16 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     final greeting = '${_timeGreeting(tr.tr)}, $userName!';
 
-    const segmentColors = [
-      Color(0xFF5C4FE0),
-      Color(0xFFC3B1E6),
-      Color(0xFF7B4DE4),
-      Color(0xFFB9C4E9),
-      Color(0xFF6DC1E3),
-      Color(0xFF658CC9),
-      Color(0xFFE57D97),
-      Color(0xFF494CE6),
-    ];
+    final segmentColors = AppColors.chartDonutPalette;
 
     final donutSegments = dashStore.areaMetrics
         .asMap()

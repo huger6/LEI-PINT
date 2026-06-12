@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/notification_defs.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../data/repositories/applications_repo.dart';
 import '../../../models/notification_model.dart';
 import '../../../presentation/state/language_controller.dart';
@@ -165,14 +166,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   NotificationTypeChip(
                     label: tr.tr('notificationsFilterAll'),
                     icon: Icons.notifications_outlined,
-                    color: const Color(0xFF5D9FD1),
+                    color: AppColors.notifHome,
                     isSelected: _selectedType == null,
                     onTap: () => setState(() => _selectedType = null),
                   ),
                   ...types.map((type) {
                     final display = NotificationDefs.getTypeDisplay(type);
                     return NotificationTypeChip(
-                      label: display.label,
+                      label: tr.tr(display.label),
                       icon: display.icon,
                       color: display.color,
                       isSelected: _selectedType == type,

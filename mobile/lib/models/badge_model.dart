@@ -162,7 +162,7 @@ class BadgeModel {
       attributes.add(
         BadgeAttribute(
           icon: Icons.category_outlined,
-          label: 'Area',
+          label: 'area',
           value: area,
         ),
       );
@@ -172,7 +172,7 @@ class BadgeModel {
       attributes.add(
         BadgeAttribute(
           icon: Icons.emoji_events_outlined,
-          label: 'Pontos',
+          label: 'points',
           value: points.toString(),
         ),
       );
@@ -182,7 +182,7 @@ class BadgeModel {
       attributes.add(
         BadgeAttribute(
           icon: Icons.stairs_outlined,
-          label: 'Nivel',
+          label: 'level',
           value: stageCode,
         ),
       );
@@ -192,7 +192,7 @@ class BadgeModel {
       attributes.add(
         BadgeAttribute(
           icon: Icons.schedule_rounded,
-          label: 'Duração',
+          label: 'duration',
           value: duration,
         ),
       );

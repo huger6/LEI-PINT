@@ -44,58 +44,58 @@ abstract class NotificationDefs {
   static NotificationTypeDisplay getTypeDisplay(String type) {
     switch (type.toUpperCase()) {
       case 'HOME':
-        return const NotificationTypeDisplay(
-          label: 'Início',
+        return NotificationTypeDisplay(
+          label: 'notifTypeHome',
           icon: Icons.home_outlined,
-          color: Color(0xFF5D9FD1),
+          color: AppColors.notifHome,
         );
       case 'BADGES':
-        return const NotificationTypeDisplay(
-          label: 'Badges',
+        return NotificationTypeDisplay(
+          label: 'notifTypeBadges',
           icon: Icons.workspace_premium_outlined,
-          color: Color(0xFFC7A11D),
+          color: AppColors.notifBadges,
         );
       case 'APPLICATIONS':
-        return const NotificationTypeDisplay(
-          label: 'Candidaturas',
+        return NotificationTypeDisplay(
+          label: 'notifTypeApplications',
           icon: Icons.description_outlined,
-          color: Color(0xFF3B8DBD),
+          color: AppColors.notifApplications,
         );
       case 'ACHIEVEMENTS':
-        return const NotificationTypeDisplay(
-          label: 'Conquistas',
+        return NotificationTypeDisplay(
+          label: 'notifTypeAchievements',
           icon: Icons.emoji_events_outlined,
-          color: Color(0xFF4BB62A),
+          color: AppColors.notifAchievements,
         );
       case 'POINTS':
-        return const NotificationTypeDisplay(
-          label: 'Pontos',
+        return NotificationTypeDisplay(
+          label: 'notifTypePoints',
           icon: Icons.stars_outlined,
-          color: Color(0xFF7C5CBF),
+          color: AppColors.notifPoints,
         );
       case 'OBJECTIVES':
-        return const NotificationTypeDisplay(
-          label: 'Objetivos',
+        return NotificationTypeDisplay(
+          label: 'notifTypeObjectives',
           icon: Icons.flag_outlined,
-          color: Color(0xFF2E9E4D),
+          color: AppColors.notifObjectives,
         );
       case 'EVOLUTION':
-        return const NotificationTypeDisplay(
-          label: 'Evolução',
+        return NotificationTypeDisplay(
+          label: 'notifTypeEvolution',
           icon: Icons.trending_up_rounded,
-          color: Color(0xFF39639C),
+          color: AppColors.secondary,
         );
       case 'ANNOUNCEMENTS':
-        return const NotificationTypeDisplay(
-          label: 'Anúncios',
+        return NotificationTypeDisplay(
+          label: 'notifTypeAnnouncements',
           icon: Icons.campaign_outlined,
-          color: Color(0xFFD97B27),
+          color: AppColors.notifAnnouncements,
         );
       default:
-        return const NotificationTypeDisplay(
-          label: 'Sistema',
+        return NotificationTypeDisplay(
+          label: 'notifTypeSystem',
           icon: Icons.settings_outlined,
-          color: Color(0xFF5E6C7A),
+          color: AppColors.notifSystem,
         );
     }
   }
@@ -103,28 +103,28 @@ abstract class NotificationDefs {
   static NotificationDisplay getDisplay(int definitionId, {String? url}) {
     switch (definitionId) {
       case applicationSubmitted:
-        return const NotificationDisplay(
+        return NotificationDisplay(
           icon: Icons.send_rounded,
-          color: Color(0xFF5D9FD1),
-          label: 'Candidatura Submetida',
+          color: AppColors.notifSubmitted,
+          label: 'notifApplicationSubmitted',
         );
       case approvedByTm:
-        return const NotificationDisplay(
+        return NotificationDisplay(
           icon: Icons.fact_check_outlined,
-          color: Color(0xFF3B8DBD),
-          label: 'Aprovado pelo Talent Manager',
+          color: AppColors.notifApprovedTm,
+          label: 'notifApprovedByTm',
         );
       case approvedBySll:
-        return const NotificationDisplay(
+        return NotificationDisplay(
           icon: Icons.verified_rounded,
-          color: Color(0xFF4BB62A),
-          label: 'Badge Aceite',
+          color: AppColors.notifAccepted,
+          label: 'notifBadgeAccepted',
         );
       case applicationRejected:
-        return const NotificationDisplay(
+        return NotificationDisplay(
           icon: Icons.cancel_outlined,
-          color: Color(0xFFD94827),
-          label: 'Candidatura Rejeitada',
+          color: AppColors.notifRejected,
+          label: 'notifApplicationRejected',
         );
       default:
         return _fallbackFromUrl(url);
@@ -134,30 +134,30 @@ abstract class NotificationDefs {
   static NotificationDisplay _fallbackFromUrl(String? url) {
     final lower = (url ?? '').toLowerCase();
     if (lower.contains('accept') || lower.contains('approve')) {
-      return const NotificationDisplay(
+      return NotificationDisplay(
         icon: Icons.check_circle_outline_rounded,
-        color: Color(0xFF4BB62A),
-        label: 'Aprovado',
+        color: AppColors.notifAccepted,
+        label: 'notifApproved',
       );
     }
     if (lower.contains('reject') || lower.contains('return')) {
-      return const NotificationDisplay(
+      return NotificationDisplay(
         icon: Icons.cancel_outlined,
-        color: Color(0xFFD94827),
-        label: 'Rejeitado',
+        color: AppColors.notifRejected,
+        label: 'notifRejected',
       );
     }
     if (lower.contains('expir')) {
-      return const NotificationDisplay(
+      return NotificationDisplay(
         icon: Icons.timer_off_outlined,
-        color: Color(0xFFC6A12A),
-        label: 'Expiração',
+        color: AppColors.notifExpired,
+        label: 'notifExpiration',
       );
     }
     return NotificationDisplay(
       icon: Icons.notifications_outlined,
       color: AppColors.onSurface,
-      label: 'Notificação',
+      label: 'notifGeneric',
     );
   }
 }
