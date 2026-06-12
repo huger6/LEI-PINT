@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
+
 class ConfettiPiece {
   ConfettiPiece({required Random random, required Size bounds})
       : x = random.nextDouble() * bounds.width,
@@ -23,16 +25,7 @@ class ConfettiPiece {
   final Color color;
   final int shape; // 0 = rect, 1 = circle, 2 = triangle
 
-  static const _confettiColors = [
-    Color(0xFF00B8E0),
-    Color(0xFF39639C),
-    Color(0xFFFFCC00),
-    Color(0xFF04CE00),
-    Color(0xFFE57D97),
-    Color(0xFF5C4FE0),
-    Color(0xFF6DC1E3),
-    Color(0xFFCFA600),
-  ];
+  static final _confettiColors = AppColors.confettiPalette;
 
   void update() {
     y += speed;

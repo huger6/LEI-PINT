@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 9;
+const int sourceStringsVersion = 10;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -488,6 +488,32 @@ const _sourceJson = r'''
   "stateRejectedF": "Rejeitada",
   "stateInValidationF": "Em validação",
   "stateSubmittedF": "Submetida",
-  "stateInAnalysis": "Em análise"
+  "stateInAnalysis": "Em análise",
+  "badgeSaved": "Badge guardado!",
+  "badgeUnsaved": "Badge removido dos guardados.",
+  "linkCopied": "Link copiado para a área de transferência!",
+  "estimatedDuration": "Tempo estimado",
+  "duration": "Duração",
+  "validity": "Validade",
+  "validityDays": "{days} dias",
+  "markAsRead": "Marcar como lida",
+  "timeNow": "Agora",
+  "notifTypeHome": "Início",
+  "notifTypeBadges": "Badges",
+  "notifTypeApplications": "Candidaturas",
+  "notifTypeAchievements": "Conquistas",
+  "notifTypePoints": "Pontos",
+  "notifTypeObjectives": "Objetivos",
+  "notifTypeEvolution": "Evolução",
+  "notifTypeAnnouncements": "Anúncios",
+  "notifTypeSystem": "Sistema",
+  "notifApplicationSubmitted": "Candidatura Submetida",
+  "notifApprovedByTm": "Aprovado pelo Talent Manager",
+  "notifBadgeAccepted": "Badge Aceite",
+  "notifApplicationRejected": "Candidatura Rejeitada",
+  "notifApproved": "Aprovado",
+  "notifRejected": "Rejeitado",
+  "notifExpiration": "Expiração",
+  "notifGeneric": "Notificação"
 }
 ''';

@@ -120,14 +120,14 @@ class NotificationCard extends StatelessWidget {
   NotificationTypeDisplay get _typeDisplay =>
       NotificationDefs.getTypeDisplay(item.notificationType);
 
-  String get _title {
+  String _title(LanguageController tr) {
     final payload = item.payload;
     if (payload != null && payload.isNotEmpty) {
       final firstLine = payload.split('\n').first;
       if (firstLine.length <= 60) return firstLine;
       return '${firstLine.substring(0, 57)}...';
     }
-    return _display.label;
+    return tr.tr(_display.label);
   }
 
   String get _message {
@@ -140,15 +140,19 @@ class NotificationCard extends StatelessWidget {
     return '';
   }
 
-  String get _timestamp {
+  String _timestamp(LanguageController tr) {
     final now = DateTime.now();
     final diff = now.difference(item.sentAt);
 
-    if (diff.inMinutes < 1) return 'Agora';
-    if (diff.inMinutes < 60) return 'Há ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'Há ${diff.inHours}h';
+    if (diff.inMinutes < 1) return tr.tr('timeNow');
+    if (diff.inMinutes < 60) {
+      return tr.tr('minutesAgo').replaceAll('{minutes}', '${diff.inMinutes}');
+    }
+    if (diff.inHours < 24) {
+      return tr.tr('hoursAgo').replaceAll('{hours}', '${diff.inHours}');
+    }
     if (diff.inDays < 7) {
-      return 'Há ${diff.inDays} ${diff.inDays == 1 ? 'dia' : 'dias'}';
+      return tr.tr('daysAgo').replaceAll('{days}', '${diff.inDays}');
     }
     final d = item.sentAt;
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -156,6 +160,7 @@ class NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final display = _display;
     final typeDisplay = _typeDisplay;
 
@@ -207,7 +212,7 @@ class NotificationCard extends StatelessWidget {
                         ),
                       Expanded(
                         child: Text(
-                          _title,
+                          _title(tr),
                           style: TextStyle(
                             color: display.color,
                             fontSize: 16,
@@ -222,7 +227,7 @@ class NotificationCard extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         constraints:
                             const BoxConstraints(minWidth: 28, minHeight: 28),
-                        tooltip: 'Marcar como lida',
+                        tooltip: tr.tr('markAsRead'),
                       ),
                     ],
                   ),
@@ -261,7 +266,7 @@ class NotificationCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              typeDisplay.label,
+                              tr.tr(typeDisplay.label),
                               style: TextStyle(
                                 color: typeDisplay.color,
                                 fontSize: 11,
@@ -273,7 +278,7 @@ class NotificationCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _timestamp,
+                        _timestamp(tr),
                         style: const TextStyle(
                           color: Color(0xFF6E7A86),
                           fontSize: 12,
