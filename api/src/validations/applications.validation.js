@@ -53,6 +53,11 @@ const getApplicationsQuerySchema = z.object({
         .optional()
         .describe("Filter applications by one or multiple states"),
 
+    areaId: z.coerce.number().int().positive().optional(),
+    badgeId: z.coerce.number().int().positive().optional(),
+    dateFrom: z.coerce.date().optional(),
+    dateTo: z.coerce.date().optional(),
+
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().default(20)
 });
@@ -69,7 +74,7 @@ const getUploadUrlBodySchema = z.object({
 });
 
 const reviewApplicationSchema = z.object({
-    action: z.enum(['accept', 'reject', 'review'], {
+    action: z.enum(['accept', 'reject', 'review', 'send_back'], {
         errorMap: () => ({ message: 'VALIDATION_REVIEW_ACTION_INVALID' })
     }),
     reviewerNotes: z.string().trim()

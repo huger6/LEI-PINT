@@ -9,6 +9,7 @@ const notificationsService = require('../services/notifications.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const {
     sendApplicationSubmittedEmail,
+    sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail
 } = require('../services/email.service');
@@ -35,7 +36,7 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit, areaId, badgeId, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
@@ -44,11 +45,33 @@ const getApplications = async (req, res) => {
             appWhereClause.application_state = { [Op.in]: state };
         }
 
+        if (badgeId) appWhereClause.badge_id = badgeId;
+
+        if (dateFrom || dateTo) {
+            appWhereClause.submitted_at = {};
+            if (dateFrom) appWhereClause.submitted_at[Op.gte] = dateFrom;
+            if (dateTo) appWhereClause.submitted_at[Op.lte] = dateTo;
+        }
+
+        const badgeWhere = {};
+        if (areaId) badgeWhere.area_id = areaId;
+
         const badgeInclude = {
             model: models.badges,
             as: 'badge',
-            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id']
+            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id'],
+            include: [
+                { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
+                { model: models.areas, as: 'area', attributes: ['area_name'] },
+                {
+                    model: models.progression_stages,
+                    as: 'progression_stage',
+                    attributes: ['stage_title', 'stage_sequence'],
+                    include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }]
+                }
+            ]
         };
+        if (Object.keys(badgeWhere).length > 0) badgeInclude.where = badgeWhere;
 
         // --- Filter by role ---
         if (role === 'Consultant') {
@@ -64,8 +87,8 @@ const getApplications = async (req, res) => {
                     code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
-            // SLL only sees applications within their SL
-            badgeInclude.where = { service_line_id: sllInfo.service_line_id };
+            // SLL only sees applications within their SL (merge with any area filter)
+            badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
 
         } else if (role === 'Talent Manager' || role === 'Administrator') {
             // TM/Admin see everything, but TM doesn't see apps in 'Open' state by default
@@ -198,9 +221,23 @@ const getApplicationById = async (req, res) => {
             }
         }
 
+        // Enrich with the consultant's total points and global ranking position.
+        // Access to this application is already RBAC-gated above, so exposing the
+        // applicant's gamification stats here is safe and avoids extra client calls.
+        const data = application.toJSON();
+        try {
+            const stats = await gamificationService.getConsultantPointsAndRank(application.user_id);
+            data.consultant_total_points = stats.totalPoints;
+            data.consultant_ranking_position = stats.rankingPosition;
+        } catch (statsError) {
+            logger.warn('Failed to compute consultant points/rank for application detail', { error: statsError });
+            data.consultant_total_points = null;
+            data.consultant_ranking_position = null;
+        }
+
         return res.status(200).json({
             success: true,
-            data: application
+            data
         });
 
     } catch (error) {
@@ -613,7 +650,8 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({ success: false, code: 'APP_TM_CANNOT_ACCEPT' });
             }
-            newState = action === 'review' ? 'In validation' : 'Rejected';
+            // 'send_back' returns the application to the consultant for correction (Open)
+            newState = action === 'review' ? 'In validation' : (action === 'send_back' ? 'Open' : 'Rejected');
 
         } else if (role === 'Service Line Leader') {
             // SLL only acts on In validation applications (after TM approval)
@@ -626,7 +664,8 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(403).json({ success: false, code: 'APP_SLL_CANNOT_REVIEW' });
             }
-            newState = action === 'accept' ? 'Accepted' : 'Rejected';
+            // 'send_back' returns the application to the consultant for correction (Open)
+            newState = action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected');
 
         } else {
             // Administrator: full flexibility
@@ -634,11 +673,13 @@ const validateApplication = async (req, res) => {
                 await transaction.rollback();
                 return res.status(400).json({ success: false, code: 'APP_REVIEW_INVALID_STATE', data: { currentState: state } });
             }
-            if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
+            if ((action === 'accept' || action === 'reject' || action === 'send_back') && !['Submitted', 'In validation'].includes(state)) {
                 await transaction.rollback();
                 return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
             }
-            newState = action === 'review' ? 'In validation' : (action === 'accept' ? 'Accepted' : 'Rejected');
+            newState = action === 'review'
+                ? 'In validation'
+                : (action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected'));
         }
 
         // Create awarded_badge record when application is accepted
@@ -659,7 +700,7 @@ const validateApplication = async (req, res) => {
         }
 
         // Audit log (before state update so the DB trigger dedup skips)
-        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject' }[action];
+        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject', send_back: 'Send Back' }[action];
         await models.application_validation_logs.create({
             application_id: application.application_id,
             user_id: reviewerId,
@@ -721,6 +762,17 @@ const validateApplication = async (req, res) => {
                     meta: badgeMeta,
                     url: `/applications/${application.application_guid}`
                 });
+            } else if (newState === 'Open') {
+                // Reviewer sent the application back to the consultant for correction
+                await notificationsService.createNotification({
+                    userId: application.user_id,
+                    definitionId: 3,
+                    notificationType: 'APPLICATIONS',
+                    title: 'NOTIF_APP_RETURNED_TITLE',
+                    body: 'NOTIF_APP_RETURNED_BODY',
+                    meta: badgeMeta,
+                    url: `/applications/${application.application_guid}`
+                });
             }
 
             // Email the consultant on terminal state changes
@@ -757,6 +809,9 @@ const validateApplication = async (req, res) => {
                 const slls = await models.service_line_leaders.findAll({
                     where: { service_line_id: application.badge.service_line_id }
                 });
+                // Applicant name for the SLL email body.
+                const applicantData = await getConsultantEmailData(application.user_id);
+                const applicantName = applicantData?.name || '';
                 for (const sll of slls) {
                     await notificationsService.createNotification({
                         userId: sll.user_id,
@@ -767,6 +822,23 @@ const validateApplication = async (req, res) => {
                         meta: badgeMeta,
                         url: `/admin/applications/${application.application_guid}`
                     });
+
+                    // Email the SLL too (req: SLL receives application/validation emails),
+                    // honouring their notification preferences.
+                    const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
+                    if (sllPrefs.is_enabled && sllPrefs.send_email) {
+                        const sllData = await getConsultantEmailData(sll.user_id);
+                        if (sllData) {
+                            await sendApplicationPendingSllReviewEmail(
+                                sllData.email,
+                                sllData.name,
+                                applicantName,
+                                application.badge.badge_title,
+                                appUrl,
+                                sllData.lang
+                            );
+                        }
+                    }
                 }
             }
         } catch (notifErr) {
