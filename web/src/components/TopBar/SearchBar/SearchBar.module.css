@@ -1,0 +1,155 @@
+.searchForm {
+    width: 100%;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--color-primary-border-soft);
+    background: var(--gradient-surface-field);
+    transition: border-color 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--color-outline);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0.85rem;
+    padding-right: 0.5rem;
+    line-height: 0;
+}
+
+.searchIcon {
+    display: block;
+    flex: 0 0 auto;
+}
+
+.searchInput {
+    border: 0;
+    background: transparent;
+    color: var(--color-on-surface);
+    font-size: 14px;
+    line-height: 1.2;
+    padding: 0.62rem 0.95rem 0.62rem 0.15rem;
+}
+
+.searchInput::placeholder {
+    color: var(--color-outline);
+    opacity: 0.82;
+}
+
+.searchInput:focus {
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.searchForm:focus-within {
+    border-color: var(--color-primary-border-medium);
+    box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+    background: var(--color-surface-overlay-90);
+}
+
+.searchForm:hover {
+    border-color: var(--color-primary-border-medium);
+    background: var(--color-surface-overlay-88);
+}
+
+/* Icon-only button */
+.iconButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: filter 0.18s ease, transform 0.15s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.iconButton:hover {
+    filter: brightness(0.9);
+    transform: scale(1.06);
+}
+
+.iconButton:active {
+    transform: scale(0.94);
+}
+
+.iconButton:focus-visible {
+    outline: 2px solid var(--color-primary-focus-ring);
+    outline-offset: 2px;
+}
+
+/* Overlay that covers the full topbar when expanded */
+.searchOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    padding: 0 16px;
+    background: var(--color-background, #ffffff);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1px solid var(--color-primary-border-medium, #DEE3E6);
+    animation: overlayIn 0.16s ease;
+}
+
+@keyframes overlayIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.overlayInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-on-surface);
+    font-size: 15px;
+    line-height: 1.2;
+    padding: 0.5rem 0.5rem;
+    outline: none;
+    min-width: 0;
+}
+
+.overlayInput::placeholder {
+    color: var(--color-outline);
+    opacity: 0.82;
+}
+
+/* Close button in overlay */
+.closeButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--color-outline);
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+    padding: 0;
+}
+
+.closeButton:hover {
+    background: var(--color-primary-hover-bg, rgba(0, 0, 0, 0.07));
+    color: var(--color-on-surface);
+}
+
+.closeButton:focus-visible {
+    outline: 2px solid var(--color-primary-focus-ring);
+    outline-offset: 2px;
+}

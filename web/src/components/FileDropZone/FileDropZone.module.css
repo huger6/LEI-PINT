@@ -1,0 +1,137 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.dropzone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 34px 24px;
+	border: 2px dashed rgba(57, 99, 156, 0.4);
+	border-radius: 16px;
+	background: #fafcff;
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.dropzone:hover,
+.dropzone.dragOver {
+	background: var(--color-blue-soft);
+	border-color: var(--color-secondary);
+}
+
+.hiddenInput {
+	display: none;
+}
+
+.iconCircle {
+	width: 56px;
+	height: 56px;
+	border-radius: 16px;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.dropLabel {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--color-secondary);
+	margin: 0;
+}
+
+.sizeHint {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	margin: 0;
+}
+
+.fileList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.fileCount {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0;
+}
+
+.fileItems {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 280px;
+	overflow-y: auto;
+	padding-right: 4px;
+}
+
+.fileItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 13px;
+	border-radius: 14px;
+	background: var(--color-bg-card);
+	border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.fileInfo {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.fileIcon {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.fileMeta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.fileName {
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fileSize {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+}
+
+.removeBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 6px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: background 150ms ease;
+}
+
+.removeBtn:hover {
+	background: var(--color-red-soft);
+}

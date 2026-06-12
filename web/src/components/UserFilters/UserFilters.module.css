@@ -1,0 +1,142 @@
+/* ── Row 1: full-width search input ──────────────────────────────────────── */
+.searchRow {
+	margin-bottom: 0.625rem;
+}
+
+
+/* ── Row 2: quick-select filters + toggle + clear ────────────────────────── */
+.filtersRow {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	flex-wrap: wrap;
+}
+
+/* Individual select wrapper */
+.selectWrapper {
+	flex: 1 1 175px;
+	max-width: 220px;
+	min-width: 0;
+}
+
+/* Clear-filters button — matches advancedToggle height/padding */
+.clearBtn {
+	height: calc(1.5em + 0.75rem + 3px) !important;
+	font-size: 0.875rem !important;
+	padding: 0 0.8rem !important;
+	border-radius: 10px !important;
+}
+
+/* ── "More Filters" toggle ───────────────────────────────────────────────── */
+.advancedToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0 0.8rem;
+	height: calc(1.5em + 0.75rem + 3px);
+	border: 1.5px solid var(--color-primary-border-soft);
+	border-radius: 10px;
+	background: transparent;
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 600;
+	font-family: inherit;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.advancedToggle:hover {
+	border-color: var(--color-primary-border-medium);
+	color: var(--color-primary);
+	background: var(--color-primary-hover-bg-soft);
+}
+
+.advancedToggleActive {
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+	background: var(--color-primary-hover-bg-soft);
+}
+
+/* Badge showing count of active advanced filters */
+.activeBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	border-radius: 9px;
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* ── Advanced filters panel (collapsible) ────────────────────────────────── */
+.advancedRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	align-items: flex-end;
+	padding-top: 1rem;
+	margin-top: 0.875rem;
+	border-top: 1px solid #f0f2f4;
+}
+
+/* Date picker columns — fixed so the panel never inherits a narrow width */
+.dateWrapper {
+	flex: 0 0 155px;
+	min-width: 0;
+	/* DatePicker panel is position:absolute and 22rem wide; it will overflow
+	   this wrapper's visual bounds, which is intentional. */
+}
+
+/* Numeric range inputs */
+.numberWrapper {
+	flex: 0 0 108px;
+	min-width: 0;
+}
+
+.numberInput {
+	border-radius: 10px !important;
+}
+
+/* Uppercase section label above each advanced filter */
+.filterLabel {
+	display: block;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-outline);
+	margin-bottom: 5px;
+}
+
+/* ── Responsive breakpoints ──────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+	.selectWrapper {
+		flex: 1 1 140px;
+	}
+}
+
+@media (max-width: 576px) {
+	.selectWrapper {
+		flex: 1 1 100%;
+	}
+
+	.advancedToggle {
+		flex: 1;
+		justify-content: center;
+	}
+
+	.dateWrapper {
+		flex: 1 1 calc(50% - 0.5rem);
+	}
+
+	.numberWrapper {
+		flex: 1 1 calc(50% - 0.5rem);
+	}
+}

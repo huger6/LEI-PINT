@@ -90,6 +90,8 @@ Badge progression maps directly across five distinct state flags managed inside 
 - Keep code modularized.
 - Re-use code if possible.
 - Any code written or edited must be re-usable, unless deemed otherwise (something very specific).
+- Always ask if in doubt.
+
 
 ### API Design Guidelines
 

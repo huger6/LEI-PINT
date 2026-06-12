@@ -1,0 +1,19 @@
+.bulletItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.bullet {
+	font-size: 0.875rem;
+	line-height: 1.3125rem;
+	flex-shrink: 0;
+	width: 8px;
+}
+
+.bulletText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.3125rem;
+}

@@ -1,0 +1,36 @@
+.title {
+	font-size: 1.5rem;
+	color: var(--color-on-primary-container);
+}
+
+.subtitle {
+	color: var(--color-outline);
+}
+
+.rememberCheckbox {
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.rememberMe {
+	color: var(--color-on-primary-container);
+}
+
+.warningIcon {
+	font-size: 2.5rem;
+}
+
+.emailActions {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.emailActionLink {
+	width: 100%;
+	display: block;
+	text-decoration: none;
+}
