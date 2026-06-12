@@ -10,6 +10,7 @@ abstract class ScreenDataScope {
       SyncCodes.applications,
       SyncCodes.points,
       SyncCodes.announcements,
+      SyncCodes.notifications,
     ],
     AppRouter.exploreCompetencies: [
       SyncCodes.badges,

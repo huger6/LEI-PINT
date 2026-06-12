@@ -4,17 +4,17 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/constants/sync_codes.dart';
 import '../../core/services/sync_service.dart';
-import '../../data/local/notification_dao.dart';
+import '../../data/repositories/notification_repo.dart';
 import '../../models/notification_model.dart';
 
 class NotificationStore extends ChangeNotifier {
-  NotificationStore(this._dao, this._syncService) {
+  NotificationStore(this._repository, this._syncService) {
     _syncSub = _syncService.onSyncComplete.listen((code) {
-      if (code == SyncCodes.notifications) loadNotifications();
+      if (code == SyncCodes.notifications) _reloadFromLocal();
     });
   }
 
-  final NotificationDao _dao;
+  final NotificationRepository _repository;
   final SyncService _syncService;
   StreamSubscription<int>? _syncSub;
 
@@ -32,17 +32,34 @@ class NotificationStore extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _all = await _dao.getAll();
+      _all = await _repository.getLocal();
+      notifyListeners();
     } catch (e) {
-      debugPrint('NotificationStore: load failed: $e');
+      debugPrint('NotificationStore: local load failed: $e');
+    }
+
+    try {
+      await _repository.fetchAndCache();
+      _all = await _repository.getLocal();
+    } catch (e) {
+      debugPrint('NotificationStore: API fetch failed: $e');
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
+  Future<void> _reloadFromLocal() async {
+    try {
+      _all = await _repository.getLocal();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('NotificationStore: reload from local failed: $e');
+    }
+  }
+
   Future<void> markRead(int id) async {
-    await _dao.markRead(id);
+    await _repository.markRead(id);
     final idx = _all.indexWhere((n) => n.id == id);
     if (idx >= 0) {
       _all[idx] = _all[idx].copyWith(isRead: true);
@@ -57,7 +74,7 @@ class NotificationStore extends ChangeNotifier {
   }
 
   Future<void> markAllRead() async {
-    await _dao.markAllRead();
+    await _repository.markAllRead();
     _all = _all.map((n) => n.copyWith(isRead: true)).toList();
     notifyListeners();
   }
