@@ -1164,12 +1164,20 @@
 		"colConsultant": "Consultor",
 		"colBadge": "Badge",
 		"colArea": "Área",
+		"colLevel": "Nível",
+		"colObtainedDate": "Data de Obtenção",
 		"colState": "Estado",
-		"colDate": "Data",
 		"filter": {
 			"obtained": "Obtidos",
-			"inprocess": "Em processo",
-			"all": "Todos"
+			"inprocess": "Em processo"
+		},
+		"filters": {
+			"toggle": "Filtros",
+			"allAreas": "Todas as áreas",
+			"allBadges": "Todos os badges",
+			"from": "De",
+			"to": "Até",
+			"clear": "Limpar"
 		}
 	},
 	"consultantsList": {
