@@ -28,6 +28,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(128),
       allowNull: true
     },
+    target_profile: {
+      type: DataTypes.STRING(128),
+      allowNull: true
+    },
     is_global: {
       type: DataTypes.BOOLEAN,
       allowNull: true
@@ -37,7 +41,15 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true
     },
-    created_by: {
+    preference_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'notification_preferences',
+        key: 'preference_id'
+      }
+    },
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
@@ -45,11 +57,19 @@ module.exports = function (sequelize, DataTypes) {
         key: 'user_id'
       }
     },
+    created_by: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'administrators',
+        key: 'user_id'
+      }
+    },
     updated_by: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'users',
+        model: 'administrators',
         key: 'user_id'
       }
     },
@@ -85,9 +105,21 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "announcements_createdby_fk",
+        name: "user_announcements_fk",
+        fields: [
+          { name: "user_id" },
+        ]
+      },
+      {
+        name: "announcements_admin_fk",
         fields: [
           { name: "created_by" },
+        ]
+      },
+      {
+        name: "announc_notif_fk",
+        fields: [
+          { name: "preference_id" },
         ]
       },
       {

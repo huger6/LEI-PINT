@@ -8,8 +8,6 @@ const { moveImageToPermanent } = require('../services/storage.service');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/admin.validation');
 const { logger } = require('../utils/logger');
-const { sendTopicUpdate } = require('../services/firebase.service');
-const { handleZodError } = require('../utils/responseHelper');
 
 const throwRequestError = (status, code) => {
     const error = new Error(code);
@@ -18,15 +16,15 @@ const throwRequestError = (status, code) => {
 };
 
 const ensureReferenceDataExists = async ({
-    languageId,
+    preferredLangId,
     locationId,
     areas,
     serviceLineId,
     transaction
 }) => {
-    if (languageId) {
-        const language = await models.languages.findByPk(languageId, { transaction });
-        if (!language) throwRequestError(400, 'ADMIN_INVALID_LANG_ID');
+    if (preferredLangId) {
+        const preferredLanguage = await models.preferred_lang.findByPk(preferredLangId, { transaction });
+        if (!preferredLanguage) throwRequestError(400, 'ADMIN_INVALID_LANG_ID');
     }
 
     if (locationId) {
@@ -40,7 +38,7 @@ const ensureReferenceDataExists = async ({
     }
 
     if (areas?.length) {
-        const areaIds = [...new Set(areas.map((area) => area.area_id))];
+        const areaIds = areas.map((area) => area.area_id);
         const availableAreas = await models.areas.findAll({
             attributes: ['area_id'],
             where: {
@@ -61,21 +59,23 @@ const syncRoleAssignments = async ({
     userId,
     targetRole,
     biography,
-    gdprAccepted,
     areas,
     serviceLineId,
     locationId,
     isSuperAdmin,
     transaction
 }) => {
-    // Consultant rows are intentionally preserved on role change (FK children
-    // with ON DELETE RESTRICT prevent deletion, and domain rules require points
-    // to be permanently preserved). Query hardening ensures orphaned rows are
-    // invisible to business logic.
-    // Consultant rows are intentionally preserved on role change (FK children
-    // with ON DELETE RESTRICT prevent deletion, and domain rules require points
-    // to be permanently preserved). Query hardening ensures orphaned rows are
-    // invisible to business logic.
+    if (targetRole !== 'Consultant') {
+        await models.consultant_areas.destroy({
+            where: { user_id: userId },
+            transaction
+        });
+
+        await models.consultants.destroy({
+            where: { user_id: userId },
+            transaction
+        });
+    }
 
     if (targetRole !== 'Talent Manager') {
         await models.talent_managers.destroy({
@@ -95,17 +95,13 @@ const syncRoleAssignments = async ({
         const consultant = await models.consultants.findByPk(userId, { transaction });
 
         if (consultant) {
-            const updateFields = {};
-            if (biography !== undefined) updateFields.biography = biography;
-            if (gdprAccepted !== undefined) updateFields.gdpr_accepted = gdprAccepted;
-            if (Object.keys(updateFields).length > 0) {
-                await consultant.update(updateFields, { transaction });
+            if (biography !== undefined) {
+                await consultant.update({ biography }, { transaction });
             }
         } else {
             await models.consultants.create({
                 user_id: userId,
-                biography: biography || null,
-                gdpr_accepted: gdprAccepted !== undefined ? gdprAccepted : false
+                biography: biography || null
             }, { transaction });
         }
 
@@ -176,191 +172,60 @@ const syncRoleAssignments = async ({
 };
 
 const getUsers = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-
-    try {
-        const parsed = validations.listUsersQuerySchema.parse(req.query);
-        const { page, limit, ...filterParams } = parsed;
-        const offset = (page - 1) * limit;
-        const cacheKey = `admin:users:list:${Buffer.from(JSON.stringify({ ...filterParams, page, limit })).toString('base64')}`;
-
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({ success: true, ...JSON.parse(cached) });
-
-        const { where, include } = models.users.buildUserFilter(filterParams, models);
-
-        const { rows, count } = await models.users.findAndCountAll({
-            where,
-            include,
-            limit,
-            offset,
-            order: [['created_at', 'DESC']],
-            distinct: true,
-            attributes: { exclude: ['password_hash'] }
-        });
-
-        const totalPages = Math.ceil(count / limit);
-        if (page > totalPages && count > 0) {
-            return res.status(404).json({ success: false, code: 'PAGINATION_PAGE_NOT_FOUND' });
-        }
-
-        const responseData = {
-            data: rows,
-            pagination: { totalItems: count, totalPages, currentPage: page }
-        };
-
-        await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
-        return res.status(200).json({ success: true, ...responseData });
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
-
-        logger.error('Error in admin:users:list', { requestId, error });
-        return res.status(500).json({ success: false, code: 'LIST_FETCH_FAILED' });
-    }
-};
-
-const getUser = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-
-    let userGuid;
-    try {
-        const parsed = validations.userIdParamSchema.parse(req.params);
-        userGuid = parsed.userGuid;
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-        logger.error('Error validating user id param', { requestId, error });
-        return res.status(500).json({ success: false, code: 'ADMIN_USER_FETCH_FAILED' });
-    }
-
-    try {
-        const user = await models.users.findOne({
-            where: /^\d+$/.test(userGuid)
-                ? { user_id: Number(userGuid) }
-                : { user_guid: userGuid },
-            attributes: [
-                'user_id', 'user_guid', 'full_name', 'username',
-                'email_address', 'user_role', 'profile_img_url',
-                'language_id', 'location_id', 'current_streak_days',
-                'is_active', 'email_confirmed', 'last_login_at',
-                'last_online', 'created_at'
-            ],
-            raw: true
-        });
-
-        if (!user) {
-            return res.status(404).json({ success: false, code: 'ADMIN_USER_NOT_FOUND' });
-        }
-
-        const [location, languageRecord, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
-            user.location_id
-                ? models.locations.findByPk(user.location_id, { attributes: ['location_id', 'location_name'], raw: true })
-                : null,
-            user.language_id
-                ? models.languages.findByPk(user.language_id, { attributes: ['language_id', 'language_iso', 'language_name'], raw: true })
-                : null,
-            models.consultants.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'gdpr_accepted'], raw: true }),
-            models.talent_managers.findOne({ where: { user_id: user.user_id }, attributes: ['biography'], raw: true }),
-            models.service_line_leaders.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'service_line_id'], raw: true }),
-            models.consultant_areas.findAll({ where: { user_id: user.user_id }, attributes: ['area_id', 'is_primary'], raw: true })
-        ]);
-
-        let areasPayload = null;
-        if (consultantAreas.length > 0) {
-            const areaIds = consultantAreas.map((a) => a.area_id);
-            const areaRecords = await models.areas.findAll({
-                where: { area_id: { [Op.in]: areaIds } },
-                attributes: ['area_id', 'area_name', 'area_slug', 'area_description', 'img_url'],
-                raw: true
-            });
-            const areaById = new Map(areaRecords.map((a) => [a.area_id, a]));
-            areasPayload = consultantAreas
-                .map((ca) => {
-                    const area = areaById.get(ca.area_id);
-                    if (!area) return null;
-                    return { areaId: area.area_id, name: area.area_name, slug: area.area_slug, description: area.area_description, imgUrl: area.img_url, isPrimary: ca.is_primary };
-                })
-                .filter(Boolean);
-            if (areasPayload.length === 0) areasPayload = null;
-        }
-
-        let serviceLineData = null;
-        let learningPathData = null;
-
-        const resolveServiceLine = async (serviceLineId) => {
-            if (!serviceLineId) return;
-            const sl = await models.service_lines.findByPk(serviceLineId, {
-                attributes: ['service_line_name', 'sl_slug', 'service_line_description', 'img_url', 'learning_path_id'],
-                raw: true
-            });
-            if (!sl) return;
-            serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
-            serviceLineData = { serviceLineId: serviceLineId, name: sl.service_line_name, slug: sl.sl_slug, description: sl.service_line_description, imgUrl: sl.img_url };
-            if (sl.learning_path_id) {
-                const lp = await models.learning_paths.findByPk(sl.learning_path_id, {
-                    attributes: ['path_title', 'path_slug', 'path_description', 'img_url'],
-                    raw: true
-                });
-                if (lp) learningPathData = { title: lp.path_title, slug: lp.path_slug, description: lp.path_description, imgUrl: lp.img_url };
+    return handleListRequest({
+        req,
+        res,
+        schema: validations.listUsersQuerySchema,
+        modelName: 'users',
+        cachePrefix: 'admin:users:list',
+        include: [
+            {
+                model: models.locations,
+                as: 'location',
+                attributes: ['location_id', 'location_name']
+            },
+            {
+                model: models.consultants,
+                as: 'consultant',
+                attributes: ['biography'],
+                include: [
+                    {
+                        model: models.consultant_areas,
+                        as: 'consultant_areas',
+                        attributes: ['area_id', 'is_primary'],
+                        include: [
+                            {
+                                model: models.areas,
+                                as: 'area',
+                                attributes: ['area_id', 'area_name']
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                model: models.talent_managers,
+                as: 'talent_manager',
+                attributes: ['biography']
+            },
+            {
+                model: models.service_line_leaders,
+                as: 'service_line_leader',
+                attributes: ['service_line_id', 'biography'],
+                include: [
+                    {
+                        model: models.service_lines,
+                        as: 'service_line',
+                        attributes: ['service_line_id', 'service_line_name']
+                    }
+                ]
             }
-        };
-
-        if (serviceLineLeader?.service_line_id) {
-            await resolveServiceLine(serviceLineLeader.service_line_id);
-        } else if (consultantAreas.length > 0) {
-            const primaryArea = consultantAreas.find((a) => a.is_primary);
-            if (primaryArea) {
-                const areaWithSl = await models.areas.findByPk(primaryArea.area_id, { attributes: ['service_line_id'], raw: true });
-                await resolveServiceLine(areaWithSl?.service_line_id);
-            }
+        ],
+        order: [['created_at', 'DESC']],
+        attributes: {
+            exclude: ['password_hash']
         }
-
-        const langPayload = languageRecord
-            ? { id: languageRecord.language_id, iso: languageRecord.language_iso, name: languageRecord.language_name }
-            : null;
-
-        const profile = {
-            guid: user.user_guid,
-            fullName: user.full_name,
-            username: user.username,
-            email: user.email_address,
-            role: user.user_role,
-            profileImg: user.profile_img_url,
-            lang: langPayload,
-            location: location ? { location_id: location.location_id, name: location.location_name } : null,
-            locationId: user.location_id,
-            biography: user.user_role === 'Consultant' ? (consultant?.biography || null)
-                : user.user_role === 'Talent Manager' ? (talentManager?.biography || null)
-                    : user.user_role === 'Service Line Leader' ? (serviceLineLeader?.biography || null)
-                        : null,
-            serviceLineId: serviceLineLeader?.service_line_id || null,
-            serviceLine: serviceLineData,
-            learningPath: learningPathData,
-            areas: areasPayload,
-            currentStreakDays: user.current_streak_days,
-            isActive: user.is_active,
-            emailConfirmed: user.email_confirmed,
-            gdprAccepted: consultant?.gdpr_accepted ?? null,
-            lastLogin: user.last_login_at,
-            lastOnline: user.last_online,
-            createdAt: user.created_at
-        };
-
-        return res.status(200).json({ success: true, code: 'ADMIN_USER_PROFILE_RETRIEVED', data: profile });
-    } catch (error) {
-        logger.error('Error fetching user profile (admin)', { requestId, userGuid, error });
-        return res.status(500).json({ success: false, code: 'ADMIN_USER_FETCH_FAILED' });
-    }
-};
-
-const resolveUserParam = async (param, transaction) => {
-    // param may be numeric id or uuid
-    if (!param) return null;
-
-    if (/^\d+$/.test(param)) {
-        return models.users.findOne({ where: { user_id: Number(param) }, transaction });
-    }
-
-    return models.users.findOne({ where: { user_guid: param }, transaction });
+    });
 };
 
 const createUser = async (req, res) => {
@@ -380,7 +245,7 @@ const createUser = async (req, res) => {
             phone_number,
             birthdate,
             profile_img_url,
-            language_id,
+            preferred_lang_id,
             location_id,
             biography,
             areas,
@@ -389,7 +254,7 @@ const createUser = async (req, res) => {
         } = validatedBody;
 
         await ensureReferenceDataExists({
-            languageId: language_id,
+            preferredLangId: preferred_lang_id,
             locationId: location_id,
             areas,
             serviceLineId: service_line_id,
@@ -426,7 +291,7 @@ const createUser = async (req, res) => {
             phone_number: phone_number || null,
             birthdate: birthdate || null,
             profile_img_url: profile_img_url || null,
-            language_id,
+            preferred_lang_id,
             location_id: location_id || null,
             approved_by: adminUserId,
             is_active: true,
@@ -470,32 +335,12 @@ const createUser = async (req, res) => {
         await t.commit();
 
         await invalidateCacheByPrefix('admin:users:list');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await invalidateCacheByPrefix('sl:list');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await redis.del('areas:filter-stats');
-        await invalidateCacheByPrefix('levels:list');
-        await redis.del('levels:filter-stats');
-        await sendTopicUpdate("new_data", 1);
-        await sendTopicUpdate("new_data", 7);
-        if (user_role === 'Consultant') {
-            await sendTopicUpdate("new_data", 2);
-            await sendTopicUpdate("new_data", 3);
-        } else if (user_role === 'Talent Manager') {
-            await sendTopicUpdate("new_data", 4);
-        } else if (user_role === 'Service Line Leader') {
-            await sendTopicUpdate("new_data", 5);
-        } else if (user_role === 'Administrator') {
-            await sendTopicUpdate("new_data", 6);
-        }
 
         const emailResult = await sendConfirmationEmail(
             newUser.email_address,
             newUser.full_name,
             confirmationToken,
-            newUser.language_id
+            newUser.preferred_lang_id
         );
 
         if (!emailResult?.success) {
@@ -506,20 +351,9 @@ const createUser = async (req, res) => {
                 emailError: emailResult?.error
             });
 
-            return res.status(201).json({
-                success: true,
-                code: 'ADMIN_USER_CREATE_EMAIL_FAILED',
-                data: {
-                    user_guid: newUser.user_guid,
-                    full_name: newUser.full_name,
-                    username: newUser.username,
-                    email_address: newUser.email_address,
-                    user_role: newUser.user_role,
-                    location_id: newUser.location_id,
-                    language_id: newUser.language_id,
-                    is_active: newUser.is_active,
-                    email_confirmed: newUser.email_confirmed
-                }
+            return res.status(502).json({
+                success: false,
+                code: 'ADMIN_USER_CREATE_EMAIL_FAILED'
             });
         }
 
@@ -527,21 +361,27 @@ const createUser = async (req, res) => {
             success: true,
             code: 'ADMIN_USER_CREATED',
             data: {
-                user_guid: newUser.user_guid,
+                user_id: newUser.user_id,
                 full_name: newUser.full_name,
                 username: newUser.username,
                 email_address: newUser.email_address,
                 user_role: newUser.user_role,
                 location_id: newUser.location_id,
-                language_id: newUser.language_id,
+                preferred_lang_id: newUser.preferred_lang_id,
                 is_active: newUser.is_active,
                 email_confirmed: newUser.email_confirmed
             }
         });
     } catch (error) {
-        if (t && !t.finished) await t.rollback();
+        if (t) await t.rollback();
 
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.issues || error.errors
+            });
+        }
 
         if (error.statusCode) {
             return res.status(error.statusCode).json({
@@ -571,20 +411,16 @@ const updateUser = async (req, res) => {
     const t = await sequelize.transaction();
 
     try {
-        const { userGuid } = validations.userIdParamSchema.parse(req.params);
+        const { userId } = validations.userIdParamSchema.parse(req.params);
         const payload = validations.updateUserBodySchema.parse(req.body);
 
-        // Resolve by numeric id or guid
-        let user = await resolveUserParam(userGuid, t);
-        if (user) {
-            await user.reload({
-                include: [
-                    { model: models.consultants, as: 'consultant', include: [{ model: models.consultant_areas, as: 'consultant_areas' }] },
-                    { model: models.service_line_leaders, as: 'service_line_leader' }
-                ],
-                transaction: t
-            });
-        }
+        const user = await models.users.findByPk(userId, {
+            include: [
+                { model: models.consultants, as: 'consultant', include: [{ model: models.consultant_areas, as: 'consultant_areas' }] },
+                { model: models.service_line_leaders, as: 'service_line_leader' }
+            ],
+            transaction: t
+        });
 
         if (!user) {
             await t.rollback();
@@ -596,27 +432,20 @@ const updateUser = async (req, res) => {
 
         const targetRole = payload.user_role || user.user_role;
 
+        // Prevent promoting any user to Administrator via this endpoint
+        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
+            });
+        }
+
         if (user.user_role === 'Administrator' && payload.user_role && payload.user_role !== 'Administrator') {
             await t.rollback();
             return res.status(400).json({
                 success: false,
                 code: 'ADMIN_CANNOT_DEMOTE_ADMIN'
-            });
-        }
-
-        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
-            });
-        }
-
-        if (payload.user_role === 'Administrator' && user.user_role !== 'Administrator') {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_PROMOTE_TO_ADMIN'
             });
         }
 
@@ -636,7 +465,21 @@ const updateUser = async (req, res) => {
             });
         }
 
+        if (payload.user_role === 'Consultant' && !payload.areas) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CONSULTANT_NEEDS_AREAS'
+            });
+        }
 
+        if (payload.user_role === 'Service Line Leader' && !payload.service_line_id) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_SLL_NEEDS_SERVICE_LINE'
+            });
+        }
 
         const shouldCheckUniqueFields = payload.username || payload.email_address;
         if (shouldCheckUniqueFields) {
@@ -652,7 +495,7 @@ const updateUser = async (req, res) => {
                         },
                         {
                             user_id: {
-                                [Op.ne]: user.user_id
+                                [Op.ne]: userId
                             }
                         }
                     ]
@@ -683,18 +526,6 @@ const updateUser = async (req, res) => {
             });
         }
 
-        let lastSllWarning = false;
-        if (user.user_role === 'Service Line Leader' && payload.user_role && payload.user_role !== 'Service Line Leader') {
-            const currentSll = await models.service_line_leaders.findByPk(user.user_id, { transaction: t });
-            if (currentSll) {
-                const sllCount = await models.service_line_leaders.count({
-                    where: { service_line_id: currentSll.service_line_id },
-                    transaction: t
-                });
-                if (sllCount <= 1) lastSllWarning = true;
-            }
-        }
-
         const hasExistingConsultantAreas = Boolean(user.consultant?.consultant_areas?.length);
         if (targetRole === 'Consultant' && !payload.areas && !hasExistingConsultantAreas) {
             await t.rollback();
@@ -705,7 +536,7 @@ const updateUser = async (req, res) => {
         }
 
         await ensureReferenceDataExists({
-            languageId: payload.language_id,
+            preferredLangId: payload.preferred_lang_id,
             locationId: payload.location_id,
             areas: payload.areas,
             serviceLineId: effectiveServiceLineId,
@@ -726,19 +557,16 @@ const updateUser = async (req, res) => {
             phone_number: payload.phone_number !== undefined ? payload.phone_number : user.phone_number,
             birthdate: payload.birthdate !== undefined ? payload.birthdate : user.birthdate,
             profile_img_url: finalProfileImage,
-            language_id: payload.language_id !== undefined ? payload.language_id : user.language_id,
+            preferred_lang_id: payload.preferred_lang_id !== undefined ? payload.preferred_lang_id : user.preferred_lang_id,
             location_id: payload.location_id !== undefined ? payload.location_id : user.location_id,
             user_role: targetRole,
-            email_confirmed: payload.email_confirmed !== undefined ? payload.email_confirmed : user.email_confirmed,
-            is_active: payload.approve_member !== undefined ? payload.approve_member : user.is_active,
-            approved_by: payload.approve_member === true ? adminUserId : user.approved_by
+            approved_by: payload.approve_member ? adminUserId : user.approved_by
         }, { transaction: t });
 
         await syncRoleAssignments({
             userId: user.user_id,
             targetRole,
             biography: payload.biography,
-            gdprAccepted: payload.gdpr_accepted,
             areas: payload.areas,
             serviceLineId: effectiveServiceLineId,
             locationId: payload.location_id,
@@ -749,37 +577,23 @@ const updateUser = async (req, res) => {
 
         await Promise.all([
             invalidateCacheByPrefix('admin:users:list'),
-            redis.del(`user:profile:${user.user_id}`),
-            invalidateCacheByPrefix('lp:list'),
-            redis.del('lp:filter-stats'),
-            invalidateCacheByPrefix('sl:list'),
-            redis.del('sl:filter-stats'),
-            invalidateCacheByPrefix('areas:list'),
-            redis.del('areas:filter-stats'),
-            invalidateCacheByPrefix('levels:list'),
-            redis.del('levels:filter-stats'),
+            redis.del(`user:profile:${userId}`)
         ]);
-        await sendTopicUpdate("new_data", 1);
-        if (targetRole === 'Consultant') {
-            await sendTopicUpdate("new_data", 2);
-            await sendTopicUpdate("new_data", 3);
-        } else if (targetRole === 'Talent Manager') {
-            await sendTopicUpdate("new_data", 4);
-        } else if (targetRole === 'Service Line Leader') {
-            await sendTopicUpdate("new_data", 5);
-        } else if (targetRole === 'Administrator') {
-            await sendTopicUpdate("new_data", 6);
-        }
 
         return res.status(200).json({
             success: true,
-            code: 'ADMIN_USER_UPDATED',
-            ...(lastSllWarning && { warning: 'ADMIN_SLL_LAST_LEADER_WARNING' })
+            code: 'ADMIN_USER_UPDATED'
         });
     } catch (error) {
-        if (t && !t.finished) await t.rollback();
+        if (t) await t.rollback();
 
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.issues || error.errors
+            });
+        }
 
         if (error.statusCode) {
             return res.status(error.statusCode).json({
@@ -807,21 +621,21 @@ const deactivateUser = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
 
     try {
-        const { userGuid } = validations.userIdParamSchema.parse(req.params);
+        const { userId } = validations.userIdParamSchema.parse(req.params);
 
-        const user = await resolveUserParam(userGuid);
+        if (req.user.sub === userId) {
+            return res.status(400).json({
+                success: false,
+                code: 'ADMIN_CANNOT_DEACTIVATE_SELF'
+            });
+        }
+
+        const user = await models.users.findByPk(userId);
 
         if (!user) {
             return res.status(404).json({
                 success: false,
                 code: 'ADMIN_USER_NOT_FOUND'
-            });
-        }
-
-        if (req.user.sub === user.user_id) {
-            return res.status(400).json({
-                success: false,
-                code: 'ADMIN_CANNOT_DEACTIVATE_SELF'
             });
         }
 
@@ -834,30 +648,27 @@ const deactivateUser = async (req, res) => {
 
         await sequelize.transaction(async (t) => {
             await user.update({ is_active: false }, { transaction: t });
-            await models.user_refresh_tokens.destroy({ where: { user_id: user.user_id }, transaction: t });
+            await models.user_refresh_tokens.destroy({ where: { user_id: userId }, transaction: t });
         });
 
+        // Clear cached profile so /me immediately reflects deactivation
         await Promise.all([
-            redis.del(`user:profile:${user.user_id}`),
-            invalidateCacheByPrefix('admin:users:list'),
-            invalidateCacheByPrefix('lp:list'),
-            redis.del('lp:filter-stats'),
-            invalidateCacheByPrefix('sl:list'),
-            redis.del('sl:filter-stats'),
-            invalidateCacheByPrefix('areas:list'),
-            redis.del('areas:filter-stats'),
-            invalidateCacheByPrefix('levels:list'),
-            redis.del('levels:filter-stats'),
+            redis.del(`user:profile:${userId}`),
+            invalidateCacheByPrefix('admin:users:list')
         ]);
-        await sendTopicUpdate("new_data", 1);
-        await sendTopicUpdate("new_data", 8);
 
         return res.status(200).json({
             success: true,
             code: 'ADMIN_USER_DEACTIVATED'
         });
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_URL_PARAM',
+                errors: error.issues || error.errors
+            });
+        }
 
         logger.error('Error deactivating user through admin module.', { requestId, error });
         return res.status(500).json({
@@ -867,47 +678,17 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-const reactivateUser = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-
-    try {
-        const { userGuid } = validations.userIdParamSchema.parse(req.params);
-        const user = await resolveUserParam(userGuid);
-
-        if (!user) {
-            return res.status(404).json({ success: false, code: 'ADMIN_USER_NOT_FOUND' });
-        }
-
-        if (user.is_active) {
-            return res.status(400).json({ success: false, code: 'ADMIN_USER_ALREADY_ACTIVE' });
-        }
-
-        await user.update({ is_active: true });
-
-        await Promise.all([
-            redis.del(`user:profile:${user.user_id}`),
-            invalidateCacheByPrefix('admin:users:list'),
-        ]);
-        await sendTopicUpdate("new_data", 1);
-
-        return res.status(200).json({ success: true, code: 'ADMIN_USER_REACTIVATED' });
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-
-        logger.error('Error reactivating user through admin module.', { requestId, error });
-        return res.status(500).json({ success: false, code: 'ADMIN_USER_REACTIVATE_FAILED' });
-    }
-};
-
 const resetUserPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const t = await sequelize.transaction();
 
     try {
-        const { userGuid } = validations.userIdParamSchema.parse(req.params);
+        const { userId } = validations.userIdParamSchema.parse(req.params);
 
-        const user = await resolveUserParam(userGuid, t);
-
+        const user = await models.users.findByPk(userId, {
+            attributes: ['user_id', 'full_name', 'email_address', 'preferred_lang_id'],
+            transaction: t
+        });
 
         if (!user) {
             await t.rollback();
@@ -956,14 +737,12 @@ const resetUserPassword = async (req, res) => {
         );
 
         await t.commit();
-        await sendTopicUpdate("new_data", 1);
-        await sendTopicUpdate("new_data", 7);
 
         const emailResult = await sendResetPasswordEmail(
             user.email_address,
             user.full_name,
             rawResetToken,
-            user.language_id
+            user.preferred_lang_id
         );
 
         if (!emailResult?.success) {
@@ -974,8 +753,8 @@ const resetUserPassword = async (req, res) => {
                 emailError: emailResult?.error
             });
 
-            return res.status(200).json({
-                success: true,
+            return res.status(502).json({
+                success: false,
                 code: 'ADMIN_PASSWORD_RESET_EMAIL_FAILED'
             });
         }
@@ -985,9 +764,15 @@ const resetUserPassword = async (req, res) => {
             code: 'ADMIN_PASSWORD_RESET_EMAIL_SENT'
         });
     } catch (error) {
-        if (t && !t.finished) await t.rollback();
+        if (t) await t.rollback();
 
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_URL_PARAM',
+                errors: error.issues || error.errors
+            });
+        }
 
         logger.error('Error forcing password reset through admin module.', { requestId, error });
         return res.status(500).json({
@@ -997,30 +782,10 @@ const resetUserPassword = async (req, res) => {
     }
 };
 
-const getSllCount = async (req, res) => {
-    try {
-        const serviceLineId = Number(req.params.serviceLineId);
-        if (!Number.isInteger(serviceLineId) || serviceLineId <= 0) {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_URL_PARAM' });
-        }
-        const count = await models.service_line_leaders.count({
-            where: { service_line_id: serviceLineId },
-            include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
-        });
-        return res.status(200).json({ success: true, data: { count } });
-    } catch (error) {
-        logger.error('Error counting SLLs for service line.', { error });
-        return res.status(500).json({ success: false, code: 'ADMIN_SLL_COUNT_FAILED' });
-    }
-};
-
 module.exports = {
     getUsers,
-    getUser,
     createUser,
     updateUser,
     deactivateUser,
-    reactivateUser,
-    resetUserPassword,
-    getSllCount
+    resetUserPassword
 };

@@ -1,34 +1,11 @@
 const { models, sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
-const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
-const { generateSignedUploadUrl, generateSignedDownloadUrl } = require('../services/storage.service');
+const gamificationValidations = require('../validations/gamification.validation');
+const { generateSignedUploadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
-const notificationsService = require('../services/notifications.service');
-const { sendTopicUpdate } = require('../services/firebase.service');
-const {
-    sendApplicationSubmittedEmail,
-    sendApplicationPendingSllReviewEmail,
-    sendApplicationApprovedEmail,
-    sendApplicationRejectedEmail
-} = require('../services/email.service');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || '';
-
-// Resolves a consultant's email address, display name, and language ISO code.
-const getConsultantEmailData = async (userId) => {
-    const user = await models.users.findByPk(userId, {
-        attributes: ['email_address', 'full_name'],
-        include: [{ model: models.languages, as: 'language', attributes: ['language_iso'] }]
-    });
-    if (!user) return null;
-    return {
-        email: user.email_address,
-        name: user.full_name,
-        lang: user.language?.language_iso || 'en-GB'
-    };
-};
 
 const getApplications = async (req, res) => {
     try {
@@ -36,7 +13,7 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit, areaId, badgeId, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
@@ -45,33 +22,11 @@ const getApplications = async (req, res) => {
             appWhereClause.application_state = { [Op.in]: state };
         }
 
-        if (badgeId) appWhereClause.badge_id = badgeId;
-
-        if (dateFrom || dateTo) {
-            appWhereClause.submitted_at = {};
-            if (dateFrom) appWhereClause.submitted_at[Op.gte] = dateFrom;
-            if (dateTo) appWhereClause.submitted_at[Op.lte] = dateTo;
-        }
-
-        const badgeWhere = {};
-        if (areaId) badgeWhere.area_id = areaId;
-
         const badgeInclude = {
             model: models.badges,
             as: 'badge',
-            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id'],
-            include: [
-                { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                { model: models.areas, as: 'area', attributes: ['area_name'] },
-                {
-                    model: models.progression_stages,
-                    as: 'progression_stage',
-                    attributes: ['stage_title', 'stage_sequence'],
-                    include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }]
-                }
-            ]
+            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id']
         };
-        if (Object.keys(badgeWhere).length > 0) badgeInclude.where = badgeWhere;
 
         // --- Filter by role ---
         if (role === 'Consultant') {
@@ -87,8 +42,8 @@ const getApplications = async (req, res) => {
                     code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
-            // SLL only sees applications within their SL (merge with any area filter)
-            badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
+            // SLL only sees applications within their SL
+            badgeInclude.where = { service_line_id: sllInfo.service_line_id };
 
         } else if (role === 'Talent Manager' || role === 'Administrator') {
             // TM/Admin see everything, but TM doesn't see apps in 'Open' state by default
@@ -129,7 +84,13 @@ const getApplications = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_QUERY_PARAMS",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error fetching applications', { error });
         return res.status(500).json({
@@ -153,21 +114,8 @@ const getApplicationById = async (req, res) => {
                     model: models.badges,
                     as: 'badge',
                     include: [
-                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title'] },
                         { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                        { model: models.areas, as: 'area', attributes: ['area_name'] },
-                        {
-                            model: models.progression_stages,
-                            as: 'progression_stage',
-                            attributes: ['stage_title', 'stage_sequence'],
-                            include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }]
-                        },
-                        {
-                            model: models.badge_requirements,
-                            as: 'badge_requirements',
-                            where: { is_active: true },
-                            required: false
-                        }
+                        { model: models.areas, as: 'area', attributes: ['area_name'] }
                     ]
                 },
                 {
@@ -185,14 +133,6 @@ const getApplicationById = async (req, res) => {
                     model: models.application_validation_logs,
                     as: 'application_validation_logs',
                     include: [{ model: models.users, as: 'user', attributes: ['full_name', 'user_role'] }]
-                },
-                {
-                    model: models.awarded_badges,
-                    as: 'awarded_badges'
-                },
-                {
-                    model: models.certificates,
-                    as: 'certificate'
                 }
             ]
         });
@@ -221,27 +161,18 @@ const getApplicationById = async (req, res) => {
             }
         }
 
-        // Enrich with the consultant's total points and global ranking position.
-        // Access to this application is already RBAC-gated above, so exposing the
-        // applicant's gamification stats here is safe and avoids extra client calls.
-        const data = application.toJSON();
-        try {
-            const stats = await gamificationService.getConsultantPointsAndRank(application.user_id);
-            data.consultant_total_points = stats.totalPoints;
-            data.consultant_ranking_position = stats.rankingPosition;
-        } catch (statsError) {
-            logger.warn('Failed to compute consultant points/rank for application detail', { error: statsError });
-            data.consultant_total_points = null;
-            data.consultant_ranking_position = null;
-        }
-
         return res.status(200).json({
             success: true,
-            data
+            data: application
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'APP_INVALID_APPLICATION_ID');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "APP_INVALID_APPLICATION_ID"
+            });
+        }
 
         logger.error('Error fetching application details', { error });
         return res.status(500).json({
@@ -254,7 +185,7 @@ const getApplicationById = async (req, res) => {
 const startApplication = async (req, res) => {
     try {
         const userId = req.user.sub; // From JWT
-        const { badgeId } = validations.startApplicationSchema.parse(req.body);
+        const { badgeId, goalId } = validations.startApplicationSchema.parse(req.body);
 
         // Check if badge exists and is active
         const badge = await models.badges.findByPk(badgeId);
@@ -284,10 +215,9 @@ const startApplication = async (req, res) => {
         // Create new application
         const newApp = await models.badge_applications.create({
             user_id: userId,
-            badge_id: badgeId
+            badge_id: badgeId,
+            goal_id: goalId || null
         });
-
-        await sendTopicUpdate("new_data", 15);
 
         return res.status(201).json({
             success: true,
@@ -296,7 +226,13 @@ const startApplication = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.issues || error.errors
+            });
+        }
         logger.error('Error starting application', { error });
         return res.status(500).json({
             success: false,
@@ -325,14 +261,6 @@ const getUploadUrl = async (req, res) => {
         }
 
         const fileExtension = fileName.split('.').pop().toLowerCase();
-
-        if (!validations.ALLOWED_EVIDENCE_EXTENSIONS.has(fileExtension)) {
-            return res.status(400).json({
-                success: false,
-                code: "APP_UPLOAD_INVALID_FILE_TYPE"
-            });
-        }
-
         const safeFileName = `${Date.now()}_req${requirementId}.${fileExtension}`;
         const storagePath = `${userGuid}/application_${applicationGuid}/${safeFileName}`;
 
@@ -347,7 +275,13 @@ const getUploadUrl = async (req, res) => {
         })
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error generating upload URL in controller', { error });
         return res.status(500).json({
@@ -408,8 +342,6 @@ const upsertEvidence = async (req, res) => {
             conflictFields: ['application_id', 'requirement_id']
         });
 
-        await sendTopicUpdate("new_data", 16);
-
         return res.status(200).json({
             success: true,
             code: created ? "APP_EVIDENCE_ADDED" : "APP_EVIDENCE_UPDATED",
@@ -417,7 +349,13 @@ const upsertEvidence = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error upserting evidence', { error });
         return res.status(500).json({
@@ -431,7 +369,6 @@ const submitApplication = async (req, res) => {
     try {
         const userId = req.user.sub;
         const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
-        const { consultantNotes } = validations.submitApplicationSchema.parse(req.body);
 
         // Get application info
         const application = await models.badge_applications.findOne({
@@ -483,88 +420,11 @@ const submitApplication = async (req, res) => {
             });
         }
 
-        // Audit log (before state update so the DB trigger dedup skips)
-        await models.application_validation_logs.create({
-            application_id: application.application_id,
-            user_id: userId,
-            validator_function: 'Consultant',
-            validator_action: 'Open -> Submitted',
-            validations_comments: null
-        });
-
         // State -> Submitted
         await application.update({
             application_state: 'Submitted',
-            submitted_at: new Date(),
-            consultant_notes: consultantNotes ?? null
+            submitted_at: new Date()
         });
-
-        await sendTopicUpdate("new_data", 15);
-
-        // Create notifications and send email to consultant
-        try {
-            const badgeMeta = { badgeTitle: application.badge.badge_title };
-            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
-
-            await notificationsService.createNotification({
-                userId: application.user_id,
-                definitionId: 3,
-                notificationType: 'APPLICATIONS',
-                title: 'NOTIF_APP_SUBMITTED_TITLE',
-                body: 'NOTIF_APP_SUBMITTED_BODY',
-                meta: badgeMeta,
-                url: `/applications/${application.application_guid}`
-            });
-
-            const submittedPrefs = await notificationsService.resolvePreferences(3, application.user_id);
-            if (submittedPrefs.is_enabled && submittedPrefs.send_email) {
-                const consultantData = await getConsultantEmailData(application.user_id);
-                if (consultantData) {
-                    await sendApplicationSubmittedEmail(
-                        consultantData.email,
-                        consultantData.name,
-                        application.badge.badge_title,
-                        appUrl,
-                        consultantData.lang
-                    );
-                }
-            }
-
-            if (application.badge && application.badge.service_line_id) {
-                const slls = await models.service_line_leaders.findAll({
-                    where: { service_line_id: application.badge.service_line_id },
-                    include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
-                });
-                for (const sll of slls) {
-                    await notificationsService.createNotification({
-                        userId: sll.user_id,
-                        definitionId: 3,
-                        notificationType: 'APPLICATIONS',
-                        title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
-                        body: 'NOTIF_APP_NEW_APPLICATION_BODY',
-                        meta: badgeMeta,
-                        url: `/admin/applications/${application.application_guid}`
-                    });
-                }
-            }
-
-            const tms = await models.talent_managers.findAll({
-                include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Talent Manager' } }]
-            });
-            for (const tm of tms) {
-                await notificationsService.createNotification({
-                    userId: tm.user_id,
-                    definitionId: 3,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
-                    body: 'NOTIF_APP_NEW_APPLICATION_BODY',
-                    meta: badgeMeta,
-                    url: `/admin/applications/${application.application_guid}`
-                });
-            }
-        } catch (notifErr) {
-            logger.error('Failed to create notifications on submitApplication', { error: notifErr });
-        }
 
         return res.status(200).json({
             success: true,
@@ -577,7 +437,13 @@ const submitApplication = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'APP_INVALID_IDENTIFIER');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "APP_INVALID_IDENTIFIER",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error submitting application', { error });
         return res.status(500).json({
@@ -589,17 +455,14 @@ const submitApplication = async (req, res) => {
 
 /*──────────────────────────────────────────────────────────────
   PUT /api/applications/:applicationGuid/validate
-  Sequential two-stage review: TM reviews first, then SLL.
+  Moves an application through the review state machine:
+    review  → Submitted      → In validation
+    accept  → Submitted|InV  → Accepted  (creates awarded_badge,
+                                           awards all points)
+    reject  → Submitted|InV  → Rejected
 
-  Talent Manager (acts on Submitted):
-    review → In validation   (approves, forwards to SLL)
-    reject → Rejected
-
-  Service Line Leader (acts on In validation):
-    accept → Accepted        (final approval, awards badge)
-    reject → Rejected
-
-  Administrator: full flexibility across all valid states.
+  Roles: Talent Manager, Service Line Leader, Administrator.
+  SLL can only act on badges within their own Service Line.
 ──────────────────────────────────────────────────────────────*/
 const validateApplication = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -612,8 +475,8 @@ const validateApplication = async (req, res) => {
             return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
-        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
-        const { action, reviewerNotes } = validations.reviewApplicationSchema.parse(req.body);
+        const { applicationGuid } = gamificationValidations.applicationGuidParamSchema.parse(req.params);
+        const { action, reviewerNotes } = gamificationValidations.reviewApplicationSchema.parse(req.body);
 
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
@@ -625,73 +488,58 @@ const validateApplication = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
-        const state = application.application_state;
-
         // SLL may only review applications within their own Service Line
         if (role === 'Service Line Leader') {
             const sllInfo = await models.service_line_leaders.findByPk(reviewerId);
             if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
                 await transaction.rollback();
-                return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_SL' });
+                return res.status(403).json({
+                    success: false,
+                    code: 'APP_ACCESS_DENIED_SL'
+                });
             }
         }
 
-        // Enforce sequential review state machine
+        // Validate state machine transitions
+        const state = application.application_state;
+        if (action === 'review' && state !== 'Submitted') {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'APP_REVIEW_INVALID_STATE',
+                data: { currentState: state }
+            });
+        }
+        if ((action === 'accept' || action === 'reject') && !['Submitted', 'In validation'].includes(state)) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                code: 'APP_ACTION_INVALID_STATE',
+                data: { currentState: state }
+            });
+        }
+
         let newState;
-
-        if (role === 'Talent Manager') {
-            // TM only acts on Submitted applications
-            if (state !== 'Submitted') {
-                await transaction.rollback();
-                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
-            }
-            // TM cannot directly accept (must forward to SLL via 'review')
-            if (action === 'accept') {
-                await transaction.rollback();
-                return res.status(403).json({ success: false, code: 'APP_TM_CANNOT_ACCEPT' });
-            }
-            // 'send_back' returns the application to the consultant for correction (Open)
-            newState = action === 'review' ? 'In validation' : (action === 'send_back' ? 'Open' : 'Rejected');
-
-        } else if (role === 'Service Line Leader') {
-            // SLL only acts on In validation applications (after TM approval)
-            if (state !== 'In validation') {
-                await transaction.rollback();
-                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
-            }
-            // SLL cannot use the 'review' action (no third stage)
-            if (action === 'review') {
-                await transaction.rollback();
-                return res.status(403).json({ success: false, code: 'APP_SLL_CANNOT_REVIEW' });
-            }
-            // 'send_back' returns the application to the consultant for correction (Open)
-            newState = action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected');
-
-        } else {
-            // Administrator: full flexibility
-            if (action === 'review' && state !== 'Submitted') {
-                await transaction.rollback();
-                return res.status(400).json({ success: false, code: 'APP_REVIEW_INVALID_STATE', data: { currentState: state } });
-            }
-            if ((action === 'accept' || action === 'reject' || action === 'send_back') && !['Submitted', 'In validation'].includes(state)) {
-                await transaction.rollback();
-                return res.status(400).json({ success: false, code: 'APP_ACTION_INVALID_STATE', data: { currentState: state } });
-            }
-            newState = action === 'review'
-                ? 'In validation'
-                : (action === 'accept' ? 'Accepted' : (action === 'send_back' ? 'Open' : 'Rejected'));
-        }
-
-        // Create awarded_badge record when application is accepted
-        // expiration_at is computed by the trg_set_badge_expiration database trigger
         let awardedBadge = null;
-        if (newState === 'Accepted') {
+
+        if (action === 'review') {
+            newState = 'In validation';
+        } else if (action === 'reject') {
+            newState = 'Rejected';
+        } else {
+            // accept
+            newState = 'Accepted';
+
             const badge = application.badge;
+            const expirationAt = badge.expiration_duration_days
+                ? new Date(Date.now() + badge.expiration_duration_days * 24 * 60 * 60 * 1000)
+                : null;
 
             awardedBadge = await models.awarded_badges.create({
                 application_id: application.application_id,
                 user_id: application.user_id,
                 awarded_at: new Date(),
+                expiration_at: expirationAt,
                 points_snapshot: badge.badge_points,
                 public_verification_link: require('crypto').randomUUID(),
                 is_published: false,
@@ -699,8 +547,17 @@ const validateApplication = async (req, res) => {
             }, { transaction });
         }
 
-        // Audit log (before state update so the DB trigger dedup skips)
-        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject', send_back: 'Send Back' }[action];
+        await application.update({
+            application_state: newState,
+            reviewer_notes: reviewerNotes ?? application.reviewer_notes,
+            ...(newState === 'Accepted' || newState === 'Rejected'
+                ? { closed_at: new Date() }
+                : {}),
+            ...(awardedBadge ? { awarded_badges_id: awardedBadge.awarded_badges_id } : {})
+        }, { transaction });
+
+        // Audit log
+        const actionLabel = { review: 'Request Review', accept: 'Accept', reject: 'Reject' }[action];
         await models.application_validation_logs.create({
             application_id: application.application_id,
             user_id: reviewerId,
@@ -709,141 +566,16 @@ const validateApplication = async (req, res) => {
             validations_comments: reviewerNotes ?? null
         }, { transaction });
 
-        await application.update({
-            application_state: newState,
-            ...(newState === 'Accepted' || newState === 'Rejected' ? { closed_at: new Date() } : {})
-        }, { transaction });
-
+        // Award points on acceptance
         if (newState === 'Accepted') {
-            await gamificationService.awardBadgeCompletionPoints(application.user_id, application.badge_id, transaction);
+            await gamificationService.awardBadgeCompletionPoints(
+                application.user_id,
+                application.badge_id,
+                transaction
+            );
         }
 
         await transaction.commit();
-        await sendTopicUpdate("new_data", 15);
-        await sendTopicUpdate("new_data", 18);
-        if (newState === 'Accepted') await sendTopicUpdate("new_data", 17);
-
-        // Post-commit notifications and emails
-        try {
-            const badgeMeta = {
-                badgeTitle: application.badge.badge_title,
-                badgeType: application.badge.badge_type
-            };
-            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
-
-            if (newState === 'Accepted') {
-                const isSpecial = application.badge.badge_type === 'Special';
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 10,
-                    notificationType: 'APPLICATIONS',
-                    title: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE' : 'NOTIF_APP_BADGE_AWARDED_TITLE',
-                    body: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY' : 'NOTIF_APP_BADGE_AWARDED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'Rejected') {
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 11,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_REJECTED_TITLE',
-                    body: 'NOTIF_APP_REJECTED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'In validation') {
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 3,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_IN_VALIDATION_TITLE',
-                    body: 'NOTIF_APP_IN_VALIDATION_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'Open') {
-                // Reviewer sent the application back to the consultant for correction
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 3,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_RETURNED_TITLE',
-                    body: 'NOTIF_APP_RETURNED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            }
-
-            // Email the consultant on terminal state changes
-            if (newState === 'Accepted' || newState === 'Rejected') {
-                const emailDefId = newState === 'Accepted' ? 10 : 11;
-                const emailPrefs = await notificationsService.resolvePreferences(emailDefId, application.user_id);
-                if (emailPrefs.is_enabled && emailPrefs.send_email) {
-                    const consultantData = await getConsultantEmailData(application.user_id);
-                    if (consultantData) {
-                        if (newState === 'Accepted') {
-                            await sendApplicationApprovedEmail(
-                                consultantData.email,
-                                consultantData.name,
-                                application.badge.badge_title,
-                                appUrl,
-                                consultantData.lang
-                            );
-                        } else {
-                            await sendApplicationRejectedEmail(
-                                consultantData.email,
-                                consultantData.name,
-                                application.badge.badge_title,
-                                reviewerNotes || null,
-                                appUrl,
-                                consultantData.lang
-                            );
-                        }
-                    }
-                }
-            }
-
-            // When TM forwards to SLL, notify all SLLs for this badge's service line
-            if (newState === 'In validation' && application.badge.service_line_id) {
-                const slls = await models.service_line_leaders.findAll({
-                    where: { service_line_id: application.badge.service_line_id }
-                });
-                // Applicant name for the SLL email body.
-                const applicantData = await getConsultantEmailData(application.user_id);
-                const applicantName = applicantData?.name || '';
-                for (const sll of slls) {
-                    await notificationsService.createNotification({
-                        userId: sll.user_id,
-                        definitionId: 3,
-                        notificationType: 'APPLICATIONS',
-                        title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
-                        body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
-                        meta: badgeMeta,
-                        url: `/admin/applications/${application.application_guid}`
-                    });
-
-                    // Email the SLL too (req: SLL receives application/validation emails),
-                    // honouring their notification preferences.
-                    const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
-                    if (sllPrefs.is_enabled && sllPrefs.send_email) {
-                        const sllData = await getConsultantEmailData(sll.user_id);
-                        if (sllData) {
-                            await sendApplicationPendingSllReviewEmail(
-                                sllData.email,
-                                sllData.name,
-                                applicantName,
-                                application.badge.badge_title,
-                                appUrl,
-                                sllData.lang
-                            );
-                        }
-                    }
-                }
-            }
-        } catch (notifErr) {
-            logger.error('Failed to create notifications on validateApplication', { error: notifErr });
-        }
 
         return res.status(200).json({
             success: true,
@@ -860,7 +592,13 @@ const validateApplication = async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.errors
+            });
+        }
         logger.error('Error validating application', { error });
         return res.status(500).json({ success: false, code: 'APP_VALIDATE_FAILED' });
     }
@@ -886,8 +624,8 @@ const reviewEvidence = async (req, res) => {
             return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
 
-        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
-        const { approved, reviewNotes } = validations.reviewEvidenceSchema.parse(req.body);
+        const { applicationGuid, evidenceId } = gamificationValidations.evidenceIdParamSchema.parse(req.params);
+        const { approved, reviewNotes } = gamificationValidations.reviewEvidenceSchema.parse(req.body);
 
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
@@ -899,14 +637,11 @@ const reviewEvidence = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
-        // TM reviews evidences while application is Submitted; SLL while In validation
-        const allowedStateForRole = role === 'Talent Manager' ? 'Submitted' : 'In validation';
-        if (application.application_state !== allowedStateForRole) {
+        if (!['Submitted', 'In validation'].includes(application.application_state)) {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                code: 'APP_EVIDENCE_REVIEW_INVALID_STATE',
-                data: { currentState: application.application_state }
+                code: 'APP_EVIDENCE_REVIEW_INVALID_STATE'
             });
         }
 
@@ -953,8 +688,6 @@ const reviewEvidence = async (req, res) => {
         }
 
         await transaction.commit();
-        await sendTopicUpdate("new_data", 16);
-        await sendTopicUpdate("new_data", 18);
 
         return res.status(200).json({
             success: true,
@@ -964,109 +697,15 @@ const reviewEvidence = async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: 'VALIDATION_INVALID_DATA',
+                errors: error.errors
+            });
+        }
         logger.error('Error reviewing evidence', { error });
         return res.status(500).json({ success: false, code: 'APP_EVIDENCE_REVIEW_FAILED' });
-    }
-};
-
-const updateApplication = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
-        const { consultantNotes } = validations.updateApplicationSchema.parse(req.body);
-
-        const application = await models.badge_applications.findOne({
-            where: { application_guid: applicationGuid, user_id: userId }
-        });
-
-        if (!application) {
-            return res.status(404).json({
-                success: false,
-                code: "APP_NOT_FOUND"
-            });
-        }
-
-        if (application.application_state !== 'Open') {
-            return res.status(403).json({
-                success: false,
-                code: "APP_EDIT_DENIED"
-            });
-        }
-
-        await application.update({ consultant_notes: consultantNotes ?? null });
-
-        return res.status(200).json({
-            success: true,
-            code: "APP_UPDATED",
-            data: { consultantNotes: application.consultant_notes }
-        });
-
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
-        logger.error('Error updating application', { error });
-        return res.status(500).json({
-            success: false,
-            code: "APP_UPDATE_FAILED"
-        });
-    }
-};
-
-const downloadEvidence = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const role = req.user.role;
-
-        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
-
-        const application = await models.badge_applications.findOne({
-            where: { application_guid: applicationGuid },
-            include: [{ model: models.badges, as: 'badge', attributes: ['service_line_id'] }]
-        });
-
-        if (!application) {
-            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
-        }
-
-        if (role === 'Consultant' && application.user_id !== userId) {
-            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_OWN' });
-        }
-
-        if (role === 'Service Line Leader') {
-            const sllInfo = await models.service_line_leaders.findByPk(userId);
-            if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
-                return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_SL' });
-            }
-        }
-
-        const evidence = await models.requirements_evidences.findOne({
-            where: { evidence_id: evidenceId, application_id: application.application_id }
-        });
-
-        if (!evidence || !evidence.evidence_file_url) {
-            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
-        }
-
-        const fileUrl = evidence.evidence_file_url;
-        const bucketName = 'private-assets';
-        const pathMatch = fileUrl.match(/\/authenticated\/[^/]+\/(.+)$/);
-
-        if (!pathMatch) {
-            return res.status(400).json({ success: false, code: 'APP_EVIDENCE_URL_INVALID' });
-        }
-
-        const filePath = decodeURIComponent(pathMatch[1]);
-        const signedUrl = await generateSignedDownloadUrl(bucketName, filePath, 600);
-
-        return res.status(200).json({
-            success: true,
-            data: { downloadUrl: signedUrl }
-        });
-
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
-        logger.error('Error downloading evidence', { error });
-        return res.status(500).json({ success: false, code: 'APP_DOWNLOAD_FAILED' });
     }
 };
 
@@ -1078,7 +717,5 @@ module.exports = {
     upsertEvidence,
     submitApplication,
     validateApplication,
-    reviewEvidence,
-    updateApplication,
-    downloadEvidence
+    reviewEvidence
 };

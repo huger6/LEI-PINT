@@ -20,9 +20,13 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    target_route: {
-      type: DataTypes.STRING(256),
-      allowNull: true
+    preference_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'notification_preferences',
+        key: 'preference_id'
+      }
     },
     user_id: {
       type: DataTypes.INTEGER,
@@ -57,6 +61,12 @@ module.exports = function (sequelize, DataTypes) {
         name: "admin_def_fk",
         fields: [
           { name: "user_id" },
+        ]
+      },
+      {
+        name: "not_def_pref_fk",
+        fields: [
+          { name: "preference_id" },
         ]
       },
     ]

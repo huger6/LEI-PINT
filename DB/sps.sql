@@ -2,22 +2,6 @@
 /* Stored Procedures / Stored Functions                         */
 /*==============================================================*/
 
-/*--------------------------------------------------------------*/
-/* FULL NAME NORMALIZATION                                      */
-/*--------------------------------------------------------------*/
-
-CREATE OR REPLACE PROCEDURE sp_normalize_users_full_name()
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE users
-    SET full_name = fn_capitalize_full_name(full_name),
-        updated_at = now()
-    WHERE full_name IS NOT NULL
-      AND full_name <> fn_capitalize_full_name(full_name);
-END;
-$$;
-
 
 /*--------------------------------------------------------------*/
 /* RANKING                                                      */
@@ -31,14 +15,13 @@ CREATE OR REPLACE FUNCTION get_ranking(
     p_area_id          INTEGER DEFAULT NULL
 )
 RETURNS TABLE (
-    user_id           INTEGER,
-    user_guid         UUID,
-    full_name         VARCHAR,
-    profile_img_url   VARCHAR,
-    total_points      BIGINT,
-    total_badges      BIGINT,
-    primary_area_name VARCHAR,
-    total_count       BIGINT
+    user_id         INTEGER,
+    user_guid       UUID,
+    full_name       VARCHAR,
+    profile_img_url VARCHAR,
+    total_points    BIGINT,
+    total_badges    BIGINT,
+    total_count     BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -72,13 +55,6 @@ BEGIN
                   AND (p_service_line_id  IS NULL OR b.service_line_id  = p_service_line_id)
                   AND (p_area_id          IS NULL OR b.area_id          = p_area_id)
             ) AS total_badges,
-            (
-                SELECT a.area_name
-                FROM consultant_areas ca
-                JOIN areas a ON a.area_id = ca.area_id
-                WHERE ca.user_id = u.user_id AND ca.is_primary = TRUE
-                LIMIT 1
-            ) AS primary_area_name,
             COUNT(*) OVER () AS total_count
         FROM users u
         WHERE u.user_role = 'Consultant'
@@ -92,7 +68,6 @@ BEGIN
         ranked.profile_img_url,
         ranked.total_points,
         ranked.total_badges,
-        ranked.primary_area_name,
         ranked.total_count
     FROM ranked
     LIMIT p_limit OFFSET v_offset;
@@ -405,56 +380,5 @@ BEGIN
       AND (p_stage_id         IS NULL OR b.progression_stage_id = p_stage_id)
     GROUP BY b.badge_id
     ORDER BY awarded_count DESC, b.badge_title;
-END;
-$$;
-
-
-/*--------------------------------------------------------------*/
-/* POINTS RECONCILIATION                                        */
-/*--------------------------------------------------------------*/
-
-/* Audits points_history against awarded badges. For every
-   accepted badge application whose badge-level completion
-   points row is missing from points_history, inserts it.
-   Handles edge cases where a badge was accepted but the
-   points record was lost (failed transaction, manual fix). */
-CREATE OR REPLACE PROCEDURE sp_reconcile_badge_points()
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_inserted_count INTEGER := 0;
-    v_rec RECORD;
-BEGIN
-    FOR v_rec IN
-        SELECT
-            ab.user_id,
-            ba.badge_id,
-            b.badge_title,
-            b.badge_points
-        FROM awarded_badges ab
-        JOIN badge_applications ba ON ba.application_id = ab.application_id
-        JOIN badges b              ON b.badge_id        = ba.badge_id
-        WHERE b.badge_points > 0
-          AND NOT EXISTS (
-              SELECT 1
-              FROM points_history ph
-              WHERE ph.user_id       = ab.user_id
-                AND ph.badge_id      = ba.badge_id
-                AND ph.requirement_id IS NULL
-          )
-    LOOP
-        INSERT INTO points_history (user_id, badge_id, requirement_id, points_delta, justification)
-        VALUES (
-            v_rec.user_id,
-            v_rec.badge_id,
-            NULL,
-            v_rec.badge_points,
-            'Reconciled: Badge completed — ' || v_rec.badge_title
-        );
-
-        v_inserted_count := v_inserted_count + 1;
-    END LOOP;
-
-    RAISE NOTICE 'sp_reconcile_badge_points: inserted % missing points record(s).', v_inserted_count;
 END;
 $$;

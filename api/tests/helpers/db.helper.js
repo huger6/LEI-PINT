@@ -17,7 +17,7 @@ async function createTestUser({ full_name, username, email_address, user_role = 
         is_active: true,
         email_confirmed: true,
         force_password_change,
-        language_id: 1
+        preferred_lang_id: 1
     });
 }
 
@@ -78,4 +78,3 @@ module.exports = {
     deleteUser,
     deleteUserByEmail
 };
-

@@ -75,23 +75,12 @@ const checkRole = (...allowedRoles) => {
     }
 }
 
-const optionalAuth = (req, _res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (token) {
-        try {
-            req.user = jwt.verify(token, process.env.JWT_SECRET_KEY, { algorithms: ['HS256'] });
-        } catch (_) { /* invalid token — continue as anonymous */ }
-    }
-    next();
-};
-
 const isAdmin = checkRole('Administrator');
 
 const leadership = checkRole('Service Line Leader', 'Talent Manager', 'Administrator');
 
 module.exports = {
     loginRequired,
-    optionalAuth,
     annonymousUsersOnly,
     checkRole,
     isAdmin,

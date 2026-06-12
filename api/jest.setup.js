@@ -6,10 +6,8 @@ process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 beforeAll(async () => {
     await sequelize.sync({ force: true });
 
-    await models.languages.create({
-        language_id: 1,
-        language_iso: 'en-GB',
-        language_name: 'English (UK)'
+    await models.preferred_lang.create({
+        preferred_lang_id: 1,
+        preferred_lang: 'en'
     });
 });
-

@@ -1,13 +1,9 @@
-const { literal } = require('sequelize');
 const { models } = require('../config/db');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
-const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
-const { handleZodError } = require('../utils/responseHelper');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
-const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/areas
 // OR
@@ -16,7 +12,6 @@ const getAreas = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
         let cachePrefix = 'areas:list:all';
-        let baseWhere = {};
 
         // If accessed via nested route, enforce Service Line (and optionally LP) parent
         if (slSlug) {
@@ -45,7 +40,8 @@ const getAreas = async (req, res) => {
                 });
             }
 
-            baseWhere = { service_line_id: sl.service_line_id };
+            // Inject the ID into the query so listHelper filters by it
+            req.query.service_line_id = sl.service_line_id;
             cachePrefix = `areas:list:sl:${slSlug}`;
         }
 
@@ -54,12 +50,7 @@ const getAreas = async (req, res) => {
             schema: validations.getAreasQuerySchema,
             modelName: 'areas',
             cachePrefix: cachePrefix,
-            baseWhere,
-            order: [['area_name', 'ASC']],
-            extraAttributes: [
-                [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
-            ]
+            order: [['area_name', 'ASC']]
         });
 
     } catch (error) {
@@ -67,42 +58,6 @@ const getAreas = async (req, res) => {
         return res.status(500).json({
             success: false,
             code: "AREA_LIST_FAILED"
-        });
-    }
-};
-
-// GET /api/areas/count
-const getAreasCount = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'areas:count:all';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({
-                success: true,
-                data: JSON.parse(cached)
-            });
-        }
-
-        const [active, inactive] = await Promise.all([
-            models.areas.count({ where: { is_active: true } }),
-            models.areas.count({ where: { is_active: false } })
-        ]);
-
-        const payload = { count: active + inactive, active, inactive };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-
-        return res.status(200).json({
-            success: true,
-            data: payload
-        });
-    } catch (error) {
-        logger.error('Error fetching Areas count', { error, requestId });
-        return res.status(500).json({
-            success: false,
-            code: "AREA_COUNT_FAILED",
-            requestId
         });
     }
 };
@@ -120,40 +75,38 @@ const getAreaBySlug = async (req, res) => {
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const lpInclude = {
-            model: models.learning_paths,
-            as: 'learning_path',
-            attributes: ['path_title', 'path_slug'],
-        };
-        if (pathSlug) {
-            lpInclude.where = { path_slug: pathSlug };
-        }
+        const includeBlock = [];
 
-        const slInclude = {
-            model: models.service_lines,
-            as: 'service_line',
-            attributes: ['service_line_name', 'sl_slug'],
-            include: [lpInclude],
-        };
+        // If URL has parent slugs, enforce the hierarchy downwards
         if (slSlug) {
-            slInclude.where = { sl_slug: slSlug };
+            const slInclude = {
+                model: models.service_lines,
+                as: 'service_line',
+                where: { sl_slug: slSlug },
+                attributes: []
+            };
+
+            // Deeply nest the Learning Path include if pathSlug exists
+            if (pathSlug) {
+                slInclude.include = [{
+                    model: models.learning_paths,
+                    as: 'learning_path',
+                    where: { path_slug: pathSlug },
+                    attributes: []
+                }];
+            }
+
+            includeBlock.push(slInclude);
         }
 
-        const includeBlock = [slInclude];
-
+        // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
-        const userId = req.user?.sub;
 
         const area = await models.areas.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields,
-                include: [
-                    [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
-                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca WHERE ca.area_id = "areas".area_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
-                ]
+                exclude: excludeFields
             }
         });
 
@@ -193,7 +146,13 @@ const checkSlugAvailability = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error checking Area slug', { error });
         return res.status(500).json({
@@ -276,6 +235,7 @@ const createArea = async (req, res) => {
             service_line_id: serviceLineId,
             area_name: areaName,
             area_slug: finalUniqueSlug,
+            area_code: areaCode || null,
             area_description: areaDescription || null,
             img_url: finalImgUrl || null,
             created_by: userId,
@@ -283,13 +243,6 @@ const createArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
-        await invalidateCacheByPrefix('areas:count');
-        await redis.del('areas:filter-stats');
-        await invalidateCacheByPrefix('sl:list');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 11);
 
         return res.status(201).json({
             success: true,
@@ -298,7 +251,13 @@ const createArea = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error creating Area', { error });
         return res.status(500).json({
@@ -388,6 +347,7 @@ const updateArea = async (req, res) => {
             service_line_id: serviceLineId !== undefined ? serviceLineId : area.service_line_id,
             area_name: areaName !== undefined ? areaName : area.area_name,
             area_slug: finalNewSlug,
+            area_code: areaCode !== undefined ? areaCode : area.area_code,
             area_description: areaDescription !== undefined ? areaDescription : area.area_description,
             img_url: finalImgUrl,
             is_active: isActive !== undefined ? isActive : area.is_active,
@@ -395,13 +355,6 @@ const updateArea = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('areas:list');
-        await invalidateCacheByPrefix('areas:count');
-        await redis.del('areas:filter-stats');
-        await invalidateCacheByPrefix('sl:list');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 11);
 
         return res.status(200).json({
             success: true,
@@ -410,7 +363,13 @@ const updateArea = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error updating Area', { error });
         return res.status(500).json({
@@ -469,37 +428,25 @@ const deleteArea = async (req, res) => {
             });
         }
 
-        const [consultantsEnrolled, activeApplications] = await Promise.all([
-            models.consultant_areas.count({ where: { area_id: area.area_id } }),
-            models.badge_applications.count({
-                where: { application_state: ['Open', 'Submitted', 'In validation'] },
-                include: [{ model: models.badges, as: 'badge', where: { area_id: area.area_id }, required: true, attributes: [] }]
-            })
-        ]);
-
-        if (consultantsEnrolled > 0 || activeApplications > 0) {
-            return res.status(409).json({
-                success: false,
-                code: "AREA_HAS_DEPENDENCIES",
-                data: { consultantsEnrolled, activeApplications }
-            });
-        }
-
-        await area.update({ is_active: false, updated_by: userId });
+        await area.update({
+            is_active: false,
+            updated_by: userId
+        });
 
         await invalidateCacheByPrefix('areas:list');
-        await invalidateCacheByPrefix('areas:count');
-        await redis.del('areas:filter-stats');
-        await invalidateCacheByPrefix('sl:list');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 11);
 
-        return res.status(200).json({ success: true, code: "AREA_DEACTIVATED" });
+        return res.status(200).json({
+            success: true,
+            code: "AREA_DEACTIVATED"
+        });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_URL_PARAM"
+            });
+        }
 
         logger.error('Error deleting Area', { error });
         return res.status(500).json({
@@ -509,75 +456,11 @@ const deleteArea = async (req, res) => {
     }
 };
 
-const getFilterStats = async (req, res) => {
-    const cacheKey = 'areas:filter-stats';
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
-
-        const rows = await models.areas.findAll({
-            attributes: [
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca WHERE ca.area_id = "areas".area_id)`), 'consultant_count'],
-                [literal(`(SELECT COUNT(*) FROM progression_stages ps WHERE ps.area_id = "areas".area_id)`), 'level_count'],
-            ],
-            raw: true,
-        });
-
-        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
-        const maxLevelCount = Math.max(0, ...rows.map(r => Number(r.level_count || 0)));
-
-        const payload = { maxConsultantCount, maxLevelCount };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching areas filter stats', { error });
-        return res.status(500).json({ success: false, code: 'AREA_FILTER_STATS_FAILED' });
-    }
-};
-
-const reactivateArea = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { areaSlug } = validations.areaSlugParamSchema.parse(req.params);
-
-        const area = await models.areas.findOne({ where: { area_slug: areaSlug } });
-
-        if (!area) {
-            return res.status(404).json({ success: false, code: "AREA_NOT_FOUND" });
-        }
-
-        if (area.is_active) {
-            return res.status(400).json({ success: false, code: "AREA_ALREADY_ACTIVE" });
-        }
-
-        await area.update({ is_active: true, updated_by: userId });
-
-        await invalidateCacheByPrefix('areas:list');
-        await invalidateCacheByPrefix('areas:count');
-        await redis.del('areas:filter-stats');
-        await invalidateCacheByPrefix('sl:list');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 11);
-
-        return res.status(200).json({ success: true, code: "AREA_ACTIVATED" });
-
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-        logger.error('Error reactivating Area', { error });
-        return res.status(500).json({ success: false, code: "AREA_ACTIVATE_FAILED" });
-    }
-};
-
 module.exports = {
     getAreas,
-    getFilterStats,
-    getAreasCount,
     getAreaBySlug,
     checkSlugAvailability,
     createArea,
     updateArea,
-    deleteArea,
-    reactivateArea,
+    deleteArea
 };

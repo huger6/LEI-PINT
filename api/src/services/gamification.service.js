@@ -127,48 +127,6 @@ const getConsultantPointsSummary = async (userId) => {
 };
 
 /*──────────────────────────────────────────────────────────────
-  POINTS + GLOBAL RANK FOR A SINGLE CONSULTANT
-  Lightweight lookup (no history rows) used to enrich views that
-  already gate access to the consultant, e.g. application detail.
-  Ordering matches the global ranking (getMyPosition with no filters).
-──────────────────────────────────────────────────────────────*/
-const getConsultantPointsAndRank = async (userId) => {
-    const rows = await sequelize.query(
-        `WITH computed AS (
-            SELECT
-                u.user_id,
-                COALESCE((
-                    SELECT SUM(ph.points_delta) FROM points_history ph WHERE ph.user_id = u.user_id
-                ), 0) AS total_points,
-                (
-                    SELECT COUNT(ab.awarded_badges_id) FROM awarded_badges ab WHERE ab.user_id = u.user_id
-                ) AS total_badges,
-                u.full_name
-            FROM users u
-            WHERE u.user_role = 'Consultant' AND u.is_active = TRUE
-        ),
-        ranked AS (
-            SELECT
-                user_id,
-                total_points,
-                ROW_NUMBER() OVER (
-                    ORDER BY total_points DESC, total_badges DESC, full_name ASC
-                ) AS position
-            FROM computed
-        )
-        SELECT total_points, position FROM ranked WHERE user_id = :userId`,
-        { replacements: { userId }, type: sequelize.QueryTypes.SELECT }
-    );
-
-    if (!rows.length) return { totalPoints: 0, rankingPosition: null };
-
-    return {
-        totalPoints: parseInt(rows[0].total_points ?? 0, 10),
-        rankingPosition: rows[0].position != null ? Number(rows[0].position) : null
-    };
-};
-
-/*──────────────────────────────────────────────────────────────
   RECOMMENDATIONS
   Delegates to the get_badge_recommendations stored procedure.
 ──────────────────────────────────────────────────────────────*/
@@ -225,63 +183,6 @@ const trackInteraction = async (userId, badgeId, interactionType) => {
 };
 
 /*──────────────────────────────────────────────────────────────
-  FAVORITES – TOGGLE
-  Adds or removes a FAVORITE interaction for a user+badge pair.
-  Returns { favorited: true/false } to indicate the new state.
-──────────────────────────────────────────────────────────────*/
-const toggleFavorite = async (userId, badgeId) => {
-    const existing = await models.user_badges_interactions.findOne({
-        where: {
-            user_id: userId,
-            badge_id: badgeId,
-            interaction_type: 'FAVORITE'
-        }
-    });
-
-    if (existing) {
-        await models.user_badges_interactions.destroy({
-            where: {
-                user_id: userId,
-                badge_id: badgeId,
-                interaction_type: 'FAVORITE'
-            }
-        });
-        return { favorited: false };
-    }
-
-    await models.user_badges_interactions.create({
-        user_id: userId,
-        badge_id: badgeId,
-        interaction_type: 'FAVORITE'
-    });
-
-    return { favorited: true };
-};
-
-/*──────────────────────────────────────────────────────────────
-  FAVORITES – LIST
-  Returns all badge IDs currently favorited by the user.
-──────────────────────────────────────────────────────────────*/
-const getUserFavorites = async (userId) => {
-    const rows = await models.user_badges_interactions.findAll({
-        attributes: ['badge_id'],
-        where: {
-            user_id: userId,
-            interaction_type: 'FAVORITE'
-        },
-        include: [{
-            model: models.badges,
-            as: 'badge',
-            attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'],
-            where: { is_active: true },
-            required: true
-        }]
-    });
-
-    return rows;
-};
-
-/*──────────────────────────────────────────────────────────────
   CONSULTANT STATS DASHBOARD
   Aggregates all dashboard metrics for a consultant in one place:
   total points, earned badges, in-progress badges, ranking
@@ -301,7 +202,7 @@ const getConsultantStats = async (userId) => {
     });
 
     const badgesInProgress = await models.badge_applications.count({
-        where: { user_id: userId, application_state: 'Open' }
+        where: { consultant_id: userId, status: 'Open' }
     });
 
     const [rankRows] = await sequelize.query(
@@ -334,10 +235,7 @@ module.exports = {
     awardRequirementPoints,
     awardBadgeCompletionPoints,
     getConsultantPointsSummary,
-    getConsultantPointsAndRank,
     getConsultantStats,
     getRecommendations,
-    trackInteraction,
-    toggleFavorite,
-    getUserFavorites
+    trackInteraction
 };

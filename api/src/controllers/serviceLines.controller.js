@@ -1,13 +1,10 @@
-const { literal } = require('sequelize');
 const { models } = require('../config/db');
+const { Op } = require('sequelize');
 const { handleListRequest, invalidateCacheByPrefix } = require('../utils/listHelper');
-const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
-const { handleZodError } = require('../utils/responseHelper');
 const { generateUniqueSlug } = require('../utils/slugHelper');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
-const { sendTopicUpdate } = require('../services/firebase.service');
 
 // GET /api/service-lines
 // OR
@@ -17,7 +14,6 @@ const getServiceLines = async (req, res) => {
     try {
         const { pathSlug } = req.params;
         let cachePrefix = 'sl:list:all';
-        let baseWhere = {};
 
         // If accessed via nested route, enforce Learning Path parent
         if (pathSlug) {
@@ -33,7 +29,8 @@ const getServiceLines = async (req, res) => {
                 });
             }
 
-            baseWhere = { learning_path_id: lp.learning_path_id };
+            // Inject the ID into the query so listHelper filters by it
+            req.query.learning_path_id = lp.learning_path_id;
             cachePrefix = `sl:list:lp:${pathSlug}`;
         }
 
@@ -42,12 +39,7 @@ const getServiceLines = async (req, res) => {
             schema: validations.getServiceLinesQuerySchema,
             modelName: 'service_lines',
             cachePrefix: cachePrefix,
-            baseWhere,
-            order: [['service_line_name', 'ASC']],
-            extraAttributes: [
-                [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
-            ]
+            order: [['service_line_name', 'ASC']]
         });
 
     } catch (error) {
@@ -55,42 +47,6 @@ const getServiceLines = async (req, res) => {
         return res.status(500).json({
             success: false,
             code: "SL_LIST_FAILED",
-            requestId
-        });
-    }
-};
-
-// GET /api/service-lines/count
-const getServiceLinesCount = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const cacheKey = 'sl:count:all';
-
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return res.status(200).json({
-                success: true,
-                data: JSON.parse(cached)
-            });
-        }
-
-        const [active, inactive] = await Promise.all([
-            models.service_lines.count({ where: { is_active: true } }),
-            models.service_lines.count({ where: { is_active: false } })
-        ]);
-
-        const payload = { count: active + inactive, active, inactive };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-
-        return res.status(200).json({
-            success: true,
-            data: payload
-        });
-    } catch (error) {
-        logger.error('Error fetching Service Lines count', { error, requestId });
-        return res.status(500).json({
-            success: false,
-            code: "SL_COUNT_FAILED",
             requestId
         });
     }
@@ -104,47 +60,32 @@ const getServiceLineBySlug = async (req, res) => {
     try {
         const { pathSlug, slSlug } = req.params;
         const isAdmin = req.user?.role === 'Administrator';
-        const userId = req.user?.sub;
 
         const whereClause = {
             sl_slug: slSlug,
             ...(isAdmin ? {} : { is_active: true })
         };
 
-        const lpInclude = {
-            model: models.learning_paths,
-            as: 'learning_path',
-            attributes: ['path_title', 'path_slug'],
-        };
+        const includeBlock = [];
+
+        // Enforce hierarchy if pathSlug is present in the URL
         if (pathSlug) {
-            lpInclude.where = { path_slug: pathSlug };
+            includeBlock.push({
+                model: models.learning_paths,
+                as: 'learning_path',
+                where: { path_slug: pathSlug },
+                attributes: []
+            });
         }
-        const includeBlock = [lpInclude];
 
-        // Include SLL leader info
-        includeBlock.push({
-            model: models.service_line_leaders,
-            as: 'service_line_leaders',
-            required: false,
-            include: [{
-                model: models.users,
-                as: 'user',
-                attributes: ['user_guid', 'full_name', 'username', 'profile_img_url']
-            }]
-        });
-
+        // Hide unimportant data for non admins
         const excludeFields = isAdmin ? [] : ["is_active", "created_by", "updated_by"];
 
         const sl = await models.service_lines.findOne({
             where: whereClause,
             include: includeBlock,
             attributes: {
-                exclude: excludeFields,
-                include: [
-                    [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
-                    [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
-                    [literal(`(SELECT EXISTS(SELECT 1 FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id AND ca.user_id = ${userId ? Number(userId) : 0}))`), 'is_enrolled'],
-                ]
+                exclude: excludeFields
             }
         });
 
@@ -155,18 +96,7 @@ const getServiceLineBySlug = async (req, res) => {
             });
         }
 
-        const slJson = sl.toJSON();
-
-        // Flatten leader data
-        if (slJson.service_line_leaders?.length > 0) {
-            const leaderEntry = slJson.service_line_leaders[0];
-            slJson.leader = leaderEntry.user || null;
-        } else {
-            slJson.leader = null;
-        }
-        delete slJson.service_line_leaders;
-
-        return res.status(200).json({ success: true, data: slJson });
+        return res.status(200).json({ success: true, data: sl });
 
     } catch (error) {
         logger.error('Error fetching Service Line', { error, requestId });
@@ -256,11 +186,6 @@ const createServiceLine = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('sl:list');
-        await invalidateCacheByPrefix('sl:count');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 10);
 
         return res.status(201).json({
             success: true,
@@ -269,7 +194,13 @@ const createServiceLine = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error creating Service Line', { error });
         return res.status(500).json({
@@ -340,11 +271,6 @@ const updateServiceLine = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('sl:list');
-        await invalidateCacheByPrefix('sl:count');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 10);
 
         return res.status(200).json({
             success: true,
@@ -353,7 +279,13 @@ const updateServiceLine = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_DATA",
+                errors: error.errors
+            });
+        }
 
         logger.error('Error updating Service Line', { error });
         return res.status(500).json({
@@ -372,121 +304,54 @@ const deleteServiceLine = async (req, res) => {
         const sl = await models.service_lines.findOne({ where: { sl_slug: slSlug } });
 
         if (!sl) {
-            return res.status(404).json({ success: false, code: "SL_NOT_FOUND_BY_SLUG" });
-        }
-
-        if (!sl.is_active) {
-            return res.status(400).json({ success: false, code: "SL_ALREADY_INACTIVE" });
-        }
-
-        const [assignedLeaders, consultantsEnrolled, activeApplications] = await Promise.all([
-            models.service_line_leaders.count({ where: { service_line_id: sl.service_line_id } }),
-            models.consultant_areas.count({
-                include: [{ model: models.areas, as: 'area', where: { service_line_id: sl.service_line_id }, required: true, attributes: [] }]
-            }),
-            models.badge_applications.count({
-                where: { application_state: ['Open', 'Submitted', 'In validation'] },
-                include: [{ model: models.badges, as: 'badge', where: { service_line_id: sl.service_line_id }, required: true, attributes: [] }]
-            })
-        ]);
-
-        if (assignedLeaders > 0 || consultantsEnrolled > 0 || activeApplications > 0) {
-            return res.status(409).json({
+            return res.status(404).json({
                 success: false,
-                code: "SL_HAS_DEPENDENCIES",
-                data: { assignedLeaders, consultantsEnrolled, activeApplications }
+                code: "SL_NOT_FOUND_BY_SLUG"
             });
         }
 
-        await sl.update({ is_active: false, updated_by: userId });
+        if (!sl.is_active) {
+            return res.status(400).json({
+                success: false,
+                code: "SL_ALREADY_INACTIVE"
+            });
+        }
 
-        await invalidateCacheByPrefix('sl:list');
-        await invalidateCacheByPrefix('sl:count');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await invalidateCacheByPrefix('areas:list');
-        await invalidateCacheByPrefix('areas:count');
-        await redis.del('areas:filter-stats');
-        await sendTopicUpdate("new_data", 10);
-
-        return res.status(200).json({ success: true, code: "SL_DEACTIVATED" });
-
-    } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-        logger.error('Error deleting Service Line', { error });
-        return res.status(500).json({ success: false, code: "SL_DELETE_FAILED" });
-    }
-};
-
-
-const getFilterStats = async (req, res) => {
-    const cacheKey = 'sl:filter-stats';
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({ success: true, data: JSON.parse(cached) });
-
-        const rows = await models.service_lines.findAll({
-            attributes: [
-                [literal(`(SELECT COUNT(DISTINCT ca.user_id) FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = "service_lines".service_line_id)`), 'consultant_count'],
-                [literal(`(SELECT COUNT(*) FROM areas a WHERE a.service_line_id = "service_lines".service_line_id)`), 'area_count'],
-            ],
-            raw: true,
+        // Soft delete
+        await sl.update({
+            is_active: false,
+            updated_by: userId
         });
 
-        const maxConsultantCount = Math.max(0, ...rows.map(r => Number(r.consultant_count || 0)));
-        const maxAreaCount = Math.max(0, ...rows.map(r => Number(r.area_count || 0)));
-
-        const payload = { maxConsultantCount, maxAreaCount };
-        await redis.set(cacheKey, JSON.stringify(payload), 'EX', 7200);
-        return res.status(200).json({ success: true, data: payload });
-    } catch (error) {
-        logger.error('Error fetching SL filter stats', { error });
-        return res.status(500).json({ success: false, code: 'SL_FILTER_STATS_FAILED' });
-    }
-};
-
-const reactivateServiceLine = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-        const { slSlug } = validations.slSlugParamSchema.parse(req.params);
-
-        const sl = await models.service_lines.findOne({ where: { sl_slug: slSlug } });
-
-        if (!sl) {
-            return res.status(404).json({ success: false, code: "SL_NOT_FOUND_BY_SLUG" });
-        }
-
-        if (sl.is_active) {
-            return res.status(400).json({ success: false, code: "SL_ALREADY_ACTIVE" });
-        }
-
-        await sl.update({ is_active: true, updated_by: userId });
-
         await invalidateCacheByPrefix('sl:list');
-        await invalidateCacheByPrefix('sl:count');
-        await redis.del('sl:filter-stats');
-        await invalidateCacheByPrefix('lp:list');
-        await redis.del('lp:filter-stats');
-        await sendTopicUpdate("new_data", 10);
 
-        return res.status(200).json({ success: true, code: "SL_ACTIVATED" });
+        return res.status(200).json({
+            success: true,
+            code: "SL_DEACTIVATED"
+        });
 
     } catch (error) {
-        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
-        logger.error('Error reactivating Service Line', { error });
-        return res.status(500).json({ success: false, code: "SL_ACTIVATE_FAILED" });
+        if (error.name === 'ZodError') {
+            return res.status(400).json({
+                success: false,
+                code: "VALIDATION_INVALID_URL_PARAM"
+            });
+        }
+
+        logger.error('Error deleting Service Line', { error });
+        return res.status(500).json({
+            success: false,
+            code: "SL_DELETE_FAILED"
+        });
     }
 };
+
 
 module.exports = {
     getServiceLines,
-    getFilterStats,
-    getServiceLinesCount,
     getServiceLineBySlug,
     checkSlugAvailability,
     createServiceLine,
     updateServiceLine,
-    deleteServiceLine,
-    reactivateServiceLine,
+    deleteServiceLine
 };

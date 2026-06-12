@@ -1,46 +1,38 @@
 const { z } = require('zod');
-require('./error-map');
 const sanitizeText = require('../utils/sanitizeText');
-const { positiveIntIdRule, uuidRule } = require('./shared-rules');
+const { positiveIntIdRule } = require('./shared-rules');
 
 const startApplicationSchema = z.object({
-    badgeId: positiveIntIdRule
+    badgeId: positiveIntIdRule,
+    goalId: positiveIntIdRule.optional().nullable()
 });
 
 const applicationGuidParamSchema = z.object({
-    applicationGuid: z.string().uuid('VALIDATION_APPLICATION_GUID_INVALID')
-});
-
-const submitApplicationSchema = z.object({
-    consultantNotes: z.string().trim()
-        .max(2000, 'VALIDATION_CONSULTANT_NOTES_MAX_LENGTH')
-        .transform(sanitizeText)
-        .optional()
-        .nullable()
+    applicationGuid: z.string().uuid("Invalid application identifier format.")
 });
 
 const upsertEvidenceBodySchema = z.object({
     requirementId: positiveIntIdRule,
 
     evidenceFileUrl: z.string().trim()
-        .url('VALIDATION_EVIDENCE_URL_INVALID')
-        .max(500, 'VALIDATION_EVIDENCE_URL_MAX_LENGTH'),
+        .url('Invalid URL format.')
+        .max(500, 'URL cannot exceed 500 characters.'),
 
     evidenceTitle: z.string().trim()
-        .min(1, 'VALIDATION_EVIDENCE_TITLE_REQUIRED')
-        .max(150, 'VALIDATION_EVIDENCE_TITLE_MAX_LENGTH')
+        .min(1, 'Title cannot be empty.')
+        .max(150, 'Title cannot exceed 150 characters.')
         .transform(sanitizeText)
         .optional()
         .nullable(),
 
     evidenceDescription: z.string().trim()
-        .max(5000, 'VALIDATION_EVIDENCE_DESCRIPTION_MAX_LENGTH')
+        .max(5000, 'Description is technically too long.')
         .transform(sanitizeText)
         .optional()
         .nullable(),
 
     evidenceFileType: z.string().trim()
-        .max(100, 'VALIDATION_EVIDENCE_FILE_TYPE_MAX_LENGTH')
+        .max(100, 'File type cannot exceed 100 characters.')
         .optional()
         .nullable()
 });
@@ -53,11 +45,6 @@ const getApplicationsQuerySchema = z.object({
         .optional()
         .describe("Filter applications by one or multiple states"),
 
-    areaId: z.coerce.number().int().positive().optional(),
-    badgeId: z.coerce.number().int().positive().optional(),
-    dateFrom: z.coerce.date().optional(),
-    dateTo: z.coerce.date().optional(),
-
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().default(20)
 });
@@ -66,58 +53,17 @@ const getUploadUrlBodySchema = z.object({
     requirementId: positiveIntIdRule, // Usa a tua regra base para IDs
 
     fileName: z.string().trim()
-        .min(1, 'VALIDATION_UPLOAD_FILE_NAME_REQUIRED')
-        .max(255, 'VALIDATION_UPLOAD_FILE_NAME_MAX_LENGTH')
+        .min(1, 'File name is required.')
+        .max(255, 'File name cannot exceed 255 characters.')
         // Esta regex garante que o ficheiro tem uma extensão (ex: .pdf, .png)
         // Essencial porque o teu backend faz: fileName.split('.').pop()
-        .regex(/\.[0-9a-z]+$/i, 'VALIDATION_UPLOAD_FILE_EXTENSION_INVALID')
+        .regex(/\.[0-9a-z]+$/i, 'File name must include a valid extension (e.g., document.pdf).')
 });
-
-const reviewApplicationSchema = z.object({
-    action: z.enum(['accept', 'reject', 'review', 'send_back'], {
-        errorMap: () => ({ message: 'VALIDATION_REVIEW_ACTION_INVALID' })
-    }),
-    reviewerNotes: z.string().trim()
-        .max(2000, 'VALIDATION_REVIEWER_NOTES_MAX_LENGTH')
-        .transform(sanitizeText)
-        .optional()
-        .nullable()
-});
-
-const reviewEvidenceSchema = z.object({
-    approved: z.boolean({ required_error: 'VALIDATION_EVIDENCE_APPROVED_REQUIRED' }),
-    reviewNotes: z.string().trim()
-        .max(1000, 'VALIDATION_EVIDENCE_REVIEW_NOTES_MAX_LENGTH')
-        .transform(sanitizeText)
-        .optional()
-        .nullable()
-});
-
-const evidenceIdParamSchema = z.object({
-    applicationGuid: uuidRule,
-    evidenceId: positiveIntIdRule
-});
-
-const updateApplicationSchema = z.object({
-    consultantNotes: z.string().trim()
-        .max(2000, 'VALIDATION_CONSULTANT_NOTES_MAX_LENGTH')
-        .transform(sanitizeText)
-        .optional()
-        .nullable()
-});
-
-const ALLOWED_EVIDENCE_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png', 'zip']);
 
 module.exports = {
     startApplicationSchema,
     applicationGuidParamSchema,
-    submitApplicationSchema,
     upsertEvidenceBodySchema,
     getApplicationsQuerySchema,
-    getUploadUrlBodySchema,
-    reviewApplicationSchema,
-    reviewEvidenceSchema,
-    evidenceIdParamSchema,
-    updateApplicationSchema,
-    ALLOWED_EVIDENCE_EXTENSIONS
+    getUploadUrlBodySchema
 };

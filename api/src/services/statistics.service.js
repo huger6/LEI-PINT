@@ -12,8 +12,7 @@ const getLearningPathProgress = async (userId) => {
     return rows;
 };
 
-const getPointsHistory = async (userId, { page = 1, limit = 20, search, serviceLineId, areaId, dateFrom, dateTo } = {}) => {
-    const { Op } = require('sequelize');
+const getPointsHistory = async (userId, { page = 1, limit = 20 } = {}) => {
     const offset = (page - 1) * limit;
 
     const [sumRows] = await sequelize.query(
@@ -23,57 +22,15 @@ const getPointsHistory = async (userId, { page = 1, limit = 20, search, serviceL
     );
     const totalPoints = parseInt(sumRows[0]?.total_points ?? 0, 10);
 
-    const needsBadgeFilter = !!(search || serviceLineId || areaId);
-
-    const badgeInclude = {
-        model: models.badges,
-        as: 'badge',
-        attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'],
-        required: needsBadgeFilter,
-        include: [
-            { model: models.service_lines, as: 'service_line', attributes: ['service_line_id', 'service_line_name'], required: !!serviceLineId },
-            { model: models.areas, as: 'area', attributes: ['area_id', 'area_name'], required: !!areaId }
-        ]
-    };
-
-    const badgeWhere = [];
-    if (search) {
-        const pattern = `%${search}%`;
-        badgeWhere.push({
-            [Op.or]: [
-                { badge_title: { [Op.iLike]: pattern } },
-                { '$badge.service_line.service_line_name$': { [Op.iLike]: pattern } },
-                { '$badge.area.area_name$': { [Op.iLike]: pattern } }
-            ]
-        });
-    }
-    if (serviceLineId) {
-        badgeWhere.push({ '$badge.service_line.service_line_id$': serviceLineId });
-    }
-    if (areaId) {
-        badgeWhere.push({ '$badge.area.area_id$': areaId });
-    }
-    if (badgeWhere.length) {
-        badgeInclude.where = badgeWhere.length === 1 ? badgeWhere[0] : { [Op.and]: badgeWhere };
-    }
-
-    const historyWhere = { user_id: userId };
-    if (dateFrom || dateTo) {
-        historyWhere.created_at = {};
-        if (dateFrom) historyWhere.created_at[Op.gte] = dateFrom;
-        if (dateTo) historyWhere.created_at[Op.lte] = dateTo;
-    }
-
     const { count, rows } = await models.points_history.findAndCountAll({
-        where: historyWhere,
+        where: { user_id: userId },
         include: [
-            badgeInclude,
+            { model: models.badges, as: 'badge', attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url'], required: false },
             { model: models.badge_requirements, as: 'requirement', attributes: ['requirement_id', 'requirement_title'], required: false }
         ],
         order: [['created_at', 'DESC']],
         limit,
-        offset,
-        subQuery: false
+        offset
     });
 
     return {
@@ -234,40 +191,6 @@ const getUserEnrollment = async () => {
     return rows[0];
 };
 
-const getBadgesPerArea = async (userId) => {
-    const [rows] = await sequelize.query(
-        `SELECT * FROM fn_consultant_badges_per_area(:userId)`,
-        { replacements: { userId } }
-    );
-    return rows;
-};
-
-const getExpiringBadges = async ({ withinDays = 30 } = {}) => {
-    const [rows] = await sequelize.query(
-        `SELECT u.user_guid,
-                u.full_name,
-                b.badge_title,
-                b.badge_slug,
-                ab.awarded_at,
-                ab.expiration_at,
-                (ab.expiration_at::date - CURRENT_DATE)::int AS days_remaining
-         FROM awarded_badges ab
-         JOIN badge_applications ba ON ba.application_id = ab.application_id
-         JOIN badges b             ON b.badge_id = ba.badge_id
-         JOIN users u              ON u.user_id = ab.user_id
-         WHERE ab.expiration_at IS NOT NULL
-           AND ab.expiration_at >= NOW()
-           AND ab.expiration_at <= NOW() + make_interval(days => :withinDays)
-         ORDER BY ab.expiration_at ASC`,
-        { replacements: { withinDays } }
-    );
-    return rows;
-};
-
-const reconcileBadgePoints = async () => {
-    await sequelize.query(`CALL sp_reconcile_badge_points()`);
-};
-
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
@@ -281,8 +204,5 @@ module.exports = {
     getBadgesAwardedByLearningPath,
     getBadgesAwardedByServiceLine,
     getLevelDistribution,
-    getUserEnrollment,
-    getBadgesPerArea,
-    getExpiringBadges,
-    reconcileBadgePoints
+    getUserEnrollment
 };
