@@ -1177,10 +1177,30 @@
 		"teamTitle": "My team",
 		"count": "{{count}} consultants",
 		"colConsultant": "Consultant",
+		"colServiceLine": "Service Line",
 		"colArea": "Area",
 		"colPoints": "Total Points",
-		"colBadges": "Badges",
-		"empty": "No consultants to show."
+		"colBadgesObtained": "Badges Earned",
+		"colApplications": "Applications",
+		"colOpenApps": "Open Apps",
+		"colLastLogin": "Last Login",
+		"neverLoggedIn": "Never",
+		"empty": "No consultants to show.",
+		"filters": {
+			"toggle": "Filters",
+			"searchPlaceholder": "Search by name...",
+			"allServiceLines": "All Service Lines",
+			"allAreas": "All areas",
+			"pointsMin": "Min points",
+			"pointsMax": "Max points",
+			"sort": "Sort",
+			"sortPointsDesc": "Points (high)",
+			"sortPointsAsc": "Points (low)",
+			"sortName": "Name",
+			"sortLastLogin": "Last login",
+			"apply": "Apply",
+			"clear": "Clear"
+		}
 	},
 	"tmValidations": {
 		"title": "Validations",
