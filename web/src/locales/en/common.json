@@ -1157,6 +1157,31 @@
 		"noConsultants": "No consultants to display.",
 		"badgesShort": "badges"
 	},
+	"sllBadgeHistory": {
+		"title": "Badge history",
+		"count": "{{count}} records",
+		"empty": "No records to show.",
+		"colConsultant": "Consultant",
+		"colBadge": "Badge",
+		"colArea": "Area",
+		"colState": "Status",
+		"colDate": "Date",
+		"filter": {
+			"obtained": "Obtained",
+			"inprocess": "In process",
+			"all": "All"
+		}
+	},
+	"consultantsList": {
+		"title": "Consultants",
+		"teamTitle": "My team",
+		"count": "{{count}} consultants",
+		"colConsultant": "Consultant",
+		"colArea": "Area",
+		"colPoints": "Total Points",
+		"colBadges": "Badges",
+		"empty": "No consultants to show."
+	},
 	"tmValidations": {
 		"title": "Validations",
 		"subtitle": "Review submitted applications and forward or reject them.",

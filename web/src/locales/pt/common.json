@@ -1157,6 +1157,31 @@
 		"noConsultants": "Sem consultores para apresentar.",
 		"badgesShort": "badges"
 	},
+	"sllBadgeHistory": {
+		"title": "Histórico de badges",
+		"count": "{{count}} registos",
+		"empty": "Sem registos para mostrar.",
+		"colConsultant": "Consultor",
+		"colBadge": "Badge",
+		"colArea": "Área",
+		"colState": "Estado",
+		"colDate": "Data",
+		"filter": {
+			"obtained": "Obtidos",
+			"inprocess": "Em processo",
+			"all": "Todos"
+		}
+	},
+	"consultantsList": {
+		"title": "Consultores",
+		"teamTitle": "A minha equipa",
+		"count": "{{count}} consultores",
+		"colConsultant": "Consultor",
+		"colArea": "Área",
+		"colPoints": "Total Pontos",
+		"colBadges": "Badges",
+		"empty": "Sem consultores para mostrar."
+	},
 	"tmValidations": {
 		"title": "Validações",
 		"subtitle": "Reveja as candidaturas submetidas e encaminhe-as ou rejeite-as.",
