@@ -36,7 +36,7 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit, areaId, badgeId, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
@@ -45,15 +45,33 @@ const getApplications = async (req, res) => {
             appWhereClause.application_state = { [Op.in]: state };
         }
 
+        if (badgeId) appWhereClause.badge_id = badgeId;
+
+        if (dateFrom || dateTo) {
+            appWhereClause.submitted_at = {};
+            if (dateFrom) appWhereClause.submitted_at[Op.gte] = dateFrom;
+            if (dateTo) appWhereClause.submitted_at[Op.lte] = dateTo;
+        }
+
+        const badgeWhere = {};
+        if (areaId) badgeWhere.area_id = areaId;
+
         const badgeInclude = {
             model: models.badges,
             as: 'badge',
             attributes: ['badge_id', 'badge_title', 'badge_slug', 'badge_img_url', 'service_line_id'],
             include: [
                 { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                { model: models.areas, as: 'area', attributes: ['area_name'] }
+                { model: models.areas, as: 'area', attributes: ['area_name'] },
+                {
+                    model: models.progression_stages,
+                    as: 'progression_stage',
+                    attributes: ['stage_title', 'stage_sequence'],
+                    include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }]
+                }
             ]
         };
+        if (Object.keys(badgeWhere).length > 0) badgeInclude.where = badgeWhere;
 
         // --- Filter by role ---
         if (role === 'Consultant') {
@@ -69,8 +87,8 @@ const getApplications = async (req, res) => {
                     code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
-            // SLL only sees applications within their SL
-            badgeInclude.where = { service_line_id: sllInfo.service_line_id };
+            // SLL only sees applications within their SL (merge with any area filter)
+            badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
 
         } else if (role === 'Talent Manager' || role === 'Administrator') {
             // TM/Admin see everything, but TM doesn't see apps in 'Open' state by default
