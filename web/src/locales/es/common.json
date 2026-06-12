@@ -403,6 +403,13 @@
 			"days": "hace {{count}}d"
 		}
 	},
+	"gdprConsent": {
+		"title": "Consentimiento RGPD",
+		"shareBadgePurpose": "Para compartir públicamente el badge \"{{badge}}\" necesitamos su consentimiento para el tratamiento y la divulgación de los datos personales asociados a la credencial.",
+		"version": "Versión {{version}}",
+		"agreeLabel": "He leído y acepto la política anterior y autorizo el uso compartido público de los datos de mi credencial.",
+		"acceptAndContinue": "Aceptar y continuar"
+	},
 	"shared": {
 		"months": {
 			"jan": "Ene",
@@ -1238,6 +1245,29 @@
 		"commentRequired": "Añada un comentario antes de continuar.",
 		"stateLabel": "Estado",
 		"expiresInDays": "Caduca en {{count}} días",
+		"histTitle": "Historial del Proceso",
+		"histSubmission": "Envío",
+		"histSubmissionDesc": "Candidatura enviada por el consultor",
+		"histTmValidation": "Validación TM",
+		"histTmBy": "Talent Manager: {{name}}",
+		"histOpinion": "Dictamen Previo",
+		"histOpinionPositive": "Dictamen: Positivo",
+		"histFinal": "Aprobación Final",
+		"histFinalDesc": "Service Line · Decisión final",
+		"histPending": "Pendiente",
+		"opinionTitle": "Dictamen Previo · {{name}} (Talent Manager)",
+		"opinionDone": "Validación completada el {{date}}",
+		"verifiedByTm": "Verificado por el TM",
+		"summaryApproved": "Aprobado",
+		"verifiedCount": "{{done}}/{{total}} verificados",
+		"result": {
+			"back": "Volver a las candidaturas",
+			"box": "{{consultant}} — {{badge}}. El consultor será notificado por email.",
+			"accept": { "title": "¡Candidatura Aprobada!", "desc": "El badge ha sido generado y publicado." },
+			"review": { "title": "¡Candidatura reenviada!", "desc": "Enviada al Service Line Leader para la decisión final." },
+			"send_back": { "title": "¡Candidatura devuelta!", "desc": "Devuelta al consultor para corrección." },
+			"reject": { "title": "¡Candidatura Rechazada!", "desc": "La candidatura ha sido cerrada." }
+		},
 		"toast": {
 			"evidenceApproved": "Evidencia aprobada.",
 			"evidenceRejected": "Evidencia rechazada.",

@@ -404,6 +404,13 @@
 			"days": "{{count}}d ago"
 		}
 	},
+	"gdprConsent": {
+		"title": "GDPR Consent",
+		"shareBadgePurpose": "To publicly share the \"{{badge}}\" badge we need your consent to process and disclose the personal data associated with the credential.",
+		"version": "Version {{version}}",
+		"agreeLabel": "I have read and accept the policy above and authorise the public sharing of my credential data.",
+		"acceptAndContinue": "Accept and continue"
+	},
 	"shared": {
 		"months": {
 			"jan": "Jan",
@@ -1239,6 +1246,29 @@
 		"commentRequired": "Add a comment before continuing.",
 		"stateLabel": "Status",
 		"expiresInDays": "Expires in {{count}} days",
+		"histTitle": "Process History",
+		"histSubmission": "Submission",
+		"histSubmissionDesc": "Application submitted by the consultant",
+		"histTmValidation": "TM Validation",
+		"histTmBy": "Talent Manager: {{name}}",
+		"histOpinion": "Prior Opinion",
+		"histOpinionPositive": "Opinion: Positive",
+		"histFinal": "Final Approval",
+		"histFinalDesc": "Service Line · Final decision",
+		"histPending": "Pending",
+		"opinionTitle": "Prior Opinion · {{name}} (Talent Manager)",
+		"opinionDone": "Validation completed on {{date}}",
+		"verifiedByTm": "Verified by TM",
+		"summaryApproved": "Approved",
+		"verifiedCount": "{{done}}/{{total}} verified",
+		"result": {
+			"back": "Back to applications",
+			"box": "{{consultant}} — {{badge}}. The consultant will be notified by email.",
+			"accept": { "title": "Application Approved!", "desc": "The badge has been generated and published." },
+			"review": { "title": "Application forwarded!", "desc": "Sent to the Service Line Leader for the final decision." },
+			"send_back": { "title": "Application returned!", "desc": "Returned to the consultant for correction." },
+			"reject": { "title": "Application Rejected!", "desc": "The application has been closed." }
+		},
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",
