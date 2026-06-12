@@ -25,7 +25,7 @@ import 'data/repositories/goals_repo.dart';
 import 'data/repositories/statistics_repo.dart';
 import 'data/local/current_user_dao.dart';
 import 'data/local/lang_dao.dart';
-import 'data/local/notification_dao.dart';
+import 'data/repositories/notification_repo.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
@@ -163,7 +163,7 @@ void main() async {
         ),
         ChangeNotifierProvider<NotificationStore>(
           create: (_) => NotificationStore(
-            getIt<NotificationDao>(),
+            getIt<NotificationRepository>(),
             getIt<SyncService>(),
           ),
         ),

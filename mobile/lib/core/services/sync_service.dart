@@ -134,7 +134,7 @@ class SyncService {
   Future<void> handleUpdate(int updateCode, String timestampStr) async {
     if (!SyncCodes.isRelevantForMobile(updateCode)) return;
 
-    if (_activeRoute != null) {
+    if (_activeRoute != null && updateCode != SyncCodes.notifications) {
       final relevantCodes = ScreenDataScope.requiredSyncCodes(_activeRoute!);
       if (relevantCodes.isNotEmpty && !relevantCodes.contains(updateCode)) {
         debugPrint(
@@ -528,9 +528,37 @@ class SyncService {
     );
   }
 
-  Future<bool> _syncNotifications() => _syncList(
-    endpoint: ApiEndpoints.getNotifications,
-    fromJson: NotificationModel.fromJson,
-    replaceAll: _notificationDao.replaceAll,
-  );
+  Future<bool> _syncNotifications() async {
+    try {
+      final items = <NotificationModel>[];
+      var page = 1;
+      while (true) {
+        final response = await _apiClient.get(
+          ApiEndpoints.getNotifications,
+          queryParameters: {'page': page, 'limit': 100},
+        );
+        final pageRows = _extractList(response)
+            .whereType<Map>()
+            .map((e) =>
+                NotificationModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        items.addAll(pageRows);
+        final totalPages = _extractTotalPages(response);
+        if (pageRows.isEmpty || page >= totalPages || page >= 50) break;
+        page++;
+      }
+      debugPrint(
+        'SyncService: fetched ${items.length} notifications across $page page(s)',
+      );
+      await _notificationDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (e) {
+      debugPrint('SyncService: notifications failed: $e');
+      return false;
+    }
+  }
 }
