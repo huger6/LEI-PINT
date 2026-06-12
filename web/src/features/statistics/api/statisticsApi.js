@@ -40,3 +40,10 @@ export async function getExpiringBadges(withinDays = 90) {
 	const { data } = await api.get('/statistics/reports/expiring-badges', { params: { withinDays } });
 	return data?.data || [];
 }
+
+// Consultants overview (leadership). SLL is scoped server-side to their Service Line.
+// params: search, serviceLineId, areaId, pointsMin, pointsMax, sort, page, limit
+export async function getConsultantsOverview(params = {}) {
+	const { data } = await api.get('/statistics/consultants', { params });
+	return { rows: data?.data || [], pagination: data?.pagination || null };
+}

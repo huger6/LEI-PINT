@@ -1176,10 +1176,30 @@
 		"teamTitle": "Mi equipo",
 		"count": "{{count}} consultores",
 		"colConsultant": "Consultor",
+		"colServiceLine": "Service Line",
 		"colArea": "Área",
 		"colPoints": "Total Puntos",
-		"colBadges": "Badges",
-		"empty": "No hay consultores para mostrar."
+		"colBadgesObtained": "Badges Obtenidos",
+		"colApplications": "Candidaturas",
+		"colOpenApps": "Cand. Abiertas",
+		"colLastLogin": "Último Acceso",
+		"neverLoggedIn": "Nunca",
+		"empty": "No hay consultores para mostrar.",
+		"filters": {
+			"toggle": "Filtros",
+			"searchPlaceholder": "Buscar por nombre...",
+			"allServiceLines": "Todas las Service Lines",
+			"allAreas": "Todas las áreas",
+			"pointsMin": "Puntos mín.",
+			"pointsMax": "Puntos máx.",
+			"sort": "Ordenar",
+			"sortPointsDesc": "Puntos (mayor)",
+			"sortPointsAsc": "Puntos (menor)",
+			"sortName": "Nombre",
+			"sortLastLogin": "Último acceso",
+			"apply": "Aplicar",
+			"clear": "Limpiar"
+		}
 	},
 	"tmValidations": {
 		"title": "Validaciones",
