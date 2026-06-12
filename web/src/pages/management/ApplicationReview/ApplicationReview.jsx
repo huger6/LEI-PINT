@@ -248,8 +248,10 @@ export default function ApplicationReview({ application }) {
 						</div>
 					</div>
 
-					{/* SLL: process history + TM prior opinion */}
-					{isSll && (
+					{/* Process history (req 21) — shown to TM and SLL. The TM prior-opinion
+					    box only renders once a TM log exists, so it stays hidden while the
+					    TM is still reviewing a Submitted application. */}
+					{(
 						<div className={styles.card}>
 							<h3 className={styles.sectionTitle}>{t('applicationReview.histTitle')}</h3>
 							<div className={styles.history}>

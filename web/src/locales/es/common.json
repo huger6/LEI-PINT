@@ -1156,6 +1156,31 @@
 		"noConsultants": "Sin consultores para mostrar.",
 		"badgesShort": "badges"
 	},
+	"sllBadgeHistory": {
+		"title": "Historial de badges",
+		"count": "{{count}} registros",
+		"empty": "No hay registros para mostrar.",
+		"colConsultant": "Consultor",
+		"colBadge": "Badge",
+		"colArea": "Área",
+		"colState": "Estado",
+		"colDate": "Fecha",
+		"filter": {
+			"obtained": "Obtenidos",
+			"inprocess": "En proceso",
+			"all": "Todos"
+		}
+	},
+	"consultantsList": {
+		"title": "Consultores",
+		"teamTitle": "Mi equipo",
+		"count": "{{count}} consultores",
+		"colConsultant": "Consultor",
+		"colArea": "Área",
+		"colPoints": "Total Puntos",
+		"colBadges": "Badges",
+		"empty": "No hay consultores para mostrar."
+	},
 	"tmValidations": {
 		"title": "Validaciones",
 		"subtitle": "Revise las candidaturas enviadas y reenvíelas o recházelas.",

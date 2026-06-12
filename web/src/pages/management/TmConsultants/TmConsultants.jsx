@@ -1,13 +1,6 @@
-import { useTranslation } from 'react-i18next';
-import PlaceholderPage from '../../../components/PlaceholderPage/PlaceholderPage';
+import ConsultantsList from '../ConsultantsList/ConsultantsList';
 
+// Talent Manager view: all consultants (no Service Line scope).
 export default function TmConsultants() {
-	const { t } = useTranslation();
-	return (
-		<PlaceholderPage
-			icon="user"
-			title={t('sidebar.tm.consultants')}
-			description={t('tmSections.consultantsDesc')}
-		/>
-	);
+	return <ConsultantsList />;
 }
