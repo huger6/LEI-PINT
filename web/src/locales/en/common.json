@@ -1245,6 +1245,8 @@
 		"approveHint": "Validate all evidence before approving the application.",
 		"commentRequired": "Add a comment before continuing.",
 		"stateLabel": "Status",
+		"totalPoints": "Total Points",
+		"ranking": "Ranking",
 		"expiresInDays": "Expires in {{count}} days",
 		"histTitle": "Process History",
 		"histSubmission": "Submission",

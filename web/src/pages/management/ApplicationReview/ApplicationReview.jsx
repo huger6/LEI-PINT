@@ -63,6 +63,8 @@ export default function ApplicationReview({ application }) {
 	const imgUrl = badge.badge_img_url;
 	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
 	const submittedAt = application?.submitted_at || application?.opened_at;
+	const consultantPoints = application?.consultant_total_points;
+	const consultantRank = application?.consultant_ranking_position;
 
 	// SLL-only: process history + the Talent Manager's prior opinion (from audit logs)
 	const logs = application?.application_validation_logs || [];
@@ -209,6 +211,28 @@ export default function ApplicationReview({ application }) {
 									{[serviceLineName, areaName].filter(Boolean).join(' · ') || '—'}
 								</span>
 							</div>
+							{isSll && (consultantPoints != null || consultantRank != null) && (
+								<div className={styles.consultantStats}>
+									{consultantPoints != null && (
+										<div className={styles.statChip}>
+											<Icon name="star-points" size={16} color="var(--color-primary)" />
+											<div className={styles.statChipBody}>
+												<span className={styles.statChipLabel}>{t('applicationReview.totalPoints')}</span>
+												<span className={styles.statChipValue}>{consultantPoints.toLocaleString('pt-PT')}</span>
+											</div>
+										</div>
+									)}
+									{consultantRank != null && (
+										<div className={styles.statChip}>
+											<Icon name="ranking" size={16} color="var(--color-secondary)" />
+											<div className={styles.statChipBody}>
+												<span className={styles.statChipLabel}>{t('applicationReview.ranking')}</span>
+												<span className={styles.statChipValue}>#{consultantRank}</span>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
 							<div className={styles.consultantSide}>
 								<span className={styles.statePill}>
 									<span className={styles.stateDot} />

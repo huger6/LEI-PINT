@@ -1244,6 +1244,8 @@
 		"approveHint": "Valide todas las evidencias para poder aprobar la candidatura.",
 		"commentRequired": "Añada un comentario antes de continuar.",
 		"stateLabel": "Estado",
+		"totalPoints": "Total Puntos",
+		"ranking": "Ranking",
 		"expiresInDays": "Caduca en {{count}} días",
 		"histTitle": "Historial del Proceso",
 		"histSubmission": "Envío",
