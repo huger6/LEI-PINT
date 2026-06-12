@@ -1155,7 +1155,16 @@
 		"topConsultants": "Top Consultants",
 		"seeRanking": "See ranking",
 		"noConsultants": "No consultants to display.",
-		"badgesShort": "badges"
+		"badgesShort": "badges",
+		"kpiPending": "Pending Validations",
+		"kpiConsultants": "Consultants",
+		"kpiBadges": "Badges Awarded",
+		"kpiApprovalRate": "Approval Rate",
+		"kpiExpiring": "Expiring Badges",
+		"chartByServiceLine": "Badges by Service Line",
+		"chartByLevel": "Badges by Level",
+		"badgesAwarded": "Badges awarded",
+		"noData": "No data to show."
 	},
 	"sllBadgeHistory": {
 		"title": "Badge history",
