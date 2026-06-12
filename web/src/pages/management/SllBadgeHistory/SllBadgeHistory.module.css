@@ -25,6 +25,54 @@
 	font-size: 0.85rem;
 }
 
+.headerActions {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+
+.filtersBar {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	padding: 0.75rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 14px;
+	background: var(--color-bg-card);
+}
+
+.dateField {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+.dateInput {
+	padding: 0.4rem 0.6rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 10px;
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+	font-size: 0.85rem;
+}
+
+.levelChip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	background: var(--color-secondary-container);
+	color: var(--color-secondary);
+	font-weight: 700;
+	font-size: 0.8rem;
+}
+
 /* Segmented filter */
 .segmented {
 	display: inline-flex;
