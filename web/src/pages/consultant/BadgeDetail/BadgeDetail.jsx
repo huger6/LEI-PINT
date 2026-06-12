@@ -12,6 +12,7 @@ import RequirementCard from '../../../components/RequirementCard/RequirementCard
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
+import GdprConsentModal from '../../../components/GdprConsentModal/GdprConsentModal';
 import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeDetail.module.css';
 
@@ -30,6 +31,7 @@ export default function BadgeDetail() {
 	const [applying, setApplying] = useState(false);
 	const [downloading, setDownloading] = useState(false);
 	const [error, setError] = useState(null);
+	const [showConsent, setShowConsent] = useState(false);
 	const carouselRef = useRef(null);
 
 	useEffect(() => {
@@ -95,7 +97,12 @@ export default function BadgeDetail() {
 		}
 	}
 
+	// Publishing/sharing a credential exposes personal data — gate behind RGPD consent.
 	function handleShareLinkedIn() {
+		setShowConsent(true);
+	}
+
+	function doShareLinkedIn() {
 		const badgeTitle = badge.badge_title || badge.badgeTitle;
 		const verificationLink = badge.user_award?.public_verification_link;
 
@@ -515,6 +522,15 @@ export default function BadgeDetail() {
 						))}
 					</div>
 				</section>
+			)}
+
+			{showConsent && (
+				<GdprConsentModal
+					policyType="Privacy"
+					purpose={t('gdprConsent.shareBadgePurpose', { badge: title })}
+					onConfirm={doShareLinkedIn}
+					onClose={() => setShowConsent(false)}
+				/>
 			)}
 		</div>
 	);

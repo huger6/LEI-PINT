@@ -404,6 +404,13 @@
 			"days": "{{count}}d atrás"
 		}
 	},
+	"gdprConsent": {
+		"title": "Consentimento RGPD",
+		"shareBadgePurpose": "Para partilhar publicamente o badge \"{{badge}}\" precisamos do seu consentimento para o tratamento e divulgação dos dados pessoais associados à credencial.",
+		"version": "Versão {{version}}",
+		"agreeLabel": "Li e aceito a política acima e autorizo a partilha pública dos dados da minha credencial.",
+		"acceptAndContinue": "Aceitar e continuar"
+	},
 	"shared": {
 		"months": {
 			"jan": "Jan",
@@ -1239,6 +1246,29 @@
 		"commentRequired": "Adicione um comentário antes de continuar.",
 		"stateLabel": "Estado",
 		"expiresInDays": "Expira em {{count}} dias",
+		"histTitle": "Histórico do Processo",
+		"histSubmission": "Submissão",
+		"histSubmissionDesc": "Candidatura submetida pelo consultor",
+		"histTmValidation": "Validação TM",
+		"histTmBy": "Talent Manager: {{name}}",
+		"histOpinion": "Parecer Prévio",
+		"histOpinionPositive": "Parecer: Positivo",
+		"histFinal": "Aprovação Final",
+		"histFinalDesc": "Service Line · Decisão final",
+		"histPending": "Pendente",
+		"opinionTitle": "Parecer Prévio · {{name}} (Talent Manager)",
+		"opinionDone": "Validação concluída em {{date}}",
+		"verifiedByTm": "Verificado pelo TM",
+		"summaryApproved": "Aprovado",
+		"verifiedCount": "{{done}}/{{total}} verificados",
+		"result": {
+			"back": "Voltar às candidaturas",
+			"box": "{{consultant}} — {{badge}}. O consultor será notificado por e-mail.",
+			"accept": { "title": "Candidatura Aprovada!", "desc": "O badge foi gerado e publicado." },
+			"review": { "title": "Candidatura encaminhada!", "desc": "Enviada ao Service Line Leader para decisão final." },
+			"send_back": { "title": "Candidatura devolvida!", "desc": "Devolvida ao consultor para correção." },
+			"reject": { "title": "Candidatura Rejeitada!", "desc": "A candidatura foi encerrada." }
+		},
 		"toast": {
 			"evidenceApproved": "Evidência aprovada.",
 			"evidenceRejected": "Evidência rejeitada.",

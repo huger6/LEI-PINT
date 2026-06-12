@@ -13,7 +13,6 @@ import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import FormAlert from '../../../components/FormAlert/FormAlert';
-import SaveToast from '../../../components/SaveToast/SaveToast';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import styles from './ApplicationReview.module.css';
 
@@ -39,12 +38,14 @@ function evidenceForRequirement(evidences, reqId) {
 	return evidences.find((ev) => String(ev.requirement_id) === String(reqId));
 }
 
-export default function ApplicationReview({ application, onReload }) {
+export default function ApplicationReview({ application }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
-	const reviewField = isSll ? 'sll_reviewed' : 'tm_reviewed';
+	// The verification that matters is the Talent Manager's: the TM marks each
+	// evidence correct; the SLL sees it read-only ("Verificado pelo TM") and decides.
+	const reviewField = 'tm_reviewed';
 	const validationsPath = isSll ? SLL.VALIDATIONS : TM.VALIDATIONS;
 
 	const appGuid = application?.application_guid;
@@ -63,12 +64,27 @@ export default function ApplicationReview({ application, onReload }) {
 	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
 	const submittedAt = application?.submitted_at || application?.opened_at;
 
+	// SLL-only: process history + the Talent Manager's prior opinion (from audit logs)
+	const logs = application?.application_validation_logs || [];
+	const tmLog = logs.find((l) => (l.validator_function || l.validatorFunction) === 'Talent Manager');
+	const tmName = tmLog?.user?.full_name || tmLog?.user?.fullName || '';
+	const tmComment = tmLog?.validations_comments || tmLog?.validationsComments || '';
+	const tmDate = tmLog?.validated_at || tmLog?.validatedAt || null;
+	const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
 	const [reviewerNotes, setReviewerNotes] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [confirmAction, setConfirmAction] = useState(null);
 	const [evidenceBusy, setEvidenceBusy] = useState(null);
 	const [error, setError] = useState(null);
-	const [toast, setToast] = useState('');
+	const [result, setResult] = useState(null); // post-decision result screen
+
+	const RESULT_META = {
+		accept: { icon: 'check_circle', cls: styles.resOk },
+		review: { icon: 'send', cls: styles.resOk },
+		send_back: { icon: 'chevron_backward', cls: styles.resWarn },
+		reject: { icon: 'close_circle', cls: styles.resBad },
+	};
 
 	const reqRows = useMemo(() => requirements.map((req, idx) => {
 		const reqId = req.requirement_id || idx;
@@ -102,7 +118,6 @@ export default function ApplicationReview({ application, onReload }) {
 		];
 
 	const ACTION_CONFIRM = { review: 'applicationReview.confirmForward', accept: 'applicationReview.confirmAccept', reject: 'applicationReview.confirmReject', send_back: 'applicationReview.confirmSendBack' };
-	const ACTION_TOAST = { review: 'applicationReview.toast.forwarded', accept: 'applicationReview.toast.accepted', reject: 'applicationReview.toast.rejected', send_back: 'applicationReview.toast.returned' };
 	const NEEDS_NOTE = ['send_back', 'reject'];
 
 	async function handleDownload(evidenceId) {
@@ -142,13 +157,34 @@ export default function ApplicationReview({ application, onReload }) {
 		setSubmitting(true);
 		try {
 			await validateApplication(appGuid, action, reviewerNotes.trim() || null);
-			setToast(t(ACTION_TOAST[action]));
-			onReload?.();
-			navigate(validationsPath);
+			setResult(action);
+			setSubmitting(false);
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 			setSubmitting(false);
 		}
+	}
+
+	// Post-decision result screen.
+	if (result) {
+		const meta = RESULT_META[result];
+		return (
+			<div className={styles.page}>
+				<div className={styles.resultWrap}>
+					<div className={`${styles.card} ${styles.resultCard}`}>
+						<div className={`${styles.resultIcon} ${meta.cls}`}>
+							<Icon name={meta.icon} size={34} color="#fff" />
+						</div>
+						<h1 className={styles.resultTitle}>{t(`applicationReview.result.${result}.title`)}</h1>
+						<p className={styles.resultDesc}>{t(`applicationReview.result.${result}.desc`)}</p>
+						<div className={styles.resultBox}>{t('applicationReview.result.box', { consultant: consultantName, badge: title })}</div>
+						<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
+							{t('applicationReview.result.back')}
+						</Button>
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	return (
@@ -187,6 +223,55 @@ export default function ApplicationReview({ application, onReload }) {
 							</div>
 						</div>
 					</div>
+
+					{/* SLL: process history + TM prior opinion */}
+					{isSll && (
+						<div className={styles.card}>
+							<h3 className={styles.sectionTitle}>{t('applicationReview.histTitle')}</h3>
+							<div className={styles.history}>
+								<div className={styles.histStep}>
+									<div className={`${styles.histIcon} ${styles.histDone}`}><Icon name="send" size={16} color="#fff" /></div>
+									<span className={styles.histLabel}>{t('applicationReview.histSubmission')}</span>
+									<span className={styles.histDate}>{fmtDate(submittedAt)}</span>
+									<span className={styles.histDesc}>{t('applicationReview.histSubmissionDesc')}</span>
+								</div>
+								<div className={styles.histStep}>
+									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="check" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
+									<span className={styles.histLabel}>{t('applicationReview.histTmValidation')}</span>
+									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
+									<span className={styles.histDesc}>{t('applicationReview.histTmBy', { name: tmName || '—' })}</span>
+								</div>
+								<div className={styles.histStep}>
+									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="paper" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
+									<span className={styles.histLabel}>{t('applicationReview.histOpinion')}</span>
+									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
+									<span className={styles.histDesc}>{t('applicationReview.histOpinionPositive')}</span>
+								</div>
+								<div className={styles.histStep}>
+									<div className={`${styles.histIcon} ${state === 'Accepted' ? styles.histDone : ''}`}><Icon name="badge" size={16} color={state === 'Accepted' ? '#fff' : 'var(--color-outline)'} /></div>
+									<span className={styles.histLabel}>{t('applicationReview.histFinal')}</span>
+									<span className={styles.histDate}>{state === 'Accepted' ? t('applicationReview.appState.accepted') : t('applicationReview.histPending')}</span>
+									<span className={styles.histDesc}>{t('applicationReview.histFinalDesc')}</span>
+								</div>
+							</div>
+
+							{tmLog && (
+								<div className={styles.opinionBox}>
+									<div className={styles.opinionHead}>
+										<Icon name="check_circle" size={16} color="var(--color-green-on-soft)" />
+										<span>{t('applicationReview.opinionTitle', { name: tmName || 'Talent Manager' })}</span>
+									</div>
+									<span className={styles.opinionDate}>{t('applicationReview.opinionDone', { date: fmtDate(tmDate) })}</span>
+									{tmComment && (
+										<div className={styles.opinionQuote}>
+											<strong>{t('applicationReview.histOpinionPositive')}</strong>
+											<p>“{tmComment}”</p>
+										</div>
+									)}
+								</div>
+							)}
+						</div>
+					)}
 
 					{/* Badge + progress */}
 					<div className={styles.card}>
@@ -227,7 +312,7 @@ export default function ApplicationReview({ application, onReload }) {
 					<div className={styles.card}>
 						<div className={styles.sectionHead}>
 							<h3 className={styles.sectionTitle}>{t('applicationReview.evidencesTitle')}</h3>
-							<span className={styles.validatedPill}>{t('applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
+							<span className={styles.validatedPill}>{t(isSll ? 'applicationReview.verifiedCount' : 'applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
 						</div>
 
 						{totalReqs === 0 ? (
@@ -243,9 +328,15 @@ export default function ApplicationReview({ application, onReload }) {
 										<div className={styles.reqBody}>
 											<div className={styles.reqTitleRow}>
 												<span className={styles.reqTitle}>{r.code}: {r.title}</span>
-												<span className={`${styles.evPill} ${r.evidence ? styles.evSubmitted : styles.evMissing}`}>
-													{r.evidence ? t('applicationReview.evidenceSubmitted') : t('applicationReview.noEvidence')}
-												</span>
+												{isSll && r.validated ? (
+													<span className={`${styles.evPill} ${styles.evVerified}`}>
+														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.verifiedByTm')}
+													</span>
+												) : r.evidence ? (
+													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.evidenceSubmitted')}</span>
+												) : (
+													<span className={`${styles.evPill} ${styles.evMissing}`}>{t('applicationReview.noEvidence')}</span>
+												)}
 											</div>
 											{r.description && <p className={styles.reqDesc}>{r.description}</p>}
 										</div>
@@ -263,18 +354,20 @@ export default function ApplicationReview({ application, onReload }) {
 													<Icon name="eye" size={14} color="var(--color-secondary)" /> {t('applicationReview.viewDocument')}
 												</button>
 											</div>
-											<div className={styles.reqActions}>
-												<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
-												<Button
-													variant={r.validated ? 'filled' : 'outlined'}
-													color={r.validated ? 'success' : 'primary'}
-													size="sm"
-													loading={evidenceBusy === evId}
-													onClick={() => toggleEvidence(evId, r.validated)}
-												>
-													<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
-												</Button>
-											</div>
+											{!isSll && (
+												<div className={styles.reqActions}>
+													<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
+													<Button
+														variant={r.validated ? 'filled' : 'outlined'}
+														color={r.validated ? 'success' : 'primary'}
+														size="sm"
+														loading={evidenceBusy === evId}
+														onClick={() => toggleEvidence(evId, r.validated)}
+													>
+														<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
+													</Button>
+												</div>
+											)}
 										</>
 									)}
 								</div>
@@ -294,7 +387,7 @@ export default function ApplicationReview({ application, onReload }) {
 									<span className={styles.summaryCode}>{r.code}</span>
 									<span className={`${styles.summaryState} ${r.validated ? styles.summaryDone : ''}`}>
 										<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} color={r.validated ? 'var(--color-green-on-soft)' : 'var(--color-outline)'} />
-										{r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.pendingLabel')}
+										{r.validated ? t(isSll ? 'applicationReview.summaryApproved' : 'applicationReview.validatedLabel') : t('applicationReview.pendingLabel')}
 									</span>
 								</li>
 							))}
@@ -352,7 +445,6 @@ export default function ApplicationReview({ application, onReload }) {
 				onConfirm={() => handleDecision(confirmAction)}
 				onCancel={() => setConfirmAction(null)}
 			/>
-			<SaveToast open={Boolean(toast)} message={toast} onClose={() => setToast('')} />
 		</div>
 	);
 }

@@ -315,6 +315,174 @@
 	color: var(--color-red-on-soft);
 }
 
+.evVerified {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+/* SLL: process history */
+.history {
+	display: flex;
+	gap: 0.5rem;
+	overflow-x: auto;
+	padding-bottom: 0.25rem;
+}
+
+.histStep {
+	flex: 1;
+	min-width: 130px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.2rem;
+	position: relative;
+}
+
+.histStep:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	top: 16px;
+	left: calc(50% + 20px);
+	right: calc(-50% + 20px);
+	height: 2px;
+	background: var(--color-outline-variant);
+}
+
+.histIcon {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	z-index: 1;
+}
+
+.histDone {
+	background: var(--color-green-on-soft);
+	border-color: var(--color-green-on-soft);
+}
+
+.histLabel {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	margin-top: 0.2rem;
+}
+
+.histDate {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-outline);
+}
+
+.histDesc {
+	font-size: 0.72rem;
+	color: var(--color-outline);
+}
+
+/* SLL: TM prior opinion */
+.opinionBox {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding: 0.85rem;
+	border-radius: 12px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+}
+
+.opinionHead {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--color-on-surface);
+}
+
+.opinionDate {
+	font-size: 0.78rem;
+	color: var(--color-outline);
+}
+
+.opinionQuote {
+	margin-top: 0.3rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 8px;
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+	font-size: 0.84rem;
+}
+
+.opinionQuote strong {
+	display: block;
+	margin-bottom: 0.2rem;
+}
+
+.opinionQuote p {
+	margin: 0;
+	color: var(--color-on-surface);
+	font-style: italic;
+}
+
+/* Post-decision result screen */
+.resultWrap {
+	display: flex;
+	justify-content: center;
+	padding: 2rem 1rem;
+}
+
+.resultCard {
+	max-width: 480px;
+	width: 100%;
+	align-items: center;
+	text-align: center;
+	gap: 1rem;
+	padding: 2rem 1.5rem;
+}
+
+.resultIcon {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.resOk { background: var(--color-green-on-soft); }
+.resWarn { background: var(--color-orange-on-soft); }
+.resBad { background: var(--color-red-on-soft); }
+
+.resultTitle {
+	font-size: 1.4rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-surface);
+}
+
+.resultDesc {
+	margin: 0;
+	color: var(--color-outline);
+}
+
+.resultBox {
+	width: 100%;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 12px;
+	padding: 0.85rem 1rem;
+	font-size: 0.88rem;
+	color: var(--color-on-surface);
+}
+
 .reqDesc {
 	margin: 0.3rem 0 0;
 	font-size: 0.84rem;
