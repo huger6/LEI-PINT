@@ -1,3 +1,4 @@
+const http = require('http');
 const loadEnvironment = require('./src/config/loadEnv');
 const { logger } = require('./src/utils/logger');
 
@@ -5,6 +6,7 @@ loadEnvironment();
 
 const { sequelize } = require('./src/config/db');
 const { app, PORT } = require('./src/app');
+const { initWebSocket } = require('./src/config/websocket');
 
 async function verifyDatabaseConnection() {
     await sequelize.authenticate();
@@ -12,7 +14,15 @@ async function verifyDatabaseConnection() {
 }
 
 function startHttpServer() {
-    app.listen(PORT, () => {
+    // Wrap Express in a raw HTTP server so socket.io can share the same port.
+    const server = http.createServer(app);
+    initWebSocket(server);
+
+    server.on('error', (error) => {
+        handleFatalError('HTTP server error', error);
+    });
+
+    server.listen(PORT, () => {
         logger.info('Server started', {
             port: PORT,
             url: `http://localhost:${PORT}`
@@ -21,18 +31,12 @@ function startHttpServer() {
 }
 
 function handleFatalError(label, error) {
-    if (error instanceof Error) {
-        logger.error(label, {
-            message: error.message,
-            stack: error.stack
-        });
-    } else {
-        logger.error(label, {
-            reason: String(error)
-        });
-    }
+    const logArgs = error instanceof Error
+        ? { message: error.message, stack: error.stack }
+        : { reason: String(error) };
 
-    process.exit(1);
+    // Wait for the logger to flush before exiting so the error is written to disk.
+    logger.error(label, logArgs, () => process.exit(1));
 }
 
 async function bootstrap() {

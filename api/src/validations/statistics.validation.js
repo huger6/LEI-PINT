@@ -1,19 +1,25 @@
 const { z } = require('zod');
-const { positiveIntIdRule } = require('./shared-rules');
+require('./error-map');
+const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const dateRule = z.coerce.date();
 
 const pointsHistoryQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().max(100).default(20)
+    limit: z.coerce.number().int().positive().max(100).default(20),
+    search: z.string().max(100).optional(),
+    serviceLineId: positiveIntIdRule.optional(),
+    areaId: positiveIntIdRule.optional(),
+    dateFrom: dateRule.optional(),
+    dateTo: dateRule.optional()
 });
 
 const userIdParamSchema = z.object({
-    userId: positiveIntIdRule
+    userGuid: uuidRule
 });
 
 const peerComparisonQuerySchema = z.object({
-    userId: positiveIntIdRule.optional(),
+    userGuid: uuidRule.optional(),
     tolerance: z.coerce.number().min(0).max(1).default(0.25)
 });
 
@@ -27,7 +33,7 @@ const badgeDistributionQuerySchema = z.object({
     dateTo: dateRule.optional()
 }).refine(
     (data) => !(data.dateFrom && data.dateTo) || data.dateFrom <= data.dateTo,
-    { message: 'dateFrom must be before or equal to dateTo', path: ['dateFrom'] }
+    { message: 'VALIDATION_DATE_RANGE_INVALID', path: ['dateFrom'] }
 );
 
 const badgesByRangeQuerySchema = z.object({
@@ -39,8 +45,30 @@ const badgesByRangeQuerySchema = z.object({
     stageId: positiveIntIdRule.optional()
 }).refine(
     (data) => data.dateFrom <= data.dateTo,
-    { message: 'dateFrom must be before or equal to dateTo', path: ['dateFrom'] }
+    { message: 'VALIDATION_DATE_RANGE_INVALID', path: ['dateFrom'] }
 );
+
+const expiringBadgesQuerySchema = z.object({
+    withinDays: z.coerce.number().int().positive().max(1825).default(90)
+});
+
+const badgesSummaryQuerySchema = z.object({
+    serviceLineId: z.coerce.number().int().positive().optional(),
+    areaId: z.coerce.number().int().positive().optional(),
+    dateFrom: z.coerce.date().optional(),
+    dateTo: z.coerce.date().optional()
+});
+
+const consultantsOverviewQuerySchema = z.object({
+    search: z.string().trim().max(120).optional(),
+    serviceLineId: z.coerce.number().int().positive().optional(),
+    areaId: z.coerce.number().int().positive().optional(),
+    pointsMin: z.coerce.number().int().min(0).optional(),
+    pointsMax: z.coerce.number().int().min(0).optional(),
+    sort: z.enum(['points_desc', 'points_asc', 'name', 'last_login']).default('points_desc'),
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(12)
+});
 
 module.exports = {
     pointsHistoryQuerySchema,
@@ -48,5 +76,8 @@ module.exports = {
     peerComparisonQuerySchema,
     applicationsCountQuerySchema,
     badgeDistributionQuerySchema,
-    badgesByRangeQuerySchema
+    badgesByRangeQuerySchema,
+    expiringBadgesQuerySchema,
+    consultantsOverviewQuerySchema,
+    badgesSummaryQuerySchema
 };

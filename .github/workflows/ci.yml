@@ -1,0 +1,28 @@
+name: Node CI
+
+on:
+  push:
+    branches: [ main, back ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test_api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies for API
+        working-directory: api
+        run: npm ci
+
+      - name: Run API tests (skip firebase)
+        working-directory: api
+        env:
+          SKIP_FIREBASE: '1'
+        run: npm test

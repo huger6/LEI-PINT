@@ -32,9 +32,17 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(512),
       allowNull: true
     },
+    notification_type: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      validate: {
+        isIn: [['HOME', 'BADGES', 'APPLICATIONS', 'ACHIEVEMENTS', 'POINTS', 'OBJECTIVES', 'EVOLUTION', 'ANNOUNCEMENTS', 'SYSTEM']]
+      }
+    },
     is_read: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     sent_at: {
       type: DataTypes.DATE,

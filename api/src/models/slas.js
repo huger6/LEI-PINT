@@ -30,7 +30,8 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_global: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     is_active: {
       type: DataTypes.BOOLEAN,
@@ -55,14 +56,6 @@ module.exports = function (sequelize, DataTypes) {
       references: {
         model: 'users',
         key: 'user_id'
-      }
-    },
-    preference_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'notification_preferences',
-        key: 'preference_id'
       }
     },
     created_by: {
@@ -122,12 +115,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "user_slas_fk",
         fields: [
           { name: "user_id" },
-        ]
-      },
-      {
-        name: "notif_slas2_fk",
-        fields: [
-          { name: "preference_id" },
         ]
       },
       {
