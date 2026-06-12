@@ -3,7 +3,9 @@ const { Op, QueryTypes, fn, col } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
+const { uuidRule } = require('../validations/shared-rules');
 const gamificationService = require('../services/gamification.service');
+const { sendTopicUpdate } = require('../services/firebase.service');
 
 /*──────────────────────────────────────────────────────────────
   POST /api/gamification/interactions
@@ -26,6 +28,8 @@ const trackInteraction = async (req, res) => {
         }
 
         const interaction = await gamificationService.trackInteraction(userId, badgeId, interactionType);
+
+        await sendTopicUpdate("new_data", 19);
 
         return res.status(201).json({
             success: true,
@@ -134,17 +138,25 @@ const getConsultantPointsById = async (req, res) => {
             });
         }
 
-        const targetUserId = parseInt(req.params.userId, 10);
-        if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
-            return res.status(400).json({ success: false, code: 'GAMIFICATION_INVALID_USER_ID' });
+        const userGuid = req.params.userGuid;
+        try {
+            uuidRule.parse(userGuid);
+        } catch (error) {
+            if (error.name === 'ZodError') return handleZodError(res, error, 'GAMIFICATION_INVALID_USER_ID');
+            throw error;
         }
 
-        const consultant = await models.consultants.findByPk(targetUserId);
+        const user = await models.users.findOne({ where: { user_guid: userGuid }, attributes: ['user_id'] });
+        if (!user) {
+            return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
+        }
+
+        const consultant = await models.consultants.findByPk(user.user_id);
         if (!consultant) {
             return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
         }
 
-        const { totalPoints, history } = await gamificationService.getConsultantPointsSummary(targetUserId);
+        const { totalPoints, history } = await gamificationService.getConsultantPointsSummary(user.user_id);
 
         return res.status(200).json({
             success: true,
@@ -374,8 +386,8 @@ const getEarnedBadges = async (req, res) => {
                                 'badge_title',
                                 'badge_slug',
                                 'badge_img_url',
-                                'description',
-                                'points_value'
+                                'badge_description',
+                                'badge_points'
                             ]
                         }
                     ]
@@ -397,8 +409,8 @@ const getEarnedBadges = async (req, res) => {
                 title: badge.application.badge.badge_title,
                 slug: badge.application.badge.badge_slug,
                 imageUrl: badge.application.badge.badge_img_url,
-                description: badge.application.badge.description,
-                pointsValue: badge.application.badge.points_value
+                description: badge.application.badge.badge_description,
+                pointsValue: badge.application.badge.badge_points
             } : null,
             awardedDate: badge.awarded_at,
             expirationDate: badge.expiration_at,
@@ -435,13 +447,7 @@ const getEarnedBadges = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_QUERY_PARAMS',
-                errors: error.errors
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_QUERY_PARAMS');
         logger.error('Error fetching earned badges', {
             error,
             userId: req.user.sub
@@ -453,6 +459,68 @@ const getEarnedBadges = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  POST /api/gamification/favorites/:badgeSlug
+  Toggles the FAVORITE state for a badge. If already favorited,
+  removes it; otherwise creates the favorite interaction.
+──────────────────────────────────────────────────────────────*/
+const toggleFavorite = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { badgeSlug } = req.params;
+
+        const badge = await models.badges.findOne({
+            where: { badge_slug: badgeSlug, is_active: true },
+            attributes: ['badge_id']
+        });
+
+        if (!badge) {
+            return res.status(404).json({
+                success: false,
+                code: 'APP_BADGE_NOT_FOUND'
+            });
+        }
+
+        const result = await gamificationService.toggleFavorite(userId, badge.badge_id);
+
+        await sendTopicUpdate("new_data", 19);
+
+        return res.status(200).json({
+            success: true,
+            code: result.favorited
+                ? 'GAMIFICATION_FAVORITE_ADDED'
+                : 'GAMIFICATION_FAVORITE_REMOVED',
+            data: result
+        });
+
+    } catch (error) {
+        logger.error('Error toggling badge favorite', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_FAVORITE_TOGGLE_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  GET /api/gamification/favorites
+  Returns the list of badges the authenticated user has favorited.
+──────────────────────────────────────────────────────────────*/
+const getFavorites = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+
+        const rows = await gamificationService.getUserFavorites(userId);
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_FAVORITES_RETRIEVED',
+            data: rows
+        });
+
+    } catch (error) {
+        logger.error('Error fetching favorites', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_FAVORITES_FETCH_FAILED' });
+    }
+};
+
 module.exports = {
     trackInteraction,
     getInteractions,
@@ -460,5 +528,7 @@ module.exports = {
     getConsultantPointsById,
     getRecommendations,
     getConsultantStats,
-    getEarnedBadges
+    getEarnedBadges,
+    toggleFavorite,
+    getFavorites
 };

@@ -15,7 +15,6 @@ module.exports = function (sequelize, DataTypes) {
         model: 'progression_stages',
         key: 'progression_stage_id'
       },
-      unique: "uk_stage_badge"
     },
     area_id: {
       type: DataTypes.INTEGER,
@@ -41,14 +40,6 @@ module.exports = function (sequelize, DataTypes) {
         key: 'learning_path_id'
       }
     },
-    goal_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'goals',
-        key: 'goal_id'
-      }
-    },
     badge_title: {
       type: DataTypes.STRING(100),
       allowNull: false
@@ -69,10 +60,6 @@ module.exports = function (sequelize, DataTypes) {
     },
     expiration_duration_days: {
       type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    estimated_time_to_acquire: {
-      type: DataTypes.TIME,
       allowNull: true
     },
     badge_description: {
@@ -143,14 +130,8 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "uk_stage_badge",
+        name: "uk_badges_stage",
         unique: true,
-        fields: [
-          { name: "progression_stage_id" },
-        ]
-      },
-      {
-        name: "stages_badges2_fk",
         fields: [
           { name: "progression_stage_id" },
         ]
@@ -159,12 +140,6 @@ module.exports = function (sequelize, DataTypes) {
         name: "area_badges_fk",
         fields: [
           { name: "area_id" },
-        ]
-      },
-      {
-        name: "goals2_fk",
-        fields: [
-          { name: "goal_id" },
         ]
       },
       {

@@ -9,9 +9,22 @@ const { emailRule, passwordRule, registerSchema, loginSchema } = require('../val
 const { sendConfirmationEmail, sendResetPasswordEmail } = require('../services/email.service');
 const { moveImageToPermanent } = require('../services/storage.service');
 const { logger } = require('../utils/logger');
-const stripNullishFields = require('../utils/stripNullishFields');
+const { sendTopicUpdate } = require('../services/firebase.service');
+const { handleZodError } = require('../utils/responseHelper');
 
 loadEnvironment();
+
+function getUpdatedStreak(lastOnline, currentStreak) {
+    if (!lastOnline) return 1;
+    const msPerDay = 86400000;
+    const now = new Date();
+    const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const lastUTC = Date.UTC(lastOnline.getUTCFullYear(), lastOnline.getUTCMonth(), lastOnline.getUTCDate());
+    const diffDays = (todayUTC - lastUTC) / msPerDay;
+    if (diffDays === 0) return currentStreak;
+    if (diffDays === 1) return currentStreak + 1;
+    return 1;
+}
 
 const register = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
@@ -93,7 +106,7 @@ const register = async (req, res) => {
             birthdate: userData.birthdate,
             profile_img_url: userData.profile_img_url,
             location_id: userData.location_id,
-            preferred_lang_id: userData.preferred_lang_id,
+            language_id: userData.language_id,
             approved_by: null, // Needs to be approved by admin if TM or SLL
             is_active: true,
             email_confirmed: false,
@@ -180,6 +193,16 @@ const register = async (req, res) => {
 
         // Commit changes
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        if (userData.user_role === 'Consultant') {
+            await sendTopicUpdate("new_data", 2);
+            await sendTopicUpdate("new_data", 3);
+        } else if (userData.user_role === 'Talent Manager') {
+            await sendTopicUpdate("new_data", 4);
+        } else if (userData.user_role === 'Service Line Leader') {
+            await sendTopicUpdate("new_data", 5);
+        }
 
         logger.info('Register transaction committed successfully', {
             requestId,
@@ -192,7 +215,7 @@ const register = async (req, res) => {
             userData.email_address,
             userData.full_name,
             tokenValue,
-            userData.preferred_lang_id
+            userData.language_id
         );
 
         if (!emailResult?.success) {
@@ -200,7 +223,7 @@ const register = async (req, res) => {
                 requestId,
                 user_id: newUser.user_id,
                 email_address: userData.email_address,
-                preferred_lang_id: userData.preferred_lang_id,
+                language_id: userData.language_id,
                 emailError: emailResult?.error
             });
 
@@ -214,7 +237,7 @@ const register = async (req, res) => {
             requestId,
             user_id: newUser.user_id,
             email_address: userData.email_address,
-            preferred_lang_id: userData.preferred_lang_id
+            language_id: userData.language_id
         });
 
         return res.status(201).json({
@@ -226,27 +249,7 @@ const register = async (req, res) => {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Registration validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code || 'VALIDATION_INVALID_DATA'
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         // Dups error (more of a failsafe as it is checked above as well)
         if (error.name === 'SequelizeUniqueConstraintError') {
@@ -350,6 +353,9 @@ const confirmEmail = async (req, res) => {
                 }
             );
         });
+
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
 
         logger.info('Email confirmation completed successfully', {
             requestId,
@@ -484,7 +490,7 @@ const login = async (req, res) => {
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
+        const refreshTokenDurationDays = remember ? 30 : (1 / 24); // 1h
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
@@ -496,13 +502,20 @@ const login = async (req, res) => {
             expires_at: expiresAt
         }, { transaction: t });
 
-        // Update last login date
+        // Save data first to handle fist login specific logic
+        const last_login_at = user.last_login_at;
+        const last_online = user.last_online;
+        const current_streak_days = getUpdatedStreak(last_online, user.current_streak_days);
+        // Update last login date and streak
         await user.update({
             last_login_at: new Date(),
-            last_online: new Date()
+            last_online: new Date(),
+            current_streak_days: current_streak_days
         }, { transaction: t });
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         // Send refreshToken via httpOnly cookie (secure)
         res.cookie('refreshToken', refreshTokenValue, {
@@ -513,46 +526,33 @@ const login = async (req, res) => {
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
+        const decoded = jwt.decode(accessToken);
+
         return res.status(200).json({
             success: true,
             code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_LOGIN_SUCCESS",
             data: {
                 token: accessToken,
+                tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
                 fpc: user.force_password_change,
                 user: {
                     full_name: user.full_name,
                     username: user.username,
                     role: user.user_role,
-                    profile_img_url: user.profile_img_url
+                    profile_img_url: user.profile_img_url,
+                    first_login: last_login_at === null ? true : false,
+                    last_login_at: last_login_at,
+                    last_online: last_online,
+                    current_streak_days: current_streak_days
                 }
             }
-        })
+        });
 
     } catch (error) {
         if (t) await t.rollback();
 
         // Validation error
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-
-            logger.warn('Login validation failed', {
-                requestId,
-                issues: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    code: err.code,
-                    message: err.message
-                }))
-            });
-
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
-                }))
-            });
-        }
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Unexpected error processing login', {
             requestId,
@@ -629,7 +629,12 @@ const refresh = async (req, res) => {
             token_value: newRefreshTokenValue
         });
 
-        await user.update({ last_online: new Date() });
+        await user.update({
+            last_online: new Date(),
+            current_streak_days: getUpdatedStreak(user.last_online, user.current_streak_days)
+        });
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
 
         const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
@@ -642,11 +647,21 @@ const refresh = async (req, res) => {
             maxAge: remainingTimeMs
         });
 
+        const decoded = jwt.decode(accessToken);
+
         return res.status(200).json({
             success: true,
             code: "AUTH_TOKEN_REFRESHED",
             data: {
-                token: accessToken
+                token: accessToken,
+                tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
+                fpc: user.force_password_change,
+                user: {
+                    full_name: user.full_name,
+                    username: user.username,
+                    role: user.user_role,
+                    profile_img_url: user.profile_img_url
+                }
             }
         });
     } catch (error) {
@@ -680,6 +695,7 @@ const logout = async (req, res) => {
                     token_value: refreshToken
                 }
             });
+            await sendTopicUpdate("new_data", 8);
         }
 
         // Clear cookie
@@ -712,18 +728,17 @@ const changePassword = async (req, res) => {
         const user_id = req.user.sub; // get from jwt
 
         // Verify if new password is valid
-        const validPw = passwordRule.safeParse(newPassword).success;
-        if (!validPw) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_FORMAT_INVALID"
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_FORMAT_INVALID');
+            throw error;
         }
 
         // Get user
         const user = await models.users.findByPk(user_id, {
-            attributes: ['password_hash'],
+            attributes: ['user_id', 'user_guid', 'user_role', 'username', 'password_hash'],
             transaction: t
         });
         // Compare current pw
@@ -760,7 +775,7 @@ const changePassword = async (req, res) => {
             }
         );
 
-        // Delete refresh tokens
+        // Revoke all existing refresh tokens
         await models.user_refresh_tokens.destroy({
             where: {
                 user_id: user_id
@@ -768,16 +783,46 @@ const changePassword = async (req, res) => {
             transaction: t
         });
 
-        await t.commit();
+        // Issue new access token (fpc is now false)
+        const accessToken = jwt.sign(
+            {
+                sub: user.user_id,
+                guid: user.user_guid,
+                role: user.user_role,
+                username: user.username,
+                fpc: false
+            },
+            process.env.JWT_SECRET_KEY,
+            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+        );
 
-        // Delete cookie
-        res.clearCookie('refreshToken', {
-            path: '/api/auth'
+        // Issue new refresh token to re-establish the session
+        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
+        const refreshTokenDurationDays = 1;
+        const expiresAt = new Date(Date.now() + refreshTokenDurationDays * 24 * 60 * 60 * 1000);
+
+        await models.user_refresh_tokens.create({
+            user_id: user.user_id,
+            token_value: refreshTokenValue,
+            expires_at: expiresAt
+        }, { transaction: t });
+
+        await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 8);
+
+        res.cookie('refreshToken', refreshTokenValue, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            path: '/api/auth',
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
         return res.status(200).json({
             success: true,
-            code: "AUTH_PASSWORD_CHANGED"
+            code: "AUTH_PASSWORD_CHANGED",
+            data: { token: accessToken }
         });
     } catch (error) {
         if (t) await t.rollback();
@@ -799,12 +844,11 @@ const forgotPassword = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const { email } = req.body;
 
-    if (!emailRule.safeParse(email).success) {
-        // Email is invalid
-        return res.status(400).json({
-            success: false,
-            code: "AUTH_EMAIL_INVALID"
-        });
+    try {
+        emailRule.parse(email);
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_EMAIL_INVALID');
+        throw error;
     }
 
     const t = await sequelize.transaction();
@@ -812,7 +856,7 @@ const forgotPassword = async (req, res) => {
     try {
         // Get user
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'preferred_lang_id', 'email_address'],
+            attributes: ['user_id', 'full_name', 'language_id', 'email_address'],
             where: {
                 email_address: email
             },
@@ -850,13 +894,14 @@ const forgotPassword = async (req, res) => {
             }
 
             await t.commit();
+            await sendTopicUpdate("new_data", 7);
 
             // Send email
             const emailResult = await sendResetPasswordEmail(
                 user.email_address,
                 user.full_name,
                 resetToken,
-                user.preferred_lang_id
+                user.language_id
             );
 
             if (!emailResult?.success) {
@@ -864,7 +909,7 @@ const forgotPassword = async (req, res) => {
                     requestId,
                     user_id: user.user_id,
                     email_address: user.email_address,
-                    preferred_lang_id: user.preferred_lang_id,
+                    language_id: user.language_id,
                     emailError: emailResult?.error
                 });
             }
@@ -947,16 +992,12 @@ const resetPassword = async (req, res) => {
 
     try {
         // Validate new pw
-        const validation = passwordRule.safeParse(newPassword);
-        if (!validation.success) {
+        try {
+            passwordRule.parse(newPassword);
+        } catch (error) {
             await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_PASSWORD_WEAK",
-                data: {
-                    errors: validation.error.issues
-                }
-            });
+            if (error.name === 'ZodError') return handleZodError(res, error, 'AUTH_PASSWORD_WEAK');
+            throw error;
         }
 
         // Generate token hash
@@ -1023,6 +1064,9 @@ const resetPassword = async (req, res) => {
         });
 
         await t.commit();
+        await sendTopicUpdate("new_data", 1);
+        await sendTopicUpdate("new_data", 7);
+        await sendTopicUpdate("new_data", 8);
 
         // Delete cookie
         res.clearCookie('refreshToken', {
@@ -1058,207 +1102,13 @@ const verifySession = async (req, res) => {
     });
 };
 
-const me = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const user_id = req.user.sub; // from jwt
-
-    const cacheKey = `user:profile:${user_id}`;
-
-    try {
-        // Check if data is on cache
-        const cachedProfile = await redis.get(cacheKey);
-
-        if (cachedProfile) {
-            return res.status(200).json({
-                success: true,
-                code: "AUTH_USER_PROFILE_RETRIEVED",
-                data: JSON.parse(cachedProfile)
-            });
-        }
-
-        const user = await models.users.findByPk(user_id, {
-            attributes: [
-                'user_id',
-                'user_guid',
-                'full_name',
-                'username',
-                'email_address',
-                'user_role',
-                'profile_img_url',
-                'preferred_lang_id',
-                'location_id'
-            ],
-            raw: true
-        });
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                code: "AUTH_USER_NOT_FOUND"
-            });
-        }
-
-        const [location, preferredLang, consultant, talentManager, serviceLineLeader, consultantAreas] = await Promise.all([
-            user.location_id
-                ? models.locations.findByPk(user.location_id, {
-                    attributes: ['location_name'],
-                    raw: true
-                })
-                : null,
-            user.preferred_lang_id
-                ? models.preferred_lang.findByPk(user.preferred_lang_id, {
-                    attributes: ['preferred_lang'],
-                    raw: true
-                })
-                : null,
-            models.consultants.findOne({
-                where: { user_id: user.user_id },
-                attributes: ['biography'],
-                raw: true
-            }),
-            models.talent_managers.findOne({
-                where: { user_id: user.user_id },
-                attributes: ['biography'],
-                raw: true
-            }),
-            models.service_line_leaders.findOne({
-                where: { user_id: user.user_id },
-                attributes: ['biography', 'service_line_id'],
-                raw: true
-            }),
-            models.consultant_areas.findAll({
-                where: { user_id: user.user_id },
-                attributes: ['area_id', 'is_primary'],
-                raw: true
-            })
-        ]);
-
-        let areasPayload = null;
-
-        if (consultantAreas.length > 0) {
-            const areaIds = consultantAreas.map((area) => area.area_id);
-            const areaRecords = await models.areas.findAll({
-                where: {
-                    area_id: {
-                        [Op.in]: areaIds
-                    }
-                },
-                attributes: ['area_id', 'area_name', 'service_line_id'],
-                raw: true
-            });
-
-            const areaById = new Map(areaRecords.map((area) => [area.area_id, area]));
-
-            areasPayload = consultantAreas
-                .map((consultantArea) => {
-                    const currentArea = areaById.get(consultantArea.area_id);
-
-                    if (!currentArea) {
-                        return null;
-                    }
-
-                    return {
-                        id: currentArea.area_id,
-                        name: currentArea.area_name,
-                        isPrimary: consultantArea.is_primary
-                    };
-                })
-                .filter(Boolean);
-
-            if (areasPayload.length === 0) {
-                areasPayload = null;
-            }
-        }
-
-        let serviceLineName = null;
-        let learningPathTitle = null;
-
-        const resolveServiceLineData = async (serviceLineId) => {
-            if (!serviceLineId) {
-                return;
-            }
-
-            const serviceLine = await models.service_lines.findByPk(serviceLineId, {
-                attributes: ['service_line_name', 'learning_path_id'],
-                raw: true
-            });
-
-            if (!serviceLine) {
-                return;
-            }
-
-            serviceLineName = serviceLine.service_line_name;
-
-            if (serviceLine.learning_path_id) {
-                const learningPath = await models.learning_paths.findByPk(serviceLine.learning_path_id, {
-                    attributes: ['path_title'],
-                    raw: true
-                });
-
-                learningPathTitle = learningPath?.path_title || null;
-            }
-        };
-
-        if (serviceLineLeader?.service_line_id) {
-            await resolveServiceLineData(serviceLineLeader.service_line_id);
-        } else if (consultantAreas.length > 0) {
-            const primaryArea = consultantAreas.find((area) => area.is_primary);
-
-            if (primaryArea) {
-                const areaWithServiceLine = await models.areas.findByPk(primaryArea.area_id, {
-                    attributes: ['service_line_id'],
-                    raw: true
-                });
-
-                await resolveServiceLineData(areaWithServiceLine?.service_line_id);
-            }
-        }
-
-        const profile = stripNullishFields({
-            id: user.user_id,
-            guid: user.user_guid,
-            fullName: user.full_name,
-            username: user.username,
-            email: user.email_address,
-            role: user.user_role,
-            profileImg: user.profile_img_url,
-            lang: preferredLang?.preferred_lang || null,
-            location: location?.location_name || null,
-            biography: consultant?.biography || talentManager?.biography || serviceLineLeader?.biography || null,
-            serviceLine: serviceLineName,
-            learningPath: learningPathTitle,
-            areas: areasPayload
-        });
-
-        // Store in cache
-        await redis.set(cacheKey, JSON.stringify(profile), 'EX', 3600);
-
-        return res.status(200).json({
-            success: true,
-            code: "AUTH_USER_PROFILE_RETRIEVED",
-            data: profile
-        });
-    } catch (error) {
-        logger.error('Error fetching current user', {
-            requestId,
-            error
-        });
-
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_PROFILE_FETCH_FAILED",
-            requestId
-        });
-    }
-};
-
 const resendConfirmation = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
     const { email } = req.body;
 
     try {
         const user = await models.users.findOne({
-            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'preferred_lang_id'],
+            attributes: ['user_id', 'full_name', 'email_address', 'email_confirmed', 'language_id'],
             where: {
                 email_address: email
             }
@@ -1323,13 +1173,14 @@ const resendConfirmation = async (req, res) => {
                 is_used: false
             });
         }
+        await sendTopicUpdate("new_data", 7);
 
         // Send confirmation email and validate service outcome
         const emailResult = await sendConfirmationEmail(
             user.email_address,
             user.full_name,
             tokenValue,
-            user.preferred_lang_id
+            user.language_id
         );
 
         // Set cache
@@ -1340,7 +1191,7 @@ const resendConfirmation = async (req, res) => {
                 requestId,
                 user_id: user.user_id,
                 email_address: user.email_address,
-                preferred_lang_id: user.preferred_lang_id,
+                language_id: user.language_id,
                 emailError: emailResult?.error
             });
 
@@ -1368,466 +1219,6 @@ const resendConfirmation = async (req, res) => {
     }
 }
 
-// --- Admin auth ---
-
-const adminLogin = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const t = await sequelize.transaction();
-
-    try {
-        const { identifier, password, remember } = loginSchema.parse(req.body);
-
-        // Email or username?
-        const isEmail = emailRule.safeParse(identifier).success;
-        const searchCriteria = isEmail ? { email_address: identifier } : { username: identifier };
-
-        logger.info(`Admin login attempt identified as ${isEmail ? 'email' : 'username'}`, {
-            requestId,
-            identifier
-        });
-
-        // Get user
-        const user = await models.users.findOne({ where: searchCriteria, transaction: t });
-
-        if (!user) {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                code: "AUTH_INVALID_CREDENTIALS"
-            });
-        }
-
-        // Check if user is indeed an admin
-        if (user.user_role !== 'Administrator') {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: user is not an administrator.', {
-                requestId,
-                identifier,
-                role: user.user_role
-            });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_ADMIN_ACCESS_DENIED"
-            });
-        }
-
-        // Check password
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-
-        if (!isPasswordValid) {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: wrong password.', {
-                requestId,
-                identifier
-            });
-            return res.status(401).json({
-                success: false,
-                code: "AUTH_INVALID_CREDENTIALS"
-            });
-        }
-
-        // Check if email is confirmed
-        if (!user.email_confirmed) {
-            await t.rollback();
-            logger.warn('Failed admin login attempt: e-mail address is not confirmed.', {
-                requestId,
-                identifier
-            });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_EMAIL_NOT_CONFIRMED"
-            });
-        }
-
-        // Generate JWT
-        const payload = {
-            sub: user.user_id,
-            guid: user.user_guid,
-            role: user.user_role,
-            username: user.username,
-            fpc: user.force_password_change
-        };
-
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-            algorithm: 'HS256',
-            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
-        });
-
-        // Generate refresh token
-        const refreshTokenDurationDays = remember ? 30 : 0.35; // 8h
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
-
-        const refreshTokenValue = crypto.randomBytes(40).toString('hex');
-
-        await models.user_refresh_tokens.create({
-            user_id: user.user_id,
-            token_value: refreshTokenValue,
-            expires_at: expiresAt
-        }, { transaction: t });
-
-        await user.update({
-            last_login_at: new Date(),
-            last_online: new Date()
-        }, { transaction: t });
-
-        await t.commit();
-
-        // Store session data in Redis so adminRefresh can validate without a DB round-trip
-        const refreshTTLSeconds = Math.floor(refreshTokenDurationDays * 24 * 60 * 60);
-        await redis.set(
-            `auth:refresh:${refreshTokenValue}`,
-            JSON.stringify({
-                user_id: user.user_id,
-                user_guid: user.user_guid,
-                user_role: user.user_role,
-                username: user.username,
-                force_password_change: user.force_password_change
-            }),
-            'EX',
-            refreshTTLSeconds
-        );
-
-        res.cookie('adminRefreshToken', refreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            path: '/api/admin/auth',
-            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: user.force_password_change ? "AUTH_LOGIN_FPC_REQUIRED" : "AUTH_ADMIN_LOGIN_SUCCESS",
-            data: {
-                token: accessToken,
-                fpc: user.force_password_change,
-                user: {
-                    full_name: user.full_name,
-                    username: user.username,
-                    role: user.user_role,
-                    profile_img_url: user.profile_img_url
-                }
-            }
-        });
-
-    } catch (error) {
-        if (t) await t.rollback();
-
-        if (error.name === 'ZodError') {
-            const zodIssues = error.issues || error.errors || [];
-            return res.status(400).json({
-                success: false,
-                code: "VALIDATION_INVALID_DATA",
-                errors: zodIssues.map((err) => ({
-                    field: Array.isArray(err.path) ? err.path[0] : undefined,
-                    message: err.message
-                }))
-            });
-        }
-
-        logger.error('Unexpected error processing admin login', { requestId, error: error.stack });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_REQUEST_FAILED",
-            requestId
-        });
-    }
-}
-
-const adminRefresh = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    // Get cookie
-    const refreshToken = req.cookies.adminRefreshToken;
-
-    if (!refreshToken) {
-        return res.status(401).json({
-            success: false,
-            code: "AUTH_ADMIN_REFRESH_TOKEN_MISSING"
-        });
-    }
-
-    const oldTokenKey = `auth:refresh:${refreshToken}`;
-
-    try {
-        const cachedData = await redis.get(oldTokenKey);
-
-        if (!cachedData) {
-            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_SESSION_EXPIRED_OR_INVALID"
-            });
-        }
-
-        const userData = JSON.parse(cachedData);
-
-        // Check if role stored in cache is still an admin
-        if (userData.user_role !== 'Administrator') {
-            res.clearCookie('adminRefreshToken', { path: '/api/admin/auth' });
-            return res.status(403).json({
-                success: false,
-                code: "AUTH_ADMIN_ROLE_MISMATCH"
-            });
-        }
-
-        const accessToken = jwt.sign({
-            sub: userData.user_id,
-            guid: userData.user_guid,
-            role: userData.user_role,
-            username: userData.username,
-            fpc: userData.force_password_change
-        }, process.env.JWT_SECRET_KEY, {
-            algorithm: 'HS256',
-            expiresIn: process.env.JWT_EXPIRES_IN || '15m'
-        });
-
-        const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
-        const newTokenKey = `auth:refresh:${newRefreshTokenValue}`;
-        const remainingTTL = await redis.ttl(oldTokenKey);
-
-        if (remainingTTL <= 0) throw new Error("Token TTL invalid");
-
-        await redis.del(oldTokenKey);
-        await redis.set(newTokenKey, JSON.stringify(userData), 'EX', remainingTTL);
-
-        await models.users.update(
-            { last_online: new Date() },
-            { where: { user_id: userData.user_id } }
-        );
-
-        res.cookie('adminRefreshToken', newRefreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            path: '/api/admin/auth',
-            maxAge: remainingTTL * 1000
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: "AUTH_ADMIN_TOKEN_REFRESHED",
-            data: { token: accessToken }
-        });
-    } catch (error) {
-        logger.error('Error generating new admin token.', { requestId, error });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_ADMIN_TOKEN_REFRESH_FAILED",
-            requestId
-        });
-    }
-};
-
-const adminLogout = async (req, res) => {
-    const refreshToken = req.cookies.adminRefreshToken;
-    const requestId = req.headers['x-request-id'] || null;
-
-    const cookieOptions = {
-        path: '/api/admin/auth',
-        httpOnly: true
-    };
-
-    try {
-        if (refreshToken) {
-            await models.user_refresh_tokens.destroy({
-                where: { token_value: refreshToken }
-            });
-            await redis.del(`auth:refresh:${refreshToken}`);
-        }
-
-        res.clearCookie('adminRefreshToken', cookieOptions);
-
-        return res.status(200).json({
-            success: true,
-            code: "AUTH_ADMIN_LOGOUT_SUCCESS"
-        });
-    } catch (error) {
-        logger.error('Error during admin logout process.', { requestId, error });
-        return res.status(500).json({
-            success: false,
-            code: "AUTH_ADMIN_LOGOUT_FAILED",
-            requestId
-        });
-    }
-};
-
-/*──────────────────────────────────────────────────────────────
-  PUT /api/auth/me
-  Update the authenticated user's profile information
-──────────────────────────────────────────────────────────────*/
-const updateProfile = async (req, res) => {
-    const requestId = req.headers['x-request-id'] || null;
-    const t = await sequelize.transaction();
-
-    try {
-        logger.info('Update profile flow started', {
-            requestId,
-            userId: req.user.sub
-        });
-
-        const userId = req.user.sub;
-        const { updateProfileSchema } = require('../validations/auth.validation');
-
-        // Validate request data
-        const validatedData = updateProfileSchema.parse(req.body);
-        const updates = stripNullishFields(validatedData);
-
-        if (Object.keys(updates).length === 0) {
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: [{ code: 'VALIDATION_INVALID_DATA', detail: 'At least one field must be provided for update.' }]
-            });
-        }
-
-        // Validate location and language if provided
-        if (updates.location_id) {
-            const location = await models.locations.findByPk(updates.location_id, {
-                attributes: ['location_id'],
-                transaction: t
-            });
-
-            if (!location) {
-                await t.rollback();
-                logger.warn('Invalid location provided', {
-                    requestId,
-                    userId,
-                    locationId: updates.location_id
-                });
-                return res.status(400).json({
-                    success: false,
-                    code: 'AUTH_INVALID_LOCATION'
-                });
-            }
-        }
-
-        if (updates.preferred_lang_id) {
-            const language = await models.preferred_lang.findByPk(updates.preferred_lang_id, {
-                attributes: ['preferred_lang_id'],
-                transaction: t
-            });
-
-            if (!language) {
-                await t.rollback();
-                logger.warn('Invalid language provided', {
-                    requestId,
-                    userId,
-                    langId: updates.preferred_lang_id
-                });
-                return res.status(400).json({
-                    success: false,
-                    code: 'AUTH_INVALID_LANGUAGE'
-                });
-            }
-        }
-
-        // Handle profile image if provided
-        if (updates.profile_img_url) {
-            try {
-                const movedImage = await moveImageToPermanent(updates.profile_img_url);
-                updates.profile_img_url = movedImage;
-            } catch (error) {
-                await t.rollback();
-                logger.warn('Profile image move failed', {
-                    requestId,
-                    userId,
-                    error: error.message
-                });
-                return res.status(400).json({
-                    success: false,
-                    code: 'AUTH_INVALID_PROFILE_IMAGE'
-                });
-            }
-        }
-
-        // Update user record
-        const user = await models.users.findByPk(userId, {
-            transaction: t
-        });
-
-        if (!user) {
-            await t.rollback();
-            return res.status(404).json({
-                success: false,
-                code: 'AUTH_USER_NOT_FOUND'
-            });
-        }
-
-        await user.update(updates, { transaction: t });
-
-        logger.debug('User profile updated', {
-            requestId,
-            userId,
-            fieldsUpdated: Object.keys(updates)
-        });
-
-        // Update biography for role-specific tables if provided
-        if (updates.biography) {
-            if (user.user_role === 'Consultant') {
-                await models.consultants.update(
-                    { biography: updates.biography },
-                    { where: { user_id: userId }, transaction: t }
-                );
-            } else if (user.user_role === 'Talent Manager') {
-                await models.talent_managers.update(
-                    { biography: updates.biography },
-                    { where: { user_id: userId }, transaction: t }
-                );
-            } else if (user.user_role === 'Service Line Leader') {
-                await models.service_line_leaders.update(
-                    { biography: updates.biography },
-                    { where: { user_id: userId }, transaction: t }
-                );
-            }
-        }
-
-        await t.commit();
-
-        // Invalidate cache
-        const cacheKey = `user:profile:${userId}`;
-        await redis.del(cacheKey);
-
-        logger.info('Profile update completed successfully', {
-            requestId,
-            userId
-        });
-
-        return res.status(200).json({
-            success: true,
-            code: 'AUTH_PROFILE_UPDATED'
-        });
-
-    } catch (error) {
-        await t.rollback();
-
-        if (error.name === 'ZodError') {
-            logger.warn('Profile update validation failed', {
-                requestId,
-                userId: req.user.sub,
-                errors: error.errors
-            });
-            return res.status(400).json({
-                success: false,
-                code: 'VALIDATION_INVALID_DATA',
-                errors: error.errors
-            });
-        }
-
-        logger.error('Error updating user profile', {
-            requestId,
-            userId: req.user.sub,
-            error
-        });
-
-        return res.status(500).json({
-            success: false,
-            code: 'AUTH_PROFILE_UPDATE_FAILED',
-            requestId
-        });
-    }
-};
-
 module.exports = {
     register,
     confirmEmail,
@@ -1839,10 +1230,5 @@ module.exports = {
     validateResetToken,
     resetPassword,
     verifySession,
-    me,
     resendConfirmation,
-    adminLogin,
-    adminRefresh,
-    adminLogout,
-    updateProfile
 };

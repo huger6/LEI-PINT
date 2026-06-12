@@ -1,4 +1,5 @@
 const express = require('express');
+const { optionalAuth } = require('../middlewares/auth.middleware');
 const locationsController = require('../controllers/locations.controller');
 
 const router = express.Router();
@@ -8,6 +9,6 @@ const router = express.Router();
  * @desc    List all available office/country locations
  * @access  Public
  */
-router.get('/', locationsController.getAvailableLocations);
+router.get('/', optionalAuth, locationsController.getAvailableLocations);
 
 module.exports = router;

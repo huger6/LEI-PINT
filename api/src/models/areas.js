@@ -25,10 +25,6 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       unique: "uk_slug_areas"
     },
-    area_code: {
-      type: DataTypes.STRING(20),
-      allowNull: true
-    },
     area_description: {
       type: DataTypes.TEXT,
       allowNull: true

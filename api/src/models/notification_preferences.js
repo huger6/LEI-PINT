@@ -12,24 +12,8 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'notification_preferences',
-        key: 'preference_id'
-      }
-    },
-    sla_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'slas',
-        key: 'sla_id'
-      }
-    },
-    announcement_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'system_announcements',
-        key: 'announcement_id'
+        model: 'notification_definitions',
+        key: 'definition_id'
       }
     },
     send_email: {
@@ -97,18 +81,6 @@ module.exports = function (sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "preference_id" },
-        ]
-      },
-      {
-        name: "notif_slas_fk",
-        fields: [
-          { name: "sla_id" },
-        ]
-      },
-      {
-        name: "announc_notif2_fk",
-        fields: [
-          { name: "announcement_id" },
         ]
       },
       {
