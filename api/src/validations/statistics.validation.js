@@ -52,6 +52,13 @@ const expiringBadgesQuerySchema = z.object({
     withinDays: z.coerce.number().int().positive().max(1825).default(90)
 });
 
+const badgesSummaryQuerySchema = z.object({
+    serviceLineId: z.coerce.number().int().positive().optional(),
+    areaId: z.coerce.number().int().positive().optional(),
+    dateFrom: z.coerce.date().optional(),
+    dateTo: z.coerce.date().optional()
+});
+
 const consultantsOverviewQuerySchema = z.object({
     search: z.string().trim().max(120).optional(),
     serviceLineId: z.coerce.number().int().positive().optional(),
@@ -71,5 +78,6 @@ module.exports = {
     badgeDistributionQuerySchema,
     badgesByRangeQuerySchema,
     expiringBadgesQuerySchema,
-    consultantsOverviewQuerySchema
+    consultantsOverviewQuerySchema,
+    badgesSummaryQuerySchema
 };
