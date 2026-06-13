@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../shared/translated_text.dart';
+
 class RecommendedBadgeCard extends StatelessWidget {
   const RecommendedBadgeCard({
     super.key,
@@ -72,7 +74,7 @@ class RecommendedBadgeCard extends StatelessWidget {
                 ),
               ),
             ),
-            Text(
+            TranslatedText(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -85,7 +87,7 @@ class RecommendedBadgeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 3),
-            Text(
+            TranslatedText(
               area,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

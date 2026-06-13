@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
+
 class CharacteristicChip extends StatelessWidget {
   const CharacteristicChip({
     super.key,
@@ -14,6 +17,7 @@ class CharacteristicChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -50,7 +54,7 @@ class CharacteristicChip extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
+            child: TranslatedText(
               label,
               style: TextStyle(
                 fontSize: 15,
@@ -68,9 +72,9 @@ class CharacteristicChip extends StatelessWidget {
                 color: const Color(0xFF5D9FD1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'Principal',
-                style: TextStyle(
+              child: Text(
+                tr.tr('primary'),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

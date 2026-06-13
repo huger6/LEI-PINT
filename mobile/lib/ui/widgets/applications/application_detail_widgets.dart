@@ -5,6 +5,7 @@ import '../../../core/sync_manager.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../badges/my_badges_widgets.dart';
+import '../shared/translated_text.dart';
 
 class ApplicationDetailColors {
   static const Color pageBackground = Color(0xFFF0F3F6);
@@ -61,7 +62,7 @@ class ApplicationDetailHeader extends StatelessWidget {
             ribbonColor: badge.ribbonColor,
           ),
           const SizedBox(height: 8),
-          Text(
+          TranslatedText(
             badge.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -163,7 +164,7 @@ class _HeaderMetaChip extends StatelessWidget {
             ),
             const SizedBox(width: 5),
             Flexible(
-              child: Text(
+              child: TranslatedText(
                 label,
                 style: const TextStyle(
                   color: ApplicationDetailColors.secondaryText,
@@ -879,7 +880,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
               height: 1,
             ),
             const SizedBox(height: 12),
-            Text(
+            TranslatedText(
               badge.description,
               style: const TextStyle(
                 color: ApplicationDetailColors.secondaryText,
@@ -916,7 +917,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
                           color: const Color(0xFFE8F0F8),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
+                        child: TranslatedText(
                           skill.name,
                           style: const TextStyle(
                             color: Color(0xFF1E3A4F),

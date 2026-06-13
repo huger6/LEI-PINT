@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/skill_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
 
 class CompetencesSection extends StatelessWidget {
   const CompetencesSection({
@@ -129,7 +130,7 @@ class _CompetenceCardState extends State<_CompetenceCard> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
+                      child: TranslatedText(
                         widget.skill.name,
                         style: const TextStyle(
                           fontSize: 15,
@@ -154,7 +155,7 @@ class _CompetenceCardState extends State<_CompetenceCard> {
                   firstChild: const SizedBox.shrink(),
                   secondChild: Padding(
                     padding: const EdgeInsets.only(top: 10, left: 46),
-                    child: Text(
+                    child: TranslatedText(
                       widget.skill.description ?? '',
                       style: const TextStyle(
                         fontSize: 13.5,

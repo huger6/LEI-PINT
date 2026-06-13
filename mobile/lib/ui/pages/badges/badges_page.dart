@@ -8,6 +8,7 @@ import '../../../models/badge_model.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
 import '../../widgets/badges/competences_section.dart';
+import '../../widgets/shared/translated_text.dart';
 import '../applications/application_page.dart';
 
 class BadgeDetailScreen extends StatefulWidget {
@@ -134,7 +135,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                     ),
                     const SizedBox(height: 12),
                     Center(
-                      child: Text(
+                      child: TranslatedText(
                         badge.title,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
@@ -210,7 +211,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                     if (badge.description.trim().isNotEmpty) ...[
                       BadgeSectionCard(
                         title: tr.tr('description'),
-                        child: Text(
+                        child: TranslatedText(
                           badge.description,
                           textAlign: TextAlign.start,
                           style: const TextStyle(

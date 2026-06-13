@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
 
 class ExploreBadgeCard extends StatelessWidget {
   const ExploreBadgeCard({
@@ -66,7 +67,7 @@ class ExploreBadgeCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
+                        child: TranslatedText(
                           title,
                           style: const TextStyle(
                             fontSize: 21,
@@ -172,7 +173,7 @@ class _DetailItem extends StatelessWidget {
         Icon(icon, size: 17, color: const Color(0xFF3F5662)),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
+          child: TranslatedText(
             value,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(

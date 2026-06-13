@@ -10,6 +10,7 @@ import '../../../data/repositories/location_repo.dart';
 import '../../../data/repositories/validation_repo.dart';
 import '../../../models/location_model.dart';
 import '../../../presentation/state/auth_store.dart';
+import '../shared/translated_text.dart';
 
 class EditProfileForm extends StatefulWidget {
   const EditProfileForm({
@@ -256,7 +257,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                           items: _locations.map((loc) {
                             return DropdownMenuItem(
                               value: loc,
-                              child: Text(loc.name),
+                              child: TranslatedText(loc.name),
                             );
                           }).toList(),
                           onChanged: (value) {

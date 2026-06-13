@@ -8,6 +8,7 @@ import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/characteristics_widgets.dart';
+import '../../widgets/shared/translated_text.dart';
 
 class CharacteristicsScreen extends StatefulWidget {
   const CharacteristicsScreen({super.key});
@@ -118,7 +119,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                           color: Colors.white24,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
+                        child: TranslatedText(
                           role,
                           style: const TextStyle(
                             color: Colors.white,
@@ -151,7 +152,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                       ),
                     ],
                   ),
-                  child: Text(
+                  child: TranslatedText(
                     biography.trim(),
                     style: const TextStyle(
                       fontSize: 14,
@@ -219,7 +220,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                           color: const Color(0xFFD7DDE4),
                         ),
                       ),
-                      child: Text(
+                      child: TranslatedText(
                         skill.name,
                         style: const TextStyle(
                           fontSize: 13,

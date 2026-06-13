@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 10;
+const int sourceStringsVersion = 12;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -514,6 +514,8 @@ const _sourceJson = r'''
   "notifApproved": "Aprovado",
   "notifRejected": "Rejeitado",
   "notifExpiration": "Expiração",
-  "notifGeneric": "Notificação"
+  "notifGeneric": "Notificação",
+  "completed": "Concluído",
+  "primary": "Principal"
 }
 ''';

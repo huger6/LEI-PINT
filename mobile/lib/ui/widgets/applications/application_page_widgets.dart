@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
+import '../shared/translated_text.dart';
 
 class ApplicationSectionTitle extends StatelessWidget {
   const ApplicationSectionTitle({
@@ -65,7 +66,7 @@ class SelectedBadgeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              TranslatedText(
                 badge.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -78,7 +79,7 @@ class SelectedBadgeCard extends StatelessWidget {
               if (badge.category.trim().isNotEmpty ||
                   badge.level.trim().isNotEmpty) ...[
                 const SizedBox(height: 2),
-                Text(
+                TranslatedText(
                   [
                     if (badge.category.trim().isNotEmpty) badge.category,
                     if (badge.level.trim().isNotEmpty) badge.level,

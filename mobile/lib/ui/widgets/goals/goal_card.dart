@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/badge_visuals.dart';
 import '../../../models/goal_model.dart';
+import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({
@@ -18,6 +20,7 @@ class GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badge = goal.badge;
     final completed = goal.isCompleted;
     final badgeSeed = badge?.slug ?? badge?.title ?? goal.title;
@@ -69,7 +72,7 @@ class GoalCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
+                          child: TranslatedText(
                             goal.title,
                             style: TextStyle(
                               fontSize: 16,
@@ -92,9 +95,9 @@ class GoalCard extends StatelessWidget {
                               color: AppColors.success.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'Concluído',
-                              style: TextStyle(
+                            child: Text(
+                              tr.tr('completed'),
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.success,
@@ -105,7 +108,7 @@ class GoalCard extends StatelessWidget {
                     ),
                     if (goal.description.trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(
+                      TranslatedText(
                         goal.description,
                         style: const TextStyle(
                           fontSize: 13,
@@ -139,7 +142,7 @@ class GoalCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Flexible(
-                    child: Text(
+                    child: TranslatedText(
                       badge.title,
                       style: const TextStyle(
                         fontSize: 12,

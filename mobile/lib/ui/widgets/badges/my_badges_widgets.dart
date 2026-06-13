@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
 
 class BadgesSearchBar extends StatelessWidget {
   const BadgesSearchBar({
@@ -101,7 +102,7 @@ class AchievedBadgeCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(
+                            child: TranslatedText(
                               badge.title,
                               style: const TextStyle(
                                 fontSize: 17,

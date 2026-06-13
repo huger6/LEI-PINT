@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/notification_defs.dart';
 import '../../../models/notification_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -211,7 +212,7 @@ class NotificationCard extends StatelessWidget {
                           ),
                         ),
                       Expanded(
-                        child: Text(
+                        child: TranslatedText(
                           _title(tr),
                           style: TextStyle(
                             color: display.color,
@@ -233,7 +234,7 @@ class NotificationCard extends StatelessWidget {
                   ),
                   if (_message.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Text(
+                    TranslatedText(
                       _message,
                       style: const TextStyle(
                         color: Color(0xFF202A33),

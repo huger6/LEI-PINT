@@ -132,6 +132,7 @@ Badge progression maps directly across five distinct state flags managed inside 
 - Hardcoding colors in UI components is strictly forbidden. Always implement colors by invoking the predefined variables located exclusively in the Mobile/lib/core/theme directory. Variables follow functional semantic naming (e.g., primary, error, surface) to ensure scalability and ease of future theme modifications.
 - If a required widget is not available during page composition, it must first be developed within the appropriate Mobile/lib/ui/widgets/theme_directory. This new widget must strictly follow the architectural logic and styling patterns of existing components before being finally instantiated in the target page.
 - When doing changes in the Mobile part of the project never change the api part of the project
+- All dynamic text originating from the database (titles, names, descriptions, categories, levels, etc.) must be rendered using the `TranslatedText` widget (from `widgets/shared/translated_text.dart`), never with a plain `Text()` widget. Static UI strings translated via `tr()` must NOT be wrapped in `TranslatedText` to avoid double-translation.
 
 
 ### Validation & Error Handling Architecture

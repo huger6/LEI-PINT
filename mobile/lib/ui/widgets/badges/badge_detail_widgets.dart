@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../shared/translated_text.dart';
 import '../../../models/badge_model.dart';
 
 class BadgeDetailTabButton extends StatelessWidget {
@@ -82,7 +83,7 @@ class BadgeRequirementsSection extends StatelessWidget {
                   Icon(requirement.icon, color: const Color(0xFF3A444C)),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
+                    child: TranslatedText(
                       requirement.text,
                       style: const TextStyle(
                         fontSize: 16,
@@ -127,7 +128,7 @@ class BadgeInfoChip extends StatelessWidget {
           Icon(icon, size: 16, color: const Color(0xFF3F5662)),
           const SizedBox(width: 5),
           Flexible(
-            child: Text(
+            child: TranslatedText(
               label,
               style: const TextStyle(
                 fontSize: 13,
@@ -214,7 +215,7 @@ class BadgeInfoTag extends StatelessWidget {
             Icon(icon, size: 15, color: const Color(0xFF4A5C6A)),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
+              child: TranslatedText(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../shared/translated_text.dart';
+
 class SubmissionCard extends StatelessWidget {
   const SubmissionCard({
     super.key,
@@ -47,7 +49,7 @@ class SubmissionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  TranslatedText(
                     title,
                     style: const TextStyle(
                       fontSize: 16,
