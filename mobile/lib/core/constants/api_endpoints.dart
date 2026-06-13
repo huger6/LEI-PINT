@@ -96,6 +96,9 @@ class ApiEndpoints {
       '/api/applications/$applicationGuid/resend-confirmation';
 
   // === GDPR ===
+  // GET /gdpr/policies - all active policies
+  static const String getGdprPolicies = '/api/gdpr/policies';
+
   // GET /gdpr/policies/latest/:type - latest active policy of a given type
   static String latestGdprPolicy(String type) =>
       '/api/gdpr/policies/latest/$type';

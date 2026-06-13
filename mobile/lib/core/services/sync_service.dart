@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/local/announcement_dao.dart';
 import '../../data/local/area_dao.dart';
+import '../../data/local/gdpr_policy_dao.dart';
 import '../../data/local/awarded_badge_dao.dart';
 import '../../data/local/badge_dao.dart';
 import '../../data/local/current_user_dao.dart';
@@ -19,6 +20,7 @@ import '../../data/local/skill_dao.dart';
 import '../../data/local/sync_metadata_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../models/announcement_model.dart';
+import '../../models/gdpr_policy_model.dart';
 import '../../models/area_model.dart';
 import '../../models/awarded_badge_model.dart';
 import '../../models/learning_path_model.dart';
@@ -54,6 +56,7 @@ class SyncService {
   late final _currentUserDao = CurrentUserDao(_database);
   late final _skillDao = SkillDao(_database);
   late final _mySkillDao = MySkillDao(_database);
+  late final _gdprPolicyDao = GdprPolicyDao(_database);
 
   String? _activeRoute;
 
@@ -124,6 +127,8 @@ class SyncService {
         return _syncAnnouncements();
       case SyncCodes.notifications:
         return _syncNotifications();
+      case SyncCodes.gdprPolicies:
+        return _syncGdprPolicies();
       default:
         return Future.value(true);
     }
@@ -185,6 +190,8 @@ class SyncService {
         success = await _syncAnnouncements();
       case SyncCodes.notifications:
         success = await _syncNotifications();
+      case SyncCodes.gdprPolicies:
+        success = await _syncGdprPolicies();
       default:
         return;
     }
@@ -558,6 +565,31 @@ class SyncService {
       return false;
     } catch (e) {
       debugPrint('SyncService: notifications failed: $e');
+      return false;
+    }
+  }
+
+  Future<bool> _syncGdprPolicies() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.getGdprPolicies);
+      final list = _extractList(
+        response is Map<String, dynamic>
+            ? (response['data'] ?? response)
+            : response,
+      );
+      final items = list
+          .whereType<Map>()
+          .map((e) => GdprPolicyModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      debugPrint('SyncService: Parsed ${items.length} GDPR policies');
+      await _gdprPolicyDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (e) {
+      debugPrint('SyncService: GDPR policies failed: $e');
       return false;
     }
   }

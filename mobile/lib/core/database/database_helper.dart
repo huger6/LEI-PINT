@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 9;
+  static const _databaseVersion = 10;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -22,6 +22,7 @@ class LocalDatabase {
   static const skillsTable = 'skills_cache';
   static const rewardsTable = 'rewards_cache';
   static const announcementsTable = 'announcements_cache';
+  static const gdprPoliciesTable = 'gdpr_policies_cache';
   static const translationCacheTable = 'translation_cache';
 
   // ── Sync tracking ────────────────────────────────────────────────────────
@@ -159,6 +160,19 @@ class LocalDatabase {
       await db.execute(
         'ALTER TABLE $badgesTable ADD COLUMN created_at INTEGER',
       );
+    }
+    if (oldVersion < 10) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $gdprPoliciesTable (
+          policy_id    INTEGER PRIMARY KEY,
+          policy_type  TEXT    NOT NULL,
+          version      TEXT    NOT NULL,
+          policy_text  TEXT    NOT NULL,
+          is_mandatory INTEGER NOT NULL DEFAULT 1,
+          created_at   INTEGER,
+          synced_at    INTEGER NOT NULL
+        )
+      ''');
     }
   }
 
@@ -323,6 +337,17 @@ class LocalDatabase {
       )
     ''',
     'CREATE INDEX IF NOT EXISTS idx_ann_active ON $announcementsTable (is_active)',
+    '''
+      CREATE TABLE IF NOT EXISTS $gdprPoliciesTable (
+        policy_id    INTEGER PRIMARY KEY,
+        policy_type  TEXT    NOT NULL,
+        version      TEXT    NOT NULL,
+        policy_text  TEXT    NOT NULL,
+        is_mandatory INTEGER NOT NULL DEFAULT 1,
+        created_at   INTEGER,
+        synced_at    INTEGER NOT NULL
+      )
+    ''',
     '''
       CREATE TABLE IF NOT EXISTS $translationCacheTable (
         source_key  TEXT    NOT NULL,

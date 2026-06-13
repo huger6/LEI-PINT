@@ -8,6 +8,7 @@ import '../data/local/area_dao.dart';
 import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
 import '../data/local/current_user_dao.dart';
+import '../data/local/gdpr_policy_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
@@ -181,6 +182,12 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<TranslationCacheDao>()) {
     getIt.registerLazySingleton<TranslationCacheDao>(
       () => TranslationCacheDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<GdprPolicyDao>()) {
+    getIt.registerLazySingleton<GdprPolicyDao>(
+      () => GdprPolicyDao(getIt<LocalDatabase>()),
     );
   }
 
