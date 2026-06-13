@@ -36,6 +36,10 @@ class CurrentUserDao {
     final db = await _database.database;
     final now = DateTime.now().millisecondsSinceEpoch;
 
+    final existing = await get();
+    final preservedGdpr =
+        user.gdprAccepted || (existing?.gdprAccepted ?? false);
+
     await db.insert(
       LocalDatabase.currentUserTable,
       {
@@ -47,7 +51,7 @@ class CurrentUserDao {
         'preferred_lang_id': user.preferredLangId ?? 1,
         'location_id': user.locationId,
         'biography': user.biography,
-        'gdpr_accepted': user.gdprAccepted ? 1 : 0,
+        'gdpr_accepted': preservedGdpr ? 1 : 0,
         'total_points': user.totalPoints,
         'synced_at': now,
       },
