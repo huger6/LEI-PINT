@@ -88,31 +88,87 @@ const getPointsHistory = async (userId, { page = 1, limit = 20, search, serviceL
     };
 };
 
+// Badges (and points) acquired per month, with a running cumulative total.
 const getAcquisitionTimeline = async (userId) => {
     const [rows] = await sequelize.query(
-        `SELECT * FROM get_consultant_acquisition_timeline(:userId)`,
+        `SELECT
+            to_char(date_trunc('month', ab.awarded_at), 'YYYY-MM') AS month,
+            COUNT(*)::int AS badges,
+            COALESCE(SUM(ab.points_snapshot), 0)::int AS points
+         FROM awarded_badges ab
+         WHERE ab.user_id = :userId AND ab.awarded_at IS NOT NULL
+         GROUP BY 1
+         ORDER BY 1`,
         { replacements: { userId } }
     );
-    return rows;
+
+    let cumulativeBadges = 0;
+    let cumulativePoints = 0;
+    return rows.map((r) => {
+        cumulativeBadges += Number(r.badges);
+        cumulativePoints += Number(r.points);
+        return {
+            month: r.month,
+            badges: Number(r.badges),
+            points: Number(r.points),
+            cumulativeBadges,
+            cumulativePoints,
+        };
+    });
 };
 
 /*──────────────────────────────────────────────────────────────
   LEADERSHIP / TALENT MANAGEMENT
 ──────────────────────────────────────────────────────────────*/
 
+// Compares a consultant against peers who share at least one area AND have
+// similar tenure (account age within `tolerance` of the target's), reporting
+// each one's points/badges plus peer averages.
 const getPeerComparison = async (targetUserId, tolerance = 0.25) => {
     const [rows] = await sequelize.query(
-        `SELECT * FROM get_consultant_peer_comparison(:targetUserId, :tolerance)`,
+        `WITH target_areas AS (
+            SELECT area_id FROM consultant_areas WHERE user_id = :targetUserId
+        ),
+        target_tenure AS (
+            SELECT GREATEST(EXTRACT(EPOCH FROM (NOW() - created_at)), 1) AS secs
+            FROM users WHERE user_id = :targetUserId
+        )
+        SELECT
+            u.user_guid,
+            u.full_name,
+            u.profile_img_url,
+            (u.user_id = :targetUserId) AS is_target,
+            COALESCE((SELECT SUM(ph.points_delta) FROM points_history ph WHERE ph.user_id = u.user_id), 0)::int AS total_points,
+            (SELECT COUNT(*) FROM awarded_badges ab WHERE ab.user_id = u.user_id)::int AS total_badges,
+            (SELECT a.area_name FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id
+                WHERE ca.user_id = u.user_id AND ca.is_primary = TRUE LIMIT 1) AS primary_area_name
+        FROM users u
+        INNER JOIN consultants c ON c.user_id = u.user_id
+        WHERE u.user_role = 'Consultant' AND u.is_active = TRUE
+          AND (
+            u.user_id = :targetUserId
+            OR (
+              EXISTS (SELECT 1 FROM consultant_areas ca WHERE ca.user_id = u.user_id AND ca.area_id IN (SELECT area_id FROM target_areas))
+              AND ABS(EXTRACT(EPOCH FROM (NOW() - u.created_at)) - (SELECT secs FROM target_tenure))
+                  <= (SELECT secs FROM target_tenure) * :tolerance
+            )
+          )
+        ORDER BY total_points DESC, full_name ASC`,
         { replacements: { targetUserId, tolerance } }
     );
 
-    const target = rows.find(r => r.is_target) || null;
-    const peers = rows.filter(r => !r.is_target);
+    const target = rows.find((r) => r.is_target) || null;
+    const peers = rows.filter((r) => !r.is_target);
+    const avg = (arr, key) => (arr.length ? Math.round(arr.reduce((s, r) => s + Number(r[key]), 0) / arr.length) : 0);
 
     return {
         target,
         peers,
-        peerCount: peers.length
+        peerCount: peers.length,
+        averages: {
+            points: avg(peers, 'total_points'),
+            badges: avg(peers, 'total_badges'),
+        },
     };
 };
 
