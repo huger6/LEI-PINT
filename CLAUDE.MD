@@ -92,6 +92,7 @@ Badge progression maps directly across five distinct state flags managed inside 
 - Any code written or edited must be re-usable, unless deemed otherwise (something very specific).
 - Always ask if in doubt.
 
+
 ### API Design Guidelines
 
 - Use clear RESTful path conventions (e.g., POST /api/v1/applications, PATCH /api/v1/applications/:id/status).

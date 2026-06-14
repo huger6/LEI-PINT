@@ -1,6 +1,7 @@
 const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
+const { sendTopicUpdate } = require('../services/firebase.service');
 const { consentBodySchema, policyIdParam, createPolicyBody, updatePolicyBody, newPolicyVersionBody, policyTypeParam } = require('../validations/gdpr.validation');
 
 // ─── User-facing endpoints ──────────────────────────────────────────────────
@@ -256,6 +257,7 @@ const adminCreatePolicy = async (req, res) => {
             updated_by: adminId
         });
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: policy });
     } catch (error) {
         logger.error('Error creating GDPR policy', { error });
@@ -286,6 +288,7 @@ const adminUpdatePolicy = async (req, res) => {
 
         await policy.update({ ...bodyValidated, updated_by: req.user.sub });
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(200).json({ success: true, data: policy });
     } catch (error) {
         logger.error('Error updating GDPR policy', { error });
@@ -309,6 +312,7 @@ const adminDeactivatePolicy = async (req, res) => {
 
         await policy.update({ is_active: false, updated_by: req.user.sub });
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(200).json({ success: true, code: 'GDPR_POLICY_DEACTIVATED' });
     } catch (error) {
         logger.error('Error deactivating GDPR policy', { error });
@@ -362,6 +366,7 @@ const adminNewPolicyVersion = async (req, res) => {
 
         await transaction.commit();
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: newPolicy });
     } catch (error) {
         await transaction.rollback();
