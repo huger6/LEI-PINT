@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { getBadgesSummary } from '../../../features/statistics/api/statisticsApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import { useUser } from '../../../hooks/userContext';
+import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import DatePicker from '../../../components/DatePicker/DatePicker';
-import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './StatsOverview.module.css';
 
 /**
- * Leadership stats header: advanced filters (area / service line / period) and
- * KPI cards (total badges, standard, premium, approval rate), backed by
- * GET /statistics/badges-summary. SLL is scoped server-side and hides the
- * Service Line filter. Rendered at the top of TmStats and SllStats.
+ * Leadership stats header (Figma TM20/SL10): always-visible "Filtros Avançados"
+ * card (Área / Service Line / Período) and KPI cards (Total Badges, Standard,
+ * Premium, Approval Rate), backed by GET /statistics/badges-summary. SLL is
+ * scoped server-side and hides the Service Line filter.
  */
 export default function StatsOverview() {
 	const { t } = useTranslation();
@@ -23,7 +23,6 @@ export default function StatsOverview() {
 	const [summary, setSummary] = useState(null);
 	const [loading, setLoading] = useState(true);
 
-	const [showFilters, setShowFilters] = useState(false);
 	const [serviceLineId, setServiceLineId] = useState('');
 	const [areaId, setAreaId] = useState('');
 	const [dateFrom, setDateFrom] = useState('');
@@ -64,18 +63,11 @@ export default function StatsOverview() {
 
 	useEffect(() => { load(); }, [load]);
 
-	function clearFilters() {
-		setServiceLineId('');
-		setAreaId('');
-		setDateFrom('');
-		setDateTo('');
-	}
-
 	const kpis = [
-		{ key: 'total', value: summary?.total ?? 0, icon: 'badge', bg: 'var(--color-secondary-container)', color: 'var(--color-secondary)', label: t('statsOverview.totalBadges') },
-		{ key: 'standard', value: summary?.standard ?? 0, icon: 'badge', bg: 'var(--color-purple-soft)', color: 'var(--color-purple-on-soft)', label: t('statsOverview.standard') },
-		{ key: 'premium', value: summary?.premium ?? 0, icon: 'trophy', bg: 'var(--color-orange-soft)', color: 'var(--color-orange-on-soft)', label: t('statsOverview.premium') },
-		{ key: 'rate', value: `${summary?.approvalRate ?? 0}%`, icon: 'check_circle', bg: 'var(--color-green-soft)', color: 'var(--color-green-on-soft)', label: t('statsOverview.approvalRate') },
+		{ key: 'total', value: summary?.total ?? 0, icon: 'badge', bg: 'var(--color-secondary-container)', iconColor: 'var(--color-secondary)', valueClass: styles.valTotal, label: t('statsOverview.totalBadges') },
+		{ key: 'standard', value: summary?.standard ?? 0, icon: 'badge', bg: 'var(--color-blue-soft)', iconColor: 'var(--color-blue-on-soft)', valueClass: styles.valStandard, label: t('statsOverview.standard') },
+		{ key: 'premium', value: summary?.premium ?? 0, icon: 'star', bg: 'var(--color-orange-soft)', iconColor: 'var(--color-orange-on-soft)', valueClass: styles.valPremium, label: t('statsOverview.premium') },
+		{ key: 'rate', value: `${summary?.approvalRate ?? 0}%`, icon: 'check_circle', bg: 'var(--color-green-soft)', iconColor: 'var(--color-green-on-soft)', valueClass: styles.valRate, label: t('statsOverview.approvalRate') },
 	];
 
 	const slOptions = [{ value: '', label: t('statsOverview.allServiceLines') },
@@ -85,45 +77,44 @@ export default function StatsOverview() {
 
 	return (
 		<div className={styles.wrap}>
-			<div className={styles.headerRow}>
-				<h2 className={styles.title}>{t('statsOverview.title')}</h2>
-				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
-					<Icon name="filter" size={16} /> {t('statsOverview.filters')}
-				</Button>
-			</div>
-
-			{showFilters && (
-				<div className={styles.filtersBar}>
+			{/* Advanced filters (always visible, per Figma) */}
+			<ContentCard className={styles.filtersCard}>
+				<CardHeader icon="filter" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('statsOverview.advancedFilters')} />
+				<div className={styles.filtersGrid}>
+					<div className={styles.field}>
+						<label className={styles.fieldLabel}>{t('statsOverview.area')}</label>
+						<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
+							options={areaOptions} ariaLabel={t('statsOverview.area')} />
+					</div>
 					{!isSll && (
-						<CustomSelect name="serviceLineId" value={serviceLineId} onChange={(e) => setServiceLineId(e.target.value)}
-							options={slOptions} ariaLabel={t('statsOverview.serviceLine')} compact />
+						<div className={styles.field}>
+							<label className={styles.fieldLabel}>{t('statsOverview.serviceLine')}</label>
+							<CustomSelect name="serviceLineId" value={serviceLineId} onChange={(e) => setServiceLineId(e.target.value)}
+								options={slOptions} ariaLabel={t('statsOverview.serviceLine')} />
+						</div>
 					)}
-					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
-						options={areaOptions} ariaLabel={t('statsOverview.area')} compact />
-					<label className={styles.dateField}>
-						<span>{t('statsOverview.from')}</span>
+					<div className={styles.field}>
+						<label className={styles.fieldLabel}>{t('statsOverview.from')}</label>
 						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}
 							onChange={(e) => setDateFrom(e.target.value)} ariaLabel={t('statsOverview.from')} />
-					</label>
-					<label className={styles.dateField}>
-						<span>{t('statsOverview.to')}</span>
+					</div>
+					<div className={styles.field}>
+						<label className={styles.fieldLabel}>{t('statsOverview.to')}</label>
 						<DatePicker name="dateTo" value={dateTo} min={dateFrom || undefined}
 							onChange={(e) => setDateTo(e.target.value)} ariaLabel={t('statsOverview.to')} />
-					</label>
-					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('statsOverview.clear')}</Button>
+					</div>
 				</div>
-			)}
+			</ContentCard>
 
+			{/* KPI cards */}
 			<div className={styles.kpiRow}>
 				{kpis.map((k) => (
 					<div key={k.key} className={styles.kpiCard}>
 						<div className={styles.kpiIcon} style={{ background: k.bg }}>
-							<Icon name={k.icon} size={20} color={k.color} />
+							<Icon name={k.icon} size={18} color={k.iconColor} />
 						</div>
-						<div className={styles.kpiBody}>
-							<span className={styles.kpiValue}>{loading ? '—' : k.value}</span>
-							<span className={styles.kpiLabel}>{k.label}</span>
-						</div>
+						<span className={styles.kpiLabel}>{k.label}</span>
+						<span className={`${styles.kpiValue} ${k.valueClass}`}>{loading ? '—' : k.value}</span>
 					</div>
 				))}
 			</div>

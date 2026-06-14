@@ -1193,6 +1193,7 @@
 	"statsOverview": {
 		"title": "Visión General",
 		"filters": "Filtros",
+		"advancedFilters": "Filtros Avanzados",
 		"serviceLine": "Service Line",
 		"area": "Área",
 		"from": "Desde",

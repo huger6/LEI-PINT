@@ -1194,6 +1194,7 @@
 	"statsOverview": {
 		"title": "Visão Geral",
 		"filters": "Filtros",
+		"advancedFilters": "Filtros Avançados",
 		"serviceLine": "Service Line",
 		"area": "Área",
 		"from": "De",

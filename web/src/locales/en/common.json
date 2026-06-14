@@ -1194,6 +1194,7 @@
 	"statsOverview": {
 		"title": "Overview",
 		"filters": "Filters",
+		"advancedFilters": "Advanced Filters",
 		"serviceLine": "Service Line",
 		"area": "Area",
 		"from": "From",
