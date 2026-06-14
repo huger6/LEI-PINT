@@ -101,6 +101,15 @@
 	background: var(--color-primary-soft);
 }
 
+.row {
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.row:hover {
+	background: var(--color-primary-soft);
+}
+
 .consultantCell {
 	display: flex;
 	align-items: center;

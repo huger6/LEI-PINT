@@ -54,3 +54,19 @@ export async function getBadgesSummary(params = {}) {
 	const { data } = await api.get('/statistics/badges-summary', { params });
 	return data?.data || { total: 0, standard: 0, premium: 0, accepted: 0, rejected: 0, approvalRate: 0 };
 }
+
+// A consultant's acquisition timeline (badges/points per month + cumulative).
+// Leaders pass userGuid to inspect a specific consultant.
+export async function getAcquisitionTimeline(userGuid) {
+	const { data } = await api.get('/statistics/consultant/timeline', { params: userGuid ? { userGuid } : {} });
+	return data?.data || [];
+}
+
+// Peer comparison for a consultant (same area + similar tenure).
+export async function getPeerComparison(userGuid, tolerance) {
+	const params = {};
+	if (userGuid) params.userGuid = userGuid;
+	if (tolerance != null) params.tolerance = tolerance;
+	const { data } = await api.get('/statistics/consultants/comparison', { params });
+	return data?.data || { target: null, peers: [], peerCount: 0, averages: { points: 0, badges: 0 } };
+}
