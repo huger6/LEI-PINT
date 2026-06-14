@@ -146,7 +146,7 @@
 <strong>Branch auditada:</strong> <code>web-new</code> · <strong>Data:</strong> 2026-06-12 (atualizado após as correções TM/SLL do mesmo dia)</p>
 </blockquote>
 <blockquote>
-<p><strong>Atualização (12/06/2026):</strong> Após a auditoria inicial foram fechadas várias lacunas TM/SLL — histórico do processo exposto ao TM (req 21), páginas de consultores (TM) e equipa (SLL) com filtros, histórico de badges da SL, email ao SLL em nova validação (req 16), e alinhamento com o Figma das páginas de consultores, histórico, dashboard e estatísticas. As tabelas abaixo já refletem este estado.</p>
+<p><strong>Atualização (14/06/2026):</strong> Após a auditoria inicial foram fechadas várias lacunas TM/SLL — histórico do processo exposto ao TM (req 21), páginas de consultores (TM) e equipa (SLL) com filtros, histórico de badges da SL, email ao SLL em nova validação (req 16), alinhamento com o Figma (consultores, histórico, dashboard, estatísticas, exports, ranking), polish do painel de revisão (rejeição explícita, ecrã de resultado com motivo, timeline data-driven), auto-refresh das listas, e os <strong>dois bónus</strong> (Timeline de evolução do TM e Comparação com pares do SLL, na nova página ConsultantDetail). <strong>TM e SLL: obrigatórios + bónus completos.</strong> As tabelas abaixo já refletem este estado.</p>
 </blockquote>
 <h2 id="legenda">Legenda</h2>
 <table>
@@ -198,17 +198,17 @@
 </tr>
 <tr>
 <td>Talent Manager</td>
-<td style="text-align:center">17</td>
+<td style="text-align:center">18</td>
 <td style="text-align:center">2</td>
-<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
 <td style="text-align:center">2</td>
 <td style="text-align:center">22</td>
 </tr>
 <tr>
 <td>Service Line Leader</td>
-<td style="text-align:center">16</td>
+<td style="text-align:center">17</td>
 <td style="text-align:center">2</td>
-<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
 <td style="text-align:center">1</td>
 <td style="text-align:center">20</td>
 </tr>
@@ -230,7 +230,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Leitura rápida:</strong> o TM e o SLL estão com os requisitos <strong>obrigatórios essencialmente completos</strong> — o que falta nesses perfis é sobretudo <strong>bónus</strong> (Timeline de evolução no TM; métricas de comparação no SLL) e polish menor (modais de exportação no painel de revisão; &quot;tempo real&quot; por refresh). As lacunas mais relevantes que sobram estão no <strong>Admin</strong> (endpoints completos sem UI: RGPD, SLAs, gestão de requisitos, ações sobre pedidos) e no <strong>Consultor</strong> (página pública de verificação <code>/verify/:link</code> sem rota no web; integração <a href="http://softinsa.pt">softinsa.pt</a>).</p>
+<p><strong>Leitura rápida:</strong> o <strong>TM e o SLL estão completos</strong> (requisitos obrigatórios + os dois bónus). O que sobra nesses perfis são apenas detalhes menores (🟡): &quot;tempo real&quot; por refresh/polling em vez de websocket, e o botão de certificado PDF no fluxo SLL. As lacunas mais relevantes do projeto estão agora no <strong>Admin</strong> (endpoints completos sem UI: RGPD, SLAs, gestão de requisitos, ações sobre pedidos) e no <strong>Consultor</strong> (página pública de verificação <code>/verify/:link</code> sem rota no web; integração <a href="http://softinsa.pt">softinsa.pt</a>).</p>
 <hr>
 <h2 id="1-perfil-consultor">1. Perfil Consultor</h2>
 <table>
@@ -610,17 +610,17 @@
 <tr>
 <td>B1</td>
 <td>(BÓNUS) Timeline de evolução por consultor</td>
-<td>❌</td>
-<td><code>Evolution.jsx</code>; <code>evolutionApi.js:23</code></td>
-<td>Timeline só para o consultor logado.</td>
+<td>✅</td>
+<td><code>ConsultantDetail.jsx</code>; <code>statistics.service.js getAcquisitionTimeline</code>; <code>GET /statistics/consultant/timeline?userGuid</code></td>
+<td>Página por-consultor (clique na lista) com timeline de badges acumulados.</td>
 </tr>
 </tbody>
 </table>
 <h3 id="resumo-talent-manager">Resumo Talent Manager</h3>
 <ul>
-<li>✅ 17 · 🟡 2 · ❌ 1 · ⚪ 2 (total 22)</li>
-<li><strong>Resolvido:</strong> (2) página de consultores + dashboard com KPIs/gráficos; (21) histórico do processo agora visível ao TM.</li>
-<li><strong>Lacunas que sobram:</strong> (B1, bónus) Timeline de evolução por consultor — ❌ inexistente; (5) sem vista de histórico dedicada por consultor e (4) &quot;tempo real&quot; por refresh on-focus — 🟡 menor.</li>
+<li>✅ 18 · 🟡 2 · ❌ 0 · ⚪ 2 (total 22) — <strong>obrigatórios + bónus completos</strong></li>
+<li><strong>Resolvido:</strong> (2) página de consultores + dashboard com KPIs/gráficos; (21) histórico do processo visível ao TM; (B1, bónus) Timeline de evolução por consultor (ConsultantDetail).</li>
+<li><strong>Lacunas que sobram (menores, 🟡):</strong> (5) sem vista de histórico dedicada por consultor; (4) &quot;tempo real&quot; por refresh/polling em vez de websocket.</li>
 <li><strong>Nota:</strong> TM corretamente sem ação 'accept' (<code>ApplicationReview.jsx</code>); exports scoped por role no backend.</li>
 </ul>
 <hr>
@@ -765,9 +765,9 @@
 <tr>
 <td>B1</td>
 <td>(BÓNUS) Métricas de comparação entre consultores</td>
-<td>❌</td>
-<td>—</td>
-<td>Sem página/endpoint.</td>
+<td>✅</td>
+<td><code>ConsultantDetail.jsx</code>; <code>statistics.service.js getPeerComparison</code>; <code>GET /statistics/consultants/comparison?userGuid</code></td>
+<td>Compara o consultor com pares da mesma área e experiência semelhante (médias, posição, tabela).</td>
 </tr>
 <tr>
 <td>B7</td>
@@ -780,10 +780,10 @@
 </table>
 <h3 id="resumo-service-line-leader">Resumo Service Line Leader</h3>
 <ul>
-<li>✅ 16 · 🟡 2 · ❌ 1 · ⚪ 1 (total 20)</li>
+<li>✅ 17 · 🟡 2 · ❌ 0 · ⚪ 1 (total 20) — <strong>obrigatórios + bónus completos</strong></li>
 <li><strong>SL-scoping</strong> bem aplicado no backend (candidaturas, exports, consultores e badges-summary scoped à SL).</li>
-<li><strong>Resolvido:</strong> (16) email ao SLL na nova validação; (4) histórico de badges da SL; (2) página de equipa; (10) relatórios com filtros Área/Período + KPIs; (17) notificações in-app + email.</li>
-<li><strong>Lacunas que sobram:</strong> (B1, bónus) métricas de comparação entre consultores — ❌ inexistente; (15) certificado PDF sem UI no fluxo SLL e (3) &quot;tempo real&quot; por refresh — 🟡 menor. &quot;Ferramenta de Comparação&quot; no header continua omitida (decisão de âmbito).</li>
+<li><strong>Resolvido:</strong> (16) email ao SLL na nova validação; (4) histórico de badges da SL; (2) página de equipa; (10) relatórios com filtros Área/Período + KPIs; (17) notificações in-app + email; (B1, bónus) métricas de comparação entre consultores (ConsultantDetail).</li>
+<li><strong>Lacunas que sobram (menores, 🟡):</strong> (15) certificado PDF sem UI no fluxo SLL; (3) &quot;tempo real&quot; por refresh/polling. &quot;Ferramenta de Comparação&quot; no header continua omitida (decisão de âmbito).</li>
 </ul>
 <hr>
 <h2 id="4-perfil-administrador">4. Perfil Administrador</h2>
@@ -1028,19 +1028,17 @@
 <p>O enunciado lista um perfil Mobile-Consultor (26 requisitos + bónus a/b). Esta auditoria cobre apenas Web + API, conforme âmbito do trabalho. O estado do Mobile deve ser avaliado separadamente sobre <code>Mobile/</code>.</p>
 <hr>
 <h2 id="foco-o-que-falta-no-tm-e-no-sll">Foco: o que falta no TM e no SLL</h2>
-<p>Os requisitos <strong>obrigatórios</strong> de TM e SLL estão essencialmente completos. O que sobra:</p>
+<p><strong>TM e SLL estão completos</strong> (obrigatórios + os dois bónus). Sobram apenas detalhes menores (🟡):</p>
 <p><strong>Talent Manager</strong></p>
-<ol>
-<li><strong>(BÓNUS, ❌)</strong> Timeline de evolução por consultor (B1) — inexistente.</li>
-<li><strong>(menor, 🟡)</strong> Vista de histórico dedicada por consultor (req 5); &quot;tempo real&quot; (req 4) por refresh on-focus em vez de polling/SSE.</li>
-</ol>
+<ul>
+<li>Vista de histórico dedicada por consultor (req 5); &quot;tempo real&quot; (req 4) por refresh/polling em vez de websocket.</li>
+</ul>
 <p><strong>Service Line Leader</strong></p>
-<ol>
-<li><strong>(BÓNUS, ❌)</strong> Métricas de comparação entre consultores da mesma área/experiência (B1) — inexistente.</li>
-<li><strong>(menor, 🟡)</strong> Botão de certificado PDF no fluxo SLL (req 15, API já permite); &quot;tempo real&quot; (req 3) por refresh.</li>
-<li>&quot;Ferramenta de Comparação&quot; no header SLL — omitida por decisão de âmbito (sem feature).</li>
-</ol>
-<p><strong>Fechado neste ciclo:</strong> tabela de validações; redesign do painel de revisão (TM+SLL); blocos exclusivos SLL (Histórico/Parecer/Verificado pelo TM + Pontos/Ranking no header); ecrã de resultado pós-decisão; gate de consentimento RGPD; histórico do processo exposto ao TM (req 21); páginas de consultores (TM) e equipa (SLL) com filtros e colunas Figma; histórico de badges da SL; email ao SLL na nova validação (req 16); dashboard com KPIs + gráficos; estatísticas com filtros avançados + KPI cards. Endpoints novos: <code>GET /statistics/consultants</code>, <code>GET /statistics/badges-summary</code>; <code>getApplications</code> com <code>progression_stage</code> + filtros área/badge/datas; pontos+ranking do consultor no detalhe.</p>
+<ul>
+<li>Botão de certificado PDF no fluxo SLL (req 15, API já permite); &quot;tempo real&quot; (req 3) por refresh.</li>
+<li>&quot;Ferramenta de Comparação&quot; no header SLL — omitida por decisão de âmbito (substituída pela página ConsultantDetail de comparação).</li>
+</ul>
+<p><strong>Fechado:</strong> tabela de validações; redesign do painel de revisão (TM+SLL) com rejeição explícita e ecrã de resultado com motivo; blocos exclusivos SLL (Histórico/Parecer/Verificado pelo TM + Pontos/Ranking no header); timeline do processo data-driven; gate de consentimento RGPD; histórico do processo exposto ao TM (req 21); páginas de consultores (TM) e equipa (SLL) com filtros e colunas Figma; histórico de badges da SL; email ao SLL na nova validação (req 16); dashboard com KPIs + gráficos; estatísticas alinhadas ao Figma (filtros avançados + KPI cards); exports redesenhados; ranking SLL scoped; auto-refresh das listas; e os <strong>bónus</strong> Timeline (TM) + Comparação com pares (SLL) na página <strong>ConsultantDetail</strong>. Endpoints novos/corrigidos: <code>GET /statistics/consultants</code>, <code>GET /statistics/badges-summary</code>, <code>getApplications</code> (+<code>progression_stage</code>, filtros área/badge/datas), pontos+ranking do consultor no detalhe, e reescrita de <code>timeline</code>/<code>peer-comparison</code> (funções SQL em falta).</p>
 
             
             

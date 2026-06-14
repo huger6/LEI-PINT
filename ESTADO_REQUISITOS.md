@@ -4,7 +4,7 @@
 > **Âmbito:** Web (React/Vite/Bootstrap) + API (Node/Express/Sequelize/PostgreSQL). **Mobile fica fora** (plataforma separada).
 > **Branch auditada:** `web-new` · **Data:** 2026-06-12 (atualizado após as correções TM/SLL do mesmo dia)
 
-> **Atualização (12/06/2026):** Após a auditoria inicial foram fechadas várias lacunas TM/SLL — histórico do processo exposto ao TM (req 21), páginas de consultores (TM) e equipa (SLL) com filtros, histórico de badges da SL, email ao SLL em nova validação (req 16), e alinhamento com o Figma das páginas de consultores, histórico, dashboard e estatísticas. As tabelas abaixo já refletem este estado.
+> **Atualização (14/06/2026):** Após a auditoria inicial foram fechadas várias lacunas TM/SLL — histórico do processo exposto ao TM (req 21), páginas de consultores (TM) e equipa (SLL) com filtros, histórico de badges da SL, email ao SLL em nova validação (req 16), alinhamento com o Figma (consultores, histórico, dashboard, estatísticas, exports, ranking), polish do painel de revisão (rejeição explícita, ecrã de resultado com motivo, timeline data-driven), auto-refresh das listas, e os **dois bónus** (Timeline de evolução do TM e Comparação com pares do SLL, na nova página ConsultantDetail). **TM e SLL: obrigatórios + bónus completos.** As tabelas abaixo já refletem este estado.
 
 ## Legenda
 
@@ -20,12 +20,12 @@
 | Perfil | ✅ Done | 🟡 Partial | ❌ Missing | ⚪ N/A | Total |
 |--------|:------:|:---------:|:---------:|:-----:|:-----:|
 | Consultor | 19 | 8 | 1 | 0 | 28 |
-| Talent Manager | 17 | 2 | 1 | 2 | 22 |
-| Service Line Leader | 16 | 2 | 1 | 1 | 20 |
+| Talent Manager | 18 | 2 | 0 | 2 | 22 |
+| Service Line Leader | 17 | 2 | 0 | 1 | 20 |
 | Administrador | 7 | 5 | 1 | 0 | 13 |
 | Requisitos Gerais | 10 | 5 | 0 | 0 | 15 |
 
-**Leitura rápida:** o TM e o SLL estão com os requisitos **obrigatórios essencialmente completos** — o que falta nesses perfis é sobretudo **bónus** (Timeline de evolução no TM; métricas de comparação no SLL) e polish menor (modais de exportação no painel de revisão; "tempo real" por refresh). As lacunas mais relevantes que sobram estão no **Admin** (endpoints completos sem UI: RGPD, SLAs, gestão de requisitos, ações sobre pedidos) e no **Consultor** (página pública de verificação `/verify/:link` sem rota no web; integração softinsa.pt).
+**Leitura rápida:** o **TM e o SLL estão completos** (requisitos obrigatórios + os dois bónus). O que sobra nesses perfis são apenas detalhes menores (🟡): "tempo real" por refresh/polling em vez de websocket, e o botão de certificado PDF no fluxo SLL. As lacunas mais relevantes do projeto estão agora no **Admin** (endpoints completos sem UI: RGPD, SLAs, gestão de requisitos, ações sobre pedidos) e no **Consultor** (página pública de verificação `/verify/:link` sem rota no web; integração softinsa.pt).
 
 ---
 
@@ -93,12 +93,12 @@
 | 19 | Notificações de aprovação/rejeição ao consultor | ✅ | `applications.controller.js:717-755,760-785` | TM 'review'→In validation notifica consultor. |
 | 20 | Ver badges próximos da expiração | ✅ | `TmStats.jsx:65-79,160-211`; `statistics.controller.js:329` | Tabela com janelas (30/90/180/365/730d). |
 | 21 | Ver histórico de cada processo de aplicação | ✅ | `ApplicationReview.jsx` (bloco "Histórico do Processo") | Exposto também ao TM (removido o gate `isSll &&`). |
-| B1 | (BÓNUS) Timeline de evolução por consultor | ❌ | `Evolution.jsx`; `evolutionApi.js:23` | Timeline só para o consultor logado. |
+| B1 | (BÓNUS) Timeline de evolução por consultor | ✅ | `ConsultantDetail.jsx`; `statistics.service.js getAcquisitionTimeline`; `GET /statistics/consultant/timeline?userGuid` | Página por-consultor (clique na lista) com timeline de badges acumulados. |
 
 ### Resumo Talent Manager
-- ✅ 17 · 🟡 2 · ❌ 1 · ⚪ 2 (total 22)
-- **Resolvido:** (2) página de consultores + dashboard com KPIs/gráficos; (21) histórico do processo agora visível ao TM.
-- **Lacunas que sobram:** (B1, bónus) Timeline de evolução por consultor — ❌ inexistente; (5) sem vista de histórico dedicada por consultor e (4) "tempo real" por refresh on-focus — 🟡 menor.
+- ✅ 18 · 🟡 2 · ❌ 0 · ⚪ 2 (total 22) — **obrigatórios + bónus completos**
+- **Resolvido:** (2) página de consultores + dashboard com KPIs/gráficos; (21) histórico do processo visível ao TM; (B1, bónus) Timeline de evolução por consultor (ConsultantDetail).
+- **Lacunas que sobram (menores, 🟡):** (5) sem vista de histórico dedicada por consultor; (4) "tempo real" por refresh/polling em vez de websocket.
 - **Nota:** TM corretamente sem ação 'accept' (`ApplicationReview.jsx`); exports scoped por role no backend.
 
 ---
@@ -125,14 +125,14 @@
 | 17 | Notificações de aprovação/rejeição | ✅ | `applications.controller.js`; `notifications.service.js` | Notif in-app + email ao SLL na nova validação. |
 | 18 | Ver/comparar ranking dos consultores da SL | ✅ | `shared/Ranking/Ranking.jsx:247-276,392-414` | Scoped client-side a `user.serviceLine` + filtro por área. |
 | 19 | Ver histórico de cada processo de candidatura | ✅ | `ApplicationReview.jsx:69-298`; `ApplicationDetailPage.jsx:64-66` | Timeline + parecer do TM. |
-| B1 | (BÓNUS) Métricas de comparação entre consultores | ❌ | — | Sem página/endpoint. |
+| B1 | (BÓNUS) Métricas de comparação entre consultores | ✅ | `ConsultantDetail.jsx`; `statistics.service.js getPeerComparison`; `GET /statistics/consultants/comparison?userGuid` | Compara o consultor com pares da mesma área e experiência semelhante (médias, posição, tabela). |
 | B7 | (BÓNUS) Badge na assinatura de email | ⚪ | `MailSignature.jsx:40` | Só consultores ganham badges. |
 
 ### Resumo Service Line Leader
-- ✅ 16 · 🟡 2 · ❌ 1 · ⚪ 1 (total 20)
+- ✅ 17 · 🟡 2 · ❌ 0 · ⚪ 1 (total 20) — **obrigatórios + bónus completos**
 - **SL-scoping** bem aplicado no backend (candidaturas, exports, consultores e badges-summary scoped à SL).
-- **Resolvido:** (16) email ao SLL na nova validação; (4) histórico de badges da SL; (2) página de equipa; (10) relatórios com filtros Área/Período + KPIs; (17) notificações in-app + email.
-- **Lacunas que sobram:** (B1, bónus) métricas de comparação entre consultores — ❌ inexistente; (15) certificado PDF sem UI no fluxo SLL e (3) "tempo real" por refresh — 🟡 menor. "Ferramenta de Comparação" no header continua omitida (decisão de âmbito).
+- **Resolvido:** (16) email ao SLL na nova validação; (4) histórico de badges da SL; (2) página de equipa; (10) relatórios com filtros Área/Período + KPIs; (17) notificações in-app + email; (B1, bónus) métricas de comparação entre consultores (ConsultantDetail).
+- **Lacunas que sobram (menores, 🟡):** (15) certificado PDF sem UI no fluxo SLL; (3) "tempo real" por refresh/polling. "Ferramenta de Comparação" no header continua omitida (decisão de âmbito).
 
 ---
 
@@ -195,15 +195,13 @@ O enunciado lista um perfil Mobile-Consultor (26 requisitos + bónus a/b). Esta 
 
 ## Foco: o que falta no TM e no SLL
 
-Os requisitos **obrigatórios** de TM e SLL estão essencialmente completos. O que sobra:
+**TM e SLL estão completos** (obrigatórios + os dois bónus). Sobram apenas detalhes menores (🟡):
 
 **Talent Manager**
-1. **(BÓNUS, ❌)** Timeline de evolução por consultor (B1) — inexistente.
-2. **(menor, 🟡)** Vista de histórico dedicada por consultor (req 5); "tempo real" (req 4) por refresh on-focus em vez de polling/SSE.
+- Vista de histórico dedicada por consultor (req 5); "tempo real" (req 4) por refresh/polling em vez de websocket.
 
 **Service Line Leader**
-1. **(BÓNUS, ❌)** Métricas de comparação entre consultores da mesma área/experiência (B1) — inexistente.
-2. **(menor, 🟡)** Botão de certificado PDF no fluxo SLL (req 15, API já permite); "tempo real" (req 3) por refresh.
-3. "Ferramenta de Comparação" no header SLL — omitida por decisão de âmbito (sem feature).
+- Botão de certificado PDF no fluxo SLL (req 15, API já permite); "tempo real" (req 3) por refresh.
+- "Ferramenta de Comparação" no header SLL — omitida por decisão de âmbito (substituída pela página ConsultantDetail de comparação).
 
-**Fechado neste ciclo:** tabela de validações; redesign do painel de revisão (TM+SLL); blocos exclusivos SLL (Histórico/Parecer/Verificado pelo TM + Pontos/Ranking no header); ecrã de resultado pós-decisão; gate de consentimento RGPD; histórico do processo exposto ao TM (req 21); páginas de consultores (TM) e equipa (SLL) com filtros e colunas Figma; histórico de badges da SL; email ao SLL na nova validação (req 16); dashboard com KPIs + gráficos; estatísticas com filtros avançados + KPI cards. Endpoints novos: `GET /statistics/consultants`, `GET /statistics/badges-summary`; `getApplications` com `progression_stage` + filtros área/badge/datas; pontos+ranking do consultor no detalhe.
+**Fechado:** tabela de validações; redesign do painel de revisão (TM+SLL) com rejeição explícita e ecrã de resultado com motivo; blocos exclusivos SLL (Histórico/Parecer/Verificado pelo TM + Pontos/Ranking no header); timeline do processo data-driven; gate de consentimento RGPD; histórico do processo exposto ao TM (req 21); páginas de consultores (TM) e equipa (SLL) com filtros e colunas Figma; histórico de badges da SL; email ao SLL na nova validação (req 16); dashboard com KPIs + gráficos; estatísticas alinhadas ao Figma (filtros avançados + KPI cards); exports redesenhados; ranking SLL scoped; auto-refresh das listas; e os **bónus** Timeline (TM) + Comparação com pares (SLL) na página **ConsultantDetail**. Endpoints novos/corrigidos: `GET /statistics/consultants`, `GET /statistics/badges-summary`, `getApplications` (+`progression_stage`, filtros área/badge/datas), pontos+ranking do consultor no detalhe, e reescrita de `timeline`/`peer-comparison` (funções SQL em falta).
