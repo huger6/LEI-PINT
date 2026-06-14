@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../presentation/state/language_controller.dart';
 import '../shared/translated_text.dart';
 
 class ExploreBadgeCard extends StatelessWidget {
@@ -35,7 +34,6 @@ class ExploreBadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tr = LanguageScope.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(15),
       onTap: onTap,
@@ -83,32 +81,6 @@ class ExploreBadgeCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isSpecial) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3D6),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: const Color(0xFFD4A843),
-                              width: 0.8,
-                            ),
-                          ),
-                          child: Text(
-                            tr.tr('special'),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFB08A2E),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
                       GestureDetector(
                         onTap: onSaveToggle,
                         child: Icon(
@@ -150,7 +122,7 @@ class ExploreBadgeCard extends StatelessWidget {
                         color: Color(0xFF5B6773),
                         height: 1.3,
                       ),
-                      maxLines: 2,
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -188,12 +160,17 @@ class _DetailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 17, color: const Color(0xFF3F5662)),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 17, color: const Color(0xFF3F5662)),
+        ),
         const SizedBox(width: 8),
         Flexible(
           child: TranslatedText(
             value,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 15,

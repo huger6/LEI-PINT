@@ -195,14 +195,37 @@ class _SimpleLineStatsCardState extends State<SimpleLineStatsCard> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: shortLabels
-                .map((label) => Text(
-                      label,
-                      style: const TextStyle(color: Color(0xFFA9B1BD)),
-                    ))
-                .toList(),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final chartWidth = constraints.maxWidth;
+              final n = shortLabels.length;
+              return SizedBox(
+                width: chartWidth,
+                height: 18,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: List.generate(n, (i) {
+                    final x = n <= 1
+                        ? chartWidth / 2
+                        : (i / (n - 1)) * chartWidth;
+                    return Positioned(
+                      left: x,
+                      top: 0,
+                      child: FractionalTranslation(
+                        translation: const Offset(-0.5, 0),
+                        child: Text(
+                          shortLabels[i],
+                          style: const TextStyle(
+                            color: Color(0xFFA9B1BD),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              );
+            },
           ),
         ],
       ),

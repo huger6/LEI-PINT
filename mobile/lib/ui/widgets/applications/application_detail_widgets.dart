@@ -38,6 +38,7 @@ class ApplicationDetailHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasCategory = badge.category.trim().isNotEmpty;
     final hasLevel = badge.level.trim().isNotEmpty;
+    final hasServiceLine = badge.serviceLine != null && badge.serviceLine!.trim().isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -73,13 +74,18 @@ class ApplicationDetailHeader extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          if (hasCategory || hasLevel) ...[
+          if (hasCategory || hasLevel || hasServiceLine) ...[
             const SizedBox(height: 10),
             Wrap(
               alignment: WrapAlignment.center,
               spacing: 8,
               runSpacing: 8,
               children: [
+                if (hasServiceLine)
+                  _HeaderMetaChip(
+                    icon: Icons.business_outlined,
+                    label: badge.serviceLine!,
+                  ),
                 if (hasCategory)
                   _HeaderMetaChip(
                     icon: Icons.category_outlined,
