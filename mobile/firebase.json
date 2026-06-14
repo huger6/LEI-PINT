@@ -1,0 +1,22 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "badges-softinsa",
+                    "appId": "1:643315101298:android:b769f4586b67d8ef7e5ceb",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "badges-softinsa",
+                    "configurations": {
+                        "android": "1:643315101298:android:b769f4586b67d8ef7e5ceb",
+                        "ios": "1:643315101298:ios:d736337dd1da38137e5ceb"
+                    }
+                }
+            }
+        }
+    }
+}

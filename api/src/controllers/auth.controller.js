@@ -191,6 +191,39 @@ const register = async (req, res) => {
             token_type: 'CONFIRMATION'
         });
 
+        // Record GDPR consent for all mandatory active policies
+        const mandatoryPolicies = await models.gdpr_policies.findAll({
+            where: { is_active: true, is_mandatory: true },
+            attributes: ['policy_id'],
+            transaction: t
+        });
+
+        if (mandatoryPolicies.length > 0) {
+            await models.gdpr_consent_history.bulkCreate(
+                mandatoryPolicies.map(p => ({
+                    user_id: newUser.user_id,
+                    policy_id: p.policy_id,
+                    action: 'ACCEPTED',
+                    ip_address: req.ip || req.headers['x-forwarded-for'] || null,
+                    user_agent: req.headers['user-agent'] || null
+                })),
+                { transaction: t }
+            );
+
+            if (userData.user_role === 'Consultant') {
+                await models.consultants.update(
+                    { gdpr_accepted: true },
+                    { where: { user_id: newUser.user_id }, transaction: t }
+                );
+            }
+
+            logger.debug('GDPR consent recorded for mandatory policies at registration', {
+                requestId,
+                user_id: newUser.user_id,
+                policiesCount: mandatoryPolicies.length
+            });
+        }
+
         // Commit changes
         await t.commit();
         await sendTopicUpdate("new_data", 1);

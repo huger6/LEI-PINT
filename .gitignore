@@ -1,6 +1,7 @@
 *.env
 */node_modules
 *.log
+CLAUDE.MD
 firebase.json
 mobile/
 .mcp.json
