@@ -4,6 +4,7 @@ import { getBadgesSummary } from '../../../features/statistics/api/statisticsApi
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import { useUser } from '../../../hooks/userContext';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../../components/DatePicker/DatePicker';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './StatsOverview.module.css';
@@ -86,7 +87,7 @@ export default function StatsOverview() {
 		<div className={styles.wrap}>
 			<div className={styles.headerRow}>
 				<h2 className={styles.title}>{t('statsOverview.title')}</h2>
-				<Button variant="outlined" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
 					<Icon name="filter" size={16} /> {t('statsOverview.filters')}
 				</Button>
 			</div>
@@ -101,11 +102,13 @@ export default function StatsOverview() {
 						options={areaOptions} ariaLabel={t('statsOverview.area')} compact />
 					<label className={styles.dateField}>
 						<span>{t('statsOverview.from')}</span>
-						<input type="date" className={styles.dateInput} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}
+							onChange={(e) => setDateFrom(e.target.value)} ariaLabel={t('statsOverview.from')} />
 					</label>
 					<label className={styles.dateField}>
 						<span>{t('statsOverview.to')}</span>
-						<input type="date" className={styles.dateInput} value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+						<DatePicker name="dateTo" value={dateTo} min={dateFrom || undefined}
+							onChange={(e) => setDateTo(e.target.value)} ariaLabel={t('statsOverview.to')} />
 					</label>
 					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('statsOverview.clear')}</Button>
 				</div>

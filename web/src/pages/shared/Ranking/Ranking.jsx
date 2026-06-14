@@ -204,6 +204,8 @@ export default function Ranking() {
     const [appliedArea, setAppliedArea] = useState('');
 
     const [consultantScope, setConsultantScope] = useState('initial');
+    // SLL ranking scope: 'sl' (own Service Line, default) | 'area:<id>' | 'general' (all)
+    const [sllScope, setSllScope] = useState('sl');
     const [findingPosition, setFindingPosition] = useState(false);
     const [scrollToMe, setScrollToMe] = useState(false);
     const myRowRef = useRef(null);
@@ -262,18 +264,20 @@ export default function Ranking() {
                 params.serviceLineId = consultantScope.split(':')[1];
             }
         } else if (role === 'Service Line Leader') {
-            const sllSlId = resolveSlFilterForSll();
-            if (sllSlId && !appliedArea) {
-                params.serviceLineId = sllSlId;
+            if (sllScope.startsWith('area:')) {
+                params.areaId = sllScope.split(':')[1];
+            } else if (sllScope === 'sl') {
+                const sllSlId = resolveSlFilterForSll();
+                if (sllSlId) params.serviceLineId = sllSlId;
             }
-            if (appliedArea) params.areaId = appliedArea;
+            // 'general' → no scope (todos)
         } else {
             if (appliedSl) params.serviceLineId = appliedSl;
             if (appliedArea) params.areaId = appliedArea;
         }
 
         return params;
-    }, [currentPage, role, consultantScope, appliedSl, appliedArea, resolveSlFilterForSll]);
+    }, [currentPage, role, consultantScope, sllScope, appliedSl, appliedArea, resolveSlFilterForSll]);
 
     useEffect(() => {
         if (!hierarchyLoaded) return;
@@ -307,6 +311,11 @@ export default function Ranking() {
         setCurrentPage(1);
     };
 
+    const handleSllScopeChange = (scope) => {
+        setSllScope(scope);
+        setCurrentPage(1);
+    };
+
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
@@ -324,9 +333,12 @@ export default function Ranking() {
                     params.serviceLineId = consultantScope.split(':')[1];
                 }
             } else if (role === 'Service Line Leader') {
-                const sllSlId = resolveSlFilterForSll();
-                if (sllSlId && !appliedArea) params.serviceLineId = sllSlId;
-                if (appliedArea) params.areaId = appliedArea;
+                if (sllScope.startsWith('area:')) {
+                    params.areaId = sllScope.split(':')[1];
+                } else if (sllScope === 'sl') {
+                    const sllSlId = resolveSlFilterForSll();
+                    if (sllSlId) params.serviceLineId = sllSlId;
+                }
             } else {
                 if (appliedSl) params.serviceLineId = appliedSl;
                 if (appliedArea) params.areaId = appliedArea;
@@ -391,25 +403,32 @@ export default function Ranking() {
 
                 {role === 'Service Line Leader' && hierarchyLoaded && (
                     <div className={styles.filterBar}>
-                        <div className={styles.filterSelect}>
-                            <CustomSelect
-                                id="ranking-area-filter"
-                                value={selectedArea}
-                                onChange={(e) => setSelectedArea(e.target.value)}
-                                options={[
-                                    { value: '', label: '' },
-                                    ...sllFilteredAreas.map((a) => ({
-                                        value: String(a.area_id),
-                                        label: a.area_name,
-                                    })),
-                                ]}
-                                placeholder={t('ranking.areaPlaceholder')}
-                            />
+                        <div className={styles.scopeButtons}>
+                            <button
+                                type="button"
+                                className={`${styles.scopeBtn} ${sllScope === 'sl' ? styles.scopeBtnActive : ''}`}
+                                onClick={() => handleSllScopeChange('sl')}
+                            >
+                                {t('ranking.scopeMyServiceLine')}
+                            </button>
+                            {sllFilteredAreas.map((a) => (
+                                <button
+                                    key={a.area_id}
+                                    type="button"
+                                    className={`${styles.scopeBtn} ${sllScope === `area:${a.area_id}` ? styles.scopeBtnActive : ''}`}
+                                    onClick={() => handleSllScopeChange(`area:${a.area_id}`)}
+                                >
+                                    {a.area_name}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                className={`${styles.scopeBtn} ${sllScope === 'general' ? styles.scopeBtnActive : ''}`}
+                                onClick={() => handleSllScopeChange('general')}
+                            >
+                                {t('ranking.scopeGeneral')}
+                            </button>
                         </div>
-                        <Button onClick={handleFilter} size="md">
-                            <Icon name="filter" size={18} color="var(--color-on-primary)" />
-                            {t('ranking.filter')}
-                        </Button>
                     </div>
                 )}
 
