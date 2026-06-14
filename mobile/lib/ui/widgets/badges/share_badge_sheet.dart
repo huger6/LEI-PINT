@@ -239,8 +239,9 @@ class _ShareBadgeContent extends StatelessWidget {
       '${_verificationUrl.isNotEmpty ? '\n\nVerificação: $_verificationUrl' : ''}',
     );
 
+    final fallbackUrl = verificationBaseUrl.isNotEmpty ? verificationBaseUrl : 'https://softinsa.pt';
     final linkedInUrl = Uri.parse(
-      'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(_verificationUrl.isNotEmpty ? _verificationUrl : 'https://softinsa.pt')}&text=$text',
+      'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(_verificationUrl.isNotEmpty ? _verificationUrl : fallbackUrl)}&text=$text',
     );
 
     if (await canLaunchUrl(linkedInUrl)) {

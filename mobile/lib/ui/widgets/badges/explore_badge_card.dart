@@ -12,6 +12,8 @@ class ExploreBadgeCard extends StatelessWidget {
     required this.level,
     required this.medalColor,
     required this.ribbonColor,
+    this.description = '',
+    this.imageUrl,
     this.onTap,
     this.isSaved = false,
     this.onSaveToggle,
@@ -24,6 +26,8 @@ class ExploreBadgeCard extends StatelessWidget {
   final String level;
   final Color medalColor;
   final Color ribbonColor;
+  final String description;
+  final String? imageUrl;
   final VoidCallback? onTap;
   final bool isSaved;
   final VoidCallback? onSaveToggle;
@@ -57,7 +61,7 @@ class ExploreBadgeCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _MedalBadgeIcon(medalColor: medalColor, ribbonColor: ribbonColor),
+            _MedalBadgeIcon(medalColor: medalColor, ribbonColor: ribbonColor, imageUrl: imageUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -135,21 +139,36 @@ class ExploreBadgeCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   _DetailItem(
                     icon: Icons.stars_rounded,
-                    value: points.toString(),
+                    value: '${points.toString()} pts',
                   ),
-                  const SizedBox(height: 6),
-                  const Align(
-                    alignment: Alignment.bottomRight,
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Color(0xFFF5C539),
-                      child: Icon(
-                        Icons.workspace_premium_outlined,
-                        size: 15,
-                        color: Color(0xFF856200),
+                  if (description.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    TranslatedText(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF5B6773),
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (isSpecial) ...[
+                    const SizedBox(height: 6),
+                    const Align(
+                      alignment: Alignment.bottomRight,
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Color(0xFFF5C539),
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 15,
+                          color: Color(0xFF856200),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -189,13 +208,16 @@ class _DetailItem extends StatelessWidget {
 }
 
 class _MedalBadgeIcon extends StatelessWidget {
-  const _MedalBadgeIcon({required this.medalColor, required this.ribbonColor});
+  const _MedalBadgeIcon({required this.medalColor, required this.ribbonColor, this.imageUrl});
 
   final Color medalColor;
   final Color ribbonColor;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
+
     return SizedBox(
       width: 82,
       height: 132,
@@ -217,14 +239,26 @@ class _MedalBadgeIcon extends StatelessWidget {
             height: 68,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: medalColor,
+              color: hasImage ? Colors.white : medalColor,
               border: Border.all(color: const Color(0xFF876E2C), width: 2),
             ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Color(0xFFFFF6C7),
-              size: 40,
-            ),
+            child: hasImage
+                ? ClipOval(
+                    child: Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFF6C7),
+                        size: 40,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.star_rounded,
+                    color: Color(0xFFFFF6C7),
+                    size: 40,
+                  ),
           ),
         ],
       ),

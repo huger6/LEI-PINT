@@ -10,13 +10,13 @@ class GoalCard extends StatelessWidget {
   const GoalCard({
     super.key,
     required this.goal,
-    required this.onComplete,
-    this.isCompleting = false,
+    this.onDelete,
+    this.isDeleting = false,
   });
 
   final GoalModel goal;
-  final VoidCallback onComplete;
-  final bool isCompleting;
+  final VoidCallback? onDelete;
+  final bool isDeleting;
 
   @override
   Widget build(BuildContext context) {
@@ -184,24 +184,24 @@ class GoalCard extends StatelessWidget {
               ],
             ),
           ],
-          if (!completed) ...[
+          if (!completed && onDelete != null) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 40,
-              child: ElevatedButton.icon(
-                onPressed: isCompleting ? null : onComplete,
-                icon: isCompleting
+              child: OutlinedButton.icon(
+                onPressed: isDeleting ? null : onDelete,
+                icon: isDeleting
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(isCompleting ? 'A concluir...' : 'Marcar como concluído'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                    : const Icon(Icons.delete_outline_rounded, size: 18),
+                label: Text(isDeleting ? tr.tr('removing') : tr.tr('removeGoal')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF8B4513),
+                  side: const BorderSide(color: Color(0xFFD4A843)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -209,7 +209,6 @@ class GoalCard extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
-                  elevation: 0,
                 ),
               ),
             ),

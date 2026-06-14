@@ -516,6 +516,19 @@ const _sourceJson = r'''
   "notifExpiration": "Expiração",
   "notifGeneric": "Notificação",
   "completed": "Concluído",
-  "primary": "Principal"
+  "primary": "Principal",
+  "addAsGoal": "Adicionar como objetivo",
+  "goalAdded": "Badge adicionado como objetivo!",
+  "goalAddError": "Erro ao adicionar objetivo.",
+  "copyHtmlCode": "Copiar código HTML",
+  "htmlCopied": "Código HTML copiado!",
+  "emailSignatureInstructions": "Instruções",
+  "gmailInstructions": "Gmail: Definições → Ver todas as definições → Geral → Assinatura → Cole o código HTML",
+  "outlookInstructions": "Outlook: Ficheiro → Opções → Correio → Assinaturas → Nova → Cole o código HTML",
+  "serviceLine": "Service Line",
+  "learningPath": "Learning Path",
+  "badgeType": "Tipo",
+  "removeGoal": "Remover objetivo",
+  "removing": "A remover..."
 }
 ''';

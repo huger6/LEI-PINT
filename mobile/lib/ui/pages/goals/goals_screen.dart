@@ -21,25 +21,25 @@ class _GoalsScreenState extends State<GoalsScreen> {
     });
   }
 
-  Future<void> _handleComplete(int goalId) async {
+  Future<void> _handleDelete(int goalId) async {
     final goalsStore = context.read<GoalsStore>();
-    final result = await goalsStore.completeGoal(goalId);
+    final result = await goalsStore.deleteGoal(goalId);
 
     if (!mounted) return;
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('\u{1F389} Parabéns! Objetivo concluído!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 3),
+          content: Text('Objetivo removido.'),
+          backgroundColor: AppColors.snackBarInfo,
+          duration: Duration(seconds: 2),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result['message']?.toString() ?? 'Erro ao completar objetivo.',
+            result['message']?.toString() ?? 'Erro ao remover objetivo.',
           ),
           backgroundColor: AppColors.error,
         ),
@@ -152,8 +152,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 10),
             ...pending.map((goal) => GoalCard(
                   goal: goal,
-                  isCompleting: store.completingGoalId == goal.goalId,
-                  onComplete: () => _handleComplete(goal.goalId),
+                  isDeleting: store.completingGoalId == goal.goalId,
+                  onDelete: () => _handleDelete(goal.goalId),
                 )),
           ],
           if (completed.isNotEmpty) ...[
@@ -169,7 +169,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 10),
             ...completed.map((goal) => GoalCard(
                   goal: goal,
-                  onComplete: () {},
                 )),
           ],
         ],

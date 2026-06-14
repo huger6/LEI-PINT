@@ -267,7 +267,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         hasError: _passwordError != null,
                         errorText: _passwordError,
-                        validator: FormValidators.validatePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return tr.tr('validationPasswordRequired');
+                          }
+                          return null;
+                        },
                       ),
 
                       Material(

@@ -47,20 +47,32 @@ class GoalsStore extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> completeGoal(int goalId) async {
+  Future<Map<String, dynamic>> addBadgeAsGoal({
+    required int badgeId,
+    required String badgeTitle,
+    String description = '',
+  }) async {
+    final result = await _goalsRepository.createGoal(
+      badgeId: badgeId,
+      title: badgeTitle,
+      description: description,
+    );
+
+    if (result['success'] == true) {
+      await loadGoals();
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteGoal(int goalId) async {
     _completingGoalId = goalId;
     notifyListeners();
 
-    final result = await _goalsRepository.completeGoal(goalId);
+    final result = await _goalsRepository.deleteGoal(goalId);
 
     if (result['success'] == true) {
-      final index = _goals.indexWhere((g) => g.goalId == goalId);
-      if (index >= 0) {
-        _goals[index] = _goals[index].copyWith(
-          isCompleted: true,
-          endDate: DateTime.now(),
-        );
-      }
+      _goals.removeWhere((g) => g.goalId == goalId);
     }
 
     _completingGoalId = null;

@@ -24,7 +24,15 @@ class GoalModel {
   });
 
   factory GoalModel.fromJson(Map<String, dynamic> json) {
-    final badgeJson = json['badge'];
+    final badgeJson = json['badge'] ?? json['badge_badge'];
+    final appJson = json['application'];
+
+    final appState = appJson is Map
+        ? (appJson['application_state'] ?? appJson['applicationState'] ?? '').toString().toLowerCase()
+        : '';
+    final completed = json['isCompleted'] == true ||
+        appState.contains('accepted') ||
+        appState.contains('approved');
 
     return GoalModel(
       goalId: _toInt(json['goalId'] ?? json['goal_id']),
@@ -39,7 +47,7 @@ class GoalModel {
       startDate: _parseDate(json['startDate'] ?? json['event_start_date']),
       endDate: _parseDate(json['endDate'] ?? json['event_end_date']),
       reminderAt: _parseDate(json['reminderAt'] ?? json['reminder_at']),
-      isCompleted: json['isCompleted'] == true,
+      isCompleted: completed,
       badge: badgeJson is Map<String, dynamic>
           ? GoalBadge.fromJson(badgeJson)
           : null,
@@ -91,11 +99,18 @@ class GoalBadge {
 
   factory GoalBadge.fromJson(Map<String, dynamic> json) {
     return GoalBadge(
-      id: json['id'] is int ? json['id'] : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
-      title: (json['title'] ?? '').toString(),
-      slug: (json['slug'] ?? '').toString(),
-      imageUrl: json['imageUrl']?.toString(),
-      points: json['points'] is int ? json['points'] : (int.tryParse(json['points']?.toString() ?? '') ?? 0),
+      id: _readInt(json, 'badge_id') ?? _readInt(json, 'id') ?? 0,
+      title: (json['badge_title'] ?? json['title'] ?? '').toString(),
+      slug: (json['badge_slug'] ?? json['slug'] ?? '').toString(),
+      imageUrl: (json['badge_img_url'] ?? json['imageUrl'])?.toString(),
+      points: _readInt(json, 'badge_points') ?? _readInt(json, 'points') ?? 0,
     );
+  }
+
+  static int? _readInt(Map<String, dynamic> json, String key) {
+    final v = json[key];
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v?.toString() ?? '');
   }
 }

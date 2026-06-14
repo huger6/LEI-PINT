@@ -50,8 +50,6 @@ class ApiClient {
             options.headers.remove('Authorization');
           } else if (_accessToken != null && _accessToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_accessToken';
-          } else {
-            options.headers.remove('Authorization');
           }
 
           handler.next(options);

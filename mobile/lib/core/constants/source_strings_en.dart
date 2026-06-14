@@ -513,6 +513,19 @@ const _sourceJsonEn = r'''
   "notifExpiration": "Expiration",
   "notifGeneric": "Notification",
   "completed": "Completed",
-  "primary": "Primary"
+  "primary": "Primary",
+  "addAsGoal": "Add as goal",
+  "goalAdded": "Badge added as goal!",
+  "goalAddError": "Error adding goal.",
+  "copyHtmlCode": "Copy HTML code",
+  "htmlCopied": "HTML code copied!",
+  "emailSignatureInstructions": "Instructions",
+  "gmailInstructions": "Gmail: Settings → See all settings → General → Signature → Paste the HTML code",
+  "outlookInstructions": "Outlook: File → Options → Mail → Signatures → New → Paste the HTML code",
+  "serviceLine": "Service Line",
+  "learningPath": "Learning Path",
+  "badgeType": "Type",
+  "removeGoal": "Remove goal",
+  "removing": "Removing..."
 }
 ''';

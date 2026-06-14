@@ -22,6 +22,7 @@ class BadgeDetailScreen extends StatefulWidget {
 
 class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
   bool _isFavorite = false;
+  bool _isAddingGoal = false;
   late BadgeModel _badge;
 
   @override
@@ -66,9 +67,47 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
     }
   }
 
+  Future<void> _addAsGoal() async {
+    if (_isAddingGoal) return;
+    setState(() => _isAddingGoal = true);
+
+    try {
+      final goalsStore = context.read<GoalsStore>();
+      final result = await goalsStore.addBadgeAsGoal(
+        badgeId: _badge.id,
+        badgeTitle: _badge.title,
+        description: _badge.description,
+      );
+
+      if (!mounted) return;
+      final tr = LanguageScope.of(context);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.tr('goalAdded')),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']?.toString() ?? tr.tr('goalAddError')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAddingGoal = false);
+    }
+  }
+
   void _shareBadge() {
     final badge = _badge;
-    final baseUrl = dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
+    final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
+        ? dotenv.env['FRONTEND_URL']!.trim()
+        : 'https://softinsa.pt';
     final text =
         '${badge.title}\n${badge.description.isNotEmpty ? badge.description : ''}'
         '\n\n$baseUrl/badges/${badge.slug}';
@@ -131,6 +170,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       child: LargeBadgeIcon(
                         medalColor: badge.medalColor,
                         ribbonColor: badge.ribbonColor,
+                        imageUrl: badge.imageUrl,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -202,6 +242,37 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: _isAddingGoal ? null : _addAsGoal,
+                          icon: _isAddingGoal
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.flag_rounded, size: 20),
+                          label: Text(
+                            tr.tr('addAsGoal'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.secondary,
+                            side: BorderSide(color: AppColors.secondary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                         ),
@@ -284,6 +355,10 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       title: tr.tr('details'),
                       child: Column(
                         children: [
+                          if (badge.learningPath != null && badge.learningPath!.trim().isNotEmpty)
+                            BadgeDetailRow(label: tr.tr('learningPath'), value: badge.learningPath!),
+                          if (badge.serviceLine != null && badge.serviceLine!.trim().isNotEmpty)
+                            BadgeDetailRow(label: tr.tr('serviceLine'), value: badge.serviceLine!),
                           if (badge.category.trim().isNotEmpty)
                             BadgeDetailRow(label: tr.tr('area'), value: badge.category),
                           if (badge.level.trim().isNotEmpty)
@@ -297,6 +372,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                               label: tr.tr('validity'),
                               value: tr.tr('validityDays').replaceAll('{days}', '${badge.expirationDays}'),
                             ),
+                          BadgeDetailRow(label: tr.tr('badgeType'), value: badge.badgeType),
                           if (badge.createdAt != null)
                             BadgeDetailRow(
                               label: tr.tr('createdAt'),

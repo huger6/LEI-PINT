@@ -100,7 +100,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      tr.tr('iAmIntro').replaceAll('{name}', userName),
+                      userName,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 24,
@@ -163,17 +163,6 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                 ),
               ],
 
-              if (serviceLine != null && serviceLine.trim().isNotEmpty) ...[
-                const CharacteristicSectionHeader(
-                  title: 'Service Line',
-                  icon: Icons.business_outlined,
-                ),
-                CharacteristicChip(
-                  label: serviceLine.trim(),
-                  icon: Icons.business_outlined,
-                ),
-              ],
-
               if (learningPath != null && learningPath.trim().isNotEmpty) ...[
                 const CharacteristicSectionHeader(
                   title: 'Learning Path',
@@ -182,6 +171,17 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                 CharacteristicChip(
                   label: learningPath.trim(),
                   icon: Icons.route_outlined,
+                ),
+              ],
+
+              if (serviceLine != null && serviceLine.trim().isNotEmpty) ...[
+                const CharacteristicSectionHeader(
+                  title: 'Service Line',
+                  icon: Icons.business_outlined,
+                ),
+                CharacteristicChip(
+                  label: serviceLine.trim(),
+                  icon: Icons.business_outlined,
                 ),
               ],
 

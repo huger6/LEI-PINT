@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../models/earned_badge_model.dart';
 import '../../../presentation/state/auth_store.dart';
@@ -18,10 +19,8 @@ class EmailSignatureScreen extends StatefulWidget {
 
 class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   final Set<int> _selectedBadgeIds = {};
-  bool _showPreview = false;
   final _searchController = TextEditingController();
   String _filterTab = 'all';
-  bool _isSaving = false;
 
   @override
   void initState() {
@@ -53,51 +52,36 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         .toList();
   }
 
-  Future<void> _handleConfirm(List<EarnedBadge> earned) async {
-    final tr = LanguageScope.of(context);
-    if (_selectedBadgeIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr.tr('selectAtLeastOneBadge')),
-          backgroundColor: const Color(0xFFD94827),
-        ),
-      );
-      return;
-    }
+  String _generateHtml(List<EarnedBadge> earned, String userName, String areaName, String userEmail) {
+    final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
+        ? dotenv.env['FRONTEND_URL']!.trim()
+        : 'https://softinsa.pt';
 
-    setState(() => _isSaving = true);
+    final selectedBadges = earned.where((e) => _selectedBadgeIds.contains(e.badge.id)).toList();
 
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
+    final badgeCells = selectedBadges.map((eb) {
+      final badge = eb.badge;
+      final link = eb.award.verificationLink ?? '';
+      final verifyUrl = link.startsWith('http') ? link : '$baseUrl/verify/$link';
+      final colorHex = '#${badge.medalColor.toARGB32().toRadixString(16).substring(2)}';
+      final cell = '<td style="text-align:center;padding:4px 8px;">'
+          '<a href="$verifyUrl" style="text-decoration:none;">'
+          '<div style="width:36px;height:36px;border-radius:50%;background:$colorHex;border:2px solid #876E2C;display:inline-block;line-height:36px;color:#FFF6C7;font-size:18px;">&#9733;</div>'
+          '<br><span style="font-size:10px;color:#3A4A57;">${badge.title}</span>'
+          '</a></td>';
+      return cell;
+    }).join('\n');
 
-      if (!mounted) return;
-      final trAfter = LanguageScope.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(trAfter.tr('emailSignatureSaved')),
-          backgroundColor: const Color(0xFF2E9E4D),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      final trAfter = LanguageScope.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(trAfter.tr('emailSignatureSaveError')),
-          backgroundColor: const Color(0xFFD94827),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
-  Future<void> _openVerificationLink(String? link) async {
-    if (link == null || link.isEmpty) return;
-    final uri = Uri.tryParse(link);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    return '''<table style="font-family:'Segoe UI',Arial,sans-serif;border-collapse:collapse;">
+<tr>
+<td style="padding-right:12px;vertical-align:top;">
+<strong style="font-size:14px;color:#172733;">$userName</strong><br>
+${areaName.isNotEmpty ? '<span style="font-size:12px;color:#3B8DBD;">$areaName</span><br>' : ''}
+${userEmail.isNotEmpty ? '<span style="font-size:12px;color:#5B6773;">$userEmail</span>' : ''}
+</td>
+</tr>
+${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badgeCells</tr></table></td></tr>' : ''}
+</table>''';
   }
 
   @override
@@ -362,41 +346,13 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
 
               const SizedBox(height: 20),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    tr.tr('previewLabel'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E2932),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        tr.tr('previewBefore'),
-                        style: const TextStyle(
-                          color: Color(0xFF5B6773),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Switch(
-                        value: _showPreview,
-                        onChanged: (v) => setState(() => _showPreview = v),
-                        activeThumbColor: const Color(0xFF5D9FD1),
-                      ),
-                      Text(
-                        tr.tr('previewAfter'),
-                        style: const TextStyle(
-                          color: Color(0xFF5B6773),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Text(
+                tr.tr('previewLabel'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E2932),
+                ),
               ),
               const SizedBox(height: 12),
 
@@ -415,6 +371,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,7 +425,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                         ),
                       ],
                     ),
-                    if (_showPreview && _selectedBadgeIds.isNotEmpty) ...[
+                    if (_selectedBadgeIds.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Divider(color: Colors.grey[300], height: 1),
                       const SizedBox(height: 12),
@@ -488,140 +445,113 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                             if (match.isEmpty) {
                               return const SizedBox.shrink();
                             }
-                            final earnedBadge = match.first;
-                            final badge = earnedBadge.badge;
-                            final link = earnedBadge.award.verificationLink;
+                            final badge = match.first.badge;
 
-                            return GestureDetector(
-                              onTap: link != null && link.isNotEmpty
-                                  ? () => _openVerificationLink(link)
-                                  : null,
-                              child: Tooltip(
-                                message: badge.title,
-                                child: SizedBox(
-                                  width: 38,
-                                  height: 48,
-                                  child: Stack(
-                                    alignment: Alignment.topCenter,
-                                    children: [
-                                      EmailSignatureBadgeMedalIcon(
-                                        medalColor: badge.medalColor,
-                                        ribbonColor: badge.ribbonColor,
-                                        size: 30,
-                                      ),
-                                      if (link != null && link.isNotEmpty)
-                                        const Positioned(
-                                          bottom: 0,
-                                          child: Icon(
-                                            Icons.link_rounded,
-                                            size: 12,
-                                            color: Color(0xFF5D9FD1),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
+                            return Tooltip(
+                              message: badge.title,
+                              child: EmailSignatureBadgeMedalIcon(
+                                medalColor: badge.medalColor,
+                                ribbonColor: badge.ribbonColor,
+                                size: 30,
                               ),
                             );
                           },
                         ),
                       ),
-                    ] else if (_showPreview)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          tr.tr('noBadgeSelected'),
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
+                    ],
                   ],
                 ),
               ),
               const SizedBox(height: 20),
 
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x14000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+              if (_selectedBadgeIds.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F4F8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFD7DDE4)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'HTML',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF5B6773),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _generateHtml(earned, userName, areaName, userEmail),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                          color: Color(0xFF3A4A57),
+                        ),
+                        maxLines: 8,
+                        overflow: TextOverflow.fade,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: _isSaving ? null : () => _handleConfirm(earned),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      final html = _generateHtml(earned, userName, areaName, userEmail);
+                      Clipboard.setData(ClipboardData(text: html));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(tr.tr('htmlCopied')),
+                          backgroundColor: const Color(0xFF2E9E4D),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 20),
+                    label: Text(tr.tr('copyHtmlCode')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5D9FD1),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD5EAF6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: _isSaving
-                                ? const Padding(
-                                    padding: EdgeInsets.all(10),
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Color(0xFF5D9FD1),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: Color(0xFF4D9ECC),
-                                  ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  tr.tr('confirmEmailSignatureAction'),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1E2932),
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  tr.tr('saveAndSendSignature'),
-                                  style: const TextStyle(
-                                    color: Color(0xFF6E7A86),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: Color(0xFF5D9FD1),
-                            size: 28,
-                          ),
-                        ],
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
+                      elevation: 0,
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+              ],
+
+              Text(
+                tr.tr('emailSignatureInstructions'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E2932),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _InstructionCard(
+                icon: Icons.email_outlined,
+                title: 'Gmail',
+                description: tr.tr('gmailInstructions'),
+              ),
+              const SizedBox(height: 10),
+              _InstructionCard(
+                icon: Icons.mark_email_read_outlined,
+                title: 'Outlook',
+                description: tr.tr('outlookInstructions'),
               ),
               const SizedBox(height: 20),
             ],
@@ -629,6 +559,76 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         ),
       ),
       bottomNavigationBar: const AppBottomNavBar(currentTab: AppTab.profile),
+    );
+  }
+}
+
+class _InstructionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _InstructionCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: const BoxDecoration(
+              color: Color(0xFFD5EAF6),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF4D9ECC), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2932),
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: Color(0xFF5B6773),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

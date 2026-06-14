@@ -145,13 +145,16 @@ class BadgeInfoChip extends StatelessWidget {
 }
 
 class LargeBadgeIcon extends StatelessWidget {
-  const LargeBadgeIcon({super.key, required this.medalColor, required this.ribbonColor});
+  const LargeBadgeIcon({super.key, required this.medalColor, required this.ribbonColor, this.imageUrl});
 
   final Color medalColor;
   final Color ribbonColor;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
+
     return SizedBox(
       width: 142,
       height: 190,
@@ -173,14 +176,26 @@ class LargeBadgeIcon extends StatelessWidget {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: medalColor,
+              color: hasImage ? Colors.white : medalColor,
               border: Border.all(color: const Color(0xFF876E2C), width: 4),
             ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Color(0xFFFFF6C7),
-              size: 72,
-            ),
+            child: hasImage
+                ? ClipOval(
+                    child: Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFF6C7),
+                        size: 72,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.star_rounded,
+                    color: Color(0xFFFFF6C7),
+                    size: 72,
+                  ),
           ),
         ],
       ),
@@ -285,9 +300,10 @@ class BadgeDetailRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 110,
             child: Text(
               label,
               style: const TextStyle(

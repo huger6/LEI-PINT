@@ -18,6 +18,9 @@ class BadgeModel {
     required this.medalColor,
     required this.ribbonColor,
     required this.description,
+    this.imageUrl,
+    this.serviceLine,
+    this.learningPath,
     this.skills = const [],
     required this.attributes,
     required this.requirements,
@@ -79,6 +82,12 @@ class BadgeModel {
     final expDays = json['expiration_duration_days'] ?? json['expirationDays'];
     final createdRaw = json['created_at'] ?? json['createdAt'];
 
+    final imgUrl = _readString(json, const ['badge_img_url', 'imageUrl', 'image_url']);
+    final slName = _readNestedString(json, const ['service_line', 'service_line_name'],
+        fallback: _readString(json, const ['service_line_name']));
+    final lpName = _readNestedString(json, const ['learning_path', 'learning_path_title'],
+        fallback: _readString(json, const ['learning_path_title']));
+
     return BadgeModel(
       id: _readInt(json, const ['badge_id', 'id']),
       slug: _readString(json, const ['badge_slug', 'slug']),
@@ -96,6 +105,9 @@ class BadgeModel {
         'badge_description',
         'description',
       ]),
+      imageUrl: imgUrl.isEmpty ? null : imgUrl,
+      serviceLine: slName.isEmpty ? null : slName,
+      learningPath: lpName.isEmpty ? null : lpName,
       skills: _extractSkills(json['skills']),
       attributes: buildAttributes(
         area: area,
@@ -127,6 +139,9 @@ class BadgeModel {
       medalColor: summary.medalColor,
       ribbonColor: summary.ribbonColor,
       description: summary.description,
+      imageUrl: summary.imageUrl,
+      serviceLine: summary.serviceLine,
+      learningPath: summary.learningPath,
       skills: skills,
       attributes: summary.attributes,
       requirements: requirements,
@@ -146,6 +161,9 @@ class BadgeModel {
   final Color medalColor;
   final Color ribbonColor;
   final String description;
+  final String? imageUrl;
+  final String? serviceLine;
+  final String? learningPath;
   final List<SkillModel> skills;
   final List<BadgeAttribute> attributes;
   final List<BadgeRequirement> requirements;

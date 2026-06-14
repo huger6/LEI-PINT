@@ -23,23 +23,28 @@ class MainBadgesCard extends StatelessWidget {
     final tr = LanguageScope.of(context);
     final isPositive = growthPercent >= 0;
 
-    final years = yearlyBadges.keys.toList()..sort();
-    final hasData = years.isNotEmpty;
     final currentYear = DateTime.now().year;
-    // With no badges yet, show a flat zero baseline across the last two years
-    // instead of a "no data" placeholder.
-    final spots = hasData
-        ? List.generate(years.length, (i) {
-            return FlSpot(i.toDouble(), (yearlyBadges[years[i]] ?? 0).toDouble());
-          })
-        : const [FlSpot(0, 0), FlSpot(1, 0)];
-    final labels = hasData
-        ? years.map((y) => '$y').toList()
-        : ['${currentYear - 1}', '$currentYear'];
+    final paddedBadges = Map<int, int>.from(yearlyBadges);
+    if (paddedBadges.isEmpty) {
+      paddedBadges[currentYear - 1] = 0;
+      paddedBadges[currentYear] = 0;
+    } else if (paddedBadges.length == 1) {
+      final onlyYear = paddedBadges.keys.first;
+      if (onlyYear >= currentYear) {
+        paddedBadges.putIfAbsent(onlyYear - 1, () => 0);
+      } else {
+        paddedBadges.putIfAbsent(onlyYear + 1, () => 0);
+      }
+    }
+    final years = paddedBadges.keys.toList()..sort();
+    final spots = List.generate(years.length, (i) {
+      return FlSpot(i.toDouble(), (paddedBadges[years[i]] ?? 0).toDouble());
+    });
+    final labels = years.map((y) => '$y').toList();
 
-    final maxY = hasData
-        ? (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
-            .ceilToDouble().clamp(1.0, 100000.0)
+    final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final maxY = maxVal > 0
+        ? (maxVal * 1.3).ceilToDouble().clamp(1.0, 100000.0)
         : 5.0;
 
     return Container(
@@ -360,9 +365,8 @@ class _PointsBarCardState extends State<PointsBarCard> {
   Map<String, double> _aggregateByMonth() {
     final now = DateTime.now();
     final buckets = <String, double>{};
-    for (var i = 11; i >= 0; i--) {
-      final month = DateTime(now.year, now.month - i);
-      final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+    for (var m = 1; m <= 12; m++) {
+      final key = '${now.year}-${m.toString().padLeft(2, '0')}';
       buckets[key] = 0;
     }
     for (final entry in widget.pointsHistory) {
