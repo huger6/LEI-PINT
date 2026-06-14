@@ -142,14 +142,14 @@ function ManagementFilter({
     }, [areas, selectedSl]);
 
     const areaOptions = useMemo(() => [
-        { value: '', label: '' },
+        { value: '', label: t('ranking.allAreas') },
         ...filteredAreas.map((a) => ({ value: String(a.area_id), label: a.area_name })),
-    ], [filteredAreas]);
+    ], [filteredAreas, t]);
 
     const slOptions = useMemo(() => [
-        { value: '', label: '' },
+        { value: '', label: t('ranking.allServiceLines') },
         ...serviceLines.map((sl) => ({ value: String(sl.service_line_id), label: sl.service_line_name })),
-    ], [serviceLines]);
+    ], [serviceLines, t]);
 
     return (
         <div className={styles.filterBar}>
