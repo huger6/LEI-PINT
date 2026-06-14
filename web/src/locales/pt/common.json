@@ -1370,7 +1370,7 @@
 			"box": "{{consultant}} — {{badge}}. O consultor será notificado por e-mail.",
 			"reasonLabel": "Motivo",
 			"notified": "O consultor será notificado por e-mail.",
-			"accept": { "title": "Candidatura Aprovada!", "desc": "O badge foi gerado e publicado." },
+			"accept": { "title": "Candidatura Aprovada!", "desc": "O consultor foi notificado e já pode publicar e partilhar o badge." },
 			"review": { "title": "Candidatura encaminhada!", "desc": "Enviada ao Service Line Leader para decisão final." },
 			"send_back": { "title": "Candidatura devolvida!", "desc": "Devolvida ao consultor para correção." },
 			"reject": { "title": "Candidatura Rejeitada!", "desc": "A candidatura foi encerrada com feedback ao consultor." }

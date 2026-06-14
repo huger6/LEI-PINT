@@ -12,6 +12,7 @@ import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
+import Spinner from '../../../components/Spinner/Spinner';
 import FormAlert from '../../../components/FormAlert/FormAlert';
 import styles from './ApplicationReview.module.css';
 
@@ -44,7 +45,8 @@ export default function ApplicationReview({ application }) {
 	const isSll = user?.role === 'Service Line Leader';
 	// The verification that matters is the Talent Manager's: the TM marks each
 	// evidence correct; the SLL sees it read-only ("Verificado pelo TM") and decides.
-	const reviewField = 'tm_reviewed';
+	// Each reviewer validates independently: TM marks tm_reviewed, SLL marks sll_reviewed.
+	const reviewField = isSll ? 'sll_reviewed' : 'tm_reviewed';
 	const validationsPath = isSll ? SLL.VALIDATIONS : TM.VALIDATIONS;
 
 	const appGuid = application?.application_guid;
@@ -222,6 +224,11 @@ export default function ApplicationReview({ application }) {
 
 	return (
 		<div className={styles.page}>
+			{submitting && (
+				<div className={styles.submitOverlay} role="status" aria-live="polite">
+					<Spinner />
+				</div>
+			)}
 			<nav className={styles.breadcrumb} aria-label="breadcrumb">
 				<Link to={validationsPath} className={styles.breadcrumbLink}>{t('applicationReview.title')}</Link>
 				<Icon name="chevron_forward" size={14} color="var(--color-outline)" />
@@ -369,7 +376,7 @@ export default function ApplicationReview({ application }) {
 					<div className={styles.card}>
 						<div className={styles.sectionHead}>
 							<h3 className={styles.sectionTitle}>{t('applicationReview.evidencesTitle')}</h3>
-							<span className={styles.validatedPill}>{t(isSll ? 'applicationReview.verifiedCount' : 'applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
+							<span className={styles.validatedPill}>{t('applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
 						</div>
 
 						{totalReqs === 0 ? (
@@ -385,14 +392,18 @@ export default function ApplicationReview({ application }) {
 										<div className={styles.reqBody}>
 											<div className={styles.reqTitleRow}>
 												<span className={styles.reqTitle}>{r.code}: {r.title}</span>
-												{isSll && r.validated ? (
+												{r.validated ? (
 													<span className={`${styles.evPill} ${styles.evVerified}`}>
-														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.verifiedByTm')}
+														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.validatedLabel')}
 													</span>
 												) : r.evidence ? (
 													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.evidenceSubmitted')}</span>
 												) : (
 													<span className={`${styles.evPill} ${styles.evMissing}`}>{t('applicationReview.noEvidence')}</span>
+												)}
+												{/* For the SLL, show the TM's prior verification as read-only context. */}
+												{isSll && r.evidence?.tm_reviewed && (
+													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.verifiedByTm')}</span>
 												)}
 											</div>
 											{r.description && <p className={styles.reqDesc}>{r.description}</p>}
@@ -411,20 +422,18 @@ export default function ApplicationReview({ application }) {
 													<Icon name="eye" size={14} color="var(--color-secondary)" /> {t('applicationReview.viewDocument')}
 												</button>
 											</div>
-											{!isSll && (
-												<div className={styles.reqActions}>
-													<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
-													<Button
-														variant={r.validated ? 'filled' : 'outlined'}
-														color={r.validated ? 'success' : 'primary'}
-														size="sm"
-														loading={evidenceBusy === evId}
-														onClick={() => toggleEvidence(evId, r.validated)}
-													>
-														<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
-													</Button>
-												</div>
-											)}
+											<div className={styles.reqActions}>
+												<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
+												<Button
+													variant={r.validated ? 'filled' : 'outlined'}
+													color={r.validated ? 'success' : 'primary'}
+													size="sm"
+													loading={evidenceBusy === evId}
+													onClick={() => toggleEvidence(evId, r.validated)}
+												>
+													<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
+												</Button>
+											</div>
 										</>
 									)}
 								</div>
