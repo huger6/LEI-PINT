@@ -42,14 +42,20 @@
 	max-width: 360px;
 }
 
-.pointsInput {
-	width: 110px;
-	padding: 0.45rem 0.7rem;
-	border: 1px solid var(--color-outline-variant);
-	border-radius: 10px;
-	background: var(--color-surface);
-	color: var(--color-on-surface);
-	font-size: 0.85rem;
+.pointsField {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 150px;
+}
+
+.pointsLabel {
+	font-size: 0.78rem;
+	color: var(--color-outline);
+}
+
+.pointsRange {
+	accent-color: var(--color-primary);
 }
 
 .tableCard {

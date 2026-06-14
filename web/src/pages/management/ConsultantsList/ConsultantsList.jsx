@@ -14,6 +14,8 @@ import Icon from '../../../components/Icons/Icons';
 import styles from './ConsultantsList.module.css';
 
 const PAGE_SIZE = 12;
+const MAX_POINTS = 2000;
+const EMPTY_APPLIED = { search: '', serviceLineId: '', areaId: '', pointsMin: '', pointsMax: '', sort: 'points_desc' };
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : null);
 
@@ -41,6 +43,8 @@ export default function ConsultantsList() {
 	const [pointsMin, setPointsMin] = useState('');
 	const [pointsMax, setPointsMax] = useState('');
 	const [sort, setSort] = useState('points_desc');
+	// Filters apply only on "Aplicar" (or page change), not on every keystroke/tick.
+	const [applied, setApplied] = useState(EMPTY_APPLIED);
 
 	const [serviceLines, setServiceLines] = useState([]);
 	const [areas, setAreas] = useState([]);
@@ -64,12 +68,12 @@ export default function ConsultantsList() {
 		setLoading(true);
 		setError('');
 		try {
-			const params = { page, limit: PAGE_SIZE, sort };
-			if (search.trim()) params.search = search.trim();
-			if (!isSll && serviceLineId) params.serviceLineId = serviceLineId;
-			if (areaId) params.areaId = areaId;
-			if (pointsMin !== '') params.pointsMin = pointsMin;
-			if (pointsMax !== '') params.pointsMax = pointsMax;
+			const params = { page, limit: PAGE_SIZE, sort: applied.sort };
+			if (applied.search.trim()) params.search = applied.search.trim();
+			if (!isSll && applied.serviceLineId) params.serviceLineId = applied.serviceLineId;
+			if (applied.areaId) params.areaId = applied.areaId;
+			if (applied.pointsMin !== '') params.pointsMin = applied.pointsMin;
+			if (applied.pointsMax !== '') params.pointsMax = applied.pointsMax;
 			const { rows: data, pagination: pag } = await getConsultantsOverview(params);
 			setRows(data);
 			setPagination(pag);
@@ -80,13 +84,13 @@ export default function ConsultantsList() {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, sort, search, isSll, serviceLineId, areaId, pointsMin, pointsMax]);
+	}, [page, applied, isSll]);
 
 	useEffect(() => { load(); }, [load]);
 
 	function applyFilters() {
+		setApplied({ search, serviceLineId, areaId, pointsMin, pointsMax, sort });
 		setPage(1);
-		load();
 	}
 
 	function clearFilters() {
@@ -96,6 +100,7 @@ export default function ConsultantsList() {
 		setPointsMin('');
 		setPointsMax('');
 		setSort('points_desc');
+		setApplied(EMPTY_APPLIED);
 		setPage(1);
 	}
 
@@ -120,7 +125,7 @@ export default function ConsultantsList() {
 					<h1 className={styles.pageTitle}>{title}</h1>
 					<p className={styles.subtitle}>{t('consultantsList.count', { count: total })}</p>
 				</div>
-				<Button variant="outlined" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
 					<Icon name="filter" size={16} /> {t('consultantsList.filters.toggle')}
 				</Button>
 			</div>
@@ -141,10 +146,26 @@ export default function ConsultantsList() {
 					)}
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
 						options={areaOptions} ariaLabel={t('consultantsList.colArea')} compact />
-					<input type="number" min="0" className={styles.pointsInput} value={pointsMin}
-						onChange={(e) => setPointsMin(e.target.value)} placeholder={t('consultantsList.filters.pointsMin')} />
-					<input type="number" min="0" className={styles.pointsInput} value={pointsMax}
-						onChange={(e) => setPointsMax(e.target.value)} placeholder={t('consultantsList.filters.pointsMax')} />
+					<div className={styles.pointsField}>
+						<label className={styles.pointsLabel}>{t('consultantsList.filters.pointsMin')}: <b>{pointsMin === '' ? 0 : pointsMin}</b></label>
+						<input type="range" min="0" max={MAX_POINTS} step="50" className={`form-range ${styles.pointsRange}`}
+							value={pointsMin === '' ? 0 : pointsMin}
+							onChange={(e) => {
+								const v = Number(e.target.value);
+								setPointsMin(String(v));
+								if (pointsMax !== '' && v > Number(pointsMax)) setPointsMax(String(v));
+							}} />
+					</div>
+					<div className={styles.pointsField}>
+						<label className={styles.pointsLabel}>{t('consultantsList.filters.pointsMax')}: <b>{pointsMax === '' ? MAX_POINTS : pointsMax}</b></label>
+						<input type="range" min="0" max={MAX_POINTS} step="50" className={`form-range ${styles.pointsRange}`}
+							value={pointsMax === '' ? MAX_POINTS : pointsMax}
+							onChange={(e) => {
+								const v = Number(e.target.value);
+								setPointsMax(String(v));
+								if (pointsMin !== '' && v < Number(pointsMin)) setPointsMin(String(v));
+							}} />
+					</div>
 					<CustomSelect name="sort" value={sort} onChange={(e) => setSort(e.target.value)}
 						options={sortOptions} ariaLabel={t('consultantsList.filters.sort')} compact />
 					<Button variant="filled" color="primary" size="sm" onClick={applyFilters}>{t('consultantsList.filters.apply')}</Button>

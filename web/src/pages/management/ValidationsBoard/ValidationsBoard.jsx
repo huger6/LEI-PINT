@@ -61,16 +61,20 @@ export default function ValidationsBoard() {
 
 	useEffect(() => { load(); }, [load]);
 
-	// Near real-time: refresh when the tab regains focus.
+	// Near real-time: refresh when the tab regains focus, and poll every 2 minutes.
 	useEffect(() => {
 		function onVisible() {
 			if (document.visibilityState === 'visible') load();
 		}
 		document.addEventListener('visibilitychange', onVisible);
 		window.addEventListener('focus', onVisible);
+		const interval = setInterval(() => {
+			if (document.visibilityState === 'visible') load();
+		}, 120000);
 		return () => {
 			document.removeEventListener('visibilitychange', onVisible);
 			window.removeEventListener('focus', onVisible);
+			clearInterval(interval);
 		};
 	}, [load]);
 
@@ -149,7 +153,7 @@ export default function ValidationsBoard() {
 					<p className={styles.subtitle}>{t('tmValidations.registered', { count: total })}</p>
 				</div>
 				<Button
-					variant={showFilters ? 'filled' : 'outlined'}
+					variant="text"
 					color="primary"
 					size="sm"
 					onClick={() => setShowFilters((v) => !v)}
@@ -177,9 +181,6 @@ export default function ValidationsBoard() {
 						ariaLabel={t('tmValidations.cols.state')}
 						compact
 					/>
-					<Button variant="outlined" color="primary" size="sm" loading={loading} onClick={load}>
-						{t('tmValidations.refresh')}
-					</Button>
 				</div>
 			)}
 

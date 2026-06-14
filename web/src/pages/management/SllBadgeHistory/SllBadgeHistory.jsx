@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
-import { getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getAreas, getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
+import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
 import Pagination from '../../../components/Pagination/Pagination';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../../components/DatePicker/DatePicker';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './SllBadgeHistory.module.css';
@@ -44,6 +46,7 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  */
 export default function SllBadgeHistory() {
 	const { t } = useTranslation();
+	const { user } = useUser();
 	const [filter, setFilter] = useState('obtained');
 	const [rows, setRows] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -60,19 +63,30 @@ export default function SllBadgeHistory() {
 	const [areas, setAreas] = useState([]);
 	const [badges, setBadges] = useState([]);
 
+	// Filter options scoped to the leader's Service Line (so picking one always
+	// matches data within their scope).
 	useEffect(() => {
 		let active = true;
 		(async () => {
-			const [ars, bds] = await Promise.all([
+			const [sls, ars, bds] = await Promise.all([
+				getServiceLines().catch(() => []),
 				getAreas().catch(() => []),
 				getBadges({ limit: 200 }).catch(() => []),
 			]);
 			if (!active) return;
-			setAreas(ars || []);
-			setBadges(Array.isArray(bds) ? bds : (bds?.data || []));
+			const matchedSl = (sls || []).find((sl) => sl.sl_slug === user?.serviceLine?.slug);
+			const slId = matchedSl ? matchedSl.service_line_id : null;
+			const badgeList = Array.isArray(bds) ? bds : (bds?.data || []);
+			if (slId) {
+				setAreas((ars || []).filter((a) => String(a.service_line_id) === String(slId)));
+				setBadges(badgeList.filter((b) => String(b.service_line_id) === String(slId)));
+			} else {
+				setAreas(ars || []);
+				setBadges(badgeList);
+			}
 		})();
 		return () => { active = false; };
-	}, []);
+	}, [user]);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -139,7 +153,7 @@ export default function SllBadgeHistory() {
 							</button>
 						))}
 					</div>
-					<Button variant="outlined" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+					<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
 						<Icon name="filter" size={16} /> {t('sllBadgeHistory.filters.toggle')}
 					</Button>
 				</div>
@@ -153,11 +167,13 @@ export default function SllBadgeHistory() {
 						options={badgeOptions} ariaLabel={t('sllBadgeHistory.colBadge')} compact />
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.from')}</span>
-						<input type="date" className={styles.dateInput} value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
+						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}
+							onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} ariaLabel={t('sllBadgeHistory.filters.from')} />
 					</label>
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.to')}</span>
-						<input type="date" className={styles.dateInput} value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+						<DatePicker name="dateTo" value={dateTo} min={dateFrom || undefined}
+							onChange={(e) => { setDateTo(e.target.value); setPage(1); }} ariaLabel={t('sllBadgeHistory.filters.to')} />
 					</label>
 					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('sllBadgeHistory.filters.clear')}</Button>
 				</div>
