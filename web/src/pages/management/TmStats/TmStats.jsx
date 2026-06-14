@@ -38,6 +38,10 @@ export default function TmStats() {
 	const [expiringWindow, setExpiringWindow] = useState(90);
 	const [expiringLoading, setExpiringLoading] = useState(true);
 
+	// Filters shared from the StatsOverview header; applied to the charts too.
+	const [chartFilters, setChartFilters] = useState({});
+	const filterKey = JSON.stringify(chartFilters);
+
 	useEffect(() => {
 		let active = true;
 		(async () => {
@@ -45,9 +49,9 @@ export default function TmStats() {
 			setError(null);
 			try {
 				const [bySl, byLp, levels, enrollment, pending, teamBadges] = await Promise.all([
-					getBadgesByServiceLine(),
-					getBadgesByLearningPath(),
-					getLevelDistribution(),
+					getBadgesByServiceLine(chartFilters),
+					getBadgesByLearningPath(chartFilters),
+					getLevelDistribution(chartFilters),
 					getUserEnrollment(),
 					getPendingApplicationsCount(),
 					getTeamBadgesCount(),
@@ -60,7 +64,8 @@ export default function TmStats() {
 			}
 		})();
 		return () => { active = false; };
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [filterKey]);
 
 	const loadExpiring = useCallback(async (withinDays) => {
 		setExpiringLoading(true);
@@ -78,7 +83,7 @@ export default function TmStats() {
 		loadExpiring(expiringWindow);
 	}, [loadExpiring, expiringWindow]);
 
-	if (loading) {
+	if (loading && !data) {
 		return (
 			<div className={styles.page}>
 				<h1 className={styles.pageTitle}>{t('sidebar.tm.stats')}</h1>
@@ -87,7 +92,7 @@ export default function TmStats() {
 		);
 	}
 
-	if (error) {
+	if (error && !data) {
 		return (
 			<div className={styles.page}>
 				<h1 className={styles.pageTitle}>{t('sidebar.tm.stats')}</h1>
@@ -104,8 +109,8 @@ export default function TmStats() {
 		<div className={styles.page}>
 			<h1 className={styles.pageTitle}>{t('sidebar.tm.stats')}</h1>
 
-			{/* Advanced filters + KPI cards */}
-			<StatsOverview />
+			{/* Advanced filters + KPI cards (filters also drive the charts below) */}
+			<StatsOverview onFiltersChange={setChartFilters} />
 
 			{/* Charts */}
 			<div className={styles.chartsGrid}>

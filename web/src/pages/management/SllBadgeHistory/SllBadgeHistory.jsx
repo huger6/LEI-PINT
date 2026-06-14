@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { getAreas, getServiceLines } from '../../../features/badges/api/hierarchyApi';
-import { getBadges } from '../../../features/badges/api/badgesApi';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -57,33 +56,23 @@ export default function SllBadgeHistory() {
 	// Filters
 	const [showFilters, setShowFilters] = useState(false);
 	const [areaId, setAreaId] = useState('');
-	const [badgeId, setBadgeId] = useState('');
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
 	const [areas, setAreas] = useState([]);
-	const [badges, setBadges] = useState([]);
 
-	// Filter options scoped to the leader's Service Line (so picking one always
+	// Area options scoped to the leader's Service Line (so picking one always
 	// matches data within their scope).
 	useEffect(() => {
 		let active = true;
 		(async () => {
-			const [sls, ars, bds] = await Promise.all([
+			const [sls, ars] = await Promise.all([
 				getServiceLines().catch(() => []),
 				getAreas().catch(() => []),
-				getBadges({ limit: 200 }).catch(() => []),
 			]);
 			if (!active) return;
 			const matchedSl = (sls || []).find((sl) => sl.sl_slug === user?.serviceLine?.slug);
 			const slId = matchedSl ? matchedSl.service_line_id : null;
-			const badgeList = Array.isArray(bds) ? bds : (bds?.data || []);
-			if (slId) {
-				setAreas((ars || []).filter((a) => String(a.service_line_id) === String(slId)));
-				setBadges(badgeList.filter((b) => String(b.service_line_id) === String(slId)));
-			} else {
-				setAreas(ars || []);
-				setBadges(badgeList);
-			}
+			setAreas(slId ? (ars || []).filter((a) => String(a.service_line_id) === String(slId)) : (ars || []));
 		})();
 		return () => { active = false; };
 	}, [user]);
@@ -94,7 +83,6 @@ export default function SllBadgeHistory() {
 		try {
 			const params = { state: FILTERS[filter], page, limit: PAGE_SIZE };
 			if (areaId) params.areaId = areaId;
-			if (badgeId) params.badgeId = badgeId;
 			if (dateFrom) params.dateFrom = dateFrom;
 			if (dateTo) params.dateTo = dateTo;
 			const { data, pagination: pag } = await getApplicationsPaged(params);
@@ -107,7 +95,7 @@ export default function SllBadgeHistory() {
 		} finally {
 			setLoading(false);
 		}
-	}, [filter, page, areaId, badgeId, dateFrom, dateTo]);
+	}, [filter, page, areaId, dateFrom, dateTo]);
 
 	useEffect(() => { load(); }, [load]);
 
@@ -118,7 +106,6 @@ export default function SllBadgeHistory() {
 
 	function clearFilters() {
 		setAreaId('');
-		setBadgeId('');
 		setDateFrom('');
 		setDateTo('');
 		setPage(1);
@@ -128,8 +115,6 @@ export default function SllBadgeHistory() {
 
 	const areaOptions = [{ value: '', label: t('sllBadgeHistory.filters.allAreas') },
 		...areas.map((a) => ({ value: String(a.area_id), label: a.area_name }))];
-	const badgeOptions = [{ value: '', label: t('sllBadgeHistory.filters.allBadges') },
-		...badges.map((b) => ({ value: String(b.badge_id), label: b.badge_title }))];
 
 	return (
 		<div className={styles.page}>
@@ -163,8 +148,6 @@ export default function SllBadgeHistory() {
 				<div className={styles.filtersBar}>
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
 						options={areaOptions} ariaLabel={t('sllBadgeHistory.colArea')} />
-					<CustomSelect name="badgeId" value={badgeId} onChange={(e) => setBadgeId(e.target.value)}
-						options={badgeOptions} ariaLabel={t('sllBadgeHistory.colBadge')} />
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.from')}</span>
 						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}

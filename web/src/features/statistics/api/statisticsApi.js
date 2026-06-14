@@ -1,18 +1,19 @@
 import api from '../../../services/api';
 
-// General reporting (Service Line Leader / Talent Manager / Administrator)
-export async function getBadgesByServiceLine() {
-	const { data } = await api.get('/statistics/reports/badges-by-service-line');
+// General reporting (Service Line Leader / Talent Manager / Administrator).
+// Optional params: serviceLineId, areaId, dateFrom, dateTo.
+export async function getBadgesByServiceLine(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-service-line', { params });
 	return data?.data || [];
 }
 
-export async function getBadgesByLearningPath() {
-	const { data } = await api.get('/statistics/reports/badges-by-learning-path');
+export async function getBadgesByLearningPath(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-learning-path', { params });
 	return data?.data || [];
 }
 
-export async function getLevelDistribution() {
-	const { data } = await api.get('/statistics/reports/level-distribution');
+export async function getLevelDistribution(params = {}) {
+	const { data } = await api.get('/statistics/reports/level-distribution', { params });
 	return data?.data || [];
 }
 

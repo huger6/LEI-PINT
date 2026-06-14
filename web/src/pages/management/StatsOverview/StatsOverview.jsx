@@ -15,7 +15,7 @@ import styles from './StatsOverview.module.css';
  * Premium, Approval Rate), backed by GET /statistics/badges-summary. SLL is
  * scoped server-side and hides the Service Line filter.
  */
-export default function StatsOverview() {
+export default function StatsOverview({ onFiltersChange }) {
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
@@ -62,6 +62,18 @@ export default function StatsOverview() {
 	}, [isSll, serviceLineId, areaId, dateFrom, dateTo]);
 
 	useEffect(() => { load(); }, [load]);
+
+	// Notify the parent so it can apply the same filters to its charts.
+	useEffect(() => {
+		if (!onFiltersChange) return;
+		const f = {};
+		if (!isSll && serviceLineId) f.serviceLineId = serviceLineId;
+		if (areaId) f.areaId = areaId;
+		if (dateFrom) f.dateFrom = dateFrom;
+		if (dateTo) f.dateTo = dateTo;
+		onFiltersChange(f);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [serviceLineId, areaId, dateFrom, dateTo, isSll]);
 
 	const kpis = [
 		{ key: 'total', value: summary?.total ?? 0, icon: 'badge', bg: 'var(--color-secondary-container)', iconColor: 'var(--color-secondary)', valueClass: styles.valTotal, label: t('statsOverview.totalBadges') },
