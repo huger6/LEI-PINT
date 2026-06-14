@@ -80,12 +80,13 @@ export default function ApplicationReview({ application }) {
 	const [evidenceBusy, setEvidenceBusy] = useState(null);
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null); // post-decision result screen
+	const [resultNote, setResultNote] = useState(''); // reviewer reason shown on result
 
 	const RESULT_META = {
-		accept: { icon: 'check_circle', cls: styles.resOk },
-		review: { icon: 'send', cls: styles.resOk },
-		send_back: { icon: 'chevron_backward', cls: styles.resWarn },
-		reject: { icon: 'close_circle', cls: styles.resBad },
+		accept: { icon: 'check_circle', cls: styles.resOk, tone: styles.toneOk },
+		review: { icon: 'send', cls: styles.resOk, tone: styles.toneOk },
+		send_back: { icon: 'chevron_backward', cls: styles.resWarn, tone: styles.toneWarn },
+		reject: { icon: 'close_circle', cls: styles.resBad, tone: styles.toneBad },
 	};
 
 	const reqRows = useMemo(() => requirements.map((req, idx) => {
@@ -159,6 +160,7 @@ export default function ApplicationReview({ application }) {
 		setSubmitting(true);
 		try {
 			await validateApplication(appGuid, action, reviewerNotes.trim() || null);
+			setResultNote(reviewerNotes.trim());
 			setResult(action);
 			setSubmitting(false);
 		} catch (err) {
@@ -170,19 +172,39 @@ export default function ApplicationReview({ application }) {
 	// Post-decision result screen.
 	if (result) {
 		const meta = RESULT_META[result];
+		const showReason = (result === 'reject' || result === 'send_back') && resultNote;
 		return (
 			<div className={styles.page}>
 				<div className={styles.resultWrap}>
-					<div className={`${styles.card} ${styles.resultCard}`}>
+					<div className={`${styles.resultCard} ${meta.tone}`}>
 						<div className={`${styles.resultIcon} ${meta.cls}`}>
-							<Icon name={meta.icon} size={34} color="#fff" />
+							<Icon name={meta.icon} size={36} color="#fff" />
 						</div>
 						<h1 className={styles.resultTitle}>{t(`applicationReview.result.${result}.title`)}</h1>
 						<p className={styles.resultDesc}>{t(`applicationReview.result.${result}.desc`)}</p>
-						<div className={styles.resultBox}>{t('applicationReview.result.box', { consultant: consultantName, badge: title })}</div>
-						<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
-							{t('applicationReview.result.back')}
-						</Button>
+						<div className={styles.resultBox}>
+							<div className={styles.resultBadge}>
+								<Avatar src={consultantImg} name={consultantName} size={32} />
+								<div>
+									<span className={styles.resultConsultant}>{consultantName}</span>
+									<span className={styles.resultBadgeTitle}>{title}</span>
+								</div>
+							</div>
+							{showReason && (
+								<div className={styles.resultReason}>
+									<span className={styles.resultReasonLabel}>{t('applicationReview.result.reasonLabel')}</span>
+									<p className={styles.resultReasonText}>“{resultNote}”</p>
+								</div>
+							)}
+							<p className={styles.resultNotified}>
+								<Icon name="email" size={14} color="var(--color-outline)" /> {t('applicationReview.result.notified')}
+							</p>
+						</div>
+						<div className={styles.resultActions}>
+							<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
+								{t('applicationReview.result.back')}
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -458,13 +480,32 @@ export default function ApplicationReview({ application }) {
 						</div>
 						{!allValidated && <p className={styles.approveHint}>{t('applicationReview.approveHint')}</p>}
 
+						{/* Explicit, prominent reject confirmation (instead of the plain toast). */}
+						{confirmAction === 'reject' && (
+							<div className={styles.rejectConfirm}>
+								<div className={styles.rejectConfirmHead}>
+									<Icon name="danger" size={18} color="var(--color-red-on-soft)" />
+									<span>{t('applicationReview.rejectConfirmTitle')}</span>
+								</div>
+								<p className={styles.rejectConfirmText}>{t('applicationReview.rejectConfirmText', { consultant: consultantName })}</p>
+								<div className={styles.rejectConfirmActions}>
+									<Button variant="outlined" color="primary" size="sm" disabled={submitting} onClick={() => setConfirmAction(null)}>
+										{t('shared.cancel')}
+									</Button>
+									<Button variant="filled" color="danger" size="sm" loading={submitting} onClick={() => handleDecision('reject')}>
+										<Icon name="close_circle" size={16} /> {t('applicationReview.rejectConfirmYes')}
+									</Button>
+								</div>
+							</div>
+						)}
+
 						<Link to={SHARED.APPLICATIONS} className={styles.backLink}>{t('applicationReview.backToList')}</Link>
 					</div>
 				</aside>
 			</div>
 
 			<ConfirmToast
-				open={confirmAction != null}
+				open={confirmAction != null && confirmAction !== 'reject'}
 				message={confirmAction ? t(ACTION_CONFIRM[confirmAction]) : ''}
 				confirmLabel={t('shared.yes', { defaultValue: 'Sim' })}
 				cancelLabel={t('shared.no', { defaultValue: 'Não' })}

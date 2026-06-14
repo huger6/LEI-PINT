@@ -1343,11 +1343,16 @@
 		"result": {
 			"back": "Back to applications",
 			"box": "{{consultant}} — {{badge}}. The consultant will be notified by email.",
+			"reasonLabel": "Reason",
+			"notified": "The consultant will be notified by email.",
 			"accept": { "title": "Application Approved!", "desc": "The badge has been generated and published." },
 			"review": { "title": "Application forwarded!", "desc": "Sent to the Service Line Leader for the final decision." },
 			"send_back": { "title": "Application returned!", "desc": "Returned to the consultant for correction." },
-			"reject": { "title": "Application Rejected!", "desc": "The application has been closed." }
+			"reject": { "title": "Application Rejected!", "desc": "The application has been closed with feedback to the consultant." }
 		},
+		"rejectConfirmTitle": "Reject application?",
+		"rejectConfirmText": "This closes {{consultant}}'s application and notifies them by email with the reason provided.",
+		"rejectConfirmYes": "Yes, reject",
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",

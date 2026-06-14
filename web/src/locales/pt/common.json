@@ -1343,11 +1343,16 @@
 		"result": {
 			"back": "Voltar às candidaturas",
 			"box": "{{consultant}} — {{badge}}. O consultor será notificado por e-mail.",
+			"reasonLabel": "Motivo",
+			"notified": "O consultor será notificado por e-mail.",
 			"accept": { "title": "Candidatura Aprovada!", "desc": "O badge foi gerado e publicado." },
 			"review": { "title": "Candidatura encaminhada!", "desc": "Enviada ao Service Line Leader para decisão final." },
 			"send_back": { "title": "Candidatura devolvida!", "desc": "Devolvida ao consultor para correção." },
-			"reject": { "title": "Candidatura Rejeitada!", "desc": "A candidatura foi encerrada." }
+			"reject": { "title": "Candidatura Rejeitada!", "desc": "A candidatura foi encerrada com feedback ao consultor." }
 		},
+		"rejectConfirmTitle": "Rejeitar candidatura?",
+		"rejectConfirmText": "Esta ação encerra a candidatura de {{consultant}} e notifica-o por e-mail com o motivo indicado.",
+		"rejectConfirmYes": "Sim, rejeitar",
 		"toast": {
 			"evidenceApproved": "Evidência aprovada.",
 			"evidenceRejected": "Evidência rejeitada.",
