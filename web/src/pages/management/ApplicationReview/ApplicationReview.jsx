@@ -66,12 +66,15 @@ export default function ApplicationReview({ application }) {
 	const consultantPoints = application?.consultant_total_points;
 	const consultantRank = application?.consultant_ranking_position;
 
-	// SLL-only: process history + the Talent Manager's prior opinion (from audit logs)
+	// Process history + the Talent Manager's prior opinion (from audit logs).
 	const logs = application?.application_validation_logs || [];
 	const tmLog = logs.find((l) => (l.validator_function || l.validatorFunction) === 'Talent Manager');
 	const tmName = tmLog?.user?.full_name || tmLog?.user?.fullName || '';
 	const tmComment = tmLog?.validations_comments || tmLog?.validationsComments || '';
 	const tmDate = tmLog?.validated_at || tmLog?.validatedAt || null;
+	const tmAction = tmLog?.validator_action || tmLog?.validatorAction || '';
+	// Real parecer derived from the TM's logged action (forward = positive, else returned).
+	const tmPositive = /in validation/i.test(tmAction);
 	const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 	const [reviewerNotes, setReviewerNotes] = useState('');
@@ -286,14 +289,14 @@ export default function ApplicationReview({ application }) {
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="check" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
 									<span className={styles.histLabel}>{t('applicationReview.histTmValidation')}</span>
-									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
-									<span className={styles.histDesc}>{t('applicationReview.histTmBy', { name: tmName || '—' })}</span>
+									<span className={styles.histDate}>{tmLog ? fmtDate(tmDate) : t('applicationReview.histPending')}</span>
+									<span className={styles.histDesc}>{tmLog ? t('applicationReview.histTmBy', { name: tmName || '—' }) : t('applicationReview.histPending')}</span>
 								</div>
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="paper" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
 									<span className={styles.histLabel}>{t('applicationReview.histOpinion')}</span>
-									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
-									<span className={styles.histDesc}>{t('applicationReview.histOpinionPositive')}</span>
+									<span className={styles.histDate}>{tmLog ? fmtDate(tmDate) : t('applicationReview.histPending')}</span>
+									<span className={styles.histDesc}>{tmLog ? t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned') : t('applicationReview.histPending')}</span>
 								</div>
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${state === 'Accepted' ? styles.histDone : ''}`}><Icon name="badge" size={16} color={state === 'Accepted' ? '#fff' : 'var(--color-outline)'} /></div>
@@ -312,7 +315,7 @@ export default function ApplicationReview({ application }) {
 									<span className={styles.opinionDate}>{t('applicationReview.opinionDone', { date: fmtDate(tmDate) })}</span>
 									{tmComment && (
 										<div className={styles.opinionQuote}>
-											<strong>{t('applicationReview.histOpinionPositive')}</strong>
+											<strong>{t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned')}</strong>
 											<p>“{tmComment}”</p>
 										</div>
 									)}

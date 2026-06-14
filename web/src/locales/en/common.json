@@ -1132,6 +1132,8 @@
 		"scopeMyArea": "My Area",
 		"scopeMyServiceLine": "My Service Line",
 		"scopeGeneral": "General",
+		"allServiceLines": "All Service Lines",
+		"allAreas": "All areas",
 		"myPosition": "My Position"
 	},
 	"tmSections": {
@@ -1332,6 +1334,8 @@
 		"histTmBy": "Talent Manager: {{name}}",
 		"histOpinion": "Prior Opinion",
 		"histOpinionPositive": "Opinion: Positive",
+		"opinionPositive": "Opinion: Positive",
+		"opinionReturned": "Opinion: Returned",
 		"histFinal": "Final Approval",
 		"histFinalDesc": "Service Line · Final decision",
 		"histPending": "Pending",
