@@ -223,41 +223,67 @@ const getBadgesByRange = async ({ dateFrom, dateTo, learningPathId = null, servi
     return rows;
 };
 
-const getBadgesAwardedByLearningPath = async () => {
+const getBadgesAwardedByLearningPath = async (filters = {}) => {
+    const repl = {};
+    const bf = badgeJoinFilter(filters, repl);
+    const af = awardedJoinFilter(filters, repl);
     const [rows] = await sequelize.query(
         `SELECT lp.learning_path_id,
                 lp.path_title,
                 lp.path_slug,
                 COUNT(ab.awarded_badges_id)::int AS awarded_count
          FROM learning_paths lp
-         LEFT JOIN badges b              ON b.learning_path_id = lp.learning_path_id
+         LEFT JOIN badges b              ON b.learning_path_id = lp.learning_path_id${bf}
          LEFT JOIN badge_applications ba ON ba.badge_id = b.badge_id
-         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id
+         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id${af}
          WHERE lp.is_active = TRUE
          GROUP BY lp.learning_path_id, lp.path_title, lp.path_slug
-         ORDER BY awarded_count DESC, lp.path_title`
+         ORDER BY awarded_count DESC, lp.path_title`,
+        { replacements: repl }
     );
     return rows;
 };
 
-const getBadgesAwardedByServiceLine = async () => {
+// Optional filters injected into the LEFT JOINs so the grouping dimension keeps
+// all its rows while only matching badges/awards are counted.
+const badgeJoinFilter = (f = {}, repl = {}) => {
+    let sql = '';
+    if (f.areaId) { sql += ' AND b.area_id = :areaId'; repl.areaId = f.areaId; }
+    if (f.serviceLineId) { sql += ' AND b.service_line_id = :serviceLineId'; repl.serviceLineId = f.serviceLineId; }
+    return sql;
+};
+const awardedJoinFilter = (f = {}, repl = {}) => {
+    let sql = '';
+    if (f.dateFrom) { sql += ' AND ab.awarded_at >= :dateFrom'; repl.dateFrom = f.dateFrom; }
+    if (f.dateTo) { sql += ' AND ab.awarded_at <= :dateTo'; repl.dateTo = f.dateTo; }
+    return sql;
+};
+
+const getBadgesAwardedByServiceLine = async (filters = {}) => {
+    const repl = {};
+    const bf = badgeJoinFilter(filters, repl);
+    const af = awardedJoinFilter(filters, repl);
     const [rows] = await sequelize.query(
         `SELECT sl.service_line_id,
                 sl.service_line_name,
                 sl.sl_slug,
                 COUNT(ab.awarded_badges_id)::int AS awarded_count
          FROM service_lines sl
-         LEFT JOIN badges b              ON b.service_line_id = sl.service_line_id
+         LEFT JOIN badges b              ON b.service_line_id = sl.service_line_id${bf}
          LEFT JOIN badge_applications ba ON ba.badge_id = b.badge_id
-         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id
+         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id${af}
          WHERE sl.is_active = TRUE
          GROUP BY sl.service_line_id, sl.service_line_name, sl.sl_slug
-         ORDER BY awarded_count DESC, sl.service_line_name`
+         ORDER BY awarded_count DESC, sl.service_line_name`,
+        { replacements: repl }
     );
     return rows;
 };
 
-const getLevelDistribution = async () => {
+const getLevelDistribution = async (filters = {}) => {
+    const repl = {};
+    const bf = badgeJoinFilter(filters, repl);
+    const af = awardedJoinFilter(filters, repl);
     const [rows] = await sequelize.query(
         `SELECT sc.stage_code_id,
                 sc.stage_code,
@@ -265,11 +291,12 @@ const getLevelDistribution = async () => {
                 COUNT(DISTINCT ab.user_id)::int  AS distinct_consultants
          FROM stage_codes sc
          LEFT JOIN progression_stages ps ON ps.stage_code_id = sc.stage_code_id
-         LEFT JOIN badges b              ON b.progression_stage_id = ps.progression_stage_id
+         LEFT JOIN badges b              ON b.progression_stage_id = ps.progression_stage_id${bf}
          LEFT JOIN badge_applications ba ON ba.badge_id = b.badge_id
-         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id
+         LEFT JOIN awarded_badges ab     ON ab.application_id = ba.application_id${af}
          GROUP BY sc.stage_code_id, sc.stage_code
-         ORDER BY sc.stage_code`
+         ORDER BY sc.stage_code`,
+        { replacements: repl }
     );
     return rows;
 };
