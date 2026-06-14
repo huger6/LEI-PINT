@@ -1207,6 +1207,21 @@
 		"premium": "Premium",
 		"approvalRate": "Approval Rate"
 	},
+	"consultantDetail": {
+		"back": "Back",
+		"points": "Points",
+		"badges": "Badges",
+		"timelineTitle": "Professional Evolution",
+		"timelineEmpty": "No badges earned to show an evolution.",
+		"comparisonTitle": "Peer Comparison",
+		"comparisonEmpty": "No comparable peers (same area and similar experience).",
+		"thisConsultant": "This consultant",
+		"peerAverage": "Peer average",
+		"standing": "{{position}} of {{total}} among comparable peers (by points).",
+		"colConsultant": "Consultant",
+		"colPoints": "Points",
+		"colBadges": "Badges"
+	},
 	"consultantsList": {
 		"title": "Consultants",
 		"teamTitle": "My team",

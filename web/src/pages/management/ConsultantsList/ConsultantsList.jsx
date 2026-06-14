@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getConsultantsOverview } from '../../../features/statistics/api/statisticsApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { TM, SLL } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -26,8 +28,10 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  */
 export default function ConsultantsList() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
+	const detailBase = isSll ? SLL.TEAM : TM.CONSULTANTS;
 
 	const [rows, setRows] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -199,7 +203,7 @@ export default function ConsultantsList() {
 							</thead>
 							<tbody>
 								{rows.map((r) => (
-									<tr key={r.user_guid}>
+									<tr key={r.user_guid} className={styles.row} onClick={() => navigate(`${detailBase}/${r.user_guid}`)}>
 										<td>
 											<div className={styles.consultantCell}>
 												<Avatar src={r.profile_img_url} name={r.full_name} size={28} />

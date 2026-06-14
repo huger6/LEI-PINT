@@ -1207,6 +1207,21 @@
 		"premium": "Premium",
 		"approvalRate": "Taxa de Aprovação"
 	},
+	"consultantDetail": {
+		"back": "Voltar",
+		"points": "Pontos",
+		"badges": "Badges",
+		"timelineTitle": "Evolução Profissional",
+		"timelineEmpty": "Sem badges obtidos para apresentar a evolução.",
+		"comparisonTitle": "Comparação com Pares",
+		"comparisonEmpty": "Sem pares comparáveis (mesma área e experiência semelhante).",
+		"thisConsultant": "Este consultor",
+		"peerAverage": "Média dos pares",
+		"standing": "{{position}}º de {{total}} entre pares comparáveis (por pontos).",
+		"colConsultant": "Consultor",
+		"colPoints": "Pontos",
+		"colBadges": "Badges"
+	},
 	"consultantsList": {
 		"title": "Consultores",
 		"teamTitle": "A minha equipa",
