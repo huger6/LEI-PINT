@@ -255,7 +255,8 @@ const getBadgesByRange = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getBadgesByLearningPath = async (req, res) => {
     try {
-        const data = await statsService.getBadgesAwardedByLearningPath();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getBadgesAwardedByLearningPath(f);
         return res.status(200).json({ success: true, code: 'STATS_BADGES_BY_LP_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching badges by learning path', { error });
@@ -269,7 +270,8 @@ const getBadgesByLearningPath = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getBadgesByServiceLine = async (req, res) => {
     try {
-        const data = await statsService.getBadgesAwardedByServiceLine();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getBadgesAwardedByServiceLine(f);
         return res.status(200).json({ success: true, code: 'STATS_BADGES_BY_SL_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching badges by service line', { error });
@@ -283,7 +285,8 @@ const getBadgesByServiceLine = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getLevelDistribution = async (req, res) => {
     try {
-        const data = await statsService.getLevelDistribution();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getLevelDistribution(f);
         return res.status(200).json({ success: true, code: 'STATS_LEVEL_DISTRIBUTION_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching level distribution', { error });
