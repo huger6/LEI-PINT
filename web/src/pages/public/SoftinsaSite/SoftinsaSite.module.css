@@ -466,7 +466,7 @@
 	padding: 4rem 1.5rem;
 }
 
-.cta h2 { font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 800; margin: 0 0 0.5rem; }
+.cta h2 { font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 800; margin: 0 0 0.5rem; color: #fff; }
 .cta p { margin: 0 0 1.6rem; font-size: 1.05rem; opacity: 0.95; }
 
 /* Footer (styled after softinsa.pt) */
