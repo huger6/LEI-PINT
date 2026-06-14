@@ -37,7 +37,9 @@ export default function ValidationsBoard() {
 
 	const [showFilters, setShowFilters] = useState(false);
 	const [search, setSearch] = useState('');
-	const [stateFilter, setStateFilter] = useState('');
+	// Default to the applications this reviewer must act on (TM: Submitted,
+	// SLL: In validation); the filter lets them switch to any/all states.
+	const [stateFilter, setStateFilter] = useState(isSll ? 'In validation' : 'Submitted');
 	const [sortKey, setSortKey] = useState('submitted');
 	const [sortDir, setSortDir] = useState('desc');
 
@@ -179,7 +181,6 @@ export default function ValidationsBoard() {
 						onChange={handleStateFilter}
 						options={stateOptions}
 						ariaLabel={t('tmValidations.cols.state')}
-						compact
 					/>
 				</div>
 			)}

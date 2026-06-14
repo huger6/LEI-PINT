@@ -178,6 +178,11 @@
 		"goodEvening": "¡Buenas noches!",
 		"badgesEarned": "Badges Obtenidos",
 		"activeApplications": "Candidaturas Activas",
+		"pendingValidations": "Validaciones Pendientes",
+		"consultants": "Consultores",
+		"badgesAwarded": "Badges Otorgados",
+		"roleTm": "Talent Manager",
+		"roleSll": "Service Line Leader",
 		"streak": "Racha",
 		"days": "días",
 		"serviceLine": "Service Line",
@@ -1372,6 +1377,12 @@
 		"rejectConfirmTitle": "¿Rechazar candidatura?",
 		"rejectConfirmText": "Esto cierra la candidatura de {{consultant}} y le notifica por email con el motivo indicado.",
 		"rejectConfirmYes": "Sí, rechazar",
+		"confirm": {
+			"review": { "title": "¿Reenviar al Service Line Leader?", "text": "La candidatura de {{consultant}} pasa a la validación final.", "yes": "Sí, reenviar" },
+			"accept": { "title": "¿Aprobar y publicar?", "text": "El badge de {{consultant}} será generado y publicado.", "yes": "Sí, aprobar" },
+			"send_back": { "title": "¿Devolver al consultor?", "text": "{{consultant}} recibe la candidatura de vuelta para corrección, con tu comentario.", "yes": "Sí, devolver" },
+			"reject": { "title": "¿Rechazar candidatura?", "text": "Esto cierra la candidatura de {{consultant}} y le notifica por email con el motivo indicado.", "yes": "Sí, rechazar" }
+		},
 		"toast": {
 			"evidenceApproved": "Evidencia aprobada.",
 			"evidenceRejected": "Evidencia rechazada.",
