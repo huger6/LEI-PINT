@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './SoftinsaSite.module.css';
 
+// Official Softinsa logo (same asset used in the app navbar).
+const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
+
 // Public corporate microsite about the project, styled like softinsa.pt and
 // intentionally independent from the application theme. Route: /softinsa
 const FEATURES = [
@@ -39,8 +42,7 @@ export default function SoftinsaSite() {
 			<header className={styles.nav}>
 				<div className={styles.navInner}>
 					<a href="#top" className={styles.brand}>
-						<span className={styles.brandMark}>SOFTINSA</span>
-						<span className={styles.brandSub}>An IBM Subsidiary</span>
+						<img src={LOGO_SRC} alt="Softinsa" className={styles.logoImg} />
 					</a>
 					<nav className={styles.navLinks}>
 						<a href="#sobre">Sobre</a>
@@ -141,7 +143,7 @@ export default function SoftinsaSite() {
 
 			<footer className={styles.footer}>
 				<div className={styles.footerInner}>
-					<span className={styles.footerBrand}>SOFTINSA</span>
+					<img src={LOGO_SRC} alt="Softinsa" className={styles.footerLogo} />
 					<p>© {new Date().getFullYear()} Softinsa — An IBM Subsidiary. Plataforma de Badges (projeto académico LEI-PINT).</p>
 				</div>
 			</footer>
