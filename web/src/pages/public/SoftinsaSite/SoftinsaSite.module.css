@@ -1,21 +1,22 @@
 /* Self-contained corporate microsite styles — independent of the app theme. */
 .site {
-	--si-navy: #0a2540;
-	--si-navy-2: #0e2f52;
-	/* Softinsa accent: navy-dominant with a warm coral/red accent (not teal). */
-	--si-teal: #e8523f;
-	--si-teal-dark: #cf4030;
-	--si-ink: #1b2733;
+	--si-navy: #16314e;
+	--si-navy-2: #1d4a78;
+	/* Softinsa brand is navy + a medium blue accent (no red). */
+	--si-teal: #2575bd;
+	--si-teal-dark: #1d5d97;
+	--si-ink: #2a3742;
 	--si-muted: #5a6b7b;
 	--si-bg: #ffffff;
-	--si-bg-alt: #f4f8fb;
-	--si-border: #e2eaf0;
+	--si-bg-alt: #f5f8fb;
+	--si-border: #e4ebf1;
 
-	font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+	font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 	color: var(--si-ink);
 	background: var(--si-bg);
 	line-height: 1.6;
 	min-height: 100vh;
+	-webkit-font-smoothing: antialiased;
 }
 
 .site * { box-sizing: border-box; }
@@ -41,32 +42,24 @@
 
 .brand {
 	display: inline-flex;
-	flex-direction: column;
-	line-height: 1;
+	align-items: center;
 	text-decoration: none;
 }
 
-.brandMark {
-	font-size: 1.4rem;
-	font-weight: 800;
-	letter-spacing: 0.06em;
-	color: var(--si-navy);
+.logoImg {
+	height: 38px;
+	width: auto;
+	object-fit: contain;
+	display: block;
 }
 
-.brandSub {
-	font-size: 0.6rem;
-	font-weight: 700;
-	letter-spacing: 0.18em;
-	text-transform: uppercase;
-	color: var(--si-muted);
-	margin-top: 2px;
-}
-
-.footerBrand {
-	font-size: 1.3rem;
-	font-weight: 800;
-	letter-spacing: 0.06em;
-	color: #fff;
+.footerLogo {
+	height: 34px;
+	width: auto;
+	object-fit: contain;
+	/* Render the logo in white on the dark footer. */
+	filter: brightness(0) invert(1);
+	opacity: 0.95;
 }
 
 .navLinks {
@@ -132,10 +125,10 @@
 
 .heroTitle {
 	font-size: clamp(2.4rem, 6vw, 4rem);
-	font-weight: 800;
-	letter-spacing: -0.03em;
+	font-weight: 600;
+	letter-spacing: -0.02em;
 	margin: 0 0 1rem;
-	line-height: 1.05;
+	line-height: 1.08;
 }
 
 .heroSubtitle {
@@ -158,7 +151,7 @@
 	right: -10%;
 	width: 520px;
 	height: 520px;
-	background: radial-gradient(circle, rgba(232, 82, 63, 0.30), transparent 70%);
+	background: radial-gradient(circle, rgba(37, 117, 189, 0.45), transparent 70%);
 	z-index: 0;
 }
 
@@ -234,10 +227,10 @@
 
 .sectionHead h2 {
 	font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-	font-weight: 800;
-	color: var(--si-navy);
+	font-weight: 600;
+	color: var(--si-teal);
 	margin: 0 0 0.75rem;
-	letter-spacing: -0.02em;
+	letter-spacing: -0.01em;
 }
 
 .sectionHead p { color: var(--si-muted); font-size: 1.05rem; margin: 0; }
