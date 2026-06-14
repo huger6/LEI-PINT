@@ -44,7 +44,7 @@ export default function SoftinsaSite() {
 
 	useEffect(() => {
 		const prev = document.title;
-		document.title = 'Softinsa — Plataforma de Badges';
+		document.title = 'Plataforma de Badges - Softinsa';
 		return () => { document.title = prev; };
 	}, []);
 
