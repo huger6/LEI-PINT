@@ -4,89 +4,70 @@
 	gap: 1rem;
 }
 
-.headerRow {
+.filtersCard {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	flex-wrap: wrap;
+	flex-direction: column;
+	gap: 0.85rem;
 }
 
-.title {
-	font-size: 1.2rem;
-	font-weight: 700;
-	color: var(--color-on-surface);
-	margin: 0;
+.filtersGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 0.85rem;
 }
 
-.filtersBar {
+.field {
 	display: flex;
-	align-items: center;
-	gap: 0.6rem;
-	flex-wrap: wrap;
-	padding: 0.75rem;
-	border: 1px solid var(--color-outline-variant);
-	border-radius: 14px;
-	background: var(--color-bg-card);
+	flex-direction: column;
+	gap: 0.3rem;
+	min-width: 0;
 }
 
-.dateField {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
+.fieldLabel {
 	font-size: 0.8rem;
+	font-weight: 600;
 	color: var(--color-outline);
 }
 
-.dateInput {
-	padding: 0.4rem 0.6rem;
-	border: 1px solid var(--color-outline-variant);
-	border-radius: 10px;
-	background: var(--color-surface);
-	color: var(--color-on-surface);
-	font-size: 0.85rem;
-}
-
+/* KPI cards — vertical: icon, label, big coloured value (Figma TM20) */
 .kpiRow {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 	gap: 1rem;
 }
 
 .kpiCard {
 	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	padding: 1.1rem;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 1.25rem;
 	border: 1px solid var(--color-outline-variant);
 	border-radius: 16px;
 	background: var(--color-bg-card);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .kpiIcon {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 44px;
-	height: 44px;
-	border-radius: 12px;
-	flex-shrink: 0;
-}
-
-.kpiBody {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
-.kpiValue {
-	font-size: 1.6rem;
-	font-weight: 700;
-	color: var(--color-on-surface);
-	line-height: 1.1;
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
 }
 
 .kpiLabel {
 	font-size: 0.82rem;
 	color: var(--color-outline);
 }
+
+.kpiValue {
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.valTotal { color: var(--color-secondary); }
+.valStandard { color: var(--color-on-surface); }
+.valPremium { color: var(--color-orange-on-soft); }
+.valRate { color: var(--color-green-on-soft); }
