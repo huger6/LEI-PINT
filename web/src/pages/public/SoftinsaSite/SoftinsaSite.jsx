@@ -148,17 +148,19 @@ export default function SoftinsaSite() {
 					</div>
 				</section>
 
-				{/* Funcionalidades */}
+				{/* Funcionalidades — auto-scrolling carousel */}
 				<section id="funcionalidades" className={`${styles.section} ${styles.sectionAlt}`}>
 					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>Funcionalidades</h2></div>
-					<div className={styles.grid}>
-						{FEATURES.map((f, i) => (
-							<article key={f.title} className={`${styles.card} ${styles.reveal}`} style={{ transitionDelay: `${i * 60}ms` }}>
-								<span className={styles.cardIcon} aria-hidden="true">{f.icon}</span>
-								<h3>{f.title}</h3>
-								<p>{f.desc}</p>
-							</article>
-						))}
+					<div className={styles.marquee}>
+						<div className={styles.marqueeTrack}>
+							{[...FEATURES, ...FEATURES].map((f, i) => (
+								<article key={i} className={styles.featCard} aria-hidden={i >= FEATURES.length}>
+									<span className={styles.cardIcon} aria-hidden="true">{f.icon}</span>
+									<h3>{f.title}</h3>
+									<p>{f.desc}</p>
+								</article>
+							))}
+						</div>
 					</div>
 				</section>
 
