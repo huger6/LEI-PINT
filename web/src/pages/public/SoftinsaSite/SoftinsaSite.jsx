@@ -39,7 +39,8 @@ export default function SoftinsaSite() {
 			<header className={styles.nav}>
 				<div className={styles.navInner}>
 					<a href="#top" className={styles.brand}>
-						<span className={styles.brandMark}>soft</span><span className={styles.brandAccent}>insa</span>
+						<span className={styles.brandMark}>SOFTINSA</span>
+						<span className={styles.brandSub}>An IBM Subsidiary</span>
 					</a>
 					<nav className={styles.navLinks}>
 						<a href="#sobre">Sobre</a>
@@ -55,11 +56,11 @@ export default function SoftinsaSite() {
 				{/* Hero */}
 				<section className={styles.hero}>
 					<div className={styles.heroInner}>
-						<span className={styles.eyebrow}>Softinsa · Grupo IBM</span>
+						<span className={styles.eyebrow}>Softinsa · An IBM Subsidiary</span>
 						<h1 className={styles.heroTitle}>Plataforma de Badges</h1>
 						<p className={styles.heroSubtitle}>
-							Transformamos a formação dos nossos consultores em credenciais digitais verificáveis —
-							gamificadas, padronizadas e prontas a partilhar.
+							Inovação, talento e tecnologia para acelerar a transformação digital — agora também na forma
+							como reconhecemos as competências das nossas equipas, com credenciais digitais verificáveis.
 						</p>
 						<div className={styles.heroActions}>
 							<Link to="/" className={styles.btnPrimary}>Entrar</Link>
@@ -140,8 +141,8 @@ export default function SoftinsaSite() {
 
 			<footer className={styles.footer}>
 				<div className={styles.footerInner}>
-					<span className={styles.brand}><span className={styles.brandMark}>soft</span><span className={styles.brandAccent}>insa</span></span>
-					<p>© {new Date().getFullYear()} Softinsa. Plataforma de Badges — projeto académico LEI-PINT.</p>
+					<span className={styles.footerBrand}>SOFTINSA</span>
+					<p>© {new Date().getFullYear()} Softinsa — An IBM Subsidiary. Plataforma de Badges (projeto académico LEI-PINT).</p>
 				</div>
 			</footer>
 		</div>
