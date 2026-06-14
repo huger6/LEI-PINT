@@ -13,7 +13,6 @@ import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import FormAlert from '../../../components/FormAlert/FormAlert';
-import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import styles from './ApplicationReview.module.css';
 
 const APP_STATE_KEY = {
@@ -92,6 +91,14 @@ export default function ApplicationReview({ application }) {
 		reject: { icon: 'close_circle', cls: styles.resBad, tone: styles.toneBad },
 	};
 
+	// Inline confirmation panel styling per action (replaces the plain toast).
+	const CONFIRM_META = {
+		review: { cls: styles.confirmOk, icon: 'send', iconColor: 'var(--color-green-on-soft)', yesColor: 'success' },
+		accept: { cls: styles.confirmOk, icon: 'check_circle', iconColor: 'var(--color-green-on-soft)', yesColor: 'success' },
+		send_back: { cls: styles.confirmWarn, icon: 'chevron_backward', iconColor: 'var(--color-orange-on-soft)', yesColor: 'primary' },
+		reject: { cls: styles.confirmBad, icon: 'close_circle', iconColor: 'var(--color-red-on-soft)', yesColor: 'danger' },
+	};
+
 	const reqRows = useMemo(() => requirements.map((req, idx) => {
 		const reqId = req.requirement_id || idx;
 		const ev = evidenceForRequirement(evidences, reqId);
@@ -123,7 +130,6 @@ export default function ApplicationReview({ application }) {
 			{ action: 'send_back', labelKey: 'applicationReview.requestRectification', icon: 'chevron_backward', variant: 'outlined', color: 'primary' },
 		];
 
-	const ACTION_CONFIRM = { review: 'applicationReview.confirmForward', accept: 'applicationReview.confirmAccept', reject: 'applicationReview.confirmReject', send_back: 'applicationReview.confirmSendBack' };
 	const NEEDS_NOTE = ['send_back', 'reject'];
 
 	async function handleDownload(evidenceId) {
@@ -483,20 +489,20 @@ export default function ApplicationReview({ application }) {
 						</div>
 						{!allValidated && <p className={styles.approveHint}>{t('applicationReview.approveHint')}</p>}
 
-						{/* Explicit, prominent reject confirmation (instead of the plain toast). */}
-						{confirmAction === 'reject' && (
-							<div className={styles.rejectConfirm}>
-								<div className={styles.rejectConfirmHead}>
-									<Icon name="danger" size={18} color="var(--color-red-on-soft)" />
-									<span>{t('applicationReview.rejectConfirmTitle')}</span>
+						{/* Explicit, prominent confirmation panel (per action) instead of a toast. */}
+						{confirmAction && (
+							<div className={`${styles.confirmPanel} ${CONFIRM_META[confirmAction].cls}`}>
+								<div className={styles.confirmHead}>
+									<Icon name={CONFIRM_META[confirmAction].icon} size={18} color={CONFIRM_META[confirmAction].iconColor} />
+									<span>{t(`applicationReview.confirm.${confirmAction}.title`)}</span>
 								</div>
-								<p className={styles.rejectConfirmText}>{t('applicationReview.rejectConfirmText', { consultant: consultantName })}</p>
-								<div className={styles.rejectConfirmActions}>
+								<p className={styles.confirmText}>{t(`applicationReview.confirm.${confirmAction}.text`, { consultant: consultantName })}</p>
+								<div className={styles.confirmActions}>
 									<Button variant="outlined" color="primary" size="sm" disabled={submitting} onClick={() => setConfirmAction(null)}>
 										{t('shared.cancel')}
 									</Button>
-									<Button variant="filled" color="danger" size="sm" loading={submitting} onClick={() => handleDecision('reject')}>
-										<Icon name="close_circle" size={16} /> {t('applicationReview.rejectConfirmYes')}
+									<Button variant="filled" color={CONFIRM_META[confirmAction].yesColor} size="sm" loading={submitting} onClick={() => handleDecision(confirmAction)}>
+										<Icon name={CONFIRM_META[confirmAction].icon} size={16} /> {t(`applicationReview.confirm.${confirmAction}.yes`)}
 									</Button>
 								</div>
 							</div>
@@ -506,15 +512,6 @@ export default function ApplicationReview({ application }) {
 					</div>
 				</aside>
 			</div>
-
-			<ConfirmToast
-				open={confirmAction != null && confirmAction !== 'reject'}
-				message={confirmAction ? t(ACTION_CONFIRM[confirmAction]) : ''}
-				confirmLabel={t('shared.yes', { defaultValue: 'Sim' })}
-				cancelLabel={t('shared.no', { defaultValue: 'Não' })}
-				onConfirm={() => handleDecision(confirmAction)}
-				onCancel={() => setConfirmAction(null)}
-			/>
 		</div>
 	);
 }

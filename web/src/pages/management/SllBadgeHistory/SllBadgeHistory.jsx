@@ -162,9 +162,9 @@ export default function SllBadgeHistory() {
 			{showFilters && (
 				<div className={styles.filtersBar}>
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
-						options={areaOptions} ariaLabel={t('sllBadgeHistory.colArea')} compact />
+						options={areaOptions} ariaLabel={t('sllBadgeHistory.colArea')} />
 					<CustomSelect name="badgeId" value={badgeId} onChange={(e) => setBadgeId(e.target.value)}
-						options={badgeOptions} ariaLabel={t('sllBadgeHistory.colBadge')} compact />
+						options={badgeOptions} ariaLabel={t('sllBadgeHistory.colBadge')} />
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.from')}</span>
 						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}

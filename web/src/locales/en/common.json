@@ -178,6 +178,11 @@
 		"goodEvening": "Good evening!",
 		"badgesEarned": "Badges Earned",
 		"activeApplications": "Active Applications",
+		"pendingValidations": "Pending Validations",
+		"consultants": "Consultants",
+		"badgesAwarded": "Badges Awarded",
+		"roleTm": "Talent Manager",
+		"roleSll": "Service Line Leader",
 		"streak": "Streak",
 		"days": "days",
 		"serviceLine": "Service Line",
@@ -1373,6 +1378,12 @@
 		"rejectConfirmTitle": "Reject application?",
 		"rejectConfirmText": "This closes {{consultant}}'s application and notifies them by email with the reason provided.",
 		"rejectConfirmYes": "Yes, reject",
+		"confirm": {
+			"review": { "title": "Forward to the Service Line Leader?", "text": "{{consultant}}'s application moves on for final validation.", "yes": "Yes, forward" },
+			"accept": { "title": "Approve and publish?", "text": "{{consultant}}'s badge will be generated and published.", "yes": "Yes, approve" },
+			"send_back": { "title": "Return to the consultant?", "text": "{{consultant}} gets the application back for correction, with your comment.", "yes": "Yes, return" },
+			"reject": { "title": "Reject application?", "text": "This closes {{consultant}}'s application and notifies them by email with the reason provided.", "yes": "Yes, reject" }
+		},
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
 			"evidenceRejected": "Evidence rejected.",

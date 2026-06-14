@@ -15,7 +15,7 @@ import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ConsultantsList.module.css';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 20;
 const MAX_POINTS = 2000;
 const EMPTY_APPLIED = { search: '', serviceLineId: '', areaId: '', pointsMin: '', pointsMax: '', sort: 'points_desc' };
 
@@ -146,10 +146,10 @@ export default function ConsultantsList() {
 					</div>
 					{!isSll && (
 						<CustomSelect name="serviceLineId" value={serviceLineId} onChange={(e) => setServiceLineId(e.target.value)}
-							options={slOptions} ariaLabel={t('consultantsList.colServiceLine')} compact />
+							options={slOptions} ariaLabel={t('consultantsList.colServiceLine')} />
 					)}
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
-						options={areaOptions} ariaLabel={t('consultantsList.colArea')} compact />
+						options={areaOptions} ariaLabel={t('consultantsList.colArea')} />
 					<div className={styles.pointsField}>
 						<label className={styles.pointsLabel}>{t('consultantsList.filters.pointsMin')}: <b>{pointsMin === '' ? 0 : pointsMin}</b></label>
 						<input type="range" min="0" max={MAX_POINTS} step="50" className={`form-range ${styles.pointsRange}`}
@@ -171,7 +171,7 @@ export default function ConsultantsList() {
 							}} />
 					</div>
 					<CustomSelect name="sort" value={sort} onChange={(e) => setSort(e.target.value)}
-						options={sortOptions} ariaLabel={t('consultantsList.filters.sort')} compact />
+						options={sortOptions} ariaLabel={t('consultantsList.filters.sort')} />
 					<Button variant="filled" color="primary" size="sm" onClick={applyFilters}>{t('consultantsList.filters.apply')}</Button>
 					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('consultantsList.filters.clear')}</Button>
 				</div>
@@ -213,12 +213,7 @@ export default function ConsultantsList() {
 										{!isSll && <td className="text-muted">{r.service_line_name || '—'}</td>}
 										<td className="text-muted">{r.primary_area_name || '—'}</td>
 										{isSll && <td className={styles.numCol}>{r.total_badges ?? 0}</td>}
-										<td className={styles.numCol}>
-											<span className={styles.pointsCell}>
-												<Icon name="star-points" size={14} color="var(--color-primary)" />
-												{Number(r.total_points || 0).toLocaleString('pt-PT')}
-											</span>
-										</td>
+										<td className={styles.numCol}>{Number(r.total_points || 0).toLocaleString('pt-PT')}</td>
 										<td className={styles.numCol}>{isSll ? (r.open_applications_count ?? 0) : (r.applications_count ?? 0)}</td>
 										<td className="text-muted">{fmtDate(r.last_login_at) || t('consultantsList.neverLoggedIn')}</td>
 									</tr>
@@ -229,13 +224,15 @@ export default function ConsultantsList() {
 				)}
 
 				{pagination && pagination.totalPages > 1 && (
-					<Pagination
-						currentPage={pagination.currentPage}
-						totalPages={pagination.totalPages}
-						totalItems={pagination.totalItems}
-						itemCount={rows.length}
-						onPageChange={setPage}
-					/>
+					<div className={styles.paginationWrap}>
+						<Pagination
+							currentPage={pagination.currentPage}
+							totalPages={pagination.totalPages}
+							totalItems={pagination.totalItems}
+							itemCount={rows.length}
+							onPageChange={setPage}
+						/>
+					</div>
 				)}
 			</div>
 		</div>

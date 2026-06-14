@@ -590,10 +590,10 @@
 }
 
 /* Explicit reject confirmation panel */
-.rejectConfirm {
+/* Inline decision confirmation panel (per action) */
+.confirmPanel {
 	margin-top: 0.85rem;
-	border: 1px solid var(--color-red-on-soft);
-	background: var(--color-red-soft);
+	border: 1px solid var(--color-outline-variant);
 	border-radius: 12px;
 	padding: 0.85rem 1rem;
 	display: flex;
@@ -601,22 +601,37 @@
 	gap: 0.6rem;
 }
 
-.rejectConfirmHead {
+.confirmOk {
+	border-color: var(--color-green-on-soft);
+	background: var(--color-green-soft);
+}
+
+.confirmWarn {
+	border-color: var(--color-orange-on-soft);
+	background: var(--color-orange-soft);
+}
+
+.confirmBad {
+	border-color: var(--color-red-on-soft);
+	background: var(--color-red-soft);
+}
+
+.confirmHead {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 	font-weight: 700;
 	font-size: 0.92rem;
-	color: var(--color-red-on-soft);
+	color: var(--color-on-surface);
 }
 
-.rejectConfirmText {
+.confirmText {
 	margin: 0;
 	font-size: 0.85rem;
 	color: var(--color-on-surface);
 }
 
-.rejectConfirmActions {
+.confirmActions {
 	display: flex;
 	gap: 0.5rem;
 	justify-content: flex-end;
