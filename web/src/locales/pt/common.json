@@ -613,6 +613,23 @@
 		"uploadFailed": "Falha ao carregar a imagem.",
 		"previewAlt": "Pré-visualização do badge"
 	},
+	"verifyBadge": {
+		"title": "Verificação de credencial",
+		"loading": "A verificar credencial...",
+		"validTitle": "Credencial verificada",
+		"validDesc": "Esta credencial foi emitida pela Softinsa e é autêntica.",
+		"expiredTitle": "Credencial expirada",
+		"expiredDesc": "Esta credencial é autêntica, mas o seu período de validade terminou.",
+		"invalidTitle": "Credencial não encontrada",
+		"invalidDesc": "Não foi possível verificar esta credencial. O link pode ser inválido ou a credencial pode não estar publicada.",
+		"awardedTo": "Atribuída a",
+		"awardedAt": "Data de atribuição",
+		"expiresAt": "Validade",
+		"points": "Pontos",
+		"premium": "Premium",
+		"viewBadge": "Ver detalhes do badge",
+		"exploreBadges": "Explorar badges"
+	},
 	"adminAreas": {
 		"title": "Áreas",
 		"newArea": "Nova Área",

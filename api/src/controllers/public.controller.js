@@ -260,5 +260,67 @@ const getPublicBadgeBySlug = async (req, res) => {
 	}
 };
 
-module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug };
+// GET /api/public/verify/:link — JSON credential verification for the SPA
+// /verify/:link page. Returns a clean payload (no internal PKs) and the
+// expiration status, so the public page can show a trustworthy result.
+const verifyAwardedBadge = async (req, res) => {
+	try {
+		let validated;
+		try {
+			validated = publicBadgeLinkParam.parse(req.params);
+		} catch (error) {
+			if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_PARAMS');
+			throw error;
+		}
+
+		const awarded = await models.awarded_badges.findOne({
+			where: { public_verification_link: validated.link, is_published: true },
+			include: [
+				{
+					model: models.badge_applications, as: 'application',
+					include: [{
+						model: models.badges, as: 'badge',
+						attributes: ['badge_slug', 'badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'badge_type'],
+					}],
+				},
+				{
+					model: models.consultants, as: 'user',
+					include: [{ model: models.users, as: 'user', attributes: ['full_name', 'user_guid'] }],
+				},
+			],
+		});
+
+		if (!awarded) {
+			return res.status(404).json({ success: false, code: 'PUBLIC_BADGE_NOT_FOUND' });
+		}
+
+		const badge = awarded.application?.badge || {};
+		const user = awarded.user?.user || {};
+		const isExpired = awarded.expiration_at ? new Date(awarded.expiration_at) < new Date() : false;
+
+		return res.status(200).json({
+			success: true,
+			data: {
+				verification_link: awarded.public_verification_link,
+				awarded_at: awarded.awarded_at,
+				expiration_at: awarded.expiration_at,
+				is_expired: isExpired,
+				recipient: { full_name: user.full_name || null, user_guid: user.user_guid || null },
+				badge: {
+					slug: badge.badge_slug || null,
+					title: badge.badge_title || null,
+					description: badge.badge_description || null,
+					image: badge.badge_img_url || null,
+					points: badge.badge_points ?? null,
+					type: badge.badge_type || null,
+				},
+			},
+		});
+	} catch (error) {
+		logger.error('Error verifying awarded badge', { error });
+		return res.status(500).json({ success: false, code: 'PUBLIC_VERIFY_FAILED' });
+	}
+};
+
+module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug, verifyAwardedBadge };
 
