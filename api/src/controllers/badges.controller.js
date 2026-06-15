@@ -924,5 +924,6 @@ module.exports = {
     checkSlugAvailability,
     createBadge,
     updateBadge,
-    deleteBadge
+    deleteBadge,
+    findBadgeInHierarchy
 };

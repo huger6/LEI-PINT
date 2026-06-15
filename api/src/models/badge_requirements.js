@@ -48,7 +48,7 @@ module.exports = function (sequelize, DataTypes) {
     is_active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: true
     },
     created_by: {
       type: DataTypes.INTEGER,
