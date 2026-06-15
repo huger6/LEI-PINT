@@ -5,15 +5,18 @@ import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evo
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
+import CelebrationModal from '../../../components/CelebrationModal/CelebrationModal';
 import styles from './Achievements.module.css';
 
 const MILESTONES = [1, 3, 5, 10, 25];
+const CELEBRATED_KEY = 'softinsa.achievements.celebratedMilestone';
 
 export default function Achievements() {
 	const { t, i18n } = useTranslation();
 	const [badges, setBadges] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
+	const [celebrate, setCelebrate] = useState(null);
 
 	useEffect(() => {
 		let active = true;
@@ -24,6 +27,19 @@ export default function Achievements() {
 			.finally(() => { if (active) setLoading(false); });
 		return () => { active = false; };
 	}, []);
+
+	// Celebrate once when a new milestone is reached (req 16). localStorage keeps
+	// the last celebrated threshold so it does not re-fire on every visit.
+	useEffect(() => {
+		if (loading || error || badges.length === 0) return;
+		const reached = MILESTONES.filter((m) => badges.length >= m).pop();
+		if (!reached) return;
+		const last = Number(localStorage.getItem(CELEBRATED_KEY) || 0);
+		if (reached > last) {
+			setCelebrate(reached);
+			localStorage.setItem(CELEBRATED_KEY, String(reached));
+		}
+	}, [loading, error, badges.length]);
 
 	const totalPoints = useMemo(
 		() => badges.reduce((sum, b) => sum + (b.pointsSnapshot ?? b.badge?.pointsValue ?? 0), 0),
@@ -137,6 +153,10 @@ export default function Achievements() {
 						})}
 					</div>
 				</>
+			)}
+
+			{celebrate != null && (
+				<CelebrationModal count={celebrate} onClose={() => setCelebrate(null)} />
 			)}
 		</div>
 	);

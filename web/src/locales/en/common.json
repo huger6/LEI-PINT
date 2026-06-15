@@ -645,7 +645,12 @@
 		"emptyTitle": "No achievements yet",
 		"emptyDesc": "Earn your first badge to see it here.",
 		"exploreBadges": "Explore badges",
-		"loadFailed": "Could not load achievements."
+		"loadFailed": "Could not load achievements.",
+		"celebrate": {
+			"title": "Congratulations!",
+			"message": "You've earned {{count}} badges. Keep it up!",
+			"close": "Continue"
+		}
 	},
 	"adminAreas": {
 		"title": "Areas",
@@ -802,6 +807,13 @@
 			"area": "Area",
 			"selectServiceLineFirst": "Select a Service Line to pick an Area.",
 			"progression": "Progression Tiers",
+			"tiers": {
+				"A": "Junior (A)",
+				"B": "Intermediate (B)",
+				"C": "Senior (C)",
+				"D": "Specialist (D)",
+				"E": "Knowledge Leader (E)"
+			},
 			"classification": "Badge Classification",
 			"class": {
 				"all": "All",

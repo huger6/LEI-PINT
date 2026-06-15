@@ -645,7 +645,12 @@
 		"emptyTitle": "Ainda sem conquistas",
 		"emptyDesc": "Conquista o teu primeiro badge para o veres aqui.",
 		"exploreBadges": "Explorar badges",
-		"loadFailed": "Não foi possível carregar as conquistas."
+		"loadFailed": "Não foi possível carregar as conquistas.",
+		"celebrate": {
+			"title": "Parabéns!",
+			"message": "Já conquistaste {{count}} badges. Continua assim!",
+			"close": "Continuar"
+		}
 	},
 	"adminAreas": {
 		"title": "Áreas",
@@ -802,6 +807,13 @@
 			"area": "Área",
 			"selectServiceLineFirst": "Selecione uma Service Line para escolher a Área.",
 			"progression": "Níveis de Progressão",
+			"tiers": {
+				"A": "Júnior (A)",
+				"B": "Intermédio (B)",
+				"C": "Sénior (C)",
+				"D": "Especialista (D)",
+				"E": "Líder de Conhecimento (E)"
+			},
 			"classification": "Classificação do Badge",
 			"class": {
 				"all": "Todos",
