@@ -93,7 +93,7 @@ const register = async (req, res) => {
         }
 
         // Hash pw
-        const passwordHash = await bcrypt.hash(password, 10);
+        const passwordHash = await bcrypt.hash(password, 12);
 
         // Create new user
         const newUser = await models.users.create({
@@ -794,7 +794,7 @@ const changePassword = async (req, res) => {
             });
         }
         // Update PW and set FPC false
-        const newHash = await bcrypt.hash(newPassword, 10);
+        const newHash = await bcrypt.hash(newPassword, 12);
         await models.users.update(
             {
                 password_hash: newHash,
@@ -1063,7 +1063,7 @@ const resetPassword = async (req, res) => {
         }
 
         // Hash new pw
-        const passwordHash = await bcrypt.hash(newPassword, 10);
+        const passwordHash = await bcrypt.hash(newPassword, 12);
 
         // Update user
         await models.users.update(

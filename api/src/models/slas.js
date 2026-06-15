@@ -14,7 +14,8 @@ module.exports = function (sequelize, DataTypes) {
     },
     response_time_hours: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { min: 1 }
     },
     start_date: {
       type: DataTypes.DATE,

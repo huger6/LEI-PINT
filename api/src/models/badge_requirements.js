@@ -43,7 +43,8 @@ module.exports = function (sequelize, DataTypes) {
     badge_points: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
+      validate: { min: 0 }
     },
     is_active: {
       type: DataTypes.BOOLEAN,
