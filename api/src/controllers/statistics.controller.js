@@ -7,23 +7,46 @@ const statsService = require('../services/statistics.service');
 const { uuidRule } = require('../validations/shared-rules');
 
 /*──────────────────────────────────────────────────────────────
-  Resolve which consultant a leader/admin wants to inspect.
-  Consultants are restricted to themselves; SLL/TM/Admin can
-  pass ?userId=, otherwise default to the authenticated user.
+  Authorize a leader inspecting a specific consultant.
+  Talent Manager / Administrator are global; a Service Line Leader
+  may only inspect consultants within their own Service Line.
+  Writes a 403 and returns false when out of scope.
 ──────────────────────────────────────────────────────────────*/
-const resolveTargetUserId = async (req) => {
+const enforceLeaderScope = async (req, res, targetUserId) => {
+    if (req.user.role !== 'Service Line Leader') return true; // TM/Admin global
+    if (targetUserId === req.user.sub) return true;           // inspecting self
+    const slId = await statsService.resolveServiceLineForUser(req.user.sub, 'Service Line Leader');
+    const inScope = await statsService.isConsultantInServiceLine(targetUserId, slId);
+    if (!inScope) {
+        res.status(403).json({ success: false, code: 'STATS_CONSULTANT_OUT_OF_SCOPE' });
+        return false;
+    }
+    return true;
+};
+
+/*──────────────────────────────────────────────────────────────
+  Resolve which consultant a leader/admin wants to inspect.
+  Consultants are restricted to themselves; TM/Admin may pass any
+  ?userGuid; a Service Line Leader is restricted to their own SL.
+  Returns the target user_id, or null when the request was denied
+  (a 403 has already been written) so the caller can early-exit.
+──────────────────────────────────────────────────────────────*/
+const resolveTargetUserId = async (req, res) => {
     if (req.user.role === 'Consultant') return req.user.sub;
     const requestedGuid = req.query.userGuid;
-    if (requestedGuid) {
-        try {
-            uuidRule.parse(requestedGuid);
-            const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
-            if (user) return user.user_id;
-        } catch (_) {
-            // Invalid GUID — ignore and fall back to authenticated user
-        }
+    if (!requestedGuid) return req.user.sub;
+
+    let target;
+    try {
+        uuidRule.parse(requestedGuid);
+        target = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
+    } catch (_) {
+        return req.user.sub; // Invalid GUID — fall back to the authenticated user
     }
-    return req.user.sub;
+    if (!target) return req.user.sub;
+
+    if (!await enforceLeaderScope(req, res, target.user_id)) return null;
+    return target.user_id;
 };
 
 /*──────────────────────────────────────────────────────────────
@@ -61,7 +84,8 @@ const assertConsultantExists = async (res, userId) => {
 ──────────────────────────────────────────────────────────────*/
 const getLearningPathProgress = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getLearningPathProgress(targetUserId);
@@ -80,7 +104,8 @@ const getLearningPathProgress = async (req, res) => {
 const getPointsHistory = async (req, res) => {
     try {
         const { page, limit, search, serviceLineId, areaId, dateFrom, dateTo } = validations.pointsHistoryQuerySchema.parse(req.query);
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPointsHistory(targetUserId, { page, limit, search, serviceLineId, areaId, dateFrom, dateTo });
@@ -104,7 +129,8 @@ const getPointsHistory = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getAcquisitionTimeline = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getAcquisitionTimeline(targetUserId);
@@ -136,6 +162,8 @@ const getPeerComparison = async (req, res) => {
             if (!user) return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
             targetUserId = user.user_id;
         }
+        // A Service Line Leader may only compare consultants within their own SL.
+        if (!await enforceLeaderScope(req, res, targetUserId)) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPeerComparison(targetUserId, tolerance);
@@ -314,7 +342,8 @@ const getUserEnrollment = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getBadgesPerArea = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getBadgesPerArea(targetUserId);
