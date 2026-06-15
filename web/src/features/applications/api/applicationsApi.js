@@ -21,10 +21,12 @@ export async function startApplication(badgeId, goalId = null) {
 	return data?.data;
 }
 
-export async function getUploadUrl(applicationGuid, requirementId, fileName) {
+export async function getUploadUrl(applicationGuid, requirementId, fileName, contentType, fileSize) {
 	const { data } = await api.post(`/applications/${applicationGuid}/upload-url`, {
 		requirementId,
 		fileName,
+		contentType,
+		fileSize,
 	});
 	return data?.data;
 }

@@ -78,7 +78,13 @@ export default function ApplicationDetail({ application, onReload }) {
 		try {
 			validateEvidenceFile(file);
 
-			const { uploadUrl, finalFileUrl } = await getUploadUrl(appGuid, requirementId, file.name);
+			// Some files (e.g. .zip) report an empty MIME type — fall back to the
+			// extension so the server-side content-type gate gets a valid value.
+			const EXT_MIME = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', zip: 'application/zip' };
+			const ext = file.name.split('.').pop().toLowerCase();
+			const contentType = file.type || EXT_MIME[ext] || 'application/octet-stream';
+
+			const { uploadUrl, finalFileUrl } = await getUploadUrl(appGuid, requirementId, file.name, contentType, file.size);
 
 			const uploadRes = await fetch(uploadUrl, {
 				method: 'PUT',
