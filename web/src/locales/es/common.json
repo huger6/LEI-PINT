@@ -1,4 +1,40 @@
 {
+	"softinsaSite": {
+		"nav": { "sobre": "Acerca de", "funcionalidades": "Funcionalidades", "badges": "Badges", "perfis": "Perfiles", "comoFunciona": "Cómo funciona", "aceder": "Acceder a la plataforma" },
+		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Plataforma de Badges", "subtitle": "Innovación, talento y tecnología para acelerar la transformación digital, ahora también en cómo reconocemos las competencias de nuestros equipos, con credenciales digitales verificables.", "entrar": "Entrar", "saberMais": "Saber más", "credential": "Credencial verificada" },
+		"stats": { "learningPaths": "Learning Path inicial", "niveis": "Niveles por área", "idiomas": "Idiomas", "verificaveis": "Credenciales verificables" },
+		"about": { "title": "Sobre el proyecto", "p1": "La Plataforma de Badges de Softinsa es un sistema de gestión de credenciales digitales que reconoce y valida las competencias tecnológicas de los consultores mediante badges asociados a Learning Paths, Service Lines y Áreas.", "p2": "Resuelve la dificultad de evidenciar competencias, añade una capa de gamificación que impulsa el aprendizaje continuo y crea una forma estandarizada y verificable de presentar credenciales profesionales." },
+		"features": { "title": "Funcionalidades", "items": [
+			{ "title": "Learning Paths", "desc": "Rutas técnicas organizadas por Service Lines, Áreas y niveles de progresión." },
+			{ "title": "Credenciales verificables", "desc": "Cada badge tiene una página pública única para verificación externa y firmas de correo." },
+			{ "title": "Gamificación", "desc": "Sistema de puntos, logros y ranking que incentiva la formación continua." },
+			{ "title": "Validación por expertos", "desc": "Flujo de validación en dos fases: Talent Manager y Service Line Leader." },
+			{ "title": "Estadísticas e informes", "desc": "KPIs, distribución de badges y exportaciones a Excel/PDF." },
+			{ "title": "Multilingüe", "desc": "Disponible en portugués, inglés y español." }
+		] },
+		"profiles": { "title": "Perfiles de usuario", "items": [
+			{ "title": "Consultor", "desc": "Solicita badges, envía evidencias, sigue su progreso y comparte credenciales." },
+			{ "title": "Talent Manager", "desc": "Verifica las evidencias de todas las candidaturas, sin importar la Service Line." },
+			{ "title": "Service Line Leader", "desc": "Decisión final sobre las candidaturas de su Service Line." },
+			{ "title": "Administrador", "desc": "Gestiona usuarios, contenidos, el motor de puntos y las políticas de la plataforma." }
+		] },
+		"flow": { "title": "Cómo funciona", "items": [
+			{ "title": "Candidatura", "desc": "El consultor solicita un badge con las evidencias necesarias." },
+			{ "title": "Verificación", "desc": "El Talent Manager valida las evidencias y las reenvía al Service Line Leader." },
+			{ "title": "Decisión", "desc": "El Service Line Leader aprueba o rechaza; el badge se genera y queda disponible." },
+			{ "title": "Compartir", "desc": "El consultor publica y comparte la credencial, con verificación pública por enlace." }
+		] },
+		"badges": { "title": "Badges", "subtitle": "Explora las credenciales disponibles y las competencias que reconoce cada una.", "empty": "No hay badges para mostrar." },
+		"cta": { "title": "¿Listo para evidenciar tus competencias?", "subtitle": "Accede a la plataforma y empieza a conseguir tus badges.", "button": "Acceder a la plataforma" },
+		"footer": {
+			"tagline": "Habla con el equipo de Softinsa y descubre cómo podemos impulsar la innovación en tu negocio.",
+			"contacteNos": "Contáctanos", "localizacao": "Ubicación", "vamosConversar": "¿Hablamos?", "envie": "Envíanos un mensaje aquí.", "formulario": "Formulario", "ligacoesUteis": "Enlaces Útiles",
+			"copyright": "© Softinsa {{year}}. Todos los derechos reservados.", "toTop": "Volver arriba",
+			"links": ["Quiénes somos", "Responsabilidad Social", "Servicios", "Centros de Innovación", "Carreras", "Destacados", "Contactos"],
+			"policies": ["Política de Privacidad", "Condiciones de Uso", "Política Ambiental", "Canal de Denuncias"]
+		},
+		"badgePage": { "back": "Todos los badges", "points": "Puntos", "validity": "Validez", "days": "{{count}} días", "competencies": "Competencias", "competenciesSub": "Lo que debes evidenciar para conseguir este badge.", "noCompetencies": "Sin competencias detalladas para este badge.", "notFound": "Badge no encontrado", "viewAll": "Ver todos los badges", "loading": "Cargando…", "premium": "Premium", "nivel": "Nivel", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+	},
 	"roles": {
 		"Consultant": "Consultor",
 		"Talent Manager": "Talent Manager",
