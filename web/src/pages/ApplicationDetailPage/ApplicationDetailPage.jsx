@@ -50,18 +50,23 @@ export default function ApplicationDetailPage() {
 	}
 
 	const state = application.application_state || application.state;
+	const isAdmin = user?.role === 'Administrator';
 
 	if (state === 'Open') {
+		// The owning consultant edits an Open application; everyone else (incl.
+		// the Administrator) only sees its read-only status.
+		if (isAdmin) return <ApplicationStatus application={application} badge={application.badge} />;
 		return <ApplicationDetail application={application} onReload={loadApplication} />;
 	}
 
 	// Reviewers act on the application at their workflow stage:
 	// Talent Manager forwards 'Submitted' apps; Service Line Leader is the final
-	// gatekeeper for 'In validation' apps (accept/reject).
-	if (user?.role === 'Talent Manager' && state === 'Submitted') {
+	// gatekeeper for 'In validation' apps (accept/reject). The Administrator is a
+	// super-reviewer and can act on either actionable state.
+	if ((user?.role === 'Talent Manager' || isAdmin) && state === 'Submitted') {
 		return <ApplicationReview application={application} onReload={loadApplication} />;
 	}
-	if (user?.role === 'Service Line Leader' && state === 'In validation') {
+	if ((user?.role === 'Service Line Leader' || isAdmin) && state === 'In validation') {
 		return <ApplicationReview application={application} onReload={loadApplication} />;
 	}
 

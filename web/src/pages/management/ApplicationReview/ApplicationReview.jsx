@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SHARED, TM, SLL } from '../../../routes/paths';
+import { SHARED, TM, SLL, ADMIN } from '../../../routes/paths';
 import {
 	downloadEvidence,
 	reviewEvidence,
@@ -42,15 +42,22 @@ export default function ApplicationReview({ application }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useUser();
-	const isSll = user?.role === 'Service Line Leader';
+	const isAdmin = user?.role === 'Administrator';
+
+	const appGuid = application?.application_guid;
+	const state = application?.application_state;
+
+	// The Administrator is a super-reviewer: which review behaviour applies is
+	// driven by the application's current state (Submitted → Talent Manager step,
+	// In validation → Service Line Leader step) rather than a fixed role.
+	const isSll = isAdmin
+		? state === 'In validation'
+		: user?.role === 'Service Line Leader';
 	// The verification that matters is the Talent Manager's: the TM marks each
 	// evidence correct; the SLL sees it read-only ("Verificado pelo TM") and decides.
 	// Each reviewer validates independently: TM marks tm_reviewed, SLL marks sll_reviewed.
 	const reviewField = isSll ? 'sll_reviewed' : 'tm_reviewed';
-	const validationsPath = isSll ? SLL.VALIDATIONS : TM.VALIDATIONS;
-
-	const appGuid = application?.application_guid;
-	const state = application?.application_state;
+	const validationsPath = isAdmin ? ADMIN.APPLICATIONS : (isSll ? SLL.VALIDATIONS : TM.VALIDATIONS);
 	const badge = application?.badge || {};
 	const requirements = badge.badge_requirements || [];
 	const [evidences, setEvidences] = useState(application?.requirements_evidences || []);
@@ -517,7 +524,7 @@ export default function ApplicationReview({ application }) {
 							</div>
 						)}
 
-						<Link to={SHARED.APPLICATIONS} className={styles.backLink}>{t('applicationReview.backToList')}</Link>
+						<Link to={isAdmin ? ADMIN.APPLICATIONS : SHARED.APPLICATIONS} className={styles.backLink}>{t('applicationReview.backToList')}</Link>
 					</div>
 				</aside>
 			</div>
