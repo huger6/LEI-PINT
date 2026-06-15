@@ -16,6 +16,7 @@ import {
 	LevelsList,
 } from '../features/structure';
 import Announcements from '../pages/management/Announcements/Announcements';
+import ValidationsBoard from '../pages/management/ValidationsBoard/ValidationsBoard';
 
 const adminRoutes = [
 	{ path: ADMIN.DASHBOARD, element: <AdminDashboard /> },
@@ -28,6 +29,7 @@ const adminRoutes = [
 	{ path: ADMIN.LEARNING_PATHS, element: <LearningPathsList /> },
 	{ path: ADMIN.LEVELS, element: <LevelsList /> },
 	{ path: ADMIN.REQUIREMENTS, element: <AdminRequirements /> },
+	{ path: ADMIN.APPLICATIONS, element: <ValidationsBoard /> },
 	{ path: ADMIN.LEARNING_PATH_DETAIL, element: <LearningPathDetail /> },
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },
 	{ path: ADMIN.AREA_DETAIL, element: <AreaDetail /> },

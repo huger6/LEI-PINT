@@ -28,6 +28,7 @@ export default function ValidationsBoard() {
 	const navigate = useNavigate();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
+	const isAdmin = user?.role === 'Administrator';
 
 	const [items, setItems] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -38,8 +39,9 @@ export default function ValidationsBoard() {
 	const [showFilters, setShowFilters] = useState(false);
 	const [search, setSearch] = useState('');
 	// Default to the applications this reviewer must act on (TM: Submitted,
-	// SLL: In validation); the filter lets them switch to any/all states.
-	const [stateFilter, setStateFilter] = useState(isSll ? 'In validation' : 'Submitted');
+	// SLL: In validation); the Administrator oversees everything so defaults to
+	// all states. The filter lets them switch freely.
+	const [stateFilter, setStateFilter] = useState(isAdmin ? '' : (isSll ? 'In validation' : 'Submitted'));
 	const [sortKey, setSortKey] = useState('submitted');
 	const [sortDir, setSortDir] = useState('desc');
 
