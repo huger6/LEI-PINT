@@ -1,11 +1,11 @@
 import Icon from '../Icons/Icons';
 import styles from './ContentCard.module.css';
 
-export function CardHeader({ icon, iconBg, iconColor, title }) {
+export function CardHeader({ icon, iconNode, iconBg, iconColor, title }) {
 	return (
 		<div className={styles.header}>
 			<div className={styles.iconCircle} style={{ background: iconBg }}>
-				<Icon name={icon} size={20} color={iconColor} />
+				{iconNode || <Icon name={icon} size={20} color={iconColor} />}
 			</div>
 			<span className={styles.headerTitle}>{title}</span>
 		</div>

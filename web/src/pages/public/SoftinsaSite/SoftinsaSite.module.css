@@ -470,7 +470,10 @@
 	transform: translateY(-4px);
 	box-shadow: 0 16px 40px rgba(10, 37, 64, 0.12);
 	border-color: var(--si-teal);
+	text-decoration: none;
 }
+
+.badgeCard h3, .badgeCard:hover h3, .badgeCard .badgeArea, .badgeCard:hover .badgeArea { text-decoration: none; }
 
 .badgeThumb {
 	position: relative;

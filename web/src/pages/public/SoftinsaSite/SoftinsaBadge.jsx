@@ -86,9 +86,21 @@ export default function SoftinsaBadge() {
 							</div>
 						</section>
 
+						{badge.skills?.length > 0 && (
+							<section className={styles.section}>
+								<h2>{t('softinsaSite.badgePage.competencies')}</h2>
+								<p className={styles.sectionSub}>{t('softinsaSite.badgePage.competenciesSub')}</p>
+								<div className={styles.skillTags}>
+									{badge.skills.map((s, i) => (
+										<span key={i} className={styles.skillTag} title={s.description || undefined}>{s.name}</span>
+									))}
+								</div>
+							</section>
+						)}
+
 						<section className={styles.section}>
-							<h2>{t('softinsaSite.badgePage.competencies')}</h2>
-							<p className={styles.sectionSub}>{t('softinsaSite.badgePage.competenciesSub')}</p>
+							<h2>{t('softinsaSite.badgePage.requirements')}</h2>
+							<p className={styles.sectionSub}>{t('softinsaSite.badgePage.requirementsSub')}</p>
 							{badge.requirements?.length > 0 ? (
 								<div className={styles.reqGrid}>
 									{badge.requirements.map((r, i) => (
@@ -100,7 +112,7 @@ export default function SoftinsaBadge() {
 									))}
 								</div>
 							) : (
-								<p className={styles.muted}>{t('softinsaSite.badgePage.noCompetencies')}</p>
+								<p className={styles.muted}>{t('softinsaSite.badgePage.noRequirements')}</p>
 							)}
 						</section>
 					</>

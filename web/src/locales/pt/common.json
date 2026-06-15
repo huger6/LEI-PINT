@@ -33,7 +33,7 @@
 			"links": ["Quem somos", "Responsabilidade Social", "Serviços", "Centros de Inovação", "Carreiras", "Destaques", "Contactos"],
 			"policies": ["Política de Privacidade", "Condições de Utilização", "Política Ambiental", "Canal de Denúncias"]
 		},
-		"badgePage": { "back": "Todos os badges", "points": "Pontos", "validity": "Validade", "days": "{{count}} dias", "competencies": "Competências", "competenciesSub": "O que é necessário evidenciar para obter este badge.", "noCompetencies": "Sem competências detalhadas para este badge.", "notFound": "Badge não encontrado", "viewAll": "Ver todos os badges", "loading": "A carregar…", "premium": "Premium", "nivel": "Nível", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+		"badgePage": { "back": "Todos os badges", "points": "Pontos", "validity": "Validade", "days": "{{count}} dias", "competencies": "Competências", "competenciesSub": "Competências que este badge certifica.", "noCompetencies": "Sem competências associadas a este badge.", "requirements": "Requisitos", "requirementsSub": "O que é necessário evidenciar para obter este badge.", "noRequirements": "Sem requisitos detalhados para este badge.", "notFound": "Badge não encontrado", "viewAll": "Ver todos os badges", "loading": "A carregar…", "premium": "Premium", "nivel": "Nível", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
 	},
 	"roles": {
 		"Consultant": "Consultor",
