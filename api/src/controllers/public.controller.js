@@ -174,5 +174,81 @@ const viewPublicCertificate = async (req, res) => {
     }
 };
 
-module.exports = { viewPublicBadge, viewPublicCertificate };
+// ── Public badge catalog (JSON) — used by the public /softinsa microsite ──────
+const PUBLIC_BADGE_INCLUDE = [
+	{ model: models.areas, as: 'area', attributes: ['area_name', 'area_slug'] },
+	{ model: models.service_lines, as: 'service_line', attributes: ['service_line_name', 'sl_slug'] },
+	{ model: models.learning_paths, as: 'learning_path', attributes: ['path_title', 'path_slug'] },
+	{
+		model: models.progression_stages,
+		as: 'progression_stage',
+		attributes: ['stage_title', 'stage_sequence'],
+		include: [{ model: models.stage_codes, as: 'stage_code', attributes: ['stage_code'] }],
+	},
+];
+
+const serializeBadge = (b) => ({
+	badge_slug: b.badge_slug,
+	badge_title: b.badge_title,
+	badge_description: b.badge_description,
+	badge_img_url: b.badge_img_url,
+	badge_points: b.badge_points,
+	badge_type: b.badge_type,
+	expiration_duration_days: b.expiration_duration_days,
+	area: b.area ? { name: b.area.area_name, slug: b.area.area_slug } : null,
+	service_line: b.service_line ? { name: b.service_line.service_line_name, slug: b.service_line.sl_slug } : null,
+	learning_path: b.learning_path ? { title: b.learning_path.path_title, slug: b.learning_path.path_slug } : null,
+	stage: b.progression_stage ? {
+		title: b.progression_stage.stage_title,
+		code: b.progression_stage.stage_code?.stage_code || null,
+	} : null,
+});
+
+const listPublicBadges = async (req, res) => {
+	try {
+		const rows = await models.badges.findAll({
+			where: { is_active: true },
+			attributes: ['badge_id', 'badge_slug', 'badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'badge_type', 'expiration_duration_days'],
+			include: PUBLIC_BADGE_INCLUDE,
+			order: [['badge_title', 'ASC']],
+		});
+		return res.status(200).json({ success: true, data: rows.map(serializeBadge) });
+	} catch (error) {
+		logger.error('Error listing public badges', { error });
+		return res.status(500).json({ success: false, code: 'PUBLIC_BADGES_FAILED' });
+	}
+};
+
+const getPublicBadgeBySlug = async (req, res) => {
+	try {
+		const badge = await models.badges.findOne({
+			where: { badge_slug: req.params.slug, is_active: true },
+			attributes: ['badge_id', 'badge_slug', 'badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'badge_type', 'expiration_duration_days'],
+			include: [
+				...PUBLIC_BADGE_INCLUDE,
+				{
+					model: models.badge_requirements,
+					as: 'badge_requirements',
+					where: { is_active: true },
+					required: false,
+					attributes: ['requirement_title', 'requirement_description', 'requirement_img_url'],
+				},
+			],
+		});
+		if (!badge) return res.status(404).json({ success: false, code: 'PUBLIC_BADGE_NOT_FOUND' });
+
+		const data = serializeBadge(badge);
+		data.requirements = (badge.badge_requirements || []).map((r) => ({
+			title: r.requirement_title,
+			description: r.requirement_description,
+			img_url: r.requirement_img_url,
+		}));
+		return res.status(200).json({ success: true, data });
+	} catch (error) {
+		logger.error('Error fetching public badge', { error });
+		return res.status(500).json({ success: false, code: 'PUBLIC_BADGE_FAILED' });
+	}
+};
+
+module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug };
 
