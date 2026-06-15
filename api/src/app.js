@@ -39,8 +39,10 @@ app.use(cors({
     origin: process.env.APP_URL,
     credentials: true
 }));;
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Explicit body-size cap (file bytes go straight to Supabase, never through the
+// API body, so request payloads are small text). Guards against large-body DoS.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 app.use(cookieParser());
 app.use(requestLogger);
 
