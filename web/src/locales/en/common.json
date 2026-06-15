@@ -1445,14 +1445,36 @@
 	},
 	"mailSignature": {
 		"title": "Email signature",
-		"subtitle": "Select the badges to include and copy the signature into your email client.",
+		"subtitle": "Build your signature and copy it into your email client.",
 		"selectBadges": "Select badges",
 		"preview": "Preview",
-		"copyHtml": "Copy signature",
-		"showHtml": "Show HTML",
+		"copySignature": "Copy signature",
+		"copyHtml": "Copy HTML",
+		"showHtml": "Show HTML code",
 		"copied": "Signature copied.",
+		"copiedHtml": "HTML copied.",
 		"copyFailed": "Could not copy. Copy the HTML manually.",
-		"empty": "You don't have any badges with a public link to include in the signature yet."
+		"empty": "You don't have any badges with a public link to include in the signature yet.",
+		"noBadgesNote": "For this role the signature is simple (name and title), without badges.",
+		"instructionsTitle": "How to add it to your email",
+		"role": {
+			"consultant": "Consultant",
+			"tm": "Talent Manager",
+			"sll": "Service Line Leader",
+			"admin": "Administrator"
+		},
+		"gmailSteps": [
+			"Open Gmail and go to Settings (⚙) › See all settings.",
+			"In the \"Signature\" section, create a new one or select an existing one.",
+			"Click the signature box and paste (Ctrl+V) — it appears formatted.",
+			"Click \"Save changes\" at the bottom of the page."
+		],
+		"outlookSteps": [
+			"In Outlook, go to Settings (⚙) › View all Outlook settings › Mail › Compose and reply.",
+			"Under \"Email signature\", create a new one.",
+			"Click the box and paste (Ctrl+V) the copied signature.",
+			"Save the changes."
+		]
 	},
 	"announcements": {
 		"title": "Announcements",

@@ -1444,14 +1444,36 @@
 	},
 	"mailSignature": {
 		"title": "Firma de correo",
-		"subtitle": "Seleccione los badges a incluir y copie la firma en su cliente de correo.",
+		"subtitle": "Crea tu firma y cópiala en tu cliente de correo.",
 		"selectBadges": "Seleccionar badges",
 		"preview": "Vista previa",
-		"copyHtml": "Copiar firma",
-		"showHtml": "Ver HTML",
+		"copySignature": "Copiar firma",
+		"copyHtml": "Copiar HTML",
+		"showHtml": "Ver código HTML",
 		"copied": "Firma copiada.",
+		"copiedHtml": "HTML copiado.",
 		"copyFailed": "No se pudo copiar. Copie el HTML manualmente.",
-		"empty": "Aún no tiene badges con enlace público para incluir en la firma."
+		"empty": "Aún no tiene badges con enlace público para incluir en la firma.",
+		"noBadgesNote": "Para este perfil la firma es simple (nombre y cargo), sin badges.",
+		"instructionsTitle": "Cómo añadirla a tu correo",
+		"role": {
+			"consultant": "Consultor",
+			"tm": "Talent Manager",
+			"sll": "Service Line Leader",
+			"admin": "Administrador"
+		},
+		"gmailSteps": [
+			"Abre Gmail y ve a Configuración (⚙) › Ver toda la configuración.",
+			"En la sección \"Firma\", crea una nueva o selecciona una existente.",
+			"Haz clic en la caja de firma y pega (Ctrl+V) — aparece con formato.",
+			"Pulsa \"Guardar cambios\" al final de la página."
+		],
+		"outlookSteps": [
+			"En Outlook, ve a Configuración (⚙) › Ver toda la configuración de Outlook › Correo › Redactar y responder.",
+			"En \"Firma de correo\", crea una nueva.",
+			"Haz clic en la caja y pega (Ctrl+V) la firma copiada.",
+			"Guarda los cambios."
+		]
 	},
 	"announcements": {
 		"title": "Comunicados",
