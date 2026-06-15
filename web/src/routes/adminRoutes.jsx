@@ -17,6 +17,9 @@ import {
 } from '../features/structure';
 import Announcements from '../pages/management/Announcements/Announcements';
 import ValidationsBoard from '../pages/management/ValidationsBoard/ValidationsBoard';
+import AdminNotifications from '../pages/admin/AdminNotifications/AdminNotifications';
+import AdminRgpd from '../pages/admin/AdminRgpd/AdminRgpd';
+import AdminSlas from '../pages/admin/AdminSlas/AdminSlas';
 
 const adminRoutes = [
 	{ path: ADMIN.DASHBOARD, element: <AdminDashboard /> },
@@ -30,6 +33,9 @@ const adminRoutes = [
 	{ path: ADMIN.LEVELS, element: <LevelsList /> },
 	{ path: ADMIN.REQUIREMENTS, element: <AdminRequirements /> },
 	{ path: ADMIN.APPLICATIONS, element: <ValidationsBoard /> },
+	{ path: ADMIN.NOTIFICATIONS, element: <AdminNotifications /> },
+	{ path: ADMIN.RGPD, element: <AdminRgpd /> },
+	{ path: ADMIN.SLAS, element: <AdminSlas /> },
 	{ path: ADMIN.LEARNING_PATH_DETAIL, element: <LearningPathDetail /> },
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },
 	{ path: ADMIN.AREA_DETAIL, element: <AreaDetail /> },
