@@ -488,6 +488,7 @@
 		"create": "Criar",
 		"edit": "Editar",
 		"delete": "Eliminar",
+		"remove": "Remover",
 			"deactivate": "Desativar",
 		"select": "Selecionar...",
 		"name": "Nome",
@@ -599,7 +600,18 @@
 		"editBadge": "Editar Badge",
 		"noBadges": "Sem badges",
 		"noBadgesDesc": "Nenhum badge encontrado.",
-		"level": "Nível"
+		"level": "Nível",
+		"image": "Imagem do badge",
+		"expirationDays": "Validade (dias)",
+		"expirationNever": "Sem expiração"
+	},
+	"badgeImage": {
+		"upload": "Carregar",
+		"design": "Desenhar",
+		"designerTitle": "Desenhar badge",
+		"useDesign": "Usar este desenho",
+		"uploadFailed": "Falha ao carregar a imagem.",
+		"previewAlt": "Pré-visualização do badge"
 	},
 	"adminAreas": {
 		"title": "Áreas",
