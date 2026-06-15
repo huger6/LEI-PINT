@@ -78,6 +78,7 @@ export const SHARED = {
 	PROFILE_EDIT: '/profile/edit',
 	MAIL_SIGNATURE: '/mail-signature',
 	PUBLIC_PROFILE: '/public-profile',
+	USER_PROFILE_VIEW: '/u/:guid',
 	SETTINGS: '/settings',
 	PRIVACY: '/privacy',
 	SECURITY: '/security',

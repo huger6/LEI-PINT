@@ -119,7 +119,7 @@ export default function WelcomeCard() {
                     {isLeader ? (
                         <div className={`d-flex flex-column flex-md-row ${styles.metaList}`}>
                             <span className={styles.metaItem}>
-                                <Icon name="security" className={styles.metaIcon} aria-hidden="true" color="#fff" />
+                                <Icon name="badge" className={styles.metaIcon} aria-hidden="true" color="#fff" />
                                 <span className={`${styles.metaText} mb-0`}>
                                     <span className={styles.metaHighlight}>{t(isSll ? 'welcomeCard.roleSll' : 'welcomeCard.roleTm')}</span>
                                 </span>

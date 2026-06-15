@@ -1222,6 +1222,8 @@
 		"comparisonEmpty": "Sem pares comparáveis (mesma área e experiência semelhante).",
 		"thisConsultant": "Este consultor",
 		"peerAverage": "Média dos pares",
+		"viewPublicProfile": "Ver perfil público",
+		"compareWith": "Comparar com:",
 		"standing": "{{position}}º de {{total}} entre pares comparáveis (por pontos).",
 		"colConsultant": "Consultor",
 		"colPoints": "Pontos",

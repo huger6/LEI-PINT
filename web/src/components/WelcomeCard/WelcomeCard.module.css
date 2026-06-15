@@ -34,6 +34,11 @@
     line-height: 1.3;
 }
 
+.metaList {
+    gap: 0.6rem 1.5rem;
+    margin-top: 0.85rem;
+}
+
 .metaItem {
     display: inline-flex;
     align-items: center;
