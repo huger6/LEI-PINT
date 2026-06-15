@@ -233,10 +233,7 @@ export default function ValidationsBoard() {
 											{!isSll && <td className="text-muted">{a.badge?.service_line?.service_line_name || '—'}</td>}
 											<td className="text-muted">{a.badge?.area?.area_name || '—'}</td>
 											<td className="text-muted">
-												<span className={styles.dateCell}>
-													<Icon name="today" size={14} color="var(--color-outline)" />
-													{formatDate(a)}
-												</span>
+												<span className={styles.dateCell}>{formatDate(a)}</span>
 											</td>
 											<td>
 												<span className={`${styles.pill} ${pill.cls}`}>

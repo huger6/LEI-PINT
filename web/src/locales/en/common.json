@@ -1222,6 +1222,8 @@
 		"comparisonEmpty": "No comparable peers (same area and similar experience).",
 		"thisConsultant": "This consultant",
 		"peerAverage": "Peer average",
+		"viewPublicProfile": "View public profile",
+		"compareWith": "Compare with:",
 		"standing": "{{position}} of {{total}} among comparable peers (by points).",
 		"colConsultant": "Consultant",
 		"colPoints": "Points",
