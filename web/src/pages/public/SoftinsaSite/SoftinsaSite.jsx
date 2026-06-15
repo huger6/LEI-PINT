@@ -31,7 +31,7 @@ export default function SoftinsaSite() {
 
 	useEffect(() => {
 		let active = true;
-		getPublicBadges().then((rows) => { if (active) setBadges(rows.slice(0, 8)); }).catch(() => {});
+		getPublicBadges().then((rows) => { if (active) setBadges(rows); }).catch(() => {});
 		return () => { active = false; };
 	}, []);
 

@@ -113,6 +113,19 @@
 .section h2 { font-size: 1.5rem; font-weight: 600; color: var(--si-teal); margin: 0 0 0.3rem; }
 .sectionSub { color: var(--si-muted); margin: 0 0 1.5rem; }
 
+.skillTags { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.skillTag {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5rem 0.9rem;
+	background: var(--si-bg-alt);
+	border: 1px solid var(--si-border);
+	border-radius: 999px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--si-navy);
+}
+
 .reqGrid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

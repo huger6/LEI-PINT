@@ -22,6 +22,28 @@ function verifyUrl(link) {
 	return `${window.location.origin}/verify/${link}`;
 }
 
+// Brand logos for the e-mail client instruction cards (multicolour SVGs, so they
+// cannot use the mono-stroke Icon component).
+const gmailIcon = (
+	<svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true">
+		<path fill="#4caf50" d="M45 16.2l-5 2.75-5 4.75L35 40h7a3 3 0 0 0 3-3z" />
+		<path fill="#1e88e5" d="M3 16.2l3.614 1.71L13 23.7V40H6a3 3 0 0 1-3-3z" />
+		<path fill="#e53935" d="M35 11.2L24 19.45 13 11.2 12 17l1 6.7L24 32l11-8.3L36 17z" />
+		<path fill="#c62828" d="M3 12.298V16.2l10 7.5V11.2L9.876 8.859A4.298 4.298 0 0 0 3 12.298z" />
+		<path fill="#fbc02d" d="M45 12.298V16.2l-10 7.5V11.2l3.124-2.341A4.298 4.298 0 0 1 45 12.298z" />
+	</svg>
+);
+
+const outlookIcon = (
+	<svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true">
+		<path fill="#0a4dae" d="M27 12h15.5A1.5 1.5 0 0 1 44 13.5v21a1.5 1.5 0 0 1-1.5 1.5H27z" />
+		<path fill="#fff" d="M30 17h11v2.4l-5.5 3.6L30 19.4z" />
+		<path fill="#cfe4fb" d="M30 20.6l5.5 3.4 5.5-3.4V31H30z" />
+		<rect x="3" y="13" width="25" height="22" rx="3" fill="#0078d4" />
+		<path fill="#fff" d="M15.4 18c-3.2 0-5.5 2.5-5.5 6s2.3 6 5.5 6 5.5-2.5 5.5-6-2.3-6-5.5-6zm0 2.5c1.9 0 3 1.6 3 3.5s-1.1 3.5-3 3.5-3-1.6-3-3.5 1.1-3.5 3-3.5z" />
+	</svg>
+);
+
 // Builds the signature HTML. Badges are only included for consultants.
 function buildSignatureHtml(name, role, email, badges) {
 	const items = badges
@@ -119,15 +141,6 @@ export default function MailSignature() {
 		}
 	}
 
-	async function copyHtmlSource() {
-		try {
-			await navigator.clipboard.writeText(signatureHtml);
-			setToast(t('mailSignature.copiedHtml'));
-		} catch {
-			setError(t('mailSignature.copyFailed'));
-		}
-	}
-
 	if (loading) {
 		return (
 			<div className={styles.page}>
@@ -182,11 +195,8 @@ export default function MailSignature() {
 						<div className={styles.preview} dangerouslySetInnerHTML={{ __html: signatureHtml }} />
 					</div>
 					<div className={styles.actions}>
-						<Button variant="filled" color="primary" size="sm" onClick={copySignature}>
-							<Icon name="check_circle" size={16} /> {t('mailSignature.copySignature')}
-						</Button>
-						<Button variant="outlined" color="primary" size="sm" onClick={copyHtmlSource}>
-							<Icon name="link" size={16} /> {t('mailSignature.copyHtml')}
+						<Button variant="filled" color="primary" size="md" onClick={copySignature}>
+							<Icon name="check_circle" size={18} /> {t('mailSignature.copySignature')}
 						</Button>
 					</div>
 				</ContentCard>
@@ -196,13 +206,13 @@ export default function MailSignature() {
 			<h2 className={styles.sectionTitle}>{t('mailSignature.instructionsTitle')}</h2>
 			<div className={styles.grid}>
 				<ContentCard className={styles.card}>
-					<CardHeader icon="email" iconBg="var(--color-red-soft)" iconColor="var(--color-red-on-soft)" title="Gmail" />
+					<CardHeader iconNode={gmailIcon} iconBg="#fff" title="Gmail" />
 					<ol className={styles.steps}>
 						{(Array.isArray(gmailSteps) ? gmailSteps : []).map((s, i) => <li key={i}>{s}</li>)}
 					</ol>
 				</ContentCard>
 				<ContentCard className={styles.card}>
-					<CardHeader icon="email" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title="Outlook" />
+					<CardHeader iconNode={outlookIcon} iconBg="#fff" title="Outlook" />
 					<ol className={styles.steps}>
 						{(Array.isArray(outlookSteps) ? outlookSteps : []).map((s, i) => <li key={i}>{s}</li>)}
 					</ol>
