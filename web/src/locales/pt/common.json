@@ -630,6 +630,23 @@
 		"viewBadge": "Ver detalhes do badge",
 		"exploreBadges": "Explorar badges"
 	},
+	"achievements": {
+		"title": "Conquistas",
+		"subtitle": "Os badges que já conquistaste e os teus marcos.",
+		"totalBadges": "Badges conquistados",
+		"totalPoints": "Pontos acumulados",
+		"toNextMilestone": "para os {{count}} badges",
+		"milestones": "Marcos",
+		"milestoneLabel": "{{count}} badges",
+		"featured": "Destaque",
+		"expired": "Expirado",
+		"viewBadge": "Ver badge",
+		"verify": "Verificar",
+		"emptyTitle": "Ainda sem conquistas",
+		"emptyDesc": "Conquista o teu primeiro badge para o veres aqui.",
+		"exploreBadges": "Explorar badges",
+		"loadFailed": "Não foi possível carregar as conquistas."
+	},
 	"adminAreas": {
 		"title": "Áreas",
 		"newArea": "Nova Área",
