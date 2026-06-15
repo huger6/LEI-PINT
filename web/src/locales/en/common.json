@@ -630,6 +630,23 @@
 		"viewBadge": "View badge details",
 		"exploreBadges": "Explore badges"
 	},
+	"achievements": {
+		"title": "Achievements",
+		"subtitle": "The badges you've earned and your milestones.",
+		"totalBadges": "Badges earned",
+		"totalPoints": "Points accumulated",
+		"toNextMilestone": "to {{count}} badges",
+		"milestones": "Milestones",
+		"milestoneLabel": "{{count}} badges",
+		"featured": "Featured",
+		"expired": "Expired",
+		"viewBadge": "View badge",
+		"verify": "Verify",
+		"emptyTitle": "No achievements yet",
+		"emptyDesc": "Earn your first badge to see it here.",
+		"exploreBadges": "Explore badges",
+		"loadFailed": "Could not load achievements."
+	},
 	"adminAreas": {
 		"title": "Areas",
 		"newArea": "New Area",
