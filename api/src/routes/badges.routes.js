@@ -55,4 +55,8 @@ router.put('/:badgeSlug', loginRequired, isAdmin, badgeController.updateBadge);
  */
 router.delete('/:badgeSlug', loginRequired, isAdmin, badgeController.deleteBadge);
 
+// Badge requirements (nested) — works on the flat path and the deep hierarchy paths
+const requirementRoutes = require('./badgeRequirements.routes');
+router.use('/:badgeSlug/requirements', requirementRoutes);
+
 module.exports = router;
