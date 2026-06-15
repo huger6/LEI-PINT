@@ -649,7 +649,16 @@
 		"selectBadge": "Selecionar Badge",
 		"chooseBadge": "Escolher badge...",
 		"requirements": "Requisitos: {{name}}",
-		"noRequirements": "Este badge não tem requisitos definidos."
+		"noRequirements": "Este badge não tem requisitos definidos.",
+		"newRequirement": "Novo Requisito",
+		"editRequirement": "Editar Requisito",
+		"sequence": "Sequência",
+		"image": "Imagem do requisito",
+		"saveFailed": "Não foi possível guardar o requisito.",
+		"errTitle": "O título deve ter entre 2 e 150 caracteres.",
+		"errDescription": "A descrição é obrigatória (até 5000 caracteres).",
+		"errSequence": "A sequência deve ser um número positivo.",
+		"errPoints": "Os pontos não podem ser negativos."
 	},
 	"adminStructure": {
 		"title": "Gerir Estrutura",
