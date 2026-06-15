@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS progression_stages (
    stage_title          VARCHAR(100)         NOT NULL,
    stage_sequence       INTEGER                 NULL,
    stage_description    TEXT                 NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
    updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
