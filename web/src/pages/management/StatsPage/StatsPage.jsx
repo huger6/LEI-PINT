@@ -8,7 +8,9 @@ import SllStats from '../SllStats/SllStats';
 export default function StatsPage() {
 	const { user } = useUser();
 
-	if (user?.role === 'Talent Manager') return <TmStats />;
+	// The Administrator oversees the whole platform, so reuses the global
+	// (Talent Manager) statistics/reports view.
+	if (user?.role === 'Talent Manager' || user?.role === 'Administrator') return <TmStats />;
 	if (user?.role === 'Service Line Leader') return <SllStats />;
 	return <Navigate to={SHARED.UNAUTHORIZED} replace />;
 }
