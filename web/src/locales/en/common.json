@@ -1,4 +1,40 @@
 {
+	"softinsaSite": {
+		"nav": { "sobre": "About", "funcionalidades": "Features", "badges": "Badges", "perfis": "Profiles", "comoFunciona": "How it works", "aceder": "Go to the platform" },
+		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Badge Platform", "subtitle": "Innovation, talent and technology to accelerate digital transformation, now also in how we recognise our teams' skills, with verifiable digital credentials.", "entrar": "Sign in", "saberMais": "Learn more", "credential": "Verified credential" },
+		"stats": { "learningPaths": "Initial Learning Path", "niveis": "Levels per area", "idiomas": "Languages", "verificaveis": "Verifiable credentials" },
+		"about": { "title": "About the project", "p1": "The Softinsa Badge Platform is a digital credential management system that recognises and validates consultants' technical skills through badges tied to Learning Paths, Service Lines and Areas.", "p2": "It addresses the difficulty of evidencing skills, adds a gamification layer that drives continuous learning, and provides a standardised, verifiable way to present professional credentials." },
+		"features": { "title": "Features", "items": [
+			{ "title": "Learning Paths", "desc": "Technical paths organised by Service Lines, Areas and progression levels." },
+			{ "title": "Verifiable credentials", "desc": "Every badge has a unique public page for external verification and email signatures." },
+			{ "title": "Gamification", "desc": "Points, achievements and ranking that encourage continuous learning." },
+			{ "title": "Expert validation", "desc": "Two-stage validation flow: Talent Manager and Service Line Leader." },
+			{ "title": "Statistics & reports", "desc": "KPIs, badge distribution and Excel/PDF exports." },
+			{ "title": "Multilingual", "desc": "Available in Portuguese, English and Spanish." }
+		] },
+		"profiles": { "title": "User profiles", "items": [
+			{ "title": "Consultant", "desc": "Applies for badges, submits evidence, tracks progress and shares credentials." },
+			{ "title": "Talent Manager", "desc": "Verifies the evidence of every application, regardless of Service Line." },
+			{ "title": "Service Line Leader", "desc": "Makes the final decision on applications within their Service Line." },
+			{ "title": "Administrator", "desc": "Manages users, content, the points engine and platform policies." }
+		] },
+		"flow": { "title": "How it works", "items": [
+			{ "title": "Application", "desc": "The consultant applies for a badge with the required evidence." },
+			{ "title": "Verification", "desc": "The Talent Manager validates the evidence and forwards it to the Service Line Leader." },
+			{ "title": "Decision", "desc": "The Service Line Leader approves or rejects; the badge is generated and made available." },
+			{ "title": "Sharing", "desc": "The consultant publishes and shares the credential, with public link verification." }
+		] },
+		"badges": { "title": "Badges", "subtitle": "Explore the available credentials and the skills each one recognises.", "empty": "No badges to show." },
+		"cta": { "title": "Ready to evidence your skills?", "subtitle": "Go to the platform and start earning your badges.", "button": "Go to the platform" },
+		"footer": {
+			"tagline": "Talk to the Softinsa team and discover how we can drive innovation in your business.",
+			"contacteNos": "Contact us", "localizacao": "Location", "vamosConversar": "Let's talk?", "envie": "Send us a message here.", "formulario": "Form", "ligacoesUteis": "Useful Links",
+			"copyright": "© Softinsa {{year}}. All rights reserved.", "toTop": "Back to top",
+			"links": ["About us", "Social Responsibility", "Services", "Innovation Centers", "Careers", "Highlights", "Contacts"],
+			"policies": ["Privacy Policy", "Terms of Use", "Environmental Policy", "Whistleblowing Channel"]
+		},
+		"badgePage": { "back": "All badges", "points": "Points", "validity": "Validity", "days": "{{count}} days", "competencies": "Skills", "competenciesSub": "What you must evidence to earn this badge.", "noCompetencies": "No detailed skills for this badge.", "notFound": "Badge not found", "viewAll": "See all badges", "loading": "Loading…", "premium": "Premium", "nivel": "Level", "area": "Area", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+	},
 	"roles": {
 		"Consultant": "Consultant",
 		"Talent Manager": "Talent Manager",

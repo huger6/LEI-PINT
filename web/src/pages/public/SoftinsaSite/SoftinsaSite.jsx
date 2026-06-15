@@ -1,38 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getPublicBadges } from '../../../features/badges/api/publicBadgesApi';
 import styles from './SoftinsaSite.module.css';
 
-// Official Softinsa logo (same asset used in the app navbar).
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
 const HERO_IMG = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80';
 const ABOUT_IMG = 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1000&q=80';
 
-const FEATURES = [
-	{ icon: '🎯', title: 'Learning Paths', desc: 'Percursos técnicos organizados por Service Lines, Áreas e níveis de progressão.' },
-	{ icon: '🏅', title: 'Credenciais verificáveis', desc: 'Cada badge tem uma página pública única para verificação externa e assinaturas de email.' },
-	{ icon: '🎮', title: 'Gamificação', desc: 'Sistema de pontos, conquistas e ranking que incentiva a formação contínua.' },
-	{ icon: '✅', title: 'Validação por especialistas', desc: 'Fluxo de validação em duas fases: Talent Manager e Service Line Leader.' },
-	{ icon: '📊', title: 'Estatísticas e relatórios', desc: 'KPIs, distribuição de badges e exportações para Excel/PDF.' },
-	{ icon: '🌐', title: 'Multilíngue', desc: 'Disponível em Português, Inglês e Espanhol.' },
-];
-
-const PROFILES = [
-	{ title: 'Consultor', desc: 'Candidata-se a badges, submete evidências, acompanha o progresso e partilha credenciais.' },
-	{ title: 'Talent Manager', desc: 'Verifica as evidências de todas as candidaturas, independentemente da Service Line.' },
-	{ title: 'Service Line Leader', desc: 'Decisão final sobre as candidaturas da sua Service Line.' },
-	{ title: 'Administrador', desc: 'Gere utilizadores, conteúdos, o motor de pontos e as políticas da plataforma.' },
-];
-
-const STEPS = [
-	{ n: '01', title: 'Candidatura', desc: 'O consultor submete a candidatura a um badge com as evidências necessárias.' },
-	{ n: '02', title: 'Verificação', desc: 'O Talent Manager valida as evidências e encaminha para o Service Line Leader.' },
-	{ n: '03', title: 'Decisão', desc: 'O Service Line Leader aprova ou rejeita; o badge é gerado e fica disponível.' },
-	{ n: '04', title: 'Partilha', desc: 'O consultor publica e partilha a credencial, com verificação pública por link.' },
-];
-
-const LIGACOES = ['Quem somos', 'Responsabilidade Social', 'Serviços', 'Centros de Inovação', 'Carreiras', 'Destaques', 'Contactos'];
-const POLICIES = ['Política de Privacidade', 'Condições de Utilização', 'Política Ambiental', 'Canal de Denúncias'];
+const FEATURE_ICONS = ['🎯', '🏅', '🎮', '✅', '📊', '🌐'];
+const STEP_NUMS = ['01', '02', '03', '04'];
+const LANGS = [{ code: 'pt', label: 'PT' }, { code: 'en', label: 'EN' }, { code: 'es', label: 'ES' }];
 
 const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 	<a className={styles.social} href={href} target="_blank" rel="noreferrer" aria-label={label}>
@@ -41,14 +19,15 @@ const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 );
 
 export default function SoftinsaSite() {
+	const { t, i18n } = useTranslation();
 	const rootRef = useRef(null);
 	const [badges, setBadges] = useState([]);
 
 	useEffect(() => {
 		const prev = document.title;
-		document.title = 'Plataforma de Badges - Softinsa';
+		document.title = `${t('softinsaSite.hero.title')} - Softinsa`;
 		return () => { document.title = prev; };
-	}, []);
+	}, [t]);
 
 	useEffect(() => {
 		let active = true;
@@ -56,7 +35,6 @@ export default function SoftinsaSite() {
 		return () => { active = false; };
 	}, []);
 
-	// Scroll-reveal animations.
 	useEffect(() => {
 		const root = rootRef.current;
 		if (!root) return undefined;
@@ -67,17 +45,21 @@ export default function SoftinsaSite() {
 		}
 		const io = new IntersectionObserver((entries) => {
 			entries.forEach((e) => {
-				if (e.isIntersecting) {
-					e.target.classList.add(styles.revealVisible);
-					io.unobserve(e.target);
-				}
+				if (e.isIntersecting) { e.target.classList.add(styles.revealVisible); io.unobserve(e.target); }
 			});
 		}, { threshold: 0.12 });
 		els.forEach((el) => io.observe(el));
 		return () => io.disconnect();
-	}, []);
+	}, [badges]);
 
 	const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+	const features = t('softinsaSite.features.items', { returnObjects: true });
+	const profiles = t('softinsaSite.profiles.items', { returnObjects: true });
+	const steps = t('softinsaSite.flow.items', { returnObjects: true });
+	const links = t('softinsaSite.footer.links', { returnObjects: true });
+	const policies = t('softinsaSite.footer.policies', { returnObjects: true });
+	const arr = (v) => (Array.isArray(v) ? v : []);
 
 	return (
 		<div className={styles.site} ref={rootRef}>
@@ -87,13 +69,24 @@ export default function SoftinsaSite() {
 						<img src={LOGO_SRC} alt="Softinsa" className={styles.logoImg} />
 					</a>
 					<nav className={styles.navLinks}>
-						<a href="#sobre">Sobre</a>
-						<a href="#funcionalidades">Funcionalidades</a>
-						<a href="#badges">Badges</a>
-						<a href="#perfis">Perfis</a>
-						<a href="#fluxo">Como funciona</a>
+						<a href="#sobre">{t('softinsaSite.nav.sobre')}</a>
+						<a href="#funcionalidades">{t('softinsaSite.nav.funcionalidades')}</a>
+						<a href="#badges">{t('softinsaSite.nav.badges')}</a>
+						<a href="#perfis">{t('softinsaSite.nav.perfis')}</a>
+						<a href="#fluxo">{t('softinsaSite.nav.comoFunciona')}</a>
 					</nav>
-					<Link to="/" className={styles.navCta}>Aceder à Plataforma</Link>
+					<div className={styles.navRight}>
+						<div className={styles.langSwitch}>
+							{LANGS.map((l) => (
+								<button key={l.code} type="button"
+									className={`${styles.langBtn} ${i18n.resolvedLanguage === l.code ? styles.langActive : ''}`}
+									onClick={() => i18n.changeLanguage(l.code)}>
+									{l.label}
+								</button>
+							))}
+						</div>
+						<Link to="/" className={styles.navCta}>{t('softinsaSite.nav.aceder')}</Link>
+					</div>
 				</div>
 			</header>
 
@@ -102,15 +95,12 @@ export default function SoftinsaSite() {
 				<section className={styles.hero}>
 					<div className={styles.heroInner}>
 						<div className={styles.heroText}>
-							<span className={styles.eyebrow}>Softinsa · An IBM Subsidiary</span>
-							<h1 className={styles.heroTitle}>Plataforma de Badges</h1>
-							<p className={styles.heroSubtitle}>
-								Inovação, talento e tecnologia para acelerar a transformação digital, agora também na forma
-								como reconhecemos as competências das nossas equipas, com credenciais digitais verificáveis.
-							</p>
+							<span className={styles.eyebrow}>{t('softinsaSite.hero.eyebrow')}</span>
+							<h1 className={styles.heroTitle}>{t('softinsaSite.hero.title')}</h1>
+							<p className={styles.heroSubtitle}>{t('softinsaSite.hero.subtitle')}</p>
 							<div className={styles.heroActions}>
-								<Link to="/" className={styles.btnPrimary}>Entrar</Link>
-								<a href="#sobre" className={styles.btnGhost}>Saber mais</a>
+								<Link to="/" className={styles.btnPrimary}>{t('softinsaSite.hero.entrar')}</Link>
+								<a href="#sobre" className={styles.btnGhost}>{t('softinsaSite.hero.saberMais')}</a>
 							</div>
 						</div>
 						<div className={styles.heroVisual}>
@@ -119,7 +109,7 @@ export default function SoftinsaSite() {
 								<span className={styles.heroBadgeIcon}>🏅</span>
 								<div>
 									<strong>OutSystems · Nível D</strong>
-									<span>Credencial verificada</span>
+									<span>{t('softinsaSite.hero.credential')}</span>
 								</div>
 							</div>
 						</div>
@@ -129,27 +119,19 @@ export default function SoftinsaSite() {
 
 				{/* Stats strip */}
 				<section className={`${styles.statsStrip} ${styles.reveal}`}>
-					<div><strong>1</strong><span>Learning Path inicial</span></div>
-					<div><strong>5</strong><span>Níveis por área</span></div>
-					<div><strong>3</strong><span>Idiomas</span></div>
-					<div><strong>100%</strong><span>Credenciais verificáveis</span></div>
+					<div><strong>1</strong><span>{t('softinsaSite.stats.learningPaths')}</span></div>
+					<div><strong>5</strong><span>{t('softinsaSite.stats.niveis')}</span></div>
+					<div><strong>3</strong><span>{t('softinsaSite.stats.idiomas')}</span></div>
+					<div><strong>100%</strong><span>{t('softinsaSite.stats.verificaveis')}</span></div>
 				</section>
 
 				{/* Sobre */}
 				<section id="sobre" className={styles.section}>
 					<div className={styles.about}>
 						<div className={`${styles.aboutText} ${styles.reveal}`}>
-							<h2>Sobre o projeto</h2>
-							<p>
-								A Plataforma de Badges da Softinsa é um sistema de gestão de credenciais digitais que
-								reconhece e valida as competências tecnológicas dos consultores através de badges associados
-								a Learning Paths, Service Lines e Áreas.
-							</p>
-							<p>
-								Colmata a dificuldade em evidenciar competências, introduz uma camada de gamificação que
-								motiva a aprendizagem contínua e cria uma forma padronizada e verificável de apresentar
-								credenciais profissionais.
-							</p>
+							<h2>{t('softinsaSite.about.title')}</h2>
+							<p>{t('softinsaSite.about.p1')}</p>
+							<p>{t('softinsaSite.about.p2')}</p>
 						</div>
 						<div className={`${styles.aboutImg} ${styles.reveal}`}>
 							<img src={ABOUT_IMG} alt="" loading="lazy" />
@@ -157,14 +139,14 @@ export default function SoftinsaSite() {
 					</div>
 				</section>
 
-				{/* Funcionalidades — auto-scrolling carousel */}
+				{/* Funcionalidades — carousel */}
 				<section id="funcionalidades" className={`${styles.section} ${styles.sectionAlt}`}>
-					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>Funcionalidades</h2></div>
+					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>{t('softinsaSite.features.title')}</h2></div>
 					<div className={styles.marquee}>
 						<div className={styles.marqueeTrack}>
-							{[...FEATURES, ...FEATURES].map((f, i) => (
-								<article key={i} className={styles.featCard} aria-hidden={i >= FEATURES.length}>
-									<span className={styles.cardIcon} aria-hidden="true">{f.icon}</span>
+							{[...arr(features), ...arr(features)].map((f, i) => (
+								<article key={i} className={styles.featCard} aria-hidden={i >= arr(features).length}>
+									<span className={styles.cardIcon} aria-hidden="true">{FEATURE_ICONS[i % FEATURE_ICONS.length]}</span>
 									<h3>{f.title}</h3>
 									<p>{f.desc}</p>
 								</article>
@@ -176,17 +158,15 @@ export default function SoftinsaSite() {
 				{/* Badges */}
 				<section id="badges" className={styles.section}>
 					<div className={`${styles.sectionHead} ${styles.reveal}`}>
-						<h2>Badges</h2>
-						<p>Explore as credenciais disponíveis e as competências que cada uma reconhece.</p>
+						<h2>{t('softinsaSite.badges.title')}</h2>
+						<p>{t('softinsaSite.badges.subtitle')}</p>
 					</div>
 					{badges.length > 0 ? (
 						<div className={styles.badgeGrid}>
 							{badges.map((b) => (
 								<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={`${styles.badgeCard} ${styles.reveal}`}>
 									<div className={styles.badgeThumb}>
-										{b.badge_img_url
-											? <img src={b.badge_img_url} alt="" loading="lazy" />
-											: <span className={styles.badgeEmoji}>🏅</span>}
+										{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <span className={styles.badgeEmoji}>🏅</span>}
 										{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
 									</div>
 									<h3>{b.badge_title}</h3>
@@ -195,15 +175,15 @@ export default function SoftinsaSite() {
 							))}
 						</div>
 					) : (
-						<p className={styles.muted}>Sem badges para mostrar.</p>
+						<p className={styles.muted}>{t('softinsaSite.badges.empty')}</p>
 					)}
 				</section>
 
 				{/* Perfis */}
 				<section id="perfis" className={styles.section}>
-					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>Perfis de utilizador</h2></div>
+					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>{t('softinsaSite.profiles.title')}</h2></div>
 					<div className={styles.profiles}>
-						{PROFILES.map((p, i) => (
+						{arr(profiles).map((p, i) => (
 							<article key={p.title} className={`${styles.profileCard} ${styles.reveal}`} style={{ transitionDelay: `${i * 60}ms` }}>
 								<h3>{p.title}</h3>
 								<p>{p.desc}</p>
@@ -214,11 +194,11 @@ export default function SoftinsaSite() {
 
 				{/* Fluxo */}
 				<section id="fluxo" className={`${styles.section} ${styles.sectionAlt}`}>
-					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>Como funciona</h2></div>
+					<div className={`${styles.sectionHead} ${styles.reveal}`}><h2>{t('softinsaSite.flow.title')}</h2></div>
 					<div className={styles.steps}>
-						{STEPS.map((s, i) => (
-							<article key={s.n} className={`${styles.step} ${styles.reveal}`} style={{ transitionDelay: `${i * 60}ms` }}>
-								<span className={styles.stepNum}>{s.n}</span>
+						{arr(steps).map((s, i) => (
+							<article key={i} className={`${styles.step} ${styles.reveal}`} style={{ transitionDelay: `${i * 60}ms` }}>
+								<span className={styles.stepNum}>{STEP_NUMS[i] || `0${i + 1}`}</span>
 								<h3>{s.title}</h3>
 								<p>{s.desc}</p>
 							</article>
@@ -228,23 +208,21 @@ export default function SoftinsaSite() {
 
 				{/* CTA */}
 				<section className={`${styles.cta} ${styles.reveal}`}>
-					<h2>Pronto para evidenciar as suas competências?</h2>
-					<p>Aceda à plataforma e comece a conquistar os seus badges.</p>
-					<Link to="/" className={styles.btnPrimary}>Aceder à Plataforma</Link>
+					<h2>{t('softinsaSite.cta.title')}</h2>
+					<p>{t('softinsaSite.cta.subtitle')}</p>
+					<Link to="/" className={styles.btnPrimary}>{t('softinsaSite.cta.button')}</Link>
 				</section>
 			</main>
 
-			{/* Footer (styled after softinsa.pt) */}
+			{/* Footer */}
 			<footer className={styles.footer}>
 				<div className={styles.footerTop}>
 					<div className={styles.footerMain}>
 						<img src={LOGO_SRC} alt="Softinsa" className={styles.footerLogo} />
-						<p className={styles.footerTagline}>
-							Fale com a equipa Softinsa e descubra como podemos impulsionar a inovação no seu negócio.
-						</p>
+						<p className={styles.footerTagline}>{t('softinsaSite.footer.tagline')}</p>
 						<div className={styles.footerContacts}>
 							<div>
-								<h4>Contacte-nos</h4>
+								<h4>{t('softinsaSite.footer.contacteNos')}</h4>
 								<a href="mailto:geral@pt.softinsa.com">
 									<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
 									geral@pt.softinsa.com
@@ -255,29 +233,24 @@ export default function SoftinsaSite() {
 								</a>
 							</div>
 							<div>
-								<h4>Localização</h4>
-								<address>
-									Edifício Office Oriente<br />
-									Rua do Mar da China nº 3 | B6<br />
-									Parque das Nações<br />
-									1990-138 Lisboa
-								</address>
+								<h4>{t('softinsaSite.footer.localizacao')}</h4>
+								<address>Edifício Office Oriente<br />Rua do Mar da China nº 3 | B6<br />Parque das Nações<br />1990-138 Lisboa</address>
 							</div>
 						</div>
 					</div>
 
 					<div className={styles.footerTalk}>
-						<h3>Vamos Conversar?</h3>
-						<p>Envie aqui a sua mensagem.</p>
+						<h3>{t('softinsaSite.footer.vamosConversar')}</h3>
+						<p>{t('softinsaSite.footer.envie')}</p>
 						<a className={styles.footerFormBtn} href="https://softinsa.pt/contactos/" target="_blank" rel="noreferrer">
-							Formulário <span aria-hidden="true">↗</span>
+							{t('softinsaSite.footer.formulario')} <span aria-hidden="true">↗</span>
 						</a>
 					</div>
 
 					<div className={styles.footerLinks}>
-						<h3>Ligações Úteis</h3>
+						<h3>{t('softinsaSite.footer.ligacoesUteis')}</h3>
 						<ul>
-							{LIGACOES.map((l) => (
+							{arr(links).map((l) => (
 								<li key={l}><a href="https://softinsa.pt" target="_blank" rel="noreferrer">{l}</a></li>
 							))}
 						</ul>
@@ -292,15 +265,15 @@ export default function SoftinsaSite() {
 						<Social label="YouTube"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.5 4 12 4 12 4s-7.5 0-9.4.4A3 3 0 0 0 .5 6.5 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.5 3 3 0 0 0 2.1 2.1C4.5 20 12 20 12 20s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.5zM9.6 15.5v-7l6.2 3.5z" /></Social>
 					</div>
 					<span className={styles.ibm}>AN <strong>IBM</strong> SUBSIDIARY</span>
-					<span className={styles.copyright}>© Softinsa {new Date().getFullYear()}. Todos os direitos reservados.</span>
+					<span className={styles.copyright}>{t('softinsaSite.footer.copyright', { year: new Date().getFullYear() })}</span>
 					<div className={styles.policies}>
-						{POLICIES.map((p) => (
+						{arr(policies).map((p) => (
 							<a key={p} href="https://softinsa.pt" target="_blank" rel="noreferrer">{p}</a>
 						))}
 					</div>
 				</div>
 
-				<button type="button" className={styles.toTop} onClick={scrollTop} aria-label="Voltar ao topo">↑</button>
+				<button type="button" className={styles.toTop} onClick={scrollTop} aria-label={t('softinsaSite.footer.toTop')}>↑</button>
 			</footer>
 		</div>
 	);
