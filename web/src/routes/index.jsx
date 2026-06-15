@@ -11,6 +11,7 @@ import RoleLayout from '../layouts/RoleLayout/RoleLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 import SoftinsaSite from '../pages/public/SoftinsaSite/SoftinsaSite';
+import SoftinsaBadge from '../pages/public/SoftinsaSite/SoftinsaBadge';
 
 import adminRoutes from './adminRoutes';
 import consultantRoutes from './consultantRoutes';
@@ -27,6 +28,7 @@ export default function AppRoutes() {
 		<Routes>
 			{/* Public corporate microsite — visible to everyone, no auth. */}
 			<Route path="/softinsa" element={<SoftinsaSite />} />
+			<Route path="/softinsa/badges/:slug" element={<SoftinsaBadge />} />
 
 			<Route element={<PublicRoute />}>
 				{authPublicRoutes.map(({ path, element }) => (
