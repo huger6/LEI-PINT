@@ -203,6 +203,21 @@ const resolveServiceLineForUser = async (userId, role) => {
     return sll?.service_line_id ?? null;
 };
 
+// True when the consultant has at least one area inside the given service line.
+// Used to keep a Service Line Leader from inspecting consultants outside their SL.
+const isConsultantInServiceLine = async (userId, serviceLineId) => {
+    if (!serviceLineId) return false;
+    const [rows] = await sequelize.query(
+        `SELECT 1
+           FROM consultant_areas ca
+           JOIN areas a ON a.area_id = ca.area_id
+          WHERE ca.user_id = :userId AND a.service_line_id = :serviceLineId
+          LIMIT 1`,
+        { replacements: { userId, serviceLineId } }
+    );
+    return rows.length > 0;
+};
+
 /*──────────────────────────────────────────────────────────────
   GENERAL REPORTING
 ──────────────────────────────────────────────────────────────*/
@@ -359,6 +374,7 @@ module.exports = {
     getTeamBadgesCount,
     getApplicationsCountByState,
     resolveServiceLineForUser,
+    isConsultantInServiceLine,
     getBadgeDistributionMonthly,
     getBadgesByRange,
     getBadgesAwardedByLearningPath,
