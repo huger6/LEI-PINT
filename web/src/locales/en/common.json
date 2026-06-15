@@ -649,7 +649,16 @@
 		"selectBadge": "Select Badge",
 		"chooseBadge": "Choose badge...",
 		"requirements": "Requirements: {{name}}",
-		"noRequirements": "This badge has no defined requirements."
+		"noRequirements": "This badge has no defined requirements.",
+		"newRequirement": "New Requirement",
+		"editRequirement": "Edit Requirement",
+		"sequence": "Sequence",
+		"image": "Requirement image",
+		"saveFailed": "Could not save the requirement.",
+		"errTitle": "Title must be between 2 and 150 characters.",
+		"errDescription": "Description is required (up to 5000 characters).",
+		"errSequence": "Sequence must be a positive number.",
+		"errPoints": "Points cannot be negative."
 	},
 	"adminStructure": {
 		"title": "Manage Structure",
