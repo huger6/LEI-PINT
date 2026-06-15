@@ -6,6 +6,7 @@ import { useUser } from '../../../hooks/userContext';
 import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
 import { getBadges } from '../../../features/badges/api/badgesApi';
 import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
+import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
 import Icon from '../../../components/Icons/Icons';
 import { ADMIN } from '../../../routes/paths';
@@ -26,15 +27,16 @@ export default function AdminDashboard() {
 	useEffect(() => {
 		async function fetchStats() {
 			try {
-				const [users, badges, paths] = await Promise.all([
+				const [users, badges, paths, apps] = await Promise.all([
 					getUsers({ limit: 1 }),
 					getBadges({ limit: 1 }),
 					getLearningPaths({ limit: 1 }),
+					getApplicationsPaged({ limit: 1 }),
 				]);
 				setStats({
 					users: users.pagination?.totalItems || users.data?.length || 0,
 					badges: badges.pagination?.total || badges.length || 0,
-					applications: 0,
+					applications: apps.pagination?.total || apps.data?.length || 0,
 					learningPaths: paths.pagination?.total || paths.length || 0,
 				});
 			} catch (err) {
