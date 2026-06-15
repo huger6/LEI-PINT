@@ -4,6 +4,15 @@ const { handleZodError } = require('../utils/responseHelper');
 const { publicBadgeLinkParam, publicCertificateParam } = require('../validations/public.validation');
 const QRCode = require('qrcode');
 
+// Escape DB/user-controlled values before interpolating into the public HTML
+// pages, preventing stored XSS (e.g. a badge title or full name with markup).
+const escapeHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const viewPublicBadge = async (req, res) => {
     try {
         let validated;
@@ -70,7 +79,7 @@ const viewPublicBadge = async (req, res) => {
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width,initial-scale=1" />
-                <title>Badge verification - ${badge.badge_title || 'Badge'}</title>
+                <title>Badge verification - ${escapeHtml(badge.badge_title || 'Badge')}</title>
                 <style>
                     body { font-family: Arial, Helvetica, sans-serif; padding: 24px; color: #222 }
                     .card { max-width: 900px; margin: 0 auto; border: 1px solid #eee; padding: 24px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.06) }
@@ -84,12 +93,12 @@ const viewPublicBadge = async (req, res) => {
             <body>
                 <div class="card">
                     <div class="header">
-                        <img class="badge-img" src="${badge.badge_img_url || 'https://via.placeholder.com/140'}" alt="badge image" />
+                        <img class="badge-img" src="${escapeHtml(badge.badge_img_url || 'https://via.placeholder.com/140')}" alt="badge image" />
                         <div class="meta">
-                            <h1>${badge.badge_title || 'Badge'}</h1>
-                            <p class="muted">Awarded to <strong>${user.full_name || 'Unknown'}</strong></p>
-                            <p class="muted">Awarded at: <strong>${awarded.awarded_at ? new Date(awarded.awarded_at).toLocaleString() : '—'}</strong></p>
-                            <p class="muted">Badge type: <strong>${badge.badge_type || '—'}</strong> &nbsp; • &nbsp; Points: <strong>${badge.badge_points || 0}</strong></p>
+                            <h1>${escapeHtml(badge.badge_title || 'Badge')}</h1>
+                            <p class="muted">Awarded to <strong>${escapeHtml(user.full_name || 'Unknown')}</strong></p>
+                            <p class="muted">Awarded at: <strong>${escapeHtml(awarded.awarded_at ? new Date(awarded.awarded_at).toLocaleString() : '—')}</strong></p>
+                            <p class="muted">Badge type: <strong>${escapeHtml(badge.badge_type || '—')}</strong> &nbsp; • &nbsp; Points: <strong>${escapeHtml(badge.badge_points || 0)}</strong></p>
                         </div>
                         <div>
                             <img class="qr" src="${qrDataUrl}" alt="QR code to verify badge" />
@@ -99,13 +108,13 @@ const viewPublicBadge = async (req, res) => {
                     <hr />
                     <section>
                         <h3>About this badge</h3>
-                        <p>${badge.badge_description || 'No description provided.'}</p>
+                        <p>${escapeHtml(badge.badge_description || 'No description provided.')}</p>
                     </section>
 
                     <section>
                         <h3>Verification</h3>
                         <p class="muted">You can verify this badge using the unique verification link:</p>
-                        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+                        <p><a href="${escapeHtml(verifyUrl)}">${escapeHtml(verifyUrl)}</a></p>
                     </section>
                 </div>
             </body>
@@ -164,7 +173,7 @@ const viewPublicCertificate = async (req, res) => {
             });
         }
 
-        const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Certificate - ${badge.badge_title || 'Certificate'}</title></head><body><div style="max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:8px;font-family:Arial,Helvetica,sans-serif;color:#222"><h1>${badge.badge_title || 'Certificate'}</h1><p>Awarded to <strong>${user.full_name || 'Unknown'}</strong></p><p>Issued: ${application.closed_at ? new Date(application.closed_at).toLocaleString() : '—'}</p><p><img src="${qrDataUrl}" alt="QR" style="width:160px"></p><p>Verify: <a href="${verifyUrl}">${verifyUrl}</a></p></div></body></html>`;
+        const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Certificate - ${escapeHtml(badge.badge_title || 'Certificate')}</title></head><body><div style="max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:8px;font-family:Arial,Helvetica,sans-serif;color:#222"><h1>${escapeHtml(badge.badge_title || 'Certificate')}</h1><p>Awarded to <strong>${escapeHtml(user.full_name || 'Unknown')}</strong></p><p>Issued: ${escapeHtml(application.closed_at ? new Date(application.closed_at).toLocaleString() : '—')}</p><p><img src="${qrDataUrl}" alt="QR" style="width:160px"></p><p>Verify: <a href="${escapeHtml(verifyUrl)}">${escapeHtml(verifyUrl)}</a></p></div></body></html>`;
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.status(200).send(html);
