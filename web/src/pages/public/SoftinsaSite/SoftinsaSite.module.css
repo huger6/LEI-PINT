@@ -416,6 +416,69 @@
 .card h3 { font-size: 1.1rem; font-weight: 700; color: var(--si-navy); margin: 0 0 0.4rem; }
 .card p { color: var(--si-muted); font-size: 0.95rem; margin: 0; }
 
+/* Badges showcase */
+.badgeGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 1.25rem;
+}
+
+.badgeCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.5rem;
+	padding: 1.5rem 1rem;
+	background: #fff;
+	border: 1px solid var(--si-border);
+	border-radius: 16px;
+	text-decoration: none;
+	color: inherit;
+	transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.badgeCard:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 16px 40px rgba(10, 37, 64, 0.12);
+	border-color: var(--si-teal);
+}
+
+.badgeThumb {
+	position: relative;
+	width: 88px;
+	height: 88px;
+	border-radius: 16px;
+	background: var(--si-bg-alt);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.badgeThumb img { width: 100%; height: 100%; object-fit: cover; }
+.badgeEmoji { font-size: 2.2rem; }
+
+.badgeLevel {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	background: var(--si-teal);
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badgeCard h3 { font-size: 0.95rem; font-weight: 700; color: var(--si-navy); margin: 0; line-height: 1.3; }
+.badgeArea { font-size: 0.8rem; color: var(--si-muted); }
+.muted { color: var(--si-muted); text-align: center; }
+
 /* Profiles */
 .profiles {
 	display: grid;

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getPublicBadges } from '../../../features/badges/api/publicBadgesApi';
 import styles from './SoftinsaSite.module.css';
 
 // Official Softinsa logo (same asset used in the app navbar).
@@ -41,11 +42,18 @@ const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 
 export default function SoftinsaSite() {
 	const rootRef = useRef(null);
+	const [badges, setBadges] = useState([]);
 
 	useEffect(() => {
 		const prev = document.title;
 		document.title = 'Plataforma de Badges - Softinsa';
 		return () => { document.title = prev; };
+	}, []);
+
+	useEffect(() => {
+		let active = true;
+		getPublicBadges().then((rows) => { if (active) setBadges(rows.slice(0, 8)); }).catch(() => {});
+		return () => { active = false; };
 	}, []);
 
 	// Scroll-reveal animations.
@@ -81,6 +89,7 @@ export default function SoftinsaSite() {
 					<nav className={styles.navLinks}>
 						<a href="#sobre">Sobre</a>
 						<a href="#funcionalidades">Funcionalidades</a>
+						<a href="#badges">Badges</a>
 						<a href="#perfis">Perfis</a>
 						<a href="#fluxo">Como funciona</a>
 					</nav>
@@ -96,7 +105,7 @@ export default function SoftinsaSite() {
 							<span className={styles.eyebrow}>Softinsa · An IBM Subsidiary</span>
 							<h1 className={styles.heroTitle}>Plataforma de Badges</h1>
 							<p className={styles.heroSubtitle}>
-								Inovação, talento e tecnologia para acelerar a transformação digital — agora também na forma
+								Inovação, talento e tecnologia para acelerar a transformação digital, agora também na forma
 								como reconhecemos as competências das nossas equipas, com credenciais digitais verificáveis.
 							</p>
 							<div className={styles.heroActions}>
@@ -162,6 +171,32 @@ export default function SoftinsaSite() {
 							))}
 						</div>
 					</div>
+				</section>
+
+				{/* Badges */}
+				<section id="badges" className={styles.section}>
+					<div className={`${styles.sectionHead} ${styles.reveal}`}>
+						<h2>Badges</h2>
+						<p>Explore as credenciais disponíveis e as competências que cada uma reconhece.</p>
+					</div>
+					{badges.length > 0 ? (
+						<div className={styles.badgeGrid}>
+							{badges.map((b) => (
+								<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={`${styles.badgeCard} ${styles.reveal}`}>
+									<div className={styles.badgeThumb}>
+										{b.badge_img_url
+											? <img src={b.badge_img_url} alt="" loading="lazy" />
+											: <span className={styles.badgeEmoji}>🏅</span>}
+										{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
+									</div>
+									<h3>{b.badge_title}</h3>
+									<span className={styles.badgeArea}>{b.area?.name || b.service_line?.name || ''}</span>
+								</Link>
+							))}
+						</div>
+					) : (
+						<p className={styles.muted}>Sem badges para mostrar.</p>
+					)}
 				</section>
 
 				{/* Perfis */}
