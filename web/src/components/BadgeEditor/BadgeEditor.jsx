@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { Canvas, Circle, Rect, Polygon, IText } from 'fabric';
 import Tooltip from '../Tooltip/Tooltip';
 import styles from './BadgeEditor.module.css';
@@ -26,7 +27,7 @@ function shieldPoints(cx, cy, w, h) {
 	];
 }
 
-export default function BadgeEditor() {
+export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 	const canvasRef = useRef(null);
 	const fabricRef = useRef(null);
 	const [selected, setSelected] = useState(null);
@@ -208,7 +209,12 @@ export default function BadgeEditor() {
 		const fc = fabricRef.current;
 		if (!fc) return;
 		const svg = fc.toSVG();
-		console.log('[BadgeEditor] SVG Export:\n', svg);
+		// When embedded (e.g. BadgeImagePicker) hand the SVG back to the parent;
+		// otherwise keep the standalone preview-modal behaviour.
+		if (onExport) {
+			onExport(svg);
+			return;
+		}
 		setSvgOutput(svg);
 	};
 
@@ -297,7 +303,7 @@ export default function BadgeEditor() {
 				</div>
 				<div className={styles.exportBar}>
 					<button className={styles.exportBtn} onClick={exportSvg}>
-						<i className="bi bi-filetype-svg" /> Export SVG
+						<i className="bi bi-filetype-svg" /> {exportLabel || 'Export SVG'}
 					</button>
 				</div>
 			</div>
@@ -441,3 +447,10 @@ export default function BadgeEditor() {
 		</div>
 	);
 }
+
+BadgeEditor.propTypes = {
+	// When provided, the export button hands the SVG string to the parent
+	// instead of opening the standalone preview modal.
+	onExport: PropTypes.func,
+	exportLabel: PropTypes.string,
+};

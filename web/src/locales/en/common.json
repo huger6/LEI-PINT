@@ -488,6 +488,7 @@
 		"create": "Create",
 		"edit": "Edit",
 		"delete": "Delete",
+		"remove": "Remove",
 			"deactivate": "Deactivate",
 		"select": "Select...",
 		"name": "Name",
@@ -599,7 +600,18 @@
 		"editBadge": "Edit Badge",
 		"noBadges": "No badges",
 		"noBadgesDesc": "No badges found.",
-		"level": "Level"
+		"level": "Level",
+		"image": "Badge image",
+		"expirationDays": "Validity (days)",
+		"expirationNever": "Never expires"
+	},
+	"badgeImage": {
+		"upload": "Upload",
+		"design": "Design",
+		"designerTitle": "Design badge",
+		"useDesign": "Use this design",
+		"uploadFailed": "Failed to upload the image.",
+		"previewAlt": "Badge preview"
 	},
 	"adminAreas": {
 		"title": "Areas",

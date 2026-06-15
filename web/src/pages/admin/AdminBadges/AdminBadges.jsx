@@ -8,6 +8,7 @@ import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
+import BadgeImagePicker from '../../../components/BadgeImagePicker/BadgeImagePicker';
 
 const BADGE_TYPES = ['Standard', 'Special'];
 
@@ -17,6 +18,8 @@ const emptyForm = {
 	progressionStageId: '',
 	badgeType: 'Standard',
 	badgePoints: 0,
+	expirationDurationDays: '',
+	badgeImgUrl: '',
 	badgeDescription: '',
 	isActive: true,
 };
@@ -31,6 +34,7 @@ export default function AdminBadges() {
 	const [editItem, setEditItem] = useState(null);
 	const [form, setForm] = useState(emptyForm);
 	const [saving, setSaving] = useState(false);
+	const [imageUploading, setImageUploading] = useState(false);
 
 	async function loadData() {
 		try {
@@ -69,6 +73,8 @@ export default function AdminBadges() {
 			progressionStageId: item.progression_stage_id || item.progressionStageId || '',
 			badgeType: item.badge_type || item.badgeType || 'Standard',
 			badgePoints: item.badge_points || item.badgePoints || 0,
+			expirationDurationDays: item.expiration_duration_days ?? item.expirationDurationDays ?? '',
+			badgeImgUrl: item.badge_img_url || item.badgeImgUrl || '',
 			badgeDescription: item.badge_description || item.badgeDescription || '',
 			isActive: item.is_active ?? true,
 		});
@@ -87,13 +93,19 @@ export default function AdminBadges() {
 
 	async function handleSubmit(e) {
 		e.preventDefault();
+		if (imageUploading) return;
 		setSaving(true);
 		try {
+			const expiration = form.expirationDurationDays === '' || form.expirationDurationDays === null
+				? null
+				: Number(form.expirationDurationDays);
 			const payload = {
 				...form,
 				areaId: Number(form.areaId) || form.areaId,
 				progressionStageId: Number(form.progressionStageId) || form.progressionStageId,
 				badgePoints: Number(form.badgePoints),
+				expirationDurationDays: expiration,
+				badgeImgUrl: form.badgeImgUrl || null,
 			};
 			if (editItem) {
 				const updated = await updateBadge(editItem.badge_slug || editItem.badgeSlug, payload);
@@ -174,7 +186,22 @@ export default function AdminBadges() {
 								<tbody>
 									{badges.map((b) => (
 										<tr key={b.badge_slug || b.badgeSlug}>
-											<td>{b.badge_title || b.badgeTitle}</td>
+											<td>
+												<div className="d-flex align-items-center gap-2">
+													{(b.badge_img_url || b.badgeImgUrl) ? (
+														<img
+															src={b.badge_img_url || b.badgeImgUrl}
+															alt=""
+															width={32}
+															height={32}
+															style={{ objectFit: 'contain', borderRadius: 8 }}
+														/>
+													) : (
+														<Icon name="badge" size={20} aria-hidden="true" className="text-secondary" />
+													)}
+													<span>{b.badge_title || b.badgeTitle}</span>
+												</div>
+											</td>
 											<td>{getAreaName(b.area_id || b.areaId)}</td>
 											<td>
 												<span className="badge bg-info">{b.badge_type || b.badgeType}</span>
@@ -217,7 +244,7 @@ export default function AdminBadges() {
 							<Button variant="outlined" onClick={() => setShowModal(false)}>
 								{t('shared.cancel')}
 							</Button>
-							<Button loading={saving} onClick={handleSubmit}>
+							<Button loading={saving} disabled={imageUploading} onClick={handleSubmit}>
 								{editItem ? t('shared.save') : t('shared.create')}
 							</Button>
 						</>
@@ -288,6 +315,21 @@ export default function AdminBadges() {
 							value={form.badgePoints}
 							onChange={handleChange}
 							min={0}
+						/>
+						<FormInput
+							label={t('adminBadges.expirationDays')}
+							name="expirationDurationDays"
+							type="number"
+							value={form.expirationDurationDays}
+							onChange={handleChange}
+							min={1}
+							placeholder={t('adminBadges.expirationNever')}
+						/>
+						<BadgeImagePicker
+							label={t('adminBadges.image')}
+							value={form.badgeImgUrl}
+							onChange={(url) => setForm((prev) => ({ ...prev, badgeImgUrl: url }))}
+							onUploadingChange={setImageUploading}
 						/>
 						<div>
 							<label htmlFor="badge_desc" className="form-label">{t('shared.description')}</label>
