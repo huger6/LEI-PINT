@@ -233,6 +233,12 @@ const getPublicBadgeBySlug = async (req, res) => {
 					required: false,
 					attributes: ['requirement_title', 'requirement_description', 'requirement_img_url'],
 				},
+				{
+					model: models.skills,
+					as: 'skills',
+					through: { attributes: [] },
+					attributes: ['skill_name', 'skill_description'],
+				},
 			],
 		});
 		if (!badge) return res.status(404).json({ success: false, code: 'PUBLIC_BADGE_NOT_FOUND' });
@@ -242,6 +248,10 @@ const getPublicBadgeBySlug = async (req, res) => {
 			title: r.requirement_title,
 			description: r.requirement_description,
 			img_url: r.requirement_img_url,
+		}));
+		data.skills = (badge.skills || []).map((s) => ({
+			name: s.skill_name,
+			description: s.skill_description,
 		}));
 		return res.status(200).json({ success: true, data });
 	} catch (error) {

@@ -7,6 +7,7 @@ var _areas = require("./areas");
 var _awarded_badges = require("./awarded_badges");
 var _badge_applications = require("./badge_applications");
 var _badge_requirements = require("./badge_requirements");
+var _badge_skills = require("./badge_skills");
 var _badges = require("./badges");
 var _certificates = require("./certificates");
 var _consultant_areas = require("./consultant_areas");
@@ -49,6 +50,7 @@ function initModels(sequelize) {
   var awarded_badges = _awarded_badges(sequelize, DataTypes);
   var badge_applications = _badge_applications(sequelize, DataTypes);
   var badge_requirements = _badge_requirements(sequelize, DataTypes);
+  var badge_skills = _badge_skills(sequelize, DataTypes);
   var badges = _badges(sequelize, DataTypes);
   var certificates = _certificates(sequelize, DataTypes);
   var consultant_areas = _consultant_areas(sequelize, DataTypes);
@@ -85,6 +87,8 @@ function initModels(sequelize) {
   areas.belongsToMany(consultants, { as: 'user_id_consultants', through: consultant_areas, foreignKey: "area_id", otherKey: "user_id" });
   consultants.belongsToMany(areas, { as: 'area_id_areas', through: consultant_areas, foreignKey: "user_id", otherKey: "area_id" });
   consultants.belongsToMany(skills, { as: 'skills_id_skills', through: consultants_selected_skills, foreignKey: "user_id", otherKey: "skills_id" });
+  badges.belongsToMany(skills, { as: 'skills', through: badge_skills, foreignKey: "badge_id", otherKey: "skills_id" });
+  skills.belongsToMany(badges, { as: 'badges', through: badge_skills, foreignKey: "skills_id", otherKey: "badge_id" });
   service_lines.belongsToMany(slas, { as: 'sla_id_slas', through: sl_slas, foreignKey: "service_line_id", otherKey: "sla_id" });
   service_lines.belongsToMany(system_announcements, { as: 'announcement_id_system_announcements', through: announc_sl, foreignKey: "service_line_id", otherKey: "announcement_id" });
   skills.belongsToMany(consultants, { as: 'user_id_consultants_consultants_selected_skills', through: consultants_selected_skills, foreignKey: "skills_id", otherKey: "user_id" });
@@ -222,6 +226,10 @@ function initModels(sequelize) {
   service_lines.hasMany(sl_slas, { as: "sl_slas", foreignKey: "service_line_id"});
   consultants_selected_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
   skills.hasMany(consultants_selected_skills, { as: "consultants_selected_skills", foreignKey: "skills_id"});
+  badge_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
+  skills.hasMany(badge_skills, { as: "badge_skills", foreignKey: "skills_id"});
+  badge_skills.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
+  badges.hasMany(badge_skills, { as: "badge_skills", foreignKey: "badge_id"});
   sl_slas.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
   slas.hasMany(sl_slas, { as: "sl_slas", foreignKey: "sla_id"});
   sla_breach_alerts.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
@@ -262,6 +270,7 @@ function initModels(sequelize) {
     awarded_badges,
     badge_applications,
     badge_requirements,
+    badge_skills,
     badges,
     certificates,
     consultant_areas,
