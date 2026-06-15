@@ -62,4 +62,7 @@ router.use('/admin', admin);
 router.use('/gdpr', gdpr);
 router.use('/integrations', integrations);
 
+// --- Public (no auth) ---
+router.use('/public', require('./publicCatalog.routes'));
+
 module.exports = router;
