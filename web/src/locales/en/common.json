@@ -613,6 +613,23 @@
 		"uploadFailed": "Failed to upload the image.",
 		"previewAlt": "Badge preview"
 	},
+	"verifyBadge": {
+		"title": "Credential verification",
+		"loading": "Verifying credential...",
+		"validTitle": "Credential verified",
+		"validDesc": "This credential was issued by Softinsa and is authentic.",
+		"expiredTitle": "Credential expired",
+		"expiredDesc": "This credential is authentic, but its validity period has ended.",
+		"invalidTitle": "Credential not found",
+		"invalidDesc": "This credential could not be verified. The link may be invalid or the credential may not be published.",
+		"awardedTo": "Awarded to",
+		"awardedAt": "Awarded on",
+		"expiresAt": "Valid until",
+		"points": "Points",
+		"premium": "Premium",
+		"viewBadge": "View badge details",
+		"exploreBadges": "Explore badges"
+	},
 	"adminAreas": {
 		"title": "Areas",
 		"newArea": "New Area",

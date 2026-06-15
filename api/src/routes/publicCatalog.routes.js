@@ -7,4 +7,7 @@ const publicCtrl = require('../controllers/public.controller');
 router.get('/badges', publicCtrl.listPublicBadges);
 router.get('/badges/:slug', publicCtrl.getPublicBadgeBySlug);
 
+// Credential verification by unique link (no auth) — feeds the SPA /verify/:link page.
+router.get('/verify/:link', publicCtrl.verifyAwardedBadge);
+
 module.exports = router;
