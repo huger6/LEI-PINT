@@ -16,11 +16,11 @@ const PAGE_SIZE = 12;
 const MAX_POINTS = 5000;
 
 const PROGRESSION_TIERS = [
-	{ code: 'A', label: 'Junior (A)' },
-	{ code: 'B', label: 'Intermediate (B)' },
-	{ code: 'C', label: 'Senior (C)' },
-	{ code: 'D', label: 'Specialist (D)' },
-	{ code: 'E', label: 'Knowledge Leader (E)' },
+	{ code: 'A', labelKey: 'badgeCatalog.filters.tiers.A' },
+	{ code: 'B', labelKey: 'badgeCatalog.filters.tiers.B' },
+	{ code: 'C', labelKey: 'badgeCatalog.filters.tiers.C' },
+	{ code: 'D', labelKey: 'badgeCatalog.filters.tiers.D' },
+	{ code: 'E', labelKey: 'badgeCatalog.filters.tiers.E' },
 ];
 
 const EMPTY_FILTERS = {
@@ -481,7 +481,7 @@ export default function BadgeCatalog() {
 									checked={state.stageCodes.includes(tier.code)}
 									onChange={() => handlers.onTierToggle(tier.code)}
 								/>
-								<span className="form-check-label">{tier.label}</span>
+								<span className="form-check-label">{t(tier.labelKey)}</span>
 							</label>
 						))}
 					</div>
