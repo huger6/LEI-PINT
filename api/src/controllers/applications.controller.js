@@ -360,8 +360,19 @@ const getUploadUrl = async (req, res) => {
 const upsertEvidence = async (req, res) => {
     try {
         const userId = req.user.sub;
+        const userGuid = req.user.guid;
         const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
         const { requirementId, evidenceFileUrl, evidenceTitle, evidenceDescription, evidenceFileType } = validations.upsertEvidenceBodySchema.parse(req.body);
+
+        // Bind the evidence URL to a file the server actually issued for THIS
+        // user + application (the signed-upload path), and re-check the
+        // extension. Prevents pointing the record at an arbitrary object.
+        const cleanUrl = evidenceFileUrl.split('?')[0];
+        const expectedSegment = `/private-assets/${userGuid}/application_${applicationGuid}/`;
+        const ext = cleanUrl.split('.').pop().toLowerCase();
+        if (!cleanUrl.includes(expectedSegment) || !validations.ALLOWED_EVIDENCE_EXTENSIONS.has(ext)) {
+            return res.status(400).json({ success: false, code: 'APP_EVIDENCE_URL_INVALID' });
+        }
 
         // Check if application is open and belongs to this user
         const application = await models.badge_applications.findOne({
