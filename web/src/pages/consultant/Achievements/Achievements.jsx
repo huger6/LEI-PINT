@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import Button from '../../../components/Button/Button';
@@ -13,6 +13,7 @@ const CELEBRATED_KEY = 'softinsa.achievements.celebratedMilestone';
 
 export default function Achievements() {
 	const { t, i18n } = useTranslation();
+	const navigate = useNavigate();
 	const [badges, setBadges] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
@@ -123,7 +124,14 @@ export default function Achievements() {
 							const badge = b.badge || {};
 							const expired = isExpired(b.expirationDate);
 							return (
-								<article key={b.awardedBadgeId} className={styles.card}>
+								<article
+									key={b.awardedBadgeId}
+									className={`${styles.card} ${badge.slug ? styles.cardClickable : ''}`}
+									onClick={badge.slug ? () => navigate(`/badges/${badge.slug}`) : undefined}
+									role={badge.slug ? 'button' : undefined}
+									tabIndex={badge.slug ? 0 : undefined}
+									onKeyDown={badge.slug ? (e) => { if (e.key === 'Enter') navigate(`/badges/${badge.slug}`); } : undefined}
+								>
 									<div className={styles.cardImg}>
 										{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={32} color="var(--color-secondary)" aria-hidden="true" />}
 										{b.isFeatured && <span className={styles.featured}><Icon name="star-points" size={12} aria-hidden="true" /> {t('achievements.featured')}</span>}
@@ -131,22 +139,18 @@ export default function Achievements() {
 									<div className={styles.cardBody}>
 										<h3 className={styles.cardTitle}>{badge.title || '—'}</h3>
 										<div className={styles.cardMeta}>
-											<span><Icon name="clock" size={13} aria-hidden="true" /> {fmtDate(b.awardedDate)}</span>
-											<span><Icon name="star-points" size={13} aria-hidden="true" /> {b.pointsSnapshot ?? badge.pointsValue ?? 0}</span>
+											<span className={styles.metaItem}><Icon name="clock" size={14} color="var(--color-outline)" aria-hidden="true" /> {fmtDate(b.awardedDate)}</span>
+											<span className={styles.metaItem}><Icon name="star-points" size={14} color="var(--color-warning)" aria-hidden="true" /> {b.pointsSnapshot ?? badge.pointsValue ?? 0} pts</span>
 										</div>
 										{expired && <span className={styles.expired}>{t('achievements.expired')}</span>}
-										<div className={styles.cardActions}>
-											{badge.slug && (
-												<Button as={Link} to={`/badges/${badge.slug}`} variant="outlined" size="sm">
-													{t('achievements.viewBadge')}
-												</Button>
-											)}
-											{b.isPublished && b.verificationLink && (
-												<Button as="a" href={`/verify/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm">
+										{b.isPublished && b.verificationLink && (
+											<div className={styles.cardActions}>
+												<Button as="a" href={`/verify/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm"
+													onClick={(e) => e.stopPropagation()}>
 													<Icon name="eye" size={14} aria-hidden="true" /> {t('achievements.verify')}
 												</Button>
-											)}
-										</div>
+											</div>
+										)}
 									</div>
 								</article>
 							);
