@@ -114,7 +114,7 @@ export default function ConsultantDetail() {
 								<span className={styles.hStatLabel}>{t('consultantDetail.badges')}</span>
 							</div>
 						</div>
-						<Button as={Link} to={`/u/${userGuid}`} variant="outlined" color="primary" size="sm" className={styles.profileBtn}>
+						<Button as={Link} to={`/softinsa/u/${userGuid}`} variant="outlined" color="primary" size="sm" className={styles.profileBtn}>
 							<Icon name="user" size={16} /> {t('consultantDetail.viewPublicProfile')}
 						</Button>
 					</ContentCard>

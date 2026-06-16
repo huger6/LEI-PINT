@@ -30,8 +30,21 @@
 			"tagline": "Talk to the Softinsa team and discover how we can drive innovation in your business.",
 			"contacteNos": "Contact us", "localizacao": "Location", "vamosConversar": "Let's talk?", "envie": "Send us a message here.", "formulario": "Form", "ligacoesUteis": "Useful Links",
 			"copyright": "© Softinsa {{year}}. All rights reserved.", "toTop": "Back to top",
-			"links": ["About us", "Social Responsibility", "Services", "Innovation Centers", "Careers", "Highlights", "Contacts"],
-			"policies": ["Privacy Policy", "Terms of Use", "Environmental Policy", "Whistleblowing Channel"]
+			"links": [
+				{ "label": "About us", "url": "https://softinsa.pt/quem-somos/" },
+				{ "label": "Social Responsibility", "url": "https://softinsa.pt/responsabilidade-social/" },
+				{ "label": "Services", "url": "https://softinsa.pt/servicos/" },
+				{ "label": "Innovation Centers", "url": "https://softinsa.pt/centros-de-inovacao/" },
+				{ "label": "Careers", "url": "https://softinsa.pt/carreiras/" },
+				{ "label": "Highlights", "url": "https://softinsa.pt/destaques/" },
+				{ "label": "Contacts", "url": "https://softinsa.pt/contactos/" }
+			],
+			"policies": [
+				{ "label": "Privacy Policy", "url": "https://softinsa.pt/politica-de-privacidade/" },
+				{ "label": "Terms of Use", "url": "https://softinsa.pt/condicoes-de-utilizacao/" },
+				{ "label": "Environmental Policy", "url": "https://softinsa.pt/politica-ambiental/" },
+				{ "label": "Whistleblowing Channel", "url": "https://softinsa.pt/canal-de-denuncias/" }
+			]
 		},
 		"badgePage": { "back": "All badges", "points": "Points", "validity": "Validity", "days": "{{count}} days", "competencies": "Skills", "competenciesSub": "Skills this badge certifies.", "noCompetencies": "No skills associated with this badge.", "requirements": "Requirements", "requirementsSub": "What you must evidence to earn this badge.", "noRequirements": "No detailed requirements for this badge.", "notFound": "Badge not found", "viewAll": "See all badges", "loading": "Loading…", "premium": "Premium", "nivel": "Level", "area": "Area", "serviceLine": "Service Line", "learningPath": "Learning Path" }
 	},
@@ -327,6 +340,7 @@
 			"users": "Manage Users",
 			"structure": "Manage Structure",
 			"badges": "Manage Badges",
+			"requirements": "Manage Requirements",
 			"applications": "Manage Applications",
 			"slas": "Manage SLAs",
 			"warnings": "Manage Warnings",
@@ -594,6 +608,10 @@
 		"sllLastLeaderWarning": "This user is the only Service Line Leader for their service line. Changing their role will leave the service line without a leader. Continue?",
 		"serviceLineRequired": "A service line must be selected for Service Line Leaders.",
 		"areasRequired": "At least one area must be selected for Consultants."
+	},
+	"adminBadgeForm": {
+		"loadFailed": "Could not load the badge.",
+		"saveFailed": "Could not save the badge."
 	},
 	"adminBadges": {
 		"title": "Badges",
