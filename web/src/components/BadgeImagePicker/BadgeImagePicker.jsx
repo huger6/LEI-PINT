@@ -7,7 +7,11 @@ import Button from '../Button/Button';
 import BadgeEditor from '../BadgeEditor/BadgeEditor';
 import styles from './BadgeImagePicker.module.css';
 
-const ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,image/gif';
+// Badge artwork is vector-only: the in-app designer exports SVG and uploads
+// must match, so the field accepts SVG exclusively.
+const ACCEPT = 'image/svg+xml,.svg';
+
+const isSvg = (file) => file.type === 'image/svg+xml' || /\.svg$/i.test(file.name || '');
 
 /**
  * Reusable image field for badges / requirements: live preview, file upload
@@ -44,8 +48,13 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 	const onFileChange = useCallback((event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
-		if (file) upload(file);
-	}, [upload]);
+		if (!file) return;
+		if (!isSvg(file)) {
+			setError(t('badgeImage.svgOnly', { defaultValue: 'A imagem do badge tem de estar em formato SVG.' }));
+			return;
+		}
+		upload(file);
+	}, [upload, t]);
 
 	const onDesignerExport = useCallback((svg) => {
 		setShowDesigner(false);

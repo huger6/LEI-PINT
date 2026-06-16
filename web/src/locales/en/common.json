@@ -640,6 +640,7 @@
 		"designerTitle": "Design badge",
 		"useDesign": "Use this design",
 		"uploadFailed": "Failed to upload the image.",
+		"svgOnly": "The badge image must be in SVG format.",
 		"previewAlt": "Badge preview"
 	},
 	"structureExport": {

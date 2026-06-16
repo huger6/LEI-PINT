@@ -115,29 +115,17 @@
 	background: var(--color-primary-soft);
 }
 
-.detailBtn {
-	border: 1px solid var(--color-outline-light);
-	background: #fff;
-	color: var(--color-secondary);
-	border-radius: 8px;
-	width: 30px;
-	height: 30px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	transition: background 0.15s, color 0.15s;
-}
-
-.detailBtn:hover {
-	background: var(--color-secondary-container);
-}
-
 .consultantCell {
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
 	min-width: 0;
+	/* reset button defaults — this is a clickable name/photo to the public profile */
+	border: 0;
+	background: transparent;
+	padding: 0;
+	text-align: left;
+	cursor: pointer;
 }
 
 .consultantName {
@@ -146,6 +134,11 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.consultantCell:hover .consultantName {
+	color: var(--color-primary);
+	text-decoration: underline;
 }
 
 .posCol {

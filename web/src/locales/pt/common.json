@@ -640,6 +640,7 @@
 		"designerTitle": "Desenhar badge",
 		"useDesign": "Usar este desenho",
 		"uploadFailed": "Falha ao carregar a imagem.",
+		"svgOnly": "A imagem do badge tem de estar em formato SVG.",
 		"previewAlt": "Pré-visualização do badge"
 	},
 	"structureExport": {
