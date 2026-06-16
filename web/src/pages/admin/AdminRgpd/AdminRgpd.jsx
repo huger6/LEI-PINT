@@ -10,6 +10,7 @@ import {
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
@@ -218,11 +219,13 @@ export default function AdminRgpd() {
 						{modal.mode === 'create' && (
 							<div>
 								<label htmlFor="policy_type" className="form-label">{t('adminRgpd.type')}</label>
-								<select id="policy_type" className="form-select" name="policy_type" value={form.policy_type} onChange={handleChange}>
-									{POLICY_TYPES.map((pt) => (
-										<option key={pt} value={pt}>{t(`adminRgpd.types.${pt}`, { defaultValue: pt })}</option>
-									))}
-								</select>
+								<CustomSelect
+									name="policy_type"
+									value={form.policy_type}
+									onChange={handleChange}
+									ariaLabel={t('adminRgpd.type')}
+									options={POLICY_TYPES.map((pt) => ({ value: pt, label: t(`adminRgpd.types.${pt}`, { defaultValue: pt }) }))}
+								/>
 							</div>
 						)}
 						<FormInput
