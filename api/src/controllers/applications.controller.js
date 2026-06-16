@@ -254,10 +254,10 @@ const getApplicationById = async (req, res) => {
 const startApplication = async (req, res) => {
     try {
         const userId = req.user.sub; // From JWT
-        const { badgeId } = validations.startApplicationSchema.parse(req.body);
+        const { badgeSlug } = validations.startApplicationSchema.parse(req.body);
 
-        // Check if badge exists and is active
-        const badge = await models.badges.findByPk(badgeId);
+        // Check if badge exists and is active (resolved by public slug, never PK)
+        const badge = await models.badges.findOne({ where: { badge_slug: badgeSlug } });
         if (!badge || !badge.is_active) {
             return res.status(404).json({
                 success: false,
@@ -269,7 +269,7 @@ const startApplication = async (req, res) => {
         const existingApp = await models.badge_applications.findOne({
             where: {
                 user_id: userId,
-                badge_id: badgeId
+                badge_id: badge.badge_id
             }
         });
 
@@ -277,14 +277,14 @@ const startApplication = async (req, res) => {
             return res.status(409).json({
                 success: false,
                 code: "APP_ALREADY_EXISTS",
-                data: { applicationId: existingApp.application_id, currentState: existingApp.application_state }
+                data: { applicationGuid: existingApp.application_guid, currentState: existingApp.application_state }
             });
         }
 
         // Create new application
         const newApp = await models.badge_applications.create({
             user_id: userId,
-            badge_id: badgeId
+            badge_id: badge.badge_id
         });
 
         await sendTopicUpdate("new_data", 15);
@@ -292,7 +292,10 @@ const startApplication = async (req, res) => {
         return res.status(201).json({
             success: true,
             code: "APP_STARTED",
-            data: newApp
+            data: {
+                application_guid: newApp.application_guid,
+                application_state: newApp.application_state
+            }
         });
 
     } catch (error) {
@@ -977,7 +980,7 @@ const reviewEvidence = async (req, res) => {
         return res.status(200).json({
             success: true,
             code: 'APP_EVIDENCE_REVIEWED',
-            data: { evidenceId, approved, reviewField }
+            data: { evidenceId, approved }
         });
 
     } catch (error) {

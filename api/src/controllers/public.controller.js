@@ -49,20 +49,17 @@ const viewPublicBadge = async (req, res) => {
 
         if (req.query.format === 'json' || req.get('accept') === 'application/json') {
             const payload = {
-                awarded_badges_id: awarded.awarded_badges_id,
                 awarded_at: awarded.awarded_at,
                 expiration_at: awarded.expiration_at,
                 is_published: awarded.is_published,
                 public_verification_link: awarded.public_verification_link,
                 badge: {
-                    badge_id: badge.badge_id,
                     title: badge.badge_title,
                     description: badge.badge_description,
                     image: badge.badge_img_url,
                     points: badge.badge_points
                 },
                 user: {
-                    user_id: consultant.user_id,
                     full_name: user.full_name,
                     user_guid: user.user_guid
                 },
