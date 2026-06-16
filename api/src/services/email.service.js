@@ -748,6 +748,67 @@ const sendCustomSlaBreachAlert = async (email, emailData) => {
     }
 };
 
+// ─── Badge expiration & objective reminder emails ───────────────────────────
+const REMINDER_TEMPLATES = {
+    expiring: {
+        'pt-PT': { subject: 'O teu badge está perto de expirar', greeting: 'Olá {name},', intro: 'O teu badge <strong>{badgeTitle}</strong> expira em {days} dia(s).', body: 'Renova ou revalida a tempo para manteres a tua credencial ativa.', cta: 'Ver badge', team: 'A Equipa Softinsa' },
+        'en-GB': { subject: 'Your badge is expiring soon', greeting: 'Hi {name},', intro: 'Your badge <strong>{badgeTitle}</strong> expires in {days} day(s).', body: 'Renew or revalidate in time to keep your credential active.', cta: 'View badge', team: 'The Softinsa Team' },
+        'es-ES': { subject: 'Tu badge está por expirar', greeting: 'Hola {name},', intro: 'Tu badge <strong>{badgeTitle}</strong> expira en {days} día(s).', body: 'Renueva o revalida a tiempo para mantener tu credencial activa.', cta: 'Ver badge', team: 'El Equipo de Softinsa' }
+    },
+    expired: {
+        'pt-PT': { subject: 'O teu badge expirou', greeting: 'Olá {name},', intro: 'O teu badge <strong>{badgeTitle}</strong> expirou.', body: 'Podes voltar a candidatar-te para o renovar.', cta: 'Ver badge', team: 'A Equipa Softinsa' },
+        'en-GB': { subject: 'Your badge has expired', greeting: 'Hi {name},', intro: 'Your badge <strong>{badgeTitle}</strong> has expired.', body: 'You can apply again to renew it.', cta: 'View badge', team: 'The Softinsa Team' },
+        'es-ES': { subject: 'Tu badge ha expirado', greeting: 'Hola {name},', intro: 'Tu badge <strong>{badgeTitle}</strong> ha expirado.', body: 'Puedes volver a postular para renovarlo.', cta: 'Ver badge', team: 'El Equipo de Softinsa' }
+    },
+    objective: {
+        'pt-PT': { subject: 'Objetivo perto do prazo', greeting: 'Olá {name},', intro: 'O teu objetivo <strong>{title}</strong> está a aproximar-se do prazo.', body: 'Não te esqueças de o concluir a tempo.', cta: 'Ver objetivos', team: 'A Equipa Softinsa' },
+        'en-GB': { subject: 'Objective due soon', greeting: 'Hi {name},', intro: 'Your objective <strong>{title}</strong> is nearing its deadline.', body: "Don't forget to complete it in time.", cta: 'View objectives', team: 'The Softinsa Team' },
+        'es-ES': { subject: 'Objetivo próximo a vencer', greeting: 'Hola {name},', intro: 'Tu objetivo <strong>{title}</strong> está cerca de su fecha límite.', body: 'No olvides completarlo a tiempo.', cta: 'Ver objetivos', team: 'El Equipo de Softinsa' }
+    }
+};
+
+const resolveReminderTemplate = (kind, lang) =>
+    (REMINDER_TEMPLATES[kind] && (REMINDER_TEMPLATES[kind][lang] || REMINDER_TEMPLATES[kind]['en-GB']));
+
+const sendReminderEmail = async (kind, email, replacements, url, lang) => {
+    const t = resolveReminderTemplate(kind, lang);
+    if (!t || !email) return { success: false };
+    const uniqueId = Date.now().toString(36);
+    let intro = t.intro;
+    for (const [k, v] of Object.entries(replacements)) {
+        intro = intro.replace(`{${k}}`, escapeHtml(String(v)));
+    }
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">${t.greeting.replace('{name}', escapeHtml(replacements.name || ''))}</p>
+                <p style="margin-bottom:16px;">${intro}</p>
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, url)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending reminder email', { error, kind });
+        return { success: false, error };
+    }
+};
+
+const sendBadgeExpiringEmail = (email, { name, badgeTitle, days, badgeUrl, lang }) =>
+    sendReminderEmail('expiring', email, { name, badgeTitle, days }, badgeUrl, lang);
+const sendBadgeExpiredEmail = (email, { name, badgeTitle, badgeUrl, lang }) =>
+    sendReminderEmail('expired', email, { name, badgeTitle }, badgeUrl, lang);
+const sendObjectiveReminderEmail = (email, { name, title, objectivesUrl, lang }) =>
+    sendReminderEmail('objective', email, { name, title }, objectivesUrl, lang);
+
 module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
@@ -756,5 +817,8 @@ module.exports = {
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail,
     sendSlaBreachAlert,
-    sendCustomSlaBreachAlert
+    sendCustomSlaBreachAlert,
+    sendBadgeExpiringEmail,
+    sendBadgeExpiredEmail,
+    sendObjectiveReminderEmail
 };
