@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../../components/Icons/Icons';
 import Tooltip from '../../../../components/Tooltip/Tooltip';
@@ -6,6 +7,7 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import StructureStatCard from '../../components/StructureStatCard/StructureStatCard';
 import SubStructureCard from '../../components/SubStructureCard/SubStructureCard';
 import StructureBreadcrumb from '../../components/StructureBreadcrumb/StructureBreadcrumb';
+import StructureExportModal from '../../components/StructureExportModal/StructureExportModal';
 import styles from './StructureDetailLayout.module.css';
 
 export default function StructureDetailLayout({
@@ -29,12 +31,18 @@ export default function StructureDetailLayout({
 	onActivate,
 	isActivating,
 	onExport,
+	exportType,
+	exportId,
 	addSubLabel,
 	pagination,
 	onPageChange,
 }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
+	const [showExport, setShowExport] = useState(false);
+	// When export metadata is provided, the download button opens the summary
+	// popup; otherwise it falls back to the legacy onExport handler.
+	const handleExportClick = exportType && exportId ? () => setShowExport(true) : onExport;
 
 	return (
 		<div className={styles.page}>
@@ -77,7 +85,7 @@ export default function StructureDetailLayout({
 							<button
 								type="button"
 								className={styles.toolbarBtn}
-								onClick={onExport}
+								onClick={handleExportClick}
 							>
 								<Icon name="download" size={16} aria-hidden="true" />
 							</button>
@@ -185,6 +193,15 @@ export default function StructureDetailLayout({
 					/>
 				)}
 			</section>
+
+			{showExport && exportType && exportId && (
+				<StructureExportModal
+					structureType={exportType}
+					identifier={exportId}
+					title={title}
+					onClose={() => setShowExport(false)}
+				/>
+			)}
 		</div>
 	);
 }

@@ -479,10 +479,97 @@ const exportBadges = async (req, res) => {
     }
 };
 
+// ─── Per-structure summary export (Learning Path / Service Line / Area) ──────
+const STRUCTURE_TYPES = new Set(['learning-path', 'service-line', 'area']);
+
+const countOne = async (sql, replacements) => {
+    const rows = await sequelize.query(sql, { replacements, type: QueryTypes.SELECT });
+    return Number(rows[0]?.c ?? 0);
+};
+
+// Builds a { title, rows:[{metric,value}] } summary for one structure entity.
+const fetchStructureSummary = async ({ type, identifier, from, to }) => {
+    const awarded = getDateFilter({ from, to, columnName: 'ab.awarded_at' });
+    const repl = { id: identifier, ...awarded.replacements };
+    const awardedSql = awarded.whereSql;
+    const rows = [];
+
+    if (type === 'learning-path') {
+        const lp = (await sequelize.query('SELECT learning_path_id, path_title FROM learning_paths WHERE path_slug = :id', { replacements: repl, type: QueryTypes.SELECT }))[0];
+        if (!lp) return null;
+        repl.lpId = lp.learning_path_id;
+        rows.push({ metric: 'Service Lines', value: await countOne('SELECT COUNT(*) c FROM service_lines WHERE learning_path_id = :lpId', repl) });
+        rows.push({ metric: 'Áreas', value: await countOne('SELECT COUNT(*) c FROM areas a JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = :lpId', repl) });
+        rows.push({ metric: 'Níveis', value: await countOne('SELECT COUNT(*) c FROM progression_stages ps JOIN areas a ON a.area_id = ps.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = :lpId', repl) });
+        rows.push({ metric: 'Badges', value: await countOne('SELECT COUNT(*) c FROM badges WHERE learning_path_id = :lpId', repl) });
+        rows.push({ metric: 'Badges atribuídos', value: await countOne(`SELECT COUNT(*) c FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id JOIN badges b ON b.badge_id = ba.badge_id WHERE b.learning_path_id = :lpId${awardedSql}`, repl) });
+        rows.push({ metric: 'Consultores inscritos', value: await countOne('SELECT COUNT(DISTINCT ca.user_id) c FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id JOIN service_lines sl ON sl.service_line_id = a.service_line_id WHERE sl.learning_path_id = :lpId', repl) });
+        return { title: `Resumo Learning Path: ${lp.path_title}`, rows };
+    }
+
+    if (type === 'service-line') {
+        const sl = (await sequelize.query('SELECT service_line_id, service_line_name FROM service_lines WHERE sl_slug = :id', { replacements: repl, type: QueryTypes.SELECT }))[0];
+        if (!sl) return null;
+        repl.slId = sl.service_line_id;
+        rows.push({ metric: 'Áreas', value: await countOne('SELECT COUNT(*) c FROM areas WHERE service_line_id = :slId', repl) });
+        rows.push({ metric: 'Níveis', value: await countOne('SELECT COUNT(*) c FROM progression_stages ps JOIN areas a ON a.area_id = ps.area_id WHERE a.service_line_id = :slId', repl) });
+        rows.push({ metric: 'Badges', value: await countOne('SELECT COUNT(*) c FROM badges WHERE service_line_id = :slId', repl) });
+        rows.push({ metric: 'Badges atribuídos', value: await countOne(`SELECT COUNT(*) c FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id JOIN badges b ON b.badge_id = ba.badge_id WHERE b.service_line_id = :slId${awardedSql}`, repl) });
+        rows.push({ metric: 'Consultores inscritos', value: await countOne('SELECT COUNT(DISTINCT ca.user_id) c FROM consultant_areas ca JOIN areas a ON a.area_id = ca.area_id WHERE a.service_line_id = :slId', repl) });
+        return { title: `Resumo Service Line: ${sl.service_line_name}`, rows };
+    }
+
+    // area
+    const area = (await sequelize.query('SELECT area_id, area_name FROM areas WHERE area_slug = :id', { replacements: repl, type: QueryTypes.SELECT }))[0];
+    if (!area) return null;
+    repl.areaId = area.area_id;
+    rows.push({ metric: 'Níveis', value: await countOne('SELECT COUNT(*) c FROM progression_stages WHERE area_id = :areaId', repl) });
+    rows.push({ metric: 'Badges', value: await countOne('SELECT COUNT(*) c FROM badges WHERE area_id = :areaId', repl) });
+    rows.push({ metric: 'Badges atribuídos', value: await countOne(`SELECT COUNT(*) c FROM awarded_badges ab JOIN badge_applications ba ON ba.application_id = ab.application_id JOIN badges b ON b.badge_id = ba.badge_id WHERE b.area_id = :areaId${awardedSql}`, repl) });
+    rows.push({ metric: 'Consultores inscritos', value: await countOne('SELECT COUNT(DISTINCT user_id) c FROM consultant_areas WHERE area_id = :areaId', repl) });
+    return { title: `Resumo Área: ${area.area_name}`, rows };
+};
+
+const structureSummaryColumns = [
+    { key: 'metric', header: 'Métrica', accessor: (r) => r.metric, width: 36 },
+    { key: 'value', header: 'Valor', accessor: (r) => r.value, width: 18 }
+];
+
+const exportStructureSummary = async (req, res) => {
+    try {
+        const { type, identifier } = req.params;
+        if (!STRUCTURE_TYPES.has(type)) {
+            return res.status(400).json({ success: false, error: 'EXPORT_INVALID_STRUCTURE_TYPE' });
+        }
+        const { format, from, to } = getExportArgs(req);
+        const summary = await fetchStructureSummary({ type, identifier, from, to });
+        if (!summary) {
+            return res.status(404).json({ success: false, error: 'STRUCTURE_NOT_FOUND' });
+        }
+
+        const dateSuffix = new Date().toISOString().slice(0, 10);
+        const fileStem = `resumo_${type}_${identifier}`;
+        if (format === 'csv') {
+            return sendAttachment(res, `${fileStem}_${dateSuffix}.csv`, 'text/csv; charset=utf-8', buildCsv(structureSummaryColumns, summary.rows));
+        }
+        if (format === 'xlsx') {
+            const buffer = await buildXlsx(summary.title, structureSummaryColumns, summary.rows);
+            return sendAttachment(res, `${fileStem}_${dateSuffix}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer);
+        }
+        const pdfBuffer = await buildPdf(summary.title, structureSummaryColumns, summary.rows);
+        return sendAttachment(res, `${fileStem}_${dateSuffix}.pdf`, 'application/pdf', pdfBuffer);
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
+        logger.error('Error exporting structure summary', { error });
+        return res.status(500).json({ success: false, error: 'EXPORT_FAILED' });
+    }
+};
+
 module.exports = {
     exportConsultants,
     exportApplicationLogs,
     exportApplications,
     exportBadges,
-    exportPointsHistory
+    exportPointsHistory,
+    exportStructureSummary
 };

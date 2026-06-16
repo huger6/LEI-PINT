@@ -198,6 +198,8 @@ export default function AreaDetail() {
 				onActivate={!area.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
+				exportType="area"
+				exportId={area.area_slug || slug}
 				pagination={pagination}
 				onPageChange={handlePageChange}
 			/>
