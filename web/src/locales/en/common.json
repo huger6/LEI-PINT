@@ -603,7 +603,14 @@
 		"level": "Level",
 		"image": "Badge image",
 		"expirationDays": "Validity (days)",
-		"expirationNever": "Never expires"
+		"expirationNever": "Never expires",
+		"subtitle": "Create and manage the platform's badges.",
+		"searchPlaceholder": "Search badge...",
+		"learningPath": "Learning Path",
+		"serviceLine": "Service Line",
+		"selectLpFirst": "Select a Learning Path first",
+		"selectSlFirst": "Select a Service Line first",
+		"selectAreaFirst": "Select an Area first"
 	},
 	"badgeImage": {
 		"upload": "Upload",

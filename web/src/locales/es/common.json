@@ -602,7 +602,14 @@
 		"level": "Nivel",
 		"image": "Imagen del badge",
 		"expirationDays": "Validez (días)",
-		"expirationNever": "Sin expiración"
+		"expirationNever": "Sin expiración",
+		"subtitle": "Crear y gestionar los badges de la plataforma.",
+		"searchPlaceholder": "Buscar badge...",
+		"learningPath": "Learning Path",
+		"serviceLine": "Service Line",
+		"selectLpFirst": "Selecciona un Learning Path primero",
+		"selectSlFirst": "Selecciona una Service Line primero",
+		"selectAreaFirst": "Selecciona un Área primero"
 	},
 	"badgeImage": {
 		"upload": "Cargar",

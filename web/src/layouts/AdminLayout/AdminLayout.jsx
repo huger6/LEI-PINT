@@ -8,7 +8,6 @@ const MENU_ITEMS = [
     { to: ADMIN.BADGES, icon: 'badge', label: 'sidebar.admin.badges' },
     { to: ADMIN.APPLICATIONS, icon: 'paper', label: 'sidebar.admin.applications' },
     { to: ADMIN.SLAS, icon: 'time', label: 'sidebar.admin.slas' },
-    { to: ADMIN.WARNINGS, icon: 'danger', label: 'sidebar.admin.warnings' },
     { to: ADMIN.NOTIFICATIONS, icon: 'bell', label: 'sidebar.admin.notifications' },
     { to: ADMIN.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.admin.announcements' },
     { to: ADMIN.STATS, icon: 'progress', label: 'sidebar.admin.stats' },

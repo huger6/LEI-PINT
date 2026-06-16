@@ -37,7 +37,6 @@ const adminRoutes = [
 	{ path: ADMIN.NOTIFICATIONS, element: <AdminNotifications /> },
 	{ path: ADMIN.RGPD, element: <AdminRgpd /> },
 	{ path: ADMIN.SLAS, element: <AdminSlas /> },
-	{ path: ADMIN.WARNINGS, element: <Announcements defaultType="Warning" /> },
 	{ path: ADMIN.STATS, element: <StatsPage /> },
 	{ path: ADMIN.LEARNING_PATH_DETAIL, element: <LearningPathDetail /> },
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },
