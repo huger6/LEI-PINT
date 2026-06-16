@@ -4,6 +4,46 @@ const { handleZodError } = require('../utils/responseHelper');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const { consentBodySchema, policyIdParam, createPolicyBody, updatePolicyBody, newPolicyVersionBody, policyTypeParam } = require('../validations/gdpr.validation');
 
+// Compare dotted version strings numerically, segment by segment, so 1.1 > 1.0.1
+// and 2.0 > 1.9 (not just first-digit). Returns >0 if a>b, <0 if a<b, 0 if equal.
+const compareVersions = (a, b) => {
+    const pa = String(a ?? '').split('.');
+    const pb = String(b ?? '').split('.');
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+        const na = parseInt(pa[i], 10) || 0;
+        const nb = parseInt(pb[i], 10) || 0;
+        if (na !== nb) return na - nb;
+    }
+    return 0;
+};
+
+// Enforce exactly one active policy per type: the highest version stays active,
+// every other version of the same type is deactivated. Robust to non-sequential
+// versions (e.g. 1.0.1 vs 1.1). Runs inside the caller's transaction.
+const reconcileActivePolicyForType = async (policyType, transaction) => {
+    const policies = await models.gdpr_policies.findAll({
+        where: { policy_type: policyType },
+        attributes: ['policy_id', 'version', 'is_active'],
+        transaction
+    });
+    if (!policies.length) return;
+
+    let top = policies[0];
+    for (const p of policies) {
+        if (compareVersions(p.version, top.version) > 0) top = p;
+    }
+    for (const p of policies) {
+        const shouldBeActive = p.policy_id === top.policy_id;
+        if (p.is_active !== shouldBeActive) {
+            await models.gdpr_policies.update(
+                { is_active: shouldBeActive },
+                { where: { policy_id: p.policy_id }, transaction }
+            );
+        }
+    }
+};
+
 // ─── User-facing endpoints ──────────────────────────────────────────────────
 
 const getActivePolicies = async (req, res) => {
@@ -240,10 +280,12 @@ const getLatestPolicy = async (req, res) => {
 // ─── Admin endpoints ────────────────────────────────────────────────────────
 
 const adminCreatePolicy = async (req, res) => {
+    const transaction = await models.gdpr_policies.sequelize.transaction();
     try {
         let validated;
         try { validated = createPolicyBody.parse(req.body); }
         catch (error) {
+            await transaction.rollback();
             if (error.name === 'ZodError') return handleZodError(res, error);
             throw error;
         }
@@ -255,11 +297,18 @@ const adminCreatePolicy = async (req, res) => {
             is_active: true,
             created_by: adminId,
             updated_by: adminId
-        });
+        }, { transaction });
 
+        // Keep only the highest version of this type active.
+        await reconcileActivePolicyForType(policy.policy_type, transaction);
+        await transaction.commit();
+
+        // Reflect the reconciled active flag (the new policy may not be the latest).
+        await policy.reload();
         await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: policy });
     } catch (error) {
+        if (!transaction.finished) await transaction.rollback();
         logger.error('Error creating GDPR policy', { error });
         return res.status(500).json({ success: false, code: 'GDPR_POLICY_CREATE_FAILED' });
     }
@@ -364,8 +413,11 @@ const adminNewPolicyVersion = async (req, res) => {
             updated_by: adminId
         }, { transaction });
 
+        // Keep only the highest version of this type active.
+        await reconcileActivePolicyForType(oldPolicy.policy_type, transaction);
         await transaction.commit();
 
+        await newPolicy.reload();
         await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: newPolicy });
     } catch (error) {
