@@ -2,6 +2,7 @@ import { ADMIN } from './paths';
 import AdminDashboard from '../pages/admin/AdminDashboard/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers/AdminUsers';
 import AdminBadges from '../pages/admin/AdminBadges/AdminBadges';
+import AdminBadgeForm from '../pages/admin/AdminBadgeForm/AdminBadgeForm';
 import AdminRequirements from '../pages/admin/AdminRequirements/AdminRequirements';
 import AdminStructure from '../pages/admin/AdminStructure/AdminStructure';
 import UserProfile from '../pages/shared/UserProfile/UserProfile';
@@ -28,6 +29,8 @@ const adminRoutes = [
 	{ path: ADMIN.USERS, element: <AdminUsers /> },
 	{ path: ADMIN.USER_PROFILE, element: <UserProfile /> },
 	{ path: ADMIN.BADGES, element: <AdminBadges /> },
+	{ path: ADMIN.BADGE_NEW, element: <AdminBadgeForm /> },
+	{ path: ADMIN.BADGE_EDIT, element: <AdminBadgeForm /> },
 	{ path: ADMIN.AREAS, element: <AreasList /> },
 	{ path: ADMIN.SERVICE_LINES, element: <ServiceLinesList /> },
 	{ path: ADMIN.LEARNING_PATHS, element: <LearningPathsList /> },
