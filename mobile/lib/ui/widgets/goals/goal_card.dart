@@ -11,12 +11,16 @@ class GoalCard extends StatelessWidget {
     super.key,
     required this.goal,
     this.onDelete,
+    this.onComplete,
     this.isDeleting = false,
+    this.isCompleting = false,
   });
 
   final GoalModel goal;
   final VoidCallback? onDelete;
+  final VoidCallback? onComplete;
   final bool isDeleting;
+  final bool isCompleting;
 
   @override
   Widget build(BuildContext context) {
@@ -184,33 +188,78 @@ class GoalCard extends StatelessWidget {
               ],
             ),
           ],
-          if (!completed && onDelete != null) ...[
+          if (!completed && (onComplete != null || onDelete != null)) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: OutlinedButton.icon(
-                onPressed: isDeleting ? null : onDelete,
-                icon: isDeleting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.delete_outline_rounded, size: 18),
-                label: Text(isDeleting ? tr.tr('removing') : tr.tr('removeGoal')),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF8B4513),
-                  side: const BorderSide(color: Color(0xFFD4A843)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Row(
+              children: [
+                if (onComplete != null)
+                  Expanded(
+                    child: SizedBox(
+                      height: 42,
+                      child: ElevatedButton.icon(
+                        onPressed: (isCompleting || isDeleting) ? null : onComplete,
+                        icon: isCompleting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                        label: Text(
+                          isCompleting ? tr.tr('concluding') : tr.tr('confirmConclusion'),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                if (onComplete != null && onDelete != null)
+                  const SizedBox(width: 10),
+                if (onDelete != null)
+                  SizedBox(
+                    width: 48,
+                    height: 42,
+                    child: OutlinedButton(
+                      onPressed: (isDeleting || isCompleting) ? null : onDelete,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        foregroundColor: AppColors.error,
+                        backgroundColor: AppColors.errorContainer.withValues(alpha: 0.45),
+                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.45)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: isDeleting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.error,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 20,
+                              color: AppColors.error,
+                            ),
+                    ),
                   ),
-                ),
-              ),
+              ],
             ),
           ],
         ],

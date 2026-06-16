@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 12;
+const int sourceStringsVersion = 13;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -529,6 +529,45 @@ const _sourceJson = r'''
   "learningPath": "Learning Path",
   "badgeType": "Tipo",
   "removeGoal": "Remover objetivo",
-  "removing": "A remover..."
+  "removing": "A remover...",
+  "goalRemoved": "Objetivo removido.",
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "confirmConclusion": "Concluir objetivo",
+  "concluding": "A concluir...",
+  "goalConcluded": "Objetivo concluído!",
+  "goalNotOwned": "Ainda não conquistaste este badge.",
+  "goalCompleteError": "Não foi possível concluir o objetivo.",
+  "goalDeadlineTitle": "Definir prazo do objetivo",
+  "goalDeadlineSubtitle": "Escolhe dentro de quantos meses queres concluir este objetivo.",
+  "goalDeadlinePreview": "Prazo: {date}",
+  "durationMonth": "mês",
+  "durationMonths": "meses",
+  "NOTIF_APP_SUBMITTED_TITLE": "Candidatura submetida",
+  "NOTIF_APP_SUBMITTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi submetida com sucesso.",
+  "NOTIF_APP_NEW_APPLICATION_TITLE": "Nova candidatura recebida",
+  "NOTIF_APP_NEW_APPLICATION_BODY": "Uma nova candidatura para o badge \"{{badgeTitle}}\" aguarda revisão.",
+  "NOTIF_APP_BADGE_AWARDED_TITLE": "Badge atribuído",
+  "NOTIF_APP_BADGE_AWARDED_BODY": "Parabéns! O badge \"{{badgeTitle}}\" foi-lhe atribuído.",
+  "NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE": "Badge especial atribuído",
+  "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Parabéns! O badge especial \"{{badgeTitle}}\" foi-lhe atribuído.",
+  "NOTIF_APP_REJECTED_TITLE": "Candidatura rejeitada",
+  "NOTIF_APP_REJECTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi rejeitada.",
+  "NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura em validação",
+  "NOTIF_APP_IN_VALIDATION_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" está agora em validação.",
+  "NOTIF_APP_PENDING_SLL_REVIEW_TITLE": "Candidatura aguarda revisão",
+  "NOTIF_APP_PENDING_SLL_REVIEW_BODY": "Uma candidatura para o badge \"{{badgeTitle}}\" aguarda a sua revisão.",
+  "NOTIF_BADGE_EXPIRING_SOON_TITLE": "Badge a expirar em breve",
+  "NOTIF_BADGE_EXPIRING_SOON_BODY": "O seu badge \"{{badgeTitle}}\" expira em {{daysRemaining}} dias.",
+  "NOTIF_BADGE_EXPIRED_TITLE": "Badge expirado",
+  "NOTIF_BADGE_EXPIRED_BODY": "O seu badge \"{{badgeTitle}}\" expirou.",
+  "NOTIF_SLA_BREACH_TITLE": "Incumprimento de SLA",
+  "NOTIF_SLA_BREACH_BODY": "O SLA \"{{slaName}}\" foi ultrapassado em {{hoursExceeded}}h para o badge \"{{badgeTitle}}\".",
+  "NOTIF_CUSTOM_SLA_BREACH_TITLE": "Incumprimento de SLA personalizado",
+  "NOTIF_CUSTOM_SLA_BREACH_BODY": "O SLA \"{{slaName}}\" atingiu o prazo limite.",
+  "NOTIF_GOAL_REMINDER_TITLE": "Lembrete de objetivo",
+  "NOTIF_GOAL_REMINDER_BODY": "Não se esqueça do seu objetivo \"{{goalTitle}}\".",
+  "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Prazo de objetivo a aproximar-se",
+  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias."
 }
 ''';

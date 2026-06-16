@@ -72,6 +72,26 @@ class BadgeRepository {
     return BadgeModel.fromApiDetail(data);
   }
 
+  /// Badge ids the consultant currently owns (awarded), read from the local
+  /// cache that mirrors the server. Used to decide whether a goal whose badge
+  /// has been earned can be marked as concluded.
+  Future<Set<int>> ownedBadgeIdsLocal() async {
+    final awarded = await _awardedBadgeDao.getAll();
+    return awarded.map((a) => a.badgeId).toSet();
+  }
+
+  /// Refreshes the local awarded-badge cache from the API and reports whether
+  /// the given badge is now owned. Falls back to the cached state when offline.
+  Future<bool> isBadgeOwned(int badgeId) async {
+    try {
+      await getEarnedBadges();
+    } catch (_) {
+      // Offline or transient failure: fall back to the local cache below.
+    }
+    final owned = await _awardedBadgeDao.getByBadge(badgeId);
+    return owned != null;
+  }
+
   Future<List<EarnedBadge>> getEarnedBadgesLocal() async {
     final awarded = await _awardedBadgeDao.getAll();
     final result = <EarnedBadge>[];

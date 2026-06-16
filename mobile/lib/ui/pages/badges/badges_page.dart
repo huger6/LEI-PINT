@@ -8,6 +8,7 @@ import '../../../models/badge_model.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
 import '../../widgets/badges/competences_section.dart';
+import '../../widgets/goals/goal_duration_sheet.dart';
 import '../../widgets/shared/translated_text.dart';
 import '../applications/application_page.dart';
 
@@ -69,14 +70,21 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
 
   Future<void> _addAsGoal() async {
     if (_isAddingGoal) return;
+
+    final months = await showGoalDurationSheet(context);
+    if (months == null || !mounted) return;
+
     setState(() => _isAddingGoal = true);
 
     try {
+      final startDate = DateTime.now();
       final goalsStore = context.read<GoalsStore>();
       final result = await goalsStore.addBadgeAsGoal(
         badgeId: _badge.id,
         badgeTitle: _badge.title,
         description: _badge.description,
+        startDate: startDate,
+        endDate: goalEndDateFromMonths(startDate, months),
       );
 
       if (!mounted) return;

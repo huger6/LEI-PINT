@@ -168,7 +168,8 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider<GoalsStore>(
-          create: (_) => GoalsStore(getIt<GoalsRepository>()),
+          create: (_) =>
+              GoalsStore(getIt<GoalsRepository>(), getIt<BadgeRepository>()),
         ),
         ChangeNotifierProvider<LanguageController>.value(
           value: languageController,

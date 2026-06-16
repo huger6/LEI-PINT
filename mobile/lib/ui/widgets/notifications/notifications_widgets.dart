@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/notification_defs.dart';
 import '../../../models/notification_model.dart';
 import '../../../presentation/state/language_controller.dart';
-import '../shared/translated_text.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -121,24 +120,32 @@ class NotificationCard extends StatelessWidget {
   NotificationTypeDisplay get _typeDisplay =>
       NotificationDefs.getTypeDisplay(item.notificationType);
 
+  /// Friendly title. The payload carries an i18n key (e.g.
+  /// `NOTIF_APP_SUBMITTED_TITLE`); resolve it to the localized template and
+  /// fill any `{{placeholder}}` from `meta`. Falls back to the definition label.
   String _title(LanguageController tr) {
-    final payload = item.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final firstLine = payload.split('\n').first;
-      if (firstLine.length <= 60) return firstLine;
-      return '${firstLine.substring(0, 57)}...';
-    }
+    final key = item.title;
+    if (key != null) return _interpolate(tr.tr(key), item.meta);
     return tr.tr(_display.label);
   }
 
-  String get _message {
-    final payload = item.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final lines = payload.split('\n');
-      if (lines.length > 1) return lines.sublist(1).join('\n').trim();
-      return payload;
+  /// Friendly body, resolved and interpolated the same way as the title.
+  String _message(LanguageController tr) {
+    final key = item.body;
+    if (key == null) return '';
+    return _interpolate(tr.tr(key), item.meta);
+  }
+
+  /// Replaces `{{name}}` tokens in a localized template with values from the
+  /// notification's `meta` payload. Unknown tokens are left untouched.
+  String _interpolate(String template, Map<String, dynamic>? meta) {
+    if (meta == null || meta.isEmpty || !template.contains('{{')) {
+      return template;
     }
-    return '';
+    return template.replaceAllMapped(RegExp(r'\{\{(\w+)\}\}'), (match) {
+      final value = meta[match.group(1)];
+      return value != null ? value.toString() : match.group(0)!;
+    });
   }
 
   String _timestamp(LanguageController tr) {
@@ -212,13 +219,15 @@ class NotificationCard extends StatelessWidget {
                           ),
                         ),
                       Expanded(
-                        child: TranslatedText(
+                        child: Text(
                           _title(tr),
                           style: TextStyle(
                             color: display.color,
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       IconButton(
@@ -232,10 +241,10 @@ class NotificationCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (_message.isNotEmpty) ...[
+                  if (_message(tr).isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    TranslatedText(
-                      _message,
+                    Text(
+                      _message(tr),
                       style: const TextStyle(
                         color: Color(0xFF202A33),
                         fontSize: 14,

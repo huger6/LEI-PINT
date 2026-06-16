@@ -37,6 +37,8 @@ class GoalsRepository {
     required int badgeId,
     required String title,
     String description = '',
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       final payload = await _apiClient.post(
@@ -45,6 +47,8 @@ class GoalsRepository {
           'badgeId': badgeId,
           'eventTitle': title,
           'eventDescription': description,
+          if (startDate != null) 'eventStartDate': startDate.toIso8601String(),
+          if (endDate != null) 'eventEndDate': endDate.toIso8601String(),
         },
       );
 

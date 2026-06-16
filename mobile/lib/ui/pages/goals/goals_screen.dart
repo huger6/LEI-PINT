@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../models/goal_model.dart';
 import '../../../presentation/state/goals_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/goals/goal_card.dart';
 
 class GoalsScreen extends StatefulWidget {
@@ -26,13 +28,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final result = await goalsStore.deleteGoal(goalId);
 
     if (!mounted) return;
+    final tr = LanguageScope.of(context);
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Objetivo removido.'),
+        SnackBar(
+          content: Text(tr.tr('goalRemoved')),
           backgroundColor: AppColors.snackBarInfo,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     } else {
@@ -41,6 +44,34 @@ class _GoalsScreenState extends State<GoalsScreen> {
           content: Text(
             result['message']?.toString() ?? 'Erro ao remover objetivo.',
           ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleComplete(GoalModel goal) async {
+    final goalsStore = context.read<GoalsStore>();
+    final result = await goalsStore.completeGoal(goal);
+
+    if (!mounted) return;
+    final tr = LanguageScope.of(context);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr.tr('goalConcluded')),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      final code = result['code']?.toString();
+      final message =
+          code == 'NOT_OWNED' ? tr.tr('goalNotOwned') : tr.tr('goalCompleteError');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
           backgroundColor: AppColors.error,
         ),
       );
@@ -152,7 +183,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 10),
             ...pending.map((goal) => GoalCard(
                   goal: goal,
-                  isDeleting: store.completingGoalId == goal.goalId,
+                  isDeleting: store.deletingGoalId == goal.goalId,
+                  isCompleting: store.completingGoalId == goal.goalId,
+                  onComplete: () => _handleComplete(goal),
                   onDelete: () => _handleDelete(goal.goalId),
                 )),
           ],
