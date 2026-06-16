@@ -1,44 +1,91 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBadges, deleteBadge, updateBadge } from '../../../features/badges/api/badgesApi';
-import { getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getBadgesCatalog, deleteBadge, updateBadge } from '../../../features/badges/api/badgesApi';
+import { getAreas, getServiceLines, getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import { ADMIN } from '../../../routes/paths';
 import Button from '../../../components/Button/Button';
 import Modal from '../../../components/Modal/Modal';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
+import Pagination from '../../../components/Pagination/Pagination';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
+import AdminBadgeFilters, { EMPTY_FILTERS, MAX_POINTS } from './AdminBadgeFilters/AdminBadgeFilters';
 import styles from './AdminBadges.module.css';
 
+const PAGE_SIZE = 12;
 const idEq = (a, b) => a != null && b != null && String(a) === String(b);
 
 export default function AdminBadges() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [badges, setBadges] = useState([]);
+	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	const [page, setPage] = useState(1);
 	const [areas, setAreas] = useState([]);
+	const [serviceLines, setServiceLines] = useState([]);
+	const [learningPaths, setLearningPaths] = useState([]);
+	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	const [showFilters, setShowFilters] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [search, setSearch] = useState('');
 	const [confirmTarget, setConfirmTarget] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [actionError, setActionError] = useState('');
 
-	async function loadData() {
+	// Filter option sources (loaded once).
+	useEffect(() => {
+		let active = true;
+		(async () => {
+			const [ars, sls, lps] = await Promise.all([
+				getAreas({ limit: 100 }).catch(() => []),
+				getServiceLines({ limit: 100 }).catch(() => []),
+				getLearningPaths({ limit: 100 }).catch(() => []),
+			]);
+			if (!active) return;
+			setAreas(ars || []);
+			setServiceLines(sls || []);
+			setLearningPaths(lps || []);
+		})();
+		return () => { active = false; };
+	}, []);
+
+	const loadBadges = useCallback(async () => {
+		setLoading(true);
 		try {
-			setLoading(true);
-			const [badgeData, areaData] = await Promise.all([getBadges(), getAreas()]);
-			setBadges(badgeData.data || badgeData || []);
-			setAreas(areaData.data || areaData || []);
+			const params = { page, limit: PAGE_SIZE };
+			if (filters.search.trim()) params.search = filters.search.trim();
+			if (filters.learningPathId) params.learningPathId = Number(filters.learningPathId);
+			if (filters.serviceLineId) params.serviceLineId = Number(filters.serviceLineId);
+			if (filters.areaId) params.areaId = Number(filters.areaId);
+			if (filters.stageCodes.length > 0) params.stageCodes = filters.stageCodes.join(',');
+			if (filters.badgeClass !== 'all') params.badgeClass = filters.badgeClass;
+			if (Number(filters.minPoints) > 0) params.minPoints = Number(filters.minPoints);
+			if (Number(filters.maxPoints) < MAX_POINTS) params.maxPoints = Number(filters.maxPoints);
+			if (filters.expiringOnly) params.expiringOnly = true;
+
+			const { data, pagination: pag } = await getBadgesCatalog(params);
+			setBadges(data || []);
+			setPagination(pag || { totalItems: 0, totalPages: 0, currentPage: 1 });
 		} catch (err) {
 			console.error(err);
+			setBadges([]);
 		} finally {
 			setLoading(false);
 		}
+	}, [page, filters]);
+
+	useEffect(() => { loadBadges(); }, [loadBadges]);
+
+	function patchFilters(patch) {
+		setFilters((prev) => ({ ...prev, ...patch }));
+		setPage(1);
 	}
 
-	useEffect(() => { loadData(); }, []);
+	function clearFilters() {
+		setFilters(EMPTY_FILTERS);
+		setPage(1);
+	}
 
 	function getAreaName(areaId) {
 		const area = areas.find((a) => idEq(a.area_id ?? a.areaId, areaId));
@@ -52,7 +99,6 @@ export default function AdminBadges() {
 		setActionError('');
 		try {
 			await deleteBadge(slug);
-			// Keep the badge in the list (inactive) so it can be reactivated.
 			setBadges((prev) => prev.map((b) => (b.badge_slug === slug ? { ...b, is_active: false } : b)));
 			setConfirmTarget(null);
 		} catch (err) {
@@ -78,11 +124,10 @@ export default function AdminBadges() {
 		}
 	}
 
-	const filteredBadges = useMemo(() => {
-		const term = search.trim().toLowerCase();
-		if (!term) return badges;
-		return badges.filter((b) => (b.badge_title || b.badgeTitle || '').toLowerCase().includes(term));
-	}, [badges, search]);
+	const hasActiveFilters = Boolean(filters.search.trim()) || Boolean(filters.learningPathId)
+		|| Boolean(filters.serviceLineId) || Boolean(filters.areaId) || filters.stageCodes.length > 0
+		|| filters.badgeClass !== 'all' || Number(filters.minPoints) > 0
+		|| Number(filters.maxPoints) < MAX_POINTS || filters.expiringOnly;
 
 	return (
 		<div>
@@ -98,86 +143,120 @@ export default function AdminBadges() {
 				</Button>
 			</div>
 
-			{!loading && badges.length > 0 && (
-				<div className={styles.toolbar}>
+			<div className={styles.toolbar}>
+				<div className={styles.searchWrap}>
 					<FilterSearchInput
 						name="search"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
+						value={filters.search}
+						onChange={(e) => patchFilters({ search: e.target.value })}
 						placeholder={t('adminBadges.searchPlaceholder')}
 						ariaLabel={t('adminBadges.searchPlaceholder')}
 					/>
 				</div>
-			)}
+				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+					<Icon name="filter" size={16} /> {t('badgeCatalog.filters.title', { defaultValue: 'Filtros' })}
+				</Button>
+				{hasActiveFilters && (
+					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>
+						{t('badgeCatalog.filters.clear')}
+					</Button>
+				)}
+			</div>
 
-			{loading ? (
-				<CardGridSkeleton count={8} />
-			) : badges.length === 0 ? (
-				<div className={styles.empty}>
-					<Icon name="badge" size={40} aria-hidden="true" className={styles.emptyIcon} />
-					<h5 className="text-muted mb-0">{t('adminBadges.noBadges')}</h5>
-					<p className="text-muted small">{t('adminBadges.noBadgesDesc')}</p>
-				</div>
-			) : (
-				<div className={styles.grid}>
-					{filteredBadges.map((b) => {
-						const img = b.badge_img_url || b.badgeImgUrl;
-						const title = b.badge_title || b.badgeTitle;
-						const isSpecial = (b.badge_type || b.badgeType) === 'Special';
-						const active = b.is_active;
-						const slug = b.badge_slug || b.badgeSlug;
-						const stageCode = b.progression_stage?.stage_code?.stage_code;
-						const openBadge = () => navigate(`/badges/${slug}`);
-						return (
-							<article
-								key={slug}
-								className={`${styles.card} ${styles.cardClickable} ${!active ? styles.cardInactive : ''}`}
-								role="button"
-								tabIndex={0}
-								onClick={openBadge}
-								onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(); } }}
-							>
-								<div className={`${styles.imageWrap} ${isSpecial ? styles.imageSpecial : ''}`}>
-									{img ? <img src={img} alt={title} className={styles.image} /> : <Icon name="badge" size={48} className={styles.imageFallback} aria-hidden="true" />}
-									<span className={`${styles.typePill} ${isSpecial ? styles.typeSpecial : styles.typeStandard}`}>
-										{isSpecial ? t('badgeCatalog.filters.class.special', { defaultValue: 'Special' }) : t('badgeCatalog.filters.class.standard', { defaultValue: 'Standard' })}
-									</span>
-									<span className={`${styles.statusPill} ${active ? styles.statusOn : styles.statusOff}`}>
-										{active ? t('shared.active') : t('shared.inactive')}
-									</span>
-								</div>
-								<div className={styles.content}>
-									<h3 className={styles.cardTitle} title={title}>{title}</h3>
-									<p className={styles.description}>{b.badge_description || b.badgeDescription || '—'}</p>
-									<div className={styles.metaGrid}>
-										<span className={styles.metaChip}>{getAreaName(b.area_id || b.areaId)}</span>
-										{stageCode && <span className={styles.metaChip}>{stageCode}</span>}
-										<span className={`${styles.metaChip} ${styles.points}`}>{b.badge_points || b.badgePoints || 0} pts</span>
-									</div>
-								</div>
-								<div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
-									<Button size="sm" variant="outlined" className="flex-fill" onClick={() => navigate(generatePath(ADMIN.BADGE_EDIT, { slug }))}>
-										<Icon name="pencil" size={14} aria-hidden="true" className="me-1" /> {t('shared.edit')}
-									</Button>
-									{active ? (
-										<Tooltip text={t('shared.deactivate')}>
-											<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => { setActionError(''); setConfirmTarget(b); }}>
-												<Icon name="trash" size={14} aria-hidden="true" />
-											</Button>
-										</Tooltip>
-									) : (
-										<Tooltip text={t('shared.reactivate')}>
-											<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => handleReactivate(b)}>
-												<Icon name="activate" size={14} aria-hidden="true" />
-											</Button>
-										</Tooltip>
-									)}
-								</div>
-							</article>
-						);
-					})}
-				</div>
-			)}
+			<div className="row g-4">
+				<aside className={`col-12 col-lg-3 ${showFilters ? '' : 'd-none d-lg-block'}`}>
+					<AdminBadgeFilters
+						filters={filters}
+						onChange={patchFilters}
+						learningPaths={learningPaths}
+						serviceLines={serviceLines}
+						areas={areas}
+					/>
+				</aside>
+
+				<section className="col-12 col-lg-9">
+					{loading ? (
+						<CardGridSkeleton count={6} columns={3} />
+					) : badges.length === 0 ? (
+						<div className={styles.empty}>
+							<Icon name="badge" size={40} aria-hidden="true" className={styles.emptyIcon} />
+							<h5 className="text-muted mb-0">{t('adminBadges.noBadges')}</h5>
+							<p className="text-muted small">{hasActiveFilters ? t('badgeCatalog.noBadgesDesc') : t('adminBadges.noBadgesDesc')}</p>
+						</div>
+					) : (
+						<>
+							<div className={styles.grid}>
+								{badges.map((b) => {
+									const img = b.badge_img_url || b.badgeImgUrl;
+									const title = b.badge_title || b.badgeTitle;
+									const isSpecial = (b.badge_type || b.badgeType) === 'Special';
+									const active = b.is_active;
+									const slug = b.badge_slug || b.badgeSlug;
+									const stageCode = b.progression_stage?.stage_code?.stage_code;
+									const openBadge = () => navigate(`/badges/${slug}`);
+									return (
+										<article
+											key={slug}
+											className={`${styles.card} ${styles.cardClickable} ${!active ? styles.cardInactive : ''}`}
+											role="button"
+											tabIndex={0}
+											onClick={openBadge}
+											onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(); } }}
+										>
+											<div className={`${styles.imageWrap} ${isSpecial ? styles.imageSpecial : ''}`}>
+												{img ? <img src={img} alt={title} className={styles.image} /> : <Icon name="badge" size={48} className={styles.imageFallback} aria-hidden="true" />}
+												<span className={`${styles.typePill} ${isSpecial ? styles.typeSpecial : styles.typeStandard}`}>
+													{isSpecial ? t('badgeCatalog.filters.class.special', { defaultValue: 'Special' }) : t('badgeCatalog.filters.class.standard', { defaultValue: 'Standard' })}
+												</span>
+												<span className={`${styles.statusPill} ${active ? styles.statusOn : styles.statusOff}`}>
+													{active ? t('shared.active') : t('shared.inactive')}
+												</span>
+											</div>
+											<div className={styles.content}>
+												<h3 className={styles.cardTitle} title={title}>{title}</h3>
+												<p className={styles.description}>{b.badge_description || b.badgeDescription || '—'}</p>
+												<div className={styles.metaGrid}>
+													<span className={styles.metaChip}>{b.area?.area_name || getAreaName(b.area_id || b.areaId)}</span>
+													{stageCode && <span className={styles.metaChip}>{stageCode}</span>}
+													<span className={`${styles.metaChip} ${styles.points}`}>{b.badge_points || b.badgePoints || 0} pts</span>
+												</div>
+											</div>
+											<div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
+												<Button size="sm" variant="outlined" className="flex-fill" onClick={() => navigate(generatePath(ADMIN.BADGE_EDIT, { slug }))}>
+													<Icon name="pencil" size={14} aria-hidden="true" className="me-1" /> {t('shared.edit')}
+												</Button>
+												{active ? (
+													<Tooltip text={t('shared.deactivate')}>
+														<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => { setActionError(''); setConfirmTarget(b); }}>
+															<Icon name="trash" size={14} aria-hidden="true" />
+														</Button>
+													</Tooltip>
+												) : (
+													<Tooltip text={t('shared.reactivate')}>
+														<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => handleReactivate(b)}>
+															<Icon name="activate" size={14} aria-hidden="true" />
+														</Button>
+													</Tooltip>
+												)}
+											</div>
+										</article>
+									);
+								})}
+							</div>
+
+							<div className="mt-4">
+								<Pagination
+									currentPage={pagination.currentPage}
+									totalPages={pagination.totalPages || 0}
+									totalItems={pagination.totalItems || 0}
+									itemCount={badges.length}
+									onPageChange={setPage}
+								/>
+							</div>
+						</>
+					)}
+				</section>
+			</div>
 
 			{confirmTarget && (
 				<Modal
