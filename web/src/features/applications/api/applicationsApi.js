@@ -16,8 +16,8 @@ export async function getApplicationById(guid) {
 	return data?.data;
 }
 
-export async function startApplication(badgeId, goalId = null) {
-	const { data } = await api.post('/applications/start', { badgeId, goalId });
+export async function startApplication(badgeSlug, goalId = null) {
+	const { data } = await api.post('/applications/start', { badgeSlug, goalId });
 	return data?.data;
 }
 
@@ -39,10 +39,6 @@ export async function upsertEvidence(applicationGuid, payload) {
 export async function submitApplication(applicationGuid, consultantNotes = null) {
 	const { data } = await api.post(`/applications/${applicationGuid}/submit`, { consultantNotes });
 	return data?.data;
-}
-
-export async function deleteApplication(applicationGuid) {
-	await api.delete(`/applications/${applicationGuid}`);
 }
 
 export async function updateApplication(applicationGuid, payload) {

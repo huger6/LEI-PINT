@@ -32,7 +32,3 @@ export async function submitApplication(applicationGuid) {
 	const { data } = await api.post(`/applications/${applicationGuid}/submit`);
 	return data?.data;
 }
-
-export async function deleteApplication(applicationGuid) {
-	await api.delete(`/applications/${applicationGuid}`);
-}
