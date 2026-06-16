@@ -77,7 +77,7 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 						<Icon name="badge" size={56} className={styles.imageFallback} aria-hidden="true" />
 					)}
 					<span className={`${styles.typePill} ${isSpecial ? styles.special : styles.standard}`}>
-						{badgeClass}
+						{t(`badgeCatalog.filters.class.${isSpecial ? 'special' : 'standard'}`, { defaultValue: badgeClass })}
 					</span>
 					<span className={styles.topLeftIcons}>
 						{hasObtained && (
