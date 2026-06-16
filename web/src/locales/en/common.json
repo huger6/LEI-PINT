@@ -1446,6 +1446,8 @@
 		"colApplications": "Applications",
 		"colOpenApps": "Open Apps",
 		"colLastLogin": "Last Login",
+		"colDetail": "Analytics",
+		"viewDetail": "View analytics",
 		"neverLoggedIn": "Never",
 		"empty": "No consultants to show.",
 		"filters": {
