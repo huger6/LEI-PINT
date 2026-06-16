@@ -24,7 +24,6 @@ export const ADMIN = {
 	REQUIREMENTS: '/admin/requirements',
 	APPLICATIONS: '/admin/applications',
 	SLAS: '/admin/slas',
-	WARNINGS: '/admin/warnings',
 	NOTIFICATIONS: '/admin/notifications',
 	STATS: '/admin/stats',
 	RGPD: '/admin/rgpd',
