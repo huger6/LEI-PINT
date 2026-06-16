@@ -70,6 +70,7 @@
 }
 
 .heroImageWrap {
+	position: relative;
 	flex-shrink: 0;
 	width: 120px;
 	height: 120px;
@@ -79,7 +80,22 @@
 	justify-content: center;
 	background: linear-gradient(135deg, rgba(0, 184, 224, 0.12) 0%, rgba(57, 99, 156, 0.12) 100%);
 	border: 3px solid var(--color-secondary);
-	overflow: hidden;
+}
+
+/* "Completed" badge pinned to the bottom-right of the circular image. */
+.obtainedCorner {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--color-success);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid #fff;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .heroImage {

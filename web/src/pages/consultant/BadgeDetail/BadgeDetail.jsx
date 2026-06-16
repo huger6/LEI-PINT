@@ -221,6 +221,11 @@ export default function BadgeDetail() {
 							<Icon name="badge" size={64} color="var(--color-secondary)" />
 						</div>
 					)}
+					{hasObtained && (
+						<span className={styles.obtainedCorner} title={t('badgeDetail.complete')} aria-label={t('badgeDetail.complete')}>
+							<Icon name="check_circle" size={20} color="#fff" aria-hidden="true" />
+						</span>
+					)}
 				</div>
 
 				<div className={styles.heroBody}>
@@ -318,13 +323,6 @@ export default function BadgeDetail() {
 							</>
 						)}
 
-						{hasObtained && (
-							<Tooltip text={t('badgeDetail.complete')}>
-								<div className={styles.obtainedIndicator}>
-									<Icon name="trophy" size={28} color="var(--color-badge-premium)" />
-								</div>
-							</Tooltip>
-						)}
 					</div>
 				</div>
 			</section>
