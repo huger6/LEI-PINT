@@ -251,7 +251,7 @@ export default function SoftinsaSite() {
 						<h3>{t('softinsaSite.footer.ligacoesUteis')}</h3>
 						<ul>
 							{arr(links).map((l) => (
-								<li key={l.label || l}><a href={l.url || 'https://softinsa.pt'} target="_blank" rel="noreferrer">{l.label || l}</a></li>
+								<li key={l}><a href="https://softinsa.pt" target="_blank" rel="noreferrer">{l}</a></li>
 							))}
 						</ul>
 					</div>
@@ -268,7 +268,7 @@ export default function SoftinsaSite() {
 					<span className={styles.copyright}>{t('softinsaSite.footer.copyright', { year: new Date().getFullYear() })}</span>
 					<div className={styles.policies}>
 						{arr(policies).map((p) => (
-							<a key={p.label || p} href={p.url || 'https://softinsa.pt'} target="_blank" rel="noreferrer">{p.label || p}</a>
+							<a key={p} href="https://softinsa.pt" target="_blank" rel="noreferrer">{p}</a>
 						))}
 					</div>
 				</div>
