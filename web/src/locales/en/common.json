@@ -715,7 +715,18 @@
 		"push": "Push",
 		"empty": "No configurable notifications.",
 		"loadFailed": "Could not load notifications.",
-		"saveFailed": "Could not save the change."
+		"saveFailed": "Could not save the change.",
+		"noEmailChannel": "This notification is only sent in-app (no email)."
+	},
+	"notifDefs": {
+		"ANNOUNCEMENT_PUBLISHED": { "name": "New announcement", "desc": "When a new announcement is published." },
+		"APPLICATION_SUBMITTED": { "name": "Application submitted", "desc": "When an application is submitted or moves to a new validation step." },
+		"APPLICATION_APPROVED": { "name": "Application approved", "desc": "When an application is approved and the badge is awarded." },
+		"APPLICATION_REJECTED": { "name": "Application rejected", "desc": "When an application is rejected." },
+		"OBJECTIVE_DUE": { "name": "Objective due soon", "desc": "Reminder for an objective nearing its deadline." },
+		"BADGE_EXPIRING_SOON": { "name": "Badge expiring soon", "desc": "When an awarded badge is close to expiring." },
+		"BADGE_EXPIRED": { "name": "Badge expired", "desc": "When an awarded badge has expired." },
+		"SLA_BREACH": { "name": "SLA exceeded", "desc": "When a response SLA is breached." }
 	},
 	"adminRgpd": {
 		"title": "GDPR",

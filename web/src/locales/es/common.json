@@ -714,7 +714,18 @@
 		"push": "Push",
 		"empty": "Sin notificaciones configurables.",
 		"loadFailed": "No se pudieron cargar las notificaciones.",
-		"saveFailed": "No se pudo guardar el cambio."
+		"saveFailed": "No se pudo guardar el cambio.",
+		"noEmailChannel": "Esta notificación solo se envía en la app (sin email)."
+	},
+	"notifDefs": {
+		"ANNOUNCEMENT_PUBLISHED": { "name": "Nuevo comunicado", "desc": "Cuando se publica un nuevo comunicado." },
+		"APPLICATION_SUBMITTED": { "name": "Candidatura enviada", "desc": "Cuando una candidatura se envía o cambia de etapa de validación." },
+		"APPLICATION_APPROVED": { "name": "Candidatura aprobada", "desc": "Cuando una candidatura es aprobada y se otorga el badge." },
+		"APPLICATION_REJECTED": { "name": "Candidatura rechazada", "desc": "Cuando una candidatura es rechazada." },
+		"OBJECTIVE_DUE": { "name": "Objetivo próximo a vencer", "desc": "Recordatorio de un objetivo cercano a su fecha límite." },
+		"BADGE_EXPIRING_SOON": { "name": "Badge próximo a expirar", "desc": "Cuando un badge otorgado está cerca de expirar." },
+		"BADGE_EXPIRED": { "name": "Badge expirado", "desc": "Cuando un badge otorgado ha expirado." },
+		"SLA_BREACH": { "name": "SLA excedido", "desc": "Cuando se supera un SLA de respuesta." }
 	},
 	"adminRgpd": {
 		"title": "RGPD",

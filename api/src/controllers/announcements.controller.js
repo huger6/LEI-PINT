@@ -1,10 +1,65 @@
-const { Op, literal } = require('sequelize');
+const { Op, literal, QueryTypes } = require('sequelize');
 const { sequelize, models } = require('../config/db');
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const { invalidateCacheByPrefix } = require('../utils/listHelper');
 const validations = require('../validations/announcements.validation');
 const { handleZodError } = require('../utils/responseHelper');
+const { createNotification } = require('../services/notifications.service');
+
+// Notify the target audience in-app (+ push) when an announcement is published.
+// Fire-and-forget: failures are logged but never block the create request.
+async function dispatchAnnouncementNotifications(announcement, { isGlobal, roleNames = [], serviceLineIds = [] }) {
+    const def = await models.notification_definitions.findOne({
+        where: { code: 'ANNOUNCEMENT_PUBLISHED' },
+        attributes: ['definition_id']
+    });
+    if (!def) return;
+
+    // Resolve recipient user ids from the announcement's audience.
+    const ids = new Set();
+    if (isGlobal) {
+        const rows = await sequelize.query(
+            'SELECT user_id FROM users WHERE is_active = TRUE',
+            { type: QueryTypes.SELECT }
+        );
+        rows.forEach((r) => ids.add(r.user_id));
+    } else {
+        if (roleNames.length) {
+            const rows = await sequelize.query(
+                'SELECT user_id FROM users WHERE is_active = TRUE AND user_role IN (:roleNames)',
+                { replacements: { roleNames }, type: QueryTypes.SELECT }
+            );
+            rows.forEach((r) => ids.add(r.user_id));
+        }
+        if (serviceLineIds.length) {
+            const rows = await sequelize.query(
+                `SELECT DISTINCT ca.user_id
+                   FROM consultant_areas ca
+                   JOIN areas a ON a.area_id = ca.area_id
+                   JOIN users u ON u.user_id = ca.user_id
+                  WHERE u.is_active = TRUE AND a.service_line_id IN (:serviceLineIds)`,
+                { replacements: { serviceLineIds }, type: QueryTypes.SELECT }
+            );
+            rows.forEach((r) => ids.add(r.user_id));
+        }
+    }
+
+    for (const userId of ids) {
+        try {
+            await createNotification({
+                userId,
+                definitionId: def.definition_id,
+                notificationType: 'ANNOUNCEMENTS',
+                title: announcement.announcement_title,
+                body: announcement.announcement_message,
+                url: '/announcements'
+            });
+        } catch (err) {
+            logger.error('Failed to create announcement notification', { err, userId });
+        }
+    }
+}
 
 const VALID_ROLES = ['Consultant', 'Talent Manager', 'Service Line Leader', 'Administrator'];
 const MANAGEMENT_ROLES = ['Administrator', 'Talent Manager', 'Service Line Leader'];
@@ -309,6 +364,10 @@ const createAnnouncement = async (req, res) => {
         });
 
         await invalidateCacheByPrefix('announcements:list');
+
+        // Fire-and-forget audience notification (in-app + push).
+        dispatchAnnouncementNotifications(result, { isGlobal, roleNames, serviceLineIds })
+            .catch((err) => logger.error('Announcement notification dispatch failed', { err }));
 
         return res.status(201).json({ success: true, code: 'ANNOUNCEMENT_CREATED', data: result });
 
