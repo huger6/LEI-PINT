@@ -16,8 +16,8 @@ const booleanQueryRule = z.preprocess(
 ).transform((v) => v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true'));
 
 const getSLAsQuerySchema = z.object({
-    isActive: booleanQueryRule,
-    isGlobal: booleanQueryRule,
+    isActive: booleanQueryRule.optional(),
+    isGlobal: booleanQueryRule.optional(),
     targetProfile: z.string().trim().max(128).optional(),
     search: z.string().trim().max(255).optional().transform((v) => (v === '' ? undefined : v)),
     page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
