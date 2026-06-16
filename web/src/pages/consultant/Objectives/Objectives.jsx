@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CONSULTANT, SHARED } from '../../../routes/paths';
+import { CONSULTANT } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
@@ -267,7 +267,7 @@ export default function Objectives() {
 											variant="filled"
 											size="sm"
 											className={styles.resumeBtn}
-											onClick={() => navigate(SHARED.BADGES)}
+											onClick={() => navigate(CONSULTANT.CATALOG)}
 										>
 											<Icon name="chevron_forward" size={14} />
 											{t('objectives.resumeTraining')}
@@ -319,7 +319,7 @@ export default function Objectives() {
 								label={t('objectives.browseCatalog')}
 								color="var(--color-primary)"
 								bg="var(--color-primary-soft)"
-								onClick={() => navigate(SHARED.BADGES)}
+								onClick={() => navigate(CONSULTANT.CATALOG)}
 							/>
 							<QuickAction
 								icon="progress"
