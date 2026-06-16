@@ -611,7 +611,10 @@
 		"serviceLine": "Service Line",
 		"selectLpFirst": "Select a Learning Path first",
 		"selectSlFirst": "Select a Service Line first",
-		"selectAreaFirst": "Select an Area first"
+		"selectAreaFirst": "Select an Area first",
+		"confirmDeactivate": "Deactivate the badge \"{{name}}\"? You can reactivate it later.",
+		"hasDependencies": "Cannot deactivate: the badge has {{count}} active application(s).",
+		"actionFailed": "Could not complete the operation."
 	},
 	"badgeImage": {
 		"upload": "Upload",
