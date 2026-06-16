@@ -15,6 +15,8 @@ export const ADMIN = {
 	USERS: '/admin/users',
 	USER_PROFILE: '/admin/users/:guid',
 	BADGES: '/admin/badges',
+	BADGE_NEW: '/admin/badges/new',
+	BADGE_EDIT: '/admin/badges/:slug/edit',
 	AREAS: '/admin/structure/areas',
 	SERVICE_LINES: '/admin/structure/service-lines',
 	LEARNING_PATHS: '/admin/structure/learning-paths',
