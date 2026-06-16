@@ -8,7 +8,7 @@ import FormInput from '../../../components/FormInput/FormInput';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
-import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
+import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import BadgeImagePicker from '../../../components/BadgeImagePicker/BadgeImagePicker';
 import styles from './AdminBadges.module.css';
 
@@ -211,70 +211,55 @@ export default function AdminBadges() {
 				</div>
 			)}
 
-			<div className={styles.tableCard}>
-				<div className="card-body">
-					{loading ? (
-						<TableSkeleton rows={5} columns={6} />
-					) : badges.length === 0 ? (
-						<div className={styles.empty}>
-							<Icon name="badge" size={40} aria-hidden="true" className={styles.emptyIcon} />
-							<h5 className="text-muted mb-0">{t('adminBadges.noBadges')}</h5>
-							<p className="text-muted small">{t('adminBadges.noBadgesDesc')}</p>
-						</div>
-					) : (
-						<div className="table-responsive">
-							<table className="table table-hover align-middle mb-0">
-								<thead className="table-light">
-									<tr>
-										<th>{t('shared.title')}</th>
-										<th>{t('shared.area')}</th>
-										<th>{t('shared.type')}</th>
-										<th>{t('shared.points')}</th>
-										<th>{t('shared.active')}</th>
-										<th className="text-end">{t('shared.actions')}</th>
-									</tr>
-								</thead>
-								<tbody>
-									{filteredBadges.map((b) => (
-										<tr key={b.badge_slug || b.badgeSlug}>
-											<td>
-												<div className="d-flex align-items-center gap-2">
-													{(b.badge_img_url || b.badgeImgUrl) ? (
-														<img src={b.badge_img_url || b.badgeImgUrl} alt="" className={styles.thumb} />
-													) : (
-														<span className={styles.thumbPlaceholder}><Icon name="badge" size={18} aria-hidden="true" /></span>
-													)}
-													<span>{b.badge_title || b.badgeTitle}</span>
-												</div>
-											</td>
-											<td>{getAreaName(b.area_id || b.areaId)}</td>
-											<td><span className="badge bg-info">{b.badge_type || b.badgeType}</span></td>
-											<td><span className="badge bg-warning text-dark">{b.badge_points || b.badgePoints} pts</span></td>
-											<td>
-												<span className={`badge ${b.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{b.is_active ? t('shared.yes') : t('shared.no')}
-												</span>
-											</td>
-											<td className="text-end">
-												<Tooltip text={t('shared.edit')}>
-													<Button size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')} onClick={() => openEdit(b)}>
-														<Icon name="pencil" size={14} aria-hidden="true" />
-													</Button>
-												</Tooltip>
-												<Tooltip text={t('shared.delete')}>
-													<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(b)}>
-														<Icon name="trash" size={14} aria-hidden="true" />
-													</Button>
-												</Tooltip>
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					)}
+			{loading ? (
+				<CardGridSkeleton count={8} />
+			) : badges.length === 0 ? (
+				<div className={styles.empty}>
+					<Icon name="badge" size={40} aria-hidden="true" className={styles.emptyIcon} />
+					<h5 className="text-muted mb-0">{t('adminBadges.noBadges')}</h5>
+					<p className="text-muted small">{t('adminBadges.noBadgesDesc')}</p>
 				</div>
-			</div>
+			) : (
+				<div className={styles.grid}>
+					{filteredBadges.map((b) => {
+						const img = b.badge_img_url || b.badgeImgUrl;
+						const isSpecial = (b.badge_type || b.badgeType) === 'Special';
+						const active = b.is_active;
+						return (
+							<article key={b.badge_slug || b.badgeSlug} className={`${styles.card} ${!active ? styles.cardInactive : ''}`}>
+								<div className={`${styles.thumb} ${isSpecial ? styles.thumbSpecial : ''}`}>
+									{img ? <img src={img} alt="" /> : <Icon name="badge" size={36} aria-hidden="true" />}
+									{isSpecial && <span className={styles.premiumTag}>{t('badgeCatalog.filters.class.special', { defaultValue: 'Premium' })}</span>}
+								</div>
+								<div className={styles.cardBody}>
+									<h3 className={styles.cardTitle} title={b.badge_title || b.badgeTitle}>{b.badge_title || b.badgeTitle}</h3>
+									<span className={styles.cardArea}>{getAreaName(b.area_id || b.areaId)}</span>
+									<div className={styles.cardMeta}>
+										<span className={styles.points}>
+											<Icon name="star-points" size={13} aria-hidden="true" /> {b.badge_points || b.badgePoints} pts
+										</span>
+										<span className={`${styles.status} ${active ? styles.statusOn : styles.statusOff}`}>
+											{active ? t('shared.active') : t('shared.inactive')}
+										</span>
+									</div>
+								</div>
+								<div className={styles.cardActions}>
+									<Tooltip text={t('shared.edit')}>
+										<Button size="sm" variant="outlined" aria-label={t('shared.edit')} onClick={() => openEdit(b)}>
+											<Icon name="pencil" size={14} aria-hidden="true" />
+										</Button>
+									</Tooltip>
+									<Tooltip text={t('shared.delete')}>
+										<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(b)}>
+											<Icon name="trash" size={14} aria-hidden="true" />
+										</Button>
+									</Tooltip>
+								</div>
+							</article>
+						);
+					})}
+				</div>
+			)}
 
 			{showModal && (
 				<Modal
