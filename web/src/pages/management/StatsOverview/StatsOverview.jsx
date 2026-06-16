@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getBadgesSummary } from '../../../features/statistics/api/statisticsApi';
-import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getLearningPaths, getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
 import { useUser } from '../../../hooks/userContext';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
@@ -23,22 +23,26 @@ export default function StatsOverview({ onFiltersChange }) {
 	const [summary, setSummary] = useState(null);
 	const [loading, setLoading] = useState(true);
 
+	const [learningPathId, setLearningPathId] = useState('');
 	const [serviceLineId, setServiceLineId] = useState('');
 	const [areaId, setAreaId] = useState('');
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
 
+	const [learningPaths, setLearningPaths] = useState([]);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [areas, setAreas] = useState([]);
 
 	useEffect(() => {
 		let active = true;
 		(async () => {
-			const [sls, ars] = await Promise.all([
+			const [lps, sls, ars] = await Promise.all([
+				getLearningPaths().catch(() => []),
 				isSll ? Promise.resolve([]) : getServiceLines().catch(() => []),
 				getAreas().catch(() => []),
 			]);
 			if (!active) return;
+			setLearningPaths(lps || []);
 			setServiceLines(sls || []);
 			setAreas(ars || []);
 		})();
@@ -49,6 +53,7 @@ export default function StatsOverview({ onFiltersChange }) {
 		setLoading(true);
 		try {
 			const params = {};
+			if (learningPathId) params.learningPathId = learningPathId;
 			if (!isSll && serviceLineId) params.serviceLineId = serviceLineId;
 			if (areaId) params.areaId = areaId;
 			if (dateFrom) params.dateFrom = dateFrom;
@@ -59,7 +64,7 @@ export default function StatsOverview({ onFiltersChange }) {
 		} finally {
 			setLoading(false);
 		}
-	}, [isSll, serviceLineId, areaId, dateFrom, dateTo]);
+	}, [isSll, learningPathId, serviceLineId, areaId, dateFrom, dateTo]);
 
 	useEffect(() => { load(); }, [load]);
 
@@ -67,13 +72,14 @@ export default function StatsOverview({ onFiltersChange }) {
 	useEffect(() => {
 		if (!onFiltersChange) return;
 		const f = {};
+		if (learningPathId) f.learningPathId = learningPathId;
 		if (!isSll && serviceLineId) f.serviceLineId = serviceLineId;
 		if (areaId) f.areaId = areaId;
 		if (dateFrom) f.dateFrom = dateFrom;
 		if (dateTo) f.dateTo = dateTo;
 		onFiltersChange(f);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [serviceLineId, areaId, dateFrom, dateTo, isSll]);
+	}, [learningPathId, serviceLineId, areaId, dateFrom, dateTo, isSll]);
 
 	const kpis = [
 		{ key: 'total', value: summary?.total ?? 0, icon: 'badge', bg: 'var(--color-secondary-container)', iconColor: 'var(--color-secondary)', valueClass: styles.valTotal, label: t('statsOverview.totalBadges') },
@@ -82,6 +88,8 @@ export default function StatsOverview({ onFiltersChange }) {
 		{ key: 'rate', value: `${summary?.approvalRate ?? 0}%`, icon: 'check_circle', bg: 'var(--color-green-soft)', iconColor: 'var(--color-green-on-soft)', valueClass: styles.valRate, label: t('statsOverview.approvalRate') },
 	];
 
+	const lpOptions = [{ value: '', label: t('statsOverview.allLearningPaths') },
+		...learningPaths.map((lp) => ({ value: String(lp.learning_path_id), label: lp.path_title }))];
 	const slOptions = [{ value: '', label: t('statsOverview.allServiceLines') },
 		...serviceLines.map((sl) => ({ value: String(sl.service_line_id), label: sl.service_line_name }))];
 	const areaOptions = [{ value: '', label: t('statsOverview.allAreas') },
@@ -93,6 +101,11 @@ export default function StatsOverview({ onFiltersChange }) {
 			<ContentCard className={styles.filtersCard}>
 				<CardHeader icon="filter" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('statsOverview.advancedFilters')} />
 				<div className={styles.filtersGrid}>
+					<div className={styles.field}>
+						<label className={styles.fieldLabel}>{t('statsOverview.learningPath')}</label>
+						<CustomSelect name="learningPathId" value={learningPathId} onChange={(e) => setLearningPathId(e.target.value)}
+							options={lpOptions} ariaLabel={t('statsOverview.learningPath')} />
+					</div>
 					<div className={styles.field}>
 						<label className={styles.fieldLabel}>{t('statsOverview.area')}</label>
 						<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}

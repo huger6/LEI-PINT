@@ -520,6 +520,7 @@ const getBadgesSummary = async (req, res) => {
         const badgeFilters = [];
         if (scopeServiceLineId != null) { repl.serviceLineId = scopeServiceLineId; badgeFilters.push('b.service_line_id = :serviceLineId'); }
         if (q.areaId) { repl.areaId = q.areaId; badgeFilters.push('b.area_id = :areaId'); }
+        if (q.learningPathId) { repl.learningPathId = q.learningPathId; badgeFilters.push('b.learning_path_id = :learningPathId'); }
         const badgeWhere = badgeFilters.length ? ` AND ${badgeFilters.join(' AND ')}` : '';
 
         const awardedDate = [];
