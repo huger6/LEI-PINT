@@ -86,6 +86,17 @@
 	transform: translateY(-2px);
 }
 
+.cardClickable {
+	cursor: pointer;
+}
+
+.cardLink {
+	display: flex;
+	flex-direction: column;
+	text-decoration: none;
+	color: inherit;
+}
+
 .cardImg {
 	position: relative;
 	height: 120px;
