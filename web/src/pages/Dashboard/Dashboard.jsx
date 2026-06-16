@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useUser } from '../../hooks/userContext';
 import { SHARED } from '../../routes/paths';
 import ConsultantDashboard from '../consultant/ConsultantDashboard/ConsultantDashboard';
-import AdminDashboard from '../admin/AdminDashboard/AdminDashboardHome';
+import AdminDashboard from '../admin/AdminDashboard/AdminDashboard';
 import TmDashboard from '../management/TmDashboard/TmDashboard';
 import SllDashboard from '../management/SllDashboard/SllDashboard';
 
