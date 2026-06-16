@@ -76,7 +76,9 @@ const generateCertificatePDF = async (data) => {
         const doc = new PDFDocument({
             size: 'A4',
             layout: 'landscape',
-            margins: { top: 60, bottom: 60, left: 72, right: 72 }
+            // Small bottom margin so the absolutely-positioned footer/QR near the
+            // page bottom don't push pdfkit into auto-adding a blank 2nd page.
+            margins: { top: 60, bottom: 24, left: 72, right: 72 }
         });
 
         const chunks = [];
@@ -187,7 +189,7 @@ const generateCertificatePDF = async (data) => {
                 // Footer
                 doc.fontSize(8).font('Helvetica').fillColor('#BDC3C7')
                     .text(`${t.issuedBy}: ${data.issuingEntity}`, margin, H - 46, {
-                        width: contentW, align: 'center'
+                        width: contentW, align: 'center', lineBreak: false, height: 12
                     });
 
                 doc.end();
