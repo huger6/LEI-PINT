@@ -1432,7 +1432,10 @@
 		"standing": "{{position}} of {{total}} among comparable peers (by points).",
 		"colConsultant": "Consultant",
 		"colPoints": "Points",
-		"colBadges": "Badges"
+		"colBadges": "Badges",
+		"pickPeerTitle": "Choose comparison",
+		"searchConsultant": "Search consultant...",
+		"noConsultants": "No consultants to compare."
 	},
 	"consultantsList": {
 		"title": "Consultants",
