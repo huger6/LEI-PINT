@@ -6,6 +6,7 @@ const MENU_ITEMS = [
     { to: ADMIN.USERS, icon: 'user', label: 'sidebar.admin.users' },
     { to: ADMIN.STRUCTURE, icon: 'structure', label: 'sidebar.admin.structure' },
     { to: ADMIN.BADGES, icon: 'badge', label: 'sidebar.admin.badges' },
+    { to: ADMIN.REQUIREMENTS, icon: 'check_circle', label: 'sidebar.admin.requirements' },
     { to: ADMIN.APPLICATIONS, icon: 'paper', label: 'sidebar.admin.applications' },
     { to: ADMIN.SLAS, icon: 'time', label: 'sidebar.admin.slas' },
     { to: ADMIN.NOTIFICATIONS, icon: 'bell', label: 'sidebar.admin.notifications' },

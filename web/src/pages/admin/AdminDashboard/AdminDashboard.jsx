@@ -4,8 +4,8 @@ import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
 import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
-import { getBadges } from '../../../features/badges/api/badgesApi';
-import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
+import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
+import { getLearningPathsPaged } from '../../../features/badges/api/hierarchyApi';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
 import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
@@ -30,15 +30,15 @@ export default function AdminDashboard() {
 			try {
 				const [users, badges, paths, apps] = await Promise.all([
 					getUsers({ limit: 1 }),
-					getBadges({ limit: 1 }),
-					getLearningPaths({ limit: 1 }),
+					getBadgesCatalog({ limit: 1 }),
+					getLearningPathsPaged({ limit: 1 }),
 					getApplicationsPaged({ limit: 1 }),
 				]);
 				setStats({
-					users: users.pagination?.totalItems || users.data?.length || 0,
-					badges: badges.pagination?.total || badges.length || 0,
-					applications: apps.pagination?.total || apps.data?.length || 0,
-					learningPaths: paths.pagination?.total || paths.length || 0,
+					users: users.pagination?.totalItems || 0,
+					badges: badges.pagination?.totalItems || 0,
+					applications: apps.pagination?.totalItems || 0,
+					learningPaths: paths.pagination?.totalItems || 0,
 				});
 			} catch (err) {
 				console.error(err);

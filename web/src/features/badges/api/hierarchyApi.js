@@ -7,6 +7,16 @@ export async function getLearningPaths(params = {}) {
 	return data?.data || [];
 }
 
+// Same endpoint as getLearningPaths but preserves the pagination metadata
+// (e.g. for dashboard totals that need pagination.totalItems).
+export async function getLearningPathsPaged(params = {}) {
+	const { data } = await api.get('/learning-paths', { params });
+	return {
+		data: data?.data || [],
+		pagination: data?.pagination || { totalItems: 0, totalPages: 0, currentPage: 1 },
+	};
+}
+
 export async function getLearningPathBySlug(slug) {
 	const { data } = await api.get(`/learning-paths/${slug}`);
 	return data?.data;
