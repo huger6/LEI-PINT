@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBadges, deleteBadge } from '../../../features/badges/api/badgesApi';
+import { getBadges, deleteBadge, updateBadge } from '../../../features/badges/api/badgesApi';
 import { getAreas } from '../../../features/badges/api/hierarchyApi';
 import { ADMIN } from '../../../routes/paths';
 import Button from '../../../components/Button/Button';
+import Modal from '../../../components/Modal/Modal';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
@@ -20,6 +21,9 @@ export default function AdminBadges() {
 	const [areas, setAreas] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState('');
+	const [confirmTarget, setConfirmTarget] = useState(null);
+	const [busy, setBusy] = useState(false);
+	const [actionError, setActionError] = useState('');
 
 	async function loadData() {
 		try {
@@ -41,11 +45,34 @@ export default function AdminBadges() {
 		return area ? (area.area_name || area.areaName) : '—';
 	}
 
-	async function handleDelete(item) {
-		if (!window.confirm(t('shared.confirmDelete', { name: item.badge_title || item.badgeTitle }))) return;
+	async function doDeactivate() {
+		if (!confirmTarget) return;
+		const slug = confirmTarget.badge_slug || confirmTarget.badgeSlug;
+		setBusy(true);
+		setActionError('');
 		try {
-			await deleteBadge(item.badge_slug || item.badgeSlug);
-			setBadges((prev) => prev.filter((b) => b.badge_slug !== item.badge_slug));
+			await deleteBadge(slug);
+			// Keep the badge in the list (inactive) so it can be reactivated.
+			setBadges((prev) => prev.map((b) => (b.badge_slug === slug ? { ...b, is_active: false } : b)));
+			setConfirmTarget(null);
+		} catch (err) {
+			const code = err?.response?.data?.code;
+			if (code === 'BADGE_HAS_DEPENDENCIES') {
+				const n = err.response.data?.data?.activeApplications;
+				setActionError(t('adminBadges.hasDependencies', { count: n ?? 0 }));
+			} else {
+				setActionError(t('adminBadges.actionFailed'));
+			}
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	async function handleReactivate(item) {
+		const slug = item.badge_slug || item.badgeSlug;
+		try {
+			await updateBadge(slug, { isActive: true });
+			setBadges((prev) => prev.map((b) => (b.badge_slug === slug ? { ...b, is_active: true } : b)));
 		} catch (err) {
 			console.error(err);
 		}
@@ -124,16 +151,41 @@ export default function AdminBadges() {
 									<Button size="sm" variant="outlined" className="flex-fill" onClick={() => navigate(generatePath(ADMIN.BADGE_EDIT, { slug }))}>
 										<Icon name="pencil" size={14} aria-hidden="true" className="me-1" /> {t('shared.edit')}
 									</Button>
-									<Tooltip text={t('shared.delete')}>
-										<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(b)}>
-											<Icon name="trash" size={14} aria-hidden="true" />
-										</Button>
-									</Tooltip>
+									{active ? (
+										<Tooltip text={t('shared.deactivate')}>
+											<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => { setActionError(''); setConfirmTarget(b); }}>
+												<Icon name="trash" size={14} aria-hidden="true" />
+											</Button>
+										</Tooltip>
+									) : (
+										<Tooltip text={t('shared.reactivate')}>
+											<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => handleReactivate(b)}>
+												<Icon name="activate" size={14} aria-hidden="true" />
+											</Button>
+										</Tooltip>
+									)}
 								</div>
 							</article>
 						);
 					})}
 				</div>
+			)}
+
+			{confirmTarget && (
+				<Modal
+					title={t('shared.deactivate')}
+					size="sm"
+					onClose={() => !busy && setConfirmTarget(null)}
+					footer={
+						<>
+							<Button variant="outlined" onClick={() => setConfirmTarget(null)} disabled={busy}>{t('shared.cancel')}</Button>
+							<Button color="danger" loading={busy} onClick={doDeactivate}>{t('shared.deactivate')}</Button>
+						</>
+					}
+				>
+					<p className="mb-2">{t('adminBadges.confirmDeactivate', { name: confirmTarget.badge_title || confirmTarget.badgeTitle })}</p>
+					{actionError && <p className="small text-danger mb-0">{actionError}</p>}
+				</Modal>
 			)}
 		</div>
 	);

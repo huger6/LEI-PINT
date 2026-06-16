@@ -611,7 +611,10 @@
 		"serviceLine": "Service Line",
 		"selectLpFirst": "Selecione um Learning Path primeiro",
 		"selectSlFirst": "Selecione uma Service Line primeiro",
-		"selectAreaFirst": "Selecione uma Área primeiro"
+		"selectAreaFirst": "Selecione uma Área primeiro",
+		"confirmDeactivate": "Desativar o badge \"{{name}}\"? Poderá reativá-lo mais tarde.",
+		"hasDependencies": "Não é possível desativar: o badge tem {{count}} candidatura(s) ativa(s).",
+		"actionFailed": "Não foi possível concluir a operação."
 	},
 	"badgeImage": {
 		"upload": "Carregar",
