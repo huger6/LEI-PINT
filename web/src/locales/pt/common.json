@@ -30,21 +30,8 @@
 			"tagline": "Fale com a equipa Softinsa e descubra como podemos impulsionar a inovação no seu negócio.",
 			"contacteNos": "Contacte-nos", "localizacao": "Localização", "vamosConversar": "Vamos Conversar?", "envie": "Envie aqui a sua mensagem.", "formulario": "Formulário", "ligacoesUteis": "Ligações Úteis",
 			"copyright": "© Softinsa {{year}}. Todos os direitos reservados.", "toTop": "Voltar ao topo",
-			"links": [
-				{ "label": "Quem somos", "url": "https://softinsa.pt/quem-somos/" },
-				{ "label": "Responsabilidade Social", "url": "https://softinsa.pt/responsabilidade-social/" },
-				{ "label": "Serviços", "url": "https://softinsa.pt/servicos/" },
-				{ "label": "Centros de Inovação", "url": "https://softinsa.pt/centros-de-inovacao/" },
-				{ "label": "Carreiras", "url": "https://softinsa.pt/carreiras/" },
-				{ "label": "Destaques", "url": "https://softinsa.pt/destaques/" },
-				{ "label": "Contactos", "url": "https://softinsa.pt/contactos/" }
-			],
-			"policies": [
-				{ "label": "Política de Privacidade", "url": "https://softinsa.pt/politica-de-privacidade/" },
-				{ "label": "Condições de Utilização", "url": "https://softinsa.pt/condicoes-de-utilizacao/" },
-				{ "label": "Política Ambiental", "url": "https://softinsa.pt/politica-ambiental/" },
-				{ "label": "Canal de Denúncias", "url": "https://softinsa.pt/canal-de-denuncias/" }
-			]
+			"links": ["Quem somos", "Responsabilidade Social", "Serviços", "Centros de Inovação", "Carreiras", "Destaques", "Contactos"],
+			"policies": ["Política de Privacidade", "Condições de Utilização", "Política Ambiental", "Canal de Denúncias"]
 		},
 		"badgePage": { "back": "Todos os badges", "points": "Pontos", "validity": "Validade", "days": "{{count}} dias", "competencies": "Competências", "competenciesSub": "Competências que este badge certifica.", "noCompetencies": "Sem competências associadas a este badge.", "requirements": "Requisitos", "requirementsSub": "O que é necessário evidenciar para obter este badge.", "noRequirements": "Sem requisitos detalhados para este badge.", "notFound": "Badge não encontrado", "viewAll": "Ver todos os badges", "loading": "A carregar…", "premium": "Premium", "nivel": "Nível", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
 	},
