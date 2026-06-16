@@ -848,8 +848,8 @@
 			"classification": "Classificação do Badge",
 			"class": {
 				"all": "Todos",
-				"standard": "Standard",
-				"special": "Special"
+				"standard": "Padrão",
+				"special": "Especial"
 			},
 			"points": "Valorização de Pontos",
 			"minPoints": "Pontos Mínimos",

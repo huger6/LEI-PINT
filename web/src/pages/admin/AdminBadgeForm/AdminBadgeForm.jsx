@@ -188,7 +188,7 @@ export default function AdminBadgeForm() {
 					<div>
 						<label className="form-label">{t('shared.type')}</label>
 						<CustomSelect name="badgeType" value={form.badgeType} onChange={handleInput} ariaLabel={t('shared.type')}
-							options={BADGE_TYPES.map((tp) => ({ value: tp, label: tp }))} />
+							options={BADGE_TYPES.map((tp) => ({ value: tp, label: t(`badgeCatalog.filters.class.${tp.toLowerCase()}`, { defaultValue: tp }) }))} />
 					</div>
 					<FormInput label={t('shared.points')} name="badgePoints" type="number" min={0} value={form.badgePoints} onChange={handleInput} />
 					<FormInput label={t('adminBadges.expirationDays')} name="expirationDurationDays" type="number" min={1}
