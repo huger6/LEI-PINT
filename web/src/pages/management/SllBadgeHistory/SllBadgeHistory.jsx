@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { getAreas, getServiceLines } from '../../../features/badges/api/hierarchyApi';
@@ -46,6 +47,7 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
 export default function SllBadgeHistory() {
 	const { t } = useTranslation();
 	const { user } = useUser();
+	const navigate = useNavigate();
 	const [filter, setFilter] = useState('obtained');
 	const [rows, setRows] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -192,12 +194,29 @@ export default function SllBadgeHistory() {
 									const stage = a.badge?.progression_stage;
 									const level = stage?.stage_code?.stage_code || stage?.stage_title || '—';
 									return (
-										<tr key={a.application_guid}>
+										<tr
+											key={a.application_guid}
+											className={styles.row}
+											onClick={() => navigate(`/applications/${a.application_guid}`)}
+										>
 											<td>
-												<div className={styles.consultantCell}>
-													<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
-													<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
-												</div>
+												{a.user?.user?.user_guid ? (
+													<div
+														className={`${styles.consultantCell} ${styles.consultantLink}`}
+														role="link"
+														tabIndex={0}
+														onClick={(e) => { e.stopPropagation(); navigate(`/team/${a.user.user.user_guid}`); }}
+														onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); navigate(`/team/${a.user.user.user_guid}`); } }}
+													>
+														<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
+														<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
+													</div>
+												) : (
+													<div className={styles.consultantCell}>
+														<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
+														<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
+													</div>
+												)}
 											</td>
 											<td>{a.badge?.badge_title || '—'}</td>
 											<td className="text-muted">{a.badge?.area?.area_name || '—'}</td>
