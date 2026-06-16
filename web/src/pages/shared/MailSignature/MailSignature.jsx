@@ -47,12 +47,20 @@ const outlookIcon = (
 // Builds the signature HTML. Badges are only included for consultants.
 function buildSignatureHtml(name, role, email, badges) {
 	const items = badges
-		.filter((b) => b.verificationLink && b.badge?.imageUrl)
-		.map((b) =>
-			`<a href="${verifyUrl(b.verificationLink)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:8px;display:inline-block;">` +
-			`<img src="${b.badge.imageUrl}" alt="${b.badge.title || 'Badge'}" height="56" width="56" style="border:0;border-radius:8px;vertical-align:middle;" />` +
-			`</a>`
-		)
+		.map((b) => {
+			const link = b.verificationLink ? verifyUrl(b.verificationLink) : null;
+			const img = b.badge?.imageUrl;
+			const title = b.badge?.title || 'Badge';
+			if (img) {
+				const imgTag = `<img src="${img}" alt="${title}" height="56" width="56" style="border:0;border-radius:8px;vertical-align:middle;" />`;
+				return link
+					? `<a href="${link}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:8px;display:inline-block;">${imgTag}</a>`
+					: `<span style="margin-right:8px;display:inline-block;">${imgTag}</span>`;
+			}
+			// No image: fall back to a small text chip (linked when published).
+			const chip = `<span style="display:inline-block;padding:4px 10px;margin-right:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#1f2937;">${title}</span>`;
+			return link ? `<a href="${link}" target="_blank" rel="noopener" style="text-decoration:none;">${chip}</a>` : chip;
+		})
 		.join('');
 
 	const emailRow = email
@@ -150,7 +158,9 @@ export default function MailSignature() {
 		);
 	}
 
-	const usableBadges = badges.filter((b) => b.verificationLink && b.badge?.imageUrl);
+	// Show every earned badge so the consultant can pick any of them; the
+	// signature handles missing images/links gracefully.
+	const usableBadges = badges;
 	const gmailSteps = t('mailSignature.gmailSteps', { returnObjects: true });
 	const outlookSteps = t('mailSignature.outlookSteps', { returnObjects: true });
 
@@ -176,8 +186,10 @@ export default function MailSignature() {
 										<li key={b.awardedBadgeId}>
 											<label className={`${styles.badgeRow} ${checked ? styles.badgeRowActive : ''}`}>
 												<input type="checkbox" className="form-check-input" checked={checked} onChange={() => toggle(b.awardedBadgeId)} />
-												<img src={b.badge.imageUrl} alt={b.badge.title} className={styles.badgeThumb} />
-												<span className={styles.badgeName}>{b.badge.title}</span>
+												{b.badge?.imageUrl
+													? <img src={b.badge.imageUrl} alt={b.badge.title || ''} className={styles.badgeThumb} />
+													: <span className={`${styles.badgeThumb} ${styles.badgeThumbFallback}`}><Icon name="badge" size={20} aria-hidden="true" /></span>}
+												<span className={styles.badgeName}>{b.badge?.title || '—'}</span>
 											</label>
 										</li>
 									);
