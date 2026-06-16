@@ -331,5 +331,65 @@ const verifyAwardedBadge = async (req, res) => {
 	}
 };
 
-module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug, verifyAwardedBadge };
+// GET /api/public/consultants/:guid — public consultant profile for the
+// microsite: name, avatar and published earned badges only (no sensitive data).
+const getPublicConsultantProfile = async (req, res) => {
+	try {
+		const guid = String(req.params.guid || '').trim();
+		if (!guid) return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_PARAMS' });
+
+		const user = await models.users.findOne({
+			where: { user_guid: guid, user_role: 'Consultant', is_active: true },
+			attributes: ['user_id', 'full_name', 'user_guid', 'profile_img_url']
+		});
+		if (!user) return res.status(404).json({ success: false, code: 'PUBLIC_PROFILE_NOT_FOUND' });
+
+		const awarded = await models.awarded_badges.findAll({
+			where: { user_id: user.user_id, is_published: true },
+			attributes: ['awarded_at', 'expiration_at', 'points_snapshot', 'public_verification_link'],
+			include: [{
+				model: models.badge_applications, as: 'application',
+				attributes: ['application_id'],
+				include: [{
+					model: models.badges, as: 'badge',
+					attributes: ['badge_slug', 'badge_title', 'badge_img_url', 'badge_points', 'badge_type']
+				}]
+			}],
+			order: [['awarded_at', 'DESC']]
+		});
+
+		const badges = awarded.map((a) => {
+			const b = a.application?.badge || {};
+			return {
+				slug: b.badge_slug || null,
+				title: b.badge_title || null,
+				image: b.badge_img_url || null,
+				points: b.badge_points ?? null,
+				type: b.badge_type || null,
+				awarded_at: a.awarded_at,
+				is_expired: a.expiration_at ? new Date(a.expiration_at) < new Date() : false,
+				verification_link: a.public_verification_link || null
+			};
+		});
+
+		const totalPoints = awarded.reduce((sum, a) => sum + (a.points_snapshot || 0), 0);
+
+		return res.status(200).json({
+			success: true,
+			data: {
+				full_name: user.full_name,
+				user_guid: user.user_guid,
+				profile_img_url: user.profile_img_url || null,
+				total_badges: badges.length,
+				total_points: totalPoints,
+				badges
+			}
+		});
+	} catch (error) {
+		logger.error('Error fetching public consultant profile', { error });
+		return res.status(500).json({ success: false, code: 'PUBLIC_PROFILE_FAILED' });
+	}
+};
+
+module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug, verifyAwardedBadge, getPublicConsultantProfile };
 
