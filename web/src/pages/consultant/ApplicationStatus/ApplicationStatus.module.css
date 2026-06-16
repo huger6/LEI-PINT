@@ -210,7 +210,9 @@
 	gap: 16px;
 	padding: 20px;
 	border: 1px solid rgba(0, 0, 0, 0.06);
-	border-radius: 14px;
+	/* Flat by default so stacked middle items read as one list; only the first
+	   and last items round their outer corners. */
+	border-radius: 0;
 	margin-bottom: -1px;
 	background: #fff;
 }
