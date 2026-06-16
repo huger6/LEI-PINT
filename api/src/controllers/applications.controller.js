@@ -891,8 +891,9 @@ const reviewEvidence = async (req, res) => {
     try {
         const reviewerId = req.user.sub;
         const role = req.user.role;
+        const isAdmin = role === 'Administrator';
 
-        if (!['Talent Manager', 'Service Line Leader'].includes(role)) {
+        if (!['Talent Manager', 'Service Line Leader', 'Administrator'].includes(role)) {
             await transaction.rollback();
             return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED' });
         }
@@ -910,9 +911,12 @@ const reviewEvidence = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
         }
 
-        // TM reviews evidences while application is Submitted; SLL while In validation
-        const allowedStateForRole = role === 'Talent Manager' ? 'Submitted' : 'In validation';
-        if (application.application_state !== allowedStateForRole) {
+        // TM reviews while Submitted; SLL while In validation; the Administrator
+        // (super-reviewer) may review in either actionable state.
+        const allowedStates = isAdmin
+            ? ['Submitted', 'In validation']
+            : [role === 'Talent Manager' ? 'Submitted' : 'In validation'];
+        if (!allowedStates.includes(application.application_state)) {
             await transaction.rollback();
             return res.status(400).json({
                 success: false,
@@ -942,8 +946,11 @@ const reviewEvidence = async (req, res) => {
             return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
         }
 
-        const reviewField = role === 'Talent Manager' ? 'tm_reviewed' : 'sll_reviewed';
-        await evidence.update({ [reviewField]: approved }, { transaction });
+        // The Administrator marks both reviewer flags; TM/SLL mark only their own.
+        const reviewUpdate = isAdmin
+            ? { tm_reviewed: approved, sll_reviewed: approved }
+            : { [role === 'Talent Manager' ? 'tm_reviewed' : 'sll_reviewed']: approved };
+        await evidence.update(reviewUpdate, { transaction });
 
         // Audit log
         await models.application_validation_logs.create({

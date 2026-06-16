@@ -54,7 +54,15 @@ const getActivePolicies = async (req, res) => {
             order: [['policy_type', 'ASC'], ['created_at', 'DESC']]
         });
 
-        return res.status(200).json({ success: true, data: policies });
+        // Return at most one policy per type — the highest version. Defensive
+        // against legacy data with multiple active rows for the same type.
+        const byType = new Map();
+        for (const p of policies) {
+            const cur = byType.get(p.policy_type);
+            if (!cur || compareVersions(p.version, cur.version) > 0) byType.set(p.policy_type, p);
+        }
+
+        return res.status(200).json({ success: true, data: [...byType.values()] });
     } catch (error) {
         logger.error('Error fetching active GDPR policies', { error });
         return res.status(500).json({ success: false, code: 'GDPR_POLICIES_FETCH_FAILED' });
@@ -292,12 +300,31 @@ const adminCreatePolicy = async (req, res) => {
 
         const adminId = req.user.sub;
 
-        const policy = await models.gdpr_policies.create({
-            ...validated,
-            is_active: true,
-            created_by: adminId,
-            updated_by: adminId
-        }, { transaction });
+        // Deactivation is a soft delete, so a row with this (type, version) may
+        // still exist (inactive). Revive it instead of inserting — otherwise
+        // re-creating a previously removed version hits UNIQUE(type, version).
+        const existing = await models.gdpr_policies.findOne({
+            where: { policy_type: validated.policy_type, version: validated.version },
+            transaction
+        });
+
+        let policy;
+        if (existing) {
+            await existing.update({
+                policy_text: validated.policy_text,
+                is_mandatory: validated.is_mandatory,
+                is_active: true,
+                updated_by: adminId
+            }, { transaction });
+            policy = existing;
+        } else {
+            policy = await models.gdpr_policies.create({
+                ...validated,
+                is_active: true,
+                created_by: adminId,
+                updated_by: adminId
+            }, { transaction });
+        }
 
         // Keep only the highest version of this type active.
         await reconcileActivePolicyForType(policy.policy_type, transaction);

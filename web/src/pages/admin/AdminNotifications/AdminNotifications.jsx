@@ -44,11 +44,19 @@ export default function AdminNotifications() {
 
 	useEffect(() => { load(); }, [load]);
 
-	// Show only the essential/functional notifications, in the defined order.
+	// Show only the essential/functional notifications, one row per definition
+	// (lowest preference_id wins if the data has duplicates), in the defined order.
 	const visiblePrefs = useMemo(() => {
 		const order = new Map(ESSENTIAL_CODES.map((c, i) => [c, i]));
+		const seen = new Set();
 		return prefs
 			.filter((p) => order.has(p.definition?.code))
+			.sort((a, b) => (a.preference_id ?? 0) - (b.preference_id ?? 0))
+			.filter((p) => {
+				if (seen.has(p.definition_id)) return false;
+				seen.add(p.definition_id);
+				return true;
+			})
 			.sort((a, b) => order.get(a.definition.code) - order.get(b.definition.code));
 	}, [prefs]);
 
