@@ -265,6 +265,7 @@ const badgeJoinFilter = (f = {}, repl = {}) => {
     let sql = '';
     if (f.areaId) { sql += ' AND b.area_id = :areaId'; repl.areaId = f.areaId; }
     if (f.serviceLineId) { sql += ' AND b.service_line_id = :serviceLineId'; repl.serviceLineId = f.serviceLineId; }
+    if (f.learningPathId) { sql += ' AND b.learning_path_id = :learningPathId'; repl.learningPathId = f.learningPathId; }
     return sql;
 };
 const awardedJoinFilter = (f = {}, repl = {}) => {
