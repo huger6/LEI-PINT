@@ -5,6 +5,7 @@ import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
@@ -288,11 +289,14 @@ export default function AdminSlas() {
 								/>
 							</div>
 							<div className="col-12 col-sm-6">
-								<label htmlFor="sla_profile" className="form-label">{t('adminSlas.targetProfile')}</label>
-								<select id="sla_profile" className="form-select" name="targetProfile" value={form.targetProfile} onChange={handleChange}>
-									<option value="">{t('adminSlas.anyProfile')}</option>
-									{TARGET_PROFILES.map((p) => <option key={p} value={p}>{p}</option>)}
-								</select>
+								<label className="form-label">{t('adminSlas.targetProfile')}</label>
+								<CustomSelect
+									name="targetProfile"
+									value={form.targetProfile}
+									onChange={handleChange}
+									ariaLabel={t('adminSlas.targetProfile')}
+									options={[{ value: '', label: t('adminSlas.anyProfile') }, ...TARGET_PROFILES.map((p) => ({ value: p, label: p }))]}
+								/>
 							</div>
 						</div>
 						<div className="row g-3">

@@ -90,10 +90,18 @@ export default function StatsOverview({ onFiltersChange }) {
 
 	const lpOptions = [{ value: '', label: t('statsOverview.allLearningPaths') },
 		...learningPaths.map((lp) => ({ value: String(lp.learning_path_id), label: lp.path_title }))];
+	// Cascade: Service Lines limited to the chosen Learning Path, Areas to the chosen Service Line.
 	const slOptions = [{ value: '', label: t('statsOverview.allServiceLines') },
-		...serviceLines.map((sl) => ({ value: String(sl.service_line_id), label: sl.service_line_name }))];
+		...serviceLines
+			.filter((sl) => !learningPathId || String(sl.learning_path_id) === String(learningPathId))
+			.map((sl) => ({ value: String(sl.service_line_id), label: sl.service_line_name }))];
 	const areaOptions = [{ value: '', label: t('statsOverview.allAreas') },
-		...areas.map((a) => ({ value: String(a.area_id), label: a.area_name }))];
+		...areas
+			.filter((a) => !serviceLineId || String(a.service_line_id) === String(serviceLineId))
+			.map((a) => ({ value: String(a.area_id), label: a.area_name }))];
+
+	const onLpChange = (e) => { setLearningPathId(e.target.value); setServiceLineId(''); setAreaId(''); };
+	const onSlChange = (e) => { setServiceLineId(e.target.value); setAreaId(''); };
 
 	return (
 		<div className={styles.wrap}>
@@ -103,21 +111,21 @@ export default function StatsOverview({ onFiltersChange }) {
 				<div className={styles.filtersGrid}>
 					<div className={styles.field}>
 						<label className={styles.fieldLabel}>{t('statsOverview.learningPath')}</label>
-						<CustomSelect name="learningPathId" value={learningPathId} onChange={(e) => setLearningPathId(e.target.value)}
+						<CustomSelect name="learningPathId" value={learningPathId} onChange={onLpChange}
 							options={lpOptions} ariaLabel={t('statsOverview.learningPath')} />
 					</div>
+					{!isSll && (
+						<div className={styles.field}>
+							<label className={styles.fieldLabel}>{t('statsOverview.serviceLine')}</label>
+							<CustomSelect name="serviceLineId" value={serviceLineId} onChange={onSlChange}
+								options={slOptions} ariaLabel={t('statsOverview.serviceLine')} />
+						</div>
+					)}
 					<div className={styles.field}>
 						<label className={styles.fieldLabel}>{t('statsOverview.area')}</label>
 						<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
 							options={areaOptions} ariaLabel={t('statsOverview.area')} />
 					</div>
-					{!isSll && (
-						<div className={styles.field}>
-							<label className={styles.fieldLabel}>{t('statsOverview.serviceLine')}</label>
-							<CustomSelect name="serviceLineId" value={serviceLineId} onChange={(e) => setServiceLineId(e.target.value)}
-								options={slOptions} ariaLabel={t('statsOverview.serviceLine')} />
-						</div>
-					)}
 					<div className={styles.field}>
 						<label className={styles.fieldLabel}>{t('statsOverview.from')}</label>
 						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}
