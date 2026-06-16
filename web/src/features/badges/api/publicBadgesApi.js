@@ -17,3 +17,9 @@ export async function verifyBadge(link) {
 	const { data } = await api.get(`/public/verify/${encodeURIComponent(link)}`);
 	return data?.data || null;
 }
+
+// Public consultant profile (no auth) for the microsite.
+export async function getPublicConsultant(guid) {
+	const { data } = await api.get(`/public/consultants/${encodeURIComponent(guid)}`);
+	return data?.data || null;
+}

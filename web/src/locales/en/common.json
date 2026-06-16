@@ -633,6 +633,14 @@
 		"download": "Download",
 		"failed": "Could not export the summary."
 	},
+	"softinsaConsultant": {
+		"notFound": "Profile not found",
+		"badges": "Badges",
+		"points": "Points",
+		"earnedBadges": "Earned badges",
+		"noBadges": "This consultant hasn't published any badges yet.",
+		"expired": "Expired"
+	},
 	"verifyBadge": {
 		"title": "Credential verification",
 		"loading": "Verifying credential...",

@@ -633,6 +633,14 @@
 		"download": "Descarregar",
 		"failed": "Não foi possível exportar o resumo."
 	},
+	"softinsaConsultant": {
+		"notFound": "Perfil não encontrado",
+		"badges": "Badges",
+		"points": "Pontos",
+		"earnedBadges": "Badges conquistados",
+		"noBadges": "Este consultor ainda não publicou badges.",
+		"expired": "Expirado"
+	},
 	"verifyBadge": {
 		"title": "Verificação de credencial",
 		"loading": "A verificar credencial...",

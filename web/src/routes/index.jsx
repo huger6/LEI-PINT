@@ -12,6 +12,7 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
 import SoftinsaSite from '../pages/public/SoftinsaSite/SoftinsaSite';
 import SoftinsaBadge from '../pages/public/SoftinsaSite/SoftinsaBadge';
+import SoftinsaConsultant from '../pages/public/SoftinsaSite/SoftinsaConsultant';
 import VerifyBadge from '../pages/public/VerifyBadge/VerifyBadge';
 
 import adminRoutes from './adminRoutes';
@@ -30,6 +31,7 @@ export default function AppRoutes() {
 			{/* Public corporate microsite — visible to everyone, no auth. */}
 			<Route path="/softinsa" element={<SoftinsaSite />} />
 			<Route path="/softinsa/badges/:slug" element={<SoftinsaBadge />} />
+			<Route path="/softinsa/u/:guid" element={<SoftinsaConsultant />} />
 
 			{/* Public credential verification (no auth) — target of the unique
 			    verification link shared on LinkedIn / email signatures. */}
