@@ -82,8 +82,11 @@ const createNotification = async ({ userId, definitionId, notificationType, titl
 };
 
 const resolvePreferences = async (definitionId, userId) => {
+    // Deterministic when the data has duplicate global rows for a definition:
+    // the canonical (lowest preference_id) row is the platform default.
     const globalPref = await models.notification_preferences.findOne({
-        where: { definition_id: definitionId }
+        where: { definition_id: definitionId },
+        order: [['preference_id', 'ASC']]
     });
 
     const effective = {
