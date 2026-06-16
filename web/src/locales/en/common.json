@@ -620,6 +620,15 @@
 		"uploadFailed": "Failed to upload the image.",
 		"previewAlt": "Badge preview"
 	},
+	"structureExport": {
+		"title": "Export summary: {{name}}",
+		"description": "Download a general summary of this structure. The date range applies to awarded badges.",
+		"format": "Format",
+		"from": "From",
+		"to": "To",
+		"download": "Download",
+		"failed": "Could not export the summary."
+	},
 	"verifyBadge": {
 		"title": "Credential verification",
 		"loading": "Verifying credential...",

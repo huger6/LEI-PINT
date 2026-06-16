@@ -191,6 +191,8 @@ export default function ServiceLineDetail() {
 				onActivate={!sl.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
+				exportType="service-line"
+				exportId={sl.sl_slug || slug}
 				pagination={pagination}
 				onPageChange={handlePageChange}
 			/>

@@ -619,6 +619,15 @@
 		"uploadFailed": "Error al cargar la imagen.",
 		"previewAlt": "Vista previa del badge"
 	},
+	"structureExport": {
+		"title": "Exportar resumen: {{name}}",
+		"description": "Descarga un resumen general de esta estructura. El intervalo de fechas se aplica a los badges otorgados.",
+		"format": "Formato",
+		"from": "Desde",
+		"to": "Hasta",
+		"download": "Descargar",
+		"failed": "No se pudo exportar el resumen."
+	},
 	"verifyBadge": {
 		"title": "Verificación de credencial",
 		"loading": "Verificando credencial...",
