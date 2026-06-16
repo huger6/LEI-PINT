@@ -13,7 +13,6 @@ import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
-import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './ConsultantsList.module.css';
 
 const PAGE_SIZE = 20;
@@ -200,17 +199,21 @@ export default function ConsultantsList() {
 									<th className={styles.numCol}>{t('consultantsList.colPoints')}</th>
 									<th className={styles.numCol}>{isSll ? t('consultantsList.colOpenApps') : t('consultantsList.colApplications')}</th>
 									<th>{t('consultantsList.colLastLogin')}</th>
-									<th className="text-end">{t('consultantsList.colDetail', { defaultValue: 'Análise' })}</th>
 								</tr>
 							</thead>
 							<tbody>
 								{rows.map((r) => (
-									<tr key={r.user_guid} className={styles.row} onClick={() => navigate(`/softinsa/u/${r.user_guid}`)}>
+									<tr key={r.user_guid} className={styles.row} onClick={() => navigate(`${detailBase}/${r.user_guid}`)}>
 										<td>
-											<div className={styles.consultantCell}>
+											<button
+												type="button"
+												className={styles.consultantCell}
+												title={t('consultantsList.viewPublicProfile', { defaultValue: 'Ver perfil público' })}
+												onClick={(e) => { e.stopPropagation(); navigate(`/softinsa/u/${r.user_guid}`); }}
+											>
 												<Avatar src={r.profile_img_url} name={r.full_name} size={28} />
 												<span className={styles.consultantName}>{r.full_name || '—'}</span>
-											</div>
+											</button>
 										</td>
 										{!isSll && <td className="text-muted">{r.service_line_name || '—'}</td>}
 										<td className="text-muted">{r.primary_area_name || '—'}</td>
@@ -218,18 +221,6 @@ export default function ConsultantsList() {
 										<td className={styles.numCol}>{Number(r.total_points || 0).toLocaleString('pt-PT')}</td>
 										<td className={styles.numCol}>{isSll ? (r.open_applications_count ?? 0) : (r.applications_count ?? 0)}</td>
 										<td className="text-muted">{fmtDate(r.last_login_at) || t('consultantsList.neverLoggedIn')}</td>
-										<td className="text-end">
-											<Tooltip text={t('consultantsList.viewDetail', { defaultValue: 'Ver análise' })}>
-												<button
-													type="button"
-													className={styles.detailBtn}
-													aria-label={t('consultantsList.viewDetail', { defaultValue: 'Ver análise' })}
-													onClick={(e) => { e.stopPropagation(); navigate(`${detailBase}/${r.user_guid}`); }}
-												>
-													<Icon name="progress" size={16} aria-hidden="true" />
-												</button>
-											</Tooltip>
-										</td>
 									</tr>
 								))}
 							</tbody>

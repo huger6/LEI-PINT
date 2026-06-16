@@ -127,8 +127,16 @@ export default function AdminBadges() {
 						const active = b.is_active;
 						const slug = b.badge_slug || b.badgeSlug;
 						const stageCode = b.progression_stage?.stage_code?.stage_code;
+						const openBadge = () => navigate(`/badges/${slug}`);
 						return (
-							<article key={slug} className={`${styles.card} ${!active ? styles.cardInactive : ''}`}>
+							<article
+								key={slug}
+								className={`${styles.card} ${styles.cardClickable} ${!active ? styles.cardInactive : ''}`}
+								role="button"
+								tabIndex={0}
+								onClick={openBadge}
+								onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(); } }}
+							>
 								<div className={`${styles.imageWrap} ${isSpecial ? styles.imageSpecial : ''}`}>
 									{img ? <img src={img} alt={title} className={styles.image} /> : <Icon name="badge" size={48} className={styles.imageFallback} aria-hidden="true" />}
 									<span className={`${styles.typePill} ${isSpecial ? styles.typeSpecial : styles.typeStandard}`}>
@@ -147,7 +155,7 @@ export default function AdminBadges() {
 										<span className={`${styles.metaChip} ${styles.points}`}>{b.badge_points || b.badgePoints || 0} pts</span>
 									</div>
 								</div>
-								<div className={styles.cardActions}>
+								<div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
 									<Button size="sm" variant="outlined" className="flex-fill" onClick={() => navigate(generatePath(ADMIN.BADGE_EDIT, { slug }))}>
 										<Icon name="pencil" size={14} aria-hidden="true" className="me-1" /> {t('shared.edit')}
 									</Button>
