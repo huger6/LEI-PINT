@@ -40,8 +40,8 @@ const consultantAreasSchema = z.array(z.object({
     });
 
 const userIdParamSchema = z.object({
-    // Accept either a UUID or a numeric ID (tests send numeric user_id)
-    userGuid: z.string().min(1)
+    // Public-safe identifier only — never accept the table PK (CLAUDE.md rule).
+    userGuid: z.string().uuid('VALIDATION_USER_GUID_INVALID')
 });
 
 const optionalBoolQuery = z.preprocess(
