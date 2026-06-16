@@ -14,6 +14,10 @@ const S = Date.now().toString(36);
 const email = (tag) => `admin.${tag}.${S}@test.invalid`;
 const uname = (tag) => `adm_${tag}_${S}`.slice(0, 50);
 
+// Valid UUID shape that does not map to any row — exercises the 404 path now
+// that user routes accept only the public GUID (never the numeric PK).
+const GHOST_GUID = '11111111-1111-4111-8111-111111111111';
+
 let adminUser, adminToken;
 let regularUser, regularToken;
 let createdUserId;
@@ -123,7 +127,7 @@ describe('POST /api/admin/users', () => {
 describe('PUT /api/admin/users/:userId', () => {
     test('200 – Admin updates a user', async () => {
         const res = await request(app)
-            .put(`/api/admin/users/${regularUser.user_id}`)
+            .put(`/api/admin/users/${regularUser.user_guid}`)
             .set(authHeader(adminToken))
             .send({ full_name: 'Updated Name' });
         expect(res.status).toBe(200);
@@ -132,7 +136,7 @@ describe('PUT /api/admin/users/:userId', () => {
 
     test('400 – Empty body (no fields)', async () => {
         const res = await request(app)
-            .put(`/api/admin/users/${regularUser.user_id}`)
+            .put(`/api/admin/users/${regularUser.user_guid}`)
             .set(authHeader(adminToken))
             .send({});
         expect(res.status).toBe(400);
@@ -140,7 +144,7 @@ describe('PUT /api/admin/users/:userId', () => {
 
     test('404 – Non-existent user', async () => {
         const res = await request(app)
-            .put('/api/admin/users/9999999')
+            .put(`/api/admin/users/${GHOST_GUID}`)
             .set(authHeader(adminToken))
             .send({ full_name: 'Ghost' });
         expect(res.status).toBe(404);
@@ -148,14 +152,14 @@ describe('PUT /api/admin/users/:userId', () => {
 
     test('401 – No token', async () => {
         const res = await request(app)
-            .put(`/api/admin/users/${regularUser.user_id}`)
+            .put(`/api/admin/users/${regularUser.user_guid}`)
             .send({ full_name: 'X' });
         expect(res.status).toBe(401);
     });
 
     test('403 – Regular user cannot update', async () => {
         const res = await request(app)
-            .put(`/api/admin/users/${regularUser.user_id}`)
+            .put(`/api/admin/users/${regularUser.user_guid}`)
             .set(authHeader(regularToken))
             .send({ full_name: 'Sneaky Update' });
         expect(res.status).toBe(403);
@@ -178,7 +182,7 @@ describe('DELETE /api/admin/users/:userId', () => {
 
     test('200 – Admin deactivates user', async () => {
         const res = await request(app)
-            .delete(`/api/admin/users/${targetUser.user_id}`)
+            .delete(`/api/admin/users/${targetUser.user_guid}`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
@@ -186,33 +190,33 @@ describe('DELETE /api/admin/users/:userId', () => {
 
     test('400 – Already inactive user', async () => {
         const res = await request(app)
-            .delete(`/api/admin/users/${targetUser.user_id}`)
+            .delete(`/api/admin/users/${targetUser.user_guid}`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(400);
     });
 
     test('400 – Admin cannot deactivate themselves', async () => {
         const res = await request(app)
-            .delete(`/api/admin/users/${adminUser.user_id}`)
+            .delete(`/api/admin/users/${adminUser.user_guid}`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(400);
     });
 
     test('404 – Non-existent user', async () => {
         const res = await request(app)
-            .delete('/api/admin/users/9999999')
+            .delete(`/api/admin/users/${GHOST_GUID}`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(404);
     });
 
     test('401 – No token', async () => {
-        const res = await request(app).delete(`/api/admin/users/${targetUser.user_id}`);
+        const res = await request(app).delete(`/api/admin/users/${targetUser.user_guid}`);
         expect(res.status).toBe(401);
     });
 
     test('403 – Regular user cannot deactivate', async () => {
         const res = await request(app)
-            .delete(`/api/admin/users/${targetUser.user_id}`)
+            .delete(`/api/admin/users/${targetUser.user_guid}`)
             .set(authHeader(regularToken));
         expect(res.status).toBe(403);
     });
@@ -224,7 +228,7 @@ describe('DELETE /api/admin/users/:userId', () => {
 describe('POST /api/admin/users/:userId/reset-password', () => {
     test('200 – Admin resets user password', async () => {
         const res = await request(app)
-            .post(`/api/admin/users/${regularUser.user_id}/reset-password`)
+            .post(`/api/admin/users/${regularUser.user_guid}/reset-password`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
@@ -232,20 +236,20 @@ describe('POST /api/admin/users/:userId/reset-password', () => {
 
     test('404 – Non-existent user', async () => {
         const res = await request(app)
-            .post('/api/admin/users/9999999/reset-password')
+            .post(`/api/admin/users/${GHOST_GUID}/reset-password`)
             .set(authHeader(adminToken));
         expect(res.status).toBe(404);
     });
 
     test('401 – No token', async () => {
         const res = await request(app)
-            .post(`/api/admin/users/${regularUser.user_id}/reset-password`);
+            .post(`/api/admin/users/${regularUser.user_guid}/reset-password`);
         expect(res.status).toBe(401);
     });
 
     test('403 – Regular user cannot reset passwords', async () => {
         const res = await request(app)
-            .post(`/api/admin/users/${regularUser.user_id}/reset-password`)
+            .post(`/api/admin/users/${regularUser.user_guid}/reset-password`)
             .set(authHeader(regularToken));
         expect(res.status).toBe(403);
     });
