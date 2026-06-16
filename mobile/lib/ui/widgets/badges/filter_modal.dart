@@ -169,22 +169,26 @@ Future<BadgeFilterResult?> showFilterModal(
                           color: textPrimary,
                         ),
                       ),
-                      childrenPadding:
-                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
                       children: [
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: areas
-                              .map(
-                                (area) => buildChip(
-                                  optionValue: area,
-                                  optionLabel: area,
-                                  selectedValue: areaSelected,
-                                  onSelect: (v) => areaSelected = v,
-                                ),
-                              )
-                              .toList(),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 210),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: areas
+                                  .map(
+                                    (area) => buildChip(
+                                      optionValue: area,
+                                      optionLabel: area,
+                                      selectedValue: areaSelected,
+                                      onSelect: (v) => areaSelected = v,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -199,22 +203,26 @@ Future<BadgeFilterResult?> showFilterModal(
                           color: textPrimary,
                         ),
                       ),
-                      childrenPadding:
-                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
                       children: [
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: levels
-                              .map(
-                                (level) => buildChip(
-                                  optionValue: level,
-                                  optionLabel: level,
-                                  selectedValue: levelSelected,
-                                  onSelect: (v) => levelSelected = v,
-                                ),
-                              )
-                              .toList(),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 210),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: levels
+                                  .map(
+                                    (level) => buildChip(
+                                      optionValue: level,
+                                      optionLabel: level,
+                                      selectedValue: levelSelected,
+                                      onSelect: (v) => levelSelected = v,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
