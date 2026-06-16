@@ -74,6 +74,7 @@ export default function WelcomeCard() {
     const isTm = role === 'Talent Manager';
     const isSll = role === 'Service Line Leader';
     const isLeader = isTm || isSll;
+    const isAdmin = role === 'Administrator';
 
     const [leaderStats, setLeaderStats] = useState(null);
 
@@ -97,7 +98,9 @@ export default function WelcomeCard() {
     const streakDays = user?.currentStreakDays ?? authUser?.current_streak_days ?? 0;
 
     const leaderValue = (v) => (leaderStats ? v : '—');
-    const stats = isLeader
+    const stats = isAdmin
+        ? []
+        : isLeader
         ? [
             { label: t('welcomeCard.pendingValidations'), value: leaderValue(leaderStats?.pending), variant: 'accent', icon: 'paper' },
             { label: t('welcomeCard.consultants'), value: leaderValue(leaderStats?.consultants), icon: 'tabler_users' },
@@ -133,18 +136,29 @@ export default function WelcomeCard() {
                                 </span>
                             )}
                         </div>
+                    ) : isAdmin ? (
+                        <div className={`d-flex flex-column flex-md-row ${styles.metaList}`}>
+                            <span className={styles.metaItem}>
+                                <Icon name="badge" className={styles.metaIcon} aria-hidden="true" color="#fff" />
+                                <span className={`${styles.metaText} mb-0`}>
+                                    <span className={styles.metaHighlight}>{t('welcomeCard.roleAdmin', { defaultValue: 'Administrador' })}</span>
+                                </span>
+                            </span>
+                        </div>
                     ) : (
                         <ConsultantMeta user={user} />
                     )}
                 </div>
 
-                <div className={styles.statsSection}>
-                    <div className={styles.statsGrid}>
-                        {stats.map((stat) => (
-                            <StatCard key={stat.label} {...stat} />
-                        ))}
+                {stats.length > 0 && (
+                    <div className={styles.statsSection}>
+                        <div className={styles.statsGrid}>
+                            {stats.map((stat) => (
+                                <StatCard key={stat.label} {...stat} />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </section>
     );
