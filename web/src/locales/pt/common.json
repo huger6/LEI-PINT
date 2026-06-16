@@ -1432,7 +1432,10 @@
 		"standing": "{{position}}º de {{total}} entre pares comparáveis (por pontos).",
 		"colConsultant": "Consultor",
 		"colPoints": "Pontos",
-		"colBadges": "Badges"
+		"colBadges": "Badges",
+		"pickPeerTitle": "Escolher comparação",
+		"searchConsultant": "Pesquisar consultor...",
+		"noConsultants": "Sem consultores para comparar."
 	},
 	"consultantsList": {
 		"title": "Consultores",

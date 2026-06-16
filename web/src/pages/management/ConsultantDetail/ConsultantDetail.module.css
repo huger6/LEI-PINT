@@ -97,6 +97,23 @@
 	white-space: nowrap;
 }
 
+.compPickerLabel {
+	flex-shrink: 0;
+}
+
+.compPickerBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	max-width: 220px;
+}
+
+.compPickerValue {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .empty {
 	margin: 0;
 	padding: 1.5rem;

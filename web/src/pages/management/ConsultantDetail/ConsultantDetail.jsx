@@ -8,11 +8,11 @@ import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
-import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import Spinner from '../../../components/Spinner/Spinner';
+import PeerPickerModal from './PeerPickerModal/PeerPickerModal';
 import styles from './ConsultantDetail.module.css';
 
 /**
@@ -31,6 +31,7 @@ export default function ConsultantDetail() {
 	const [comparison, setComparison] = useState(null);
 	const [consultants, setConsultants] = useState([]);
 	const [compareGuid, setCompareGuid] = useState('');
+	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 
@@ -76,13 +77,6 @@ export default function ConsultantDetail() {
 		{ name: t('consultantDetail.thisConsultant'), value: Number(target.total_badges) },
 		{ name: compareLabel, value: compareBadges },
 	] : [];
-
-	const compareOptions = [
-		{ value: '', label: t('consultantDetail.peerAverage') },
-		...consultants
-			.filter((c) => c.user_guid !== userGuid)
-			.map((c) => ({ value: c.user_guid, label: c.full_name })),
-	];
 
 	const hasComparison = Boolean(target) && (chosen || peers.length > 0);
 	const timelineData = timeline.map((r) => ({ ...r, label: r.month }));
@@ -139,11 +133,13 @@ export default function ConsultantDetail() {
 					<ContentCard className={styles.section}>
 						<div className={styles.compHead}>
 							<CardHeader icon="ranking" iconBg="var(--color-purple-soft)" iconColor="var(--color-purple-on-soft)" title={t('consultantDetail.comparisonTitle')} />
-							<label className={styles.compPicker}>
-								<span>{t('consultantDetail.compareWith')}</span>
-								<CustomSelect name="compareGuid" value={compareGuid} onChange={(e) => setCompareGuid(e.target.value)}
-									options={compareOptions} ariaLabel={t('consultantDetail.compareWith')} compact />
-							</label>
+							<div className={styles.compPicker}>
+								<span className={styles.compPickerLabel}>{t('consultantDetail.compareWith')}</span>
+								<Button variant="outlined" color="primary" size="sm" onClick={() => setShowPicker(true)} className={styles.compPickerBtn}>
+									<span className={styles.compPickerValue}>{compareLabel}</span>
+									<Icon name="pencil" size={14} />
+								</Button>
+							</div>
 						</div>
 
 						{!hasComparison ? (
@@ -197,6 +193,16 @@ export default function ConsultantDetail() {
 						)}
 					</ContentCard>
 				</>
+			)}
+
+			{showPicker && (
+				<PeerPickerModal
+					consultants={consultants}
+					excludeGuid={userGuid}
+					currentGuid={compareGuid}
+					onSelect={setCompareGuid}
+					onClose={() => setShowPicker(false)}
+				/>
 			)}
 		</div>
 	);
