@@ -8,6 +8,7 @@ import { getBadges } from '../../../features/badges/api/badgesApi';
 import { getLearningPaths } from '../../../features/badges/api/hierarchyApi';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
+import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
 import Icon from '../../../components/Icons/Icons';
 import { ADMIN } from '../../../routes/paths';
 
@@ -66,10 +67,9 @@ export default function AdminDashboard() {
 
 	return (
 		<div>
-			<h1 className="h3 mb-2">{t('adminDashboard.title')}</h1>
-			<p className="text-muted mb-4">
-				{t('adminDashboard.welcome', { name: user?.fullName })}
-			</p>
+			<div className="mb-4">
+				<WelcomeCard />
+			</div>
 
 			<div className="row g-3 mb-4">
 				{cards.map((card) => (
