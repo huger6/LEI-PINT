@@ -1445,6 +1445,8 @@
 		"colApplications": "Candidaturas",
 		"colOpenApps": "Cand. Abiertas",
 		"colLastLogin": "Último Acceso",
+		"colDetail": "Análisis",
+		"viewDetail": "Ver análisis",
 		"neverLoggedIn": "Nunca",
 		"empty": "No hay consultores para mostrar.",
 		"filters": {
