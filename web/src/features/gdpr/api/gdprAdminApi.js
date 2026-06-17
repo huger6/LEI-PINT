@@ -1,10 +1,17 @@
 import api from '../../../services/api';
 
-// Lists the currently active policies (one per type/version). Creating a new
-// version deactivates the previous one, so this reflects the live set.
+// Admin management list: every policy of every type, active AND inactive, so
+// the full version history is visible (the public /gdpr/policies returns only
+// the active set, one per type).
 export async function getPolicies() {
-	const { data } = await api.get('/gdpr/policies');
+	const { data } = await api.get('/gdpr/admin/policies');
 	return data?.data || [];
+}
+
+// Reactivate a specific (inactive) version — becomes the single active one of its type.
+export async function activatePolicy(policyId) {
+	const { data } = await api.patch(`/gdpr/admin/policies/${policyId}/activate`);
+	return data?.data;
 }
 
 // payload: { policy_type: 'Privacy'|'Terms'|'Cookies', version, policy_text, is_mandatory? }

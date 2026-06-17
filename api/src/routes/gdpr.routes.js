@@ -14,8 +14,10 @@ router.post('/data-export', loginRequired, gdprCtrl.requestDataExport);
 router.delete('/account', loginRequired, gdprCtrl.requestAccountDeletion);
 
 // ─── Admin endpoints ────────────────────────────────────────────────────────
+router.get('/admin/policies', loginRequired, isAdmin, gdprCtrl.adminListPolicies);
 router.post('/admin/policies', loginRequired, isAdmin, gdprCtrl.adminCreatePolicy);
 router.put('/admin/policies/:id', loginRequired, isAdmin, gdprCtrl.adminUpdatePolicy);
+router.patch('/admin/policies/:id/activate', loginRequired, isAdmin, gdprCtrl.adminActivatePolicy);
 router.patch('/admin/policies/:id/deactivate', loginRequired, isAdmin, gdprCtrl.adminDeactivatePolicy);
 router.post('/admin/policies/:id/new-version', loginRequired, isAdmin, gdprCtrl.adminNewPolicyVersion);
 
