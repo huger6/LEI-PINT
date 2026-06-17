@@ -261,14 +261,11 @@ const createRequirementBodySchema = z.object({
 
 	requirementSequence: z.coerce.number().int().positive().optional().nullable(),
 
-	badgePoints: z.coerce.number().int().min(0).default(0),
-
-	requirementImgUrl: imgUrlRule.optional().nullable()
+	badgePoints: z.coerce.number().int().min(0).default(0)
 });
 
 const updateRequirementBodySchema = createRequirementBodySchema.extend({
-	isActive: z.boolean().optional(),
-	requirementImgUrl: imgUrlExistingRule.optional().nullable()
+	isActive: z.boolean().optional()
 }).partial();
 
 module.exports = {

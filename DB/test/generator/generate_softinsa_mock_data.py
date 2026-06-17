@@ -891,7 +891,6 @@ def generate_sql() -> str:
                 "requirement_title": f"{template_title} {sequence} - {badge['badge_title']}"[:150],
                 "requirement_sequence": sequence,
                 "requirement_description": f"{template_description} Badge context: {badge['badge_title']}.",
-                "requirement_img_url": None,
                 "badge_points": max(10, int(badge["badge_points"]) // NUM_REQUIREMENTS_PER_BADGE),
                 "is_active": True,
                 "created_by": random.choice(admin_ids),

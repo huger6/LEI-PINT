@@ -5,7 +5,6 @@ const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/structure.validation');
 const { handleZodError } = require('../utils/responseHelper');
-const { moveStructureImageToPermanent } = require('../services/storage.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const { findBadgeInHierarchy } = require('./badges.controller');
 
@@ -67,18 +66,12 @@ const createRequirement = async (req, res) => {
             requirementTitle,
             requirementDescription,
             requirementSequence,
-            badgePoints,
-            requirementImgUrl
+            badgePoints
         } = validations.createRequirementBodySchema.parse(req.body);
 
         const badge = await findBadgeInHierarchy({ badgeSlug, stageCode, areaSlug, slSlug, pathSlug });
         if (!badge) {
             return res.status(404).json({ success: false, code: 'BADGE_NOT_FOUND' });
-        }
-
-        let finalImgUrl = requirementImgUrl;
-        if (requirementImgUrl && requirementImgUrl.includes('/temp/')) {
-            finalImgUrl = await moveStructureImageToPermanent('badges', requirementImgUrl, badge.badge_slug);
         }
 
         const newRequirement = await models.badge_requirements.create({
@@ -87,7 +80,6 @@ const createRequirement = async (req, res) => {
             requirement_title: requirementTitle,
             requirement_description: requirementDescription,
             requirement_sequence: requirementSequence ?? null,
-            requirement_img_url: finalImgUrl || null,
             badge_points: badgePoints,
             is_active: true,
             created_by: userId,
@@ -118,7 +110,6 @@ const updateRequirement = async (req, res) => {
             requirementDescription,
             requirementSequence,
             badgePoints,
-            requirementImgUrl,
             isActive
         } = validations.updateRequirementBodySchema.parse(req.body);
 
@@ -134,21 +125,11 @@ const updateRequirement = async (req, res) => {
             return res.status(404).json({ success: false, code: 'REQUIREMENT_NOT_FOUND' });
         }
 
-        let finalImgUrl = requirement.requirement_img_url;
-        if (requirementImgUrl !== undefined) {
-            if (requirementImgUrl && requirementImgUrl.includes('/temp/')) {
-                finalImgUrl = await moveStructureImageToPermanent('badges', requirementImgUrl, badge.badge_slug);
-            } else {
-                finalImgUrl = requirementImgUrl;
-            }
-        }
-
         await requirement.update({
             requirement_title: requirementTitle !== undefined ? requirementTitle : requirement.requirement_title,
             requirement_description: requirementDescription !== undefined ? requirementDescription : requirement.requirement_description,
             requirement_sequence: requirementSequence !== undefined ? requirementSequence : requirement.requirement_sequence,
             badge_points: badgePoints !== undefined ? badgePoints : requirement.badge_points,
-            requirement_img_url: finalImgUrl,
             is_active: isActive !== undefined ? isActive : requirement.is_active,
             updated_by: userId,
             updated_at: new Date()

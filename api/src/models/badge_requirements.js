@@ -36,10 +36,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    requirement_img_url: {
-      type: DataTypes.STRING(512),
-      allowNull: true
-    },
     badge_points: {
       type: DataTypes.INTEGER,
       allowNull: false,
