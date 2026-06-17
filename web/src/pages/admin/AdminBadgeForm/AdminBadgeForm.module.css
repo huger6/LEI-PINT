@@ -1,5 +1,6 @@
 .page {
 	max-width: 820px;
+	margin: 0 auto;
 }
 
 .breadcrumb {
@@ -12,12 +13,19 @@
 }
 
 .breadcrumbLink {
-	color: var(--color-secondary);
+	color: var(--color-outline);
 	text-decoration: none;
 }
 
 .breadcrumbLink:hover {
+	color: var(--color-secondary);
 	text-decoration: underline;
+}
+
+/* The current page is the emphasised (coloured) crumb, not the parent link. */
+.breadcrumbCurrent {
+	color: var(--color-secondary);
+	font-weight: 600;
 }
 
 .formCard {

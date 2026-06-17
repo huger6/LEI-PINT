@@ -107,7 +107,11 @@ const getDateFilter = ({ from, to, columnName }) => {
     }
 
     if (to) {
-        conditions.push(`${columnName} <= :to`);
+        // `to` is a calendar date (e.g. 2026-06-16). A plain `<= :to` coerces it
+        // to midnight and drops everything that happened during that day, so the
+        // selected end date appeared to be excluded. Compare against the start of
+        // the *next* day to make the range inclusive of the whole `to` date.
+        conditions.push(`${columnName} < (:to::date + 1)`);
         replacements.to = to;
     }
 

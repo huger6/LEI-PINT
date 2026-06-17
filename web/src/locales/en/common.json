@@ -775,6 +775,7 @@
 	},
 	"adminRequirements": {
 		"title": "Badge Requirements",
+		"subtitle": "Manage each badge's requirements: create, edit or remove.",
 		"selectBadge": "Select Badge",
 		"chooseBadge": "Choose badge...",
 		"requirements": "Requirements: {{name}}",
