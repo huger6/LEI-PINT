@@ -58,6 +58,10 @@
 	max-width: 720px;
 }
 
+.xl {
+	max-width: 1100px;
+}
+
 .body {
 	padding: 1.25rem;
 	overflow-y: auto;
