@@ -131,7 +131,7 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 			{showDesigner && (
 				<Modal
 					title={t('badgeImage.designerTitle', { defaultValue: 'Desenhar badge' })}
-					size="lg"
+					size="xl"
 					onClose={() => setShowDesigner(false)}
 				>
 					<BadgeEditor
