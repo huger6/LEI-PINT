@@ -147,7 +147,7 @@ export default function AdminBadgeForm() {
 			<nav className={styles.breadcrumb} aria-label="breadcrumb">
 				<Link to={ADMIN.BADGES} className={styles.breadcrumbLink}>{t('adminBadges.title')}</Link>
 				<Icon name="chevron_forward" size={14} color="var(--color-outline)" />
-				<span>{isEdit ? t('adminBadges.editBadge') : t('adminBadges.newBadge')}</span>
+				<span className={styles.breadcrumbCurrent}>{isEdit ? t('adminBadges.editBadge') : t('adminBadges.newBadge')}</span>
 			</nav>
 
 			<h1 className="h3 mb-4">{isEdit ? t('adminBadges.editBadge') : t('adminBadges.newBadge')}</h1>

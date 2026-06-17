@@ -5,8 +5,10 @@ import { getRequirements, deleteRequirement } from '../../../features/badges/api
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import CreateRequirementModal from '../../../components/CreateRequirementModal/CreateRequirementModal';
+import styles from './AdminRequirements.module.css';
 
 export default function AdminRequirements() {
 	const { t } = useTranslation();
@@ -77,96 +79,96 @@ export default function AdminRequirements() {
 
 	return (
 		<div>
-			<h1 className="h3 mb-4">{t('adminRequirements.title')}</h1>
-
-			<div className="card border-0 shadow-sm mb-4">
-				<div className="card-body">
-					<label htmlFor="badge_select" className="form-label">{t('adminRequirements.selectBadge')}</label>
-					{loadingBadges ? (
-						<div className="placeholder-glow"><span className="placeholder col-6" /></div>
-					) : (
-						<select
-							id="badge_select"
-							className="form-select"
-							value={selectedBadge}
-							onChange={(e) => setSelectedBadge(e.target.value)}
-						>
-							<option value="">{t('adminRequirements.chooseBadge')}</option>
-							{badges.map((b) => (
-								<option key={b.badge_slug || b.badgeSlug} value={b.badge_slug || b.badgeSlug}>
-									{b.badge_title || b.badgeTitle}
-								</option>
-							))}
-						</select>
-					)}
+			<div className={styles.header}>
+				<div className={styles.headerIcon}><Icon name="check_circle" size={24} aria-hidden="true" /></div>
+				<div className={styles.headerText}>
+					<h1 className={styles.title}>{t('adminRequirements.title')}</h1>
+					<p className={styles.subtitle}>{t('adminRequirements.subtitle')}</p>
 				</div>
 			</div>
 
-			{selectedBadge && (
-				<div className="card border-0 shadow-sm">
-					<div className="card-body">
-						<div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-							<h5 className="fw-semibold mb-0">
-								{t('adminRequirements.requirements', { name: activeBadge?.badge_title || activeBadge?.badgeTitle })}
-							</h5>
-							<Button size="sm" onClick={openCreate}>
-								<Icon name="add" size={14} aria-hidden="true" className="me-1" />
-								{t('adminRequirements.newRequirement')}
-							</Button>
-						</div>
+			<div className={styles.card}>
+				<label htmlFor="badge_select" className={styles.selectLabel}>{t('adminRequirements.selectBadge')}</label>
+				{loadingBadges ? (
+					<div className="placeholder-glow"><span className="placeholder col-6" /></div>
+				) : (
+					<div className={styles.selectWrap}>
+						<CustomSelect
+							name="badge_select"
+							value={selectedBadge}
+							onChange={(e) => setSelectedBadge(e.target.value)}
+							ariaLabel={t('adminRequirements.selectBadge')}
+							options={[
+								{ value: '', label: t('adminRequirements.chooseBadge') },
+								...badges.map((b) => ({ value: b.badge_slug || b.badgeSlug, label: b.badge_title || b.badgeTitle })),
+							]}
+						/>
+					</div>
+				)}
+			</div>
 
-						{loadingReqs ? (
-							<TableSkeleton rows={4} columns={5} />
-						) : requirements.length === 0 ? (
-							<p className="text-muted small mb-0">{t('adminRequirements.noRequirements')}</p>
-						) : (
-							<div className="table-responsive">
-								<table className="table table-hover align-middle mb-0">
-									<thead className="table-light">
-										<tr>
-											<th>{t('adminRequirements.sequence')}</th>
-											<th>{t('shared.title')}</th>
-											<th>{t('shared.points')}</th>
-											<th>{t('shared.active')}</th>
-											<th className="text-end">{t('shared.actions')}</th>
-										</tr>
-									</thead>
-									<tbody>
-										{requirements.map((req, idx) => (
-											<tr key={req.requirement_id || req.requirementId || idx}>
-												<td>{req.requirement_sequence ?? req.requirementSequence ?? idx + 1}</td>
-												<td>{req.requirement_title || req.requirementTitle || '—'}</td>
-												<td>
-													<span className="badge bg-warning text-dark">
-														{req.badge_points ?? req.badgePoints ?? 0} pts
-													</span>
-												</td>
-												<td>
-													<span className={`badge ${req.is_active ? 'bg-success' : 'bg-secondary'}`}>
-														{req.is_active ? t('shared.yes') : t('shared.no')}
-													</span>
-												</td>
-												<td className="text-end">
-													<Tooltip text={t('shared.edit')}>
-														<Button size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')} onClick={() => openEdit(req)}>
-															<Icon name="pencil" size={14} aria-hidden="true" />
+			{selectedBadge && (
+				<div className={styles.card}>
+					<div className={styles.reqHeaderRow}>
+						<h2 className={styles.reqTitle}>
+							{t('adminRequirements.requirements', { name: activeBadge?.badge_title || activeBadge?.badgeTitle })}
+						</h2>
+						<Button size="sm" onClick={openCreate}>
+							<Icon name="add" size={14} aria-hidden="true" className="me-1" />
+							{t('adminRequirements.newRequirement')}
+						</Button>
+					</div>
+
+					{loadingReqs ? (
+						<TableSkeleton rows={4} columns={5} />
+					) : requirements.length === 0 ? (
+						<div className={styles.empty}>
+							<Icon name="check_circle" size={36} aria-hidden="true" className={styles.emptyIcon} />
+							<p className="mb-0">{t('adminRequirements.noRequirements')}</p>
+						</div>
+					) : (
+						<div className="table-responsive">
+							<table className={`table align-middle ${styles.table}`}>
+								<thead>
+									<tr>
+										<th>{t('adminRequirements.sequence')}</th>
+										<th>{t('shared.title')}</th>
+										<th>{t('shared.points')}</th>
+										<th>{t('shared.active')}</th>
+										<th className="text-end">{t('shared.actions')}</th>
+									</tr>
+								</thead>
+								<tbody>
+									{requirements.map((req, idx) => (
+										<tr key={req.requirement_id || req.requirementId || idx}>
+											<td><span className={styles.seqBadge}>{req.requirement_sequence ?? req.requirementSequence ?? idx + 1}</span></td>
+											<td>{req.requirement_title || req.requirementTitle || '—'}</td>
+											<td><span className={styles.pointsChip}>{req.badge_points ?? req.badgePoints ?? 0} pts</span></td>
+											<td>
+												<span className={`${styles.statusChip} ${req.is_active ? styles.statusOn : styles.statusOff}`}>
+													{req.is_active ? t('shared.yes') : t('shared.no')}
+												</span>
+											</td>
+											<td className="text-end">
+												<Tooltip text={t('shared.edit')}>
+													<Button size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')} onClick={() => openEdit(req)}>
+														<Icon name="pencil" size={14} aria-hidden="true" />
+													</Button>
+												</Tooltip>
+												{req.is_active && (
+													<Tooltip text={t('shared.delete')}>
+														<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(req)}>
+															<Icon name="trash" size={14} aria-hidden="true" />
 														</Button>
 													</Tooltip>
-													{req.is_active && (
-														<Tooltip text={t('shared.delete')}>
-															<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(req)}>
-																<Icon name="trash" size={14} aria-hidden="true" />
-															</Button>
-														</Tooltip>
-													)}
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-						)}
-					</div>
+												)}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
 				</div>
 			)}
 
