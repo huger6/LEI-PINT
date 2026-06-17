@@ -427,12 +427,18 @@ const exportApplications = async (req, res) => {
         const userId = req.user?.sub;
         const role = req.user?.role;
 
+        // Only the Administrator may export PII (email). TM/SLL get the same
+        // dataset minus the email column.
+        const columns = role === 'Administrator'
+            ? applicationColumns
+            : applicationColumns.filter((c) => c.key !== 'email_address');
+
         await exportDataset({
             req,
             res,
             title: 'Applications export',
             fileStem: 'applications',
-            columns: applicationColumns,
+            columns,
             fetchRows: ({ from, to, state }) => fetchApplicationRows({ from, to, state, userId, role }),
             schema: exportApplicationsQuerySchema
         });

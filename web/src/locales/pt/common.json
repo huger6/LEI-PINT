@@ -773,6 +773,20 @@
 		"noLevelsDesc": "Nenhum nível de progressão encontrado.",
 		"levelCode": "Código do Nível"
 	},
+	"adminStats": {
+		"title": "Estatísticas",
+		"enrollment": {
+			"title": "Utilizadores por perfil",
+			"total": "Total de utilizadores",
+			"active": "Ativos",
+			"inactive": "Inativos",
+			"confirmed": "Email confirmado",
+			"consultants": "Consultores",
+			"serviceLineLeaders": "Service Line Leaders",
+			"talentManagers": "Talent Managers",
+			"administrators": "Administradores"
+		}
+	},
 	"adminRequirements": {
 		"title": "Requisitos de Badges",
 		"subtitle": "Gere os requisitos de cada badge: cria, edita ou remove.",

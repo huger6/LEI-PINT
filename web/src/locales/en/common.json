@@ -773,6 +773,20 @@
 		"noLevelsDesc": "No progression levels found.",
 		"levelCode": "Level Code"
 	},
+	"adminStats": {
+		"title": "Statistics",
+		"enrollment": {
+			"title": "Users by role",
+			"total": "Total users",
+			"active": "Active",
+			"inactive": "Inactive",
+			"confirmed": "Email confirmed",
+			"consultants": "Consultants",
+			"serviceLineLeaders": "Service Line Leaders",
+			"talentManagers": "Talent Managers",
+			"administrators": "Administrators"
+		}
+	},
 	"adminRequirements": {
 		"title": "Badge Requirements",
 		"subtitle": "Manage each badge's requirements: create, edit or remove.",
