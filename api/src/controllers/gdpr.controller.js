@@ -287,6 +287,60 @@ const getLatestPolicy = async (req, res) => {
 
 // ─── Admin endpoints ────────────────────────────────────────────────────────
 
+// Admin management view: every policy of every type, active and inactive, so
+// the full version history is visible and inactive versions can be reactivated.
+// (The public GET /policies only returns the active set, one per type.)
+const adminListPolicies = async (req, res) => {
+    try {
+        const policies = await models.gdpr_policies.findAll({
+            attributes: ['policy_id', 'policy_type', 'version', 'policy_text', 'is_mandatory', 'is_active', 'created_at', 'updated_at'],
+            order: [['policy_type', 'ASC'], ['created_at', 'DESC']]
+        });
+        return res.status(200).json({ success: true, data: policies });
+    } catch (error) {
+        logger.error('Error listing GDPR policies (admin)', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICIES_FETCH_FAILED' });
+    }
+};
+
+// Reactivate a specific (inactive) version, making it the single active version
+// of its type. Explicit admin choice — unlike create/new-version, it does not
+// force the highest version, it honours exactly the version chosen.
+const adminActivatePolicy = async (req, res) => {
+    const transaction = await models.gdpr_policies.sequelize.transaction();
+    try {
+        let validated;
+        try { validated = policyIdParam.parse(req.params); }
+        catch (error) {
+            await transaction.rollback();
+            if (error.name === 'ZodError') return handleZodError(res, error);
+            throw error;
+        }
+
+        const policy = await models.gdpr_policies.findByPk(validated.id, { transaction });
+        if (!policy) {
+            await transaction.rollback();
+            return res.status(404).json({ success: false, code: 'GDPR_POLICY_NOT_FOUND' });
+        }
+
+        // Deactivate every other version of this type, then activate the chosen one.
+        await models.gdpr_policies.update(
+            { is_active: false, updated_by: req.user.sub },
+            { where: { policy_type: policy.policy_type }, transaction }
+        );
+        await policy.update({ is_active: true, updated_by: req.user.sub }, { transaction });
+
+        await transaction.commit();
+        await policy.reload();
+        await sendTopicUpdate("new_data", 22);
+        return res.status(200).json({ success: true, data: policy });
+    } catch (error) {
+        if (!transaction.finished) await transaction.rollback();
+        logger.error('Error activating GDPR policy', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICY_ACTIVATE_FAILED' });
+    }
+};
+
 const adminCreatePolicy = async (req, res) => {
     const transaction = await models.gdpr_policies.sequelize.transaction();
     try {
@@ -462,6 +516,8 @@ module.exports = {
     getConsentHistory,
     requestDataExport,
     requestAccountDeletion,
+    adminListPolicies,
+    adminActivatePolicy,
     adminCreatePolicy,
     adminUpdatePolicy,
     adminDeactivatePolicy,

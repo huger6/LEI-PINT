@@ -5,6 +5,7 @@ import {
 	createPolicy,
 	updatePolicy,
 	deactivatePolicy,
+	activatePolicy,
 	newPolicyVersion,
 } from '../../../features/gdpr/api/gdprAdminApi';
 import Modal from '../../../components/Modal/Modal';
@@ -121,6 +122,15 @@ export default function AdminRgpd() {
 		}
 	}
 
+	async function handleActivate(policy) {
+		try {
+			await activatePolicy(policy.policy_id);
+			load();
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
@@ -137,7 +147,7 @@ export default function AdminRgpd() {
 			<div className="card border-0 shadow-sm">
 				<div className="card-body">
 					{loading ? (
-						<TableSkeleton rows={3} columns={4} />
+						<TableSkeleton rows={3} columns={5} />
 					) : policies.length === 0 ? (
 						<p className="text-muted small mb-0">{t('adminRgpd.empty')}</p>
 					) : (
@@ -147,6 +157,7 @@ export default function AdminRgpd() {
 									<tr>
 										<th>{t('adminRgpd.type')}</th>
 										<th>{t('adminRgpd.version')}</th>
+										<th>{t('shared.status')}</th>
 										<th>{t('adminRgpd.mandatory')}</th>
 										<th className="text-end">{t('shared.actions')}</th>
 									</tr>
@@ -154,9 +165,14 @@ export default function AdminRgpd() {
 								<tbody>
 									{policies.map((p) => (
 										<Fragment key={p.policy_id}>
-											<tr>
+											<tr className={p.is_active ? '' : 'opacity-75'}>
 												<td><span className="badge bg-info">{t(`adminRgpd.types.${p.policy_type}`, { defaultValue: p.policy_type })}</span></td>
 												<td>{p.version}</td>
+												<td>
+													<span className={`badge ${p.is_active ? 'bg-success' : 'bg-secondary'}`}>
+														{p.is_active ? t('shared.active') : t('shared.inactive')}
+													</span>
+												</td>
 												<td>
 													<div className="form-check form-switch m-0">
 														<input
@@ -181,16 +197,24 @@ export default function AdminRgpd() {
 															<Icon name="pencil" size={14} aria-hidden="true" />
 														</Button>
 													</Tooltip>
-													<Tooltip text={t('shared.deactivate')}>
-														<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => handleDeactivate(p)}>
-															<Icon name="trash" size={14} aria-hidden="true" />
-														</Button>
-													</Tooltip>
+													{p.is_active ? (
+														<Tooltip text={t('shared.deactivate')}>
+															<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => handleDeactivate(p)}>
+																<Icon name="trash" size={14} aria-hidden="true" />
+															</Button>
+														</Tooltip>
+													) : (
+														<Tooltip text={t('shared.reactivate')}>
+															<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => handleActivate(p)}>
+																<Icon name="activate" size={14} aria-hidden="true" />
+															</Button>
+														</Tooltip>
+													)}
 												</td>
 											</tr>
 											{expanded === p.policy_id && (
 												<tr>
-													<td colSpan={4}>
+													<td colSpan={5}>
 														<div className={styles.policyText}>{p.policy_text || t('adminRgpd.noText')}</div>
 													</td>
 												</tr>
