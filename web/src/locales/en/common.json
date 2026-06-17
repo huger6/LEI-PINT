@@ -775,6 +775,14 @@
 	},
 	"adminStats": {
 		"title": "Statistics",
+		"applications": "Applications",
+		"applicationsByState": "Applications by state",
+		"consent": {
+			"title": "GDPR consent",
+			"total": "Total consultants",
+			"accepted": "Accepted",
+			"pending": "Pending"
+		},
 		"enrollment": {
 			"title": "Users by role",
 			"total": "Total users",

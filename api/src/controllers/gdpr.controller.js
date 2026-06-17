@@ -287,6 +287,23 @@ const getLatestPolicy = async (req, res) => {
 
 // ─── Admin endpoints ────────────────────────────────────────────────────────
 
+// Aggregate RGPD acceptance across consultants (admin dashboard insight).
+const adminConsentSummary = async (req, res) => {
+    try {
+        const [total, accepted] = await Promise.all([
+            models.consultants.count(),
+            models.consultants.count({ where: { gdpr_accepted: true } })
+        ]);
+        return res.status(200).json({
+            success: true,
+            data: { total, accepted, pending: Math.max(0, total - accepted) }
+        });
+    } catch (error) {
+        logger.error('Error fetching GDPR consent summary', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_CONSENT_SUMMARY_FAILED' });
+    }
+};
+
 // Admin management view: every policy of every type, active and inactive, so
 // the full version history is visible and inactive versions can be reactivated.
 // (The public GET /policies only returns the active set, one per type.)
@@ -516,6 +533,7 @@ module.exports = {
     getConsentHistory,
     requestDataExport,
     requestAccountDeletion,
+    adminConsentSummary,
     adminListPolicies,
     adminActivatePolicy,
     adminCreatePolicy,

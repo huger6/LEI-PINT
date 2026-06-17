@@ -22,6 +22,12 @@ export async function getUserEnrollment() {
 	return data?.data || null;
 }
 
+// Admin-only: badge application counts grouped by workflow state.
+export async function getApplicationsByState() {
+	const { data } = await api.get('/statistics/reports/applications-by-state');
+	return data?.data || [];
+}
+
 // Team scope KPIs
 export async function getPendingApplicationsCount() {
 	const { data } = await api.get('/statistics/team/applications-pending');

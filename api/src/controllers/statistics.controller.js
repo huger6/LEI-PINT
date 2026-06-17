@@ -337,6 +337,31 @@ const getUserEnrollment = async (req, res) => {
 };
 
 /*──────────────────────────────────────────────────────────────
+  GET /api/statistics/reports/applications-by-state
+  Platform-wide count of badge applications grouped by workflow state.
+  Administrator only.
+──────────────────────────────────────────────────────────────*/
+const APPLICATION_STATES = ['Open', 'Submitted', 'In validation', 'Accepted', 'Rejected'];
+
+const getApplicationsByState = async (req, res) => {
+    try {
+        const rows = await sequelize.query(
+            `SELECT application_state, COUNT(*)::int AS count
+             FROM badge_applications
+             GROUP BY application_state`,
+            { type: QueryTypes.SELECT }
+        );
+        const counts = new Map(rows.map((r) => [r.application_state, r.count]));
+        // Return every state (including zero) in canonical order for a stable chart.
+        const data = APPLICATION_STATES.map((state) => ({ state, count: counts.get(state) ?? 0 }));
+        return res.status(200).json({ success: true, code: 'STATS_APPLICATIONS_BY_STATE_RETRIEVED', data });
+    } catch (error) {
+        logger.error('Error fetching applications by state', { error });
+        return res.status(500).json({ success: false, code: 'STATS_APPLICATIONS_BY_STATE_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
   GET /api/statistics/consultant/badges-per-area
   Per-area breakdown: badges earned and points per area.
 ──────────────────────────────────────────────────────────────*/
@@ -584,6 +609,7 @@ module.exports = {
     getBadgesByServiceLine,
     getLevelDistribution,
     getUserEnrollment,
+    getApplicationsByState,
     getBadgesPerArea,
     getExpiringBadges,
     getConsultantsOverview,

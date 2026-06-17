@@ -14,6 +14,7 @@ router.post('/data-export', loginRequired, gdprCtrl.requestDataExport);
 router.delete('/account', loginRequired, gdprCtrl.requestAccountDeletion);
 
 // ─── Admin endpoints ────────────────────────────────────────────────────────
+router.get('/admin/consent-summary', loginRequired, isAdmin, gdprCtrl.adminConsentSummary);
 router.get('/admin/policies', loginRequired, isAdmin, gdprCtrl.adminListPolicies);
 router.post('/admin/policies', loginRequired, isAdmin, gdprCtrl.adminCreatePolicy);
 router.put('/admin/policies/:id', loginRequired, isAdmin, gdprCtrl.adminUpdatePolicy);

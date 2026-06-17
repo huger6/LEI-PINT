@@ -5,8 +5,10 @@ import {
 	getBadgesByLearningPath,
 	getLevelDistribution,
 	getUserEnrollment,
+	getApplicationsByState,
 	getExpiringBadges,
 } from '../../../features/statistics/api/statisticsApi';
+import { getConsentSummary } from '../../../features/gdpr/api/gdprAdminApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
@@ -35,6 +37,8 @@ export default function AdminStats() {
 	const { t } = useTranslation();
 	const [data, setData] = useState(null);
 	const [enrollment, setEnrollment] = useState(null);
+	const [byState, setByState] = useState([]);
+	const [consent, setConsent] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
@@ -51,13 +55,15 @@ export default function AdminStats() {
 			setLoading(true);
 			setError(null);
 			try {
-				const [bySl, byLp, levels, enr] = await Promise.all([
+				const [bySl, byLp, levels, enr, appsByState, consentSummary] = await Promise.all([
 					getBadgesByServiceLine(chartFilters),
 					getBadgesByLearningPath(chartFilters),
 					getLevelDistribution(chartFilters),
 					getUserEnrollment(),
+					getApplicationsByState(),
+					getConsentSummary(),
 				]);
-				if (active) { setData({ bySl, byLp, levels }); setEnrollment(enr); }
+				if (active) { setData({ bySl, byLp, levels }); setEnrollment(enr); setByState(appsByState || []); setConsent(consentSummary); }
 			} catch (err) {
 				if (active) setError(resolveErrorMessage(err));
 			} finally {
@@ -161,6 +167,43 @@ export default function AdminStats() {
 					<CardHeader icon="learning-path" iconBg="var(--color-purple-soft)" iconColor="var(--color-purple-on-soft)" title={t('tmStats.charts.byLearningPath')} />
 					{hasLp ? (
 						<VerticalBarChart data={data.byLp} xAxisKey="path_title" yAxisKey="awarded_count" barColor="#39639C" valueName={t('tmStats.kpi.badgesAwarded')} />
+					) : (
+						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
+					)}
+				</ContentCard>
+			</div>
+
+			{/* Applications pipeline + RGPD consent (admin-only) */}
+			<div className={styles.chartsGrid}>
+				<ContentCard className={styles.chartCard}>
+					<CardHeader icon="paper" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('adminStats.applicationsByState')} />
+					{byState.some((r) => r.count > 0) ? (
+						<VerticalBarChart data={byState} xAxisKey="state" yAxisKey="count" barColor="#39639C" valueName={t('adminStats.applications')} />
+					) : (
+						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
+					)}
+				</ContentCard>
+
+				<ContentCard className={styles.chartCard}>
+					<CardHeader icon="privacy" iconBg="var(--color-green-soft)" iconColor="var(--color-green-on-soft)" title={t('adminStats.consent.title')} />
+					{consent ? (
+						<div className={styles.enrollGrid}>
+							<div className={styles.enrollCard}>
+								<div className={styles.enrollIcon} style={{ background: 'var(--color-secondary-container)' }}><Icon name="tabler_users" size={18} color="var(--color-secondary)" /></div>
+								<span className={styles.enrollValue}>{Number(consent.total ?? 0).toLocaleString('pt-PT')}</span>
+								<span className={styles.enrollLabel}>{t('adminStats.consent.total')}</span>
+							</div>
+							<div className={styles.enrollCard}>
+								<div className={styles.enrollIcon} style={{ background: 'var(--color-green-soft)' }}><Icon name="check_circle" size={18} color="var(--color-green-on-soft)" /></div>
+								<span className={styles.enrollValue}>{Number(consent.accepted ?? 0).toLocaleString('pt-PT')}</span>
+								<span className={styles.enrollLabel}>{t('adminStats.consent.accepted')}</span>
+							</div>
+							<div className={styles.enrollCard}>
+								<div className={styles.enrollIcon} style={{ background: 'var(--color-orange-soft)' }}><Icon name="clock" size={18} color="var(--color-orange-on-soft)" /></div>
+								<span className={styles.enrollValue}>{Number(consent.pending ?? 0).toLocaleString('pt-PT')}</span>
+								<span className={styles.enrollLabel}>{t('adminStats.consent.pending')}</span>
+							</div>
+						</div>
 					) : (
 						<p className={styles.emptyChart}>{t('tmStats.noData')}</p>
 					)}
