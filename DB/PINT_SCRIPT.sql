@@ -297,7 +297,6 @@ CREATE TABLE IF NOT EXISTS badge_requirements (
    requirement_title    VARCHAR(150)         NOT NULL,
    requirement_sequence INTEGER                 NULL,
    requirement_description TEXT                 NOT NULL,
-   requirement_img_url  VARCHAR(512)         NULL,
    badge_points         INTEGER                 NOT NULL DEFAULT 0,
       CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,

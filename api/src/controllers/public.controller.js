@@ -237,7 +237,7 @@ const getPublicBadgeBySlug = async (req, res) => {
 					as: 'badge_requirements',
 					where: { is_active: true },
 					required: false,
-					attributes: ['requirement_title', 'requirement_description', 'requirement_img_url'],
+					attributes: ['requirement_title', 'requirement_description'],
 				},
 				{
 					model: models.skills,
@@ -253,7 +253,6 @@ const getPublicBadgeBySlug = async (req, res) => {
 		data.requirements = (badge.badge_requirements || []).map((r) => ({
 			title: r.requirement_title,
 			description: r.requirement_description,
-			img_url: r.requirement_img_url,
 		}));
 		data.skills = (badge.skills || []).map((s) => ({
 			name: s.skill_name,
