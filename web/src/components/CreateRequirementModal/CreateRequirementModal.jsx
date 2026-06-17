@@ -5,7 +5,6 @@ import { createRequirement, updateRequirement } from '../../features/badges/api/
 import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
 import FormInput from '../FormInput/FormInput';
-import BadgeImagePicker from '../BadgeImagePicker/BadgeImagePicker';
 
 function buildInitialForm(initialData) {
 	return {
@@ -13,7 +12,6 @@ function buildInitialForm(initialData) {
 		requirementDescription: initialData?.requirement_description ?? initialData?.requirementDescription ?? '',
 		requirementSequence: initialData?.requirement_sequence ?? initialData?.requirementSequence ?? '',
 		badgePoints: initialData?.badge_points ?? initialData?.badgePoints ?? 0,
-		requirementImgUrl: initialData?.requirement_img_url ?? initialData?.requirementImgUrl ?? '',
 	};
 }
 
@@ -24,7 +22,6 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 	const [errors, setErrors] = useState({});
 	const [apiError, setApiError] = useState('');
 	const [saving, setSaving] = useState(false);
-	const [imageUploading, setImageUploading] = useState(false);
 
 	function setField(name, value) {
 		setForm((prev) => ({ ...prev, [name]: value }));
@@ -52,7 +49,7 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 
 	async function handleSubmit(e) {
 		e.preventDefault();
-		if (imageUploading || !validate()) return;
+		if (!validate()) return;
 		setSaving(true);
 		setApiError('');
 		try {
@@ -61,7 +58,6 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 				requirementDescription: form.requirementDescription.trim(),
 				requirementSequence: form.requirementSequence === '' ? null : Number(form.requirementSequence),
 				badgePoints: Number(form.badgePoints) || 0,
-				requirementImgUrl: form.requirementImgUrl || null,
 			};
 			const result = isEdit
 				? await updateRequirement(badgeSlug, initialData.requirement_id || initialData.requirementId, payload)
@@ -83,7 +79,7 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 			footer={
 				<>
 					<Button variant="outlined" onClick={onClose}>{t('shared.cancel')}</Button>
-					<Button loading={saving} disabled={imageUploading} onClick={handleSubmit}>
+					<Button loading={saving} onClick={handleSubmit}>
 						{isEdit ? t('shared.save') : t('shared.create')}
 					</Button>
 				</>
@@ -136,12 +132,6 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 						/>
 					</div>
 				</div>
-				<BadgeImagePicker
-					label={t('adminRequirements.image')}
-					value={form.requirementImgUrl}
-					onChange={(url) => setField('requirementImgUrl', url)}
-					onUploadingChange={setImageUploading}
-				/>
 				{apiError && <p className="small text-danger mb-0">{apiError}</p>}
 			</form>
 		</Modal>
