@@ -14,6 +14,12 @@ export async function activatePolicy(policyId) {
 	return data?.data;
 }
 
+// Aggregate RGPD acceptance across consultants: { total, accepted, pending }.
+export async function getConsentSummary() {
+	const { data } = await api.get('/gdpr/admin/consent-summary');
+	return data?.data || null;
+}
+
 // payload: { policy_type: 'Privacy'|'Terms'|'Cookies', version, policy_text, is_mandatory? }
 export async function createPolicy(payload) {
 	const { data } = await api.post('/gdpr/admin/policies', payload);

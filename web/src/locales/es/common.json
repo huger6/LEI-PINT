@@ -775,6 +775,14 @@
 	},
 	"adminStats": {
 		"title": "Estadísticas",
+		"applications": "Candidaturas",
+		"applicationsByState": "Candidaturas por estado",
+		"consent": {
+			"title": "Consentimientos RGPD",
+			"total": "Total de consultores",
+			"accepted": "Aceptaron",
+			"pending": "Pendientes"
+		},
 		"enrollment": {
 			"title": "Usuarios por rol",
 			"total": "Total de usuarios",
