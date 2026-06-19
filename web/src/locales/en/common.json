@@ -280,6 +280,46 @@
 		"settings": "Settings",
 		"exit": "Exit"
 	},
+	"settings": {
+		"title": "Settings",
+		"appearance": "Appearance",
+		"appearanceHint": "Choose the application's display mode.",
+		"modeLight": "Light",
+		"modeDark": "Dark",
+		"language": "Language",
+		"languageHint": "Select the interface language."
+	},
+	"privacy": {
+		"title": "Privacy (GDPR)",
+		"exportTitle": "Export my data",
+		"exportHint": "Download a copy of all your personal data (GDPR).",
+		"exportButton": "Export data",
+		"exportFailed": "Could not export the data.",
+		"historyTitle": "Consent history",
+		"historyEmpty": "No consents recorded.",
+		"policy": "Policy",
+		"action": "Action",
+		"date": "Date",
+		"actions": { "ACCEPTED": "Accepted", "REVOKED": "Revoked" },
+		"deleteTitle": "Delete account",
+		"deleteHint": "Permanently delete your account and anonymise your data.",
+		"deleteButton": "Delete my account",
+		"deleteConfirm": "Delete",
+		"deleteWarning": "This action is irreversible. Your account will be deactivated and personal data anonymised.",
+		"deleteFailed": "Could not delete the account."
+	},
+	"security": {
+		"title": "Security",
+		"changePassword": "Change password",
+		"currentPassword": "Current password",
+		"newPassword": "New password",
+		"confirmPassword": "Confirm new password",
+		"errCurrent": "Enter your current password.",
+		"errNext": "The new password must be at least {{min}} characters.",
+		"errConfirm": "Passwords do not match.",
+		"success": "Password changed successfully.",
+		"save": "Save"
+	},
 	"confirmToast": {
 		"logoutMessage": "Are you sure you want to logout?",
 		"yes": "Yes",

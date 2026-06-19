@@ -280,6 +280,46 @@
 		"settings": "Definições",
 		"exit": "Sair"
 	},
+	"settings": {
+		"title": "Definições",
+		"appearance": "Aparência",
+		"appearanceHint": "Escolhe o modo de visualização da aplicação.",
+		"modeLight": "Claro",
+		"modeDark": "Escuro",
+		"language": "Idioma",
+		"languageHint": "Seleciona o idioma da interface."
+	},
+	"privacy": {
+		"title": "Privacidade (RGPD)",
+		"exportTitle": "Exportar os meus dados",
+		"exportHint": "Descarrega uma cópia de todos os teus dados pessoais (RGPD).",
+		"exportButton": "Exportar dados",
+		"exportFailed": "Não foi possível exportar os dados.",
+		"historyTitle": "Histórico de consentimentos",
+		"historyEmpty": "Sem consentimentos registados.",
+		"policy": "Política",
+		"action": "Ação",
+		"date": "Data",
+		"actions": { "ACCEPTED": "Aceite", "REVOKED": "Revogado" },
+		"deleteTitle": "Eliminar conta",
+		"deleteHint": "Elimina permanentemente a tua conta e anonimiza os teus dados.",
+		"deleteButton": "Eliminar a minha conta",
+		"deleteConfirm": "Eliminar",
+		"deleteWarning": "Esta ação é irreversível. A tua conta será desativada e os dados pessoais anonimizados.",
+		"deleteFailed": "Não foi possível eliminar a conta."
+	},
+	"security": {
+		"title": "Segurança",
+		"changePassword": "Alterar palavra-passe",
+		"currentPassword": "Palavra-passe atual",
+		"newPassword": "Nova palavra-passe",
+		"confirmPassword": "Confirmar nova palavra-passe",
+		"errCurrent": "Indica a palavra-passe atual.",
+		"errNext": "A nova palavra-passe deve ter pelo menos {{min}} caracteres.",
+		"errConfirm": "As palavras-passe não coincidem.",
+		"success": "Palavra-passe alterada com sucesso.",
+		"save": "Guardar"
+	},
 	"confirmToast": {
 		"logoutMessage": "Tem a certeza que deseja terminar sessão?",
 		"yes": "Sim",

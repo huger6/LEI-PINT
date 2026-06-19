@@ -1,0 +1,40 @@
+.page {
+	max-width: 820px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.title {
+	font-size: 1.4rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.hint {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.danger {
+	border: 1px solid var(--color-red-soft);
+}
+
+.actionChip {
+	font-size: 0.72rem;
+	font-weight: 700;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+}
+
+.accepted { background: var(--color-success-container); color: var(--color-green-on-soft); }
+.revoked { background: var(--color-red-soft); color: var(--color-red-on-soft); }
