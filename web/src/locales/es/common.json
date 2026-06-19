@@ -280,6 +280,46 @@
 		"settings": "Configuración",
 		"exit": "Salir"
 	},
+	"settings": {
+		"title": "Configuración",
+		"appearance": "Apariencia",
+		"appearanceHint": "Elige el modo de visualización de la aplicación.",
+		"modeLight": "Claro",
+		"modeDark": "Oscuro",
+		"language": "Idioma",
+		"languageHint": "Selecciona el idioma de la interfaz."
+	},
+	"privacy": {
+		"title": "Privacidad (RGPD)",
+		"exportTitle": "Exportar mis datos",
+		"exportHint": "Descarga una copia de todos tus datos personales (RGPD).",
+		"exportButton": "Exportar datos",
+		"exportFailed": "No se pudieron exportar los datos.",
+		"historyTitle": "Historial de consentimientos",
+		"historyEmpty": "Sin consentimientos registrados.",
+		"policy": "Política",
+		"action": "Acción",
+		"date": "Fecha",
+		"actions": { "ACCEPTED": "Aceptado", "REVOKED": "Revocado" },
+		"deleteTitle": "Eliminar cuenta",
+		"deleteHint": "Elimina permanentemente tu cuenta y anonimiza tus datos.",
+		"deleteButton": "Eliminar mi cuenta",
+		"deleteConfirm": "Eliminar",
+		"deleteWarning": "Esta acción es irreversible. Tu cuenta será desactivada y los datos personales anonimizados.",
+		"deleteFailed": "No se pudo eliminar la cuenta."
+	},
+	"security": {
+		"title": "Seguridad",
+		"changePassword": "Cambiar contraseña",
+		"currentPassword": "Contraseña actual",
+		"newPassword": "Nueva contraseña",
+		"confirmPassword": "Confirmar nueva contraseña",
+		"errCurrent": "Indica tu contraseña actual.",
+		"errNext": "La nueva contraseña debe tener al menos {{min}} caracteres.",
+		"errConfirm": "Las contraseñas no coinciden.",
+		"success": "Contraseña cambiada con éxito.",
+		"save": "Guardar"
+	},
 	"confirmToast": {
 		"logoutMessage": "¿Estás seguro de que deseas cerrar sesión?",
 		"yes": "Sí",
