@@ -24,7 +24,7 @@
 			{ "title": "Decisión", "desc": "El Service Line Leader aprueba o rechaza; el badge se genera y queda disponible." },
 			{ "title": "Compartir", "desc": "El consultor publica y comparte la credencial, con verificación pública por enlace." }
 		] },
-		"badges": { "title": "Badges", "subtitle": "Explora las credenciales disponibles y las competencias que reconoce cada una.", "empty": "No hay badges para mostrar." },
+		"badges": { "title": "Badges", "subtitle": "Explora las credenciales disponibles y las competencias que reconoce cada una.", "empty": "No hay badges para mostrar.", "other": "Otros" },
 		"cta": { "title": "¿Listo para evidenciar tus competencias?", "subtitle": "Accede a la plataforma y empieza a conseguir tus badges.", "button": "Acceder a la plataforma" },
 		"footer": {
 			"tagline": "Habla con el equipo de Softinsa y descubre cómo podemos impulsar la innovación en tu negocio.",

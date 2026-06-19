@@ -24,7 +24,7 @@
 			{ "title": "Decision", "desc": "The Service Line Leader approves or rejects; the badge is generated and made available." },
 			{ "title": "Sharing", "desc": "The consultant publishes and shares the credential, with public link verification." }
 		] },
-		"badges": { "title": "Badges", "subtitle": "Explore the available credentials and the skills each one recognises.", "empty": "No badges to show." },
+		"badges": { "title": "Badges", "subtitle": "Explore the available credentials and the skills each one recognises.", "empty": "No badges to show.", "other": "Other" },
 		"cta": { "title": "Ready to evidence your skills?", "subtitle": "Go to the platform and start earning your badges.", "button": "Go to the platform" },
 		"footer": {
 			"tagline": "Talk to the Softinsa team and discover how we can drive innovation in your business.",
