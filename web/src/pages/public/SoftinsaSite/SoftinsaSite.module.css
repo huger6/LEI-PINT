@@ -445,6 +445,42 @@
 .card p { color: var(--si-muted); font-size: 0.95rem; margin: 0; }
 
 /* Badges showcase */
+.badgeGroups {
+	display: flex;
+	flex-direction: column;
+	gap: 2.25rem;
+}
+
+.badgeGroupHead {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin-bottom: 1rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--si-border);
+}
+
+.badgeGroupTitle {
+	font-size: 1.15rem;
+	font-weight: 800;
+	color: var(--si-navy);
+	margin: 0;
+}
+
+.badgeGroupCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	height: 26px;
+	padding: 0 0.5rem;
+	border-radius: 999px;
+	background: var(--si-bg-alt);
+	color: var(--si-muted);
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
 .badgeGrid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -485,9 +521,11 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
+	padding: 8px;
 }
 
-.badgeThumb img { width: 100%; height: 100%; object-fit: cover; }
+/* contain (not cover) so the real badge artwork is shown whole, not cropped */
+.badgeThumb img { width: 100%; height: 100%; object-fit: contain; }
 .badgeEmoji { font-size: 2.2rem; }
 
 .badgeLevel {

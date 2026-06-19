@@ -12,6 +12,23 @@ const FEATURE_ICONS = ['🎯', '🏅', '🎮', '✅', '📊', '🌐'];
 const STEP_NUMS = ['01', '02', '03', '04'];
 const LANGS = [{ code: 'pt', label: 'PT' }, { code: 'en', label: 'EN' }, { code: 'es', label: 'ES' }];
 
+// Group badges by their Learning Path (falling back down the hierarchy), so the
+// public showcase reads as themed collections instead of one long flat list.
+function groupBadges(badges, otherLabel) {
+	const map = new Map();
+	for (const b of badges) {
+		const label = b.learning_path?.title || b.service_line?.name || b.area?.name || otherLabel;
+		if (!map.has(label)) map.set(label, []);
+		map.get(label).push(b);
+	}
+	return [...map.entries()]
+		.map(([label, items]) => ({
+			label,
+			items: items.slice().sort((a, c) => (a.stage?.code || '').localeCompare(c.stage?.code || '') || (a.badge_title || '').localeCompare(c.badge_title || '')),
+		}))
+		.sort((a, c) => a.label.localeCompare(c.label));
+}
+
 const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 	<a className={styles.social} href={href} target="_blank" rel="noreferrer" aria-label={label}>
 		<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">{children}</svg>
@@ -162,16 +179,26 @@ export default function SoftinsaSite() {
 						<p>{t('softinsaSite.badges.subtitle')}</p>
 					</div>
 					{badges.length > 0 ? (
-						<div className={styles.badgeGrid}>
-							{badges.map((b) => (
-								<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={`${styles.badgeCard} ${styles.reveal}`}>
-									<div className={styles.badgeThumb}>
-										{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <span className={styles.badgeEmoji}>🏅</span>}
-										{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
+						<div className={styles.badgeGroups}>
+							{groupBadges(badges, t('softinsaSite.badges.other')).map((group) => (
+								<div key={group.label} className={`${styles.badgeGroup} ${styles.reveal}`}>
+									<div className={styles.badgeGroupHead}>
+										<h3 className={styles.badgeGroupTitle}>{group.label}</h3>
+										<span className={styles.badgeGroupCount}>{group.items.length}</span>
 									</div>
-									<h3>{b.badge_title}</h3>
-									<span className={styles.badgeArea}>{b.area?.name || b.service_line?.name || ''}</span>
-								</Link>
+									<div className={styles.badgeGrid}>
+										{group.items.map((b) => (
+											<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={styles.badgeCard}>
+												<div className={styles.badgeThumb}>
+													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <span className={styles.badgeEmoji}>🏅</span>}
+													{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
+												</div>
+												<h3>{b.badge_title}</h3>
+												<span className={styles.badgeArea}>{b.area?.name || b.service_line?.name || ''}</span>
+											</Link>
+										))}
+									</div>
+								</div>
 							))}
 						</div>
 					) : (
