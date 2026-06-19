@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getConsultantsOverview } from '../../../features/statistics/api/statisticsApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { TM, SLL } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -13,7 +15,9 @@ import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ConsultantsList.module.css';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 20;
+const MAX_POINTS = 2000;
+const EMPTY_APPLIED = { search: '', serviceLineId: '', areaId: '', pointsMin: '', pointsMax: '', sort: 'points_desc' };
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : null);
 
@@ -24,8 +28,10 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  */
 export default function ConsultantsList() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
+	const detailBase = isSll ? SLL.TEAM : TM.CONSULTANTS;
 
 	const [rows, setRows] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -41,6 +47,8 @@ export default function ConsultantsList() {
 	const [pointsMin, setPointsMin] = useState('');
 	const [pointsMax, setPointsMax] = useState('');
 	const [sort, setSort] = useState('points_desc');
+	// Filters apply only on "Aplicar" (or page change), not on every keystroke/tick.
+	const [applied, setApplied] = useState(EMPTY_APPLIED);
 
 	const [serviceLines, setServiceLines] = useState([]);
 	const [areas, setAreas] = useState([]);
@@ -64,12 +72,12 @@ export default function ConsultantsList() {
 		setLoading(true);
 		setError('');
 		try {
-			const params = { page, limit: PAGE_SIZE, sort };
-			if (search.trim()) params.search = search.trim();
-			if (!isSll && serviceLineId) params.serviceLineId = serviceLineId;
-			if (areaId) params.areaId = areaId;
-			if (pointsMin !== '') params.pointsMin = pointsMin;
-			if (pointsMax !== '') params.pointsMax = pointsMax;
+			const params = { page, limit: PAGE_SIZE, sort: applied.sort };
+			if (applied.search.trim()) params.search = applied.search.trim();
+			if (!isSll && applied.serviceLineId) params.serviceLineId = applied.serviceLineId;
+			if (applied.areaId) params.areaId = applied.areaId;
+			if (applied.pointsMin !== '') params.pointsMin = applied.pointsMin;
+			if (applied.pointsMax !== '') params.pointsMax = applied.pointsMax;
 			const { rows: data, pagination: pag } = await getConsultantsOverview(params);
 			setRows(data);
 			setPagination(pag);
@@ -80,13 +88,13 @@ export default function ConsultantsList() {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, sort, search, isSll, serviceLineId, areaId, pointsMin, pointsMax]);
+	}, [page, applied, isSll]);
 
 	useEffect(() => { load(); }, [load]);
 
 	function applyFilters() {
+		setApplied({ search, serviceLineId, areaId, pointsMin, pointsMax, sort });
 		setPage(1);
-		load();
 	}
 
 	function clearFilters() {
@@ -96,6 +104,7 @@ export default function ConsultantsList() {
 		setPointsMin('');
 		setPointsMax('');
 		setSort('points_desc');
+		setApplied(EMPTY_APPLIED);
 		setPage(1);
 	}
 
@@ -120,7 +129,7 @@ export default function ConsultantsList() {
 					<h1 className={styles.pageTitle}>{title}</h1>
 					<p className={styles.subtitle}>{t('consultantsList.count', { count: total })}</p>
 				</div>
-				<Button variant="outlined" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
 					<Icon name="filter" size={16} /> {t('consultantsList.filters.toggle')}
 				</Button>
 			</div>
@@ -137,16 +146,32 @@ export default function ConsultantsList() {
 					</div>
 					{!isSll && (
 						<CustomSelect name="serviceLineId" value={serviceLineId} onChange={(e) => setServiceLineId(e.target.value)}
-							options={slOptions} ariaLabel={t('consultantsList.colServiceLine')} compact />
+							options={slOptions} ariaLabel={t('consultantsList.colServiceLine')} />
 					)}
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
-						options={areaOptions} ariaLabel={t('consultantsList.colArea')} compact />
-					<input type="number" min="0" className={styles.pointsInput} value={pointsMin}
-						onChange={(e) => setPointsMin(e.target.value)} placeholder={t('consultantsList.filters.pointsMin')} />
-					<input type="number" min="0" className={styles.pointsInput} value={pointsMax}
-						onChange={(e) => setPointsMax(e.target.value)} placeholder={t('consultantsList.filters.pointsMax')} />
+						options={areaOptions} ariaLabel={t('consultantsList.colArea')} />
+					<div className={styles.pointsField}>
+						<label className={styles.pointsLabel}>{t('consultantsList.filters.pointsMin')}: <b>{pointsMin === '' ? 0 : pointsMin}</b></label>
+						<input type="range" min="0" max={MAX_POINTS} step="50" className={`form-range ${styles.pointsRange}`}
+							value={pointsMin === '' ? 0 : pointsMin}
+							onChange={(e) => {
+								const v = Number(e.target.value);
+								setPointsMin(String(v));
+								if (pointsMax !== '' && v > Number(pointsMax)) setPointsMax(String(v));
+							}} />
+					</div>
+					<div className={styles.pointsField}>
+						<label className={styles.pointsLabel}>{t('consultantsList.filters.pointsMax')}: <b>{pointsMax === '' ? MAX_POINTS : pointsMax}</b></label>
+						<input type="range" min="0" max={MAX_POINTS} step="50" className={`form-range ${styles.pointsRange}`}
+							value={pointsMax === '' ? MAX_POINTS : pointsMax}
+							onChange={(e) => {
+								const v = Number(e.target.value);
+								setPointsMax(String(v));
+								if (pointsMin !== '' && v < Number(pointsMin)) setPointsMin(String(v));
+							}} />
+					</div>
 					<CustomSelect name="sort" value={sort} onChange={(e) => setSort(e.target.value)}
-						options={sortOptions} ariaLabel={t('consultantsList.filters.sort')} compact />
+						options={sortOptions} ariaLabel={t('consultantsList.filters.sort')} />
 					<Button variant="filled" color="primary" size="sm" onClick={applyFilters}>{t('consultantsList.filters.apply')}</Button>
 					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('consultantsList.filters.clear')}</Button>
 				</div>
@@ -178,22 +203,22 @@ export default function ConsultantsList() {
 							</thead>
 							<tbody>
 								{rows.map((r) => (
-									<tr key={r.user_guid}>
+									<tr key={r.user_guid} className={styles.row} onClick={() => navigate(`${detailBase}/${r.user_guid}`)}>
 										<td>
-											<div className={styles.consultantCell}>
+											<button
+												type="button"
+												className={styles.consultantCell}
+												title={t('consultantsList.viewPublicProfile', { defaultValue: 'Ver perfil público' })}
+												onClick={(e) => { e.stopPropagation(); navigate(`/softinsa/u/${r.user_guid}`); }}
+											>
 												<Avatar src={r.profile_img_url} name={r.full_name} size={28} />
 												<span className={styles.consultantName}>{r.full_name || '—'}</span>
-											</div>
+											</button>
 										</td>
 										{!isSll && <td className="text-muted">{r.service_line_name || '—'}</td>}
 										<td className="text-muted">{r.primary_area_name || '—'}</td>
 										{isSll && <td className={styles.numCol}>{r.total_badges ?? 0}</td>}
-										<td className={styles.numCol}>
-											<span className={styles.pointsCell}>
-												<Icon name="star-points" size={14} color="var(--color-primary)" />
-												{Number(r.total_points || 0).toLocaleString('pt-PT')}
-											</span>
-										</td>
+										<td className={styles.numCol}>{Number(r.total_points || 0).toLocaleString('pt-PT')}</td>
 										<td className={styles.numCol}>{isSll ? (r.open_applications_count ?? 0) : (r.applications_count ?? 0)}</td>
 										<td className="text-muted">{fmtDate(r.last_login_at) || t('consultantsList.neverLoggedIn')}</td>
 									</tr>
@@ -204,13 +229,15 @@ export default function ConsultantsList() {
 				)}
 
 				{pagination && pagination.totalPages > 1 && (
-					<Pagination
-						currentPage={pagination.currentPage}
-						totalPages={pagination.totalPages}
-						totalItems={pagination.totalItems}
-						itemCount={rows.length}
-						onPageChange={setPage}
-					/>
+					<div className={styles.paginationWrap}>
+						<Pagination
+							currentPage={pagination.currentPage}
+							totalPages={pagination.totalPages}
+							totalItems={pagination.totalItems}
+							itemCount={rows.length}
+							onPageChange={setPage}
+						/>
+					</div>
 				)}
 			</div>
 		</div>

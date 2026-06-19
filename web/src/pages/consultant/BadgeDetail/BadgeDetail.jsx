@@ -34,6 +34,10 @@ export default function BadgeDetail() {
 	const [showConsent, setShowConsent] = useState(false);
 	const carouselRef = useRef(null);
 
+	// Catalog list lives at different paths per role: Consultants use /catalog,
+	// while TM/SLL use the shared /badges board. Linking the wrong one 403s.
+	const catalogPath = user?.role === 'Consultant' ? CONSULTANT.CATALOG : SHARED.BADGES;
+
 	useEffect(() => {
 		loadData();
 	}, [slug]);
@@ -68,7 +72,7 @@ export default function BadgeDetail() {
 	async function handleApply() {
 		setApplying(true);
 		try {
-			const newApp = await startApplication(badge.badge_id || badge.badgeId);
+			const newApp = await startApplication(badge.badge_slug || badge.badgeSlug || slug);
 			const appGuid = newApp.application_guid || newApp.applicationGuid;
 			navigate(`${SHARED.APPLICATIONS}/${appGuid}`);
 		} catch (err) {
@@ -138,7 +142,7 @@ export default function BadgeDetail() {
 		return (
 			<div className="text-center py-5">
 				<h5 className="text-muted">{t('badgeDetail.notFound')}</h5>
-				<Link to={SHARED.BADGES}>{t('badgeDetail.backToCatalog')}</Link>
+				<Link to={catalogPath}>{t('badgeDetail.backToCatalog')}</Link>
 			</div>
 		);
 	}
@@ -182,7 +186,7 @@ export default function BadgeDetail() {
 
 	const breadcrumbItems = [
 		{ label: t('sidebar.consultant.home'), to: SHARED.HOME },
-		...(learningPathName ? [{ label: learningPathName, to: SHARED.BADGES }] : []),
+		...(learningPathName ? [{ label: learningPathName, to: catalogPath }] : []),
 		...(serviceLineName ? [{ label: serviceLineName }] : []),
 		{ label: title, active: true },
 	];
@@ -220,6 +224,11 @@ export default function BadgeDetail() {
 						<div className={styles.heroImageFallback}>
 							<Icon name="badge" size={64} color="var(--color-secondary)" />
 						</div>
+					)}
+					{hasObtained && (
+						<span className={styles.obtainedCorner} title={t('badgeDetail.complete')} aria-label={t('badgeDetail.complete')}>
+							<Icon name="check_circle" size={20} color="#fff" aria-hidden="true" />
+						</span>
 					)}
 				</div>
 
@@ -318,13 +327,6 @@ export default function BadgeDetail() {
 							</>
 						)}
 
-						{hasObtained && (
-							<Tooltip text={t('badgeDetail.complete')}>
-								<div className={styles.obtainedIndicator}>
-									<Icon name="trophy" size={28} color="var(--color-badge-premium)" />
-								</div>
-							</Tooltip>
-						)}
 					</div>
 				</div>
 			</section>

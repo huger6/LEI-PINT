@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
 import {
@@ -31,7 +32,7 @@ function formatDate(iso) {
 	return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function Announcements() {
+export default function Announcements({ defaultType = '' }) {
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
@@ -42,7 +43,7 @@ export default function Announcements() {
 	const [page, setPage] = useState(1);
 
 	const [search, setSearch] = useState('');
-	const [typeFilter, setTypeFilter] = useState('');
+	const [typeFilter, setTypeFilter] = useState(defaultType);
 	const [statusFilter, setStatusFilter] = useState('');
 
 	const [showModal, setShowModal] = useState(false);
@@ -363,3 +364,8 @@ export default function Announcements() {
 		</div>
 	);
 }
+
+Announcements.propTypes = {
+	// Pre-selects the type filter (e.g. "Warning" for the admin Avisos page).
+	defaultType: PropTypes.string,
+};

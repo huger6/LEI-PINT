@@ -15,9 +15,10 @@ function initWebSocket(httpServer) {
         return null;
     }
 
+    const allowedOrigins = [process.env.APP_URL, process.env.WEB_APP_URL].filter(Boolean);
     io = new Server(httpServer, {
         cors: {
-            origin: process.env.APP_URL,
+            origin: allowedOrigins,
             credentials: true
         }
     });

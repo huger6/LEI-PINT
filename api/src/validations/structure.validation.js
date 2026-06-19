@@ -244,6 +244,30 @@ const slugQuerySchema = z.object({
 	slug: z.string().trim().min(1, 'VALIDATION_SLUG_REQUIRED').max(500, 'VALIDATION_SLUG_MAX_500')
 });
 
+// --- Badge Requirements ---
+const requirementIdParamSchema = z.object({
+	requirementId: positiveIntIdRule
+});
+
+const getRequirementsQuerySchema = z.object({
+	synced_at: syncedAtRule,
+	is_active: booleanQueryRule.optional()
+});
+
+const createRequirementBodySchema = z.object({
+	requirementTitle: z.string().trim().min(2, 'VALIDATION_REQUIREMENT_TITLE_MIN').max(150, 'VALIDATION_REQUIREMENT_TITLE_MAX'),
+
+	requirementDescription: z.string().trim().min(1, 'VALIDATION_REQUIREMENT_DESCRIPTION_REQUIRED').max(5000, 'VALIDATION_REQUIREMENT_DESCRIPTION_MAX'),
+
+	requirementSequence: z.coerce.number().int().positive().optional().nullable(),
+
+	badgePoints: z.coerce.number().int().min(0).default(0)
+});
+
+const updateRequirementBodySchema = createRequirementBodySchema.extend({
+	isActive: z.boolean().optional()
+}).partial();
+
 module.exports = {
 	// Query schemas
 	getAvailableLearningPathsQuerySchema,
@@ -270,5 +294,9 @@ module.exports = {
 	createLevelBodySchema,
 	updateLevelBodySchema,
 	createBadgeBodySchema,
-	updateBadgeBodySchema
+	updateBadgeBodySchema,
+	requirementIdParamSchema,
+	getRequirementsQuerySchema,
+	createRequirementBodySchema,
+	updateRequirementBodySchema
 };

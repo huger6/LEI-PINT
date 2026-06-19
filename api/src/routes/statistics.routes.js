@@ -143,6 +143,13 @@ router.get('/reports/user-enrollment', loginRequired, leadership, ctrl.getUserEn
  */
 router.get('/reports/expiring-badges', loginRequired, checkRole('Talent Manager', 'Administrator'), ctrl.getExpiringBadges);
 
+/**
+ * @route   GET /api/statistics/reports/applications-by-state
+ * @desc    Platform-wide badge application counts grouped by workflow state
+ * @access  Administrator
+ */
+router.get('/reports/applications-by-state', loginRequired, adminOnly, ctrl.getApplicationsByState);
+
 /*──────────────────────────────────────────────────────────────
   Admin maintenance
 ──────────────────────────────────────────────────────────────*/

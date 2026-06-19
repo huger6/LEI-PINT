@@ -51,16 +51,19 @@ module.exports = function (sequelize, DataTypes) {
     },
     badge_type: {
       type: DataTypes.STRING(128),
-      allowNull: false
+      allowNull: false,
+      validate: { isIn: { args: [['Standard', 'Special']], msg: 'badge_type must be Standard or Special' } }
     },
     badge_points: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
+      validate: { min: 0 }
     },
     expiration_duration_days: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      validate: { min: 1 }
     },
     badge_description: {
       type: DataTypes.TEXT,

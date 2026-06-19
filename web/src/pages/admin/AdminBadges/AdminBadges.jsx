@@ -1,317 +1,277 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBadges, createBadge, updateBadge, deleteBadge } from '../../../features/badges/api/badgesApi';
-import { getAreas, getLevels } from '../../../features/badges/api/hierarchyApi';
-import Modal from '../../../components/Modal/Modal';
+import { getBadgesCatalog, deleteBadge, updateBadge } from '../../../features/badges/api/badgesApi';
+import { getAreas, getServiceLines, getLearningPaths } from '../../../features/badges/api/hierarchyApi';
+import { ADMIN } from '../../../routes/paths';
 import Button from '../../../components/Button/Button';
-import FormInput from '../../../components/FormInput/FormInput';
+import Modal from '../../../components/Modal/Modal';
+import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
+import Pagination from '../../../components/Pagination/Pagination';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
-import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
+import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
+import AdminBadgeFilters, { EMPTY_FILTERS, MAX_POINTS } from './AdminBadgeFilters/AdminBadgeFilters';
+import styles from './AdminBadges.module.css';
 
-const BADGE_TYPES = ['Standard', 'Special'];
-
-const emptyForm = {
-	badgeTitle: '',
-	areaId: '',
-	progressionStageId: '',
-	badgeType: 'Standard',
-	badgePoints: 0,
-	badgeDescription: '',
-	isActive: true,
-};
+const PAGE_SIZE = 12;
+const idEq = (a, b) => a != null && b != null && String(a) === String(b);
 
 export default function AdminBadges() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const [badges, setBadges] = useState([]);
+	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	const [page, setPage] = useState(1);
 	const [areas, setAreas] = useState([]);
-	const [allLevels, setAllLevels] = useState([]);
+	const [serviceLines, setServiceLines] = useState([]);
+	const [learningPaths, setLearningPaths] = useState([]);
+	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	const [showFilters, setShowFilters] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [showModal, setShowModal] = useState(false);
-	const [editItem, setEditItem] = useState(null);
-	const [form, setForm] = useState(emptyForm);
-	const [saving, setSaving] = useState(false);
+	const [confirmTarget, setConfirmTarget] = useState(null);
+	const [busy, setBusy] = useState(false);
+	const [actionError, setActionError] = useState('');
 
-	async function loadData() {
+	// Filter option sources (loaded once).
+	useEffect(() => {
+		let active = true;
+		(async () => {
+			const [ars, sls, lps] = await Promise.all([
+				getAreas({ limit: 100 }).catch(() => []),
+				getServiceLines({ limit: 100 }).catch(() => []),
+				getLearningPaths({ limit: 100 }).catch(() => []),
+			]);
+			if (!active) return;
+			setAreas(ars || []);
+			setServiceLines(sls || []);
+			setLearningPaths(lps || []);
+		})();
+		return () => { active = false; };
+	}, []);
+
+	const loadBadges = useCallback(async () => {
+		setLoading(true);
 		try {
-			setLoading(true);
-			const [badgeData, areaData, levelData] = await Promise.all([getBadges(), getAreas(), getLevels()]);
-			setBadges(badgeData.data || badgeData || []);
-			setAreas(areaData.data || areaData || []);
-			setAllLevels(levelData.data || levelData || []);
+			const params = { page, limit: PAGE_SIZE };
+			if (filters.search.trim()) params.search = filters.search.trim();
+			if (filters.learningPathId) params.learningPathId = Number(filters.learningPathId);
+			if (filters.serviceLineId) params.serviceLineId = Number(filters.serviceLineId);
+			if (filters.areaId) params.areaId = Number(filters.areaId);
+			if (filters.stageCodes.length > 0) params.stageCodes = filters.stageCodes.join(',');
+			if (filters.badgeClass !== 'all') params.badgeClass = filters.badgeClass;
+			if (Number(filters.minPoints) > 0) params.minPoints = Number(filters.minPoints);
+			if (Number(filters.maxPoints) < MAX_POINTS) params.maxPoints = Number(filters.maxPoints);
+			if (filters.expiringOnly) params.expiringOnly = true;
+
+			const { data, pagination: pag } = await getBadgesCatalog(params);
+			setBadges(data || []);
+			setPagination(pag || { totalItems: 0, totalPages: 0, currentPage: 1 });
 		} catch (err) {
 			console.error(err);
+			setBadges([]);
 		} finally {
 			setLoading(false);
 		}
+	}, [page, filters]);
+
+	useEffect(() => { loadBadges(); }, [loadBadges]);
+
+	function patchFilters(patch) {
+		setFilters((prev) => ({ ...prev, ...patch }));
+		setPage(1);
 	}
 
-	useEffect(() => {
-		loadData();
-	}, []);
+	function clearFilters() {
+		setFilters(EMPTY_FILTERS);
+		setPage(1);
+	}
 
 	function getAreaName(areaId) {
-		const area = areas.find((a) => a.area_id === areaId || a.areaId === areaId);
+		const area = areas.find((a) => idEq(a.area_id ?? a.areaId, areaId));
 		return area ? (area.area_name || area.areaName) : '—';
 	}
 
-	function openCreate() {
-		setEditItem(null);
-		setForm(emptyForm);
-		setShowModal(true);
-	}
-
-	function openEdit(item) {
-		setEditItem(item);
-		setForm({
-			badgeTitle: item.badge_title || item.badgeTitle || '',
-			areaId: item.area_id || item.areaId || '',
-			progressionStageId: item.progression_stage_id || item.progressionStageId || '',
-			badgeType: item.badge_type || item.badgeType || 'Standard',
-			badgePoints: item.badge_points || item.badgePoints || 0,
-			badgeDescription: item.badge_description || item.badgeDescription || '',
-			isActive: item.is_active ?? true,
-		});
-		setShowModal(true);
-	}
-
-	async function handleDelete(item) {
-		if (!window.confirm(t('shared.confirmDelete', { name: item.badge_title || item.badgeTitle }))) return;
+	async function doDeactivate() {
+		if (!confirmTarget) return;
+		const slug = confirmTarget.badge_slug || confirmTarget.badgeSlug;
+		setBusy(true);
+		setActionError('');
 		try {
-			await deleteBadge(item.badge_slug || item.badgeSlug);
-			setBadges((prev) => prev.filter((b) => b.badge_slug !== item.badge_slug));
+			await deleteBadge(slug);
+			setBadges((prev) => prev.map((b) => (b.badge_slug === slug ? { ...b, is_active: false } : b)));
+			setConfirmTarget(null);
 		} catch (err) {
-			console.error(err);
-		}
-	}
-
-	async function handleSubmit(e) {
-		e.preventDefault();
-		setSaving(true);
-		try {
-			const payload = {
-				...form,
-				areaId: Number(form.areaId) || form.areaId,
-				progressionStageId: Number(form.progressionStageId) || form.progressionStageId,
-				badgePoints: Number(form.badgePoints),
-			};
-			if (editItem) {
-				const updated = await updateBadge(editItem.badge_slug || editItem.badgeSlug, payload);
-				setBadges((prev) => prev.map((b) => (b.badge_slug === editItem.badge_slug ? updated : b)));
+			const code = err?.response?.data?.code;
+			if (code === 'BADGE_HAS_DEPENDENCIES') {
+				const n = err.response.data?.data?.activeApplications;
+				setActionError(t('adminBadges.hasDependencies', { count: n ?? 0 }));
 			} else {
-				const created = await createBadge(payload);
-				setBadges((prev) => [...prev, created]);
+				setActionError(t('adminBadges.actionFailed'));
 			}
-			setShowModal(false);
-		} catch (err) {
-			console.error(err);
 		} finally {
-			setSaving(false);
+			setBusy(false);
 		}
 	}
 
-	const takenStageIds = badges
-		.filter((b) => {
-			const stageId = b.progression_stage_id || b.progressionStageId;
-			if (!stageId) return false;
-			if (editItem) {
-				const editStageId = editItem.progression_stage_id || editItem.progressionStageId;
-				return stageId !== editStageId;
-			}
-			return true;
-		})
-		.map((b) => b.progression_stage_id || b.progressionStageId);
-
-	const availableLevels = allLevels.filter((l) => {
-		const levelAreaId = l.area_id || l.areaId;
-		if (form.areaId && levelAreaId !== Number(form.areaId)) return false;
-		const stageId = l.progression_stage_id || l.progressionStageId;
-		return !takenStageIds.includes(stageId);
-	});
-
-	function handleChange(e) {
-		const { name, value, type, checked } = e.target;
-		setForm((prev) => {
-			const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
-			if (name === 'areaId') {
-				next.progressionStageId = '';
-			}
-			return next;
-		});
+	async function handleReactivate(item) {
+		const slug = item.badge_slug || item.badgeSlug;
+		try {
+			await updateBadge(slug, { isActive: true });
+			setBadges((prev) => prev.map((b) => (b.badge_slug === slug ? { ...b, is_active: true } : b)));
+		} catch (err) {
+			console.error(err);
+		}
 	}
+
+	const hasActiveFilters = Boolean(filters.search.trim()) || Boolean(filters.learningPathId)
+		|| Boolean(filters.serviceLineId) || Boolean(filters.areaId) || filters.stageCodes.length > 0
+		|| filters.badgeClass !== 'all' || Number(filters.minPoints) > 0
+		|| Number(filters.maxPoints) < MAX_POINTS || filters.expiringOnly;
 
 	return (
 		<div>
-			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h1 className="h3 mb-0">{t('adminBadges.title')}</h1>
-				<Button onClick={openCreate}>
+			<div className={styles.header}>
+				<div className={styles.headerIcon}><Icon name="badge" size={24} aria-hidden="true" /></div>
+				<div className={styles.headerText}>
+					<h1 className={styles.title}>{t('adminBadges.title')}</h1>
+					<p className={styles.subtitle}>{t('adminBadges.subtitle')}</p>
+				</div>
+				<Button onClick={() => navigate(ADMIN.BADGE_NEW)}>
+					<Icon name="add" size={16} aria-hidden="true" className="me-1" />
 					{t('adminBadges.newBadge')}
 				</Button>
 			</div>
 
-			<div className="card border-0 shadow-sm">
-				<div className="card-body">
-					{loading ? (
-						<TableSkeleton rows={5} columns={6} />
-					) : badges.length === 0 ? (
-						<div className="text-center py-5">
-							<h5 className="text-muted">{t('adminBadges.noBadges')}</h5>
-							<p className="text-muted small">{t('adminBadges.noBadgesDesc')}</p>
-						</div>
-					) : (
-						<div className="table-responsive">
-							<table className="table table-hover align-middle mb-0">
-								<thead className="table-light">
-									<tr>
-										<th>{t('shared.title')}</th>
-										<th>{t('shared.area')}</th>
-										<th>{t('shared.type')}</th>
-										<th>{t('shared.points')}</th>
-										<th>{t('shared.active')}</th>
-										<th className="text-end">{t('shared.actions')}</th>
-									</tr>
-								</thead>
-								<tbody>
-									{badges.map((b) => (
-										<tr key={b.badge_slug || b.badgeSlug}>
-											<td>{b.badge_title || b.badgeTitle}</td>
-											<td>{getAreaName(b.area_id || b.areaId)}</td>
-											<td>
-												<span className="badge bg-info">{b.badge_type || b.badgeType}</span>
-											</td>
-											<td>
-												<span className="badge bg-warning text-dark">{b.badge_points || b.badgePoints} pts</span>
-											</td>
-											<td>
-												<span className={`badge ${b.is_active ? 'bg-success' : 'bg-secondary'}`}>
-													{b.is_active ? t('shared.yes') : t('shared.no')}
-												</span>
-											</td>
-											<td className="text-end">
-												<Tooltip text={t('shared.edit')}>
-													<Button size="sm" variant="outlined" className="me-2" aria-label={t('shared.edit')} onClick={() => openEdit(b)}>
-														<Icon name="pencil" size={14} aria-hidden="true" />
-													</Button>
-												</Tooltip>
-												<Tooltip text={t('shared.delete')}>
-													<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.delete')} onClick={() => handleDelete(b)}>
-														<Icon name="trash" size={14} aria-hidden="true" />
-													</Button>
-												</Tooltip>
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					)}
+			<div className={styles.toolbar}>
+				<div className={styles.searchWrap}>
+					<FilterSearchInput
+						name="search"
+						value={filters.search}
+						onChange={(e) => patchFilters({ search: e.target.value })}
+						placeholder={t('adminBadges.searchPlaceholder')}
+						ariaLabel={t('adminBadges.searchPlaceholder')}
+					/>
 				</div>
+				<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+					<Icon name="filter" size={16} /> {t('badgeCatalog.filters.title', { defaultValue: 'Filtros' })}
+				</Button>
+				{hasActiveFilters && (
+					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>
+						{t('badgeCatalog.filters.clear')}
+					</Button>
+				)}
 			</div>
 
-			{showModal && (
+			<div className="row g-4">
+				<aside className={`col-12 col-lg-3 ${showFilters ? '' : 'd-none d-lg-block'}`}>
+					<AdminBadgeFilters
+						filters={filters}
+						onChange={patchFilters}
+						learningPaths={learningPaths}
+						serviceLines={serviceLines}
+						areas={areas}
+					/>
+				</aside>
+
+				<section className="col-12 col-lg-9">
+					{loading ? (
+						<CardGridSkeleton count={6} columns={3} />
+					) : badges.length === 0 ? (
+						<div className={styles.empty}>
+							<Icon name="badge" size={40} aria-hidden="true" className={styles.emptyIcon} />
+							<h5 className="text-muted mb-0">{t('adminBadges.noBadges')}</h5>
+							<p className="text-muted small">{hasActiveFilters ? t('badgeCatalog.noBadgesDesc') : t('adminBadges.noBadgesDesc')}</p>
+						</div>
+					) : (
+						<>
+							<div className={styles.grid}>
+								{badges.map((b) => {
+									const img = b.badge_img_url || b.badgeImgUrl;
+									const title = b.badge_title || b.badgeTitle;
+									const isSpecial = (b.badge_type || b.badgeType) === 'Special';
+									const active = b.is_active;
+									const slug = b.badge_slug || b.badgeSlug;
+									const stageCode = b.progression_stage?.stage_code?.stage_code;
+									const openBadge = () => navigate(`/badges/${slug}`);
+									return (
+										<article
+											key={slug}
+											className={`${styles.card} ${styles.cardClickable} ${!active ? styles.cardInactive : ''}`}
+											role="button"
+											tabIndex={0}
+											onClick={openBadge}
+											onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBadge(); } }}
+										>
+											<div className={`${styles.imageWrap} ${isSpecial ? styles.imageSpecial : ''}`}>
+												{img ? <img src={img} alt={title} className={styles.image} /> : <Icon name="badge" size={48} className={styles.imageFallback} aria-hidden="true" />}
+												<span className={`${styles.typePill} ${isSpecial ? styles.typeSpecial : styles.typeStandard}`}>
+													{isSpecial ? t('badgeCatalog.filters.class.special', { defaultValue: 'Special' }) : t('badgeCatalog.filters.class.standard', { defaultValue: 'Standard' })}
+												</span>
+												<span className={`${styles.statusPill} ${active ? styles.statusOn : styles.statusOff}`}>
+													{active ? t('shared.active') : t('shared.inactive')}
+												</span>
+											</div>
+											<div className={styles.content}>
+												<h3 className={styles.cardTitle} title={title}>{title}</h3>
+												<p className={styles.description}>{b.badge_description || b.badgeDescription || '—'}</p>
+												<div className={styles.metaGrid}>
+													<span className={styles.metaChip}>{b.area?.area_name || getAreaName(b.area_id || b.areaId)}</span>
+													{stageCode && <span className={styles.metaChip}>{stageCode}</span>}
+													<span className={`${styles.metaChip} ${styles.points}`}>{b.badge_points || b.badgePoints || 0} pts</span>
+												</div>
+											</div>
+											<div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
+												<Button size="sm" variant="outlined" className="flex-fill" onClick={() => navigate(generatePath(ADMIN.BADGE_EDIT, { slug }))}>
+													<Icon name="pencil" size={14} aria-hidden="true" className="me-1" /> {t('shared.edit')}
+												</Button>
+												{active ? (
+													<Tooltip text={t('shared.deactivate')}>
+														<Button size="sm" variant="outlined" color="danger" aria-label={t('shared.deactivate')} onClick={() => { setActionError(''); setConfirmTarget(b); }}>
+															<Icon name="trash" size={14} aria-hidden="true" />
+														</Button>
+													</Tooltip>
+												) : (
+													<Tooltip text={t('shared.reactivate')}>
+														<Button size="sm" variant="outlined" color="success" aria-label={t('shared.reactivate')} onClick={() => handleReactivate(b)}>
+															<Icon name="activate" size={14} aria-hidden="true" />
+														</Button>
+													</Tooltip>
+												)}
+											</div>
+										</article>
+									);
+								})}
+							</div>
+
+							<div className="mt-4">
+								<Pagination
+									currentPage={pagination.currentPage}
+									totalPages={pagination.totalPages || 0}
+									totalItems={pagination.totalItems || 0}
+									itemCount={badges.length}
+									onPageChange={setPage}
+								/>
+							</div>
+						</>
+					)}
+				</section>
+			</div>
+
+			{confirmTarget && (
 				<Modal
-					title={editItem ? t('adminBadges.editBadge') : t('adminBadges.newBadge')}
-					onClose={() => setShowModal(false)}
+					title={t('shared.deactivate')}
+					size="sm"
+					onClose={() => !busy && setConfirmTarget(null)}
 					footer={
 						<>
-							<Button variant="outlined" onClick={() => setShowModal(false)}>
-								{t('shared.cancel')}
-							</Button>
-							<Button loading={saving} onClick={handleSubmit}>
-								{editItem ? t('shared.save') : t('shared.create')}
-							</Button>
+							<Button variant="outlined" onClick={() => setConfirmTarget(null)} disabled={busy}>{t('shared.cancel')}</Button>
+							<Button color="danger" loading={busy} onClick={doDeactivate}>{t('shared.deactivate')}</Button>
 						</>
 					}
 				>
-					<form id="badge-form" onSubmit={handleSubmit} className="d-flex flex-column gap-3">
-						<FormInput
-							label={t('shared.title')}
-							name="badgeTitle"
-							value={form.badgeTitle}
-							onChange={handleChange}
-							required
-						/>
-						<div>
-							<label htmlFor="badge_area" className="form-label">{t('shared.area')}</label>
-							<select
-								id="badge_area"
-								className="form-select"
-								name="areaId"
-								value={form.areaId}
-								onChange={handleChange}
-								required
-							>
-								<option value="">{t('shared.select')}</option>
-								{areas.map((a) => (
-									<option key={a.area_slug || a.areaSlug} value={a.area_id || a.areaId}>
-										{a.area_name || a.areaName}
-									</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<label htmlFor="badge_level" className="form-label">{t('adminBadges.level')}</label>
-							<select
-								id="badge_level"
-								className="form-select"
-								name="progressionStageId"
-								value={form.progressionStageId}
-								onChange={handleChange}
-								required
-							>
-								<option value="">{t('shared.select')}</option>
-								{availableLevels.map((l) => (
-									<option key={l.progression_stage_id || l.progressionStageId} value={l.progression_stage_id || l.progressionStageId}>
-										{l.stage_title || l.stageTitle}{l.stage_code?.stage_code ? ` (${l.stage_code.stage_code})` : ''}
-									</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<label htmlFor="badge_type" className="form-label">{t('shared.type')}</label>
-							<select
-								id="badge_type"
-								className="form-select"
-								name="badgeType"
-								value={form.badgeType}
-								onChange={handleChange}
-							>
-								{BADGE_TYPES.map((tp) => (
-									<option key={tp} value={tp}>{tp}</option>
-								))}
-							</select>
-						</div>
-						<FormInput
-							label={t('shared.points')}
-							name="badgePoints"
-							type="number"
-							value={form.badgePoints}
-							onChange={handleChange}
-							min={0}
-						/>
-						<div>
-							<label htmlFor="badge_desc" className="form-label">{t('shared.description')}</label>
-							<textarea
-								id="badge_desc"
-								className="form-control"
-								name="badgeDescription"
-								rows={3}
-								value={form.badgeDescription}
-								onChange={handleChange}
-							/>
-						</div>
-						<div className="form-check">
-							<input
-								className="form-check-input"
-								type="checkbox"
-								name="isActive"
-								id="badge_active"
-								checked={form.isActive}
-								onChange={handleChange}
-							/>
-							<label className="form-check-label" htmlFor="badge_active">{t('shared.active')}</label>
-						</div>
-					</form>
+					<p className="mb-2">{t('adminBadges.confirmDeactivate', { name: confirmTarget.badge_title || confirmTarget.badgeTitle })}</p>
+					{actionError && <p className="small text-danger mb-0">{actionError}</p>}
 				</Modal>
 			)}
 		</div>

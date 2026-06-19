@@ -234,9 +234,7 @@ const getUser = async (req, res) => {
 
     try {
         const user = await models.users.findOne({
-            where: /^\d+$/.test(userGuid)
-                ? { user_id: Number(userGuid) }
-                : { user_guid: userGuid },
+            where: { user_guid: userGuid },
             attributes: [
                 'user_id', 'user_guid', 'full_name', 'username',
                 'email_address', 'user_role', 'profile_img_url',
@@ -353,12 +351,8 @@ const getUser = async (req, res) => {
 };
 
 const resolveUserParam = async (param, transaction) => {
-    // param may be numeric id or uuid
+    // Public-safe lookup by GUID only — the table PK is never accepted (CLAUDE.md rule).
     if (!param) return null;
-
-    if (/^\d+$/.test(param)) {
-        return models.users.findOne({ where: { user_id: Number(param) }, transaction });
-    }
 
     return models.users.findOne({ where: { user_guid: param }, transaction });
 };

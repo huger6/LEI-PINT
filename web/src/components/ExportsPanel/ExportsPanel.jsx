@@ -4,8 +4,8 @@ import { downloadExport } from '../../features/statistics/api/exportsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../ContentCard/ContentCard';
 import CustomSelect from '../CustomSelect/CustomSelect';
-import Button from '../Button/Button';
 import FormAlert from '../FormAlert/FormAlert';
+import Icon from '../Icons/Icons';
 import styles from './ExportsPanel.module.css';
 
 const FORMAT_OPTIONS = [
@@ -15,13 +15,13 @@ const FORMAT_OPTIONS = [
 ];
 
 const EXPORT_BUTTONS = [
-	{ key: 'consultants', type: 'consultants', labelKey: 'tmStats.exports.consultants' },
-	{ key: 'applications', type: 'applications', labelKey: 'tmStats.exports.applications' },
-	{ key: 'accepted', type: 'applications', params: { state: 'Accepted' }, labelKey: 'tmStats.exports.accepted' },
-	{ key: 'rejected', type: 'applications', params: { state: 'Rejected' }, labelKey: 'tmStats.exports.rejected' },
-	{ key: 'badges', type: 'badges', labelKey: 'tmStats.exports.badges' },
-	{ key: 'pointsHistory', type: 'pointsHistory', labelKey: 'tmStats.exports.pointsHistory' },
-	{ key: 'applicationLogs', type: 'applicationLogs', labelKey: 'tmStats.exports.applicationLogs' },
+	{ key: 'consultants', type: 'consultants', icon: 'tabler_users', labelKey: 'tmStats.exports.consultants' },
+	{ key: 'applications', type: 'applications', icon: 'paper', labelKey: 'tmStats.exports.applications' },
+	{ key: 'accepted', type: 'applications', params: { state: 'Accepted' }, icon: 'check_circle', labelKey: 'tmStats.exports.accepted' },
+	{ key: 'rejected', type: 'applications', params: { state: 'Rejected' }, icon: 'close_circle', labelKey: 'tmStats.exports.rejected' },
+	{ key: 'badges', type: 'badges', icon: 'badge', labelKey: 'tmStats.exports.badges' },
+	{ key: 'pointsHistory', type: 'pointsHistory', icon: 'star-points', labelKey: 'tmStats.exports.pointsHistory' },
+	{ key: 'applicationLogs', type: 'applicationLogs', icon: 'time', labelKey: 'tmStats.exports.applicationLogs' },
 ];
 
 /**
@@ -66,18 +66,17 @@ export default function ExportsPanel() {
 
 			<div className={styles.buttons}>
 				{EXPORT_BUTTONS.map((btn) => (
-					<Button
+					<button
 						key={btn.key}
-						variant="outlined"
-						color="primary"
-						size="sm"
-						fullWidth
-						loading={busy === btn.key}
+						type="button"
+						className={styles.exportBtn}
 						disabled={Boolean(busy)}
 						onClick={() => handleExport(btn)}
 					>
-						{t(btn.labelKey)}
-					</Button>
+						<span className={styles.exportIcon}><Icon name={btn.icon} size={16} color="var(--color-secondary)" /></span>
+						<span className={styles.exportLabel}>{t(btn.labelKey)}</span>
+						{busy === btn.key && <span className={styles.exportSpinner} aria-hidden="true" />}
+					</button>
 				))}
 			</div>
 

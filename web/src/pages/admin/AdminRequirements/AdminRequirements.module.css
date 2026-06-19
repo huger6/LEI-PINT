@@ -1,0 +1,117 @@
+.header {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+}
+
+.headerIcon {
+	width: 48px;
+	height: 48px;
+	flex: 0 0 auto;
+	border-radius: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--color-primary-container);
+	color: var(--color-on-primary-container);
+}
+
+.headerText { flex: 1; min-width: 0; }
+.title { font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--color-on-background); }
+.subtitle { margin: 0; color: var(--color-outline); font-size: 0.9rem; }
+
+.card {
+	background: #fff;
+	border: 1px solid var(--color-outline-light);
+	border-radius: 16px;
+	box-shadow: var(--shadow-card);
+	padding: 1.25rem;
+	margin-bottom: 1.25rem;
+}
+
+.selectLabel {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-outline);
+	margin-bottom: 0.4rem;
+	display: block;
+}
+
+.selectWrap { max-width: 420px; }
+
+.reqHeaderRow {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin-bottom: 1rem;
+}
+
+.reqTitle {
+	font-size: 1.05rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-surface);
+}
+
+.table {
+	margin-bottom: 0;
+}
+
+.table thead th {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	color: var(--color-outline);
+	border-bottom: 1px solid var(--color-outline-light);
+	background: transparent;
+}
+
+.seqBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	background: var(--color-primary-soft);
+	color: var(--color-primary);
+	font-weight: 700;
+	font-size: 0.8rem;
+}
+
+.pointsChip {
+	font-size: 0.75rem;
+	font-weight: 700;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+	background: var(--color-warning-container-soft);
+	color: var(--color-warning);
+}
+
+.statusChip {
+	font-size: 0.72rem;
+	font-weight: 700;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+}
+
+.statusOn { background: var(--color-success-container); color: var(--color-green-on-soft); }
+.statusOff { background: var(--color-surface-overlay-85); color: var(--color-outline); }
+
+.empty {
+	text-align: center;
+	padding: 2.5rem 1rem;
+	color: var(--color-outline);
+}
+
+.emptyIcon { color: var(--color-outline-variant); margin-bottom: 0.5rem; }
+
+@media (max-width: 360px) {
+	.card { padding: 1rem; }
+	.selectWrap { max-width: 100%; }
+}

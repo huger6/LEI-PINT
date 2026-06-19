@@ -34,13 +34,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
+const allowedOrigins = [process.env.APP_URL, process.env.WEB_APP_URL].filter(Boolean);
 app.use(cors({
-    origin: process.env.APP_URL,
-    credentials: true
-}));;
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(helmet());
+// Explicit body-size cap (file bytes go straight to Supabase, never through the
+// API body, so request payloads are small text). Guards against large-body DoS.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 app.use(cookieParser());
 app.use(requestLogger);
 

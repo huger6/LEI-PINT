@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS areas CASCADE;
 DROP TABLE IF EXISTS awarded_badges CASCADE;
 DROP TABLE IF EXISTS badge_applications CASCADE;
 DROP TABLE IF EXISTS badge_requirements CASCADE;
+DROP TABLE IF EXISTS badge_skills CASCADE;
 DROP TABLE IF EXISTS badges CASCADE;
 DROP TABLE IF EXISTS certificates CASCADE;
 DROP TABLE IF EXISTS consultant_areas CASCADE;
@@ -163,6 +164,7 @@ CREATE TABLE IF NOT EXISTS progression_stages (
    stage_title          VARCHAR(100)         NOT NULL,
    stage_sequence       INTEGER                 NULL,
    stage_description    TEXT                 NULL,
+   is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
 
    created_by           INTEGER                 NULL, -- FK -> administrators(user_id)
    updated_by           INTEGER                 NULL, -- FK -> administrators(user_id)
@@ -295,7 +297,6 @@ CREATE TABLE IF NOT EXISTS badge_requirements (
    requirement_title    VARCHAR(150)         NOT NULL,
    requirement_sequence INTEGER                 NULL,
    requirement_description TEXT                 NOT NULL,
-   requirement_img_url  VARCHAR(512)         NULL,
    badge_points         INTEGER                 NOT NULL DEFAULT 0,
       CONSTRAINT ckc_positive_points CHECK (badge_points >= 0),
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
@@ -854,6 +855,21 @@ CREATE TABLE IF NOT EXISTS consultants_selected_skills (
 CREATE UNIQUE INDEX IF NOT EXISTS CONSULTANTS_SELECTED_SKILLS_PK ON consultants_selected_skills (user_id, skills_id);
 
 /*==============================================================*/
+/* TABLE: badge_skills                                          */
+/*==============================================================*/
+CREATE TABLE IF NOT EXISTS badge_skills (
+   badge_id             INTEGER                 NOT NULL, -- FK -> badges(badge_id)
+   skills_id            INTEGER                 NOT NULL, -- FK -> skills(skills_id)
+
+   CONSTRAINT pk_badge_skills PRIMARY KEY (badge_id, skills_id)
+);
+
+/*==============================================================*/
+/* INDEX: BADGE_SKILLS_PK                                       */
+/*==============================================================*/
+CREATE UNIQUE INDEX IF NOT EXISTS BADGE_SKILLS_PK ON badge_skills (badge_id, skills_id);
+
+/*==============================================================*/
 /* TABLE: consultant_areas                                      */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS consultant_areas (
@@ -1121,6 +1137,16 @@ ALTER TABLE consultants_selected_skills
 
 ALTER TABLE consultants_selected_skills
    ADD CONSTRAINT fk_consulta_consultan_skills FOREIGN KEY (skills_id)
+      REFERENCES skills (skills_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE badge_skills
+   ADD CONSTRAINT fk_badge_skills_badge_badges FOREIGN KEY (badge_id)
+      REFERENCES badges (badge_id)
+      ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE badge_skills
+   ADD CONSTRAINT fk_badge_skills_skills_skills FOREIGN KEY (skills_id)
       REFERENCES skills (skills_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
 

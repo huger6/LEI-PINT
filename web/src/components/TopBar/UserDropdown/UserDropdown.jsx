@@ -99,12 +99,14 @@ export default function UserDropdown() {
                             )
                         }
                         {
-                            user.role !== 'Administrator' && (
+                            // Public profile is the consultant microsite credential page;
+                            // only Consultants have one.
+                            user.role === 'Consultant' && user.guid && (
                                 <DropdownOption
                                     icon="user"
                                     iconSize={18}
                                     label="userDropdown.publicProfile"
-                                    onClick={() => handleOptionClick(SHARED.PUBLIC_PROFILE)}
+                                    onClick={() => handleOptionClick(`/softinsa/u/${user.guid}`)}
                                     role="menuitem"
                                 />
                             )

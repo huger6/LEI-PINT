@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
-import { getAreas } from '../../../features/badges/api/hierarchyApi';
-import { getBadges } from '../../../features/badges/api/badgesApi';
+import { getAreas, getServiceLines } from '../../../features/badges/api/hierarchyApi';
+import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
 import Pagination from '../../../components/Pagination/Pagination';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../../components/DatePicker/DatePicker';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import styles from './SllBadgeHistory.module.css';
@@ -44,6 +46,8 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  */
 export default function SllBadgeHistory() {
 	const { t } = useTranslation();
+	const { user } = useUser();
+	const navigate = useNavigate();
 	const [filter, setFilter] = useState('obtained');
 	const [rows, setRows] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -54,25 +58,26 @@ export default function SllBadgeHistory() {
 	// Filters
 	const [showFilters, setShowFilters] = useState(false);
 	const [areaId, setAreaId] = useState('');
-	const [badgeId, setBadgeId] = useState('');
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
 	const [areas, setAreas] = useState([]);
-	const [badges, setBadges] = useState([]);
 
+	// Area options scoped to the leader's Service Line (so picking one always
+	// matches data within their scope).
 	useEffect(() => {
 		let active = true;
 		(async () => {
-			const [ars, bds] = await Promise.all([
+			const [sls, ars] = await Promise.all([
+				getServiceLines().catch(() => []),
 				getAreas().catch(() => []),
-				getBadges({ limit: 200 }).catch(() => []),
 			]);
 			if (!active) return;
-			setAreas(ars || []);
-			setBadges(Array.isArray(bds) ? bds : (bds?.data || []));
+			const matchedSl = (sls || []).find((sl) => sl.sl_slug === user?.serviceLine?.slug);
+			const slId = matchedSl ? matchedSl.service_line_id : null;
+			setAreas(slId ? (ars || []).filter((a) => String(a.service_line_id) === String(slId)) : (ars || []));
 		})();
 		return () => { active = false; };
-	}, []);
+	}, [user]);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -80,7 +85,6 @@ export default function SllBadgeHistory() {
 		try {
 			const params = { state: FILTERS[filter], page, limit: PAGE_SIZE };
 			if (areaId) params.areaId = areaId;
-			if (badgeId) params.badgeId = badgeId;
 			if (dateFrom) params.dateFrom = dateFrom;
 			if (dateTo) params.dateTo = dateTo;
 			const { data, pagination: pag } = await getApplicationsPaged(params);
@@ -93,7 +97,7 @@ export default function SllBadgeHistory() {
 		} finally {
 			setLoading(false);
 		}
-	}, [filter, page, areaId, badgeId, dateFrom, dateTo]);
+	}, [filter, page, areaId, dateFrom, dateTo]);
 
 	useEffect(() => { load(); }, [load]);
 
@@ -104,7 +108,6 @@ export default function SllBadgeHistory() {
 
 	function clearFilters() {
 		setAreaId('');
-		setBadgeId('');
 		setDateFrom('');
 		setDateTo('');
 		setPage(1);
@@ -114,8 +117,6 @@ export default function SllBadgeHistory() {
 
 	const areaOptions = [{ value: '', label: t('sllBadgeHistory.filters.allAreas') },
 		...areas.map((a) => ({ value: String(a.area_id), label: a.area_name }))];
-	const badgeOptions = [{ value: '', label: t('sllBadgeHistory.filters.allBadges') },
-		...badges.map((b) => ({ value: String(b.badge_id), label: b.badge_title }))];
 
 	return (
 		<div className={styles.page}>
@@ -139,7 +140,7 @@ export default function SllBadgeHistory() {
 							</button>
 						))}
 					</div>
-					<Button variant="outlined" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
+					<Button variant="text" color="primary" size="sm" onClick={() => setShowFilters((v) => !v)}>
 						<Icon name="filter" size={16} /> {t('sllBadgeHistory.filters.toggle')}
 					</Button>
 				</div>
@@ -148,16 +149,16 @@ export default function SllBadgeHistory() {
 			{showFilters && (
 				<div className={styles.filtersBar}>
 					<CustomSelect name="areaId" value={areaId} onChange={(e) => setAreaId(e.target.value)}
-						options={areaOptions} ariaLabel={t('sllBadgeHistory.colArea')} compact />
-					<CustomSelect name="badgeId" value={badgeId} onChange={(e) => setBadgeId(e.target.value)}
-						options={badgeOptions} ariaLabel={t('sllBadgeHistory.colBadge')} compact />
+						options={areaOptions} ariaLabel={t('sllBadgeHistory.colArea')} />
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.from')}</span>
-						<input type="date" className={styles.dateInput} value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
+						<DatePicker name="dateFrom" value={dateFrom} max={dateTo || undefined}
+							onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} ariaLabel={t('sllBadgeHistory.filters.from')} />
 					</label>
 					<label className={styles.dateField}>
 						<span>{t('sllBadgeHistory.filters.to')}</span>
-						<input type="date" className={styles.dateInput} value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+						<DatePicker name="dateTo" value={dateTo} min={dateFrom || undefined}
+							onChange={(e) => { setDateTo(e.target.value); setPage(1); }} ariaLabel={t('sllBadgeHistory.filters.to')} />
 					</label>
 					<Button variant="text" color="primary" size="sm" onClick={clearFilters}>{t('sllBadgeHistory.filters.clear')}</Button>
 				</div>
@@ -193,12 +194,29 @@ export default function SllBadgeHistory() {
 									const stage = a.badge?.progression_stage;
 									const level = stage?.stage_code?.stage_code || stage?.stage_title || '—';
 									return (
-										<tr key={a.application_guid}>
+										<tr
+											key={a.application_guid}
+											className={styles.row}
+											onClick={() => navigate(`/applications/${a.application_guid}`)}
+										>
 											<td>
-												<div className={styles.consultantCell}>
-													<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
-													<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
-												</div>
+												{a.user?.user?.user_guid ? (
+													<div
+														className={`${styles.consultantCell} ${styles.consultantLink}`}
+														role="link"
+														tabIndex={0}
+														onClick={(e) => { e.stopPropagation(); navigate(`/team/${a.user.user.user_guid}`); }}
+														onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); navigate(`/team/${a.user.user.user_guid}`); } }}
+													>
+														<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
+														<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
+													</div>
+												) : (
+													<div className={styles.consultantCell}>
+														<Avatar src={a.user?.user?.profile_img_url} name={a.user?.user?.full_name} size={28} />
+														<span className={styles.consultantName}>{a.user?.user?.full_name || '—'}</span>
+													</div>
+												)}
 											</td>
 											<td>{a.badge?.badge_title || '—'}</td>
 											<td className="text-muted">{a.badge?.area?.area_name || '—'}</td>

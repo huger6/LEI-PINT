@@ -120,6 +120,17 @@ SKILL_CATALOG = [
     ("Accessibility", "Inclusive interface design and WCAG-oriented quality practices."),
 ]
 
+# Competencies certified per badge, keyed by the theme present in the badge title
+# (derived from the area/service-line base). Names must match SKILL_CATALOG.
+THEME_BADGE_SKILLS = {
+    "Hybrid Cloud": ["AWS Cloud", "Azure Cloud", "IBM Cloud", "Kubernetes", "OpenShift", "Docker", "Terraform", "Linux", "Observability"],
+    "Automation": ["Terraform", "GitHub Actions", "Jenkins", "Docker", "Kubernetes", "DevSecOps", "Linux", "Observability"],
+    "Data Engineering": ["Data Engineering", "Python", "Apache Spark", "dbt", "PostgreSQL", "SQL Server", "Kafka", "Power BI", "Machine Learning", "MLOps"],
+    "Application Modernization": ["Java", "JavaScript", "TypeScript", "React", "Angular", "Node.js", "REST APIs", "GraphQL", "Microservices", "Event-Driven Architecture", "RabbitMQ"],
+    "DevSecOps Platform": ["DevSecOps", "Cybersecurity", "Identity and Access Management", "Docker", "Kubernetes", "Jenkins", "GitHub Actions", "OpenShift", "Observability", "Terraform"],
+}
+DEFAULT_BADGE_SKILLS = ["Agile Delivery", "Scrum", "Quality Assurance", "Business Analysis", "REST APIs"]
+
 FIRST_NAMES = [
     "Ana", "Andre", "Beatriz", "Bruno", "Carla", "Carlos", "Catarina",
     "Daniel", "Diana", "Diogo", "Eduardo", "Filipa", "Francisco", "Helena",
@@ -880,7 +891,6 @@ def generate_sql() -> str:
                 "requirement_title": f"{template_title} {sequence} - {badge['badge_title']}"[:150],
                 "requirement_sequence": sequence,
                 "requirement_description": f"{template_description} Badge context: {badge['badge_title']}.",
-                "requirement_img_url": None,
                 "badge_points": max(10, int(badge["badge_points"]) // NUM_REQUIREMENTS_PER_BADGE),
                 "is_active": True,
                 "created_by": random.choice(admin_ids),
@@ -920,6 +930,28 @@ def generate_sql() -> str:
             sql.insert("consultants_selected_skills", {
                 "user_id": consultant["user_id"],
                 "skills_id": skill["skills_id"],
+            })
+
+    # Competencies (skills) certified by each badge. Deterministic selection by
+    # badge_id so it does not disturb the shared random stream.
+    skill_id_by_name = {skill["skill_name"]: skill["skills_id"] for skill in skills}
+    for badge in badges:
+        title = badge["badge_title"]
+        theme_skills = next(
+            (names for theme, names in THEME_BADGE_SKILLS.items() if theme in title),
+            DEFAULT_BADGE_SKILLS,
+        )
+        pool = [skill_id_by_name[name] for name in theme_skills if name in skill_id_by_name]
+        if not pool:
+            continue
+        badge_id = int(badge["badge_id"])
+        count = min(len(pool), 4 + (badge_id % 3))
+        start = badge_id % len(pool)
+        chosen = sorted({pool[(start + offset) % len(pool)] for offset in range(count)})
+        for skills_id in chosen:
+            sql.insert("badge_skills", {
+                "badge_id": badge_id,
+                "skills_id": skills_id,
             })
 
     for announcement in system_announcements:

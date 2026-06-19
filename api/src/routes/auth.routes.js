@@ -32,6 +32,32 @@ const forgotPasswordLimiter = rateLimit({
     message: { success: false, code: 'AUTH_RATE_LIMIT_FORGOT_PASSWORD' }
 });
 
+// Brute-force backstop for the password / reset-token endpoints.
+const passwordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, code: 'AUTH_RATE_LIMIT_PASSWORD' }
+});
+
+// Lenient backstop for token refresh (called often by the SPA).
+const refreshLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, code: 'AUTH_RATE_LIMIT_REFRESH' }
+});
+
+const resendLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, code: 'AUTH_RATE_LIMIT_RESEND' }
+});
+
 // --- Session Management ---
 
 /**
@@ -53,7 +79,7 @@ router.post('/login', loginLimiter, annonymousUsersOnly, authController.login);
  * @desc    Issue a new access token using a valid refresh token
  * @access  Public
  */
-router.post('/refresh', optionalAuth, authController.refresh);
+router.post('/refresh', refreshLimiter, optionalAuth, authController.refresh);
 
 /**
  * @route   POST /api/auth/logout
@@ -83,7 +109,7 @@ router.get('/confirm-email', optionalAuth, authController.confirmEmail);
  * @desc    Resend the email confirmation link
  * @access  Public
  */
-router.post('/resend-confirmation', optionalAuth, authController.resendConfirmation);
+router.post('/resend-confirmation', resendLimiter, optionalAuth, authController.resendConfirmation);
 
 // --- Password Recovery ---
 
@@ -99,14 +125,14 @@ router.post('/forgot-password', forgotPasswordLimiter, annonymousUsersOnly, auth
  * @desc    Validate a password-reset token before allowing the reset
  * @access  Anonymous only
  */
-router.get('/validate-reset-token/:token', annonymousUsersOnly, authController.validateResetToken);
+router.get('/validate-reset-token/:token', passwordLimiter, annonymousUsersOnly, authController.validateResetToken);
 
 /**
  * @route   POST /api/auth/reset-password
  * @desc    Reset password using a valid reset token
  * @access  Anonymous only
  */
-router.post('/reset-password', annonymousUsersOnly, authController.resetPassword);
+router.post('/reset-password', passwordLimiter, annonymousUsersOnly, authController.resetPassword);
 
 // --- Security ---
 
@@ -115,7 +141,7 @@ router.post('/reset-password', annonymousUsersOnly, authController.resetPassword
  * @desc    Change password while authenticated (requires current password)
  * @access  Authenticated
  */
-router.post('/change-password', loginRequired, authController.changePassword);
+router.post('/change-password', passwordLimiter, loginRequired, authController.changePassword);
 
 module.exports = router;
 

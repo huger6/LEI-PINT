@@ -2,6 +2,18 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+	position: relative;
+}
+
+.submitOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.55);
+	backdrop-filter: blur(1px);
 }
 
 .breadcrumb {
@@ -475,21 +487,32 @@
 }
 
 .resultCard {
-	max-width: 480px;
+	max-width: 520px;
 	width: 100%;
+	display: flex;
+	flex-direction: column;
 	align-items: center;
 	text-align: center;
 	gap: 1rem;
-	padding: 2rem 1.5rem;
+	padding: 2.5rem 1.75rem;
+	background: var(--color-bg-card);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 20px;
+	border-top-width: 4px;
 }
 
+.toneOk { border-top-color: var(--color-green-on-soft); }
+.toneWarn { border-top-color: var(--color-orange-on-soft); }
+.toneBad { border-top-color: var(--color-red-on-soft); }
+
 .resultIcon {
-	width: 64px;
-	height: 64px;
+	width: 72px;
+	height: 72px;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	box-shadow: 0 0 0 8px var(--color-surface);
 }
 
 .resOk { background: var(--color-green-on-soft); }
@@ -497,7 +520,7 @@
 .resBad { background: var(--color-red-on-soft); }
 
 .resultTitle {
-	font-size: 1.4rem;
+	font-size: 1.45rem;
 	font-weight: 700;
 	margin: 0;
 	color: var(--color-on-surface);
@@ -506,16 +529,125 @@
 .resultDesc {
 	margin: 0;
 	color: var(--color-outline);
+	max-width: 40ch;
 }
 
 .resultBox {
 	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
 	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 14px;
+	padding: 1rem;
+	text-align: left;
+}
+
+.resultBadge {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.resultConsultant {
+	display: block;
+	font-weight: 700;
+	font-size: 0.92rem;
+	color: var(--color-on-surface);
+}
+
+.resultBadgeTitle {
+	display: block;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.resultReason {
+	border-left: 3px solid var(--color-red-on-soft);
+	background: var(--color-red-soft);
+	border-radius: 0 8px 8px 0;
+	padding: 0.6rem 0.85rem;
+}
+
+.resultReasonLabel {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--color-red-on-soft);
+}
+
+.resultReasonText {
+	margin: 0.25rem 0 0;
+	font-size: 0.88rem;
+	font-style: italic;
+	color: var(--color-on-surface);
+}
+
+.resultNotified {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+.resultActions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+/* Explicit reject confirmation panel */
+/* Inline decision confirmation panel (per action) */
+.confirmPanel {
+	margin-top: 0.85rem;
 	border: 1px solid var(--color-outline-variant);
 	border-radius: 12px;
 	padding: 0.85rem 1rem;
-	font-size: 0.88rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.confirmOk {
+	border-color: var(--color-green-on-soft);
+	background: var(--color-green-soft);
+}
+
+.confirmWarn {
+	border-color: var(--color-orange-on-soft);
+	background: var(--color-orange-soft);
+}
+
+.confirmBad {
+	border-color: var(--color-red-on-soft);
+	background: var(--color-red-soft);
+}
+
+.confirmHead {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 700;
+	font-size: 0.92rem;
 	color: var(--color-on-surface);
+}
+
+.confirmText {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--color-on-surface);
+}
+
+.confirmActions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	flex-wrap: wrap;
 }
 
 .reqDesc {
@@ -693,5 +825,29 @@
 
 	.sidebar {
 		position: static;
+	}
+}
+
+/* Consultant header: stack cleanly on narrow widths so it doesn't break. */
+@media (max-width: 640px) {
+	.consultantRow {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.consultantInfo {
+		flex: none;
+	}
+
+	.consultantStats {
+		width: 100%;
+	}
+
+	.statChip {
+		flex: 1;
+	}
+
+	.consultantSide {
+		align-items: flex-start;
 	}
 }

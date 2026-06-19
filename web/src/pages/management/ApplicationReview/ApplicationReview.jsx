@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SHARED, TM, SLL } from '../../../routes/paths';
+import { SHARED, TM, SLL, ADMIN } from '../../../routes/paths';
 import {
 	downloadEvidence,
 	reviewEvidence,
@@ -12,8 +12,8 @@ import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Button from '../../../components/Button/Button';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
+import Spinner from '../../../components/Spinner/Spinner';
 import FormAlert from '../../../components/FormAlert/FormAlert';
-import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import styles from './ApplicationReview.module.css';
 
 const APP_STATE_KEY = {
@@ -42,14 +42,22 @@ export default function ApplicationReview({ application }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useUser();
-	const isSll = user?.role === 'Service Line Leader';
-	// The verification that matters is the Talent Manager's: the TM marks each
-	// evidence correct; the SLL sees it read-only ("Verificado pelo TM") and decides.
-	const reviewField = 'tm_reviewed';
-	const validationsPath = isSll ? SLL.VALIDATIONS : TM.VALIDATIONS;
+	const isAdmin = user?.role === 'Administrator';
 
 	const appGuid = application?.application_guid;
 	const state = application?.application_state;
+
+	// The Administrator is a super-reviewer: which review behaviour applies is
+	// driven by the application's current state (Submitted → Talent Manager step,
+	// In validation → Service Line Leader step) rather than a fixed role.
+	const isSll = isAdmin
+		? state === 'In validation'
+		: user?.role === 'Service Line Leader';
+	// The verification that matters is the Talent Manager's: the TM marks each
+	// evidence correct; the SLL sees it read-only ("Verificado pelo TM") and decides.
+	// Each reviewer validates independently: TM marks tm_reviewed, SLL marks sll_reviewed.
+	const reviewField = isSll ? 'sll_reviewed' : 'tm_reviewed';
+	const validationsPath = isAdmin ? ADMIN.APPLICATIONS : (isSll ? SLL.VALIDATIONS : TM.VALIDATIONS);
 	const badge = application?.badge || {};
 	const requirements = badge.badge_requirements || [];
 	const [evidences, setEvidences] = useState(application?.requirements_evidences || []);
@@ -66,12 +74,15 @@ export default function ApplicationReview({ application }) {
 	const consultantPoints = application?.consultant_total_points;
 	const consultantRank = application?.consultant_ranking_position;
 
-	// SLL-only: process history + the Talent Manager's prior opinion (from audit logs)
+	// Process history + the Talent Manager's prior opinion (from audit logs).
 	const logs = application?.application_validation_logs || [];
 	const tmLog = logs.find((l) => (l.validator_function || l.validatorFunction) === 'Talent Manager');
 	const tmName = tmLog?.user?.full_name || tmLog?.user?.fullName || '';
 	const tmComment = tmLog?.validations_comments || tmLog?.validationsComments || '';
 	const tmDate = tmLog?.validated_at || tmLog?.validatedAt || null;
+	const tmAction = tmLog?.validator_action || tmLog?.validatorAction || '';
+	// Real parecer derived from the TM's logged action (forward = positive, else returned).
+	const tmPositive = /in validation/i.test(tmAction);
 	const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 	const [reviewerNotes, setReviewerNotes] = useState('');
@@ -80,12 +91,21 @@ export default function ApplicationReview({ application }) {
 	const [evidenceBusy, setEvidenceBusy] = useState(null);
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null); // post-decision result screen
+	const [resultNote, setResultNote] = useState(''); // reviewer reason shown on result
 
 	const RESULT_META = {
-		accept: { icon: 'check_circle', cls: styles.resOk },
-		review: { icon: 'send', cls: styles.resOk },
-		send_back: { icon: 'chevron_backward', cls: styles.resWarn },
-		reject: { icon: 'close_circle', cls: styles.resBad },
+		accept: { icon: 'check_circle', cls: styles.resOk, tone: styles.toneOk },
+		review: { icon: 'send', cls: styles.resOk, tone: styles.toneOk },
+		send_back: { icon: 'chevron_backward', cls: styles.resWarn, tone: styles.toneWarn },
+		reject: { icon: 'close_circle', cls: styles.resBad, tone: styles.toneBad },
+	};
+
+	// Inline confirmation panel styling per action (replaces the plain toast).
+	const CONFIRM_META = {
+		review: { cls: styles.confirmOk, icon: 'send', iconColor: 'var(--color-green-on-soft)', yesColor: 'success' },
+		accept: { cls: styles.confirmOk, icon: 'check_circle', iconColor: 'var(--color-green-on-soft)', yesColor: 'success' },
+		send_back: { cls: styles.confirmWarn, icon: 'chevron_backward', iconColor: 'var(--color-orange-on-soft)', yesColor: 'primary' },
+		reject: { cls: styles.confirmBad, icon: 'close_circle', iconColor: 'var(--color-red-on-soft)', yesColor: 'danger' },
 	};
 
 	const reqRows = useMemo(() => requirements.map((req, idx) => {
@@ -119,7 +139,6 @@ export default function ApplicationReview({ application }) {
 			{ action: 'send_back', labelKey: 'applicationReview.requestRectification', icon: 'chevron_backward', variant: 'outlined', color: 'primary' },
 		];
 
-	const ACTION_CONFIRM = { review: 'applicationReview.confirmForward', accept: 'applicationReview.confirmAccept', reject: 'applicationReview.confirmReject', send_back: 'applicationReview.confirmSendBack' };
 	const NEEDS_NOTE = ['send_back', 'reject'];
 
 	async function handleDownload(evidenceId) {
@@ -159,6 +178,7 @@ export default function ApplicationReview({ application }) {
 		setSubmitting(true);
 		try {
 			await validateApplication(appGuid, action, reviewerNotes.trim() || null);
+			setResultNote(reviewerNotes.trim());
 			setResult(action);
 			setSubmitting(false);
 		} catch (err) {
@@ -170,19 +190,39 @@ export default function ApplicationReview({ application }) {
 	// Post-decision result screen.
 	if (result) {
 		const meta = RESULT_META[result];
+		const showReason = (result === 'reject' || result === 'send_back') && resultNote;
 		return (
 			<div className={styles.page}>
 				<div className={styles.resultWrap}>
-					<div className={`${styles.card} ${styles.resultCard}`}>
+					<div className={`${styles.resultCard} ${meta.tone}`}>
 						<div className={`${styles.resultIcon} ${meta.cls}`}>
-							<Icon name={meta.icon} size={34} color="#fff" />
+							<Icon name={meta.icon} size={36} color="#fff" />
 						</div>
 						<h1 className={styles.resultTitle}>{t(`applicationReview.result.${result}.title`)}</h1>
 						<p className={styles.resultDesc}>{t(`applicationReview.result.${result}.desc`)}</p>
-						<div className={styles.resultBox}>{t('applicationReview.result.box', { consultant: consultantName, badge: title })}</div>
-						<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
-							{t('applicationReview.result.back')}
-						</Button>
+						<div className={styles.resultBox}>
+							<div className={styles.resultBadge}>
+								<Avatar src={consultantImg} name={consultantName} size={32} />
+								<div>
+									<span className={styles.resultConsultant}>{consultantName}</span>
+									<span className={styles.resultBadgeTitle}>{title}</span>
+								</div>
+							</div>
+							{showReason && (
+								<div className={styles.resultReason}>
+									<span className={styles.resultReasonLabel}>{t('applicationReview.result.reasonLabel')}</span>
+									<p className={styles.resultReasonText}>“{resultNote}”</p>
+								</div>
+							)}
+							<p className={styles.resultNotified}>
+								<Icon name="email" size={14} color="var(--color-outline)" /> {t('applicationReview.result.notified')}
+							</p>
+						</div>
+						<div className={styles.resultActions}>
+							<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
+								{t('applicationReview.result.back')}
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -191,6 +231,11 @@ export default function ApplicationReview({ application }) {
 
 	return (
 		<div className={styles.page}>
+			{submitting && (
+				<div className={styles.submitOverlay} role="status" aria-live="polite">
+					<Spinner />
+				</div>
+			)}
 			<nav className={styles.breadcrumb} aria-label="breadcrumb">
 				<Link to={validationsPath} className={styles.breadcrumbLink}>{t('applicationReview.title')}</Link>
 				<Icon name="chevron_forward" size={14} color="var(--color-outline)" />
@@ -264,14 +309,14 @@ export default function ApplicationReview({ application }) {
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="check" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
 									<span className={styles.histLabel}>{t('applicationReview.histTmValidation')}</span>
-									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
-									<span className={styles.histDesc}>{t('applicationReview.histTmBy', { name: tmName || '—' })}</span>
+									<span className={styles.histDate}>{tmLog ? fmtDate(tmDate) : t('applicationReview.histPending')}</span>
+									<span className={styles.histDesc}>{tmLog ? t('applicationReview.histTmBy', { name: tmName || '—' }) : t('applicationReview.histPending')}</span>
 								</div>
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${tmLog ? styles.histDone : ''}`}><Icon name="paper" size={16} color={tmLog ? '#fff' : 'var(--color-outline)'} /></div>
 									<span className={styles.histLabel}>{t('applicationReview.histOpinion')}</span>
-									<span className={styles.histDate}>{fmtDate(tmDate)}</span>
-									<span className={styles.histDesc}>{t('applicationReview.histOpinionPositive')}</span>
+									<span className={styles.histDate}>{tmLog ? fmtDate(tmDate) : t('applicationReview.histPending')}</span>
+									<span className={styles.histDesc}>{tmLog ? t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned') : t('applicationReview.histPending')}</span>
 								</div>
 								<div className={styles.histStep}>
 									<div className={`${styles.histIcon} ${state === 'Accepted' ? styles.histDone : ''}`}><Icon name="badge" size={16} color={state === 'Accepted' ? '#fff' : 'var(--color-outline)'} /></div>
@@ -290,7 +335,7 @@ export default function ApplicationReview({ application }) {
 									<span className={styles.opinionDate}>{t('applicationReview.opinionDone', { date: fmtDate(tmDate) })}</span>
 									{tmComment && (
 										<div className={styles.opinionQuote}>
-											<strong>{t('applicationReview.histOpinionPositive')}</strong>
+											<strong>{t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned')}</strong>
 											<p>“{tmComment}”</p>
 										</div>
 									)}
@@ -338,7 +383,7 @@ export default function ApplicationReview({ application }) {
 					<div className={styles.card}>
 						<div className={styles.sectionHead}>
 							<h3 className={styles.sectionTitle}>{t('applicationReview.evidencesTitle')}</h3>
-							<span className={styles.validatedPill}>{t(isSll ? 'applicationReview.verifiedCount' : 'applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
+							<span className={styles.validatedPill}>{t('applicationReview.validatedCount', { done: validatedCount, total: totalReqs })}</span>
 						</div>
 
 						{totalReqs === 0 ? (
@@ -354,14 +399,18 @@ export default function ApplicationReview({ application }) {
 										<div className={styles.reqBody}>
 											<div className={styles.reqTitleRow}>
 												<span className={styles.reqTitle}>{r.code}: {r.title}</span>
-												{isSll && r.validated ? (
+												{r.validated ? (
 													<span className={`${styles.evPill} ${styles.evVerified}`}>
-														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.verifiedByTm')}
+														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.validatedLabel')}
 													</span>
 												) : r.evidence ? (
 													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.evidenceSubmitted')}</span>
 												) : (
 													<span className={`${styles.evPill} ${styles.evMissing}`}>{t('applicationReview.noEvidence')}</span>
+												)}
+												{/* For the SLL, show the TM's prior verification as read-only context. */}
+												{isSll && r.evidence?.tm_reviewed && (
+													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.verifiedByTm')}</span>
 												)}
 											</div>
 											{r.description && <p className={styles.reqDesc}>{r.description}</p>}
@@ -380,20 +429,18 @@ export default function ApplicationReview({ application }) {
 													<Icon name="eye" size={14} color="var(--color-secondary)" /> {t('applicationReview.viewDocument')}
 												</button>
 											</div>
-											{!isSll && (
-												<div className={styles.reqActions}>
-													<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
-													<Button
-														variant={r.validated ? 'filled' : 'outlined'}
-														color={r.validated ? 'success' : 'primary'}
-														size="sm"
-														loading={evidenceBusy === evId}
-														onClick={() => toggleEvidence(evId, r.validated)}
-													>
-														<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
-													</Button>
-												</div>
-											)}
+											<div className={styles.reqActions}>
+												<span className={styles.reqActionLabel}>{t('applicationReview.markHint')}</span>
+												<Button
+													variant={r.validated ? 'filled' : 'outlined'}
+													color={r.validated ? 'success' : 'primary'}
+													size="sm"
+													loading={evidenceBusy === evId}
+													onClick={() => toggleEvidence(evId, r.validated)}
+												>
+													<Icon name={r.validated ? 'check_circle' : 'circle'} size={14} /> {r.validated ? t('applicationReview.validatedLabel') : t('applicationReview.markCorrect')}
+												</Button>
+											</div>
 										</>
 									)}
 								</div>
@@ -458,19 +505,29 @@ export default function ApplicationReview({ application }) {
 						</div>
 						{!allValidated && <p className={styles.approveHint}>{t('applicationReview.approveHint')}</p>}
 
-						<Link to={SHARED.APPLICATIONS} className={styles.backLink}>{t('applicationReview.backToList')}</Link>
+						{/* Explicit, prominent confirmation panel (per action) instead of a toast. */}
+						{confirmAction && (
+							<div className={`${styles.confirmPanel} ${CONFIRM_META[confirmAction].cls}`}>
+								<div className={styles.confirmHead}>
+									<Icon name={CONFIRM_META[confirmAction].icon} size={18} color={CONFIRM_META[confirmAction].iconColor} />
+									<span>{t(`applicationReview.confirm.${confirmAction}.title`)}</span>
+								</div>
+								<p className={styles.confirmText}>{t(`applicationReview.confirm.${confirmAction}.text`, { consultant: consultantName })}</p>
+								<div className={styles.confirmActions}>
+									<Button variant="outlined" color="primary" size="sm" disabled={submitting} onClick={() => setConfirmAction(null)}>
+										{t('shared.cancel')}
+									</Button>
+									<Button variant="filled" color={CONFIRM_META[confirmAction].yesColor} size="sm" loading={submitting} onClick={() => handleDecision(confirmAction)}>
+										<Icon name={CONFIRM_META[confirmAction].icon} size={16} /> {t(`applicationReview.confirm.${confirmAction}.yes`)}
+									</Button>
+								</div>
+							</div>
+						)}
+
+						<Link to={isAdmin ? ADMIN.APPLICATIONS : SHARED.APPLICATIONS} className={styles.backLink}>{t('applicationReview.backToList')}</Link>
 					</div>
 				</aside>
 			</div>
-
-			<ConfirmToast
-				open={confirmAction != null}
-				message={confirmAction ? t(ACTION_CONFIRM[confirmAction]) : ''}
-				confirmLabel={t('shared.yes', { defaultValue: 'Sim' })}
-				cancelLabel={t('shared.no', { defaultValue: 'Não' })}
-				onConfirm={() => handleDecision(confirmAction)}
-				onCancel={() => setConfirmAction(null)}
-			/>
 		</div>
 	);
 }

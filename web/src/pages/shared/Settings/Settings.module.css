@@ -1,0 +1,62 @@
+.page {
+	max-width: 720px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.title {
+	font-size: 1.4rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.hint {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.segmented {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.segmentedBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	border: 1px solid var(--color-outline-light);
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+	border-radius: 10px;
+	padding: 0.5rem 0.9rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.segmentedBtn:hover {
+	background: var(--color-primary-soft);
+}
+
+.segmentedBtnActive {
+	background: var(--color-primary);
+	border-color: var(--color-primary);
+	color: var(--color-on-primary);
+}
+
+@media (max-width: 360px) {
+	.segmentedBtn { flex: 1; justify-content: center; }
+}

@@ -1,7 +1,48 @@
 const { models } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
+const { sendTopicUpdate } = require('../services/firebase.service');
 const { consentBodySchema, policyIdParam, createPolicyBody, updatePolicyBody, newPolicyVersionBody, policyTypeParam } = require('../validations/gdpr.validation');
+
+// Compare dotted version strings numerically, segment by segment, so 1.1 > 1.0.1
+// and 2.0 > 1.9 (not just first-digit). Returns >0 if a>b, <0 if a<b, 0 if equal.
+const compareVersions = (a, b) => {
+    const pa = String(a ?? '').split('.');
+    const pb = String(b ?? '').split('.');
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+        const na = parseInt(pa[i], 10) || 0;
+        const nb = parseInt(pb[i], 10) || 0;
+        if (na !== nb) return na - nb;
+    }
+    return 0;
+};
+
+// Enforce exactly one active policy per type: the highest version stays active,
+// every other version of the same type is deactivated. Robust to non-sequential
+// versions (e.g. 1.0.1 vs 1.1). Runs inside the caller's transaction.
+const reconcileActivePolicyForType = async (policyType, transaction) => {
+    const policies = await models.gdpr_policies.findAll({
+        where: { policy_type: policyType },
+        attributes: ['policy_id', 'version', 'is_active'],
+        transaction
+    });
+    if (!policies.length) return;
+
+    let top = policies[0];
+    for (const p of policies) {
+        if (compareVersions(p.version, top.version) > 0) top = p;
+    }
+    for (const p of policies) {
+        const shouldBeActive = p.policy_id === top.policy_id;
+        if (p.is_active !== shouldBeActive) {
+            await models.gdpr_policies.update(
+                { is_active: shouldBeActive },
+                { where: { policy_id: p.policy_id }, transaction }
+            );
+        }
+    }
+};
 
 // ─── User-facing endpoints ──────────────────────────────────────────────────
 
@@ -13,7 +54,15 @@ const getActivePolicies = async (req, res) => {
             order: [['policy_type', 'ASC'], ['created_at', 'DESC']]
         });
 
-        return res.status(200).json({ success: true, data: policies });
+        // Return at most one policy per type — the highest version. Defensive
+        // against legacy data with multiple active rows for the same type.
+        const byType = new Map();
+        for (const p of policies) {
+            const cur = byType.get(p.policy_type);
+            if (!cur || compareVersions(p.version, cur.version) > 0) byType.set(p.policy_type, p);
+        }
+
+        return res.status(200).json({ success: true, data: [...byType.values()] });
     } catch (error) {
         logger.error('Error fetching active GDPR policies', { error });
         return res.status(500).json({ success: false, code: 'GDPR_POLICIES_FETCH_FAILED' });
@@ -238,26 +287,126 @@ const getLatestPolicy = async (req, res) => {
 
 // ─── Admin endpoints ────────────────────────────────────────────────────────
 
+// Aggregate RGPD acceptance across consultants (admin dashboard insight).
+const adminConsentSummary = async (req, res) => {
+    try {
+        const [total, accepted] = await Promise.all([
+            models.consultants.count(),
+            models.consultants.count({ where: { gdpr_accepted: true } })
+        ]);
+        return res.status(200).json({
+            success: true,
+            data: { total, accepted, pending: Math.max(0, total - accepted) }
+        });
+    } catch (error) {
+        logger.error('Error fetching GDPR consent summary', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_CONSENT_SUMMARY_FAILED' });
+    }
+};
+
+// Admin management view: every policy of every type, active and inactive, so
+// the full version history is visible and inactive versions can be reactivated.
+// (The public GET /policies only returns the active set, one per type.)
+const adminListPolicies = async (req, res) => {
+    try {
+        const policies = await models.gdpr_policies.findAll({
+            attributes: ['policy_id', 'policy_type', 'version', 'policy_text', 'is_mandatory', 'is_active', 'created_at', 'updated_at'],
+            order: [['policy_type', 'ASC'], ['created_at', 'DESC']]
+        });
+        return res.status(200).json({ success: true, data: policies });
+    } catch (error) {
+        logger.error('Error listing GDPR policies (admin)', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICIES_FETCH_FAILED' });
+    }
+};
+
+// Reactivate a specific (inactive) version, making it the single active version
+// of its type. Explicit admin choice — unlike create/new-version, it does not
+// force the highest version, it honours exactly the version chosen.
+const adminActivatePolicy = async (req, res) => {
+    const transaction = await models.gdpr_policies.sequelize.transaction();
+    try {
+        let validated;
+        try { validated = policyIdParam.parse(req.params); }
+        catch (error) {
+            await transaction.rollback();
+            if (error.name === 'ZodError') return handleZodError(res, error);
+            throw error;
+        }
+
+        const policy = await models.gdpr_policies.findByPk(validated.id, { transaction });
+        if (!policy) {
+            await transaction.rollback();
+            return res.status(404).json({ success: false, code: 'GDPR_POLICY_NOT_FOUND' });
+        }
+
+        // Deactivate every other version of this type, then activate the chosen one.
+        await models.gdpr_policies.update(
+            { is_active: false, updated_by: req.user.sub },
+            { where: { policy_type: policy.policy_type }, transaction }
+        );
+        await policy.update({ is_active: true, updated_by: req.user.sub }, { transaction });
+
+        await transaction.commit();
+        await policy.reload();
+        await sendTopicUpdate("new_data", 22);
+        return res.status(200).json({ success: true, data: policy });
+    } catch (error) {
+        if (!transaction.finished) await transaction.rollback();
+        logger.error('Error activating GDPR policy', { error });
+        return res.status(500).json({ success: false, code: 'GDPR_POLICY_ACTIVATE_FAILED' });
+    }
+};
+
 const adminCreatePolicy = async (req, res) => {
+    const transaction = await models.gdpr_policies.sequelize.transaction();
     try {
         let validated;
         try { validated = createPolicyBody.parse(req.body); }
         catch (error) {
+            await transaction.rollback();
             if (error.name === 'ZodError') return handleZodError(res, error);
             throw error;
         }
 
         const adminId = req.user.sub;
 
-        const policy = await models.gdpr_policies.create({
-            ...validated,
-            is_active: true,
-            created_by: adminId,
-            updated_by: adminId
+        // Deactivation is a soft delete, so a row with this (type, version) may
+        // still exist (inactive). Revive it instead of inserting — otherwise
+        // re-creating a previously removed version hits UNIQUE(type, version).
+        const existing = await models.gdpr_policies.findOne({
+            where: { policy_type: validated.policy_type, version: validated.version },
+            transaction
         });
 
+        let policy;
+        if (existing) {
+            await existing.update({
+                policy_text: validated.policy_text,
+                is_mandatory: validated.is_mandatory,
+                is_active: true,
+                updated_by: adminId
+            }, { transaction });
+            policy = existing;
+        } else {
+            policy = await models.gdpr_policies.create({
+                ...validated,
+                is_active: true,
+                created_by: adminId,
+                updated_by: adminId
+            }, { transaction });
+        }
+
+        // Keep only the highest version of this type active.
+        await reconcileActivePolicyForType(policy.policy_type, transaction);
+        await transaction.commit();
+
+        // Reflect the reconciled active flag (the new policy may not be the latest).
+        await policy.reload();
+        await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: policy });
     } catch (error) {
+        if (!transaction.finished) await transaction.rollback();
         logger.error('Error creating GDPR policy', { error });
         return res.status(500).json({ success: false, code: 'GDPR_POLICY_CREATE_FAILED' });
     }
@@ -286,6 +435,7 @@ const adminUpdatePolicy = async (req, res) => {
 
         await policy.update({ ...bodyValidated, updated_by: req.user.sub });
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(200).json({ success: true, data: policy });
     } catch (error) {
         logger.error('Error updating GDPR policy', { error });
@@ -309,6 +459,7 @@ const adminDeactivatePolicy = async (req, res) => {
 
         await policy.update({ is_active: false, updated_by: req.user.sub });
 
+        await sendTopicUpdate("new_data", 22);
         return res.status(200).json({ success: true, code: 'GDPR_POLICY_DEACTIVATED' });
     } catch (error) {
         logger.error('Error deactivating GDPR policy', { error });
@@ -360,8 +511,12 @@ const adminNewPolicyVersion = async (req, res) => {
             updated_by: adminId
         }, { transaction });
 
+        // Keep only the highest version of this type active.
+        await reconcileActivePolicyForType(oldPolicy.policy_type, transaction);
         await transaction.commit();
 
+        await newPolicy.reload();
+        await sendTopicUpdate("new_data", 22);
         return res.status(201).json({ success: true, data: newPolicy });
     } catch (error) {
         await transaction.rollback();
@@ -378,6 +533,9 @@ module.exports = {
     getConsentHistory,
     requestDataExport,
     requestAccountDeletion,
+    adminConsentSummary,
+    adminListPolicies,
+    adminActivatePolicy,
     adminCreatePolicy,
     adminUpdatePolicy,
     adminDeactivatePolicy,

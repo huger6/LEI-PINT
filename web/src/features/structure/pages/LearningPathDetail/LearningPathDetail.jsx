@@ -181,6 +181,8 @@ export default function LearningPathDetail() {
 				onActivate={!lp.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
+				exportType="learning-path"
+				exportId={lp.path_slug || slug}
 				pagination={pagination}
 				onPageChange={handlePageChange}
 			/>

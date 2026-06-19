@@ -28,6 +28,7 @@ export default function ValidationsBoard() {
 	const navigate = useNavigate();
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
+	const isAdmin = user?.role === 'Administrator';
 
 	const [items, setItems] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -37,7 +38,10 @@ export default function ValidationsBoard() {
 
 	const [showFilters, setShowFilters] = useState(false);
 	const [search, setSearch] = useState('');
-	const [stateFilter, setStateFilter] = useState('');
+	// Default to the applications this reviewer must act on (TM: Submitted,
+	// SLL: In validation); the Administrator oversees everything so defaults to
+	// all states. The filter lets them switch freely.
+	const [stateFilter, setStateFilter] = useState(isAdmin ? '' : (isSll ? 'In validation' : 'Submitted'));
 	const [sortKey, setSortKey] = useState('submitted');
 	const [sortDir, setSortDir] = useState('desc');
 
@@ -61,16 +65,20 @@ export default function ValidationsBoard() {
 
 	useEffect(() => { load(); }, [load]);
 
-	// Near real-time: refresh when the tab regains focus.
+	// Near real-time: refresh when the tab regains focus, and poll every 2 minutes.
 	useEffect(() => {
 		function onVisible() {
 			if (document.visibilityState === 'visible') load();
 		}
 		document.addEventListener('visibilitychange', onVisible);
 		window.addEventListener('focus', onVisible);
+		const interval = setInterval(() => {
+			if (document.visibilityState === 'visible') load();
+		}, 120000);
 		return () => {
 			document.removeEventListener('visibilitychange', onVisible);
 			window.removeEventListener('focus', onVisible);
+			clearInterval(interval);
 		};
 	}, [load]);
 
@@ -149,7 +157,7 @@ export default function ValidationsBoard() {
 					<p className={styles.subtitle}>{t('tmValidations.registered', { count: total })}</p>
 				</div>
 				<Button
-					variant={showFilters ? 'filled' : 'outlined'}
+					variant="text"
 					color="primary"
 					size="sm"
 					onClick={() => setShowFilters((v) => !v)}
@@ -175,11 +183,7 @@ export default function ValidationsBoard() {
 						onChange={handleStateFilter}
 						options={stateOptions}
 						ariaLabel={t('tmValidations.cols.state')}
-						compact
 					/>
-					<Button variant="outlined" color="primary" size="sm" loading={loading} onClick={load}>
-						{t('tmValidations.refresh')}
-					</Button>
 				</div>
 			)}
 
@@ -231,10 +235,7 @@ export default function ValidationsBoard() {
 											{!isSll && <td className="text-muted">{a.badge?.service_line?.service_line_name || '—'}</td>}
 											<td className="text-muted">{a.badge?.area?.area_name || '—'}</td>
 											<td className="text-muted">
-												<span className={styles.dateCell}>
-													<Icon name="today" size={14} color="var(--color-outline)" />
-													{formatDate(a)}
-												</span>
+												<span className={styles.dateCell}>{formatDate(a)}</span>
 											</td>
 											<td>
 												<span className={`${styles.pill} ${pill.cls}`}>
