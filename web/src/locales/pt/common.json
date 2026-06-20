@@ -1719,6 +1719,8 @@
 		"verifiedCount": "{{done}}/{{total}} verificados",
 		"result": {
 			"back": "Voltar às candidaturas",
+			"downloadCertificate": "Descarregar certificado",
+			"certificateError": "Não foi possível gerar o certificado.",
 			"box": "{{consultant}} — {{badge}}. O consultor será notificado por e-mail.",
 			"reasonLabel": "Motivo",
 			"notified": "O consultor será notificado por e-mail.",

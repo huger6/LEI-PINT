@@ -1719,6 +1719,8 @@
 		"verifiedCount": "{{done}}/{{total}} verified",
 		"result": {
 			"back": "Back to applications",
+			"downloadCertificate": "Download certificate",
+			"certificateError": "Could not generate the certificate.",
 			"box": "{{consultant}} — {{badge}}. The consultant will be notified by email.",
 			"reasonLabel": "Reason",
 			"notified": "The consultant will be notified by email.",

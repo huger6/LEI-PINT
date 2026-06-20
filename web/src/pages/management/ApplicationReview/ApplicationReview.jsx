@@ -6,6 +6,7 @@ import {
 	downloadEvidence,
 	reviewEvidence,
 	validateApplication,
+	generateCertificate,
 } from '../../../features/applications/api/applicationsApi';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
@@ -38,8 +39,10 @@ function evidenceForRequirement(evidences, reqId) {
 	return evidences.find((ev) => String(ev.requirement_id) === String(reqId));
 }
 
+const CERT_LANG_MAP = { pt: 'pt', en: 'en', es: 'es' };
+
 export default function ApplicationReview({ application }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
@@ -92,6 +95,8 @@ export default function ApplicationReview({ application }) {
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null); // post-decision result screen
 	const [resultNote, setResultNote] = useState(''); // reviewer reason shown on result
+	const [certLoading, setCertLoading] = useState(false);
+	const [certError, setCertError] = useState(null);
 
 	const RESULT_META = {
 		accept: { icon: 'check_circle', cls: styles.resOk, tone: styles.toneOk },
@@ -187,6 +192,20 @@ export default function ApplicationReview({ application }) {
 		}
 	}
 
+	async function handleDownloadCertificate() {
+		setCertError(null);
+		setCertLoading(true);
+		try {
+			const lang = CERT_LANG_MAP[(i18n.language || 'pt').slice(0, 2)] || 'pt';
+			const { certificateUrl } = await generateCertificate(appGuid, lang);
+			if (certificateUrl) window.open(certificateUrl, '_blank');
+		} catch (err) {
+			setCertError(resolveErrorMessage(err));
+		} finally {
+			setCertLoading(false);
+		}
+	}
+
 	// Post-decision result screen.
 	if (result) {
 		const meta = RESULT_META[result];
@@ -218,7 +237,15 @@ export default function ApplicationReview({ application }) {
 								<Icon name="email" size={14} color="var(--color-outline)" /> {t('applicationReview.result.notified')}
 							</p>
 						</div>
+						{result === 'accept' && (
+							<FormAlert message={certError} variant="danger" className="mt-2 mb-0" />
+						)}
 						<div className={styles.resultActions}>
+							{result === 'accept' && (
+								<Button variant="outlined" color="primary" loading={certLoading} onClick={handleDownloadCertificate}>
+									<Icon name="download" size={16} /> {t('applicationReview.result.downloadCertificate')}
+								</Button>
+							)}
 							<Button variant="filled" color="primary" onClick={() => navigate(validationsPath)}>
 								{t('applicationReview.result.back')}
 							</Button>
