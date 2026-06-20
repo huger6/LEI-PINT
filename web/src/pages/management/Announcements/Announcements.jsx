@@ -195,7 +195,6 @@ export default function Announcements({ defaultType = '' }) {
 						options={typeSelectOptions}
 						placeholder={t('announcements.filterByType')}
 						ariaLabel={t('announcements.filterByType')}
-						compact
 					/>
 				</div>
 				<div className={styles.selectWrapper}>
@@ -207,7 +206,6 @@ export default function Announcements({ defaultType = '' }) {
 						options={statusSelectOptions}
 						placeholder={t('announcements.filterByStatus')}
 						ariaLabel={t('announcements.filterByStatus')}
-						compact
 					/>
 				</div>
 			</div>
