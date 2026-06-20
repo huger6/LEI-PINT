@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SHARED } from '../../../routes/paths';
+import { SHARED, TM, SLL } from '../../../routes/paths';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { getRanking } from '../../../services/pointsService';
 import {
@@ -66,17 +66,20 @@ export default function ManagementDashboard() {
 		return () => { active = false; };
 	}, [isSll]);
 
-	const pending = (counts?.Submitted ?? 0) + (counts?.['In validation'] ?? 0);
+	// Pending = the queue awaiting THIS role's action (TM: Submitted, SLL: In
+	// validation). Matches the welcome card so the two counts never disagree.
+	const pending = isSll ? (counts?.['In validation'] ?? 0) : (counts?.Submitted ?? 0);
 	const accepted = counts?.Accepted ?? 0;
 	const rejected = counts?.Rejected ?? 0;
 	const approvalRate = accepted + rejected > 0 ? Math.round((accepted / (accepted + rejected)) * 100) : 0;
+	const consultantsPath = isSll ? SLL.TEAM : TM.CONSULTANTS;
 
 	const kpis = [
 		{ key: 'pending', value: pending, icon: 'progress', bg: 'var(--color-orange-soft)', color: 'var(--color-orange-on-soft)', label: t('tmDashboard.kpiPending'), to: VALIDATIONS_PATH },
-		{ key: 'consultants', value: consultantsTotal, icon: 'tabler_users', bg: 'var(--color-purple-soft)', color: 'var(--color-purple-on-soft)', label: t('tmDashboard.kpiConsultants') },
-		{ key: 'badges', value: accepted, icon: 'badge', bg: 'var(--color-green-soft)', color: 'var(--color-green-on-soft)', label: t('tmDashboard.kpiBadges') },
-		{ key: 'rate', value: `${approvalRate}%`, icon: 'check_circle', bg: 'var(--color-secondary-container)', color: 'var(--color-secondary)', label: t('tmDashboard.kpiApprovalRate') },
-		...(!isSll ? [{ key: 'expiring', value: expiringCount, icon: 'clock', bg: 'var(--color-red-soft)', color: 'var(--color-red-on-soft)', label: t('tmDashboard.kpiExpiring') }] : []),
+		{ key: 'consultants', value: consultantsTotal, icon: 'tabler_users', bg: 'var(--color-purple-soft)', color: 'var(--color-purple-on-soft)', label: t('tmDashboard.kpiConsultants'), to: consultantsPath },
+		{ key: 'badges', value: accepted, icon: 'badge', bg: 'var(--color-green-soft)', color: 'var(--color-green-on-soft)', label: t('tmDashboard.kpiBadges'), to: TM.STATS },
+		{ key: 'rate', value: `${approvalRate}%`, icon: 'check_circle', bg: 'var(--color-secondary-container)', color: 'var(--color-secondary)', label: t('tmDashboard.kpiApprovalRate'), to: TM.STATS },
+		...(!isSll ? [{ key: 'expiring', value: expiringCount, icon: 'clock', bg: 'var(--color-red-soft)', color: 'var(--color-red-on-soft)', label: t('tmDashboard.kpiExpiring'), to: TM.STATS }] : []),
 	];
 
 	return (
