@@ -524,72 +524,82 @@ const submitApplication = async (req, res) => {
             consultant_notes: consultantNotes ?? null
         });
 
-        await sendTopicUpdate("new_data", 15);
+        sendTopicUpdate("new_data", 15).catch(err => logger.error('Firebase topic update failed', { error: err }));
 
-        // Create notifications and send email to consultant
-        try {
-            const badgeMeta = { badgeTitle: application.badge.badge_title };
-            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
+        // Fire-and-forget: notifications and emails run after the response
+        const submitContext = {
+            userId: application.user_id,
+            badgeMeta: { badgeTitle: application.badge.badge_title },
+            appUrl: `${FRONTEND_URL}/applications/${application.application_guid}`,
+            applicationGuid: application.application_guid,
+            badgeTitle: application.badge.badge_title,
+            serviceLineId: application.badge?.service_line_id
+        };
+        (async () => {
+            try {
+                const { userId, badgeMeta, appUrl, applicationGuid, serviceLineId } = submitContext;
 
-            await notificationsService.createNotification({
-                userId: application.user_id,
-                definitionId: 3,
-                notificationType: 'APPLICATIONS',
-                title: 'NOTIF_APP_SUBMITTED_TITLE',
-                body: 'NOTIF_APP_SUBMITTED_BODY',
-                meta: badgeMeta,
-                url: `/applications/${application.application_guid}`
-            });
-
-            const submittedPrefs = await notificationsService.resolvePreferences(3, application.user_id);
-            if (submittedPrefs.is_enabled && submittedPrefs.send_email) {
-                const consultantData = await getConsultantEmailData(application.user_id);
-                if (consultantData) {
-                    await sendApplicationSubmittedEmail(
-                        consultantData.email,
-                        consultantData.name,
-                        application.badge.badge_title,
-                        appUrl,
-                        consultantData.lang
-                    );
-                }
-            }
-
-            if (application.badge && application.badge.service_line_id) {
-                const slls = await models.service_line_leaders.findAll({
-                    where: { service_line_id: application.badge.service_line_id },
-                    include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
-                });
-                for (const sll of slls) {
-                    await notificationsService.createNotification({
-                        userId: sll.user_id,
-                        definitionId: 3,
-                        notificationType: 'APPLICATIONS',
-                        title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
-                        body: 'NOTIF_APP_NEW_APPLICATION_BODY',
-                        meta: badgeMeta,
-                        url: `/admin/applications/${application.application_guid}`
-                    });
-                }
-            }
-
-            const tms = await models.talent_managers.findAll({
-                include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Talent Manager' } }]
-            });
-            for (const tm of tms) {
                 await notificationsService.createNotification({
+                    userId,
+                    definitionId: 3,
+                    notificationType: 'APPLICATIONS',
+                    title: 'NOTIF_APP_SUBMITTED_TITLE',
+                    body: 'NOTIF_APP_SUBMITTED_BODY',
+                    meta: badgeMeta,
+                    url: `/applications/${applicationGuid}`
+                });
+
+                const submittedPrefs = await notificationsService.resolvePreferences(3, userId);
+                if (submittedPrefs.is_enabled && submittedPrefs.send_email) {
+                    const consultantData = await getConsultantEmailData(userId);
+                    if (consultantData) {
+                        await sendApplicationSubmittedEmail(
+                            consultantData.email,
+                            consultantData.name,
+                            submitContext.badgeTitle,
+                            appUrl,
+                            consultantData.lang
+                        );
+                    }
+                }
+
+                const sllNotifs = [];
+                if (serviceLineId) {
+                    const slls = await models.service_line_leaders.findAll({
+                        where: { service_line_id: serviceLineId },
+                        include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Service Line Leader' } }]
+                    });
+                    for (const sll of slls) {
+                        sllNotifs.push(notificationsService.createNotification({
+                            userId: sll.user_id,
+                            definitionId: 3,
+                            notificationType: 'APPLICATIONS',
+                            title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
+                            body: 'NOTIF_APP_NEW_APPLICATION_BODY',
+                            meta: badgeMeta,
+                            url: `/admin/applications/${applicationGuid}`
+                        }));
+                    }
+                }
+
+                const tms = await models.talent_managers.findAll({
+                    include: [{ model: models.users, as: 'user', attributes: [], where: { user_role: 'Talent Manager' } }]
+                });
+                const tmNotifs = tms.map(tm => notificationsService.createNotification({
                     userId: tm.user_id,
                     definitionId: 3,
                     notificationType: 'APPLICATIONS',
                     title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                     body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                     meta: badgeMeta,
-                    url: `/admin/applications/${application.application_guid}`
-                });
+                    url: `/admin/applications/${applicationGuid}`
+                }));
+
+                await Promise.all([...sllNotifs, ...tmNotifs]);
+            } catch (notifErr) {
+                logger.error('Failed to create notifications on submitApplication', { error: notifErr });
             }
-        } catch (notifErr) {
-            logger.error('Failed to create notifications on submitApplication', { error: notifErr });
-        }
+        })();
 
         return res.status(200).json({
             success: true,
@@ -755,131 +765,141 @@ const validateApplication = async (req, res) => {
         }
 
         await transaction.commit();
-        await sendTopicUpdate("new_data", 15);
-        await sendTopicUpdate("new_data", 18);
-        if (newState === 'Accepted') await sendTopicUpdate("new_data", 17);
 
-        // Post-commit notifications and emails
-        try {
-            const badgeMeta = {
-                badgeTitle: application.badge.badge_title,
-                badgeType: application.badge.badge_type
-            };
-            const appUrl = `${FRONTEND_URL}/applications/${application.application_guid}`;
+        // Fire-and-forget: broadcast Firebase topic updates in parallel.
+        // These must not delay the HTTP response.
+        const topicUpdates = [
+            sendTopicUpdate("new_data", 15),
+            sendTopicUpdate("new_data", 18)
+        ];
+        if (newState === 'Accepted') topicUpdates.push(sendTopicUpdate("new_data", 17));
+        Promise.all(topicUpdates).catch(err => logger.error('Firebase topic update failed', { error: err }));
 
-            if (newState === 'Accepted') {
-                const isSpecial = application.badge.badge_type === 'Special';
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 10,
-                    notificationType: 'APPLICATIONS',
-                    title: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE' : 'NOTIF_APP_BADGE_AWARDED_TITLE',
-                    body: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY' : 'NOTIF_APP_BADGE_AWARDED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'Rejected') {
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 11,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_REJECTED_TITLE',
-                    body: 'NOTIF_APP_REJECTED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'In validation') {
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 3,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_IN_VALIDATION_TITLE',
-                    body: 'NOTIF_APP_IN_VALIDATION_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            } else if (newState === 'Open') {
-                // Reviewer sent the application back to the consultant for correction
-                await notificationsService.createNotification({
-                    userId: application.user_id,
-                    definitionId: 3,
-                    notificationType: 'APPLICATIONS',
-                    title: 'NOTIF_APP_RETURNED_TITLE',
-                    body: 'NOTIF_APP_RETURNED_BODY',
-                    meta: badgeMeta,
-                    url: `/applications/${application.application_guid}`
-                });
-            }
+        // Fire-and-forget: notifications and emails run after the response.
+        // The transaction is committed so delivery failures are non-critical.
+        const postCommitContext = {
+            userId: application.user_id,
+            badgeMeta: { badgeTitle: application.badge.badge_title, badgeType: application.badge.badge_type },
+            appUrl: `${FRONTEND_URL}/applications/${application.application_guid}`,
+            applicationGuid: application.application_guid,
+            badgeTitle: application.badge.badge_title,
+            serviceLineId: application.badge.service_line_id,
+            newState,
+            reviewerNotes
+        };
+        (async () => {
+            try {
+                const { userId, badgeMeta, appUrl, applicationGuid, badgeTitle, serviceLineId } = postCommitContext;
 
-            // Email the consultant on terminal state changes
-            if (newState === 'Accepted' || newState === 'Rejected') {
-                const emailDefId = newState === 'Accepted' ? 10 : 11;
-                const emailPrefs = await notificationsService.resolvePreferences(emailDefId, application.user_id);
-                if (emailPrefs.is_enabled && emailPrefs.send_email) {
-                    const consultantData = await getConsultantEmailData(application.user_id);
-                    if (consultantData) {
-                        if (newState === 'Accepted') {
-                            await sendApplicationApprovedEmail(
-                                consultantData.email,
-                                consultantData.name,
-                                application.badge.badge_title,
-                                appUrl,
-                                consultantData.lang
-                            );
-                        } else {
-                            await sendApplicationRejectedEmail(
-                                consultantData.email,
-                                consultantData.name,
-                                application.badge.badge_title,
-                                reviewerNotes || null,
-                                appUrl,
-                                consultantData.lang
-                            );
-                        }
-                    }
-                }
-            }
-
-            // When TM forwards to SLL, notify all SLLs for this badge's service line
-            if (newState === 'In validation' && application.badge.service_line_id) {
-                const slls = await models.service_line_leaders.findAll({
-                    where: { service_line_id: application.badge.service_line_id }
-                });
-                // Applicant name for the SLL email body.
-                const applicantData = await getConsultantEmailData(application.user_id);
-                const applicantName = applicantData?.name || '';
-                for (const sll of slls) {
+                if (postCommitContext.newState === 'Accepted') {
+                    const isSpecial = postCommitContext.badgeMeta.badgeType === 'Special';
                     await notificationsService.createNotification({
-                        userId: sll.user_id,
+                        userId,
+                        definitionId: 10,
+                        notificationType: 'APPLICATIONS',
+                        title: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE' : 'NOTIF_APP_BADGE_AWARDED_TITLE',
+                        body: isSpecial ? 'NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY' : 'NOTIF_APP_BADGE_AWARDED_BODY',
+                        meta: badgeMeta,
+                        url: `/applications/${applicationGuid}`
+                    });
+                } else if (postCommitContext.newState === 'Rejected') {
+                    await notificationsService.createNotification({
+                        userId,
+                        definitionId: 11,
+                        notificationType: 'APPLICATIONS',
+                        title: 'NOTIF_APP_REJECTED_TITLE',
+                        body: 'NOTIF_APP_REJECTED_BODY',
+                        meta: badgeMeta,
+                        url: `/applications/${applicationGuid}`
+                    });
+                } else if (postCommitContext.newState === 'In validation') {
+                    await notificationsService.createNotification({
+                        userId,
                         definitionId: 3,
                         notificationType: 'APPLICATIONS',
-                        title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
-                        body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
+                        title: 'NOTIF_APP_IN_VALIDATION_TITLE',
+                        body: 'NOTIF_APP_IN_VALIDATION_BODY',
                         meta: badgeMeta,
-                        url: `/admin/applications/${application.application_guid}`
+                        url: `/applications/${applicationGuid}`
                     });
+                } else if (postCommitContext.newState === 'Open') {
+                    await notificationsService.createNotification({
+                        userId,
+                        definitionId: 3,
+                        notificationType: 'APPLICATIONS',
+                        title: 'NOTIF_APP_RETURNED_TITLE',
+                        body: 'NOTIF_APP_RETURNED_BODY',
+                        meta: badgeMeta,
+                        url: `/applications/${applicationGuid}`
+                    });
+                }
 
-                    // Email the SLL too (req: SLL receives application/validation emails),
-                    // honouring their notification preferences.
-                    const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
-                    if (sllPrefs.is_enabled && sllPrefs.send_email) {
-                        const sllData = await getConsultantEmailData(sll.user_id);
-                        if (sllData) {
-                            await sendApplicationPendingSllReviewEmail(
-                                sllData.email,
-                                sllData.name,
-                                applicantName,
-                                application.badge.badge_title,
-                                appUrl,
-                                sllData.lang
-                            );
+                if (postCommitContext.newState === 'Accepted' || postCommitContext.newState === 'Rejected') {
+                    const emailDefId = postCommitContext.newState === 'Accepted' ? 10 : 11;
+                    const emailPrefs = await notificationsService.resolvePreferences(emailDefId, userId);
+                    if (emailPrefs.is_enabled && emailPrefs.send_email) {
+                        const consultantData = await getConsultantEmailData(userId);
+                        if (consultantData) {
+                            if (postCommitContext.newState === 'Accepted') {
+                                await sendApplicationApprovedEmail(
+                                    consultantData.email,
+                                    consultantData.name,
+                                    badgeTitle,
+                                    appUrl,
+                                    consultantData.lang
+                                );
+                            } else {
+                                await sendApplicationRejectedEmail(
+                                    consultantData.email,
+                                    consultantData.name,
+                                    badgeTitle,
+                                    postCommitContext.reviewerNotes || null,
+                                    appUrl,
+                                    consultantData.lang
+                                );
+                            }
                         }
                     }
                 }
+
+                if (postCommitContext.newState === 'In validation' && serviceLineId) {
+                    const slls = await models.service_line_leaders.findAll({
+                        where: { service_line_id: serviceLineId }
+                    });
+                    const applicantData = await getConsultantEmailData(userId);
+                    const applicantName = applicantData?.name || '';
+
+                    await Promise.all(slls.map(async (sll) => {
+                        await notificationsService.createNotification({
+                            userId: sll.user_id,
+                            definitionId: 3,
+                            notificationType: 'APPLICATIONS',
+                            title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
+                            body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
+                            meta: badgeMeta,
+                            url: `/admin/applications/${applicationGuid}`
+                        });
+
+                        const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
+                        if (sllPrefs.is_enabled && sllPrefs.send_email) {
+                            const sllData = await getConsultantEmailData(sll.user_id);
+                            if (sllData) {
+                                await sendApplicationPendingSllReviewEmail(
+                                    sllData.email,
+                                    sllData.name,
+                                    applicantName,
+                                    badgeTitle,
+                                    appUrl,
+                                    sllData.lang
+                                );
+                            }
+                        }
+                    }));
+                }
+            } catch (notifErr) {
+                logger.error('Failed to create notifications on validateApplication', { error: notifErr });
             }
-        } catch (notifErr) {
-            logger.error('Failed to create notifications on validateApplication', { error: notifErr });
-        }
+        })();
 
         return res.status(200).json({
             success: true,
@@ -1000,8 +1020,11 @@ const reviewEvidence = async (req, res) => {
         }
 
         await transaction.commit();
-        await sendTopicUpdate("new_data", 16);
-        await sendTopicUpdate("new_data", 18);
+
+        Promise.all([
+            sendTopicUpdate("new_data", 16),
+            sendTopicUpdate("new_data", 18)
+        ]).catch(err => logger.error('Firebase topic update failed', { error: err }));
 
         return res.status(200).json({
             success: true,
