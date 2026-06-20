@@ -5,6 +5,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useUser } from '../../hooks/userContext';
 import { getApplicationsPaged } from '../../features/applications/api/applicationsApi';
 import { getConsultantsOverview, getBadgesSummary } from '../../features/statistics/api/statisticsApi';
+import { CONSULTANT, TM, SLL } from '../../routes/paths';
 import styles from './WelcomeCard.module.css';
 import StatCard from './StatCard/StatCard';
 import Icon from '../Icons/Icons';
@@ -77,6 +78,7 @@ export default function WelcomeCard() {
     const isAdmin = role === 'Administrator';
 
     const [leaderStats, setLeaderStats] = useState(null);
+    const [consultantStats, setConsultantStats] = useState(null);
 
     useEffect(() => {
         if (!isLeader) return undefined;
@@ -93,23 +95,39 @@ export default function WelcomeCard() {
         return () => { active = false; };
     }, [isLeader, isSll]);
 
+    // Consultant KPIs: one call over their own applications → earned (Accepted)
+    // and in-progress (Open / Submitted / In validation) counts.
+    useEffect(() => {
+        if (role !== 'Consultant') return undefined;
+        let active = true;
+        (async () => {
+            const apps = await getApplicationsPaged({ page: 1, limit: 200 }).then(r => r.data || []).catch(() => []);
+            const earned = apps.filter(a => (a.application_state || a.state) === 'Accepted').length;
+            const inProgress = apps.filter(a => ['Open', 'Submitted', 'In validation'].includes(a.application_state || a.state)).length;
+            if (active) setConsultantStats({ earned, inProgress });
+        })();
+        return () => { active = false; };
+    }, [role]);
+
     const greeting = getGreeting(t, authUser);
     const serviceLine = user?.serviceLine?.name;
     const streakDays = user?.currentStreakDays ?? authUser?.current_streak_days ?? 0;
 
     const leaderValue = (v) => (leaderStats ? v : '—');
+    const consultantValue = (v) => (consultantStats ? v : '—');
+    const consultantsPath = isSll ? SLL.TEAM : TM.CONSULTANTS;
     const stats = isAdmin
         ? []
         : isLeader
         ? [
-            { label: t('welcomeCard.pendingValidations'), value: leaderValue(leaderStats?.pending), variant: 'accent', icon: 'paper' },
-            { label: t('welcomeCard.consultants'), value: leaderValue(leaderStats?.consultants), icon: 'tabler_users' },
-            { label: t('welcomeCard.badgesAwarded'), value: leaderValue(leaderStats?.badges), variant: 'success', icon: 'badge' },
+            { label: t('welcomeCard.pendingValidations'), value: leaderValue(leaderStats?.pending), variant: 'accent', icon: 'paper', to: TM.VALIDATIONS },
+            { label: t('welcomeCard.consultants'), value: leaderValue(leaderStats?.consultants), icon: 'tabler_users', to: consultantsPath },
+            { label: t('welcomeCard.badgesAwarded'), value: leaderValue(leaderStats?.badges), variant: 'success', icon: 'badge', to: TM.STATS },
         ]
         : [
-            { label: t('welcomeCard.badgesEarned'), value: '-', variant: 'accent', icon: 'badge' },
-            { label: t('welcomeCard.activeApplications'), value: '-', icon: 'paper' },
-            { label: t('welcomeCard.streak'), value: `${streakDays} ${t('welcomeCard.days')}`, variant: 'success', icon: 'fire' },
+            { label: t('welcomeCard.badgesEarned'), value: consultantValue(consultantStats?.earned), variant: 'accent', icon: 'badge', to: CONSULTANT.ACHIEVEMENTS },
+            { label: t('welcomeCard.activeApplications'), value: consultantValue(consultantStats?.inProgress), icon: 'paper', to: CONSULTANT.APPLICATIONS },
+            { label: t('welcomeCard.streak'), value: `${streakDays} ${t('welcomeCard.days')}`, variant: 'success', icon: 'fire', to: CONSULTANT.EVOLUTION },
         ];
 
     return (
