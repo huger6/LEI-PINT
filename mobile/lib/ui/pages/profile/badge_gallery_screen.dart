@@ -5,6 +5,8 @@ import '../../../presentation/state/badge_store.dart';
 import '../../../models/earned_badge_model.dart';
 import '../../widgets/badges/my_badges_widgets.dart';
 import '../../widgets/profile/badge_gallery_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeGalleryScreen extends StatefulWidget {
   const BadgeGalleryScreen({super.key});
@@ -83,8 +85,8 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF1E2932),
             size: 20,
           ),

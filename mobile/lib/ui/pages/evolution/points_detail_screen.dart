@@ -6,6 +6,8 @@ import '../../../core/utils/badge_visuals.dart';
 import '../../../presentation/state/dashboard_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/points/points_detail_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class PointsDetailScreen extends StatelessWidget {
   const PointsDetailScreen({super.key, required this.totalPoints});
@@ -66,8 +68,8 @@ class PointsDetailScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF20252B),
             size: 26,
           ),

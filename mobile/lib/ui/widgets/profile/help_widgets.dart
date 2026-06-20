@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../shared/app_icon/app_icon.dart';
+
 class HelpSection extends StatelessWidget {
   const HelpSection({
     super.key,
@@ -8,7 +10,7 @@ class HelpSection extends StatelessWidget {
     required this.description,
   });
 
-  final IconData icon;
+  final String icon;
   final String title;
   final String description;
 
@@ -38,7 +40,7 @@ class HelpSection extends StatelessWidget {
               color: Color(0xFFD5EAF6),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF4D9ECC), size: 22),
+            child: AppIcon(icon, color: const Color(0xFF4D9ECC), size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(

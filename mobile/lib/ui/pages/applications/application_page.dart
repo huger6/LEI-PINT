@@ -15,6 +15,8 @@ import '../../../presentation/state/auth_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/applications/application_page_widgets.dart';
 import 'badge_email_confirmation_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -313,10 +315,10 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          AppIcon(
                             hasFiles
-                                ? Icons.check_circle_rounded
-                                : Icons.check_circle_outline_rounded,
+                                ? AppIcons.checkCircle
+                                : AppIcons.checkCircle,
                             color: hasFiles
                                 ? const Color(0xFF4CAF50)
                                 : ApplicationColors.primaryAction,
@@ -366,8 +368,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.attach_file_rounded,
+                                const AppIcon(
+                                  AppIcons.attachFile,
                                   color: ApplicationColors.iconMuted,
                                   size: 20,
                                 ),
@@ -382,8 +384,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                                     ),
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.upload_file_rounded,
+                                const AppIcon(
+                                  AppIcons.upload,
                                   color: ApplicationColors.iconMuted,
                                   size: 20,
                                 ),
@@ -483,7 +485,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.check_circle_outline_rounded),
+                    : const AppIcon(AppIcons.checkCircle),
                 label: Text(_isSubmitting ? tr.tr('submitting') : tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),

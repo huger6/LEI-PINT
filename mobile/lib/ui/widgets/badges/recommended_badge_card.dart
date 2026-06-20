@@ -64,7 +64,7 @@ class RecommendedBadgeCard extends StatelessWidget {
                           ),
                         ),
                         child: const Icon(
-                          Icons.star_rounded,
+                          Icons.star,
                           color: Color(0xFFFFF6C7),
                           size: 34,
                         ),

@@ -11,6 +11,8 @@ import '../../widgets/badges/competences_section.dart';
 import '../../widgets/goals/goal_duration_sheet.dart';
 import '../../widgets/shared/translated_text.dart';
 import '../applications/application_page.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeDetailScreen extends StatefulWidget {
   const BadgeDetailScreen({super.key, required this.badge});
@@ -148,21 +150,21 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_rounded, size: 26),
+                    icon: const AppIcon(AppIcons.chevronBackward, size: 26),
                     color: AppColors.navIcon,
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: _toggleFavorite,
-                    icon: Icon(
-                      _isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                    icon: AppIcon(
+                      _isFavorite ? AppIcons.bookmarkFilled : AppIcons.bookmark,
                       size: 28,
                     ),
                     color: _isFavorite ? AppColors.primary : AppColors.iconMuted,
                   ),
                   IconButton(
                     onPressed: _shareBadge,
-                    icon: const Icon(Icons.share_rounded, size: 26),
+                    icon: const AppIcon(AppIcons.share, size: 26),
                     color: AppColors.iconMuted,
                   ),
                 ],
@@ -202,22 +204,22 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         children: [
                           if (badge.category.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.category_outlined,
+                              icon: AppIcons.area,
                               label: badge.category,
                             ),
                           if (badge.level.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.stairs_outlined,
+                              icon: AppIcons.ranking,
                               label: badge.level,
                             ),
                           if (badge.points > 0)
                             BadgeInfoTag(
-                              icon: Icons.stars_rounded,
+                              icon: AppIcons.starPoints,
                               label: '${badge.points} pts',
                             ),
                           if (badge.duration.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.schedule_rounded,
+                              icon: AppIcons.time,
                               label: badge.duration,
                             ),
                         ],
@@ -255,37 +257,39 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: OutlinedButton.icon(
-                          onPressed: _isAddingGoal ? null : _addAsGoal,
-                          icon: _isAddingGoal
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.flag_rounded, size: 20),
-                          label: Text(
-                            tr.tr('addAsGoal'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                    if (!context.watch<GoalsStore>().goals.any((g) => g.badgeId == badge.id)) ...[
+                      const SizedBox(height: 10),
+                      Center(
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: OutlinedButton.icon(
+                            onPressed: _isAddingGoal ? null : _addAsGoal,
+                            icon: _isAddingGoal
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const AppIcon(AppIcons.type, size: 20),
+                            label: Text(
+                              tr.tr('addAsGoal'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.secondary,
-                            side: BorderSide(color: AppColors.secondary),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.secondary,
+                              side: BorderSide(color: AppColors.secondary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 24),
                     if (badge.description.trim().isNotEmpty) ...[
                       BadgeSectionCard(

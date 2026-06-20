@@ -38,7 +38,6 @@ if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
     module.exports = mockRedis;
 } else {
     const redis = new Redis(process.env.REDIS_URL, {
-        // retry not to crash app
         retryStrategy(times) {
             const delay = Math.min(times * 50, 2000);
             return delay;
@@ -46,9 +45,51 @@ if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
         maxRetriesPerRequest: 3
     });
 
-    redis.on('error', (err) => {
-        console.error('Erro no Redis:', err);
+    let connected = false;
+
+    redis.on('ready', () => {
+        connected = true;
+        console.log('Redis connected.');
     });
 
-    module.exports = redis;
+    redis.on('error', (err) => {
+        connected = false;
+        console.error('Erro no Redis:', err.message);
+    });
+
+    redis.on('close', () => {
+        connected = false;
+    });
+
+    const safeRedis = {
+        async get(key) {
+            if (!connected) return null;
+            try { return await redis.get(key); } catch { return null; }
+        },
+        async incr(key) {
+            if (!connected) return 1;
+            try { return await redis.incr(key); } catch { return 1; }
+        },
+        async ttl(key) {
+            if (!connected) return -1;
+            try { return await redis.ttl(key); } catch { return -1; }
+        },
+        async set(key, value, mode, duration) {
+            if (!connected) return 'OK';
+            try { return await redis.set(key, value, mode, duration); } catch { return 'OK'; }
+        },
+        async del(key) {
+            if (!connected) return 0;
+            try { return await redis.del(key); } catch { return 0; }
+        },
+        async expire(key, seconds) {
+            if (!connected) return 1;
+            try { return await redis.expire(key, seconds); } catch { return 1; }
+        },
+        on(...args) {
+            return redis.on(...args);
+        }
+    };
+
+    module.exports = safeRedis;
 }

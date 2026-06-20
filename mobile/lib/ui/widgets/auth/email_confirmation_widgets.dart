@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class EmailConfirmationBody extends StatefulWidget {
   const EmailConfirmationBody({
@@ -106,8 +108,8 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
             color: const Color(0xFFE8F5E9),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.mark_email_read_outlined,
+          child: const AppIcon(
+            AppIcons.email,
             size: 42,
             color: AppColors.success,
           ),
@@ -221,8 +223,8 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         const SizedBox(height: 24),
         Divider(color: colorScheme.outline.withValues(alpha: 0.22)),
         const SizedBox(height: 16),
-        Icon(
-          Icons.info_outline_rounded,
+        AppIcon(
+          AppIcons.help,
           size: 18,
           color: colorScheme.onSurface.withValues(alpha: 0.5),
         ),

@@ -5,6 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/repositories/lang_repo.dart';
 import '../../../injection_container.dart';
 import '../../../models/lang_model.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class LanguageOption {
   const LanguageOption({
@@ -268,8 +270,8 @@ class _LanguageTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(
-                  Icons.language_rounded,
+                AppIcon(
+                  AppIcons.language,
                   size: 24,
                   color: isSelected ? AppColors.secondary : AppColors.outline,
                 ),
@@ -296,15 +298,15 @@ class _LanguageTile extends StatelessWidget {
                     ),
                   )
                 else if (isSelected)
-                  const Icon(
-                    Icons.check_circle_rounded,
+                  const AppIcon(
+                    AppIcons.checkCircle,
                     color: AppColors.primary,
                     size: 22,
                   )
                 else if (!option.modelReady &&
                     option.code != TranslationService.sourceLang)
-                  Icon(
-                    Icons.download_rounded,
+                  AppIcon(
+                    AppIcons.download,
                     color: AppColors.outline,
                     size: 22,
                   ),

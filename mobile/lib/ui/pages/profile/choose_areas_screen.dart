@@ -7,6 +7,8 @@ import '../../../models/area_model.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/profile/choose_areas_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 /// Lets a consultant choose the areas they belong to (1 to 5, one primary).
 ///
@@ -196,7 +198,7 @@ class _ChooseAreasScreenState extends State<ChooseAreasScreen> {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E2932)),
+          icon: const AppIcon(AppIcons.chevronBackward, color: Color(0xFF1E2932)),
         ),
         title: Text(
           tr.tr('chooseAreasTitle'),

@@ -4,6 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/badge_model.dart';
 import '../../../models/awarded_badge_model.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 Future<bool> showShareBadgeSheet(
   BuildContext context, {
@@ -85,7 +87,7 @@ class _ShareBadgeContent extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context, false),
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const AppIcon(AppIcons.close),
                   color: const Color(0xFF46535E),
                 ),
               ],
@@ -114,7 +116,7 @@ class _ShareBadgeContent extends StatelessWidget {
                       ),
                     ),
                     child: const Icon(
-                      Icons.star_rounded,
+                      Icons.star,
                       color: Colors.white,
                       size: 36,
                     ),
@@ -178,7 +180,7 @@ class _ShareBadgeContent extends StatelessWidget {
               height: 50,
               child: ElevatedButton.icon(
                 onPressed: () => _shareOnLinkedIn(context),
-                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                icon: const AppIcon(AppIcons.link, size: 20),
                 label: const Text('Partilhar no LinkedIn'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0A66C2),
@@ -207,8 +209,8 @@ class _ShareBadgeContent extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.link_rounded,
+                    const AppIcon(
+                      AppIcons.link,
                       size: 18,
                       color: Color(0xFF46535E),
                     ),

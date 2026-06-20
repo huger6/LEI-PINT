@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class AttachedDocument {
   const AttachedDocument({
@@ -48,7 +50,7 @@ class AttachedFilesList extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.description_outlined, color: Color(0xFF556571)),
+              const AppIcon(AppIcons.paper, color: Color(0xFF556571)),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -77,14 +79,14 @@ class AttachedFilesList extends StatelessWidget {
               IconButton(
                 tooltip: tr.tr('openLink'),
                 onPressed: () {},
-                icon: const Icon(Icons.link_rounded, color: Color(0xFF556571)),
+                icon: const AppIcon(AppIcons.link, color: Color(0xFF556571)),
               ),
               if (!readOnly)
                 IconButton(
                   tooltip: tr.tr('removeFile'),
                   onPressed: () => onDelete?.call(index),
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
+                  icon: const AppIcon(
+                    AppIcons.trash,
                     color: Color(0xFFD45555),
                   ),
                 ),

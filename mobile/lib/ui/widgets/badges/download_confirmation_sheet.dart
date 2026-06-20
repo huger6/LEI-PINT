@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 Future<void> showDownloadConfirmationSheet(
   BuildContext context, {
@@ -72,7 +74,7 @@ class _DownloadConfirmationContent extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const AppIcon(AppIcons.close),
                   color: const Color(0xFF46535E),
                 ),
               ],
@@ -86,8 +88,8 @@ class _DownloadConfirmationContent extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Color(0xFF59C13E),
               ),
-              child: const Icon(
-                Icons.check_rounded,
+              child: const AppIcon(
+                AppIcons.check,
                 color: Colors.white,
                 size: 40,
               ),
@@ -125,8 +127,8 @@ class _DownloadConfirmationContent extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.description_outlined,
+                  const AppIcon(
+                    AppIcons.paper,
                     size: 20,
                     color: Color(0xFF46535E),
                   ),
@@ -155,7 +157,7 @@ class _DownloadConfirmationContent extends StatelessWidget {
                   Navigator.pop(context);
                   OpenFilex.open(filePath);
                 },
-                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                icon: const AppIcon(AppIcons.link, size: 20),
                 label: const Text('Abrir Comprovativo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E6CA2),

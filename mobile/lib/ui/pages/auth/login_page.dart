@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/routes/app_router.dart';
 import '../../../injection_container.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -235,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: tr.tr('emailOrUsername'),
                         isRequired: true,
                         hintText: tr.tr('emailOrUsernameHint'),
-                        prefixIcon: Icons.email_outlined,
+                        prefixIcon: AppIcons.email,
                         keyboardType: TextInputType.text,
                         controller: _loginController,
                         hasError: _loginError != null,
@@ -262,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: tr.tr('password'),
                         isRequired: true,
                         hintText: tr.tr('enterPasswordHint'),
-                        prefixIcon: Icons.lock_outlined,
+                        prefixIcon: AppIcons.lock,
                         obscureText: true,
                         controller: _passwordController,
                         hasError: _passwordError != null,

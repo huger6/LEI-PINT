@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../core/theme/app_colors.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgeEmailConfirmationBody extends StatefulWidget {
   const BadgeEmailConfirmationBody({
@@ -125,8 +127,8 @@ class _BadgeEmailConfirmationBodyState
             color: AppColors.primaryContainer.withValues(alpha: 0.6),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.mark_email_unread_outlined,
+          child: const AppIcon(
+            AppIcons.email,
             size: 42,
             color: AppColors.primary,
           ),
@@ -170,8 +172,8 @@ class _BadgeEmailConfirmationBodyState
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.workspace_premium_rounded,
+              const AppIcon(
+                AppIcons.badgePremium,
                 size: 22,
                 color: AppColors.secondary,
               ),
@@ -203,7 +205,7 @@ class _BadgeEmailConfirmationBodyState
                       color: AppColors.onPrimary,
                     ),
                   )
-                : const Icon(Icons.send_rounded, size: 20),
+                : const AppIcon(AppIcons.send, size: 20),
             label: Text(
               _isSending ? tr.tr('sending') : tr.tr('sendConfirmationEmail'),
               style:
@@ -242,8 +244,8 @@ class _BadgeEmailConfirmationBodyState
             color: Color(0xFFE8F5E9),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.mark_email_read_outlined,
+          child: const AppIcon(
+            AppIcons.email,
             size: 42,
             color: AppColors.success,
           ),
@@ -286,8 +288,8 @@ class _BadgeEmailConfirmationBodyState
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.workspace_premium_rounded,
+              const AppIcon(
+                AppIcons.badgePremium,
                 size: 22,
                 color: AppColors.secondary,
               ),
@@ -403,8 +405,8 @@ class _BadgeEmailConfirmationBodyState
         const SizedBox(height: 16),
         Divider(color: colorScheme.outline.withValues(alpha: 0.22)),
         const SizedBox(height: 16),
-        Icon(
-          Icons.info_outline_rounded,
+        AppIcon(
+          AppIcons.help,
           size: 18,
           color: colorScheme.onSurface.withValues(alpha: 0.5),
         ),

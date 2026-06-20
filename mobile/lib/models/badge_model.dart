@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/utils/badge_visuals.dart';
 import 'skill_model.dart';
+import '../ui/widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeModel {
   const BadgeModel({
@@ -179,7 +180,7 @@ class BadgeModel {
     if (area.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.category_outlined,
+          icon: AppIcons.area,
           label: 'area',
           value: area,
         ),
@@ -189,7 +190,7 @@ class BadgeModel {
     if (points > 0) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.emoji_events_outlined,
+          icon: AppIcons.trophy,
           label: 'points',
           value: points.toString(),
         ),
@@ -199,7 +200,7 @@ class BadgeModel {
     if (stageCode.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.stairs_outlined,
+          icon: AppIcons.ranking,
           label: 'level',
           value: stageCode,
         ),
@@ -209,7 +210,7 @@ class BadgeModel {
     if (duration.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.schedule_rounded,
+          icon: AppIcons.time,
           label: 'duration',
           value: duration,
         ),
@@ -242,7 +243,7 @@ class BadgeModel {
           ]);
           return BadgeRequirement(
             id: id > 0 ? id : null,
-            icon: Icons.task_alt_outlined,
+            icon: AppIcons.checkCircle,
             text: text,
           );
         })
@@ -322,7 +323,7 @@ class BadgeAttribute {
     required this.value,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final String value;
 }
@@ -331,6 +332,6 @@ class BadgeRequirement {
   const BadgeRequirement({this.id, required this.icon, required this.text});
 
   final int? id;
-  final IconData icon;
+  final String icon;
   final String text;
 }

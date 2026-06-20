@@ -9,6 +9,8 @@ import '../../../presentation/state/badge_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/email_signature/email_signature_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class EmailSignatureScreen extends StatefulWidget {
   const EmailSignatureScreen({super.key});
@@ -120,7 +122,7 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E2932)),
+          icon: const AppIcon(AppIcons.chevronBackward, color: Color(0xFF1E2932)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -146,10 +148,10 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: tr.tr('myBadgesSearchHint'),
-                  prefixIcon: const Icon(Icons.search_rounded),
+                  prefixIcon: const AppIcon(AppIcons.search),
                   suffixIcon: IconButton(
                     onPressed: () {},
-                    icon: const Icon(Icons.tune_rounded),
+                    icon: const AppIcon(AppIcons.filter),
                   ),
                 ),
               ),
@@ -331,8 +333,8 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
                                   color: Color(0xFF3E88C8),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.check,
+                                child: const AppIcon(
+                                  AppIcons.check,
                                   color: Colors.white,
                                   size: 18,
                                 ),
@@ -379,8 +381,8 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
                         const CircleAvatar(
                           radius: 24,
                           backgroundColor: Color(0xFFD5EAF6),
-                          child: Icon(
-                            Icons.person,
+                          child: AppIcon(
+                            AppIcons.user,
                             color: Colors.white,
                             size: 28,
                           ),
@@ -543,13 +545,13 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
               ),
               const SizedBox(height: 12),
               _InstructionCard(
-                icon: Icons.email_outlined,
+                icon: AppIcons.email,
                 title: 'Gmail',
                 description: tr.tr('gmailInstructions'),
               ),
               const SizedBox(height: 10),
               _InstructionCard(
-                icon: Icons.mark_email_read_outlined,
+                icon: AppIcons.email,
                 title: 'Outlook',
                 description: tr.tr('outlookInstructions'),
               ),
@@ -564,7 +566,7 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
 }
 
 class _InstructionCard extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String title;
   final String description;
 
@@ -600,7 +602,7 @@ class _InstructionCard extends StatelessWidget {
               color: Color(0xFFD5EAF6),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF4D9ECC), size: 20),
+            child: AppIcon(icon, color: const Color(0xFF4D9ECC), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(

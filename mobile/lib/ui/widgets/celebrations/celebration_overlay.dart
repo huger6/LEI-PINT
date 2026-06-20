@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../core/services/celebration_service.dart';
 import '../../../core/theme/app_colors.dart';
 import 'confetti_painter.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 Future<void> showCelebrationOverlay(
   BuildContext context, {
@@ -117,20 +119,20 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
     super.dispose();
   }
 
-  IconData _milestoneIcon() {
+  String _milestoneIcon() {
     switch (widget.milestone.icon) {
       case 'star':
-        return Icons.star_rounded;
+        return AppIcons.star;
       case 'rocket':
-        return Icons.rocket_launch_rounded;
+        return AppIcons.spark;
       case 'trophy':
-        return Icons.emoji_events_rounded;
+        return AppIcons.trophy;
       case 'medal':
-        return Icons.military_tech_rounded;
+        return AppIcons.badge;
       case 'crown':
-        return Icons.workspace_premium_rounded;
+        return AppIcons.badgePremium;
       default:
-        return Icons.celebration_rounded;
+        return AppIcons.fire;
     }
   }
 
@@ -233,7 +235,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.celebration_rounded, size: 20),
+                          AppIcon(AppIcons.fire, size: 20),
                           SizedBox(width: 8),
                           Text('OK'),
                         ],
@@ -284,7 +286,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                 ),
               ],
             ),
-            child: Icon(
+            child: AppIcon(
               _milestoneIcon(),
               size: 52,
               color: accentColor,

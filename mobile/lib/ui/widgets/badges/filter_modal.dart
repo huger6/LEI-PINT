@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgeFilterResult {
   const BadgeFilterResult({
@@ -117,7 +119,7 @@ Future<BadgeFilterResult?> showFilterModal(
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
+                        icon: const AppIcon(AppIcons.close),
                         color: textSecondary,
                       ),
                     ],

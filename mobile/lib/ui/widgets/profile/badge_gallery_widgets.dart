@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../models/earned_badge_model.dart';
 import '../badges/my_badges_widgets.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class GalleryBadgeCard extends StatelessWidget {
   const GalleryBadgeCard({
@@ -76,16 +78,16 @@ class GalleryBadgeCard extends StatelessWidget {
                   children: [
                     if (level.isNotEmpty)
                       _InfoChip(
-                        icon: Icons.trending_up_rounded,
+                        icon: AppIcons.progress,
                         text: level,
                       ),
                     if (points > 0)
                       _InfoChip(
-                        icon: Icons.workspace_premium_outlined,
+                        icon: AppIcons.badgePremium,
                         text: '$points pts',
                       ),
                     _InfoChip(
-                      icon: Icons.calendar_month_rounded,
+                      icon: AppIcons.today,
                       text: _formatDate(earned.award.awardedAt),
                     ),
                   ],
@@ -133,10 +135,10 @@ class GalleryBadgeCard extends StatelessWidget {
                   width: 1.5,
                 ),
               ),
-              child: Icon(
+              child: AppIcon(
                 isFeatured
-                    ? Icons.check_rounded
-                    : Icons.add_rounded,
+                    ? AppIcons.check
+                    : AppIcons.add,
                 color: isFeatured
                     ? Colors.white
                     : const Color(0xFF6B7C8A),
@@ -160,7 +162,7 @@ class GalleryBadgeCard extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   const _InfoChip({required this.icon, required this.text});
 
-  final IconData icon;
+  final String icon;
   final String text;
 
   @override
@@ -168,7 +170,7 @@ class _InfoChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF445967)),
+        AppIcon(icon, size: 14, color: const Color(0xFF445967)),
         const SizedBox(width: 3),
         Flexible(
           child: Text(
@@ -221,8 +223,8 @@ class GalleryHeader extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.military_tech_outlined,
+              AppIcon(
+                AppIcons.badge,
                 color: Colors.white,
                 size: 24,
               ),
@@ -259,8 +261,8 @@ class GalleryHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.visibility_outlined,
+                const AppIcon(
+                  AppIcons.eye,
                   color: Colors.white,
                   size: 18,
                 ),
@@ -297,10 +299,10 @@ class GalleryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            AppIcon(
               isSearchEmpty
-                  ? Icons.search_off_rounded
-                  : Icons.emoji_events_outlined,
+                  ? AppIcons.search
+                  : AppIcons.trophy,
               size: 56,
               color: Colors.grey[400],
             ),

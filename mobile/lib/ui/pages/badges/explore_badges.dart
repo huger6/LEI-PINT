@@ -12,6 +12,8 @@ import '../../widgets/badges/filter_modal.dart';
 import 'badges_page.dart';
 import 'saved_badges_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ExploreCompetenciesScreen extends StatefulWidget {
   const ExploreCompetenciesScreen({super.key});
@@ -191,7 +193,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.bookmark_border_rounded, size: 28),
+                    icon: const AppIcon(AppIcons.bookmark, size: 28),
                     color: const Color(0xFF1E2932),
                   ),
                   IconButton(
@@ -205,7 +207,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.notifications_none, size: 31),
+                    icon: const AppIcon(AppIcons.bell, size: 31),
                     color: const Color(0xFF1E2932),
                   ),
                 ],
@@ -216,7 +218,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: tr.tr('searchBadgeHint'),
-                  prefixIcon: const Icon(Icons.search_rounded),
+                  prefixIcon: const AppIcon(AppIcons.search),
                   suffixIcon: IconButton(
                     onPressed: () async {
                       final result = await showFilterModal(
@@ -228,8 +230,8 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         setState(() => _activeFilter = result);
                       }
                     },
-                    icon: Icon(
-                      Icons.tune_rounded,
+                    icon: AppIcon(
+                      AppIcons.filter,
                       size: 22,
                       color: _activeFilter != null
                           ? const Color(0xFF5EAEDC)

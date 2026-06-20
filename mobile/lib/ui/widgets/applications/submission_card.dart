@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class SubmissionCard extends StatelessWidget {
   const SubmissionCard({
@@ -75,8 +77,8 @@ class SubmissionCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Icon(
-                  Icons.chevron_right_rounded,
+                AppIcon(
+                  AppIcons.chevronForward,
                   color: Colors.grey.shade400,
                   size: 22,
                 ),
@@ -84,8 +86,8 @@ class SubmissionCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.access_time_rounded,
+                    AppIcon(
+                      AppIcons.time,
                       size: 14,
                       color: Colors.grey.shade500,
                     ),
@@ -127,9 +129,9 @@ class _MedalIcon extends StatelessWidget {
             top: 30,
             child: Row(
               children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 20),
+                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 20),
                 const SizedBox(width: 1),
-                Icon(Icons.bookmark, color: ribbonColor, size: 20),
+                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 20),
               ],
             ),
           ),
@@ -141,8 +143,8 @@ class _MedalIcon extends StatelessWidget {
               color: medalColor,
               border: Border.all(color: const Color(0xFF7A7A7A), width: 1.5),
             ),
-            child: const Icon(
-              Icons.star_rounded,
+            child: const AppIcon(
+              AppIcons.star,
               color: Colors.white,
               size: 24,
             ),

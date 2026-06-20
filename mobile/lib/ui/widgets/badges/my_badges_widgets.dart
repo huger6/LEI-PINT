@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgesSearchBar extends StatelessWidget {
   const BadgesSearchBar({
@@ -23,7 +25,7 @@ class BadgesSearchBar extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: const Icon(Icons.search_rounded),
+        prefixIcon: const AppIcon(AppIcons.search),
       ),
       style: const TextStyle(fontSize: 14),
     );
@@ -157,8 +159,8 @@ class AchievedBadgeCard extends StatelessWidget {
                               if (level.trim().isNotEmpty)
                                 _BadgeMetaChip(
                                   icon: isSpecial
-                                      ? Icons.star_rounded
-                                      : Icons.workspace_premium_outlined,
+                                      ? AppIcons.star
+                                      : AppIcons.badgePremium,
                                   label: level,
                                   iconColor: isSpecial
                                       ? const Color(0xFFD4A843)
@@ -167,24 +169,24 @@ class AchievedBadgeCard extends StatelessWidget {
                                 ),
                               if (points > 0)
                                 _BadgeMetaChip(
-                                  icon: Icons.emoji_events_outlined,
+                                  icon: AppIcons.trophy,
                                   label: '$points ${tr.tr('pointsLabel')}',
                                   maxWidth: maxChipWidth,
                                 ),
                               if (badge.category.trim().isNotEmpty)
                                 _BadgeMetaChip(
-                                  icon: Icons.category_outlined,
+                                  icon: AppIcons.area,
                                   label: badge.category,
                                   maxWidth: maxChipWidth,
                                 ),
                               _BadgeMetaChip(
-                                icon: Icons.calendar_month_rounded,
+                                icon: AppIcons.today,
                                 label: _formatDate(completionDate),
                                 maxWidth: maxChipWidth,
                               ),
                               if (expirationDate != null)
                                 _BadgeMetaChip(
-                                  icon: Icons.event_busy_rounded,
+                                  icon: AppIcons.closeCircle,
                                   label: '${tr.tr('expiresOn')} ${_formatDate(expirationDate!)}',
                                   iconColor: const Color(0xFFB05B2E),
                                   maxWidth: maxChipWidth,
@@ -204,7 +206,7 @@ class AchievedBadgeCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onDownload,
-                    icon: const Icon(Icons.download_rounded, size: 18),
+                    icon: const AppIcon(AppIcons.download, size: 18),
                     label: FittedBox(
                       child: Text(tr.tr('proofDocument')),
                     ),
@@ -223,7 +225,7 @@ class AchievedBadgeCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onShare,
-                    icon: const Icon(Icons.share_outlined, size: 18),
+                    icon: const AppIcon(AppIcons.share, size: 18),
                     label: FittedBox(
                       child: Text(tr.tr('share')),
                     ),
@@ -264,7 +266,7 @@ class _BadgeMetaChip extends StatelessWidget {
     this.iconColor = const Color(0xFF445967),
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   /// Upper bound (the parent column width) the chip may occupy. The label
@@ -285,7 +287,7 @@ class _BadgeMetaChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: iconColor),
+            AppIcon(icon, size: 15, color: iconColor),
             const SizedBox(width: 4),
             Flexible(
               child: Text(
@@ -372,8 +374,8 @@ class ApplicationCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.category_outlined,
+                      const AppIcon(
+                        AppIcons.area,
                         size: 16,
                         color: Color(0xFF445967),
                       ),
@@ -394,8 +396,8 @@ class ApplicationCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.calendar_month_rounded,
+                    const AppIcon(
+                      AppIcons.today,
                       size: 16,
                       color: Color(0xFF445967),
                     ),
@@ -508,7 +510,7 @@ class BadgeMedalIcon extends StatelessWidget {
               border: Border.all(color: const Color(0xFF7A7A7A), width: 1.4),
             ),
             child: Icon(
-              Icons.star_rounded,
+              Icons.star,
               color: Colors.white,
               size: iconSize,
             ),

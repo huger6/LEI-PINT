@@ -9,6 +9,8 @@ import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/characteristics_widgets.dart';
 import '../../widgets/shared/translated_text.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class CharacteristicsScreen extends StatefulWidget {
   const CharacteristicsScreen({super.key});
@@ -66,7 +68,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E2932)),
+          icon: const AppIcon(AppIcons.chevronBackward, color: Color(0xFF1E2932)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -92,8 +94,8 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                     const CircleAvatar(
                       radius: 36,
                       backgroundColor: Colors.white24,
-                      child: Icon(
-                        Icons.person_outline_rounded,
+                      child: AppIcon(
+                        AppIcons.user,
                         color: Colors.white,
                         size: 40,
                       ),
@@ -136,7 +138,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               if (biography != null && biography.trim().isNotEmpty) ...[
                 CharacteristicSectionHeader(
                   title: tr.tr('biography'),
-                  icon: Icons.info_outline_rounded,
+                  icon: AppIcons.help,
                 ),
                 Container(
                   width: double.infinity,
@@ -166,34 +168,34 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               if (learningPath != null && learningPath.trim().isNotEmpty) ...[
                 const CharacteristicSectionHeader(
                   title: 'Learning Path',
-                  icon: Icons.route_outlined,
+                  icon: AppIcons.learningPath,
                 ),
                 CharacteristicChip(
                   label: learningPath.trim(),
-                  icon: Icons.route_outlined,
+                  icon: AppIcons.learningPath,
                 ),
               ],
 
               if (serviceLine != null && serviceLine.trim().isNotEmpty) ...[
                 const CharacteristicSectionHeader(
                   title: 'Service Line',
-                  icon: Icons.business_outlined,
+                  icon: AppIcons.serviceLine,
                 ),
                 CharacteristicChip(
                   label: serviceLine.trim(),
-                  icon: Icons.business_outlined,
+                  icon: AppIcons.serviceLine,
                 ),
               ],
 
               if (areas.isNotEmpty) ...[
                 CharacteristicSectionHeader(
                   title: tr.tr('areas'),
-                  icon: Icons.category_outlined,
+                  icon: AppIcons.area,
                 ),
                 ...areas.map(
                   (area) => CharacteristicChip(
                     label: area.name,
-                    icon: Icons.category_outlined,
+                    icon: AppIcons.area,
                     isPrimary: area.isPrimary,
                   ),
                 ),
@@ -202,7 +204,7 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
               if (skills.isNotEmpty) ...[
                 CharacteristicSectionHeader(
                   title: tr.tr('skills'),
-                  icon: Icons.extension_outlined,
+                  icon: AppIcons.structure,
                 ),
                 Wrap(
                   spacing: 8,
@@ -241,8 +243,8 @@ class _CharacteristicsScreenState extends State<CharacteristicsScreen> {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(
-                          Icons.person_search_outlined,
+                        AppIcon(
+                          AppIcons.tablerUsers,
                           size: 64,
                           color: Colors.grey[350],
                         ),

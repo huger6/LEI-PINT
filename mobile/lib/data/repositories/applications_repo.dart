@@ -193,6 +193,7 @@ class ApplicationsRepository {
   Future<Map<String, dynamic>> submitApplication(String applicationGuid) async {
     final payload = await _apiClient.post(
       ApiEndpoints.submitApplication(applicationGuid),
+      data: {},
       options: _longTimeout,
     );
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class SuccessHeader extends StatelessWidget {
   const SuccessHeader({super.key});
@@ -21,8 +23,8 @@ class SuccessHeader extends StatelessWidget {
               color: Color(0xFFCCEDD8),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check_circle_outline,
+            child: const AppIcon(
+              AppIcons.checkCircle,
               size: 42,
               color: Color(0xFF4AA170),
             ),
@@ -102,19 +104,19 @@ class SummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           DetailRow(
-            icon: Icons.sync_rounded,
+            icon: AppIcons.sync,
             label: tr.tr('badgeTypeLabel'),
             value: badgeType,
           ),
           const SizedBox(height: 10),
           DetailRow(
-            icon: Icons.access_time_outlined,
+            icon: AppIcons.time,
             label: tr.tr('submittedAtLabel'),
             value: submittedAtLabel,
           ),
           const SizedBox(height: 10),
           DetailRow(
-            icon: Icons.mail_outline,
+            icon: AppIcons.email,
             label: tr.tr('confirmationSentTo'),
             value: confirmationEmail,
           ),
@@ -132,7 +134,7 @@ class DetailRow extends StatelessWidget {
     required this.value,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final String value;
 
@@ -143,7 +145,7 @@ class DetailRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 24, color: const Color(0xFF2B3238)),
+          child: AppIcon(icon, size: 24, color: const Color(0xFF2B3238)),
         ),
         const SizedBox(width: 10),
         Expanded(

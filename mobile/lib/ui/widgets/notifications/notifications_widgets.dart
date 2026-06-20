@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/notification_defs.dart';
 import '../../../models/notification_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -57,7 +59,7 @@ class NotificationTypeChip extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final String icon;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -80,7 +82,7 @@ class NotificationTypeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              AppIcon(
                 icon,
                 size: 16,
                 color: isSelected ? Colors.white : color,
@@ -199,7 +201,7 @@ class NotificationCard extends StatelessWidget {
                 color: display.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(display.icon, color: display.color, size: 22),
+              child: AppIcon(display.icon, color: display.color, size: 22),
             ),
             Expanded(
               child: Column(
@@ -232,7 +234,7 @@ class NotificationCard extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: onClose,
-                        icon: const Icon(Icons.close, size: 22),
+                        icon: const AppIcon(AppIcons.close, size: 22),
                         color: const Color(0xFF8B96A1),
                         padding: EdgeInsets.zero,
                         constraints:
@@ -269,7 +271,7 @@ class NotificationCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            AppIcon(
                               typeDisplay.icon,
                               size: 12,
                               color: typeDisplay.color,

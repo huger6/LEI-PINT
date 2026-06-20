@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../../ui/widgets/shared/app_icon/app_icon_data.dart';
 
 class NotificationDisplay {
   const NotificationDisplay({
@@ -9,7 +10,7 @@ class NotificationDisplay {
     required this.label,
   });
 
-  final IconData icon;
+  final String icon;
   final Color color;
   final String label;
 }
@@ -22,7 +23,7 @@ class NotificationTypeDisplay {
   });
 
   final String label;
-  final IconData icon;
+  final String icon;
   final Color color;
 }
 
@@ -46,55 +47,55 @@ abstract class NotificationDefs {
       case 'HOME':
         return NotificationTypeDisplay(
           label: 'notifTypeHome',
-          icon: Icons.home_outlined,
+          icon: AppIcons.home,
           color: AppColors.notifHome,
         );
       case 'BADGES':
         return NotificationTypeDisplay(
           label: 'notifTypeBadges',
-          icon: Icons.workspace_premium_outlined,
+          icon: AppIcons.badgePremium,
           color: AppColors.notifBadges,
         );
       case 'APPLICATIONS':
         return NotificationTypeDisplay(
           label: 'notifTypeApplications',
-          icon: Icons.description_outlined,
+          icon: AppIcons.paper,
           color: AppColors.notifApplications,
         );
       case 'ACHIEVEMENTS':
         return NotificationTypeDisplay(
           label: 'notifTypeAchievements',
-          icon: Icons.emoji_events_outlined,
+          icon: AppIcons.trophy,
           color: AppColors.notifAchievements,
         );
       case 'POINTS':
         return NotificationTypeDisplay(
           label: 'notifTypePoints',
-          icon: Icons.stars_outlined,
+          icon: AppIcons.starPoints,
           color: AppColors.notifPoints,
         );
       case 'OBJECTIVES':
         return NotificationTypeDisplay(
           label: 'notifTypeObjectives',
-          icon: Icons.flag_outlined,
+          icon: AppIcons.type,
           color: AppColors.notifObjectives,
         );
       case 'EVOLUTION':
         return NotificationTypeDisplay(
           label: 'notifTypeEvolution',
-          icon: Icons.trending_up_rounded,
+          icon: AppIcons.progress,
           color: AppColors.secondary,
         );
       case 'ANNOUNCEMENTS':
         return NotificationTypeDisplay(
           label: 'notifTypeAnnouncements',
-          icon: Icons.campaign_outlined,
+          icon: AppIcons.megaphone,
           color: AppColors.notifAnnouncements,
         );
       default:
         return NotificationTypeDisplay(
           label: 'notifTypeSystem',
-          icon: Icons.settings_outlined,
+          icon: AppIcons.settings,
           color: AppColors.notifSystem,
         );
     }
@@ -104,25 +105,25 @@ abstract class NotificationDefs {
     switch (definitionId) {
       case applicationSubmitted:
         return NotificationDisplay(
-          icon: Icons.send_rounded,
+          icon: AppIcons.send,
           color: AppColors.notifSubmitted,
           label: 'notifApplicationSubmitted',
         );
       case approvedByTm:
         return NotificationDisplay(
-          icon: Icons.fact_check_outlined,
+          icon: AppIcons.certificate,
           color: AppColors.notifApprovedTm,
           label: 'notifApprovedByTm',
         );
       case approvedBySll:
         return NotificationDisplay(
-          icon: Icons.verified_rounded,
+          icon: AppIcons.skills,
           color: AppColors.notifAccepted,
           label: 'notifBadgeAccepted',
         );
       case applicationRejected:
         return NotificationDisplay(
-          icon: Icons.cancel_outlined,
+          icon: AppIcons.closeCircle,
           color: AppColors.notifRejected,
           label: 'notifApplicationRejected',
         );
@@ -135,27 +136,27 @@ abstract class NotificationDefs {
     final lower = (url ?? '').toLowerCase();
     if (lower.contains('accept') || lower.contains('approve')) {
       return NotificationDisplay(
-        icon: Icons.check_circle_outline_rounded,
+        icon: AppIcons.checkCircle,
         color: AppColors.notifAccepted,
         label: 'notifApproved',
       );
     }
     if (lower.contains('reject') || lower.contains('return')) {
       return NotificationDisplay(
-        icon: Icons.cancel_outlined,
+        icon: AppIcons.closeCircle,
         color: AppColors.notifRejected,
         label: 'notifRejected',
       );
     }
     if (lower.contains('expir')) {
       return NotificationDisplay(
-        icon: Icons.timer_off_outlined,
+        icon: AppIcons.clock,
         color: AppColors.notifExpired,
         label: 'notifExpiration',
       );
     }
     return NotificationDisplay(
-      icon: Icons.notifications_outlined,
+      icon: AppIcons.bell,
       color: AppColors.onSurface,
       label: 'notifGeneric',
     );

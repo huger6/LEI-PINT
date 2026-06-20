@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../presentation/state/dashboard_store.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class SimpleLineStatsCard extends StatefulWidget {
   const SimpleLineStatsCard({
@@ -135,10 +137,10 @@ class _SimpleLineStatsCardState extends State<SimpleLineStatsCard> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
+                AppIcon(
                   isPositive
-                      ? Icons.arrow_drop_up_rounded
-                      : Icons.arrow_drop_down_rounded,
+                      ? AppIcons.keyboardArrowUp
+                      : AppIcons.keyboardArrowDown,
                   color: isPositive
                       ? const Color(0xFF5BBF76)
                       : const Color(0xFFD63D2B),

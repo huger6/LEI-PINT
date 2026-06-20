@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class ExploreBadgeCard extends StatelessWidget {
   const ExploreBadgeCard({
@@ -83,8 +85,8 @@ class ExploreBadgeCard extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: onSaveToggle,
-                        child: Icon(
-                          isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                        child: AppIcon(
+                          isSaved ? AppIcons.bookmarkFilled : AppIcons.bookmark,
                           color: isSaved ? const Color(0xFF00B8E0) : const Color(0xFF415865),
                           size: 34,
                         ),
@@ -96,13 +98,13 @@ class ExploreBadgeCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _DetailItem(
-                          icon: Icons.category_outlined,
+                          icon: AppIcons.area,
                           value: category,
                         ),
                       ),
                       Expanded(
                         child: _DetailItem(
-                          icon: Icons.stairs_outlined,
+                          icon: AppIcons.ranking,
                           value: level,
                         ),
                       ),
@@ -110,7 +112,7 @@ class ExploreBadgeCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   _DetailItem(
-                    icon: Icons.stars_rounded,
+                    icon: AppIcons.starPoints,
                     value: '${points.toString()} pts',
                   ),
                   if (description.trim().isNotEmpty) ...[
@@ -134,7 +136,7 @@ class ExploreBadgeCard extends StatelessWidget {
                         radius: 12,
                         backgroundColor: Color(0xFFF5C539),
                         child: Icon(
-                          Icons.star_rounded,
+                          Icons.star,
                           size: 15,
                           color: Color(0xFF856200),
                         ),
@@ -154,7 +156,7 @@ class ExploreBadgeCard extends StatelessWidget {
 class _DetailItem extends StatelessWidget {
   const _DetailItem({required this.icon, required this.value});
 
-  final IconData icon;
+  final String icon;
   final String value;
 
   @override
@@ -164,7 +166,7 @@ class _DetailItem extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 17, color: const Color(0xFF3F5662)),
+          child: AppIcon(icon, size: 17, color: const Color(0xFF3F5662)),
         ),
         const SizedBox(width: 8),
         Flexible(
@@ -225,14 +227,14 @@ class _MedalBadgeIcon extends StatelessWidget {
                       imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const Icon(
-                        Icons.star_rounded,
+                        Icons.star,
                         color: Color(0xFFFFF6C7),
                         size: 40,
                       ),
                     ),
                   )
                 : const Icon(
-                    Icons.star_rounded,
+                    Icons.star,
                     color: Color(0xFFFFF6C7),
                     size: 40,
                   ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/sync_manager.dart';
+import 'app_icon/app_icon.dart';
+import 'app_icon/app_icon_data.dart';
 
 enum AppTab { explore, badges, home, progress, profile }
 
@@ -33,7 +35,7 @@ class AppBottomNavBar extends StatelessWidget {
         children: [
           Expanded(
             child: _BottomNavItem(
-              icon: Icons.search_rounded,
+              icon: AppIcons.search,
               label: tr.tr('navExplore'),
               isActive: currentTab == AppTab.explore,
               onTap: () => _handleTap(context, AppTab.explore),
@@ -41,7 +43,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomNavItem(
-              icon: Icons.workspace_premium_outlined,
+              icon: AppIcons.badgePremium,
               label: tr.tr('navBadges'),
               isActive: currentTab == AppTab.badges,
               onTap: () => _handleTap(context, AppTab.badges),
@@ -49,7 +51,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomNavItem(
-              icon: Icons.home_outlined,
+              icon: AppIcons.home,
               label: tr.tr('navHome'),
               isActive: currentTab == AppTab.home,
               onTap: () => _handleTap(context, AppTab.home),
@@ -57,7 +59,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomNavItem(
-              icon: Icons.query_stats_rounded,
+              icon: AppIcons.progress,
               label: tr.tr('navProgress'),
               isActive: currentTab == AppTab.progress,
               onTap: () => _handleTap(context, AppTab.progress),
@@ -65,7 +67,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomNavItem(
-              icon: Icons.person_outline_rounded,
+              icon: AppIcons.user,
               label: tr.tr('navProfile'),
               isActive: currentTab == AppTab.profile,
               onTap: () => _handleTap(context, AppTab.profile),
@@ -109,7 +111,7 @@ class _BottomNavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
@@ -129,7 +131,7 @@ class _BottomNavItem extends StatelessWidget {
               color: isActive ? const Color(0xFF6ABBE0) : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(icon, size: 30, color: const Color(0xFF48515A)),
+            child: AppIcon(icon, size: 30, color: const Color(0xFF48515A)),
           ),
           const SizedBox(height: 4),
           Text(

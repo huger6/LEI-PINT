@@ -10,6 +10,7 @@ import '../../../core/routes/app_router.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
 import 'points_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class EvolucaoScreen extends StatefulWidget {
   const EvolucaoScreen({super.key});
@@ -77,7 +78,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
           (s) => ActivityItem(
             title: s.badge.title,
             timeAgo: tr.tr('timeAgoValue').replaceAll('{time}', s.timestamp),
-            icon: Icons.workspace_premium_rounded,
+            icon: AppIcons.badgePremium,
           ),
         )
         .toList(growable: false);
@@ -120,26 +121,26 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   MiniStatCard(
                     title: tr.tr('badgesObtained'),
                     value: '$badgeCount',
-                    icon: Icons.workspace_premium_rounded,
+                    icon: AppIcons.badgePremium,
                     accentColor: const Color(0xFF66B6E6),
                     onTap: () => context.go(AppRouter.myBadges),
                   ),
                   MiniStatCard(
                     title: tr.tr('activeAchievements'),
                     value: '$activeBadges',
-                    icon: Icons.emoji_events_outlined,
+                    icon: AppIcons.trophy,
                     accentColor: const Color(0xFF83A9E8),
                   ),
                   MiniStatCard(
                     title: tr.tr('levelsCompleted'),
                     value: '$uniqueLevels',
-                    icon: Icons.auto_graph_rounded,
+                    icon: AppIcons.evolution,
                     accentColor: const Color(0xFF8BC4D9),
                   ),
                   MiniStatCard(
                     title: tr.tr('totalPoints'),
                     value: '${dashStore.totalPoints > 0 ? dashStore.totalPoints : (user?.totalPoints ?? 0)}',
-                    icon: Icons.stars_rounded,
+                    icon: AppIcons.starPoints,
                     accentColor: const Color(0xFF96B8CF),
                     onTap: () {
                       Navigator.push(

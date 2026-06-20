@@ -6,6 +6,8 @@ import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../badges/my_badges_widgets.dart';
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class ApplicationDetailColors {
   static const Color pageBackground = Color(0xFFF0F3F6);
@@ -83,17 +85,17 @@ class ApplicationDetailHeader extends StatelessWidget {
               children: [
                 if (hasServiceLine)
                   _HeaderMetaChip(
-                    icon: Icons.business_outlined,
+                    icon: AppIcons.serviceLine,
                     label: badge.serviceLine!,
                   ),
                 if (hasCategory)
                   _HeaderMetaChip(
-                    icon: Icons.category_outlined,
+                    icon: AppIcons.area,
                     label: badge.category,
                   ),
                 if (hasLevel)
                   _HeaderMetaChip(
-                    icon: Icons.stairs_outlined,
+                    icon: AppIcons.ranking,
                     label: badge.level,
                   ),
               ],
@@ -147,7 +149,7 @@ class _HeaderMetaChip extends StatelessWidget {
     required this.label,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -163,7 +165,7 @@ class _HeaderMetaChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            AppIcon(
               icon,
               size: 15,
               color: ApplicationDetailColors.secondaryText,
@@ -291,11 +293,11 @@ class _ApplicationProgressStepperState
 
     String statusMessage;
     Color statusColor;
-    IconData statusIcon;
+    String statusIcon;
     if (isAccepted) {
       statusMessage = tr.tr('applicationApprovedSuccess');
       statusColor = ApplicationDetailColors.stepAccepted;
-      statusIcon = Icons.check_circle_rounded;
+      statusIcon = AppIcons.checkCircle;
     } else if (isRejected) {
       if (_rejectedByTM) {
         statusMessage = tr.tr('rejectedByTM');
@@ -303,19 +305,19 @@ class _ApplicationProgressStepperState
         statusMessage = tr.tr('rejectedBySL');
       }
       statusColor = ApplicationDetailColors.stepRejected;
-      statusIcon = Icons.cancel_rounded;
+      statusIcon = AppIcons.closeCircle;
     } else if (isInValidation) {
       statusMessage = tr.tr('inReviewBySLL');
       statusColor = ApplicationDetailColors.stepCurrent;
-      statusIcon = Icons.hourglass_top_rounded;
+      statusIcon = AppIcons.time;
     } else if (isSubmitted) {
       statusMessage = tr.tr('inReviewByTM');
       statusColor = ApplicationDetailColors.stepCurrent;
-      statusIcon = Icons.hourglass_top_rounded;
+      statusIcon = AppIcons.time;
     } else {
       statusMessage = tr.tr('applicationOpen');
       statusColor = ApplicationDetailColors.mutedText;
-      statusIcon = Icons.edit_note_rounded;
+      statusIcon = AppIcons.pencil;
     }
 
     final bool rejAtStep2 = isRejected && currentStep == 2;
@@ -457,7 +459,7 @@ class _ApplicationProgressStepperState
             ),
             child: Row(
               children: [
-                Icon(statusIcon, size: 20, color: statusColor),
+                AppIcon(statusIcon, size: 20, color: statusColor),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -506,15 +508,15 @@ class _StepDot extends StatelessWidget {
     if (isCurrent && isRejected) {
       bgColor = ApplicationDetailColors.stepRejected;
       borderColor = ApplicationDetailColors.stepRejected;
-      child = const Icon(Icons.close, color: Colors.white, size: 18);
+      child = const AppIcon(AppIcons.close, color: Colors.white, size: 18);
     } else if (isCurrent && isFinalStep && isAccepted) {
       bgColor = ApplicationDetailColors.stepAccepted;
       borderColor = ApplicationDetailColors.stepAccepted;
-      child = const Icon(Icons.check, color: Colors.white, size: 18);
+      child = const AppIcon(AppIcons.check, color: Colors.white, size: 18);
     } else if (isCompleted) {
       bgColor = ApplicationDetailColors.stepCompleted;
       borderColor = ApplicationDetailColors.stepCompleted;
-      child = const Icon(Icons.check, color: Colors.white, size: 18);
+      child = const AppIcon(AppIcons.check, color: Colors.white, size: 18);
     } else if (isCurrent) {
       bgColor = Colors.white;
       borderColor = ApplicationDetailColors.stepCurrent;
@@ -662,14 +664,14 @@ class ApplicationInfoSection extends StatelessWidget {
           const SizedBox(height: 12),
           if (openedAt != null)
             _InfoRow(
-              icon: Icons.folder_open_outlined,
+              icon: AppIcons.paper,
               label: tr.tr('openedAt'),
               value: _formatDate(openedAt!),
             ),
           if (openedAt != null) const SizedBox(height: 10),
           if (submittedAt != null)
             _InfoRow(
-              icon: Icons.send_outlined,
+              icon: AppIcons.send,
               label: tr.tr('submittedAtLabel'),
               value: _formatDate(submittedAt!),
             ),
@@ -741,7 +743,7 @@ class _InfoRow extends StatelessWidget {
     required this.value,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final String value;
 
@@ -749,7 +751,7 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
+        AppIcon(
           icon,
           size: 20,
           color: ApplicationDetailColors.primaryAction,
@@ -799,31 +801,31 @@ class ApplicationBadgeAttributes extends StatelessWidget {
 
     if (badge.category.trim().isNotEmpty) {
       chips.add(_AttributeChipData(
-        icon: Icons.category_outlined,
+        icon: AppIcons.area,
         label: badge.category,
       ));
     }
     if (badge.level.trim().isNotEmpty) {
       chips.add(_AttributeChipData(
-        icon: Icons.trending_up_rounded,
+        icon: AppIcons.progress,
         label: badge.level,
       ));
     }
     if (badge.points > 0) {
       chips.add(_AttributeChipData(
-        icon: Icons.workspace_premium_outlined,
+        icon: AppIcons.badgePremium,
         label: '${badge.points} pts',
       ));
     }
     if (badge.duration.trim().isNotEmpty) {
       chips.add(_AttributeChipData(
-        icon: Icons.schedule_outlined,
+        icon: AppIcons.time,
         label: badge.duration,
       ));
     }
     if (badge.expirationDays != null && badge.expirationDays! > 0) {
       chips.add(_AttributeChipData(
-        icon: Icons.event_available_rounded,
+        icon: AppIcons.checkCircle,
         label: tr.tr('validityDays').replaceAll('{days}', '${badge.expirationDays}'),
       ));
     }
@@ -866,7 +868,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                const Icon(Icons.calendar_today_rounded, size: 14, color: ApplicationDetailColors.mutedText),
+                const AppIcon(AppIcons.today, size: 14, color: ApplicationDetailColors.mutedText),
                 const SizedBox(width: 6),
                 Text(
                   '${tr.tr('createdAt')} ${badge.createdAt!.day.toString().padLeft(2, '0')}/${badge.createdAt!.month.toString().padLeft(2, '0')}/${badge.createdAt!.year}',
@@ -943,14 +945,14 @@ class ApplicationBadgeAttributes extends StatelessWidget {
 
 class _AttributeChipData {
   const _AttributeChipData({required this.icon, required this.label});
-  final IconData icon;
+  final String icon;
   final String label;
 }
 
 class _AttributeChip extends StatelessWidget {
   const _AttributeChip({required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -964,7 +966,7 @@ class _AttributeChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: ApplicationDetailColors.primaryAction),
+          AppIcon(icon, size: 16, color: ApplicationDetailColors.primaryAction),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
@@ -1122,8 +1124,8 @@ class ApplicationRequirementsList extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.description_outlined,
+                            const AppIcon(
+                              AppIcons.paper,
                               size: 18,
                               color: ApplicationDetailColors.primaryAction,
                             ),
@@ -1156,8 +1158,8 @@ class ApplicationRequirementsList extends StatelessWidget {
                                 ),
                               ),
                             const SizedBox(width: 6),
-                            const Icon(
-                              Icons.download_rounded,
+                            const AppIcon(
+                              AppIcons.download,
                               size: 18,
                               color: ApplicationDetailColors.primaryAction,
                             ),
@@ -1206,8 +1208,8 @@ class SuccessSubmissionDialog extends StatelessWidget {
                 color: Color(0xFFE2F5E9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check_circle_rounded,
+              child: const AppIcon(
+                AppIcons.checkCircle,
                 size: 38,
                 color: Color(0xFF4AA170),
               ),

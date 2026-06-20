@@ -3,48 +3,50 @@ import 'package:flutter/material.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/profile/help_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
   static const _sections = [
     _HelpEntry(
-      icon: Icons.dashboard_outlined,
+      icon: AppIcons.home,
       titleKey: 'helpDashboardTitle',
       descKey: 'helpDashboardDesc',
     ),
     _HelpEntry(
-      icon: Icons.explore_outlined,
+      icon: AppIcons.target,
       titleKey: 'helpExploreTitle',
       descKey: 'helpExploreDesc',
     ),
     _HelpEntry(
-      icon: Icons.workspace_premium_outlined,
+      icon: AppIcons.badgePremium,
       titleKey: 'helpMyBadgesTitle',
       descKey: 'helpMyBadgesDesc',
     ),
     _HelpEntry(
-      icon: Icons.trending_up_outlined,
+      icon: AppIcons.progress,
       titleKey: 'helpEvolutionTitle',
       descKey: 'helpEvolutionDesc',
     ),
     _HelpEntry(
-      icon: Icons.person_outline_rounded,
+      icon: AppIcons.user,
       titleKey: 'helpProfileTitle',
       descKey: 'helpProfileDesc',
     ),
     _HelpEntry(
-      icon: Icons.description_outlined,
+      icon: AppIcons.paper,
       titleKey: 'helpApplicationsTitle',
       descKey: 'helpApplicationsDesc',
     ),
     _HelpEntry(
-      icon: Icons.notifications_none_rounded,
+      icon: AppIcons.bell,
       titleKey: 'helpNotificationsTitle',
       descKey: 'helpNotificationsDesc',
     ),
     _HelpEntry(
-      icon: Icons.share_outlined,
+      icon: AppIcons.share,
       titleKey: 'helpShareTitle',
       descKey: 'helpShareDesc',
     ),
@@ -69,7 +71,7 @@ class HelpScreen extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E2932)),
+          icon: const AppIcon(AppIcons.chevronBackward, color: Color(0xFF1E2932)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -92,8 +94,8 @@ class HelpScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Icon(
-                      Icons.help_outline_rounded,
+                    const AppIcon(
+                      AppIcons.help,
                       color: Colors.white,
                       size: 48,
                     ),
@@ -152,7 +154,7 @@ class _HelpEntry {
     required this.descKey,
   });
 
-  final IconData icon;
+  final String icon;
   final String titleKey;
   final String descKey;
 }

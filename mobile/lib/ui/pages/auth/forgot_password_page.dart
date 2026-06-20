@@ -5,6 +5,8 @@ import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../../core/sync_manager.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -69,7 +71,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const AppIcon(AppIcons.chevronBackward),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(tr.tr('recoverPassword')),
@@ -103,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             CustomTextField(
                               label: tr.tr('email'),
                               hintText: tr.tr('emailHint'),
-                              prefixIcon: Icons.email_outlined,
+                              prefixIcon: AppIcons.email,
                               keyboardType: TextInputType.emailAddress,
                               controller: _emailController,
                               validator: FormValidators.validateEmail,
@@ -132,8 +134,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.check_circle,
+                            AppIcon(
+                              AppIcons.checkCircle,
                               color: colorScheme.primary,
                               size: 50,
                             ),

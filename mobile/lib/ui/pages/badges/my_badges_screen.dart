@@ -17,6 +17,8 @@ import '../../widgets/badges/share_badge_sheet.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/badges/my_badges_widgets.dart';
 import '../applications/application_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class MyBadgesScreen extends StatefulWidget {
   const MyBadgesScreen({super.key});
@@ -375,8 +377,8 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.emoji_events_outlined,
+                    AppIcon(
+                      AppIcons.trophy,
                       size: 56,
                       color: Colors.grey[400],
                     ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 /// Smallest and largest goal deadlines the user can pick, in months.
 const int _minGoalMonths = 1;
@@ -95,8 +97,8 @@ class _GoalDurationSheetState extends State<_GoalDurationSheet> {
                     color: AppColors.primary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.calendar_month_rounded,
+                  child: const AppIcon(
+                    AppIcons.today,
                     color: AppColors.secondary,
                     size: 22,
                   ),
@@ -140,7 +142,7 @@ class _GoalDurationSheetState extends State<_GoalDurationSheet> {
               child: Row(
                 children: [
                   _StepperButton(
-                    icon: Icons.remove_rounded,
+                    icon: AppIcons.remove,
                     onTap: _months > _minGoalMonths
                         ? () => _setMonths(_months - 1)
                         : null,
@@ -168,7 +170,7 @@ class _GoalDurationSheetState extends State<_GoalDurationSheet> {
                     ),
                   ),
                   _StepperButton(
-                    icon: Icons.add_rounded,
+                    icon: AppIcons.add,
                     onTap: _months < _maxGoalMonths
                         ? () => _setMonths(_months + 1)
                         : null,
@@ -198,8 +200,8 @@ class _GoalDurationSheetState extends State<_GoalDurationSheet> {
             // Live preview of the computed end date.
             Row(
               children: [
-                const Icon(
-                  Icons.event_available_rounded,
+                const AppIcon(
+                  AppIcons.checkCircle,
                   size: 18,
                   color: AppColors.secondary,
                 ),
@@ -269,7 +271,7 @@ class _GoalDurationSheetState extends State<_GoalDurationSheet> {
 class _StepperButton extends StatelessWidget {
   const _StepperButton({required this.icon, this.onTap});
 
-  final IconData icon;
+  final String icon;
   final VoidCallback? onTap;
 
   @override
@@ -286,7 +288,7 @@ class _StepperButton extends StatelessWidget {
         child: SizedBox(
           width: 46,
           height: 46,
-          child: Icon(
+          child: AppIcon(
             icon,
             color: enabled ? AppColors.secondary : const Color(0xFFB4BcC4),
             size: 24,

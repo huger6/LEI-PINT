@@ -6,6 +6,8 @@ import '../../../models/goal_model.dart';
 import '../../../presentation/state/goals_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../widgets/goals/goal_card.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -90,8 +92,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF20252B),
             size: 26,
           ),
@@ -121,7 +123,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded, size: 48, color: Colors.grey[400]),
+              AppIcon(AppIcons.danger, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 12),
               Text(
                 store.errorMessage!,
@@ -148,7 +150,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.flag_outlined, size: 56, color: Colors.grey[400]),
+            AppIcon(AppIcons.type, size: 56, color: Colors.grey[400]),
             const SizedBox(height: 12),
             Text(
               'Ainda não tem objetivos atribuídos.',

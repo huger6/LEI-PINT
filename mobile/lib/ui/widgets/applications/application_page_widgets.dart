@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class ApplicationSectionTitle extends StatelessWidget {
   const ApplicationSectionTitle({
@@ -93,8 +95,8 @@ class SelectedBadgeCard extends StatelessWidget {
             ],
           ),
         ),
-        const Icon(
-          Icons.lock_outline_rounded,
+        const AppIcon(
+          AppIcons.lock,
           color: ApplicationColors.iconMuted,
           size: 16,
         ),
@@ -125,9 +127,9 @@ class SelectedBadgeMedal extends StatelessWidget {
             bottom: 0,
             child: Row(
               children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 15),
+                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 15),
                 const SizedBox(width: 2),
-                Icon(Icons.bookmark, color: ribbonColor, size: 15),
+                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 15),
               ],
             ),
           ),
@@ -139,8 +141,8 @@ class SelectedBadgeMedal extends StatelessWidget {
               color: medalColor,
               border: Border.all(color: const Color(0xFF876E2C), width: 1.2),
             ),
-            child: const Icon(
-              Icons.star_rounded,
+            child: const AppIcon(
+              AppIcons.star,
               color: Color(0xFFFFF6C7),
               size: 20,
             ),

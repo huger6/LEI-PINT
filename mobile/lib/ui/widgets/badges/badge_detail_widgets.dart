@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/sync_manager.dart';
 import '../shared/translated_text.dart';
 import '../../../models/badge_model.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgeDetailTabButton extends StatelessWidget {
   const BadgeDetailTabButton({
@@ -80,7 +82,7 @@ class BadgeRequirementsSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(requirement.icon, color: const Color(0xFF3A444C)),
+                  AppIcon(requirement.icon, color: const Color(0xFF3A444C)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TranslatedText(
@@ -92,8 +94,8 @@ class BadgeRequirementsSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
-                    Icons.open_in_new_rounded,
+                  const AppIcon(
+                    AppIcons.link,
                     color: Color(0xFF4B535A),
                     size: 22,
                   ),
@@ -110,7 +112,7 @@ class BadgeRequirementsSection extends StatelessWidget {
 class BadgeInfoChip extends StatelessWidget {
   const BadgeInfoChip({super.key, required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -125,7 +127,7 @@ class BadgeInfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF3F5662)),
+          AppIcon(icon, size: 16, color: const Color(0xFF3F5662)),
           const SizedBox(width: 5),
           Flexible(
             child: TranslatedText(
@@ -185,14 +187,14 @@ class LargeBadgeIcon extends StatelessWidget {
                       imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const Icon(
-                        Icons.star_rounded,
+                        Icons.star,
                         color: Color(0xFFFFF6C7),
                         size: 72,
                       ),
                     ),
                   )
                 : const Icon(
-                    Icons.star_rounded,
+                    Icons.star,
                     color: Color(0xFFFFF6C7),
                     size: 72,
                   ),
@@ -206,7 +208,7 @@ class LargeBadgeIcon extends StatelessWidget {
 class BadgeInfoTag extends StatelessWidget {
   const BadgeInfoTag({super.key, required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -227,7 +229,7 @@ class BadgeInfoTag extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: const Color(0xFF4A5C6A)),
+            AppIcon(icon, size: 15, color: const Color(0xFF4A5C6A)),
             const SizedBox(width: 6),
             Flexible(
               child: TranslatedText(

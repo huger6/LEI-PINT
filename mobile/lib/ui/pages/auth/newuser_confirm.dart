@@ -11,6 +11,8 @@ import '../../../presentation/state/language_controller.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_button.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
   const NewUserConfirmScreen({
@@ -101,7 +103,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const AppIcon(AppIcons.chevronBackward),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(tr.tr('confirmRegister')),

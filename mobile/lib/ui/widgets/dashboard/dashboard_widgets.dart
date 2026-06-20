@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class DashboardTopBar extends StatelessWidget {
   const DashboardTopBar({
@@ -42,8 +44,8 @@ class DashboardTopBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(
-                  Icons.workspace_premium_rounded,
+                const AppIcon(
+                  AppIcons.badgePremium,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -62,8 +64,8 @@ class DashboardTopBar extends StatelessWidget {
                 color: Color(0xFFD2DAE2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.emoji_flags_rounded,
+              child: const AppIcon(
+                AppIcons.type,
                 color: Color(0xFF20252B),
               ),
             ),
@@ -81,8 +83,8 @@ class DashboardTopBar extends StatelessWidget {
                   color: Color(0xFFD2DAE2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.notifications_none,
+                child: const AppIcon(
+                  AppIcons.bell,
                   color: Color(0xFF20252B),
                 ),
               ),

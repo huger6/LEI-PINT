@@ -5,6 +5,8 @@ import '../../../core/utils/badge_visuals.dart';
 import '../../../models/goal_model.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({
@@ -62,8 +64,8 @@ class GoalCard extends StatelessWidget {
                       : medalColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  completed ? Icons.check_circle_rounded : Icons.flag_rounded,
+                child: AppIcon(
+                  completed ? AppIcons.checkCircle : AppIcons.type,
                   color: completed ? AppColors.success : medalColor,
                   size: 24,
                 ),
@@ -139,8 +141,8 @@ class GoalCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.workspace_premium_outlined,
+                  AppIcon(
+                    AppIcons.badgePremium,
                     size: 16,
                     color: medalColor,
                   ),
@@ -175,7 +177,7 @@ class GoalCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.schedule_rounded, size: 14, color: Color(0xFF7B8A96)),
+                const AppIcon(AppIcons.time, size: 14, color: Color(0xFF7B8A96)),
                 const SizedBox(width: 4),
                 Text(
                   'Prazo: ${_formatDate(goal.endDate!)}',
@@ -207,7 +209,7 @@ class GoalCard extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                            : const AppIcon(AppIcons.checkCircle, size: 18),
                         label: Text(
                           isCompleting ? tr.tr('concluding') : tr.tr('confirmConclusion'),
                         ),
@@ -252,8 +254,8 @@ class GoalCard extends StatelessWidget {
                                 color: AppColors.error,
                               ),
                             )
-                          : const Icon(
-                              Icons.delete_outline_rounded,
+                          : const AppIcon(
+                              AppIcons.trash,
                               size: 20,
                               color: AppColors.error,
                             ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class MainBadgesCard extends StatelessWidget {
   const MainBadgesCard({
@@ -92,10 +94,10 @@ class MainBadgesCard extends StatelessWidget {
               ),
               if (growthPercent != 0) ...[
                 const SizedBox(width: 12),
-                Icon(
+                AppIcon(
                   isPositive
-                      ? Icons.trending_up_rounded
-                      : Icons.trending_down_rounded,
+                      ? AppIcons.progress
+                      : AppIcons.progress,
                   color: isPositive
                       ? const Color(0xFF2FB45A)
                       : const Color(0xFFD63D2B),
@@ -216,7 +218,7 @@ class MiniStatCard extends StatelessWidget {
 
   final String title;
   final String value;
-  final IconData icon;
+  final String icon;
   final Color accentColor;
   final VoidCallback? onTap;
 
@@ -270,7 +272,7 @@ class MiniStatCard extends StatelessWidget {
                     ),
                   ),
                   Positioned.fill(
-                    child: Icon(icon, color: accentColor, size: 22),
+                    child: AppIcon(icon, color: accentColor, size: 22),
                   ),
                 ],
               ),
@@ -481,7 +483,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: widget.selectedPeriod,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                    icon: const AppIcon(AppIcons.keyboardArrowDown),
                     items: widget.periodOptions
                         .map(
                           (period) => DropdownMenuItem<String>(
@@ -509,7 +511,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stars_rounded, size: 18, color: Color(0xFF00B8E0)),
+                  const AppIcon(AppIcons.starPoints, size: 18, color: Color(0xFF00B8E0)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: RichText(
@@ -530,7 +532,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                   ),
                   GestureDetector(
                     onTap: () => setState(() => _selectedBarIndex = -1),
-                    child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF8CA0B2)),
+                    child: const AppIcon(AppIcons.close, size: 16, color: Color(0xFF8CA0B2)),
                   ),
                 ],
               ),
@@ -640,7 +642,7 @@ class ActivityItem {
 
   final String title;
   final String timeAgo;
-  final IconData icon;
+  final String icon;
 }
 
 class RecentActivitySection extends StatelessWidget {
@@ -691,7 +693,7 @@ class RecentActivitySection extends StatelessWidget {
                         color: Color(0xFFBCC8D4),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: AppIcon(
                         activity.icon,
                         color: const Color(0xFF2B3945),
                       ),
@@ -754,14 +756,14 @@ class ApplicationsMetricsSection extends StatelessWidget {
         ApplicationMetricCard(
           title: tr.tr('approvalPercentage'),
           value: '$approvalPercent%',
-          icon: Icons.check_circle_outline_rounded,
+          icon: AppIcons.checkCircle,
           accentColor: const Color(0xFF6FC391),
         ),
         const SizedBox(height: 8),
         ApplicationMetricCard(
           title: tr.tr('submittedApplications'),
           value: '$totalApplications',
-          icon: Icons.description_outlined,
+          icon: AppIcons.paper,
           accentColor: const Color(0xFF93A8C8),
         ),
       ],
@@ -780,7 +782,7 @@ class ApplicationMetricCard extends StatelessWidget {
 
   final String title;
   final String value;
-  final IconData icon;
+  final String icon;
   final Color accentColor;
 
   @override
@@ -801,7 +803,7 @@ class ApplicationMetricCard extends StatelessWidget {
               color: accentColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: accentColor, size: 22),
+            child: AppIcon(icon, color: accentColor, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(

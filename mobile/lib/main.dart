@@ -31,6 +31,8 @@ import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/services/translation_service.dart';
+import 'ui/widgets/shared/app_icon/app_icon.dart';
+import 'ui/widgets/shared/app_icon/app_icon_data.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -195,7 +197,7 @@ class ErrorApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                const AppIcon(AppIcons.danger, color: Colors.red, size: 60),
                 const SizedBox(height: 16),
                 Text(
                   errorMessage,

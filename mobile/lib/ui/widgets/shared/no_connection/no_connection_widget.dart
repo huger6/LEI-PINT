@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../injection_container.dart';
+import '../app_icon/app_icon.dart';
+import '../app_icon/app_icon_data.dart';
 
 class NoConnectionWidget extends StatefulWidget {
   const NoConnectionWidget({super.key, required this.targetRoute});
@@ -55,7 +57,7 @@ class _NoConnectionWidgetState extends State<NoConnectionWidget> {
         elevation: 0,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded,
+                icon: const AppIcon(AppIcons.chevronBackward,
                     color: AppColors.onBackground),
                 onPressed: () => Navigator.of(context).pop(),
               )

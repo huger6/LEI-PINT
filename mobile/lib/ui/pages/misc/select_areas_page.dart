@@ -9,6 +9,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../injection_container.dart';
 import '../../widgets/shared/auth_particle_background.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class SelectAreaScreen extends StatefulWidget {
   final Map<String, dynamic>? registrationData;
@@ -122,8 +124,8 @@ class _SelectAreaScreenState extends State<SelectAreaScreen> {
                         'assets/images/logotipo_softinsa.png',
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.image_not_supported,
+                          return AppIcon(
+                            AppIcons.photo,
                             size: 64,
                             color: theme.colorScheme.outline,
                           );

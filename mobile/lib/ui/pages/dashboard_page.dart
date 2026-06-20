@@ -59,6 +59,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     return tr('goodEvening');
   }
 
+  String _motivationMessage(String Function(String) tr, int topPercent) {
+    if (topPercent <= 0) return tr('motivationNotRanked');
+    if (topPercent <= 10) return tr('motivationTop10');
+    if (topPercent <= 25) return tr('motivationTop25');
+    if (topPercent <= 50) return tr('motivationTop50');
+    if (topPercent <= 75) return tr('motivationTop75');
+    return tr('motivationBottom');
+  }
+
   void _maybeCelebrate(BuildContext context, BadgeStore badgeStore) {
     if (_celebrationChecked) return;
     final milestone = badgeStore.pendingCelebration;
@@ -258,7 +267,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       // Keep going / top percent
                       const SizedBox(height: 16),
                       Text(
-                        tr.tr('keepGoing'),
+                        _motivationMessage(tr.tr, dashStore.topPercent),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
