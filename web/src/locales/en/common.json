@@ -33,7 +33,7 @@
 			"links": ["About us", "Social Responsibility", "Services", "Innovation Centers", "Careers", "Highlights", "Contacts"],
 			"policies": ["Privacy Policy", "Terms of Use", "Environmental Policy", "Whistleblowing Channel"]
 		},
-		"badgePage": { "back": "All badges", "points": "Points", "validity": "Validity", "days": "{{count}} days", "competencies": "Skills", "competenciesSub": "Skills this badge certifies.", "noCompetencies": "No skills associated with this badge.", "requirements": "Requirements", "requirementsSub": "What you must evidence to earn this badge.", "noRequirements": "No detailed requirements for this badge.", "notFound": "Badge not found", "viewAll": "See all badges", "loading": "Loading…", "premium": "Premium", "nivel": "Level", "area": "Area", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+		"badgePage": { "back": "All badges", "points": "Points", "validity": "Validity", "days": "{{count}} days", "competencies": "Skills", "competenciesSub": "Skills this badge certifies.", "noCompetencies": "No skills associated with this badge.", "requirements": "Requirements", "requirementsSub": "What you must evidence to earn this badge.", "noRequirements": "No detailed requirements for this badge.", "notFound": "Badge not found", "viewAll": "See all badges", "loading": "Loading…", "premium": "Premium", "certified": "Official credential certified by Softinsa · Active", "nivel": "Level", "area": "Area", "serviceLine": "Service Line", "learningPath": "Learning Path" }
 	},
 	"roles": {
 		"Consultant": "Consultant",

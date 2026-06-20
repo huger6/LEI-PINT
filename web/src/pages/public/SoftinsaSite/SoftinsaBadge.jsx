@@ -64,6 +64,9 @@ export default function SoftinsaBadge() {
 							<div className={styles.heroInfo}>
 								{badge.badge_type === 'Special' && <span className={styles.premium}>{t('softinsaSite.badgePage.premium')}</span>}
 								<h1>{badge.badge_title}</h1>
+								<span className={styles.certified}>
+									<i className="bi bi-patch-check-fill" aria-hidden="true" /> {t('softinsaSite.badgePage.certified')}
+								</span>
 								<p className={styles.desc}>{badge.badge_description}</p>
 								<div className={styles.metaRow}>
 									{meta.map((m) => (

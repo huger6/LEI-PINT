@@ -33,7 +33,7 @@
 			"links": ["Quiénes somos", "Responsabilidad Social", "Servicios", "Centros de Innovación", "Carreras", "Destacados", "Contactos"],
 			"policies": ["Política de Privacidad", "Condiciones de Uso", "Política Ambiental", "Canal de Denuncias"]
 		},
-		"badgePage": { "back": "Todos los badges", "points": "Puntos", "validity": "Validez", "days": "{{count}} días", "competencies": "Competencias", "competenciesSub": "Competencias que este badge certifica.", "noCompetencies": "Sin competencias asociadas a este badge.", "requirements": "Requisitos", "requirementsSub": "Lo que debes evidenciar para conseguir este badge.", "noRequirements": "Sin requisitos detallados para este badge.", "notFound": "Badge no encontrado", "viewAll": "Ver todos los badges", "loading": "Cargando…", "premium": "Premium", "nivel": "Nivel", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+		"badgePage": { "back": "Todos los badges", "points": "Puntos", "validity": "Validez", "days": "{{count}} días", "competencies": "Competencias", "competenciesSub": "Competencias que este badge certifica.", "noCompetencies": "Sin competencias asociadas a este badge.", "requirements": "Requisitos", "requirementsSub": "Lo que debes evidenciar para conseguir este badge.", "noRequirements": "Sin requisitos detallados para este badge.", "notFound": "Badge no encontrado", "viewAll": "Ver todos los badges", "loading": "Cargando…", "premium": "Premium", "certified": "Credencial oficial certificada por Softinsa · Activa", "nivel": "Nivel", "area": "Área", "serviceLine": "Service Line", "learningPath": "Learning Path" }
 	},
 	"roles": {
 		"Consultant": "Consultor",
