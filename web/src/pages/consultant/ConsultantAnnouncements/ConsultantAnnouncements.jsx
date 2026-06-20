@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getAnnouncements } from '../../../features/announcements/api/announcementsApi';
 import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearchInput';
 import Pagination from '../../../components/Pagination/Pagination';
+import Modal from '../../../components/Modal/Modal';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ConsultantAnnouncements.module.css';
 
@@ -18,13 +19,18 @@ function formatDate(iso) {
 	return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function AnnouncementCard({ announcement, t }) {
-	const [expanded, setExpanded] = useState(false);
+function AnnouncementCard({ announcement, t, onOpen }) {
 	const message = announcement.announcement_message || '';
-	const isLong = message.length > 200;
 
 	return (
-		<article className={styles.card}>
+		<article
+			className={styles.card}
+			role="button"
+			tabIndex={0}
+			onClick={() => onOpen(announcement)}
+			onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(announcement); } }}
+			title={t('announcements.readMore')}
+		>
 			{announcement.announcement_type && (
 				<span className={`${styles.typeBadge} ${styles[TYPE_CLASS_MAP[announcement.announcement_type]] || ''}`}>
 					{t(`announcements.types.${announcement.announcement_type}`)}
@@ -33,15 +39,9 @@ function AnnouncementCard({ announcement, t }) {
 
 			<h3 className={styles.cardTitle}>{announcement.announcement_title}</h3>
 
-			<p className={`${styles.cardMessage} ${!expanded && isLong ? styles.cardMessageClamped : ''}`}>
+			<p className={`${styles.cardMessage} ${styles.cardMessageClamped}`}>
 				{message}
 			</p>
-
-			{isLong && (
-				<button type="button" className={styles.readMoreBtn} onClick={() => setExpanded(!expanded)}>
-					{expanded ? t('announcements.readLess') : t('announcements.readMore')}
-				</button>
-			)}
 
 			<div className={styles.cardFooter}>
 				<span className={styles.cardDate}>
@@ -75,6 +75,7 @@ export default function ConsultantAnnouncements() {
 	const [loading, setLoading] = useState(true);
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState('');
+	const [active, setActive] = useState(null);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -132,7 +133,7 @@ export default function ConsultantAnnouncements() {
 			) : (
 				<div className={styles.grid}>
 					{announcements.map(a => (
-						<AnnouncementCard key={a.announcement_id} announcement={a} t={t} />
+						<AnnouncementCard key={a.announcement_id} announcement={a} t={t} onOpen={setActive} />
 					))}
 				</div>
 			)}
@@ -146,6 +147,25 @@ export default function ConsultantAnnouncements() {
 					onPageChange={setPage}
 				/>
 			</div>
+
+			{active && (
+				<Modal title={active.announcement_title} onClose={() => setActive(null)}>
+					<div className={styles.modalBody}>
+						{active.announcement_type && (
+							<span className={`${styles.typeBadge} ${styles[TYPE_CLASS_MAP[active.announcement_type]] || ''}`}>
+								{t(`announcements.types.${active.announcement_type}`)}
+							</span>
+						)}
+						<p className={styles.modalMessage}>{active.announcement_message}</p>
+						<div className={styles.cardFooter}>
+							<span className={styles.cardDate}>{t('announcements.postedOn')} {formatDate(active.created_at)}</span>
+							<span className={styles.cardExpiry}>
+								{active.ends_at ? `→ ${formatDate(active.ends_at)}` : t('announcements.noExpiry')}
+							</span>
+						</div>
+					</div>
+				</Modal>
+			)}
 		</div>
 	);
 }
