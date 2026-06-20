@@ -51,7 +51,8 @@ export default function ChangePasswordPage() {
 		form.clearServerErrors();
 		try {
 			const result = await changePassword(form.values.currentPassword, form.values.newPassword);
-			completeFpc(result?.data?.data);
+			const newToken = result?.data?.data?.token;
+			completeFpc(newToken);
 			setSuccess(true);
 		} catch (err) {
 			const backendFields = extractFieldErrors(err);

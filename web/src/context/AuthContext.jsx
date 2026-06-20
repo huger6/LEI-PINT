@@ -5,12 +5,9 @@ import { setApiToken, clearApiToken, performRefresh, setOnRefreshSuccess } from 
 export const AuthContext = createContext(null);
 
 const SESSION_FLAG = 'hasSession';
-const SESSION_PERSISTENT_FLAG = 'sessionPersistent';
 const ACTIVITY_DEBOUNCE_MS = 10_000;
 const REFRESH_CHECK_INTERVAL_MS = 30_000;
-const ACTIVITY_WINDOW_MS_PERSISTENT = 5 * 60 * 1000;
-const ACTIVITY_WINDOW_MS_EPHEMERAL = 10 * 60 * 1000;
-const INACTIVITY_CHECK_MS = 15_000;
+const ACTIVITY_WINDOW_MS = 5 * 60 * 1000;
 const TOKEN_REFRESH_THRESHOLD_S = 60;
 
 export function AuthProvider({ children }) {
@@ -25,18 +22,14 @@ export function AuthProvider({ children }) {
 	const lastActivityAt = useRef(Date.now());
 	const lastActivityUpdate = useRef(0);
 
-	const isPersistent = useRef(false);
-
 	const clearAuth = useCallback(() => {
 		clearApiToken();
 		localStorage.removeItem(SESSION_FLAG);
-		localStorage.removeItem(SESSION_PERSISTENT_FLAG);
 		setUser(null);
 		setToken(null);
 		setFpc(false);
 		setIsAuthenticated(false);
 		tokenExpiresAt.current = null;
-		isPersistent.current = false;
 	}, []);
 
 	const applyRefreshData = useCallback((data) => {
@@ -44,10 +37,6 @@ export function AuthProvider({ children }) {
 		setToken(data.token);
 		if (data.tokenExpiresIn) {
 			tokenExpiresAt.current = Math.floor(Date.now() / 1000) + data.tokenExpiresIn;
-		}
-		if (data.persistent !== undefined) {
-			isPersistent.current = data.persistent;
-			localStorage.setItem(SESSION_PERSISTENT_FLAG, data.persistent ? '1' : '0');
 		}
 		if (data.user) setUser(data.user);
 		if (data.fpc !== undefined) setFpc(data.fpc);
@@ -95,11 +84,8 @@ export function AuthProvider({ children }) {
 			const remainingS = tokenExpiresAt.current - Math.floor(Date.now() / 1000);
 			if (remainingS > TOKEN_REFRESH_THRESHOLD_S) return;
 
-			const activityWindow = isPersistent.current
-				? ACTIVITY_WINDOW_MS_PERSISTENT
-				: ACTIVITY_WINDOW_MS_EPHEMERAL;
 			const timeSinceActivity = Date.now() - lastActivityAt.current;
-			if (timeSinceActivity > activityWindow) return;
+			if (timeSinceActivity > ACTIVITY_WINDOW_MS) return;
 
 			try {
 				const result = await performRefresh();
@@ -112,27 +98,11 @@ export function AuthProvider({ children }) {
 		return () => clearInterval(interval);
 	}, [applyRefreshData]);
 
-	// Proactively log out non-persistent sessions after 10 minutes of inactivity
-	useEffect(() => {
-		const interval = setInterval(() => {
-			if (!tokenExpiresAt.current || isPersistent.current) return;
-
-			const timeSinceActivity = Date.now() - lastActivityAt.current;
-			if (timeSinceActivity > ACTIVITY_WINDOW_MS_EPHEMERAL) {
-				logout();
-			}
-		}, INACTIVITY_CHECK_MS);
-
-		return () => clearInterval(interval);
-	}, [logout]);
-
 	useEffect(() => {
 		if (!localStorage.getItem(SESSION_FLAG)) {
 			setIsLoading(false);
 			return;
 		}
-
-		isPersistent.current = localStorage.getItem(SESSION_PERSISTENT_FLAG) === '1';
 
 		if (refreshAttempted.current) return;
 		refreshAttempted.current = true;
@@ -145,7 +115,6 @@ export function AuthProvider({ children }) {
 			.catch((err) => {
 				if (err.response?.status === 401 || err.response?.status === 403) {
 					localStorage.removeItem(SESSION_FLAG);
-					localStorage.removeItem(SESSION_PERSISTENT_FLAG);
 				}
 			})
 			.finally(() => {
@@ -155,33 +124,23 @@ export function AuthProvider({ children }) {
 
 	const login = useCallback(async (identifier, password, remember) => {
 		const { data } = await authApi.login(identifier, password, remember);
-		const { token: newToken, tokenExpiresIn, fpc: forcePwChange, persistent, user: userData } = data.data;
+		const { token: newToken, tokenExpiresIn, fpc: forcePwChange, user: userData } = data.data;
 		localStorage.setItem(SESSION_FLAG, 'true');
-		localStorage.setItem(SESSION_PERSISTENT_FLAG, persistent ? '1' : '0');
-		isPersistent.current = persistent;
 		setApiToken(newToken);
 		setToken(newToken);
 		if (tokenExpiresIn) {
 			tokenExpiresAt.current = Math.floor(Date.now() / 1000) + tokenExpiresIn;
 		}
-		lastActivityAt.current = Date.now();
 		setUser(userData);
 		setFpc(forcePwChange);
 		setIsAuthenticated(true);
 		return forcePwChange;
 	}, []);
 
-	const completeFpc = useCallback((data) => {
-		if (data?.token) {
-			setApiToken(data.token);
-			setToken(data.token);
-		}
-		if (data?.tokenExpiresIn) {
-			tokenExpiresAt.current = Math.floor(Date.now() / 1000) + data.tokenExpiresIn;
-		}
-		if (data?.persistent !== undefined) {
-			isPersistent.current = data.persistent;
-			localStorage.setItem(SESSION_PERSISTENT_FLAG, data.persistent ? '1' : '0');
+	const completeFpc = useCallback((newToken) => {
+		if (newToken) {
+			setApiToken(newToken);
+			setToken(newToken);
 		}
 		setFpc(false);
 	}, []);

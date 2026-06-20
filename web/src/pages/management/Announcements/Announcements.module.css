@@ -137,7 +137,7 @@
 	display: flex;
 	gap: 0.75rem;
 	flex-wrap: wrap;
-	align-items: stretch;
+	align-items: flex-end;
 }
 
 .filterRow > :first-child {
@@ -147,15 +147,6 @@
 
 .selectWrapper {
 	min-width: 160px;
-	display: flex;
-}
-
-.selectWrapper > * {
-	flex: 1;
-}
-
-.selectWrapper button[role="combobox"] {
-	height: 100%;
 }
 
 /* ── Title cell truncate ─────────────────────────────────────────────────── */

@@ -523,18 +523,16 @@ const login = async (req, res) => {
         });
 
         // Generate Refresh Token (to maintain session)
-        const refreshTokenDurationMs = remember
-            ? 30 * 24 * 60 * 60 * 1000   // 30 days
-            : 30 * 60 * 1000;             // 30 minutes
-        const expiresAt = new Date(Date.now() + refreshTokenDurationMs);
+        const refreshTokenDurationDays = remember ? 30 : (1 / 24); // 1h
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + (refreshTokenDurationDays * 24));
 
         const refreshTokenValue = crypto.randomBytes(40).toString('hex');
 
         await models.user_refresh_tokens.create({
             user_id: user.user_id,
             token_value: refreshTokenValue,
-            expires_at: expiresAt,
-            is_persistent: remember
+            expires_at: expiresAt
         }, { transaction: t });
 
         // Save data first to handle fist login specific logic
@@ -556,9 +554,9 @@ const login = async (req, res) => {
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             path: '/api/auth',
-            maxAge: refreshTokenDurationMs
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
         const decoded = jwt.decode(accessToken);
@@ -570,7 +568,6 @@ const login = async (req, res) => {
                 token: accessToken,
                 tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
                 fpc: user.force_password_change,
-                persistent: remember,
                 user: {
                     full_name: user.full_name,
                     username: user.username,
@@ -661,19 +658,9 @@ const refresh = async (req, res) => {
 
         const newRefreshTokenValue = crypto.randomBytes(40).toString('hex');
 
-        // Non-persistent sessions get a rolling 30-minute window on each refresh
-        let cookieMaxAgeMs;
-        if (storedToken.is_persistent) {
-            cookieMaxAgeMs = new Date(storedToken.expires_at).getTime() - Date.now();
-            await storedToken.update({ token_value: newRefreshTokenValue });
-        } else {
-            const newExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
-            cookieMaxAgeMs = 30 * 60 * 1000;
-            await storedToken.update({
-                token_value: newRefreshTokenValue,
-                expires_at: newExpiresAt
-            });
-        }
+        await storedToken.update({
+            token_value: newRefreshTokenValue
+        });
 
         await user.update({
             last_online: new Date(),
@@ -682,13 +669,15 @@ const refresh = async (req, res) => {
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 8);
 
+        const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
+
         // Set new cookie
         res.cookie('refreshToken', newRefreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             path: '/api/auth',
-            maxAge: cookieMaxAgeMs
+            maxAge: remainingTimeMs
         });
 
         const decoded = jwt.decode(accessToken);
@@ -700,7 +689,6 @@ const refresh = async (req, res) => {
                 token: accessToken,
                 tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
                 fpc: user.force_password_change,
-                persistent: storedToken.is_persistent,
                 user: {
                     full_name: user.full_name,
                     username: user.username,
@@ -841,16 +829,15 @@ const changePassword = async (req, res) => {
             { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
         );
 
-        // Issue new refresh token to re-establish the session (non-persistent by default)
+        // Issue new refresh token to re-establish the session
         const refreshTokenValue = crypto.randomBytes(40).toString('hex');
-        const refreshTokenDurationMs = 30 * 60 * 1000; // 30 minutes
-        const expiresAt = new Date(Date.now() + refreshTokenDurationMs);
+        const refreshTokenDurationDays = 1;
+        const expiresAt = new Date(Date.now() + refreshTokenDurationDays * 24 * 60 * 60 * 1000);
 
         await models.user_refresh_tokens.create({
             user_id: user.user_id,
             token_value: refreshTokenValue,
-            expires_at: expiresAt,
-            is_persistent: false
+            expires_at: expiresAt
         }, { transaction: t });
 
         await t.commit();
@@ -862,19 +849,13 @@ const changePassword = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             path: '/api/auth',
-            maxAge: refreshTokenDurationMs
+            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
-
-        const decoded = jwt.decode(accessToken);
 
         return res.status(200).json({
             success: true,
             code: "AUTH_PASSWORD_CHANGED",
-            data: {
-                token: accessToken,
-                tokenExpiresIn: decoded.exp - Math.floor(Date.now() / 1000),
-                persistent: false
-            }
+            data: { token: accessToken }
         });
     } catch (error) {
         if (t) await t.rollback();
