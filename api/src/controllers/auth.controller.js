@@ -239,6 +239,7 @@ const register = async (req, res) => {
                 policiesCount: mandatoryPolicies.length
             });
         }
+        logger.debug('After policies');
 
         // Commit changes
         await t.commit();
