@@ -1745,6 +1745,8 @@
 		},
 		"exports": {
 			"title": "Exportaciones",
+			"from": "Desde",
+			"to": "Hasta",
 			"format": "Formato",
 			"consultants": "Consultores",
 			"applications": "Candidaturas",

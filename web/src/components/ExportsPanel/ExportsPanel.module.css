@@ -12,6 +12,13 @@
 	flex-wrap: wrap;
 }
 
+.controls {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
 .inlineSelect {
 	display: flex;
 	align-items: center;

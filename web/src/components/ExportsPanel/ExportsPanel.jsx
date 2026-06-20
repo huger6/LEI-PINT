@@ -4,6 +4,7 @@ import { downloadExport } from '../../features/statistics/api/exportsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../ContentCard/ContentCard';
 import CustomSelect from '../CustomSelect/CustomSelect';
+import DatePicker from '../DatePicker/DatePicker';
 import FormAlert from '../FormAlert/FormAlert';
 import Icon from '../Icons/Icons';
 import styles from './ExportsPanel.module.css';
@@ -32,6 +33,8 @@ const EXPORT_BUTTONS = [
 export default function ExportsPanel() {
 	const { t } = useTranslation();
 	const [format, setFormat] = useState('xlsx');
+	const [from, setFrom] = useState('');
+	const [to, setTo] = useState('');
 	const [busy, setBusy] = useState(null);
 	const [error, setError] = useState(null);
 
@@ -39,7 +42,12 @@ export default function ExportsPanel() {
 		setError(null);
 		setBusy(btn.key);
 		try {
-			await downloadExport(btn.type, { format, ...(btn.params || {}) });
+			await downloadExport(btn.type, {
+				format,
+				...(from ? { from } : {}),
+				...(to ? { to } : {}),
+				...(btn.params || {}),
+			});
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 		} finally {
@@ -51,17 +59,27 @@ export default function ExportsPanel() {
 		<ContentCard className={styles.card}>
 			<div className={styles.headerRow}>
 				<CardHeader icon="download" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('tmStats.exports.title')} />
-				<label className={styles.inlineSelect}>
-					<span className={styles.inlineSelectLabel}>{t('tmStats.exports.format')}</span>
-					<CustomSelect
-						name="exportFormat"
-						value={format}
-						onChange={(e) => setFormat(e.target.value)}
-						options={FORMAT_OPTIONS}
-						ariaLabel={t('tmStats.exports.format')}
-						compact
-					/>
-				</label>
+				<div className={styles.controls}>
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.exports.from')}</span>
+						<DatePicker name="exportFrom" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} ariaLabel={t('tmStats.exports.from')} />
+					</label>
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.exports.to')}</span>
+						<DatePicker name="exportTo" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} ariaLabel={t('tmStats.exports.to')} />
+					</label>
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.exports.format')}</span>
+						<CustomSelect
+							name="exportFormat"
+							value={format}
+							onChange={(e) => setFormat(e.target.value)}
+							options={FORMAT_OPTIONS}
+							ariaLabel={t('tmStats.exports.format')}
+							compact
+						/>
+					</label>
+				</div>
 			</div>
 
 			<div className={styles.buttons}>

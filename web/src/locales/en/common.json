@@ -1745,6 +1745,8 @@
 		},
 		"exports": {
 			"title": "Exports",
+			"from": "From",
+			"to": "To",
 			"format": "Format",
 			"consultants": "Consultants",
 			"applications": "Applications",
