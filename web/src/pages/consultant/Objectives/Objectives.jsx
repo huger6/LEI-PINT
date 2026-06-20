@@ -84,7 +84,14 @@ export default function Objectives() {
 	const [objectives, setObjectives] = useState([]);
 	const [areaTimelines, setAreaTimelines] = useState([]);
 	const [progressData, setProgressData] = useState([]);
+	const [visibleTimelines, setVisibleTimelines] = useState(2);
 	const greeting = getGreeting(t);
+
+	// Show the most-advanced timelines first; the rest collapse under "Show more".
+	const advancement = (area) => area.stages.reduce(
+		(acc, s) => acc + (s.status === 'complete' ? 1 : s.status === 'inProgress' ? 0.5 : 0), 0);
+	const sortedTimelines = [...areaTimelines].sort((a, b) => advancement(b) - advancement(a));
+	const shownTimelines = sortedTimelines.slice(0, visibleTimelines);
 
 	useEffect(() => {
 		fetchNotifications({ limit: 5 })
@@ -180,7 +187,7 @@ export default function Objectives() {
 			{/* ── Professional Timeline ──────────────── */}
 			<section className={styles.section}>
 				<h2 className={styles.sectionTitle}>{t('objectives.professionalTimeline')}</h2>
-				{areaTimelines.map((area) => (
+				{shownTimelines.map((area) => (
 					<div key={area.area_slug} className={styles.areaTimelineGroup}>
 						<h3 className={styles.areaTimelineTitle}>{area.area_name}</h3>
 						<div className={styles.timeline}>
@@ -201,8 +208,11 @@ export default function Objectives() {
 											</div>
 										)}
 										{i < area.stages.length - 1 && (
+											// Green only between two attained stages — the segment to the
+											// next (current) stage stays neutral.
 											<div className={`${styles.timelineLine} ${
-												stage.status === 'complete' ? styles.lineComplete : styles.linePending
+												stage.status === 'complete' && area.stages[i + 1].status === 'complete'
+													? styles.lineComplete : styles.linePending
 											}`} />
 										)}
 									</div>
@@ -230,6 +240,11 @@ export default function Objectives() {
 						</div>
 					</div>
 				))}
+				{sortedTimelines.length > visibleTimelines && (
+					<button type="button" className={styles.showMoreBtn} onClick={() => setVisibleTimelines((v) => v + 2)}>
+						{t('objectives.showMore')}
+					</button>
+				)}
 			</section>
 
 			{/* ── Two-column: Objectives + Reminders ── */}
