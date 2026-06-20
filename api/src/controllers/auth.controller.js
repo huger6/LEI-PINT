@@ -554,8 +554,8 @@ const login = async (req, res) => {
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            path: '/api/auth', // Cookie is only sent to /auth prefixed routes
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+            path: '/api/auth',
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
 
@@ -675,7 +675,7 @@ const refresh = async (req, res) => {
         res.cookie('refreshToken', newRefreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             path: '/api/auth',
             maxAge: remainingTimeMs
         });
@@ -847,7 +847,7 @@ const changePassword = async (req, res) => {
         res.cookie('refreshToken', refreshTokenValue, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             path: '/api/auth',
             maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
         });
