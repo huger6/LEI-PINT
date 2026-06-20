@@ -316,7 +316,7 @@ export default function Evolution() {
     const statCards = [
         { key: 'badgesObtained', icon: 'badge', value: stats?.earnedBadges ?? '—', delta: deltas.badgesDelta },
         { key: 'badgesInProgress', icon: 'progress', value: stats?.badgesInProgress ?? '—', delta: deltas.progressDelta },
-        { key: 'skillsAcquired', icon: 'check_circle', value: competenciesCount || '—', delta: null },
+        { key: 'skillsAcquired', icon: 'skills', value: competenciesCount || '—', delta: null },
         { key: 'totalPoints', icon: 'star-points', value: stats?.totalPoints != null ? stats.totalPoints.toLocaleString('pt-PT') : '—', delta: deltas.pointsDelta },
         { key: 'averageLevel', icon: 'evolution', value: averageLevel.code, levelTitle: averageLevel.title, delta: null },
     ];
