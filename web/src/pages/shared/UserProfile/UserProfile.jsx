@@ -372,17 +372,8 @@ export default function UserProfile() {
 			];
 		}
 
-		if (isTm) {
-			return [
-				...base,
-				{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
-				{ icon: 'check_circle', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
-			];
-		}
-
-		// SLL
+		// TM / SLL are reviewers, not badge earners — show only reviewer stats.
 		return [
-			...base,
 			{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },
 			{ icon: 'check_circle', accentColor: 'var(--color-green-on-soft)', accentBg: 'var(--color-green-soft)', value: profile?.validationsCount ?? profile?.validations_count ?? 0, label: t('profile.validationsDone'), footer: t('profile.statFooterValidations') },
 		];
@@ -584,7 +575,8 @@ export default function UserProfile() {
 				</div>
 			</ContentCard>
 
-			{/* ── Content sections (2-column grid) ───────────── */}
+			{/* ── Content sections (2-column grid) — consultant-only ──── */}
+			{isConsultant && (
 			<div className="row g-4">
 				<div className="col-md-6">
 					<ContentCard>
@@ -608,8 +600,7 @@ export default function UserProfile() {
 					</ContentCard>
 				</div>
 
-				{(isConsultant || !isTm) && (
-					<div className="col-md-6">
+				<div className="col-md-6">
 						<ContentCard>
 							<CardHeader
 								icon="skills"
@@ -651,7 +642,6 @@ export default function UserProfile() {
 							</div>
 						</ContentCard>
 					</div>
-				)}
 
 				<div className="col-md-6">
 					<ContentCard>
@@ -701,6 +691,7 @@ export default function UserProfile() {
 					</ContentCard>
 				</div>
 			</div>
+			)}
 
 			{/* ── Statistics section ─────────────────────────── */}
 			<h2 className={styles.sectionTitle}>{t('profile.statistics')}</h2>
@@ -711,6 +702,7 @@ export default function UserProfile() {
 			</div>
 
 			{/* ── Badge gallery link ──────────────────────────── */}
+			{isConsultant && (
 			<ContentCard className={styles.badgeGalleryCard}>
 				<Link to={badgesPath} className={styles.badgeGalleryLink}>
 					<div className={styles.badgeGalleryIcon}>
@@ -725,6 +717,7 @@ export default function UserProfile() {
 					</div>
 				</Link>
 			</ContentCard>
+			)}
 
 			{/* ── Save / Cancel buttons (edit mode) ──────────── */}
 			{isEditMode && (
