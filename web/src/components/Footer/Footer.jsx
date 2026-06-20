@@ -7,9 +7,14 @@ import Icon from '../Icons/Icons';
 
 const Footer = () => {
     const { t, i18n } = useTranslation();
-    const { lang, handleLanguageChange } = useUser();
+    const { lang, handleLanguageChange, user } = useUser();
     const { languages } = useLanguageContext();
     const currentYear = new Date().getFullYear();
+
+    // Badge catalogue lives at a different path per role.
+    const catalogHref = user?.role === 'Consultant' ? '/catalog'
+        : user?.role === 'Administrator' ? '/admin/badges'
+            : '/badges';
 
     // activeLang seeds from lang.iso (same DB value as language_iso) so the
     // comparison is exact; updated optimistically on click for instant feedback.
@@ -49,18 +54,17 @@ const Footer = () => {
                     <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.platformTitle')}</h5>
                         <ul className="list-unstyled mb-0">
-                            <li className="mb-2"><a href="/catalog" className={styles.footerLink}>{t('footer.platformCatalog')}</a></li>
-                            <li className="mb-2"><a href="/paths" className={styles.footerLink}>{t('footer.platformPaths')}</a></li>
+                            <li className="mb-2"><a href={catalogHref} className={styles.footerLink}>{t('footer.platformCatalog')}</a></li>
                             <li className="mb-2"><a href="/ranking" className={styles.footerLink}>{t('footer.platformRanking')}</a></li>
+                            <li className="mb-2"><a href="/announcements" className={styles.footerLink}>{t('sidebar.consultant.announcements', { defaultValue: 'Comunicados' })}</a></li>
                         </ul>
                     </div>
 
                     <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.supportTitle')}</h5>
                         <ul className="list-unstyled mb-0">
-                            <li className="mb-2"><a href="/help" className={styles.footerLink}>{t('footer.supportHelp')}</a></li>
                             <li className="mb-2"><a href="/privacy" className={styles.footerLink}>{t('footer.supportPrivacy')}</a></li>
-                            <li className="mb-2"><a href="/terms" className={styles.footerLink}>{t('footer.supportTerms')}</a></li>
+                            <li className="mb-2"><a href="/security" className={styles.footerLink}>{t('security.title', { defaultValue: 'Segurança' })}</a></li>
                         </ul>
                     </div>
 
