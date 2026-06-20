@@ -1,47 +1,12 @@
-.header {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	flex-wrap: wrap;
-	margin-bottom: 1.5rem;
-}
-
-.headerIcon {
-	width: 48px;
-	height: 48px;
-	flex: 0 0 auto;
-	border-radius: 14px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--color-primary-container);
-	color: var(--color-on-primary-container);
-}
-
-.headerText { flex: 1; min-width: 0; }
-.title { font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--color-on-background); }
-.subtitle { margin: 0; color: var(--color-outline); font-size: 0.9rem; }
-
-.card {
+.wrap {
 	background: #fff;
 	border: 1px solid var(--color-outline-light);
 	border-radius: 16px;
 	box-shadow: var(--shadow-card);
-	padding: 1.25rem;
-	margin-bottom: 1.25rem;
+	padding: 1.5rem;
 }
 
-.selectLabel {
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--color-outline);
-	margin-bottom: 0.4rem;
-	display: block;
-}
-
-.selectWrap { max-width: 420px; }
-
-.reqHeaderRow {
+.headerRow {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -50,8 +15,8 @@
 	margin-bottom: 1rem;
 }
 
-.reqTitle {
-	font-size: 1.05rem;
+.title {
+	font-size: 1.1rem;
 	font-weight: 700;
 	margin: 0;
 	color: var(--color-on-surface);
@@ -105,13 +70,12 @@
 
 .empty {
 	text-align: center;
-	padding: 2.5rem 1rem;
+	padding: 2rem 1rem;
 	color: var(--color-outline);
 }
 
 .emptyIcon { color: var(--color-outline-variant); margin-bottom: 0.5rem; }
 
 @media (max-width: 360px) {
-	.card { padding: 1rem; }
-	.selectWrap { max-width: 100%; }
+	.wrap { padding: 1rem; }
 }

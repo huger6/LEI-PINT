@@ -3,7 +3,6 @@ import AdminDashboard from '../pages/admin/AdminDashboard/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers/AdminUsers';
 import AdminBadges from '../pages/admin/AdminBadges/AdminBadges';
 import AdminBadgeForm from '../pages/admin/AdminBadgeForm/AdminBadgeForm';
-import AdminRequirements from '../pages/admin/AdminRequirements/AdminRequirements';
 import AdminStructure from '../pages/admin/AdminStructure/AdminStructure';
 import UserProfile from '../pages/shared/UserProfile/UserProfile';
 import {
@@ -35,7 +34,6 @@ const adminRoutes = [
 	{ path: ADMIN.SERVICE_LINES, element: <ServiceLinesList /> },
 	{ path: ADMIN.LEARNING_PATHS, element: <LearningPathsList /> },
 	{ path: ADMIN.LEVELS, element: <LevelsList /> },
-	{ path: ADMIN.REQUIREMENTS, element: <AdminRequirements /> },
 	{ path: ADMIN.APPLICATIONS, element: <ValidationsBoard /> },
 	{ path: ADMIN.NOTIFICATIONS, element: <AdminNotifications /> },
 	{ path: ADMIN.RGPD, element: <AdminRgpd /> },

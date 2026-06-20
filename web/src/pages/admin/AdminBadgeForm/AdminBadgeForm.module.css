@@ -53,6 +53,10 @@
 	padding-top: 1.25rem;
 }
 
+.requirements {
+	margin-top: 1.5rem;
+}
+
 @media (max-width: 360px) {
 	.formCard {
 		padding: 1rem;

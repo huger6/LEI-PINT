@@ -9,6 +9,7 @@ import FormInput from '../../../components/FormInput/FormInput';
 import Icon from '../../../components/Icons/Icons';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import BadgeImagePicker from '../../../components/BadgeImagePicker/BadgeImagePicker';
+import BadgeRequirementsManager from '../../../components/BadgeRequirementsManager/BadgeRequirementsManager';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import styles from './AdminBadgeForm.module.css';
 
@@ -217,6 +218,13 @@ export default function AdminBadgeForm() {
 					<Button type="submit" loading={saving} disabled={imageUploading}>{isEdit ? t('shared.save') : t('shared.create')}</Button>
 				</div>
 			</form>
+
+			{/* Requirements are managed inline as part of editing the badge. */}
+			{isEdit && (editItem?.badge_slug || slug) && (
+				<div className={styles.requirements}>
+					<BadgeRequirementsManager badgeSlug={editItem?.badge_slug || slug} />
+				</div>
+			)}
 		</div>
 	);
 }
