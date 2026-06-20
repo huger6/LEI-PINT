@@ -944,6 +944,7 @@
 		"completed": "Completed",
 		"recentApplications": "Recent Applications",
 		"noApplications": "You have no applications yet.",
+		"noApplicationsHint": "Explore the catalog and apply for your first badge.",
 		"exploreCatalog": "Explore Catalog",
 		"myApplications": "My Applications"
 	},

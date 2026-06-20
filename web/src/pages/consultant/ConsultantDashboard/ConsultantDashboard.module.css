@@ -1,3 +1,39 @@
 .clickableRow {
 	cursor: pointer;
 }
+
+.statCard {
+	color: inherit;
+	transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.statCard:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--shadow-card);
+}
+
+.emptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.4rem;
+	padding: 2rem 1rem;
+}
+
+.emptyIcon {
+	color: var(--color-outline-variant);
+	margin-bottom: 0.25rem;
+}
+
+.emptyTitle {
+	margin: 0;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.emptyHint {
+	margin: 0 0 0.5rem;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}

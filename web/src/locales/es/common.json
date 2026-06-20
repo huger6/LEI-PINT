@@ -944,6 +944,7 @@
 		"completed": "Completadas",
 		"recentApplications": "Candidaturas Recientes",
 		"noApplications": "Aún no tienes candidaturas.",
+		"noApplicationsHint": "Explora el catálogo y solicita tu primer badge.",
 		"exploreCatalog": "Explorar Catálogo",
 		"myApplications": "Mis Candidaturas"
 	},

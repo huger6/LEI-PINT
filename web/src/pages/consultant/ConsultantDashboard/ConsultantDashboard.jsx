@@ -53,38 +53,21 @@ export default function ConsultantDashboard() {
 			<WelcomeCard />
 
 			<div className="row g-4 mb-4 mt-2">
-				<div className="col-md-3">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h6 className="text-muted mb-2">{t('consultantDashboard.totalApplications')}</h6>
-							<h3 className="mb-0">{stats.total}</h3>
-						</div>
+				{[
+					{ key: 'totalApplications', value: stats.total, cls: '' },
+					{ key: 'open', value: stats.open, cls: 'text-secondary' },
+					{ key: 'submitted', value: stats.submitted, cls: 'text-primary' },
+					{ key: 'completed', value: stats.accepted, cls: 'text-success' },
+				].map((s) => (
+					<div className="col-6 col-md-3" key={s.key}>
+						<Link to={SHARED.APPLICATIONS} className={`card border-0 shadow-sm h-100 text-decoration-none ${styles.statCard}`}>
+							<div className="card-body">
+								<h6 className="text-muted mb-2">{t(`consultantDashboard.${s.key}`)}</h6>
+								<h3 className={`mb-0 ${s.cls}`}>{s.value}</h3>
+							</div>
+						</Link>
 					</div>
-				</div>
-				<div className="col-md-3">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h6 className="text-muted mb-2">{t('consultantDashboard.open')}</h6>
-							<h3 className="mb-0 text-secondary">{stats.open}</h3>
-						</div>
-					</div>
-				</div>
-				<div className="col-md-3">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h6 className="text-muted mb-2">{t('consultantDashboard.submitted')}</h6>
-							<h3 className="mb-0 text-primary">{stats.submitted}</h3>
-						</div>
-					</div>
-				</div>
-				<div className="col-md-3">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h6 className="text-muted mb-2">{t('consultantDashboard.completed')}</h6>
-							<h3 className="mb-0 text-success">{stats.accepted}</h3>
-						</div>
-					</div>
-				</div>
+				))}
 			</div>
 
 			<div className="row g-4">
@@ -97,7 +80,15 @@ export default function ConsultantDashboard() {
 							</div>
 
 							{recentApps.length === 0 ? (
-								<p className="text-muted small mb-0">{t('consultantDashboard.noApplications')}</p>
+								<div className={styles.emptyState}>
+									<Icon name="paper" size={36} className={styles.emptyIcon} aria-hidden="true" />
+									<p className={styles.emptyTitle}>{t('consultantDashboard.noApplications')}</p>
+									<p className={styles.emptyHint}>{t('consultantDashboard.noApplicationsHint')}</p>
+									<Button as={Link} to={CONSULTANT.CATALOG} size="sm">
+										<Icon name="search" size={14} className="me-1" aria-hidden="true" />
+										{t('consultantDashboard.exploreCatalog')}
+									</Button>
+								</div>
 							) : (
 								<div className="table-responsive">
 									<table className="table table-sm align-middle mb-0">
