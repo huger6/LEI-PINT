@@ -33,7 +33,7 @@ if (process.env.SKIP_API_ROUTES !== '1') {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', 1);
+app.set('trust proxy', parseInt(process.env.TRUST_PROXY_HOPS, 10) || 1);
 
 // Middleware
 const allowedOrigins = [process.env.APP_URL, process.env.WEB_APP_URL].filter(Boolean);
@@ -60,8 +60,10 @@ if (apiRoutes) {
 }
 
 // Dev-only: serve generated files when Supabase/storage is not available
-const path = require('path');
-app.use('/_dev_storage', express.static(path.join(__dirname, '../logs/dev_storage')));
+if (process.env.NODE_ENV !== 'production') {
+    const path = require('path');
+    app.use('/_dev_storage', express.static(path.join(__dirname, '../logs/dev_storage')));
+}
 
 module.exports = {
     app,

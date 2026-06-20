@@ -1,5 +1,5 @@
 const { models, sequelize } = require('../config/db');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
@@ -123,7 +123,7 @@ const getApplications = async (req, res) => {
                     }]
                 }
             ],
-            order: [['submitted_at', 'DESC NULLS LAST'], ['opened_at', 'DESC']],
+            order: [Sequelize.literal('submitted_at DESC NULLS LAST'), ['opened_at', 'DESC']],
             limit,
             offset
         });

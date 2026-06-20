@@ -342,6 +342,13 @@ const confirmEmail = async (req, res) => {
     const { token } = req.query;
     const requestId = req.headers['x-request-id'] || null;
 
+    if (!token) {
+        return res.status(400).json({
+            success: false,
+            code: 'AUTH_TOKEN_REQUIRED'
+        });
+    }
+
     try {
         logger.info('Email confirmation flow started', {
             requestId,

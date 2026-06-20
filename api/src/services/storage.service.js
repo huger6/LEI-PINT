@@ -146,7 +146,10 @@ const uploadBuffer = async (bucketName, storagePath, buffer, contentType = 'appl
 
         return publicUrl;
     } catch (err) {
-        // On error, fallback to local dev storage to avoid blocking tests
+        if (process.env.NODE_ENV === 'production') {
+            logger.error('Supabase upload failed in production', { err, bucketName, storagePath });
+            throw err;
+        }
         const devBase = process.env.DEV_PUBLIC_URL || `http://localhost:${process.env.PORT || 3000}`;
         const localPath = require('path').join(__dirname, '../../logs/dev_storage', bucketName, storagePath);
         const dir = require('path').dirname(localPath);
