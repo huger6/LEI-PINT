@@ -17,6 +17,17 @@
 
 DROP FUNCTION IF EXISTS fn_capitalize_full_name(VARCHAR);
 
+-- Reporting functions are dropped first so a changed RETURNS TABLE signature
+-- can be replaced (CREATE OR REPLACE cannot change a function's return type).
+-- Names are unique (no overloads), so dropping by name is unambiguous.
+DROP FUNCTION IF EXISTS fn_consultant_badges_per_area;
+DROP FUNCTION IF EXISTS get_ranking;
+DROP FUNCTION IF EXISTS get_consultant_lp_progress;
+DROP FUNCTION IF EXISTS get_consultant_acquisition_timeline;
+DROP FUNCTION IF EXISTS get_consultant_peer_comparison;
+DROP FUNCTION IF EXISTS get_badge_distribution_monthly;
+DROP FUNCTION IF EXISTS get_badges_by_range;
+
 CREATE OR REPLACE FUNCTION fn_capitalize_full_name(p_full_name VARCHAR)
 RETURNS VARCHAR
 LANGUAGE plpgsql
@@ -121,12 +132,11 @@ AS $$
     ),
     /*-- Per-badge count of skills the user has selected ---------*/
     user_skill_badges AS (
-        SELECT s.badge_id, COUNT(*) AS skill_count
+        SELECT bs.badge_id, COUNT(*) AS skill_count
         FROM consultants_selected_skills css
-        JOIN skills s ON s.skills_id = css.skills_id
+        JOIN badge_skills bs ON bs.skills_id = css.skills_id
         WHERE css.user_id = p_user_id
-          AND s.badge_id IS NOT NULL
-        GROUP BY s.badge_id
+        GROUP BY bs.badge_id
     ),
     /*-- Interactions in the last 7 days -------------------------*/
     recent_7d AS (
@@ -754,7 +764,7 @@ BEGIN
                COUNT(s.skills_id) AS n
         FROM awarded_badges ab
         JOIN badge_applications ba ON ba.application_id = ab.application_id
-        JOIN skills s ON s.badge_id = ba.badge_id
+        JOIN badge_skills s ON s.badge_id = ba.badge_id
         WHERE ab.user_id = p_user_id
         GROUP BY 1
     ),
@@ -852,7 +862,7 @@ BEGIN
             (SELECT COUNT(DISTINCT s.skills_id)
                 FROM awarded_badges ab
                 JOIN badge_applications ba ON ba.application_id = ab.application_id
-                JOIN skills s ON s.badge_id = ba.badge_id
+                JOIN badge_skills s ON s.badge_id = ba.badge_id
                 WHERE ab.user_id = u.user_id)::BIGINT AS total_skills,
             (SELECT COUNT(*)
                 FROM certificates c
