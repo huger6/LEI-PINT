@@ -145,7 +145,7 @@ export default function Objectives() {
 				</div>
 				<div className={styles.welcomeBody}>
 					<h1 className={styles.welcomeTitle}>
-						{greeting}, {displayName || authUser?.name || t('objectives.user')}!
+						{greeting.replace(/[!！]\s*$/, '')}, {displayName || authUser?.name || t('objectives.user')}!
 					</h1>
 					<p className={styles.welcomeSubtitle}>
 						{t('objectives.welcomeSubtitle', {
@@ -371,7 +371,7 @@ export default function Objectives() {
 									valueKey="value"
 									isDonut
 									height={200}
-									colors={['var(--color-primary)', 'rgba(57, 99, 156, 0.12)']}
+									colors={['var(--color-primary)', 'rgba(57, 99, 156, 0.30)']}
 								/>
 								<div className={styles.donutLabel}>
 									<strong>{pd.name}</strong>

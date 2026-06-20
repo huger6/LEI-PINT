@@ -224,20 +224,12 @@ export default function Ranking() {
     const resolveInitialConsultantScope = useCallback(() => {
         if (role !== 'Consultant' || !hierarchyLoaded) return null;
 
-        const primaryArea = user?.areas?.find((a) => a.isPrimary);
-        if (primaryArea) {
-            const matched = areas.find((a) => a.area_slug === primaryArea.slug);
-            if (matched) return `area:${matched.area_id}`;
-        }
-
-        const userSl = user?.serviceLine;
-        if (userSl) {
-            const matched = serviceLines.find((sl) => sl.sl_slug === userSl.slug);
-            if (matched) return `sl:${matched.service_line_id}`;
-        }
-
+        // Default to the general ranking so the consultant always sees their real
+        // totals: a consultant can earn badges/points outside their primary area,
+        // and an area-scoped default would show a misleading 0 pts / 0 badges.
+        // "My area" / "My Service Line" remain available as explicit scopes.
         return 'general';
-    }, [role, user, hierarchyLoaded, areas, serviceLines]);
+    }, [role, hierarchyLoaded]);
 
     useEffect(() => {
         if (role === 'Consultant' && hierarchyLoaded && consultantScope === 'initial') {

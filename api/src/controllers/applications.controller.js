@@ -728,7 +728,9 @@ const validateApplication = async (req, res) => {
                 awarded_at: new Date(),
                 points_snapshot: badge.badge_points,
                 public_verification_link: require('crypto').randomUUID(),
-                is_published: false,
+                // Per the workflow, acceptance generates AND publishes the badge:
+                // it becomes a public, verifiable credential immediately.
+                is_published: true,
                 is_featured: false
             }, { transaction });
         }
