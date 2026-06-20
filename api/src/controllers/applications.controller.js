@@ -629,9 +629,18 @@ const validateApplication = async (req, res) => {
         const { applicationGuid } = validations.applicationGuidParamSchema.parse(req.params);
         const { action, reviewerNotes } = validations.reviewApplicationSchema.parse(req.body);
 
+        // Lock the application row FOR UPDATE inside the transaction. Reviewers are
+        // global (every TM sees every Submitted application), so two TMs can act on
+        // the same one at once. The lock serialises them: the second reviewer blocks
+        // until the first commits, then re-reads the (now-changed) state and fails
+        // the state-machine guard below — no silent double validation.
+        // `of` keeps the lock on badge_applications only (FOR UPDATE can't apply to
+        // the nullable side of the badges outer join).
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
-            include: [{ model: models.badges, as: 'badge' }]
+            include: [{ model: models.badges, as: 'badge' }],
+            transaction,
+            lock: { level: transaction.LOCK.UPDATE, of: models.badge_applications }
         });
 
         if (!application) {
@@ -904,9 +913,13 @@ const reviewEvidence = async (req, res) => {
         const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
         const { approved, reviewNotes } = validations.reviewEvidenceSchema.parse(req.body);
 
+        // Lock the application row so concurrent reviewers process one application
+        // serially (see validateApplication for the rationale).
         const application = await models.badge_applications.findOne({
             where: { application_guid: applicationGuid },
-            include: [{ model: models.badges, as: 'badge' }]
+            include: [{ model: models.badges, as: 'badge' }],
+            transaction,
+            lock: { level: transaction.LOCK.UPDATE, of: models.badge_applications }
         });
 
         if (!application) {
