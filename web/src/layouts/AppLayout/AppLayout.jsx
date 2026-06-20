@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.css';
 import Sidebar from '../../components/Sidebar/Sidebar';
@@ -5,11 +6,17 @@ import Footer from '../../components/Footer/Footer';
 import TopBar from '../../components/TopBar/TopBar';
 
 export default function AppLayout({ menuItems }) {
+    const [mobileOpen, setMobileOpen] = useState(false);
+
     return (
         <div className={styles.layout}>
-            <Sidebar menuItems={menuItems} />
+            <Sidebar
+                menuItems={menuItems}
+                mobileOpen={mobileOpen}
+                onMobileClose={() => setMobileOpen(false)}
+            />
             <div className={styles.contentArea}>
-                <TopBar />
+                <TopBar onMenuToggle={() => setMobileOpen(prev => !prev)} />
                 <main className={styles.mainContent}>
                     <Outlet />
                 </main>

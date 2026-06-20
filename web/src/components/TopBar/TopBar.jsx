@@ -8,8 +8,9 @@ import { useUser } from '../../hooks/userContext';
 import UserDropdown from './UserDropdown/UserDropdown';
 import PointsCard from './PointsCard/PointsCard';
 import SearchBar from './SearchBar/SearchBar';
+import Icon from '../Icons/Icons';
 
-export default function TopBar() {
+export default function TopBar({ onMenuToggle }) {
     const { user, displayName, points } = useUser();
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -21,6 +22,16 @@ export default function TopBar() {
 
     return (
         <header className={styles.topBar}>
+            {onMenuToggle && (
+                <button
+                    type="button"
+                    className={styles.menuToggle}
+                    onClick={onMenuToggle}
+                    aria-label={t('sidebar.menu')}
+                >
+                    <Icon name="hamburger" size={24} color="var(--color-on-background)" />
+                </button>
+            )}
             <Link to={SHARED.HOME} className={styles.logoSection}>
                 <Logo />
             </Link>
