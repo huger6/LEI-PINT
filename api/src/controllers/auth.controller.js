@@ -14,6 +14,22 @@ const { handleZodError } = require('../utils/responseHelper');
 
 loadEnvironment();
 
+// Refresh-token cookie options. In production the API and the SPA live on
+// different domains (e.g. *.onrender.com and *.vercel.app), so the cookie must
+// be SameSite=None; Secure or the browser drops it on cross-site requests and
+// the session never persists. Locally (same-origin via the Vite proxy, over
+// http) Secure can't be used, so we fall back to Lax/non-secure.
+function refreshCookieOptions(extra = {}) {
+    const isProd = process.env.NODE_ENV === 'production';
+    return {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? 'None' : 'Lax',
+        path: '/api/auth',
+        ...extra,
+    };
+}
+
 function getUpdatedStreak(lastOnline, currentStreak) {
     if (!lastOnline) return 1;
     const msPerDay = 86400000;
@@ -551,13 +567,7 @@ const login = async (req, res) => {
         await sendTopicUpdate("new_data", 8);
 
         // Send refreshToken via httpOnly cookie (secure)
-        res.cookie('refreshToken', refreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
-            path: '/api/auth',
-            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
-        });
+        res.cookie('refreshToken', refreshTokenValue, refreshCookieOptions({ maxAge: refreshTokenDurationMs }));
 
         const decoded = jwt.decode(accessToken);
 
@@ -617,7 +627,7 @@ const refresh = async (req, res) => {
         });
 
         if (!storedToken) {
-            res.clearCookie('refreshToken', { path: '/api/auth' });
+            res.clearCookie('refreshToken', refreshCookieOptions());
             return res.status(403).json({
                 success: false,
                 code: "AUTH_SESSION_EXPIRED_OR_INVALID"
@@ -627,7 +637,7 @@ const refresh = async (req, res) => {
         // Check if token has expired
         if (new Date(storedToken.expires_at) < new Date()) {
             await storedToken.destroy(); // clear from db
-            res.clearCookie('refreshToken', { path: '/api/auth' });
+            res.clearCookie('refreshToken', refreshCookieOptions());
             return res.status(403).json({
                 success: false,
                 code: "AUTH_SESSION_EXPIRED"
@@ -672,13 +682,7 @@ const refresh = async (req, res) => {
         const remainingTimeMs = new Date(storedToken.expires_at).getTime() - new Date().getTime();
 
         // Set new cookie
-        res.cookie('refreshToken', newRefreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
-            path: '/api/auth',
-            maxAge: remainingTimeMs
-        });
+        res.cookie('refreshToken', newRefreshTokenValue, refreshCookieOptions({ maxAge: cookieMaxAgeMs }));
 
         const decoded = jwt.decode(accessToken);
 
@@ -715,10 +719,7 @@ const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     const requestId = req.headers['x-request-id'] || null;
 
-    const cookieOptions = {
-        path: '/api/auth',
-        httpOnly: true
-    };
+    const cookieOptions = refreshCookieOptions();
 
     try {
         if (refreshToken) {
@@ -844,13 +845,7 @@ const changePassword = async (req, res) => {
         await sendTopicUpdate("new_data", 1);
         await sendTopicUpdate("new_data", 8);
 
-        res.cookie('refreshToken', refreshTokenValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
-            path: '/api/auth',
-            maxAge: refreshTokenDurationDays * 24 * 60 * 60 * 1000
-        });
+        res.cookie('refreshToken', refreshTokenValue, refreshCookieOptions({ maxAge: refreshTokenDurationMs }));
 
         return res.status(200).json({
             success: true,
@@ -1102,9 +1097,7 @@ const resetPassword = async (req, res) => {
         await sendTopicUpdate("new_data", 8);
 
         // Delete cookie
-        res.clearCookie('refreshToken', {
-            path: '/api/auth'
-        });
+        res.clearCookie('refreshToken', refreshCookieOptions());
 
         return res.status(200).json({
             success: true,
