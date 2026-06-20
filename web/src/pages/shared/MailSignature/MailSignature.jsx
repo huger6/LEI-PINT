@@ -45,7 +45,10 @@ const outlookIcon = (
 );
 
 // Builds the signature HTML. Badges are only included for consultants.
-function buildSignatureHtml(name, role, email, badges) {
+// `opts` toggles the profile photo and the name (the user can pick photo, name
+// or both — defaults to both).
+function buildSignatureHtml(name, role, email, badges, photoUrl, opts = {}) {
+	const { showPhoto = true, showName = true } = opts;
 	const items = badges
 		.map((b) => {
 			const link = b.verificationLink ? verifyUrl(b.verificationLink) : null;
@@ -67,15 +70,26 @@ function buildSignatureHtml(name, role, email, badges) {
 		? `<tr><td style="font-size:12px;padding-top:4px;"><a href="mailto:${email}" style="color:#2575bd;text-decoration:none;">${email}</a></td></tr>`
 		: '';
 	const badgeRow = items ? `<tr><td style="padding-top:10px;">${items}</td></tr>` : '';
+	const nameRow = showName ? `<tr><td style="font-size:15px;font-weight:bold;">${name}</td></tr>` : '';
 
-	return (
+	const infoTable =
 		`<table cellpadding="0" cellspacing="0" style="font-family:Arial,Helvetica,sans-serif;color:#1f2937;">` +
-		`<tr><td style="font-size:15px;font-weight:bold;">${name}</td></tr>` +
+		nameRow +
 		`<tr><td style="font-size:12px;color:#6b7280;padding-top:2px;">${role} · Softinsa</td></tr>` +
 		emailRow +
 		badgeRow +
-		`</table>`
-	);
+		`</table>`;
+
+	if (showPhoto && photoUrl) {
+		return (
+			`<table cellpadding="0" cellspacing="0" style="font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><tr>` +
+			`<td style="padding-right:12px;vertical-align:middle;"><img src="${photoUrl}" alt="${name}" width="64" height="64" style="border:0;border-radius:50%;object-fit:cover;display:block;" /></td>` +
+			`<td style="vertical-align:middle;">${infoTable}</td>` +
+			`</tr></table>`
+		);
+	}
+
+	return infoTable;
 }
 
 export default function MailSignature() {
@@ -85,7 +99,10 @@ export default function MailSignature() {
 	const isConsultant = user?.role === 'Consultant';
 	const roleLabel = t(`mailSignature.role.${ROLE_KEY[user?.role] || 'consultant'}`, { defaultValue: user?.role || '' });
 	const email = user?.email || user?.email_address || '';
+	const photoUrl = user?.profileImg || user?.profile_img_url || '';
 
+	const [includePhoto, setIncludePhoto] = useState(true);
+	const [includeName, setIncludeName] = useState(true);
 	const [badges, setBadges] = useState([]);
 	const [selected, setSelected] = useState(() => new Set());
 	const [loading, setLoading] = useState(true);
@@ -118,8 +135,8 @@ export default function MailSignature() {
 	);
 
 	const signatureHtml = useMemo(
-		() => buildSignatureHtml(displayName || '', roleLabel, email, selectedBadges),
-		[displayName, roleLabel, email, selectedBadges]
+		() => buildSignatureHtml(displayName || '', roleLabel, email, selectedBadges, photoUrl, { showPhoto: includePhoto, showName: includeName }),
+		[displayName, roleLabel, email, selectedBadges, photoUrl, includePhoto, includeName]
 	);
 
 	function toggle(id) {
@@ -203,6 +220,17 @@ export default function MailSignature() {
 				<ContentCard className={styles.card}>
 					<CardHeader icon="email" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('mailSignature.preview')} />
 					{!isConsultant && <p className={styles.note}>{t('mailSignature.noBadgesNote')}</p>}
+					<div className={styles.displayOptions}>
+						<span className={styles.displayOptionsLabel}>{t('mailSignature.include')}</span>
+						<label className={`form-check ${styles.optionCheck}`}>
+							<input type="checkbox" className="form-check-input" checked={includePhoto} disabled={!photoUrl} onChange={(e) => setIncludePhoto(e.target.checked)} />
+							<span className="form-check-label">{t('mailSignature.includePhoto')}</span>
+						</label>
+						<label className={`form-check ${styles.optionCheck}`}>
+							<input type="checkbox" className="form-check-input" checked={includeName} onChange={(e) => setIncludeName(e.target.checked)} />
+							<span className="form-check-label">{t('mailSignature.includeName')}</span>
+						</label>
+					</div>
 					<div className={styles.previewBox}>
 						<div className={styles.preview} dangerouslySetInnerHTML={{ __html: signatureHtml }} />
 					</div>

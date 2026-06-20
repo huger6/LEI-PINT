@@ -97,6 +97,27 @@
 	margin: 0 0 0.75rem;
 }
 
+.displayOptions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-bottom: 0.85rem;
+}
+
+.displayOptionsLabel {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-outline);
+}
+
+.optionCheck {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+}
+
 .previewBox {
 	background: #fff;
 	border: 1px dashed var(--color-outline-variant);
