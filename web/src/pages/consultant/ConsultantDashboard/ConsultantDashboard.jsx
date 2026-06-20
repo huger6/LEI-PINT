@@ -1,156 +1,174 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Button from '../../../components/Button/Button';
 import { useTranslation } from 'react-i18next';
 import { CONSULTANT, SHARED } from '../../../routes/paths';
+import { useUser } from '../../../hooks/userContext';
 import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
+import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
+import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
+import { getAreas } from '../../../features/badges/api/hierarchyApi';
 import styles from './ConsultantDashboard.module.css';
 
-const STATE_BADGE_CLASS = {
-	Open: 'bg-secondary',
-	Submitted: 'bg-primary',
-	'In validation': 'bg-warning text-dark',
-	Accepted: 'bg-success',
-	Rejected: 'bg-danger',
-};
+// Localised "x days ago" without extra translation keys.
+function relativeTime(dateStr, lang) {
+	if (!dateStr) return '';
+	const diffDays = Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000);
+	const rtf = new Intl.RelativeTimeFormat(lang || 'pt', { numeric: 'auto' });
+	if (Math.abs(diffDays) < 1) return rtf.format(0, 'day');
+	if (Math.abs(diffDays) >= 7) return rtf.format(-Math.round(diffDays / 7), 'week');
+	return rtf.format(-diffDays, 'day');
+}
+
+function statusOf(state) {
+	if (state === 'Accepted') return { key: 'approved', cls: 'statusApproved' };
+	if (state === 'Rejected') return { key: 'rejected', cls: 'statusRejected' };
+	return { key: 'pending', cls: 'statusPending' };
+}
 
 export default function ConsultantDashboard() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
-	const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, accepted: 0 });
+	const { user } = useUser();
+
 	const [recentApps, setRecentApps] = useState([]);
+	const [recommendations, setRecommendations] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const carouselRef = useRef(null);
 
 	useEffect(() => {
 		let ignore = false;
-
-		async function load() {
+		(async () => {
 			try {
 				const apps = await getApplications();
 				const appList = Array.isArray(apps) ? apps : (apps.data || []);
-
 				if (ignore) return;
-
-				const total = appList.length;
-				const open = appList.filter((a) => (a.application_state || a.state) === 'Open').length;
-				const submitted = appList.filter((a) => (a.application_state || a.state) === 'Submitted').length;
-				const accepted = appList.filter((a) => (a.application_state || a.state) === 'Accepted').length;
-
-				setStats({ total, open, submitted, accepted });
-				setRecentApps(appList.slice(0, 5));
+				const sorted = [...appList].sort((a, b) =>
+					new Date(b.submitted_at || b.opened_at || 0) - new Date(a.submitted_at || a.opened_at || 0));
+				setRecentApps(sorted.slice(0, 4));
 			} catch (err) {
 				console.error(err);
+			} finally {
+				if (!ignore) setLoading(false);
 			}
-		}
-
-		load();
+		})();
 		return () => { ignore = true; };
 	}, []);
 
+	// Recommendations: not-yet-earned badges in the consultant's primary area.
+	useEffect(() => {
+		let ignore = false;
+		(async () => {
+			try {
+				const primarySlug = user?.areas?.find(a => a.isPrimary)?.slug || user?.areas?.[0]?.slug;
+				let areaId;
+				if (primarySlug) {
+					const areas = await getAreas({ limit: 200 }).catch(() => []);
+					areaId = (areas || []).find(a => (a.area_slug || a.areaSlug) === primarySlug)?.area_id;
+				}
+				const { data } = await getBadgesCatalog(areaId ? { areaId, limit: 12 } : { limit: 12 });
+				if (ignore) return;
+				setRecommendations((data || []).filter(b => !(b.has_obtained === true)).slice(0, 9));
+			} catch {
+				if (!ignore) setRecommendations([]);
+			}
+		})();
+		return () => { ignore = true; };
+	}, [user]);
+
+	function scrollCarousel(dir) {
+		carouselRef.current?.scrollBy({ left: dir === 'next' ? 320 : -320, behavior: 'smooth' });
+	}
+
 	return (
-		<div>
+		<div className={styles.page}>
 			<WelcomeCard />
 
-			<div className="row g-4 mb-4 mt-2">
-				{[
-					{ key: 'totalApplications', value: stats.total, cls: '' },
-					{ key: 'open', value: stats.open, cls: 'text-secondary' },
-					{ key: 'submitted', value: stats.submitted, cls: 'text-primary' },
-					{ key: 'completed', value: stats.accepted, cls: 'text-success' },
-				].map((s) => (
-					<div className="col-6 col-md-3" key={s.key}>
-						<Link to={SHARED.APPLICATIONS} className={`card border-0 shadow-sm h-100 text-decoration-none ${styles.statCard}`}>
-							<div className="card-body">
-								<h6 className="text-muted mb-2">{t(`consultantDashboard.${s.key}`)}</h6>
-								<h3 className={`mb-0 ${s.cls}`}>{s.value}</h3>
-							</div>
-						</Link>
-					</div>
-				))}
-			</div>
-
-			<div className="row g-4">
-				<div className="col-lg-8">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<div className="d-flex justify-content-between align-items-center mb-3">
-								<h5 className="fw-semibold mb-0">{t('consultantDashboard.recentApplications')}</h5>
-								<Link to={SHARED.APPLICATIONS} className="small">{t('shared.viewAll')}</Link>
-							</div>
-
-							{recentApps.length === 0 ? (
-								<div className={styles.emptyState}>
-									<Icon name="paper" size={36} className={styles.emptyIcon} aria-hidden="true" />
-									<p className={styles.emptyTitle}>{t('consultantDashboard.noApplications')}</p>
-									<p className={styles.emptyHint}>{t('consultantDashboard.noApplicationsHint')}</p>
-									<Button as={Link} to={CONSULTANT.CATALOG} size="sm">
-										<Icon name="search" size={14} className="me-1" aria-hidden="true" />
-										{t('consultantDashboard.exploreCatalog')}
-									</Button>
-								</div>
-							) : (
-								<div className="table-responsive">
-									<table className="table table-sm align-middle mb-0">
-										<thead className="table-light">
-											<tr>
-												<th>{t('shared.badge')}</th>
-												<th>{t('shared.state')}</th>
-												<th>{t('shared.date')}</th>
-											</tr>
-										</thead>
-										<tbody>
-											{recentApps.map((app) => {
-												const state = app.application_state || app.state;
-												return (
-													<tr
-														key={app.application_guid || app.applicationGuid}
-														className={styles.clickableRow}
-														onClick={() => navigate(`${SHARED.APPLICATIONS}/${app.application_guid || app.applicationGuid}`)}
-													>
-														<td className="fw-medium">
-															{app.badge?.badge_title || app.badge?.badgeTitle || '—'}
-														</td>
-														<td>
-															<span className={`badge ${STATE_BADGE_CLASS[state] || 'bg-secondary'}`}>
-																{state}
-															</span>
-														</td>
-														<td className="text-muted small">
-															{(() => {
-																const dateStr = app.submitted_at || app.submittedAt || app.opened_at || app.createdAt;
-																return dateStr ? new Date(dateStr).toLocaleDateString('pt-PT') : '—';
-															})()}
-														</td>
-													</tr>
-												);
-											})}
-										</tbody>
-									</table>
-								</div>
-							)}
-						</div>
-					</div>
+			{/* Recent submissions */}
+			<section className={styles.section}>
+				<div className={styles.sectionHead}>
+					<h2 className={styles.sectionTitle}>{t('consultantDashboard.recentSubmissions')}</h2>
+					<Link to={SHARED.APPLICATIONS} className={styles.viewAll}>{t('shared.viewAll')}</Link>
 				</div>
 
-				<div className="col-lg-4">
-					<div className="card border-0 shadow-sm">
-						<div className="card-body">
-							<h5 className="fw-semibold mb-3">{t('shared.quickActions')}</h5>
-							<div className="d-flex flex-column gap-2">
-								<Button as={Link} to={CONSULTANT.CATALOG} variant="outlined" className="text-start">
-									<Icon name="search" size={16} className="me-2" aria-hidden="true" />
-									{t('consultantDashboard.exploreCatalog')}
-								</Button>
-								<Button as={Link} to={SHARED.APPLICATIONS} variant="outlined" className="text-start">
-									<Icon name="paper" size={16} className="me-2" aria-hidden="true" />
-									{t('consultantDashboard.myApplications')}
-								</Button>
-							</div>
+				{loading ? (
+					<div className={styles.subList}>
+						{[0, 1, 2].map((i) => <div key={i} className={`${styles.subRow} ${styles.skeletonRow}`} />)}
+					</div>
+				) : recentApps.length === 0 ? (
+					<div className={styles.emptyState}>
+						<Icon name="paper" size={36} className={styles.emptyIcon} aria-hidden="true" />
+						<p className={styles.emptyTitle}>{t('consultantDashboard.noApplications')}</p>
+						<p className={styles.emptyHint}>{t('consultantDashboard.noApplicationsHint')}</p>
+						<Button as={Link} to={CONSULTANT.CATALOG} size="sm">
+							<Icon name="search" size={14} className="me-1" aria-hidden="true" />
+							{t('consultantDashboard.exploreCatalog')}
+						</Button>
+					</div>
+				) : (
+					<div className={styles.subList}>
+						{recentApps.map((app) => {
+							const guid = app.application_guid || app.applicationGuid;
+							const state = app.application_state || app.state;
+							const st = statusOf(state);
+							const title = app.badge?.badge_title || app.badge?.badgeTitle || '—';
+							const img = app.badge?.badge_img_url || app.badge?.badgeImgUrl;
+							return (
+								<button key={guid} type="button" className={styles.subRow} onClick={() => navigate(`${SHARED.APPLICATIONS}/${guid}`)}>
+									<span className={styles.subThumb}>
+										{img ? <img src={img} alt="" /> : <Icon name="badge" size={22} color="var(--color-secondary)" aria-hidden="true" />}
+									</span>
+									<span className={styles.subInfo}>
+										<span className={styles.subName}>{title}</span>
+										<span className={styles.subTime}>{relativeTime(app.submitted_at || app.opened_at, i18n.language)}</span>
+									</span>
+									<span className={`${styles.statusChip} ${styles[st.cls]}`}>
+										<Icon name={state === 'Accepted' ? 'check_circle' : state === 'Rejected' ? 'close_circle' : 'clock'} size={14} aria-hidden="true" />
+										{t(`consultantDashboard.status.${st.key}`)}
+									</span>
+								</button>
+							);
+						})}
+					</div>
+				)}
+			</section>
+
+			{/* Discover learning in your area */}
+			{recommendations.length > 0 && (
+				<section className={styles.section}>
+					<div className={styles.sectionHead}>
+						<h2 className={styles.sectionTitle}>{t('consultantDashboard.discoverInArea')}</h2>
+						<div className={styles.carouselNav}>
+							<button type="button" className={styles.navBtn} onClick={() => scrollCarousel('prev')} aria-label={t('shared.previous', { defaultValue: 'Anterior' })}>
+								<Icon name="chevron_backward" size={18} aria-hidden="true" />
+							</button>
+							<button type="button" className={styles.navBtn} onClick={() => scrollCarousel('next')} aria-label={t('shared.next', { defaultValue: 'Seguinte' })}>
+								<Icon name="chevron_forward" size={18} aria-hidden="true" />
+							</button>
 						</div>
 					</div>
-				</div>
-			</div>
+
+					<div className={styles.carousel} ref={carouselRef}>
+						{recommendations.map((b) => {
+							const slug = b.badge_slug || b.badgeSlug;
+							const title = b.badge_title || b.badgeTitle;
+							const img = b.badge_img_url || b.badgeImgUrl;
+							const isSpecial = (b.badge_type || b.badgeType) === 'Special';
+							return (
+								<Link key={slug} to={`/badges/${slug}`} className={styles.recCard}>
+									<div className={styles.recThumb}>
+										{img ? <img src={img} alt="" loading="lazy" /> : <Icon name="badge" size={40} color="var(--color-secondary)" aria-hidden="true" />}
+										{isSpecial && <span className={styles.recPremium} title="Special"><Icon name="star" size={14} color="#1d1b20" aria-hidden="true" /></span>}
+									</div>
+									<h3 className={styles.recTitle}>{title}</h3>
+									<p className={styles.recDesc}>{b.badge_description || b.badgeDescription || ''}</p>
+								</Link>
+							);
+						})}
+					</div>
+				</section>
+			)}
 		</div>
 	);
 }

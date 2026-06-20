@@ -5,6 +5,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useUser } from '../../hooks/userContext';
 import { getApplicationsPaged } from '../../features/applications/api/applicationsApi';
 import { getConsultantsOverview, getBadgesSummary } from '../../features/statistics/api/statisticsApi';
+import { getGoals } from '../../features/goals/api/goalsApi';
 import { CONSULTANT, TM, SLL } from '../../routes/paths';
 import styles from './WelcomeCard.module.css';
 import StatCard from './StatCard/StatCard';
@@ -101,10 +102,12 @@ export default function WelcomeCard() {
         if (role !== 'Consultant') return undefined;
         let active = true;
         (async () => {
-            const apps = await getApplicationsPaged({ page: 1, limit: 200 }).then(r => r.data || []).catch(() => []);
+            const [apps, goals] = await Promise.all([
+                getApplicationsPaged({ page: 1, limit: 200 }).then(r => r.data || []).catch(() => []),
+                getGoals().then(g => (Array.isArray(g) ? g : g?.data || [])).catch(() => []),
+            ]);
             const earned = apps.filter(a => (a.application_state || a.state) === 'Accepted').length;
-            const inProgress = apps.filter(a => ['Open', 'Submitted', 'In validation'].includes(a.application_state || a.state)).length;
-            if (active) setConsultantStats({ earned, inProgress });
+            if (active) setConsultantStats({ earned, goals: goals.length });
         })();
         return () => { active = false; };
     }, [role]);
@@ -126,7 +129,7 @@ export default function WelcomeCard() {
         ]
         : [
             { label: t('welcomeCard.badgesEarned'), value: consultantValue(consultantStats?.earned), variant: 'accent', icon: 'badge', to: CONSULTANT.ACHIEVEMENTS },
-            { label: t('welcomeCard.activeApplications'), value: consultantValue(consultantStats?.inProgress), icon: 'paper', to: CONSULTANT.APPLICATIONS },
+            { label: t('welcomeCard.objectives'), value: consultantValue(consultantStats?.goals), icon: 'target', to: CONSULTANT.OBJECTIVES },
             { label: t('welcomeCard.streak'), value: `${streakDays} ${t('welcomeCard.days')}`, variant: 'success', icon: 'fire', to: CONSULTANT.EVOLUTION },
         ];
 
