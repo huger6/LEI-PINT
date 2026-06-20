@@ -1559,6 +1559,7 @@
 	},
 	"consultantDetail": {
 		"back": "Volver",
+		"historyTitle": "Historial de insignias",
 		"points": "Puntos",
 		"badges": "Badges",
 		"timelineTitle": "Evolución Profesional",

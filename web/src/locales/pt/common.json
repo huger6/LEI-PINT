@@ -1559,6 +1559,7 @@
 	},
 	"consultantDetail": {
 		"back": "Voltar",
+		"historyTitle": "Histórico de badges",
 		"points": "Pontos",
 		"badges": "Badges",
 		"timelineTitle": "Evolução Profissional",

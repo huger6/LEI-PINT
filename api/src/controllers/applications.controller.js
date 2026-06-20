@@ -36,7 +36,7 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit, areaId, badgeId, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit, areaId, badgeId, consultantGuid, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
@@ -46,6 +46,17 @@ const getApplications = async (req, res) => {
         }
 
         if (badgeId) appWhereClause.badge_id = badgeId;
+
+        // Leadership can scope the list to a single consultant (e.g. the
+        // per-consultant badge history). Resolve the public guid to its user_id.
+        if (consultantGuid && role !== 'Consultant') {
+            const consultantUser = await models.users.findOne({
+                where: { user_guid: consultantGuid },
+                attributes: ['user_id']
+            });
+            // No match → force an empty result rather than leaking the full list.
+            appWhereClause.user_id = consultantUser ? consultantUser.user_id : -1;
+        }
 
         if (dateFrom || dateTo) {
             appWhereClause.submitted_at = {};

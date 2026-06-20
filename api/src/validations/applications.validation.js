@@ -57,6 +57,8 @@ const getApplicationsQuerySchema = z.object({
 
     areaId: z.coerce.number().int().positive().optional(),
     badgeId: z.coerce.number().int().positive().optional(),
+    consultantGuid: z.string().uuid().optional()
+        .describe("Restrict the list to a single consultant (by user_guid)"),
     dateFrom: z.coerce.date().optional(),
     dateTo: z.coerce.date().optional(),
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getAcquisitionTimeline, getPeerComparison, getConsultantsOverview } from '../../../features/statistics/api/statisticsApi';
+import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { useUser } from '../../../hooks/userContext';
 import { TM, SLL } from '../../../routes/paths';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
@@ -15,9 +16,22 @@ import Spinner from '../../../components/Spinner/Spinner';
 import PeerPickerModal from './PeerPickerModal/PeerPickerModal';
 import styles from './ConsultantDetail.module.css';
 
+// Badge history lenses: earned badges vs still-in-process applications.
+const HISTORY_FILTERS = { obtained: ['Accepted'], inprocess: ['Open', 'Submitted', 'In validation'] };
+const APP_STATE_KEY = { Open: 'open', Submitted: 'submitted', 'In validation': 'inValidation', Accepted: 'accepted', Rejected: 'rejected' };
+const fmtHistDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
+
+function histStatePill(state) {
+	if (state === 'Accepted') return styles.pillApproved;
+	if (state === 'Rejected') return styles.pillRejected;
+	if (state === 'Open') return styles.pillOpen;
+	return styles.pillPending;
+}
+
 /**
  * Per-consultant detail for leadership: professional evolution timeline (TM
- * bonus) and peer comparison (SLL bonus). Opened from the consultants/team list.
+ * bonus), peer comparison (SLL bonus) and the consultant's badge history
+ * (earned vs in-process). Opened from the consultants/team list.
  */
 export default function ConsultantDetail() {
 	const { t } = useTranslation();
@@ -34,6 +48,10 @@ export default function ConsultantDetail() {
 	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
+
+	const [historyFilter, setHistoryFilter] = useState('obtained');
+	const [history, setHistory] = useState([]);
+	const [historyLoading, setHistoryLoading] = useState(true);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -55,6 +73,16 @@ export default function ConsultantDetail() {
 	}, [userGuid]);
 
 	useEffect(() => { load(); }, [load]);
+
+	useEffect(() => {
+		let active = true;
+		setHistoryLoading(true);
+		getApplicationsPaged({ consultantGuid: userGuid, state: HISTORY_FILTERS[historyFilter], limit: 50 })
+			.then(({ data }) => { if (active) setHistory(data); })
+			.catch(() => { if (active) setHistory([]); })
+			.finally(() => { if (active) setHistoryLoading(false); });
+		return () => { active = false; };
+	}, [userGuid, historyFilter]);
 
 	const target = comparison?.target;
 	const peers = comparison?.peers || [];
@@ -190,6 +218,63 @@ export default function ConsultantDetail() {
 									</div>
 								)}
 							</>
+						)}
+					</ContentCard>
+
+					{/* Per-consultant badge history (req 5): earned vs in-process */}
+					<ContentCard className={styles.section}>
+						<div className={styles.compHead}>
+							<CardHeader icon="badge" iconBg="var(--color-primary-container)" iconColor="var(--color-primary)" title={t('consultantDetail.historyTitle')} />
+							<div className={styles.segmented} role="tablist">
+								{Object.keys(HISTORY_FILTERS).map((key) => (
+									<button
+										key={key}
+										type="button"
+										role="tab"
+										aria-selected={historyFilter === key}
+										className={`${styles.segBtn} ${historyFilter === key ? styles.segActive : ''}`}
+										onClick={() => setHistoryFilter(key)}
+									>
+										{t(`sllBadgeHistory.filter.${key}`)}
+									</button>
+								))}
+							</div>
+						</div>
+
+						{historyLoading ? (
+							<Spinner />
+						) : history.length === 0 ? (
+							<p className={styles.empty}>{t('sllBadgeHistory.empty')}</p>
+						) : (
+							<div className="table-responsive">
+								<table className={`table align-middle mb-0 ${styles.table}`}>
+									<thead>
+										<tr>
+											<th>{t('sllBadgeHistory.colBadge')}</th>
+											<th>{t('sllBadgeHistory.colArea')}</th>
+											<th>{t('sllBadgeHistory.colObtainedDate')}</th>
+											<th>{t('sllBadgeHistory.colState')}</th>
+										</tr>
+									</thead>
+									<tbody>
+										{history.map((a) => {
+											const date = a.validated_at || a.submitted_at || a.opened_at;
+											return (
+												<tr key={a.application_guid} className={styles.histRow} onClick={() => navigate(`/applications/${a.application_guid}`)}>
+													<td>{a.badge?.badge_title || '—'}</td>
+													<td className="text-muted">{a.badge?.area?.area_name || '—'}</td>
+													<td className="text-muted">{fmtHistDate(date)}</td>
+													<td>
+														<span className={`${styles.histPill} ${histStatePill(a.application_state)}`}>
+															{t(`applicationReview.appState.${APP_STATE_KEY[a.application_state] || 'pending'}`, { defaultValue: a.application_state })}
+														</span>
+													</td>
+												</tr>
+											);
+										})}
+									</tbody>
+								</table>
+							</div>
 						)}
 					</ContentCard>
 				</>

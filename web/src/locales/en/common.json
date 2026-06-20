@@ -1559,6 +1559,7 @@
 	},
 	"consultantDetail": {
 		"back": "Back",
+		"historyTitle": "Badge history",
 		"points": "Points",
 		"badges": "Badges",
 		"timelineTitle": "Professional Evolution",

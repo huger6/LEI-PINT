@@ -188,3 +188,69 @@
 	text-align: right;
 	white-space: nowrap;
 }
+
+/* ── Badge history ───────────────────────────────────────────────────────── */
+.segmented {
+	display: inline-flex;
+	background: var(--color-background);
+	border-radius: 999px;
+	padding: 3px;
+	gap: 2px;
+}
+
+.segBtn {
+	border: 0;
+	background: transparent;
+	border-radius: 999px;
+	padding: 0.32rem 0.9rem;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-outline);
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s;
+}
+
+.segActive {
+	background: var(--color-surface, #fff);
+	color: var(--color-primary);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.histRow {
+	cursor: pointer;
+	transition: background 0.12s;
+}
+
+.histRow:hover {
+	background: var(--color-primary-soft);
+}
+
+.histPill {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.74rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.pillApproved {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+.pillRejected {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.pillOpen {
+	background: var(--color-background);
+	color: var(--color-outline);
+}
+
+.pillPending {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
