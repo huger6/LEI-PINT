@@ -981,6 +981,7 @@ CREATE TABLE IF NOT EXISTS user_refresh_tokens (
    user_id                 INTEGER                                      NOT NULL, -- FK -> users(user_id)
    token_value             VARCHAR(512)                                 NOT NULL,
    expires_at              TIMESTAMPTZ                                  NOT NULL,
+   is_persistent           BOOLEAN                                      NOT NULL DEFAULT FALSE,
    created_at              TIMESTAMPTZ                                  NOT NULL DEFAULT now(),
 
    CONSTRAINT pk_user_refresh_tokens PRIMARY KEY (token_id)
