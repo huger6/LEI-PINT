@@ -33,6 +33,8 @@ if (process.env.SKIP_API_ROUTES !== '1') {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [process.env.APP_URL, process.env.WEB_APP_URL].filter(Boolean);
 app.use(cors({
