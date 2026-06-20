@@ -37,6 +37,9 @@ export default function BadgeDetail() {
 	// Catalog list lives at different paths per role: Consultants use /catalog,
 	// while TM/SLL use the shared /badges board. Linking the wrong one 403s.
 	const catalogPath = user?.role === 'Consultant' ? CONSULTANT.CATALOG : SHARED.BADGES;
+	// Only Consultants apply for badges / set objectives / track their own progress.
+	// TM, SLL and Admin view the badge as a catalogue entry (requirements only).
+	const isConsultant = user?.role === 'Consultant';
 
 	useEffect(() => {
 		loadData();
@@ -278,8 +281,8 @@ export default function BadgeDetail() {
 					</div>
 
 					<div className={styles.actionRow}>
-						{/* Application button: hidden when obtained or rejected */}
-						{!hasObtained && appState !== 'Rejected' && (
+						{/* Application button: consultant only; hidden when obtained or rejected */}
+						{isConsultant && !hasObtained && appState !== 'Rejected' && (
 							isActiveApp ? (
 								<Button
 									className={styles.actionBtn}
@@ -296,8 +299,8 @@ export default function BadgeDetail() {
 							)
 						)}
 
-						{/* Objective button: hidden when obtained */}
-						{!hasObtained && (
+						{/* Objective button: consultant only; hidden when obtained */}
+						{isConsultant && !hasObtained && (
 							<Button
 								variant="filled"
 								className={styles.actionBtnObjective}
@@ -451,7 +454,9 @@ export default function BadgeDetail() {
 					)}
 				</div>
 
-				{requirements.length > 0 && (
+				{/* Progress bar is the consultant's own completion; non-consultants
+				    just see the requirements list below. */}
+				{isConsultant && requirements.length > 0 && (
 					<div className={styles.progressBlock}>
 						<div className={styles.progressMeta}>
 							<span>{t('badgeDetail.progress')}</span>
