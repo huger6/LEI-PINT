@@ -610,7 +610,16 @@
 		"users": "Users",
 		"badges": "Badges",
 		"serviceLines": "Service Lines",
-		"areas": "Areas"
+		"areas": "Areas",
+		"announcements": "Announcements!",
+		"createAnnouncement": "Create announcement",
+		"noAnnouncements": "No announcements.",
+		"slas": "SLA's",
+		"createSla": "Create SLA",
+		"noSlas": "No SLAs defined.",
+		"slaStart": "Start",
+		"slaEnd": "End",
+		"slaStatus": { "active": "Active", "expiring": "Expiring soon", "expired": "Expired" }
 	},
 	"adminUsers": {
 		"title": "Users",

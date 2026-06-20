@@ -610,7 +610,16 @@
 		"users": "Utilizadores",
 		"badges": "Badges",
 		"serviceLines": "Service Lines",
-		"areas": "Áreas"
+		"areas": "Áreas",
+		"announcements": "Avisos!",
+		"createAnnouncement": "Criar Aviso",
+		"noAnnouncements": "Sem avisos.",
+		"slas": "SLA's",
+		"createSla": "Criar SLA",
+		"noSlas": "Sem SLAs definidos.",
+		"slaStart": "Início",
+		"slaEnd": "Conclusão",
+		"slaStatus": { "active": "Ativo", "expiring": "Próximo de Expirar", "expired": "Expirado" }
 	},
 	"adminUsers": {
 		"title": "Utilizadores",
