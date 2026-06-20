@@ -10,7 +10,7 @@ let socket = null;
 export function connectSocket(token) {
 	if (socket) socket.disconnect();
 
-	socket = io({
+	socket = io(import.meta.env.API_URL, {
 		auth: { token },
 		reconnection: true,
 		reconnectionAttempts: Infinity,

@@ -53,6 +53,16 @@ export function AuthProvider({ children }) {
 		if (data.fpc !== undefined) setFpc(data.fpc);
 	}, []);
 
+	const logout = useCallback(async () => {
+		try {
+			await authApi.logout();
+		} catch {
+			// best-effort
+		} finally {
+			clearAuth();
+		}
+	}, [clearAuth]);
+
 	useEffect(() => {
 		const handleForceLogout = () => clearAuth();
 		window.addEventListener('auth:logout', handleForceLogout);
@@ -185,16 +195,6 @@ export function AuthProvider({ children }) {
 		}
 		setFpc(false);
 	}, []);
-
-	const logout = useCallback(async () => {
-		try {
-			await authApi.logout();
-		} catch {
-			// best-effort
-		} finally {
-			clearAuth();
-		}
-	}, [clearAuth]);
 
 	return (
 		<AuthContext.Provider
