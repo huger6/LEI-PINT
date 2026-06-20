@@ -23,6 +23,7 @@ export default function LoginPage() {
 	const [form, setForm] = useState({ identifier: '', password: '', remember: false });
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
+	const [fieldErrors, setFieldErrors] = useState({ identifier: '', password: '' });
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
 	const [loading, setLoading] = useState(false);
 
@@ -41,14 +42,22 @@ export default function LoginPage() {
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
 		setError('');
 		setEmailNotConfirmed(false);
+		if (name === 'identifier' || name === 'password') {
+			setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+		}
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (!form.identifier.trim() || !form.password) {
-			setError(t('login.fillAllFields'));
+		const nextFieldErrors = {
+			identifier: form.identifier.trim() ? '' : t('validation.identifierRequired'),
+			password: form.password ? '' : t('validation.passwordRequired'),
+		};
+		if (nextFieldErrors.identifier || nextFieldErrors.password) {
+			setFieldErrors(nextFieldErrors);
 			return;
 		}
+		setFieldErrors({ identifier: '', password: '' });
 
 		setLoading(true);
 		setError('');
@@ -123,6 +132,7 @@ export default function LoginPage() {
 								placeholder={t('emailPlaceholder')}
 								autoComplete="username"
 								autoFocus
+								error={fieldErrors.identifier}
 							/>
 
 							<FormInput
@@ -135,6 +145,7 @@ export default function LoginPage() {
 								placeholder={t('passwordPlaceholder')}
 								autoComplete="current-password"
 								trailing={<PasswordToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
+								error={fieldErrors.password}
 							/>
 
 							<div className="d-flex align-items-center justify-content-between gap-2">
