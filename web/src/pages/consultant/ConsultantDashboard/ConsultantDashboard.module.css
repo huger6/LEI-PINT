@@ -188,7 +188,9 @@
 
 .recThumb {
 	position: relative;
-	height: 96px;
+	/* Badge artwork is square, so keep the thumbnail square too. */
+	aspect-ratio: 1 / 1;
+	width: 100%;
 	border-radius: 12px;
 	background: var(--color-primary-soft);
 	display: flex;
@@ -197,7 +199,7 @@
 	overflow: hidden;
 }
 
-.recThumb img { max-width: 80px; max-height: 80px; object-fit: contain; }
+.recThumb img { max-width: 72%; max-height: 72%; object-fit: contain; }
 
 .recPremium {
 	position: absolute;
