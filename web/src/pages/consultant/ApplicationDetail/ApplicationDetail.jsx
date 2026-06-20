@@ -207,8 +207,13 @@ export default function ApplicationDetail({ application, onReload }) {
 					<div className={styles.badgeIcon}>
 						{imgUrl ? (
 							<img src={imgUrl} alt={title} className={styles.badgeIconImg} />
-						) : (
+						) : application?.application_state === 'Accepted' ? (
+							// Gold trophy only once the badge is actually earned (Accepted);
+							// for Open/Submitted/etc. show a neutral badge icon so it doesn't
+							// look obtained.
 							<Icon name="trophy" size={42} color="var(--color-badge-premium)" />
+						) : (
+							<Icon name="badge" size={42} color="var(--color-secondary)" />
 						)}
 					</div>
 					<div className={styles.badgeBody}>
