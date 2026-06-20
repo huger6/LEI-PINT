@@ -6,7 +6,7 @@ import { useUser } from '../../hooks/userContext';
 import { getApplicationsPaged } from '../../features/applications/api/applicationsApi';
 import { getConsultantsOverview, getBadgesSummary } from '../../features/statistics/api/statisticsApi';
 import { getGoals } from '../../features/goals/api/goalsApi';
-import { CONSULTANT, TM, SLL } from '../../routes/paths';
+import { CONSULTANT, TM, SLL, SHARED } from '../../routes/paths';
 import styles from './WelcomeCard.module.css';
 import StatCard from './StatCard/StatCard';
 import Icon from '../Icons/Icons';
@@ -40,8 +40,8 @@ function ConsultantMeta({ user }) {
     const primaryAreaSlug = primary?.slug;
     return (
         <div className={`d-flex flex-column flex-md-row ${styles.metaList}`}>
-            {serviceLine && (
-                <Link to={serviceLineSlug ? `${CONSULTANT.CATALOG}?sl=${serviceLineSlug}` : CONSULTANT.CATALOG} className={`${styles.metaItem} ${styles.metaLink}`}>
+            {serviceLine && serviceLineSlug && (
+                <Link to={SHARED.STRUCTURE_SL_DETAIL.replace(':slug', serviceLineSlug)} className={`${styles.metaItem} ${styles.metaLink}`}>
                     <Icon name="service-line" className={styles.metaIcon} aria-hidden="true" color="#fff" />
                     <p className={`${styles.metaText} mb-0`}>
                         <span className={styles.metaLabel}>{t('welcomeCard.serviceLineLabel')} </span>
@@ -49,8 +49,8 @@ function ConsultantMeta({ user }) {
                     </p>
                 </Link>
             )}
-            {primaryArea && (
-                <Link to={primaryAreaSlug ? `${CONSULTANT.CATALOG}?area=${primaryAreaSlug}` : CONSULTANT.CATALOG} className={`${styles.metaItem} ${styles.metaLink}`}>
+            {primaryArea && primaryAreaSlug && (
+                <Link to={SHARED.STRUCTURE_AREA_DETAIL.replace(':slug', primaryAreaSlug)} className={`${styles.metaItem} ${styles.metaLink}`}>
                     <Icon name="area" className={styles.metaIcon} aria-hidden="true" size={24} color="#fff" />
                     <p className={`${styles.metaText} mb-0`}>
                         <span className={styles.metaLabel}>{t('welcomeCard.areaLabel')} </span>

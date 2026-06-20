@@ -5,7 +5,8 @@ import StructureDetailLayout from '../../layouts/StructureDetailLayout/Structure
 import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import { fetchLearningPathBySlug, fetchServiceLinesByLearningPath } from '../../api/structureDetailApi';
 import { deleteLearningPath, activateLearningPath } from '../../api/structureListApi';
-import { ADMIN } from '../../../../routes/paths';
+import { ADMIN, structureDetailPaths } from '../../../../routes/paths';
+import { useUser } from '../../../../hooks/userContext';
 import CreateLearningPathModal from '../../components/CreateLearningPathModal/CreateLearningPathModal';
 import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
 import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
@@ -16,6 +17,9 @@ export default function LearningPathDetail() {
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const { user } = useUser();
+	const isAdmin = user?.role === 'Administrator';
+	const P = structureDetailPaths(isAdmin);
 	const [lp, setLp] = useState(null);
 	const [serviceLines, setServiceLines] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -83,7 +87,7 @@ export default function LearningPathDetail() {
 		}
 
 		if (nextSlug && nextSlug !== slug) {
-			navigate(ADMIN.LEARNING_PATH_DETAIL.replace(':slug', nextSlug));
+			navigate(P.lp.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
 
@@ -144,7 +148,7 @@ export default function LearningPathDetail() {
 		title: sl.service_line_name,
 		description: sl.service_line_description,
 		isActive: sl.is_active,
-		to: ADMIN.SERVICE_LINE_DETAIL.replace(':slug', sl.sl_slug),
+		to: P.sl.replace(':slug', sl.sl_slug),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(sl.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
 			{ icon: 'area', value: Number(sl.area_count || 0), label: t('shared.areas', { defaultValue: 'Areas' }) },
@@ -154,7 +158,7 @@ export default function LearningPathDetail() {
 	const breadcrumbItems = [
 		{
 			label: lp.path_title,
-			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', slug),
+			path: P.lp.replace(':slug', slug),
 		},
 	];
 
@@ -175,10 +179,11 @@ export default function LearningPathDetail() {
 				subStructureIcon="service-line"
 				subStructureTone="serviceLines"
 				addSubLabel={t('structureDetail.addServiceLine', { defaultValue: 'Add Service Line' })}
-				onEdit={() => setShowEditModal(true)}
-				onAddSub={() => setShowCreateServiceLineModal(true)}
-				onDelete={lp.is_active ? () => setShowDeleteModal(true) : undefined}
-				onActivate={!lp.is_active ? handleActivate : undefined}
+				canManage={isAdmin}
+				onEdit={isAdmin ? () => setShowEditModal(true) : undefined}
+				onAddSub={isAdmin ? () => setShowCreateServiceLineModal(true) : undefined}
+				onDelete={isAdmin && lp.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={isAdmin && !lp.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
 				exportType="learning-path"

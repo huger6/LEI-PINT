@@ -5,7 +5,8 @@ import StructureDetailLayout from '../../layouts/StructureDetailLayout/Structure
 import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import { fetchAreaBySlug, fetchLevelsByArea } from '../../api/structureDetailApi';
 import { deleteArea, activateArea } from '../../api/structureListApi';
-import { ADMIN } from '../../../../routes/paths';
+import { ADMIN, structureDetailPaths } from '../../../../routes/paths';
+import { useUser } from '../../../../hooks/userContext';
 import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
 import CreateLevelModal from '../../components/CreateLevelModal/CreateLevelModal';
 import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
@@ -16,6 +17,9 @@ export default function AreaDetail() {
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const { user } = useUser();
+	const isAdmin = user?.role === 'Administrator';
+	const P = structureDetailPaths(isAdmin);
 	const [area, setArea] = useState(null);
 	const [levels, setLevels] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -83,7 +87,7 @@ export default function AreaDetail() {
 		}
 
 		if (nextSlug && nextSlug !== slug) {
-			navigate(ADMIN.AREA_DETAIL.replace(':slug', nextSlug));
+			navigate(P.area.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
 
@@ -145,7 +149,7 @@ export default function AreaDetail() {
 		description: level.stage_description,
 		isActive: level.is_active,
 		count: level.stage_sequence != null ? `#${level.stage_sequence}` : undefined,
-		to: ADMIN.LEVEL_DETAIL.replace(':areaSlug', area.area_slug).replace(':stageCode', level.stage_code?.stage_code),
+		to: P.level.replace(':areaSlug', area.area_slug).replace(':stageCode', level.stage_code?.stage_code),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(level.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
 			{ icon: 'badge', value: level.has_badge ? t('shared.yes', { defaultValue: 'Yes' }) : t('shared.no', { defaultValue: 'No' }), label: t('shared.badge', { defaultValue: 'Badge' }) },
@@ -159,20 +163,20 @@ export default function AreaDetail() {
 	if (parentLp) {
 		breadcrumbItems.push({
 			label: parentLp.path_title,
-			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', parentLp.path_slug),
+			path: P.lp.replace(':slug', parentLp.path_slug),
 		});
 	}
 
 	if (parentSl) {
 		breadcrumbItems.push({
 			label: parentSl.service_line_name,
-			path: ADMIN.SERVICE_LINE_DETAIL.replace(':slug', parentSl.sl_slug),
+			path: P.sl.replace(':slug', parentSl.sl_slug),
 		});
 	}
 
 	breadcrumbItems.push({
 		label: area.area_name,
-		path: ADMIN.AREA_DETAIL.replace(':slug', slug),
+		path: P.area.replace(':slug', slug),
 	});
 
 	return (
@@ -192,10 +196,11 @@ export default function AreaDetail() {
 				subStructureIcon="evolution"
 				subStructureTone="levels"
 				addSubLabel={t('structureDetail.addLevel', { defaultValue: 'Add Level' })}
-				onEdit={() => setShowEditModal(true)}
-				onAddSub={() => setShowCreateLevelModal(true)}
-				onDelete={area.is_active ? () => setShowDeleteModal(true) : undefined}
-				onActivate={!area.is_active ? handleActivate : undefined}
+				canManage={isAdmin}
+				onEdit={isAdmin ? () => setShowEditModal(true) : undefined}
+				onAddSub={isAdmin ? () => setShowCreateLevelModal(true) : undefined}
+				onDelete={isAdmin && area.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={isAdmin && !area.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
 				exportType="area"

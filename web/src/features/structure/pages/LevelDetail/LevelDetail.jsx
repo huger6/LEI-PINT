@@ -5,7 +5,8 @@ import StructureDetailLayout from '../../layouts/StructureDetailLayout/Structure
 import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDetailSkeleton';
 import { fetchLevelByCode, fetchBadgesByLevel } from '../../api/structureDetailApi';
 import { deleteLevel, activateLevel } from '../../api/structureListApi';
-import { ADMIN, SHARED } from '../../../../routes/paths';
+import { ADMIN, SHARED, structureDetailPaths } from '../../../../routes/paths';
+import { useUser } from '../../../../hooks/userContext';
 import CreateLevelModal from '../../components/CreateLevelModal/CreateLevelModal';
 import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
 
@@ -14,6 +15,9 @@ const PAGE_SIZE = 32;
 export default function LevelDetail() {
 	const { areaSlug, stageCode: stageCodeParam } = useParams();
 	const { t } = useTranslation();
+	const { user } = useUser();
+	const isAdmin = user?.role === 'Administrator';
+	const P = structureDetailPaths(isAdmin);
 	const [level, setLevel] = useState(null);
 	const [badges, setBadges] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -135,27 +139,27 @@ export default function LevelDetail() {
 	if (parentLp) {
 		breadcrumbItems.push({
 			label: parentLp.path_title,
-			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', parentLp.path_slug),
+			path: P.lp.replace(':slug', parentLp.path_slug),
 		});
 	}
 
 	if (parentSl) {
 		breadcrumbItems.push({
 			label: parentSl.service_line_name,
-			path: ADMIN.SERVICE_LINE_DETAIL.replace(':slug', parentSl.sl_slug),
+			path: P.sl.replace(':slug', parentSl.sl_slug),
 		});
 	}
 
 	if (parentArea) {
 		breadcrumbItems.push({
 			label: parentArea.area_name,
-			path: ADMIN.AREA_DETAIL.replace(':slug', parentArea.area_slug),
+			path: P.area.replace(':slug', parentArea.area_slug),
 		});
 	}
 
 	breadcrumbItems.push({
 		label: title,
-		path: ADMIN.LEVEL_DETAIL.replace(':areaSlug', parentAreaSlug).replace(':stageCode', stageCode),
+		path: P.level.replace(':areaSlug', parentAreaSlug).replace(':stageCode', stageCode),
 	});
 
 	return (
@@ -175,10 +179,11 @@ export default function LevelDetail() {
 				subStructureIcon="badge"
 				subStructureTone="learningPaths"
 				addSubLabel={t('structureDetail.addBadge', { defaultValue: 'Add Badge' })}
-				onEdit={() => setShowEditModal(true)}
-				onAddSub={() => {}}
-				onDelete={level.is_active ? () => setShowDeleteModal(true) : undefined}
-				onActivate={!level.is_active ? handleActivate : undefined}
+				canManage={isAdmin}
+				onEdit={isAdmin ? () => setShowEditModal(true) : undefined}
+				onAddSub={isAdmin ? () => {} : undefined}
+				onDelete={isAdmin && level.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={isAdmin && !level.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
 				pagination={pagination}

@@ -36,6 +36,9 @@ export default function StructureDetailLayout({
 	addSubLabel,
 	pagination,
 	onPageChange,
+	// When false, this is a read-only view (non-admin): hide every management
+	// action (edit / activate / delete / export / add sub-structure).
+	canManage = true,
 }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';
@@ -71,6 +74,7 @@ export default function StructureDetailLayout({
 						)}
 					</div>
 
+					{canManage && (
 					<div className={styles.toolbar}>
 						<Tooltip text={t('shared.edit')}>
 							<button
@@ -119,6 +123,7 @@ export default function StructureDetailLayout({
 							</Tooltip>
 						)}
 					</div>
+					)}
 				</aside>
 
 				{/* Right panel - content */}
@@ -153,18 +158,20 @@ export default function StructureDetailLayout({
 			<section className={styles.subSection}>
 				<div className={styles.subSectionHeader}>
 					<h2 className={styles.sectionTitle}>{subStructureLabel}</h2>
-					<Tooltip text={isActive === false ? t('structureDetail.inactiveCannotAdd', { defaultValue: 'Cannot add substructures to an inactive structure' }) : null}>
-						<Button
-							variant="outlined"
-							size="sm"
-							className={styles.addSubBtn}
-							onClick={onAddSub}
-							disabled={isActive === false}
-						>
-							<Icon name="add" size={15} aria-hidden="true" />
-							<span>{addSubLabel}</span>
-						</Button>
-					</Tooltip>
+					{canManage && (
+						<Tooltip text={isActive === false ? t('structureDetail.inactiveCannotAdd', { defaultValue: 'Cannot add substructures to an inactive structure' }) : null}>
+							<Button
+								variant="outlined"
+								size="sm"
+								className={styles.addSubBtn}
+								onClick={onAddSub}
+								disabled={isActive === false}
+							>
+								<Icon name="add" size={15} aria-hidden="true" />
+								<span>{addSubLabel}</span>
+							</Button>
+						</Tooltip>
+					)}
 				</div>
 				{subStructures && subStructures.length > 0 && (
 					<div className={styles.subGrid}>

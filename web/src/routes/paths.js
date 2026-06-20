@@ -86,4 +86,18 @@ export const SHARED = {
 	UNAUTHORIZED: '/unauthorized',
 	RANKING: '/ranking',
 	ANNOUNCEMENTS: '/announcements',
+	// Read-only structure detail, available to every role (admin keeps its own
+	// /admin/structure/* paths with management actions).
+	STRUCTURE_LP_DETAIL: '/structure/learning-paths/:slug',
+	STRUCTURE_SL_DETAIL: '/structure/service-lines/:slug',
+	STRUCTURE_AREA_DETAIL: '/structure/areas/:slug',
+	STRUCTURE_LEVEL_DETAIL: '/structure/levels/:areaSlug/:stageCode',
 };
+
+// Path templates for the structure detail pages, picked by role: the
+// Administrator gets the management routes, everyone else the read-only ones.
+export function structureDetailPaths(isAdmin) {
+	return isAdmin
+		? { lp: ADMIN.LEARNING_PATH_DETAIL, sl: ADMIN.SERVICE_LINE_DETAIL, area: ADMIN.AREA_DETAIL, level: ADMIN.LEVEL_DETAIL }
+		: { lp: SHARED.STRUCTURE_LP_DETAIL, sl: SHARED.STRUCTURE_SL_DETAIL, area: SHARED.STRUCTURE_AREA_DETAIL, level: SHARED.STRUCTURE_LEVEL_DETAIL };
+}

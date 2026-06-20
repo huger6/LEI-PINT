@@ -6,7 +6,8 @@ import StructureDetailSkeleton from '../../../../components/Skeleton/StructureDe
 import SLLeaderCard from '../../components/SLLeaderCard/SLLeaderCard';
 import { fetchServiceLineBySlug, fetchAreasByServiceLine } from '../../api/structureDetailApi';
 import { deleteServiceLine, activateServiceLine } from '../../api/structureListApi';
-import { ADMIN } from '../../../../routes/paths';
+import { ADMIN, structureDetailPaths } from '../../../../routes/paths';
+import { useUser } from '../../../../hooks/userContext';
 import CreateServiceLineModal from '../../components/CreateServiceLineModal/CreateServiceLineModal';
 import CreateAreaModal from '../../components/CreateAreaModal/CreateAreaModal';
 import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteStructureModal';
@@ -17,6 +18,9 @@ export default function ServiceLineDetail() {
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const { user } = useUser();
+	const isAdmin = user?.role === 'Administrator';
+	const P = structureDetailPaths(isAdmin);
 	const [sl, setSl] = useState(null);
 	const [areas, setAreas] = useState([]);
 	const [pagination, setPagination] = useState(null);
@@ -84,7 +88,7 @@ export default function ServiceLineDetail() {
 		}
 
 		if (nextSlug && nextSlug !== slug) {
-			navigate(ADMIN.SERVICE_LINE_DETAIL.replace(':slug', nextSlug));
+			navigate(P.sl.replace(':slug', nextSlug));
 		}
 	}, [slug, navigate]);
 
@@ -145,7 +149,7 @@ export default function ServiceLineDetail() {
 		title: area.area_name,
 		description: area.area_description,
 		isActive: area.is_active,
-		to: ADMIN.AREA_DETAIL.replace(':slug', area.area_slug),
+		to: P.area.replace(':slug', area.area_slug),
 		infoItems: [
 			{ icon: 'tabler_users', value: Number(area.consultant_count || 0), label: t('shared.consultants', { defaultValue: 'Consultants' }) },
 			{ icon: 'evolution', value: Number(area.level_count || 0), label: t('shared.levels', { defaultValue: 'Levels' }) },
@@ -158,13 +162,13 @@ export default function ServiceLineDetail() {
 	if (parentLp) {
 		breadcrumbItems.push({
 			label: parentLp.path_title,
-			path: ADMIN.LEARNING_PATH_DETAIL.replace(':slug', parentLp.path_slug),
+			path: P.lp.replace(':slug', parentLp.path_slug),
 		});
 	}
 
 	breadcrumbItems.push({
 		label: sl.service_line_name,
-		path: ADMIN.SERVICE_LINE_DETAIL.replace(':slug', slug),
+		path: P.sl.replace(':slug', slug),
 	});
 
 	return (
@@ -185,10 +189,11 @@ export default function ServiceLineDetail() {
 				subStructureIcon="area"
 				subStructureTone="areas"
 				addSubLabel={t('structureDetail.addArea', { defaultValue: 'Add Area' })}
-				onEdit={() => setShowEditModal(true)}
-				onAddSub={() => setShowCreateAreaModal(true)}
-				onDelete={sl.is_active ? () => setShowDeleteModal(true) : undefined}
-				onActivate={!sl.is_active ? handleActivate : undefined}
+				canManage={isAdmin}
+				onEdit={isAdmin ? () => setShowEditModal(true) : undefined}
+				onAddSub={isAdmin ? () => setShowCreateAreaModal(true) : undefined}
+				onDelete={isAdmin && sl.is_active ? () => setShowDeleteModal(true) : undefined}
+				onActivate={isAdmin && !sl.is_active ? handleActivate : undefined}
 				isActivating={isActivating}
 				onExport={() => {}}
 				exportType="service-line"
