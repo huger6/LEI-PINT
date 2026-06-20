@@ -827,14 +827,14 @@ DECLARE
     v_max_badges    BIGINT;
 BEGIN
     SELECT COUNT(*) INTO v_target_badges
-    FROM awarded_badges WHERE user_id = p_target_user_id;
+    FROM awarded_badges ab WHERE ab.user_id = p_target_user_id;
 
     v_min_badges := GREATEST(0, FLOOR(v_target_badges * (1 - p_tolerance)));
     v_max_badges := CEIL(v_target_badges * (1 + p_tolerance)) + 1;
 
     RETURN QUERY
     WITH target_areas AS (
-        SELECT area_id FROM consultant_areas WHERE user_id = p_target_user_id
+        SELECT ca.area_id FROM consultant_areas ca WHERE ca.user_id = p_target_user_id
     ),
     peer_pool AS (
         SELECT DISTINCT u.user_id
@@ -872,7 +872,7 @@ BEGIN
                 WHERE ba.user_id = u.user_id AND ba.application_state = 'Open')::BIGINT AS open_apps
         FROM users u
         WHERE u.user_id = p_target_user_id
-           OR u.user_id IN (SELECT user_id FROM peer_filtered WHERE user_id <> p_target_user_id)
+           OR u.user_id IN (SELECT pf.user_id FROM peer_filtered pf WHERE pf.user_id <> p_target_user_id)
     )
     SELECT
         a.user_id,
