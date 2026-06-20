@@ -153,6 +153,16 @@ export function AuthProvider({ children }) {
 			});
 	}, [applyRefreshData]);
 
+	const logout = useCallback(async () => {
+		try {
+			await authApi.logout();
+		} catch {
+			// best-effort
+		} finally {
+			clearAuth();
+		}
+	}, [clearAuth]);
+
 	const login = useCallback(async (identifier, password, remember) => {
 		const { data } = await authApi.login(identifier, password, remember);
 		const { token: newToken, tokenExpiresIn, fpc: forcePwChange, persistent, user: userData } = data.data;
@@ -185,16 +195,6 @@ export function AuthProvider({ children }) {
 		}
 		setFpc(false);
 	}, []);
-
-	const logout = useCallback(async () => {
-		try {
-			await authApi.logout();
-		} catch {
-			// best-effort
-		} finally {
-			clearAuth();
-		}
-	}, [clearAuth]);
 
 	return (
 		<AuthContext.Provider
