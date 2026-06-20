@@ -273,6 +273,9 @@
 	position: absolute;
 	top: 12px;
 	right: 12px;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.28rem;
 	padding: 0.24rem 0.62rem;
 	border-radius: 999px;
 	font-size: 0.67rem;
