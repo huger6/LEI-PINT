@@ -29,38 +29,33 @@ function getGreeting(t, authUser) {
     return t('welcomeCard.goodEvening');
 }
 
-function toSlug(value) {
-    return String(value ?? '')
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
-
-function buildPath(basePath, value) {
-    const slug = toSlug(value);
-    if (slug) return `${basePath}/${slug}`;
-    return `${basePath}/${encodeURIComponent(String(value ?? '').trim().toLowerCase())}`;
-}
-
-// Service line / area meta shown to a consultant (unchanged behaviour).
+// Service line / area meta shown to a consultant. Each opens the badge catalog
+// scoped to that service line / area (the consultant's "relative page").
 function ConsultantMeta({ user }) {
+    const { t } = useTranslation();
     const serviceLine = user?.serviceLine?.name;
-    const primaryArea = user?.areas?.find(a => a.isPrimary)?.name || user?.areas?.[0]?.name;
+    const serviceLineSlug = user?.serviceLine?.slug;
+    const primary = user?.areas?.find(a => a.isPrimary) || user?.areas?.[0];
+    const primaryArea = primary?.name;
+    const primaryAreaSlug = primary?.slug;
     return (
         <div className={`d-flex flex-column flex-md-row ${styles.metaList}`}>
             {serviceLine && (
-                <Link to={buildPath('/service-lines', serviceLine)} className={`${styles.metaItem} ${styles.metaLink}`}>
+                <Link to={serviceLineSlug ? `${CONSULTANT.CATALOG}?sl=${serviceLineSlug}` : CONSULTANT.CATALOG} className={`${styles.metaItem} ${styles.metaLink}`}>
                     <Icon name="service-line" className={styles.metaIcon} aria-hidden="true" color="#fff" />
-                    <p className={`${styles.metaText} mb-0`}><span className={styles.metaHighlight}>{serviceLine}</span></p>
+                    <p className={`${styles.metaText} mb-0`}>
+                        <span className={styles.metaLabel}>{t('welcomeCard.serviceLineLabel')} </span>
+                        <span className={styles.metaHighlight}>{serviceLine}</span>
+                    </p>
                 </Link>
             )}
             {primaryArea && (
-                <Link to={buildPath('/areas', primaryArea)} className={`${styles.metaItem} ${styles.metaLink}`}>
+                <Link to={primaryAreaSlug ? `${CONSULTANT.CATALOG}?area=${primaryAreaSlug}` : CONSULTANT.CATALOG} className={`${styles.metaItem} ${styles.metaLink}`}>
                     <Icon name="area" className={styles.metaIcon} aria-hidden="true" size={24} color="#fff" />
-                    <p className={`${styles.metaText} mb-0`}><span className={styles.metaHighlight}>{primaryArea}</span></p>
+                    <p className={`${styles.metaText} mb-0`}>
+                        <span className={styles.metaLabel}>{t('welcomeCard.areaLabel')} </span>
+                        <span className={styles.metaHighlight}>{primaryArea}</span>
+                    </p>
                 </Link>
             )}
         </div>

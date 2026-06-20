@@ -16,7 +16,21 @@ export default function UserDropdown() {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    // Light/dark theme toggle. Dark styling is not built yet, so this only flips
+    // the preference + data-theme attribute (placeholder for the future theme).
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
     const dropdownRef = useRef(null);
+
+    const toggleTheme = () => {
+        const next = theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+        localStorage.setItem('theme', next);
+        document.documentElement.setAttribute('data-theme', next);
+    };
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
 
     useEffect(() => {
         if (!open) return;
@@ -112,10 +126,10 @@ export default function UserDropdown() {
                             )
                         }
                         <DropdownOption
-                            icon="moon"
+                            icon={theme === 'dark' ? 'sun' : 'moon'}
                             iconSize={18}
-                            label="userDropdown.colorMode"
-                            onClick={() => handleOptionClick(SHARED.SETTINGS)}
+                            label={theme === 'dark' ? 'userDropdown.lightMode' : 'userDropdown.darkMode'}
+                            onClick={toggleTheme}
                             role="menuitem"
                         />
                         <DropdownOption

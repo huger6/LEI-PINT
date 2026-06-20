@@ -74,6 +74,12 @@
     text-decoration: none;
 }
 
+.metaLabel {
+    color: var(--color-background);
+    font-weight: 400;
+    opacity: 0.85;
+}
+
 .metaHighlight {
     color: var(--color-primary);
     font-weight: 500;

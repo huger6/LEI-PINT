@@ -209,6 +209,8 @@
 	"welcomeCard": {
 		"welcomeFirstLogin": "¡Bienvenido!",
 		"welcomeBack": "Bienvenido de nuevo",
+		"serviceLineLabel": "Service Line:",
+		"areaLabel": "Área:",
 		"goodMorning": "¡Buenos días!",
 		"goodAfternoon": "¡Buenas tardes!",
 		"goodEvening": "¡Buenas noches!",
@@ -278,6 +280,8 @@
 		"privacy": "Privacidad (RGPD)",
 		"security": "Seguridad",
 		"colorMode": "Modo de color",
+		"darkMode": "Modo oscuro",
+		"lightMode": "Modo claro",
 		"settings": "Configuración",
 		"exit": "Salir"
 	},

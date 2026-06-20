@@ -20,4 +20,8 @@
        inside their own `table-responsive` wrapper, not the whole page. */
     min-width: 0;
     overflow-x: hidden;
+    /* Fill at least the viewport (minus the 57px TopBar) so the Footer sits
+       below the fold — it is reached by scrolling to the end of the content,
+       never pinned at the bottom of a short page. */
+    min-height: calc(100vh - 57px);
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
@@ -56,6 +57,7 @@ function normalizeFilters(filters) {
 export default function BadgeCatalog() {
 	const { t } = useTranslation();
 	const { user } = useUser();
+	const [searchParams] = useSearchParams();
 
 	const [loadingPage, setLoadingPage] = useState(true);
 	const [loadingBadges, setLoadingBadges] = useState(false);
@@ -166,6 +168,29 @@ export default function BadgeCatalog() {
 	useEffect(() => {
 		if (defaultAreaApplied || areas.length === 0 || serviceLines.length === 0) return;
 
+		// Deep-link from the dashboard: ?area=<slug> or ?sl=<slug> scopes the
+		// catalog to that area / service line, overriding the primary-area default.
+		const urlAreaSlug = searchParams.get('area');
+		const urlSlSlug = searchParams.get('sl');
+		if (urlAreaSlug || urlSlSlug) {
+			const urlArea = urlAreaSlug ? areas.find((a) => (a.area_slug || a.areaSlug) === urlAreaSlug) : null;
+			const urlSl = urlSlSlug ? serviceLines.find((s) => (s.sl_slug || s.slSlug) === urlSlSlug) : null;
+			const slId = (urlArea?.service_line_id || urlArea?.serviceLineId) || (urlSl?.service_line_id || urlSl?.serviceLineId) || '';
+			const lpId = slId
+				? (serviceLineById.get(slId)?.learning_path_id || serviceLineById.get(slId)?.learningPathId || '')
+				: '';
+			const urlFilters = normalizeFilters({
+				...EMPTY_FILTERS,
+				learningPathId: lpId,
+				serviceLineId: slId,
+				areaId: urlArea ? (urlArea.area_id || urlArea.areaId) : '',
+			});
+			setFilters(urlFilters);
+			setMobileDraftFilters(urlFilters);
+			setDefaultAreaApplied(true);
+			return;
+		}
+
 		const primaryAreaSlug = user?.areas?.find((area) => area.isPrimary)?.slug;
 		if (!primaryAreaSlug) {
 			setDefaultAreaApplied(true);
@@ -194,7 +219,7 @@ export default function BadgeCatalog() {
 		setFilters(defaultFilters);
 		setMobileDraftFilters(defaultFilters);
 		setDefaultAreaApplied(true);
-	}, [areas, defaultAreaApplied, serviceLineById, serviceLines, user]);
+	}, [areas, defaultAreaApplied, serviceLineById, serviceLines, user, searchParams]);
 
 	useEffect(() => {
 		let ignore = false;
