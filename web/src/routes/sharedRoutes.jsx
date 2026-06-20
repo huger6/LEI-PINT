@@ -11,6 +11,7 @@ import AnnouncementsPage from '../pages/shared/AnnouncementsPage/AnnouncementsPa
 import Settings from '../pages/shared/Settings/Settings';
 import Privacy from '../pages/shared/Privacy/Privacy';
 import Security from '../pages/shared/Security/Security';
+import RedirectPublicProfile from './RedirectPublicProfile';
 
 const sharedRoutes = [
 	{ path: SHARED.SEARCH, element: <SearchResults /> },
@@ -20,7 +21,7 @@ const sharedRoutes = [
 	{ path: SHARED.APPLICATION_DETAIL, element: <ApplicationDetailPage /> },
 	{ path: SHARED.PROFILE, element: <UserProfile /> },
 	{ path: SHARED.PROFILE_EDIT, element: <UserProfile /> },
-	{ path: SHARED.USER_PROFILE_VIEW, element: <UserProfile /> },
+	{ path: SHARED.USER_PROFILE_VIEW, element: <RedirectPublicProfile /> },
 	{ path: SHARED.MAIL_SIGNATURE, element: <MailSignature /> },
 	{ path: SHARED.RANKING, element: <Ranking /> },
 	{ path: SHARED.ANNOUNCEMENTS, element: <AnnouncementsPage /> },
