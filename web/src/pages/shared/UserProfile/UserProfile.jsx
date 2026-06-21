@@ -609,49 +609,6 @@ export default function UserProfile() {
 				</div>
 
 				<div className="col-md-6">
-						<ContentCard>
-							<CardHeader
-								icon="skills"
-								iconBg="var(--color-orange-soft)"
-								iconColor="var(--color-orange-on-soft)"
-								title={t('profile.keyInterests')}
-							/>
-							<div className={styles.sectionBody}>
-								{isEditMode ? (
-									<>
-										<div className={styles.chipList}>
-											{(form.interests || []).map((interest, idx) => (
-												<Chip key={idx} label={interest} onRemove={() => removeInterest(idx)} />
-											))}
-										</div>
-										<div className={styles.addRow}>
-											<input
-												type="text"
-												className={`form-control ${styles.addInput}`}
-												value={interestInput}
-												onChange={(e) => setInterestInput(e.target.value)}
-												onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
-												placeholder={t('profile.addInterest')}
-											/>
-											<Button size="sm" onClick={addInterest} disabled={!interestInput.trim()}>
-												<Icon name="add" size={16} />
-											</Button>
-										</div>
-									</>
-								) : displayInterests.length > 0 ? (
-									<div className={styles.chipList}>
-										{displayInterests.map((interest, idx) => (
-											<Chip key={idx} label={interest} />
-										))}
-									</div>
-								) : (
-									<p className={styles.emptyText}>{t('profile.noInterests')}</p>
-								)}
-							</div>
-						</ContentCard>
-					</div>
-
-				<div className="col-md-6">
 					<ContentCard>
 						<CardHeader
 							icon="target"
@@ -701,6 +658,18 @@ export default function UserProfile() {
 			</div>
 			)}
 
+			{/* ── Save / Cancel buttons (edit mode) — above the stats ── */}
+			{isEditMode && (
+				<div className={styles.actionBar}>
+					<Button variant="outlined" onClick={handleCancel} disabled={saving}>
+						{t('profile.cancel')}
+					</Button>
+					<Button onClick={handleSave} loading={saving} disabled={!isDirty}>
+						{t('profile.saveChanges')}
+					</Button>
+				</div>
+			)}
+
 			{/* ── Statistics section ─────────────────────────── */}
 			<h2 className={styles.sectionTitle}>{t('profile.statistics')}</h2>
 			<div className={styles.statsGrid}>
@@ -727,17 +696,6 @@ export default function UserProfile() {
 			</ContentCard>
 			)}
 
-			{/* ── Save / Cancel buttons (edit mode) ──────────── */}
-			{isEditMode && (
-				<div className={styles.actionBar}>
-					<Button variant="outlined" onClick={handleCancel} disabled={saving}>
-						{t('profile.cancel')}
-					</Button>
-					<Button onClick={handleSave} loading={saving} disabled={!isDirty}>
-						{t('profile.saveChanges')}
-					</Button>
-				</div>
-			)}
 
 			{/* ── Success toast ───────────────────────────────── */}
 			{saveSuccess && (

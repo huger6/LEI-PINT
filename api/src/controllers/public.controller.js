@@ -413,11 +413,12 @@ const getFeaturedProfiles = async (req, res) => {
 
 		// Two consultants that have at least one published earned badge.
 		const consultants = await sequelize.query(
-			`SELECT DISTINCT u.full_name, u.user_guid, u.profile_img_url, u.user_role
+			`SELECT u.full_name, u.user_guid, u.profile_img_url, u.user_role
 			 FROM users u
-			 JOIN awarded_badges ab ON ab.user_id = u.user_id AND ab.is_published = true
 			 WHERE u.user_role = 'Consultant' AND u.is_active = true
-			 ORDER BY u.full_name
+			 ORDER BY (u.username = 'rita.soares') DESC,
+			          (EXISTS (SELECT 1 FROM awarded_badges ab WHERE ab.user_id = u.user_id)) DESC,
+			          u.full_name
 			 LIMIT 2`,
 			{ type: QueryTypes.SELECT }
 		);
