@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
-import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import styles from './SoftinsaSite.module.css';
 
@@ -29,6 +28,13 @@ function groupBadges(badges, otherLabel) {
 			items: items.slice().sort((a, c) => (a.stage?.code || '').localeCompare(c.stage?.code || '') || (a.badge_title || '').localeCompare(c.badge_title || '')),
 		}))
 		.sort((a, c) => a.label.localeCompare(c.label));
+}
+
+function initials(name = '') {
+	const parts = String(name).trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) return '?';
+	if (parts.length === 1) return parts[0][0].toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
@@ -229,7 +235,11 @@ export default function SoftinsaSite() {
 						<div className={styles.peopleRow}>
 							{people.map((p) => (
 								<Link key={p.guid} to={`/softinsa/u/${p.guid}`} className={`${styles.personCard} ${styles.reveal}`}>
-									<Avatar src={p.img} name={p.name} size={56} />
+									<div className={styles.personPhoto}>
+										{p.img
+											? <img src={p.img} alt={p.name} loading="lazy" />
+											: <span className={styles.personInitials}>{initials(p.name)}</span>}
+									</div>
 									<span className={styles.personName}>{p.name}</span>
 									<span className={styles.personRole}>{t(`roles.${p.role}`, p.role)}</span>
 								</Link>
