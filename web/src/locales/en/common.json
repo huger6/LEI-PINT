@@ -621,6 +621,10 @@
 	"adminDashboard": {
 		"title": "Administration Panel",
 		"welcome": "Welcome, <strong>{{name}}</strong>",
+		"serviceLines": "Service Lines",
+		"areas": "Areas",
+		"applications": "Applications",
+		"applicationsByState": "Applications by state",
 		"totalUsers": "Total Users",
 		"totalBadges": "Total Badges",
 		"totalApplications": "Total Applications",

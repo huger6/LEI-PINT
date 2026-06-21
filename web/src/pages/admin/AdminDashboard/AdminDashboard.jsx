@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
 import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
-import { getLearningPathsPaged } from '../../../features/badges/api/hierarchyApi';
+import { getLearningPathsPaged, getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getApplicationsByState } from '../../../features/statistics/api/statisticsApi';
 import { getAnnouncements } from '../../../features/announcements/api/announcementsApi';
 import { getSLAs } from '../../../features/slas/api/slasApi';
 import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
@@ -24,7 +25,8 @@ function slaStatus(sla) {
 
 export default function AdminDashboard() {
 	const { t } = useTranslation();
-	const [stats, setStats] = useState({ users: 0, badges: 0, learningPaths: 0 });
+	const [stats, setStats] = useState({ users: 0, badges: 0, learningPaths: 0, serviceLines: 0, areas: 0, applications: 0 });
+	const [byState, setByState] = useState([]);
 	const [announcements, setAnnouncements] = useState([]);
 	const [slas, setSlas] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -33,18 +35,29 @@ export default function AdminDashboard() {
 		let active = true;
 		(async () => {
 			try {
-				const [users, badges, paths, anns, slaRes] = await Promise.all([
+				const [users, badges, paths, sls, areas, states, anns, slaRes] = await Promise.all([
 					getUsers({ limit: 1 }),
 					getBadgesCatalog({ limit: 1 }),
 					getLearningPathsPaged({ limit: 1 }),
+					getServiceLines({ limit: 200 }).catch(() => []),
+					getAreas({ limit: 500 }).catch(() => []),
+					getApplicationsByState().catch(() => []),
 					getAnnouncements({ limit: 4 }).catch(() => ({ data: [] })),
 					getSLAs({ limit: 4 }).catch(() => ({ data: [] })),
 				]);
 				if (!active) return;
+				const stateRows = (states || []).map((s) => ({
+					state: s.state || s.application_state,
+					count: Number(s.count ?? s.total ?? 0),
+				}));
+				setByState(stateRows);
 				setStats({
 					users: users.pagination?.totalItems || 0,
 					badges: badges.pagination?.totalItems || 0,
 					learningPaths: paths.pagination?.totalItems || 0,
+					serviceLines: Array.isArray(sls) ? sls.length : (sls.pagination?.totalItems || 0),
+					areas: Array.isArray(areas) ? areas.length : (areas.pagination?.totalItems || 0),
+					applications: stateRows.reduce((sum, r) => sum + r.count, 0),
 				});
 				setAnnouncements(anns.data || []);
 				setSlas(slaRes.data || []);
@@ -61,7 +74,12 @@ export default function AdminDashboard() {
 		{ key: 'users', value: stats.users, icon: 'tabler_users', label: t('adminDashboard.users'), link: ADMIN.USERS },
 		{ key: 'badges', value: stats.badges, icon: 'badge', label: t('adminDashboard.badges'), link: ADMIN.BADGES },
 		{ key: 'paths', value: stats.learningPaths, icon: 'learning-path', label: t('adminDashboard.learningPaths'), link: ADMIN.STRUCTURE },
+		{ key: 'serviceLines', value: stats.serviceLines, icon: 'service-line', label: t('adminDashboard.serviceLines'), link: ADMIN.STRUCTURE },
+		{ key: 'areas', value: stats.areas, icon: 'area', label: t('adminDashboard.areas'), link: ADMIN.STRUCTURE },
+		{ key: 'applications', value: stats.applications, icon: 'paper', label: t('adminDashboard.applications'), link: ADMIN.APPLICATIONS },
 	];
+
+	const STATE_KEY = { 'Open': 'open', 'Submitted': 'submitted', 'In validation': 'inValidation', 'Accepted': 'accepted', 'Rejected': 'rejected' };
 
 	if (loading) return <DashboardSkeleton />;
 
@@ -81,6 +99,24 @@ export default function AdminDashboard() {
 					</Link>
 				))}
 			</div>
+
+			{byState.length > 0 && (
+				<section className={styles.statesPanel}>
+					<div className={styles.panelHead}>
+						<Icon name="progress" size={20} color="var(--color-secondary)" aria-hidden="true" />
+						<h2 className={styles.panelTitle}>{t('adminDashboard.applicationsByState')}</h2>
+						<Link to={ADMIN.STATS} className={styles.statesLink}>{t('shared.viewAll')}</Link>
+					</div>
+					<div className={styles.statesGrid}>
+						{byState.map((s) => (
+							<div key={s.state} className={`${styles.stateCard} ${styles[`state_${STATE_KEY[s.state] || 'open'}`]}`}>
+								<span className={styles.stateCount}>{s.count}</span>
+								<span className={styles.stateLabel}>{t(`applicationReview.appState.${STATE_KEY[s.state] || 'open'}`, { defaultValue: s.state })}</span>
+							</div>
+						))}
+					</div>
+				</section>
+			)}
 
 			<div className={styles.panels}>
 				{/* Announcements */}

@@ -621,6 +621,10 @@
 	"adminDashboard": {
 		"title": "Painel de Administração",
 		"welcome": "Bem-vindo, <strong>{{name}}</strong>",
+		"serviceLines": "Service Lines",
+		"areas": "Áreas",
+		"applications": "Candidaturas",
+		"applicationsByState": "Candidaturas por estado",
 		"totalUsers": "Total Utilizadores",
 		"totalBadges": "Total Badges",
 		"totalApplications": "Total Candidaturas",

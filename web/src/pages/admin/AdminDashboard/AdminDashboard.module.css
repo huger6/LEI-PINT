@@ -27,9 +27,56 @@
 /* ── KPI cards ── */
 .kpiRow {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 1.25rem;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 1rem;
 }
+
+@media (max-width: 1100px) { .kpiRow { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .kpiRow { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Applications by state ───────────────────────────────────────────────── */
+.statesPanel {
+	background: var(--color-surface, #fff);
+	border: 1px solid var(--color-outline-variant, #e0e0e0);
+	border-radius: 16px;
+	padding: 1.1rem 1.25rem;
+}
+
+.statesLink {
+	margin-left: auto;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	text-decoration: none;
+}
+
+.statesGrid {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 0.75rem;
+	margin-top: 0.9rem;
+}
+
+@media (max-width: 700px) { .statesGrid { grid-template-columns: repeat(2, 1fr); } }
+
+.stateCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.2rem;
+	padding: 0.8rem 0.5rem;
+	border-radius: 12px;
+	background: var(--color-background);
+}
+
+.stateCount { font-size: 1.5rem; font-weight: 700; color: var(--color-on-background); }
+.stateLabel { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-outline); text-align: center; }
+
+.state_open { background: var(--color-primary-soft); }
+.state_submitted { background: #fef9c2; }
+.state_inValidation { background: var(--color-orange-soft); }
+.state_accepted { background: var(--color-green-soft); }
+.state_rejected { background: var(--color-red-soft); }
 
 .kpiCard {
 	display: flex;
@@ -158,6 +205,5 @@
 .panelBtn { width: 100%; justify-content: center; }
 
 @media (max-width: 768px) {
-	.kpiRow { grid-template-columns: 1fr; }
 	.panels { grid-template-columns: 1fr; }
 }
