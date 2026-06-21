@@ -62,7 +62,7 @@
 /* ─── Cards ────────────────────────────── */
 
 .card {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
 	padding: 24px;
@@ -230,7 +230,7 @@
 .reqItem {
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
-	background: #fff;
+	background: var(--color-surface);
 	transition: border-color 200ms ease;
 }
 
@@ -593,7 +593,7 @@
 	padding: 12px 28px;
 	border-radius: 14px;
 	border: 1px solid rgba(0, 0, 0, 0.1);
-	background: #fff;
+	background: var(--color-surface);
 	font-size: 0.9375rem;
 	font-weight: 500;
 	color: var(--color-on-background);

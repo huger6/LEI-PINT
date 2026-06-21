@@ -1,5 +1,5 @@
 .panel {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--color-outline-light);
 	border-radius: 16px;
 	padding: 1.1rem;
@@ -37,7 +37,7 @@
 
 .areaTag {
 	border: 1px solid var(--color-outline-light);
-	background: #fff;
+	background: var(--color-surface);
 	color: var(--color-on-surface);
 	border-radius: 999px;
 	padding: 0.25rem 0.7rem;

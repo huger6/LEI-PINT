@@ -33,7 +33,7 @@
 }
 
 .bottomBar {
-    background-color: #ffffff;
+    background-color: var(--color-surface);
     border-top: 1px solid #e9ecef;
 }
 

@@ -1570,7 +1570,7 @@
 		"colState": "Status",
 		"filter": {
 			"obtained": "Obtained",
-			"inprocess": "In process"
+			"inprocess": "In process", "submitted": "Submitted"
 		},
 		"filters": {
 			"toggle": "Filters",

@@ -76,7 +76,7 @@
 }
 
 .statCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 16px;
 	padding: 20px 24px;
@@ -142,7 +142,7 @@
 }
 
 .appCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
 	padding: 24px;
@@ -368,7 +368,7 @@
 
 /* ── Empty State ── */
 .emptyCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
 	padding: 48px 24px;
@@ -395,7 +395,7 @@
 
 /* ── Error ── */
 .errorCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
 	padding: 24px;
@@ -414,7 +414,7 @@
 }
 
 .skeletonCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 16px;
 	padding: 24px;

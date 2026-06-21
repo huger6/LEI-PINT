@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchUsers as getUsers } from '../../../features/users/api/usersApi';
 import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
-import { getLearningPathsPaged, getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getLearningPathsPaged } from '../../../features/badges/api/hierarchyApi';
+import { getServiceLinesCount, getAreasCount } from '../../../features/structure/api/structureCountsApi';
 import { getApplicationsByState } from '../../../features/statistics/api/statisticsApi';
 import { getAnnouncements } from '../../../features/announcements/api/announcementsApi';
 import { getSLAs } from '../../../features/slas/api/slasApi';
@@ -35,12 +36,12 @@ export default function AdminDashboard() {
 		let active = true;
 		(async () => {
 			try {
-				const [users, badges, paths, sls, areas, states, anns, slaRes] = await Promise.all([
+				const [users, badges, paths, slCount, areaCount, states, anns, slaRes] = await Promise.all([
 					getUsers({ limit: 1 }),
 					getBadgesCatalog({ limit: 1 }),
 					getLearningPathsPaged({ limit: 1 }),
-					getServiceLines({ limit: 200 }).catch(() => []),
-					getAreas({ limit: 500 }).catch(() => []),
+					getServiceLinesCount().catch(() => ({ active: 0, inactive: 0 })),
+					getAreasCount().catch(() => ({ active: 0, inactive: 0 })),
 					getApplicationsByState().catch(() => []),
 					getAnnouncements({ limit: 4 }).catch(() => ({ data: [] })),
 					getSLAs({ limit: 4 }).catch(() => ({ data: [] })),
@@ -55,8 +56,8 @@ export default function AdminDashboard() {
 					users: users.pagination?.totalItems || 0,
 					badges: badges.pagination?.totalItems || 0,
 					learningPaths: paths.pagination?.totalItems || 0,
-					serviceLines: Array.isArray(sls) ? sls.length : (sls.pagination?.totalItems || 0),
-					areas: Array.isArray(areas) ? areas.length : (areas.pagination?.totalItems || 0),
+					serviceLines: (slCount.active || 0) + (slCount.inactive || 0),
+					areas: (areaCount.active || 0) + (areaCount.inactive || 0),
 					applications: stateRows.reduce((sum, r) => sum + r.count, 0),
 				});
 				setAnnouncements(anns.data || []);

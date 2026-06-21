@@ -204,7 +204,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
-	background: #fff;
+	background: var(--color-surface);
 	color: var(--si-ink);
 	padding: 0.7rem 1rem;
 	border-radius: 14px;
@@ -290,7 +290,7 @@
 	max-width: 1140px;
 	margin: -2.5rem auto 0;
 	padding: 1.5rem;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 18px;
 	box-shadow: 0 20px 45px rgba(10, 37, 64, 0.1);
@@ -402,7 +402,7 @@
 
 .featCard {
 	flex: 0 0 300px;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -423,7 +423,7 @@
 }
 
 .card {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -494,7 +494,7 @@
 	text-align: center;
 	gap: 0.5rem;
 	padding: 1.5rem 1rem;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	text-decoration: none;
@@ -573,7 +573,7 @@
 }
 
 .step {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -771,7 +771,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	padding: 1.25rem 1rem;
-	background: #ffffff;
+	background: var(--color-surface);
 	border: 1px solid rgba(57, 99, 156, 0.14);
 	border-radius: 16px;
 	text-decoration: none;

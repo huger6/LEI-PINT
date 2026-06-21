@@ -1,7 +1,7 @@
 .empty {
 	text-align: center;
 	padding: 3rem 1rem;
-	background: #fff;
+	background: var(--color-surface);
 	border-radius: 16px;
 	border: 1px solid var(--color-outline-light);
 	display: flex;
@@ -20,7 +20,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--color-outline-light);
 	border-radius: 16px;
 	padding: 1rem 1.25rem;
@@ -72,7 +72,7 @@
 }
 
 .card {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--color-outline-light);
 	border-radius: 16px;
 	overflow: hidden;

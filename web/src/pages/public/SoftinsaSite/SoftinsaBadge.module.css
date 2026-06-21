@@ -7,7 +7,7 @@
 	--si-border: #e4ebf1;
 	font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 	color: var(--si-ink);
-	background: #fff;
+	background: var(--color-surface);
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -147,7 +147,7 @@
 }
 
 .reqCard {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.5rem;

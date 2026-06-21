@@ -10,7 +10,7 @@
 	right: 0;
 	width: 380px;
 	max-height: 480px;
-	background: #ffffff;
+	background: var(--color-surface);
 	border: 1px solid #DEE3E6;
 	border-radius: 12px;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);

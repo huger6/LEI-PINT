@@ -117,7 +117,7 @@
 .panel {
 	display: flex;
 	flex-direction: column;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--color-outline-light);
 	border-radius: 16px;
 	box-shadow: var(--shadow-card);
