@@ -69,7 +69,7 @@ export default function SearchBar({
                     onClick={() => setIsExpanded(true)}
                     aria-label={ariaLabel}
                 >
-                    <Icon name="search" size={18} color="#fff" fill="#fff" stroke="none" />
+                    <Icon name="search" size={20} color="currentColor" fill="currentColor" stroke="none" />
                 </button>
                 {isExpanded && (
                     <form

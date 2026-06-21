@@ -92,14 +92,20 @@
         display: flex;
     }
 
+    /* Logo stays pinned left; the search (icon) groups with the bell/avatar on
+       the right. */
+    .logoSection {
+        margin-right: auto;
+    }
+
     .searchSection {
         flex: 0 0 auto;
         max-width: none;
-        margin: 0 8px;
+        margin: 0 4px 0 0;
     }
 
     .rightSection {
-        gap: 12px;
+        gap: 8px;
     }
 }
 
@@ -118,14 +124,10 @@
     }
 }
 
-/* Below xs (576px): hide logo and points card */
+/* Below xs (576px): keep the logo (left-aligned), hide only the points card */
 @media (max-width: 575px) {
     .topBar {
         padding: 0 12px;
-    }
-
-    .logoSection {
-        display: none;
     }
 
     .pointsCardWrap {
