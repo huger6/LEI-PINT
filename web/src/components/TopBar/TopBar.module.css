@@ -8,8 +8,8 @@
     height: 57px;
     min-height: 57px;
     padding: 0 24px;
-    background: #ffffff;
-    border-bottom: 1px solid #DEE3E6;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-outline-light);
 }
 
 /* Hamburger: desktop has the in-rail collapse toggle, so this is mobile-only */

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
@@ -20,6 +21,13 @@ export default function Settings() {
 	const { languages } = useLanguageContext();
 	const currentLang = (i18n.language || 'pt').split('-')[0];
 
+	const [theme, setTheme] = useState(() => (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || 'light');
+	const applyTheme = (next) => {
+		setTheme(next);
+		localStorage.setItem('theme', next);
+		document.documentElement.setAttribute('data-theme', next);
+	};
+
 	// Persist the choice the same way the footer does: resolve the DB language_id
 	// for the iso and call the context handler (updates i18n + the user record).
 	const changeLanguage = (lang) => {
@@ -31,6 +39,29 @@ export default function Settings() {
 	return (
 		<div className={styles.page}>
 			<h1 className={styles.title}>{t('settings.title')}</h1>
+
+			<ContentCard className={styles.section}>
+				<CardHeader icon="moon" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('settings.appearance')} />
+				<p className={styles.hint}>{t('settings.appearanceHint')}</p>
+				<div className={styles.segmented}>
+					<button
+						type="button"
+						className={`${styles.segmentedBtn} ${theme !== 'dark' ? styles.segmentedBtnActive : ''}`}
+						onClick={() => applyTheme('light')}
+						aria-pressed={theme !== 'dark'}
+					>
+						<Icon name="sun" size={16} /> {t('settings.modeLight')}
+					</button>
+					<button
+						type="button"
+						className={`${styles.segmentedBtn} ${theme === 'dark' ? styles.segmentedBtnActive : ''}`}
+						onClick={() => applyTheme('dark')}
+						aria-pressed={theme === 'dark'}
+					>
+						<Icon name="moon" size={16} /> {t('settings.modeDark')}
+					</button>
+				</div>
+			</ContentCard>
 
 			<ContentCard className={styles.section}>
 				<CardHeader icon="language" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('settings.language')} />
