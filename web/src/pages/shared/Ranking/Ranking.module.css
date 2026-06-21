@@ -213,6 +213,15 @@
 	gap: 12px;
 }
 
+.consultantLink {
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.consultantLink:hover { text-decoration: none; }
+.consultantLink:hover .consultantCell span { color: var(--color-primary); }
+
 .pointsCell {
 	font-weight: 600;
 	color: var(--color-secondary);

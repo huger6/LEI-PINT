@@ -6,12 +6,8 @@
 	border-radius: 14px;
 	border: 1px solid rgba(57, 99, 156, 0.12);
 	background: var(--color-surface);
-	transition: border-color 200ms ease, box-shadow 200ms ease;
-}
-
-.card:hover {
-	border-color: rgba(0, 184, 224, 0.3);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+	/* Read-only status display — must not look or behave like a form field. */
+	cursor: default;
 }
 
 .complete {
@@ -25,10 +21,11 @@
 
 .emptyCircle {
 	display: block;
-	width: 22px;
-	height: 22px;
+	width: 10px;
+	height: 10px;
+	margin: 6px;
 	border-radius: 50%;
-	border: 2px solid var(--color-outline);
+	background: var(--color-outline-light, #cfd6dc);
 }
 
 .body {

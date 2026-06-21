@@ -105,11 +105,11 @@ export default function LoginPage() {
 								{t('login.resendConfirmation')}
 							</Button>
 							<Button
-								as={Link}
-								to={AUTH.LOGIN}
+								type="button"
 								variant="outlined"
 								className={styles.emailActionLink}
 								fullWidth
+								onClick={() => { setEmailNotConfirmed(false); setError(''); }}
 							>
 								<Icon name="keyboard_arrow_down" size={16} className="me-2" style={{ transform: 'rotate(90deg)' }} aria-hidden="true" />{t('backToLogin')}
 							</Button>

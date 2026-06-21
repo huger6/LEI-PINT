@@ -3,17 +3,30 @@ import { Link } from 'react-router-dom';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import Icon from '../../../components/Icons/Icons';
 import { SHARED } from '../../../routes/paths';
+import { useUser } from '../../../hooks/userContext';
+import { useLanguageContext } from '../../../context/LanguageContext';
 import styles from './Settings.module.css';
 
+// iso code (pt-PT/en-GB/es-ES) -> short code used by i18n + the button labels.
 const LANGUAGES = [
-	{ code: 'pt', label: 'Português' },
-	{ code: 'en', label: 'English' },
-	{ code: 'es', label: 'Español' },
+	{ code: 'pt', iso: 'pt-PT', label: 'Português' },
+	{ code: 'en', iso: 'en-GB', label: 'English' },
+	{ code: 'es', iso: 'es-ES', label: 'Español' },
 ];
 
 export default function Settings() {
 	const { t, i18n } = useTranslation();
+	const { handleLanguageChange } = useUser();
+	const { languages } = useLanguageContext();
 	const currentLang = (i18n.language || 'pt').split('-')[0];
+
+	// Persist the choice the same way the footer does: resolve the DB language_id
+	// for the iso and call the context handler (updates i18n + the user record).
+	const changeLanguage = (lang) => {
+		const match = (languages || []).find((l) => l.language_iso === lang.iso || l.language_iso?.startsWith(lang.code));
+		if (match) handleLanguageChange(match.language_id, match.language_iso);
+		else i18n.changeLanguage(lang.code);
+	};
 
 	return (
 		<div className={styles.page}>
@@ -28,7 +41,7 @@ export default function Settings() {
 							key={l.code}
 							type="button"
 							className={`${styles.segmentedBtn} ${currentLang === l.code ? styles.segmentedBtnActive : ''}`}
-							onClick={() => i18n.changeLanguage(l.code)}
+							onClick={() => changeLanguage(l)}
 							aria-pressed={currentLang === l.code}
 						>
 							{l.label}
