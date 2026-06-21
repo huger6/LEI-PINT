@@ -50,7 +50,8 @@ function parseNotificationPayload(payload) {
 	try {
 		return JSON.parse(payload);
 	} catch {
-		return {};
+		// Plain-text payload: use it as the message body.
+		return { body: payload };
 	}
 }
 

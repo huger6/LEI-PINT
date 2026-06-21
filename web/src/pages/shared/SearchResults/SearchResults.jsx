@@ -29,12 +29,16 @@ function buildBreadcrumb(item) {
 }
 
 function getResultLink(item) {
+    // `subtitle` carries the slug for badge / structure entities.
     switch (item.entity_type) {
         case 'badge':
-            return SHARED.BADGE_DETAIL.replace(':slug', item.subtitle);
+            return item.subtitle ? SHARED.BADGE_DETAIL.replace(':slug', item.subtitle) : null;
         case 'learning_path':
+            return item.subtitle ? SHARED.STRUCTURE_LP_DETAIL.replace(':slug', item.subtitle) : null;
         case 'service_line':
+            return item.subtitle ? SHARED.STRUCTURE_SL_DETAIL.replace(':slug', item.subtitle) : null;
         case 'area':
+            return item.subtitle ? SHARED.STRUCTURE_AREA_DETAIL.replace(':slug', item.subtitle) : null;
         case 'skill':
         case 'user':
         default:

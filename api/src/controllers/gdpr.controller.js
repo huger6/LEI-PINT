@@ -177,7 +177,7 @@ const requestDataExport = async (req, res) => {
             include: [
                 { model: models.users, as: 'user', attributes: { exclude: ['password_hash'] } },
                 { model: models.awarded_badges, as: 'awarded_badges' },
-                { model: models.points_history, as: 'points_history' }
+                { model: models.points_history, as: 'points_histories' }
             ]
         });
 
@@ -198,7 +198,7 @@ const requestDataExport = async (req, res) => {
                 gdpr_accepted: consultant.gdpr_accepted
             },
             awarded_badges: consultant.awarded_badges || [],
-            points_history: consultant.points_history || [],
+            points_history: consultant.points_histories || [],
             consent_history: consentHistory
         };
 
