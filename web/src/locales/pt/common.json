@@ -1784,6 +1784,7 @@
 			"from": "Desde",
 			"to": "Até",
 			"format": "Formato",
+			"clearDates": "Limpar datas",
 			"consultants": "Consultores",
 			"applications": "Pedidos",
 			"accepted": "Aprovações",

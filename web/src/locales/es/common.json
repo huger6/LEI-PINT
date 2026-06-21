@@ -1781,6 +1781,7 @@
 		},
 		"exports": {
 			"title": "Exportaciones",
+			"clearDates": "Limpiar fechas",
 			"from": "Desde",
 			"to": "Hasta",
 			"format": "Formato",

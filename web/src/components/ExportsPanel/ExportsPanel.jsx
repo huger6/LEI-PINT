@@ -79,6 +79,15 @@ export default function ExportsPanel() {
 							compact
 						/>
 					</label>
+					{(from || to) && (
+						<button
+							type="button"
+							className={styles.clearDatesBtn}
+							onClick={() => { setFrom(''); setTo(''); }}
+						>
+							<Icon name="close" size={14} aria-hidden="true" /> {t('tmStats.exports.clearDates', { defaultValue: 'Limpar datas' })}
+						</button>
+					)}
 				</div>
 			</div>
 

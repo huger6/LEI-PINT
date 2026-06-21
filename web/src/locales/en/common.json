@@ -1781,6 +1781,7 @@
 		},
 		"exports": {
 			"title": "Exports",
+			"clearDates": "Clear dates",
 			"from": "From",
 			"to": "To",
 			"format": "Format",
