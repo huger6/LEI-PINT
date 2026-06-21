@@ -490,6 +490,7 @@
 	"notifications": {
 		"title": "Notificações",
 		"bell": "Notificações",
+		"markRead": "Marcar como lida",
 		"empty": "Sem notificações",
 		"emptyRecent": "Sem notificações por ler",
 		"markAllRead": "Marcar todas como lidas",

@@ -490,6 +490,7 @@
 	"notifications": {
 		"title": "Notifications",
 		"bell": "Notifications",
+		"markRead": "Mark as read",
 		"empty": "No notifications yet",
 		"emptyRecent": "No unread notifications",
 		"markAllRead": "Mark all as read",

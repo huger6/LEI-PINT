@@ -84,6 +84,7 @@ export default function NotificationPanel({ open, onClose }) {
 									key={n.notification_id}
 									notification={n}
 									onRead={markAsRead}
+									onNavigate={onClose}
 								/>
 							))}
 							{hasMore && (
