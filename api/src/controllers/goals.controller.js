@@ -272,11 +272,61 @@ const getProgressionTimeline = async (req, res) => {
     }
 };
 
+// GET /api/goals/calendar — exports the consultant's objectives as an .ics
+// calendar (all-day events on each objective's deadline). Opening the file adds
+// the objectives to Teams / Outlook / any calendar app (Teams integration).
+const getGoalsCalendar = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const goals = await models.goals.findAll({
+            where: { user_id: userId },
+            include: [{ model: models.badges, as: 'badge_badge', attributes: ['badge_title'] }],
+            order: [['event_end_date', 'ASC NULLS LAST']]
+        });
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const toDate = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`;
+        const toStamp = (d) => `${toDate(d)}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+        const esc = (s) => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+
+        const now = new Date();
+        const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Softinsa//Badges//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+
+        for (const g of goals) {
+            if (!g.event_end_date) continue; // only objectives with a deadline
+            const end = new Date(g.event_end_date);
+            if (Number.isNaN(end.getTime())) continue;
+            const next = new Date(end); next.setUTCDate(next.getUTCDate() + 1); // all-day DTEND is exclusive
+            const title = g.badge_badge?.badge_title || g.event_title || 'Objetivo';
+            lines.push(
+                'BEGIN:VEVENT',
+                `UID:goal-${g.goal_id}@softinsa`,
+                `DTSTAMP:${toStamp(now)}`,
+                `DTSTART;VALUE=DATE:${toDate(end)}`,
+                `DTEND;VALUE=DATE:${toDate(next)}`,
+                `SUMMARY:${esc('Softinsa — ' + title)}`,
+                `DESCRIPTION:${esc(g.event_description || title)}`,
+                'END:VEVENT'
+            );
+        }
+        lines.push('END:VCALENDAR');
+
+        const ics = lines.join('\r\n');
+        res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="objetivos-softinsa.ics"');
+        return res.status(200).send(ics);
+    } catch (error) {
+        logger.error('Error building goals calendar', { error });
+        return res.status(500).json({ success: false, code: 'GOALS_CALENDAR_FAILED' });
+    }
+};
+
 module.exports = {
     getGoals,
     createGoal,
     updateGoal,
     deleteGoal,
     getGoalStats,
-    getProgressionTimeline
+    getProgressionTimeline,
+    getGoalsCalendar
 };

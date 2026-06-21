@@ -18,6 +18,13 @@ router.get('/stats', loginRequired, ctrl.getGoalStats);
 router.get('/timeline', loginRequired, ctrl.getProgressionTimeline);
 
 /**
+ * @route   GET /api/goals/calendar
+ * @desc    Export the consultant's objectives as an .ics calendar (Teams/Outlook)
+ * @access  Authenticated
+ */
+router.get('/calendar', loginRequired, ctrl.getGoalsCalendar);
+
+/**
  * @route   GET /api/goals
  * @desc    List all goals for the authenticated consultant
  * @access  Authenticated
