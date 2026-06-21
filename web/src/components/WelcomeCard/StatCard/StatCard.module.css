@@ -6,8 +6,10 @@
     gap: 0.25rem;
     height: 100%;
     min-height: 5.5rem;
-    min-width: 140px;
-    padding: 1rem 0.9rem;
+    /* Width is driven by the parent grid track (minmax(0,1fr)); a fixed
+       min-width made the 3 cards overflow and overlap on phone screens. */
+    min-width: 0;
+    padding: 1rem 0.6rem;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.12);

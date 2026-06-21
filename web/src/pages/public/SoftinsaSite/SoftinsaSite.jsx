@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getPublicBadges } from '../../../features/badges/api/publicBadgesApi';
+import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
+import Avatar from '../../../components/Avatar/Avatar';
+import Icon from '../../../components/Icons/Icons';
 import styles from './SoftinsaSite.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -39,6 +41,7 @@ export default function SoftinsaSite() {
 	const { t, i18n } = useTranslation();
 	const rootRef = useRef(null);
 	const [badges, setBadges] = useState([]);
+	const [people, setPeople] = useState([]);
 
 	useEffect(() => {
 		const prev = document.title;
@@ -49,6 +52,7 @@ export default function SoftinsaSite() {
 	useEffect(() => {
 		let active = true;
 		getPublicBadges().then((rows) => { if (active) setBadges(rows); }).catch(() => {});
+		getFeaturedProfiles().then((rows) => { if (active) setPeople(rows); }).catch(() => {});
 		return () => { active = false; };
 	}, []);
 
@@ -190,7 +194,7 @@ export default function SoftinsaSite() {
 										{group.items.map((b) => (
 											<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={styles.badgeCard}>
 												<div className={styles.badgeThumb}>
-													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <span className={styles.badgeEmoji}>🏅</span>}
+													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <Icon name="badge" size={40} color="var(--si-cyan, #00b8e0)" aria-hidden="true" />}
 													{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
 												</div>
 												<h3>{b.badge_title}</h3>
@@ -217,6 +221,18 @@ export default function SoftinsaSite() {
 							</article>
 						))}
 					</div>
+
+					{people.length > 0 && (
+						<div className={styles.peopleRow}>
+							{people.map((p) => (
+								<Link key={p.guid} to={`/softinsa/u/${p.guid}`} className={`${styles.personCard} ${styles.reveal}`}>
+									<Avatar src={p.img} name={p.name} size={56} />
+									<span className={styles.personName}>{p.name}</span>
+									<span className={styles.personRole}>{t(`roles.${p.role}`, p.role)}</span>
+								</Link>
+							))}
+						</div>
+					)}
 				</section>
 
 				{/* Fluxo */}

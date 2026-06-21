@@ -13,4 +13,7 @@ router.get('/verify/:link', publicCtrl.verifyAwardedBadge);
 // Public consultant profile (no auth) — feeds the /softinsa/u/:guid microsite page.
 router.get('/consultants/:guid', publicCtrl.getPublicConsultantProfile);
 
+// Featured profiles (no auth) — small showcase (TM, SLL, consultants) for the microsite.
+router.get('/profiles', publicCtrl.getFeaturedProfiles);
+
 module.exports = router;
