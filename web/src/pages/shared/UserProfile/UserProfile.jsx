@@ -218,8 +218,16 @@ export default function UserProfile() {
 				checkDirty(next);
 				return next;
 			});
-		} catch {
-			setProfileUploadError(t('register.profilePictureUploadFailed'));
+		} catch (err) {
+			URL.revokeObjectURL(localUrl);
+			setProfilePreviewUrl('');
+			// Surface the actual reason so the user knows why (size/format/config).
+			const byCode = {
+				PROFILE_IMAGE_TOO_LARGE: t('register.profilePictureTooLarge', { sizeMb: 2 }),
+				PROFILE_IMAGE_INVALID_FORMAT: t('register.profilePictureInvalidFormat'),
+				SUPABASE_CONFIG_MISSING: t('register.profilePictureConfigMissing'),
+			};
+			setProfileUploadError(byCode[err?.code] || t('register.profilePictureUploadFailed'));
 		} finally {
 			setProfileUploading(false);
 		}
