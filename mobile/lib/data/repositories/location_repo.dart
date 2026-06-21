@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../core/constants/api_endpoints.dart';
 import '../local/location_dao.dart';
@@ -29,11 +28,9 @@ class LocationRepository {
       }
 
       return locations;
-    } on DioException catch (e) {
-      debugPrint('API error (locations): ${e.message}');
+    } on DioException catch (_) {
       return _locationDao.getAll();
-    } catch (e) {
-      debugPrint('Unexpected error (locations): $e');
+    } catch (_) {
       return _locationDao.getAll();
     }
   }

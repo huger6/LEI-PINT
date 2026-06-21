@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
 import '../../data/local/translation_cache_dao.dart';
@@ -47,8 +46,7 @@ class TranslationService {
     if (lang == null) return false;
     try {
       return await _modelManager.isModelDownloaded(lang.bcpCode);
-    } catch (e) {
-      debugPrint('TranslationService: isModelDownloaded check failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -59,10 +57,7 @@ class TranslationService {
   Future<bool> downloadModel(String langCode, {bool requireWifi = false}) async {
     if (langCode == sourceLang) return true;
     final lang = _fromBcpCode(langCode);
-    if (lang == null) {
-      debugPrint('TranslationService: Unsupported language code "$langCode"');
-      return false;
-    }
+    if (lang == null) return false;
     try {
       final srcLang = _fromBcpCode(sourceLang)!;
       final srcReady = await _modelManager.isModelDownloaded(srcLang.bcpCode);
@@ -79,10 +74,7 @@ class TranslationService {
         lang.bcpCode,
         isWifiRequired: requireWifi,
       );
-    } catch (e) {
-      debugPrint(
-        'TranslationService: Failed to download model for $langCode: $e',
-      );
+    } catch (_) {
       return false;
     }
   }
@@ -167,10 +159,7 @@ class TranslationService {
           final restored = protectedText.restore(translated);
           newTranslations[entry.key] = restored;
           result[entry.key] = restored;
-        } catch (e) {
-          debugPrint(
-            'TranslationService: Failed to translate "${entry.key}": $e',
-          );
+        } catch (_) {
           result[entry.key] = entry.value;
         }
       }
@@ -214,11 +203,7 @@ class TranslationService {
     try {
       await _modelManager.deleteModel(lang.bcpCode);
       await clearCache(langCode);
-    } catch (e) {
-      debugPrint(
-        'TranslationService: Failed to delete model for $langCode: $e',
-      );
-    }
+    } catch (_) {}
   }
 
   void dispose() {

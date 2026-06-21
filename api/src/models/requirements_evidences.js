@@ -44,11 +44,13 @@ module.exports = function (sequelize, DataTypes) {
     },
     tm_reviewed: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     sll_reviewed: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     },
     uploaded_at: {
       type: DataTypes.DATE,

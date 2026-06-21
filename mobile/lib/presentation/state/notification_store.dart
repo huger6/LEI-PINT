@@ -34,16 +34,12 @@ class NotificationStore extends ChangeNotifier {
     try {
       _all = await _repository.getLocal();
       notifyListeners();
-    } catch (e) {
-      debugPrint('NotificationStore: local load failed: $e');
-    }
+    } catch (_) {}
 
     try {
       await _repository.fetchAndCache();
       _all = await _repository.getLocal();
-    } catch (e) {
-      debugPrint('NotificationStore: API fetch failed: $e');
-    }
+    } catch (_) {}
 
     _isLoading = false;
     notifyListeners();
@@ -53,9 +49,7 @@ class NotificationStore extends ChangeNotifier {
     try {
       _all = await _repository.getLocal();
       notifyListeners();
-    } catch (e) {
-      debugPrint('NotificationStore: reload from local failed: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> markRead(int id) async {

@@ -84,9 +84,7 @@ class LanguageController extends ChangeNotifier {
             sourceTexts: sourceStrings,
             targetLang: code,
           );
-        } catch (e) {
-          debugPrint('LanguageController: prepare "$code" failed: $e');
-        }
+        } catch (_) {}
       }
 
       _languagesPrepared = true;
@@ -99,9 +97,7 @@ class LanguageController extends ChangeNotifier {
   Future<void> _refreshLanguageList() async {
     try {
       _availableLanguages = await _languageDao.getAll();
-    } catch (e) {
-      debugPrint('LanguageController: Failed to load languages from DB: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> setLanguageFromId(int? langId) async {
@@ -162,8 +158,7 @@ class LanguageController extends ChangeNotifier {
         sourceTexts: sourceStrings,
         targetLang: normalizedCode,
       );
-    } catch (e) {
-      debugPrint('Translation failed, falling back to source: $e');
+    } catch (_) {
       _translatedStrings = Map.of(sourceStrings);
     }
 

@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 import '../../data/local/announcement_dao.dart';
 import '../../data/local/area_dao.dart';
 import '../../data/local/gdpr_policy_dao.dart';
@@ -68,14 +66,12 @@ class SyncService {
 
   void setActiveRoute(String route) {
     _activeRoute = route;
-    debugPrint('SyncService: Active route set to $route');
   }
 
   Future<bool> syncForScreen(String route) async {
     final codes = ScreenDataScope.requiredSyncCodes(route);
     if (codes.isEmpty) return true;
 
-    debugPrint('SyncService: Syncing ${codes.length} codes for $route');
     final results = await Future.wait(codes.map(_syncCode));
     final allOk = results.every((ok) => ok);
 
@@ -142,9 +138,6 @@ class SyncService {
     if (_activeRoute != null && updateCode != SyncCodes.notifications) {
       final relevantCodes = ScreenDataScope.requiredSyncCodes(_activeRoute!);
       if (relevantCodes.isNotEmpty && !relevantCodes.contains(updateCode)) {
-        debugPrint(
-          'SyncService: Code $updateCode skipped (not relevant for $_activeRoute)',
-        );
         return;
       }
     }
@@ -153,12 +146,7 @@ class SyncService {
     if (incoming == null) return;
 
     final lastSync = await _syncDao.getLastSync(updateCode);
-    if (lastSync != null && !incoming.isAfter(lastSync)) {
-      debugPrint('SyncService: Code $updateCode already up-to-date');
-      return;
-    }
-
-    debugPrint('SyncService: Syncing code $updateCode');
+    if (lastSync != null && !incoming.isAfter(lastSync)) return;
 
     bool success = false;
     switch (updateCode) {
@@ -199,7 +187,6 @@ class SyncService {
     if (success) {
       await _syncDao.setLastSync(updateCode, incoming);
       if (!_syncController.isClosed) _syncController.add(updateCode);
-      debugPrint('SyncService: Code $updateCode synced');
     }
   }
 
@@ -248,16 +235,11 @@ class SyncService {
         endpoint,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint('SyncService: API response from $endpoint:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final list = _extractList(response);
       final items = list
           .whereType<Map>()
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      debugPrint('SyncService: Parsed ${items.length} items from $endpoint');
 
       if (isIncremental) {
         if (items.isNotEmpty) {
@@ -271,8 +253,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: $endpoint failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -282,10 +263,6 @@ class SyncService {
   Future<bool> _syncUserProfile() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getProfile);
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint('SyncService: API response from ${ApiEndpoints.getProfile}:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final data = response is Map<String, dynamic>
           ? (response['data'] ?? response)
           : response;
@@ -299,8 +276,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: user profile failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -384,8 +360,6 @@ class SyncService {
             .whereType<Map>()
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
-        debugPrint(
-            'SyncService: incremental badge sync got ${rows.length} changed badges');
         if (rows.isNotEmpty) {
           await _badgeDao.upsertAllFromJson(rows);
         }
@@ -409,8 +383,6 @@ class SyncService {
         if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
         page++;
       }
-      debugPrint(
-          'SyncService: fetched ${rows.length} badges across $page page(s)');
       if (rows.isNotEmpty) {
         await _badgeDao.replaceAllFromJson(rows);
       }
@@ -419,8 +391,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: badges failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -482,8 +453,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: awarded badges failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -491,11 +461,6 @@ class SyncService {
   Future<bool> _syncPointsHistory() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getPointsHistory);
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint(
-          'SyncService: API response from ${ApiEndpoints.getPointsHistory}:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final data = response is Map<String, dynamic>
           ? (response['data'] ?? response)
           : response;
@@ -511,15 +476,13 @@ class SyncService {
           .whereType<Map>()
           .map((e) => PointsHistoryModel.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      debugPrint('SyncService: Parsed ${items.length} points history items');
       await _pointsHistoryDao.replaceAll(items);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: points history failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -554,17 +517,13 @@ class SyncService {
         if (pageRows.isEmpty || page >= totalPages || page >= 50) break;
         page++;
       }
-      debugPrint(
-        'SyncService: fetched ${items.length} notifications across $page page(s)',
-      );
       await _notificationDao.replaceAll(items);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: notifications failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -581,15 +540,13 @@ class SyncService {
           .whereType<Map>()
           .map((e) => GdprPolicyModel.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      debugPrint('SyncService: Parsed ${items.length} GDPR policies');
       await _gdprPolicyDao.replaceAll(items);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: GDPR policies failed: $e');
+    } catch (_) {
       return false;
     }
   }

@@ -7,23 +7,46 @@ const statsService = require('../services/statistics.service');
 const { uuidRule } = require('../validations/shared-rules');
 
 /*──────────────────────────────────────────────────────────────
-  Resolve which consultant a leader/admin wants to inspect.
-  Consultants are restricted to themselves; SLL/TM/Admin can
-  pass ?userId=, otherwise default to the authenticated user.
+  Authorize a leader inspecting a specific consultant.
+  Talent Manager / Administrator are global; a Service Line Leader
+  may only inspect consultants within their own Service Line.
+  Writes a 403 and returns false when out of scope.
 ──────────────────────────────────────────────────────────────*/
-const resolveTargetUserId = async (req) => {
+const enforceLeaderScope = async (req, res, targetUserId) => {
+    if (req.user.role !== 'Service Line Leader') return true; // TM/Admin global
+    if (targetUserId === req.user.sub) return true;           // inspecting self
+    const slId = await statsService.resolveServiceLineForUser(req.user.sub, 'Service Line Leader');
+    const inScope = await statsService.isConsultantInServiceLine(targetUserId, slId);
+    if (!inScope) {
+        res.status(403).json({ success: false, code: 'STATS_CONSULTANT_OUT_OF_SCOPE' });
+        return false;
+    }
+    return true;
+};
+
+/*──────────────────────────────────────────────────────────────
+  Resolve which consultant a leader/admin wants to inspect.
+  Consultants are restricted to themselves; TM/Admin may pass any
+  ?userGuid; a Service Line Leader is restricted to their own SL.
+  Returns the target user_id, or null when the request was denied
+  (a 403 has already been written) so the caller can early-exit.
+──────────────────────────────────────────────────────────────*/
+const resolveTargetUserId = async (req, res) => {
     if (req.user.role === 'Consultant') return req.user.sub;
     const requestedGuid = req.query.userGuid;
-    if (requestedGuid) {
-        try {
-            uuidRule.parse(requestedGuid);
-            const user = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
-            if (user) return user.user_id;
-        } catch (_) {
-            // Invalid GUID — ignore and fall back to authenticated user
-        }
+    if (!requestedGuid) return req.user.sub;
+
+    let target;
+    try {
+        uuidRule.parse(requestedGuid);
+        target = await models.users.findOne({ where: { user_guid: requestedGuid }, attributes: ['user_id'] });
+    } catch (_) {
+        return req.user.sub; // Invalid GUID — fall back to the authenticated user
     }
-    return req.user.sub;
+    if (!target) return req.user.sub;
+
+    if (!await enforceLeaderScope(req, res, target.user_id)) return null;
+    return target.user_id;
 };
 
 /*──────────────────────────────────────────────────────────────
@@ -61,7 +84,8 @@ const assertConsultantExists = async (res, userId) => {
 ──────────────────────────────────────────────────────────────*/
 const getLearningPathProgress = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getLearningPathProgress(targetUserId);
@@ -80,7 +104,8 @@ const getLearningPathProgress = async (req, res) => {
 const getPointsHistory = async (req, res) => {
     try {
         const { page, limit, search, serviceLineId, areaId, dateFrom, dateTo } = validations.pointsHistoryQuerySchema.parse(req.query);
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPointsHistory(targetUserId, { page, limit, search, serviceLineId, areaId, dateFrom, dateTo });
@@ -104,7 +129,8 @@ const getPointsHistory = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getAcquisitionTimeline = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getAcquisitionTimeline(targetUserId);
@@ -136,6 +162,8 @@ const getPeerComparison = async (req, res) => {
             if (!user) return res.status(404).json({ success: false, code: 'GAMIFICATION_CONSULTANT_NOT_FOUND' });
             targetUserId = user.user_id;
         }
+        // A Service Line Leader may only compare consultants within their own SL.
+        if (!await enforceLeaderScope(req, res, targetUserId)) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const result = await statsService.getPeerComparison(targetUserId, tolerance);
@@ -255,7 +283,8 @@ const getBadgesByRange = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getBadgesByLearningPath = async (req, res) => {
     try {
-        const data = await statsService.getBadgesAwardedByLearningPath();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getBadgesAwardedByLearningPath(f);
         return res.status(200).json({ success: true, code: 'STATS_BADGES_BY_LP_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching badges by learning path', { error });
@@ -269,7 +298,8 @@ const getBadgesByLearningPath = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getBadgesByServiceLine = async (req, res) => {
     try {
-        const data = await statsService.getBadgesAwardedByServiceLine();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getBadgesAwardedByServiceLine(f);
         return res.status(200).json({ success: true, code: 'STATS_BADGES_BY_SL_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching badges by service line', { error });
@@ -283,7 +313,8 @@ const getBadgesByServiceLine = async (req, res) => {
 ──────────────────────────────────────────────────────────────*/
 const getLevelDistribution = async (req, res) => {
     try {
-        const data = await statsService.getLevelDistribution();
+        const f = validations.badgesSummaryQuerySchema.parse(req.query);
+        const data = await statsService.getLevelDistribution(f);
         return res.status(200).json({ success: true, code: 'STATS_LEVEL_DISTRIBUTION_RETRIEVED', data });
     } catch (error) {
         logger.error('Error fetching level distribution', { error });
@@ -306,12 +337,38 @@ const getUserEnrollment = async (req, res) => {
 };
 
 /*──────────────────────────────────────────────────────────────
+  GET /api/statistics/reports/applications-by-state
+  Platform-wide count of badge applications grouped by workflow state.
+  Administrator only.
+──────────────────────────────────────────────────────────────*/
+const APPLICATION_STATES = ['Open', 'Submitted', 'In validation', 'Accepted', 'Rejected'];
+
+const getApplicationsByState = async (req, res) => {
+    try {
+        const rows = await sequelize.query(
+            `SELECT application_state, COUNT(*)::int AS count
+             FROM badge_applications
+             GROUP BY application_state`,
+            { type: QueryTypes.SELECT }
+        );
+        const counts = new Map(rows.map((r) => [r.application_state, r.count]));
+        // Return every state (including zero) in canonical order for a stable chart.
+        const data = APPLICATION_STATES.map((state) => ({ state, count: counts.get(state) ?? 0 }));
+        return res.status(200).json({ success: true, code: 'STATS_APPLICATIONS_BY_STATE_RETRIEVED', data });
+    } catch (error) {
+        logger.error('Error fetching applications by state', { error });
+        return res.status(500).json({ success: false, code: 'STATS_APPLICATIONS_BY_STATE_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
   GET /api/statistics/consultant/badges-per-area
   Per-area breakdown: badges earned and points per area.
 ──────────────────────────────────────────────────────────────*/
 const getBadgesPerArea = async (req, res) => {
     try {
-        const targetUserId = await resolveTargetUserId(req);
+        const targetUserId = await resolveTargetUserId(req, res);
+        if (targetUserId === null) return;
         if (!await assertConsultantExists(res, targetUserId)) return;
 
         const data = await statsService.getBadgesPerArea(targetUserId);
@@ -488,6 +545,7 @@ const getBadgesSummary = async (req, res) => {
         const badgeFilters = [];
         if (scopeServiceLineId != null) { repl.serviceLineId = scopeServiceLineId; badgeFilters.push('b.service_line_id = :serviceLineId'); }
         if (q.areaId) { repl.areaId = q.areaId; badgeFilters.push('b.area_id = :areaId'); }
+        if (q.learningPathId) { repl.learningPathId = q.learningPathId; badgeFilters.push('b.learning_path_id = :learningPathId'); }
         const badgeWhere = badgeFilters.length ? ` AND ${badgeFilters.join(' AND ')}` : '';
 
         const awardedDate = [];
@@ -551,6 +609,7 @@ module.exports = {
     getBadgesByServiceLine,
     getLevelDistribution,
     getUserEnrollment,
+    getApplicationsByState,
     getBadgesPerArea,
     getExpiringBadges,
     getConsultantsOverview,

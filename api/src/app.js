@@ -33,14 +33,21 @@ if (process.env.SKIP_API_ROUTES !== '1') {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', parseInt(process.env.TRUST_PROXY_HOPS, 10) || 1);
+
 // Middleware
-app.use(helmet());
+const allowedOrigins = [process.env.APP_URL, process.env.WEB_APP_URL].filter(Boolean);
 app.use(cors({
-    origin: process.env.APP_URL,
-    credentials: true
-}));;
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(helmet());
+// Explicit body-size cap (file bytes go straight to Supabase, never through the
+// API body, so request payloads are small text). Guards against large-body DoS.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 app.use(cookieParser());
 app.use(requestLogger);
 
@@ -53,8 +60,10 @@ if (apiRoutes) {
 }
 
 // Dev-only: serve generated files when Supabase/storage is not available
-const path = require('path');
-app.use('/_dev_storage', express.static(path.join(__dirname, '../logs/dev_storage')));
+if (process.env.NODE_ENV !== 'production') {
+    const path = require('path');
+    app.use('/_dev_storage', express.static(path.join(__dirname, '../logs/dev_storage')));
+}
 
 module.exports = {
     app,

@@ -4,7 +4,9 @@ const sanitizeText = require('../utils/sanitizeText');
 const { positiveIntIdRule, uuidRule } = require('./shared-rules');
 
 const startApplicationSchema = z.object({
-    badgeId: positiveIntIdRule
+    badgeSlug: z.string().trim()
+        .min(1, 'VALIDATION_BADGE_SLUG_REQUIRED')
+        .max(100, 'VALIDATION_BADGE_SLUG_MAX_100')
 });
 
 const applicationGuidParamSchema = z.object({
@@ -55,12 +57,25 @@ const getApplicationsQuerySchema = z.object({
 
     areaId: z.coerce.number().int().positive().optional(),
     badgeId: z.coerce.number().int().positive().optional(),
+    consultantGuid: z.string().uuid().optional()
+        .describe("Restrict the list to a single consultant (by user_guid)"),
     dateFrom: z.coerce.date().optional(),
     dateTo: z.coerce.date().optional(),
 
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().default(20)
 });
+
+const MAX_EVIDENCE_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+const ALLOWED_EVIDENCE_MIME_TYPES = new Set([
+    'application/pdf',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'application/zip',
+    'application/x-zip-compressed'
+]);
 
 const getUploadUrlBodySchema = z.object({
     requirementId: positiveIntIdRule, // Usa a tua regra base para IDs
@@ -70,7 +85,18 @@ const getUploadUrlBodySchema = z.object({
         .max(255, 'VALIDATION_UPLOAD_FILE_NAME_MAX_LENGTH')
         // Esta regex garante que o ficheiro tem uma extensão (ex: .pdf, .png)
         // Essencial porque o teu backend faz: fileName.split('.').pop()
-        .regex(/\.[0-9a-z]+$/i, 'VALIDATION_UPLOAD_FILE_EXTENSION_INVALID')
+        .regex(/\.[0-9a-z]+$/i, 'VALIDATION_UPLOAD_FILE_EXTENSION_INVALID'),
+
+    // Declared MIME type and size — validated server-side before a signed URL is
+    // issued, so the upload is gated on type and size (not just extension).
+    contentType: z.string().trim()
+        .max(150, 'VALIDATION_UPLOAD_CONTENT_TYPE_INVALID')
+        .refine((v) => ALLOWED_EVIDENCE_MIME_TYPES.has(v.toLowerCase()), 'VALIDATION_UPLOAD_CONTENT_TYPE_INVALID'),
+
+    fileSize: z.coerce.number()
+        .int('VALIDATION_UPLOAD_FILE_SIZE_INVALID')
+        .positive('VALIDATION_UPLOAD_FILE_SIZE_INVALID')
+        .max(MAX_EVIDENCE_FILE_SIZE_BYTES, 'VALIDATION_UPLOAD_FILE_TOO_LARGE')
 });
 
 const reviewApplicationSchema = z.object({
@@ -119,5 +145,7 @@ module.exports = {
     reviewEvidenceSchema,
     evidenceIdParamSchema,
     updateApplicationSchema,
-    ALLOWED_EVIDENCE_EXTENSIONS
+    ALLOWED_EVIDENCE_EXTENSIONS,
+    ALLOWED_EVIDENCE_MIME_TYPES,
+    MAX_EVIDENCE_FILE_SIZE_BYTES
 };

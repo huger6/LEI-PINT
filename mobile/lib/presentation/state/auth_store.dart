@@ -61,9 +61,6 @@ class AuthStore extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_rememberKey, true);
         await prefs.setInt(_sessionExpiryKey, expiryMs);
-        debugPrint('login: remember=true, saved expiry=$expiryMs');
-      } else {
-        debugPrint('login: remember=false, session not persisted');
       }
 
       notifyListeners();
@@ -77,30 +74,21 @@ class AuthStore extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final remember = prefs.getBool(_rememberKey) ?? false;
-      debugPrint('tryRestoreSession: remember=$remember');
       if (!remember) return false;
 
       final expiryMs = prefs.getInt(_sessionExpiryKey) ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
-      debugPrint('tryRestoreSession: expiryMs=$expiryMs, now=$now, expired=${now > expiryMs}');
       if (now > expiryMs) {
         await prefs.remove(_rememberKey);
         await prefs.remove(_sessionExpiryKey);
         return false;
       }
 
-      final cookies = await _apiClient.cookieJar.loadForRequest(
-        Uri.parse('${_apiClient.dio.options.baseUrl}/api/auth/refresh'),
-      );
-      debugPrint('tryRestoreSession: cookies for refresh endpoint = ${cookies.map((c) => '${c.name}=${c.value.substring(0, 8)}...').toList()}');
-
       final refreshResult = await _authRepository.refreshToken();
-      debugPrint('tryRestoreSession: refreshResult success=${refreshResult['success']}');
       if (refreshResult['success'] != true) return false;
 
       final data = refreshResult['data'];
       final token = data is Map ? data['token']?.toString() : null;
-      debugPrint('tryRestoreSession: got token=${token != null && token.isNotEmpty}');
       if (token == null || token.isEmpty) return false;
 
       _accessToken = token;
@@ -116,10 +104,8 @@ class AuthStore extends ChangeNotifier {
 
       notifyListeners();
       await FCMService.subscribe(_apiClient);
-      debugPrint('tryRestoreSession: SUCCESS');
       return true;
-    } catch (e) {
-      debugPrint('Session restore failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -148,8 +134,7 @@ class AuthStore extends ChangeNotifier {
       notifyListeners();
 
       return true;
-    } catch (e) {
-      debugPrint('Registration submission error: $e');
+    } catch (_) {
       _lastRegistrationError = 'Erro ao criar conta. Tente novamente.';
       notifyListeners();
       return false;

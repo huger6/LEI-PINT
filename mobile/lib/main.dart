@@ -47,15 +47,9 @@ void main() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('Flutter framework error during startup: ${details.exception}');
-    if (details.stack != null) {
-      debugPrintStack(stackTrace: details.stack);
-    }
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Uncaught async error during startup: $error');
-    debugPrintStack(stackTrace: stack);
     return true;
   };
 
@@ -65,9 +59,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FCMService.initialize();
-  } catch (e) {
-    debugPrint('Erro fatal ao inicializar o Firebase/FCM: $e');
-  }
+  } catch (_) {}
 
   try {
     await setupDependencies().timeout(
@@ -78,9 +70,7 @@ void main() async {
         );
       },
     );
-  } catch (e, stackTrace) {
-    debugPrint('setupDependencies failed: $e');
-    debugPrintStack(stackTrace: stackTrace);
+  } catch (e) {
     runApp(ErrorApp(errorMessage: 'Initialization failed: $e'));
     return;
   }

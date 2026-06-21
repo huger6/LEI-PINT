@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -51,12 +50,7 @@ Future<void> setupDependencies() async {
         // Try the next candidate.
       }
     }
-    if (!envLoaded) {
-      debugPrint(
-        'No environment file loaded (expected .env). '
-        'Continuing with fallback config.',
-      );
-    }
+    if (!envLoaded) {}
   }
 
   final supabaseUrl =
@@ -82,14 +76,7 @@ Future<void> setupDependencies() async {
       try {
         await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
         hasSupabaseClient = true;
-      } catch (e, stackTrace) {
-        debugPrint('Supabase initialization failed: $e');
-        debugPrintStack(stackTrace: stackTrace);
-      }
-    } else {
-      debugPrint(
-        'Supabase credentials missing in environment. Skipping Supabase initialization.',
-      );
+      } catch (_) {}
     }
   }
 
@@ -286,10 +273,5 @@ Future<void> setupDependencies() async {
 
   try {
     await getIt<ApiClient>().init();
-  } catch (e, stackTrace) {
-    debugPrint(
-      'ApiClient init failed. App will continue without persisted cookies: $e',
-    );
-    debugPrintStack(stackTrace: stackTrace);
-  }
+  } catch (_) {}
 }

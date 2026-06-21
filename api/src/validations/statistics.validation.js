@@ -53,6 +53,7 @@ const expiringBadgesQuerySchema = z.object({
 });
 
 const badgesSummaryQuerySchema = z.object({
+    learningPathId: z.coerce.number().int().positive().optional(),
     serviceLineId: z.coerce.number().int().positive().optional(),
     areaId: z.coerce.number().int().positive().optional(),
     dateFrom: z.coerce.date().optional(),

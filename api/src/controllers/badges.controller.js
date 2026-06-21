@@ -321,6 +321,12 @@ const getBadgeBySlug = async (req, res) => {
                 attributes: ['reward_id', 'special_title', 'special_portrait_svg']
             },
             {
+                model: models.skills,
+                as: 'skills',
+                through: { attributes: [] },
+                attributes: ['skills_id', 'skill_name', 'skill_description']
+            },
+            {
                 model: models.progression_stages,
                 as: 'progression_stage',
                 attributes: ['progression_stage_id', 'stage_title', 'stage_sequence'],
@@ -924,5 +930,6 @@ module.exports = {
     checkSlugAvailability,
     createBadge,
     updateBadge,
-    deleteBadge
+    deleteBadge,
+    findBadgeInHierarchy
 };

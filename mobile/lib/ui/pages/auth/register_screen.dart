@@ -165,7 +165,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Error loading locations/languages: $e");
       if (mounted) {
         setState(() {
           if (_availableLanguages.isEmpty) {
@@ -343,8 +342,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           });
         }
       }
-    } catch (e) {
-      debugPrint('Validation error for $field: $e');
+    } catch (_) {
       setState(() {
         _validationState[field] = null;
         _validationMessages.remove(field);

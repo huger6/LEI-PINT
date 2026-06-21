@@ -1,5 +1,13 @@
 const { Op } = require('sequelize');
-const { models } = require('../config/db');
+const { models, sequelize } = require('../config/db');
+
+// Service lines assigned to an SLA (read-only, for the admin UI).
+const SLA_SL_INCLUDE = [{
+    model: models.service_lines,
+    as: 'service_line_id_service_lines_sl_slas',
+    attributes: ['service_line_id', 'service_line_name', 'sl_slug'],
+    through: { attributes: [] }
+}];
 const redis = require('../config/redis');
 const { logger } = require('../utils/logger');
 const { invalidateCacheByPrefix } = require('../utils/listHelper');
@@ -41,6 +49,7 @@ const getSLAs = async (req, res) => {
             offset,
             order: [['created_at', 'DESC']],
             attributes: { exclude: excludedFields },
+            include: SLA_SL_INCLUDE,
             distinct: true
         });
 
@@ -82,7 +91,8 @@ const getSLAById = async (req, res) => {
 
         const sla = await models.slas.findOne({
             where,
-            attributes: { exclude: excludedFields }
+            attributes: { exclude: excludedFields },
+            include: SLA_SL_INCLUDE
         });
 
         if (!sla) {
@@ -101,8 +111,25 @@ const getSLAById = async (req, res) => {
     }
 };
 
+// Validate that all given service line ids exist; returns the deduped list.
+const resolveServiceLineIds = async (serviceLineIds, transaction) => {
+    const uniqueIds = [...new Set(serviceLineIds)];
+    if (uniqueIds.length === 0) return [];
+    const found = await models.service_lines.count({
+        where: { service_line_id: uniqueIds },
+        transaction
+    });
+    if (found !== uniqueIds.length) {
+        const err = new Error('SLA_INVALID_SERVICE_LINES');
+        err.code = 'SLA_INVALID_SERVICE_LINES';
+        throw err;
+    }
+    return uniqueIds;
+};
+
 // POST /api/slas
 const createSLA = async (req, res) => {
+    let t;
     try {
         const userId = req.user.sub;
 
@@ -115,8 +142,11 @@ const createSLA = async (req, res) => {
             isGlobal,
             slaDescription,
             definitionId,
-            userId: targetUserId
+            userId: targetUserId,
+            serviceLineIds
         } = validations.createSLABodySchema.parse(req.body);
+
+        t = await sequelize.transaction();
 
         const newSLA = await models.slas.create({
             sla_name: slaName,
@@ -130,13 +160,21 @@ const createSLA = async (req, res) => {
             user_id: targetUserId ?? null,
             created_by: userId,
             updated_by: userId
-        });
+        }, { transaction: t });
 
+        if (serviceLineIds && serviceLineIds.length) {
+            const ids = await resolveServiceLineIds(serviceLineIds, t);
+            await newSLA.setService_line_id_service_lines_sl_slas(ids, { transaction: t });
+        }
+
+        await t.commit();
         await invalidateCacheByPrefix('slas:list');
 
         return res.status(201).json({ success: true, code: 'SLA_CREATED', data: newSLA });
 
     } catch (error) {
+        if (t && !t.finished) { try { await t.rollback(); } catch { /* noop */ } }
+        if (error.code === 'SLA_INVALID_SERVICE_LINES') return res.status(400).json({ success: false, code: 'SLA_INVALID_SERVICE_LINES' });
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error creating SLA', { error });
@@ -146,6 +184,7 @@ const createSLA = async (req, res) => {
 
 // PUT /api/slas/:slaId
 const updateSLA = async (req, res) => {
+    let t;
     try {
         const userId = req.user.sub;
         const { slaId } = validations.slaIdParamSchema.parse(req.params);
@@ -160,7 +199,8 @@ const updateSLA = async (req, res) => {
             isActive,
             slaDescription,
             definitionId,
-            userId: targetUserId
+            userId: targetUserId,
+            serviceLineIds
         } = validations.updateSLABodySchema.parse(req.body);
 
         const sla = await models.slas.findOne({ where: { sla_id: slaId } });
@@ -168,6 +208,8 @@ const updateSLA = async (req, res) => {
         if (!sla) {
             return res.status(404).json({ success: false, code: 'SLA_NOT_FOUND' });
         }
+
+        t = await sequelize.transaction();
 
         await sla.update({
             sla_name: slaName !== undefined ? slaName : sla.sla_name,
@@ -182,13 +224,22 @@ const updateSLA = async (req, res) => {
             user_id: targetUserId !== undefined ? targetUserId : sla.user_id,
             updated_by: userId,
             updated_at: new Date()
-        });
+        }, { transaction: t });
 
+        // Replace the full service-line assignment set when provided ([] clears it).
+        if (serviceLineIds !== undefined) {
+            const ids = await resolveServiceLineIds(serviceLineIds, t);
+            await sla.setService_line_id_service_lines_sl_slas(ids, { transaction: t });
+        }
+
+        await t.commit();
         await invalidateCacheByPrefix('slas:list');
 
         return res.status(200).json({ success: true, code: 'SLA_UPDATED', data: sla });
 
     } catch (error) {
+        if (t && !t.finished) { try { await t.rollback(); } catch { /* noop */ } }
+        if (error.code === 'SLA_INVALID_SERVICE_LINES') return res.status(400).json({ success: false, code: 'SLA_INVALID_SERVICE_LINES' });
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
 
         logger.error('Error updating SLA', { error });

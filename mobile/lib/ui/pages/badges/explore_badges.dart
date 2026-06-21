@@ -87,12 +87,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
 
     final excludedIds = {...earnedIds, ...activeAppBadgeIds};
 
-    debugPrint('ExploreFilter: ${badges.length} total badges, '
-        '${earnedIds.length} earned, ${activeAppBadgeIds.length} active apps, '
-        'excludedIds=$excludedIds');
-
     var result = badges.where((b) => !excludedIds.contains(b.id)).toList();
-    debugPrint('ExploreFilter: ${result.length} after exclusion');
     final query = _searchCtrl.text.trim().toLowerCase();
 
     if (query.isNotEmpty) {

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/api_endpoints.dart';
@@ -50,7 +49,6 @@ class BadgeRepository {
       if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
       page++;
     }
-    debugPrint('BadgeRepo.getBadges: parsed ${rows.length} badge rows');
     if (rows.isNotEmpty) {
       await _badgeDao.replaceAllFromJson(rows);
     }
@@ -100,8 +98,6 @@ class BadgeRepository {
       final badge = await _badgeDao.getById(award.badgeId);
       if (badge != null) {
         result.add(EarnedBadge(badge: badge, award: award));
-      } else {
-        debugPrint('BadgeRepo: awarded badge id=${award.id} has badge_id=${award.badgeId} NOT found in catalog — dropped');
       }
     }
 
@@ -110,9 +106,7 @@ class BadgeRepository {
 
   Future<List<EarnedBadge>> getEarnedBadges() async {
     final payload = await _apiClient.get(ApiEndpoints.getEarnedBadges);
-    debugPrint('BadgeRepo.getEarnedBadges: payload type=${payload.runtimeType}');
     final list = _extractList(payload);
-    debugPrint('BadgeRepo.getEarnedBadges: extracted ${list.length} items');
 
     final rawMaps = list
         .whereType<Map>()
@@ -121,17 +115,14 @@ class BadgeRepository {
 
     for (final json in rawMaps) {
       final badgeData = json['badge'];
-      debugPrint('BadgeRepo.getEarnedBadges: badge=${badgeData != null}, badgeId=${badgeData is Map ? badgeData['id'] : 'N/A'}');
       if (badgeData is Map) {
         await _badgeDao.insertIfMissing(Map<String, dynamic>.from(badgeData));
       }
     }
 
     final awarded = rawMaps.map(_parseAwardedFromApi).toList();
-    debugPrint('BadgeRepo.getEarnedBadges: parsed ${awarded.length} awarded badges');
     await _awardedBadgeDao.replaceAll(awarded);
     final result = await getEarnedBadgesLocal();
-    debugPrint('BadgeRepo.getEarnedBadges: joined ${result.length} earned badges from local DB');
     return result;
   }
 

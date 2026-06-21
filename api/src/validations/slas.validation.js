@@ -16,8 +16,8 @@ const booleanQueryRule = z.preprocess(
 ).transform((v) => v === undefined ? undefined : (typeof v === 'boolean' ? v : v === 'true'));
 
 const getSLAsQuerySchema = z.object({
-    isActive: booleanQueryRule,
-    isGlobal: booleanQueryRule,
+    isActive: booleanQueryRule.optional(),
+    isGlobal: booleanQueryRule.optional(),
     targetProfile: z.string().trim().max(128).optional(),
     search: z.string().trim().max(255).optional().transform((v) => (v === '' ? undefined : v)),
     page: z.coerce.number().int().positive('VALIDATION_PAGE_POSITIVE_INTEGER').default(1),
@@ -43,7 +43,8 @@ const createSLABodySchema = z.object({
     slaDescription: z.string().trim().max(10000).optional().nullable(),
 
     definitionId: positiveIntIdRule.optional().nullable(),
-    userId: positiveIntIdRule.optional().nullable()
+    userId: positiveIntIdRule.optional().nullable(),
+    serviceLineIds: z.array(positiveIntIdRule).max(100, 'VALIDATION_SERVICE_LINES_MAX').optional()
 }).refine(
     (data) => data.endDate > data.startDate,
     { message: 'VALIDATION_END_DATE_AFTER_START_DATE', path: ['endDate'] }
@@ -78,7 +79,8 @@ const updateSLABodySchema = z.object({
     slaDescription: z.string().trim().max(10000).optional().nullable(),
 
     definitionId: positiveIntIdRule.optional().nullable(),
-    userId: positiveIntIdRule.optional().nullable()
+    userId: positiveIntIdRule.optional().nullable(),
+    serviceLineIds: z.array(positiveIntIdRule).max(100, 'VALIDATION_SERVICE_LINES_MAX').optional()
 }).refine(
     (data) => {
         if (data.startDate && data.endDate) return data.endDate > data.startDate;

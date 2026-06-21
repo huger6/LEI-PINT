@@ -7,12 +7,14 @@ var _areas = require("./areas");
 var _awarded_badges = require("./awarded_badges");
 var _badge_applications = require("./badge_applications");
 var _badge_requirements = require("./badge_requirements");
+var _badge_skills = require("./badge_skills");
 var _badges = require("./badges");
 var _certificates = require("./certificates");
 var _consultant_areas = require("./consultant_areas");
 var _consultants = require("./consultants");
 var _device_tokens = require("./device_tokens");
 var _consultants_selected_skills = require("./consultants_selected_skills");
+var _gdpr_consent_history = require("./gdpr_consent_history");
 var _gdpr_policies = require("./gdpr_policies");
 var _goals = require("./goals");
 var _learning_paths = require("./learning_paths");
@@ -49,12 +51,14 @@ function initModels(sequelize) {
   var awarded_badges = _awarded_badges(sequelize, DataTypes);
   var badge_applications = _badge_applications(sequelize, DataTypes);
   var badge_requirements = _badge_requirements(sequelize, DataTypes);
+  var badge_skills = _badge_skills(sequelize, DataTypes);
   var badges = _badges(sequelize, DataTypes);
   var certificates = _certificates(sequelize, DataTypes);
   var consultant_areas = _consultant_areas(sequelize, DataTypes);
   var consultants = _consultants(sequelize, DataTypes);
   var device_tokens = _device_tokens(sequelize, DataTypes);
   var consultants_selected_skills = _consultants_selected_skills(sequelize, DataTypes);
+  var gdpr_consent_history = _gdpr_consent_history(sequelize, DataTypes);
   var gdpr_policies = _gdpr_policies(sequelize, DataTypes);
   var goals = _goals(sequelize, DataTypes);
   var learning_paths = _learning_paths(sequelize, DataTypes);
@@ -85,6 +89,8 @@ function initModels(sequelize) {
   areas.belongsToMany(consultants, { as: 'user_id_consultants', through: consultant_areas, foreignKey: "area_id", otherKey: "user_id" });
   consultants.belongsToMany(areas, { as: 'area_id_areas', through: consultant_areas, foreignKey: "user_id", otherKey: "area_id" });
   consultants.belongsToMany(skills, { as: 'skills_id_skills', through: consultants_selected_skills, foreignKey: "user_id", otherKey: "skills_id" });
+  badges.belongsToMany(skills, { as: 'skills', through: badge_skills, foreignKey: "badge_id", otherKey: "skills_id" });
+  skills.belongsToMany(badges, { as: 'badges', through: badge_skills, foreignKey: "skills_id", otherKey: "badge_id" });
   service_lines.belongsToMany(slas, { as: 'sla_id_slas', through: sl_slas, foreignKey: "service_line_id", otherKey: "sla_id" });
   service_lines.belongsToMany(system_announcements, { as: 'announcement_id_system_announcements', through: announc_sl, foreignKey: "service_line_id", otherKey: "announcement_id" });
   skills.belongsToMany(consultants, { as: 'user_id_consultants_consultants_selected_skills', through: consultants_selected_skills, foreignKey: "skills_id", otherKey: "user_id" });
@@ -180,6 +186,10 @@ function initModels(sequelize) {
   consultants.hasMany(badge_applications, { as: "badge_applications", foreignKey: "user_id"});
   consultant_areas.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
   consultants.hasMany(consultant_areas, { as: "consultant_areas", foreignKey: "user_id"});
+  gdpr_consent_history.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
+  consultants.hasMany(gdpr_consent_history, { as: "gdpr_consent_histories", foreignKey: "user_id"});
+  gdpr_consent_history.belongsTo(gdpr_policies, { as: "policy", foreignKey: "policy_id"});
+  gdpr_policies.hasMany(gdpr_consent_history, { as: "gdpr_consent_histories", foreignKey: "policy_id"});
   consultants_selected_skills.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
   consultants.hasMany(consultants_selected_skills, { as: "consultants_selected_skills", foreignKey: "user_id"});
   goals.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
@@ -222,6 +232,10 @@ function initModels(sequelize) {
   service_lines.hasMany(sl_slas, { as: "sl_slas", foreignKey: "service_line_id"});
   consultants_selected_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
   skills.hasMany(consultants_selected_skills, { as: "consultants_selected_skills", foreignKey: "skills_id"});
+  badge_skills.belongsTo(skills, { as: "skill", foreignKey: "skills_id"});
+  skills.hasMany(badge_skills, { as: "badge_skills", foreignKey: "skills_id"});
+  badge_skills.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
+  badges.hasMany(badge_skills, { as: "badge_skills", foreignKey: "badge_id"});
   sl_slas.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
   slas.hasMany(sl_slas, { as: "sl_slas", foreignKey: "sla_id"});
   sla_breach_alerts.belongsTo(slas, { as: "sla", foreignKey: "sla_id"});
@@ -262,12 +276,14 @@ function initModels(sequelize) {
     awarded_badges,
     badge_applications,
     badge_requirements,
+    badge_skills,
     badges,
     certificates,
     consultant_areas,
     consultants,
     consultants_selected_skills,
     device_tokens,
+    gdpr_consent_history,
     gdpr_policies,
     goals,
     learning_paths,

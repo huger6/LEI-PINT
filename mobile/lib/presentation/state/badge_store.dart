@@ -93,9 +93,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
 
     try {
       _badges = await _badgeRepository.getBadges();
-      debugPrint('BadgeStore: loaded ${_badges.length} badges');
-    } catch (e) {
-      debugPrint('BadgeStore: loadBadges failed: $e');
+    } catch (_) {
       final local = await _badgeRepository.getBadgesLocal();
       if (local.isNotEmpty) {
         _badges = local;
@@ -128,9 +126,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
         await loadBadges();
       }
       _earnedBadges = await _badgeRepository.getEarnedBadges();
-      debugPrint('BadgeStore: loaded ${_earnedBadges.length} earned badges');
-    } catch (e) {
-      debugPrint('BadgeStore: loadEarnedBadges FAILED: $e');
+    } catch (_) {
       final local = await _badgeRepository.getEarnedBadgesLocal();
       if (local.isNotEmpty) {
         _earnedBadges = local;

@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import '../../core/constants/api_endpoints.dart';
 import '../../models/notification_model.dart';
 import '../local/notification_dao.dart';
@@ -33,9 +31,6 @@ class NotificationRepository {
       if (pageRows.isEmpty || page >= totalPages || page >= 50) break;
       page++;
     }
-    debugPrint(
-      'NotificationRepo: fetched ${items.length} notifications across $page page(s)',
-    );
     await _notificationDao.replaceAll(items);
     return items;
   }

@@ -21,14 +21,10 @@ class ApiLoggerInterceptor extends Interceptor {
       final logEntry =
           '[$timestamp] [$type] $message\n----------------------------------------\n';
 
-      debugPrint('[$type] $message');
-
       try {
         await _initFile();
         await _logFile!.writeAsString(logEntry, mode: FileMode.append);
-      } catch (e) {
-        debugPrint('Erro ao escrever no ficheiro de log: $e');
-      }
+      } catch (_) {}
     }
   }
 

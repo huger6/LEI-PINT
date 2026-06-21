@@ -47,7 +47,6 @@ class ConnectivityService extends ChangeNotifier {
     _isOnline = value;
     if (!_controller.isClosed) _controller.add(value);
     notifyListeners();
-    debugPrint('ConnectivityService: ${value ? "ONLINE" : "OFFLINE"}');
   }
 
   Future<void> recheckNow() async => _checkConnectivity();

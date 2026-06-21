@@ -3,6 +3,10 @@ const loadEnvironment = require('./loadEnv');
 
 loadEnvironment();
 
+if (process.env.NODE_ENV === 'production' && !process.env.REDIS_URL) {
+    throw new Error('REDIS_URL is required in production — the in-memory mock has no TTL support and will break account lockouts and rate limits');
+}
+
 // If REDIS_URL is not provided or we're running tests, export a lightweight
 // in-memory mock so the rest of the app can call `get/set/del` safely.
 if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
@@ -38,6 +42,7 @@ if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
     module.exports = mockRedis;
 } else {
     const redis = new Redis(process.env.REDIS_URL, {
+        // retry not to crash app
         retryStrategy(times) {
             const delay = Math.min(times * 50, 2000);
             return delay;
@@ -45,51 +50,9 @@ if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
         maxRetriesPerRequest: 3
     });
 
-    let connected = false;
-
-    redis.on('ready', () => {
-        connected = true;
-        console.log('Redis connected.');
-    });
-
     redis.on('error', (err) => {
-        connected = false;
-        console.error('Erro no Redis:', err.message);
+        console.error('Erro no Redis:', err);
     });
 
-    redis.on('close', () => {
-        connected = false;
-    });
-
-    const safeRedis = {
-        async get(key) {
-            if (!connected) return null;
-            try { return await redis.get(key); } catch { return null; }
-        },
-        async incr(key) {
-            if (!connected) return 1;
-            try { return await redis.incr(key); } catch { return 1; }
-        },
-        async ttl(key) {
-            if (!connected) return -1;
-            try { return await redis.ttl(key); } catch { return -1; }
-        },
-        async set(key, value, mode, duration) {
-            if (!connected) return 'OK';
-            try { return await redis.set(key, value, mode, duration); } catch { return 'OK'; }
-        },
-        async del(key) {
-            if (!connected) return 0;
-            try { return await redis.del(key); } catch { return 0; }
-        },
-        async expire(key, seconds) {
-            if (!connected) return 1;
-            try { return await redis.expire(key, seconds); } catch { return 1; }
-        },
-        on(...args) {
-            return redis.on(...args);
-        }
-    };
-
-    module.exports = safeRedis;
+    module.exports = redis;
 }

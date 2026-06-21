@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../core/constants/api_endpoints.dart';
 import '../local/area_dao.dart';
@@ -25,8 +24,7 @@ class AreaRepository {
       }
 
       return areas;
-    } on DioException catch (e) {
-      debugPrint('API error (areas): ${e.message}');
+    } on DioException catch (_) {
       final cachedAreas = await _areaDao.getAll();
       if (cachedAreas.isNotEmpty) {
         return cachedAreas;
@@ -35,8 +33,7 @@ class AreaRepository {
       throw Exception(
         'Failed to load areas from API. Ensure the backend is running and adb reverse is configured.',
       );
-    } catch (e) {
-      debugPrint('Unexpected error (areas): $e');
+    } catch (_) {
       final cachedAreas = await _areaDao.getAll();
       if (cachedAreas.isNotEmpty) {
         return cachedAreas;

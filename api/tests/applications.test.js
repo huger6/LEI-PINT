@@ -15,7 +15,7 @@ let adminUser, adminToken;
 let consultantUser, consultantToken;
 let tmUser, tmToken;
 let lpSlug, slSlug, areaSlug;
-let badgeId;
+let badgeId, badgeSlug;
 let applicationGuid;
 
 beforeAll(async () => {
@@ -59,6 +59,7 @@ beforeAll(async () => {
                 const bgRes = await request(app).post('/api/badges').set(authHeader(adminToken))
                     .send({ badgeTitle: `AP Badge ${S}`, badgeSlug: `ap-badge-${S}`, badgeType: 'Certification', badgePoints: 50, progressionStageId });
                 badgeId = bgRes.body.data?.badge_id ?? bgRes.body.data?.id;
+                badgeSlug = bgRes.body.data?.badge_slug ?? bgRes.body.data?.badgeSlug ?? `ap-badge-${S}`;
             }
         }
     }
@@ -126,22 +127,22 @@ describe('GET /api/applications', () => {
 // ─────────────────────────────────────────────
 describe('POST /api/applications/start', () => {
     test('201 – Consultant starts an application', async () => {
-        if (!badgeId) { console.warn('No badgeId – skipping start test'); return; }
+        if (!badgeSlug) { console.warn('No badgeSlug – skipping start test'); return; }
         const res = await request(app)
             .post('/api/applications/start')
             .set(authHeader(consultantToken))
-            .send({ badgeId });
+            .send({ badgeSlug });
         expect(res.status).toBe(201);
         expect(res.body.success).toBe(true);
         applicationGuid = res.body.data?.application_guid;
     });
 
     test('409 – Duplicate application for same badge', async () => {
-        if (!badgeId || !applicationGuid) return;
+        if (!badgeSlug || !applicationGuid) return;
         const res = await request(app)
             .post('/api/applications/start')
             .set(authHeader(consultantToken))
-            .send({ badgeId });
+            .send({ badgeSlug });
         expect(res.status).toBe(409);
     });
 
@@ -149,11 +150,11 @@ describe('POST /api/applications/start', () => {
         const res = await request(app)
             .post('/api/applications/start')
             .set(authHeader(consultantToken))
-            .send({ badgeId: 9999999 });
+            .send({ badgeSlug: 'non-existent-badge-slug-xyz' });
         expect(res.status).toBe(404);
     });
 
-    test('400 – Missing badgeId', async () => {
+    test('400 – Missing badgeSlug', async () => {
         const res = await request(app)
             .post('/api/applications/start')
             .set(authHeader(consultantToken))
@@ -162,7 +163,7 @@ describe('POST /api/applications/start', () => {
     });
 
     test('401 – No token', async () => {
-        const res = await request(app).post('/api/applications/start').send({ badgeId: 1 });
+        const res = await request(app).post('/api/applications/start').send({ badgeSlug: 'whatever' });
         expect(res.status).toBe(401);
     });
 });
