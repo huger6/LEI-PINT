@@ -1,0 +1,45 @@
+@startuml use-case-consultor-3
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Consultor" as C
+
+rectangle "Plataforma Web & Mobile" {
+
+  package "Credenciais e Partilha" {
+    usecase "Descarregar certificado\nem PDF" as UC40
+    usecase "Partilhar badge\nno LinkedIn" as UC41
+    usecase "Aceder à galeria\npública de badges" as UC42
+    usecase "Verificar badge\npor URL única" as UC43
+    usecase "Configurar assinatura\nde e-mail" as UC44
+  }
+
+  package "Notificações" {
+    usecase "Receber notificação\nde aprovação/rejeição" as UC50
+    usecase "Receber alerta\nde expiração de badge" as UC51
+    usecase "Receber e-mail\nde confirmação" as UC52
+    usecase "Consultar avisos\nda plataforma" as UC53
+  }
+}
+
+C --> UC40
+C --> UC41
+C --> UC42
+C --> UC43
+C --> UC44
+
+C --> UC50
+C --> UC51
+C --> UC52
+C --> UC53
+
+@enduml
