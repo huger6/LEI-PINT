@@ -521,6 +521,43 @@ const getFavorites = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  PATCH /api/gamification/earned-badges/:verificationLink/featured
+  Lets a consultant choose which of their earned badges are shown
+  on their public profile (gallery customisation). Identified by the
+  public verification link, never the PK.
+  Body: { featured: boolean }
+──────────────────────────────────────────────────────────────*/
+const setBadgeFeatured = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { verificationLink } = req.params;
+        const { featured } = req.body || {};
+
+        if (typeof featured !== 'boolean') {
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_DATA' });
+        }
+
+        const [updated] = await models.awarded_badges.update(
+            { is_featured: featured },
+            { where: { public_verification_link: verificationLink, user_id: userId } }
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({ success: false, code: 'GAMIFICATION_BADGE_NOT_FOUND' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            code: 'GAMIFICATION_BADGE_FEATURED_UPDATED',
+            data: { featured }
+        });
+    } catch (error) {
+        logger.error('Error updating badge featured flag', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_BADGE_FEATURE_FAILED' });
+    }
+};
+
 module.exports = {
     trackInteraction,
     getInteractions,
@@ -530,5 +567,6 @@ module.exports = {
     getConsultantStats,
     getEarnedBadges,
     toggleFavorite,
-    getFavorites
+    getFavorites,
+    setBadgeFeatured
 };

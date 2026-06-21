@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
+import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
@@ -18,6 +19,23 @@ export default function Achievements() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
 	const [celebrate, setCelebrate] = useState(null);
+	const [savingFeatured, setSavingFeatured] = useState(null);
+
+	// Curate the public gallery: toggle whether an earned badge is shown publicly.
+	async function toggleFeatured(b) {
+		if (!b.verificationLink) return;
+		const next = !b.isFeatured;
+		setSavingFeatured(b.awardedBadgeId);
+		// Optimistic update; revert on failure.
+		setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: next } : x)));
+		try {
+			await setBadgeFeatured(b.verificationLink, next);
+		} catch {
+			setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: !next } : x)));
+		} finally {
+			setSavingFeatured(null);
+		}
+	}
 
 	useEffect(() => {
 		let active = true;
@@ -148,6 +166,16 @@ export default function Achievements() {
 												<Button as="a" href={`/verify/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm"
 													onClick={(e) => e.stopPropagation()}>
 													<Icon name="eye" size={14} aria-hidden="true" /> {t('achievements.verify')}
+												</Button>
+												<Button
+													variant="text"
+													size="sm"
+													loading={savingFeatured === b.awardedBadgeId}
+													onClick={(e) => { e.stopPropagation(); toggleFeatured(b); }}
+													title={t(b.isFeatured ? 'achievements.hideFromProfile' : 'achievements.showOnProfile')}
+												>
+													<Icon name={b.isFeatured ? 'bookmark-filled' : 'bookmark'} size={14} aria-hidden="true" />
+													{t(b.isFeatured ? 'achievements.onProfile' : 'achievements.showOnProfile')}
 												</Button>
 											</div>
 										)}

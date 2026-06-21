@@ -10,6 +10,12 @@ export async function getFavorites() {
 	return data?.data || [];
 }
 
+// Toggle whether an earned badge appears on the consultant's public profile.
+export async function setBadgeFeatured(verificationLink, featured) {
+	const { data } = await api.patch(`/gamification/earned-badges/${verificationLink}/featured`, { featured });
+	return data?.data;
+}
+
 export async function trackInteraction(badgeId, interactionType) {
 	const { data } = await api.post('/gamification/interactions', {
 		badgeId,

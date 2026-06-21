@@ -53,6 +53,13 @@ router.get('/consultant-stats', loginRequired, gamificationController.getConsult
 router.get('/earned-badges', loginRequired, gamificationController.getEarnedBadges);
 
 /**
+ * @route   PATCH /api/gamification/earned-badges/:verificationLink/featured
+ * @desc    Toggle whether an earned badge is shown on the public profile
+ * @access  Consultant (owner only)
+ */
+router.patch('/earned-badges/:verificationLink/featured', loginRequired, gamificationController.setBadgeFeatured);
+
+/**
  * @route   POST /api/gamification/favorites/:badgeSlug
  * @desc    Toggle favorite state for a badge (add/remove)
  * @access  Any authenticated user

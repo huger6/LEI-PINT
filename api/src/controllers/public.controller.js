@@ -340,9 +340,9 @@ const getPublicConsultantProfile = async (req, res) => {
 		});
 		if (!user) return res.status(404).json({ success: false, code: 'PUBLIC_PROFILE_NOT_FOUND' });
 
-		const awarded = await models.awarded_badges.findAll({
+		const awardedAll = await models.awarded_badges.findAll({
 			where: { user_id: user.user_id, is_published: true },
-			attributes: ['awarded_at', 'expiration_at', 'points_snapshot', 'public_verification_link'],
+			attributes: ['awarded_at', 'expiration_at', 'points_snapshot', 'public_verification_link', 'is_featured'],
 			include: [{
 				model: models.badge_applications, as: 'application',
 				attributes: ['application_id'],
@@ -353,6 +353,11 @@ const getPublicConsultantProfile = async (req, res) => {
 			}],
 			order: [['awarded_at', 'DESC']]
 		});
+
+		// The consultant curates their public gallery: if they featured any
+		// badges, show only those; otherwise show all earned badges by default.
+		const hasFeatured = awardedAll.some((a) => a.is_featured);
+		const awarded = hasFeatured ? awardedAll.filter((a) => a.is_featured) : awardedAll;
 
 		const badges = awarded.map((a) => {
 			const b = a.application?.badge || {};
@@ -368,7 +373,8 @@ const getPublicConsultantProfile = async (req, res) => {
 			};
 		});
 
-		const totalPoints = awarded.reduce((sum, a) => sum + (a.points_snapshot || 0), 0);
+		// Totals reflect every earned badge; the gallery (badges) may be a curated subset.
+		const totalPoints = awardedAll.reduce((sum, a) => sum + (a.points_snapshot || 0), 0);
 
 		return res.status(200).json({
 			success: true,
@@ -376,7 +382,7 @@ const getPublicConsultantProfile = async (req, res) => {
 				full_name: user.full_name,
 				user_guid: user.user_guid,
 				profile_img_url: user.profile_img_url || null,
-				total_badges: badges.length,
+				total_badges: awardedAll.length,
 				total_points: totalPoints,
 				badges
 			}
