@@ -287,6 +287,7 @@
 	},
 	"settings": {
 		"title": "Configuración",
+		"account": "Cuenta y privacidad",
 		"appearance": "Apariencia",
 		"appearanceHint": "Elige el modo de visualización de la aplicación.",
 		"modeLight": "Claro",

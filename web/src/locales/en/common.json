@@ -287,6 +287,7 @@
 	},
 	"settings": {
 		"title": "Settings",
+		"account": "Account & privacy",
 		"appearance": "Appearance",
 		"appearanceHint": "Choose the application's display mode.",
 		"modeLight": "Light",

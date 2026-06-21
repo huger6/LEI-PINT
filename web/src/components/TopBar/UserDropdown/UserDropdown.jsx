@@ -132,20 +132,6 @@ export default function UserDropdown() {
                             onClick={toggleTheme}
                             role="menuitem"
                         />
-                        <DropdownOption
-                            icon="privacy"
-                            iconSize={18}
-                            label="userDropdown.privacy"
-                            onClick={() => handleOptionClick(SHARED.PRIVACY)}
-                            role="menuitem"
-                        />
-                        <DropdownOption
-                            icon="security"
-                            iconSize={18}
-                            label="userDropdown.security"
-                            onClick={() => handleOptionClick(SHARED.SECURITY)}
-                            role="menuitem"
-                        />
                     </div>
 
                     <hr className={styles.divider} />
