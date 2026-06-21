@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CONSULTANT } from '../../../routes/paths';
+import { CONSULTANT, SHARED } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
@@ -71,6 +71,8 @@ function mapGoalToObjective(goal) {
 		daysRemaining,
 		completedReqs,
 		totalReqs,
+		badgeSlug: badge?.badge_slug || null,
+		applicationGuid: app?.application_guid || null,
 	};
 }
 
@@ -282,7 +284,13 @@ export default function Objectives() {
 											variant="filled"
 											size="sm"
 											className={styles.resumeBtn}
-											onClick={() => navigate(CONSULTANT.CATALOG)}
+											onClick={() => navigate(
+												obj.applicationGuid
+													? `${SHARED.APPLICATIONS}/${obj.applicationGuid}`
+													: obj.badgeSlug
+														? `/badges/${obj.badgeSlug}`
+														: CONSULTANT.CATALOG
+											)}
 										>
 											<Icon name="chevron_forward" size={14} />
 											{t('objectives.resumeTraining')}
@@ -323,20 +331,6 @@ export default function Objectives() {
 						<h3 className={styles.quickActionsTitle}>{t('objectives.quickActions')}</h3>
 						<div className={styles.quickActionsGrid}>
 							<QuickAction
-								icon="add"
-								label={t('objectives.addNewObjective')}
-								color="var(--color-success)"
-								bg="var(--color-green-soft)"
-								onClick={() => navigate(CONSULTANT.OBJECTIVES)}
-							/>
-							<QuickAction
-								icon="badge"
-								label={t('objectives.browseCatalog')}
-								color="var(--color-primary)"
-								bg="var(--color-primary-soft)"
-								onClick={() => navigate(CONSULTANT.CATALOG)}
-							/>
-							<QuickAction
 								icon="progress"
 								label={t('objectives.viewProgressReport')}
 								color="var(--color-warning)"
@@ -344,10 +338,11 @@ export default function Objectives() {
 								onClick={() => navigate(CONSULTANT.EVOLUTION || CONSULTANT.HOME)}
 							/>
 							<QuickAction
-								icon="paper"
-								label={t('objectives.exportObjectives')}
-								color="var(--color-secondary)"
-								bg="var(--color-blue-soft)"
+								icon="badge"
+								label={t('objectives.browseCatalog')}
+								color="var(--color-primary)"
+								bg="var(--color-primary-soft)"
+								onClick={() => navigate(CONSULTANT.CATALOG)}
 							/>
 						</div>
 					</section>

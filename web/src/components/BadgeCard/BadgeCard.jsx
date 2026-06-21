@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
@@ -13,6 +14,8 @@ function getBadgeClassLabel(rawType) {
 
 export default function BadgeCard({ badge, to, isConsultant = true, isFavorited = false, onToggleFavorite }) {
 	const { t } = useTranslation();
+	const linkRef = useRef(null);
+	const [hasAnimated, setHasAnimated] = useState(false);
 
 	const title = badge.badge_title || badge.badgeTitle;
 	const description = badge.badge_description || badge.badgeDescription || '';
@@ -31,20 +34,39 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 	const badgeClass = getBadgeClassLabel(badgeType);
 	const isSpecial = badgeClass.toLowerCase() === 'special';
 
-	// Special badges are distinguished only by their title/label pill — no
-	// decorative frame, glow or animation (rewards rule).
+	// Special badges get an animated frame/glow that plays once on scroll-in.
+	useEffect(() => {
+		if (!isSpecial || hasAnimated) return;
+		const el = linkRef.current;
+		if (!el) return;
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setHasAnimated(true);
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.3 }
+		);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [isSpecial, hasAnimated]);
+
 	const linkClasses = [
 		'text-decoration-none',
 		styles.link,
+		isSpecial && hasAnimated ? styles.fuseActive : '',
 	].filter(Boolean).join(' ');
 
 	const cardClasses = [
 		styles.card,
+		isSpecial ? styles.specialCard : '',
+		isSpecial && hasAnimated ? styles.specialGlow : '',
 		hasObtained ? styles.obtainedCard : '',
 	].filter(Boolean).join(' ');
 
 	return (
-		<Link to={to} className={linkClasses}>
+		<Link ref={linkRef} to={to} className={linkClasses}>
 			<article className={cardClasses}>
 				<div className={styles.imageWrap}>
 					{imageUrl ? (
