@@ -3,7 +3,7 @@
 		"nav": { "sobre": "Acerca de", "funcionalidades": "Funcionalidades", "badges": "Badges", "perfis": "Perfiles", "comoFunciona": "Cómo funciona", "aceder": "Acceder a la plataforma" },
 		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Plataforma de Badges", "subtitle": "Innovación, talento y tecnología para acelerar la transformación digital, ahora también en cómo reconocemos las competencias de nuestros equipos, con credenciales digitales verificables.", "entrar": "Entrar", "saberMais": "Saber más", "credential": "Credencial verificada" },
 		"stats": { "learningPaths": "Learning Path inicial", "niveis": "Niveles por área", "idiomas": "Idiomas", "verificaveis": "Credenciales verificables" },
-		"about": { "title": "Sobre el proyecto", "p1": "La Plataforma de Badges de Softinsa es un sistema de gestión de credenciales digitales que reconoce y valida las competencias tecnológicas de los consultores mediante badges asociados a Learning Paths, Service Lines y Áreas.", "p2": "Resuelve la dificultad de evidenciar competencias, añade una capa de gamificación que impulsa el aprendizaje continuo y crea una forma estandarizada y verificable de presentar credenciales profesionales." },
+		"about": { "title": "Sobre el proyecto", "p1": "La Plataforma de Badges de Softinsa es un sistema de gestión de credenciales digitales que reconoce y valida las competencias tecnológicas de los consultores mediante badges asociados a Learning Paths, Service Lines y Áreas.", "p2": "Resuelve la dificultad de evidenciar competencias, añade una capa de gamificación que impulsa el aprendizaje continuo y crea una forma estandarizada y verificable de presentar credenciales profesionales.", "p3": "Está organizada en una jerarquía clara — Learning Paths que agrupan Service Lines, Áreas y niveles de progresión — donde cada nivel desbloquea insignias específicas. Para usarla: explora el catálogo, solicita una insignia, envía las evidencias y sigue el progreso hasta la validación." },
 		"features": { "title": "Funcionalidades", "items": [
 			{ "title": "Learning Paths", "desc": "Rutas técnicas organizadas por Service Lines, Áreas y niveles de progresión." },
 			{ "title": "Credenciales verificables", "desc": "Cada badge tiene una página pública única para verificación externa y firmas de correo." },
@@ -24,7 +24,7 @@
 			{ "title": "Decisión", "desc": "El Service Line Leader aprueba o rechaza; el badge se genera y queda disponible." },
 			{ "title": "Compartir", "desc": "El consultor publica y comparte la credencial, con verificación pública por enlace." }
 		] },
-		"badges": { "title": "Badges", "subtitle": "Explora las credenciales disponibles y las competencias que reconoce cada una.", "empty": "No hay badges para mostrar.", "other": "Otros" },
+		"badges": { "title": "Badges", "subtitle": "Algunos ejemplos de las credenciales disponibles — el catálogo completo está dentro de la plataforma.", "empty": "No hay badges para mostrar.", "other": "Otros" },
 		"cta": { "title": "¿Listo para evidenciar tus competencias?", "subtitle": "Accede a la plataforma y empieza a conseguir tus badges.", "button": "Acceder a la plataforma" },
 		"footer": {
 			"tagline": "Habla con el equipo de Softinsa y descubre cómo podemos impulsar la innovación en tu negocio.",

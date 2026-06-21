@@ -153,6 +153,7 @@ export default function SoftinsaSite() {
 							<h2>{t('softinsaSite.about.title')}</h2>
 							<p>{t('softinsaSite.about.p1')}</p>
 							<p>{t('softinsaSite.about.p2')}</p>
+							<p>{t('softinsaSite.about.p3')}</p>
 						</div>
 						<div className={`${styles.aboutImg} ${styles.reveal}`}>
 							<img src={ABOUT_IMG} alt="" loading="lazy" />
@@ -184,7 +185,9 @@ export default function SoftinsaSite() {
 					</div>
 					{badges.length > 0 ? (
 						<div className={styles.badgeGroups}>
-							{groupBadges(badges, t('softinsaSite.badges.other')).map((group) => (
+							{/* Showcase a sample, not the whole catalog: up to 3 collections,
+							    4 badges each. The full catalog lives inside the app. */}
+							{groupBadges(badges, t('softinsaSite.badges.other')).slice(0, 3).map((group) => ({ ...group, items: group.items.slice(0, 4) })).map((group) => (
 								<div key={group.label} className={`${styles.badgeGroup} ${styles.reveal}`}>
 									<div className={styles.badgeGroupHead}>
 										<h3 className={styles.badgeGroupTitle}>{group.label}</h3>
