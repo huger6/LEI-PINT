@@ -98,9 +98,31 @@ function ensureLogDirectoryExists() {
 }
 
 const isLoggingEnabled = parseBoolean(process.env.LOGGING_ENABLED, true);
+const isProduction = process.env.NODE_ENV === 'production';
 
-if (isLoggingEnabled) {
+if (isLoggingEnabled && !isProduction) {
     ensureLogDirectoryExists();
+}
+
+function buildTransports() {
+    if (!isLoggingEnabled) {
+        return [];
+    }
+
+    if (isProduction) {
+        return [
+            new winston.transports.Console({
+                level: process.env.LOG_LEVEL || 'info'
+            })
+        ];
+    }
+
+    return [
+        new winston.transports.File({
+            filename: path.join(LOG_DIRECTORY, LOG_FILE_NAME),
+            level: 'debug'
+        })
+    ];
 }
 
 const logger = winston.createLogger({
@@ -111,14 +133,7 @@ const logger = winston.createLogger({
         winston.format.splat(),
         winston.format.json()
     ),
-    transports: isLoggingEnabled
-        ? [
-            new winston.transports.File({
-                filename: path.join(LOG_DIRECTORY, LOG_FILE_NAME),
-                level: 'debug'
-            })
-        ]
-        : []
+    transports: buildTransports()
 });
 
 if (!isLoggingEnabled) {

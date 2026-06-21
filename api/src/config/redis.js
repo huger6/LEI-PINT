@@ -3,6 +3,10 @@ const loadEnvironment = require('./loadEnv');
 
 loadEnvironment();
 
+if (process.env.NODE_ENV === 'production' && !process.env.REDIS_URL) {
+    throw new Error('REDIS_URL is required in production — the in-memory mock has no TTL support and will break account lockouts and rate limits');
+}
+
 // If REDIS_URL is not provided or we're running tests, export a lightweight
 // in-memory mock so the rest of the app can call `get/set/del` safely.
 if (!process.env.REDIS_URL || process.env.NODE_ENV === 'test') {
