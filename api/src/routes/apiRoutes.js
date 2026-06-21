@@ -47,6 +47,7 @@ router.use('/goals', goals);
 // --- Gamification & rankings ---
 router.use('/ranking', ranking);
 router.use('/gamification', gamification);
+router.use('/rewards', require('./rewards.routes'));
 router.use('/notifications', notifications);
 router.use('/statistics', statistics);
 

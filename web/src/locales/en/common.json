@@ -358,6 +358,7 @@
 			"objectives": "Objectives",
 			"evolution": "Evolution",
 			"ranking": "Ranking",
+			"store": "Store",
 			"announcements": "Announcements",
 			"browse": "Structure"
 		},
@@ -486,6 +487,21 @@
 			"areas": "Areas of expertise",
 			"profile_img_url": "Profile picture"
 		}
+	},
+	"store": {
+		"title": "Rewards Store",
+		"subtitle": "Spend your points on courses and perks.",
+		"points": "points",
+		"empty": "No rewards available yet.",
+		"redeem": "Redeem",
+		"notEnough": "Not enough points",
+		"myRedemptions": "My redemptions",
+		"access": "Access",
+		"confirmTitle": "Confirm redemption",
+		"confirmText": "Redeem \"{{name}}\" for {{cost}} points?",
+		"successTitle": "Reward redeemed!",
+		"successText": "You successfully redeemed \"{{name}}\".",
+		"emailNote": "We've emailed you the access details."
 	},
 	"notifications": {
 		"title": "Notifications",

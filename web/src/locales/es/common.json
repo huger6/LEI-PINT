@@ -358,6 +358,7 @@
 			"objectives": "Objetivos",
 			"evolution": "Evolución",
 			"ranking": "Ranking",
+			"store": "Tienda",
 			"announcements": "Comunicados",
 			"browse": "Estructura"
 		},
@@ -486,6 +487,21 @@
 			"areas": "Áreas de especialización",
 			"profile_img_url": "Foto de perfil"
 		}
+	},
+	"store": {
+		"title": "Tienda de Recompensas",
+		"subtitle": "Gasta tus puntos en cursos y ventajas.",
+		"points": "puntos",
+		"empty": "Aún no hay recompensas disponibles.",
+		"redeem": "Canjear",
+		"notEnough": "Puntos insuficientes",
+		"myRedemptions": "Mis canjes",
+		"access": "Acceder",
+		"confirmTitle": "Confirmar canje",
+		"confirmText": "¿Canjear \"{{name}}\" por {{cost}} puntos?",
+		"successTitle": "¡Recompensa canjeada!",
+		"successText": "Has canjeado \"{{name}}\" con éxito.",
+		"emailNote": "Te hemos enviado los datos de acceso por email."
 	},
 	"notifications": {
 		"title": "Notificaciones",

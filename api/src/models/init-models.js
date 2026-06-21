@@ -27,6 +27,7 @@ var _languages = require("./languages");
 var _progression_stages = require("./progression_stages");
 var _requirements_evidences = require("./requirements_evidences");
 var _rewards = require("./rewards");
+var _reward_redemptions = require("./reward_redemptions");
 var _service_line_leaders = require("./service_line_leaders");
 var _service_lines = require("./service_lines");
 var _skills = require("./skills");
@@ -71,6 +72,7 @@ function initModels(sequelize) {
   var progression_stages = _progression_stages(sequelize, DataTypes);
   var requirements_evidences = _requirements_evidences(sequelize, DataTypes);
   var rewards = _rewards(sequelize, DataTypes);
+  var reward_redemptions = _reward_redemptions(sequelize, DataTypes);
   var service_line_leaders = _service_line_leaders(sequelize, DataTypes);
   var service_lines = _service_lines(sequelize, DataTypes);
   var skills = _skills(sequelize, DataTypes);
@@ -178,6 +180,10 @@ function initModels(sequelize) {
   badges.hasMany(points_history, { as: "points_histories", foreignKey: "badge_id"});
   rewards.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(rewards, { as: "rewards", foreignKey: "badge_id"});
+  reward_redemptions.belongsTo(rewards, { as: "reward", foreignKey: "reward_id"});
+  rewards.hasMany(reward_redemptions, { as: "redemptions", foreignKey: "reward_id"});
+  reward_redemptions.belongsTo(users, { as: "user", foreignKey: "user_id"});
+  users.hasMany(reward_redemptions, { as: "reward_redemptions", foreignKey: "user_id"});
   user_badges_interactions.belongsTo(badges, { as: "badge", foreignKey: "badge_id"});
   badges.hasMany(user_badges_interactions, { as: "user_badges_interactions", foreignKey: "badge_id"});
   awarded_badges.belongsTo(consultants, { as: "user", foreignKey: "user_id"});
@@ -296,6 +302,7 @@ function initModels(sequelize) {
     progression_stages,
     requirements_evidences,
     rewards,
+    reward_redemptions,
     service_line_leaders,
     service_lines,
     skills,

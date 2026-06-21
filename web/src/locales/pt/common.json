@@ -358,6 +358,7 @@
 			"objectives": "Objetivos",
 			"evolution": "Evolução",
 			"ranking": "Ranking",
+			"store": "Loja",
 			"announcements": "Comunicados",
 			"browse": "Estrutura"
 		},
@@ -486,6 +487,21 @@
 			"areas": "Áreas de especialização",
 			"profile_img_url": "Foto de perfil"
 		}
+	},
+	"store": {
+		"title": "Loja de Recompensas",
+		"subtitle": "Gasta os teus pontos em cursos e perks.",
+		"points": "pontos",
+		"empty": "Ainda não há recompensas disponíveis.",
+		"redeem": "Resgatar",
+		"notEnough": "Pontos insuficientes",
+		"myRedemptions": "Os meus resgates",
+		"access": "Aceder",
+		"confirmTitle": "Confirmar resgate",
+		"confirmText": "Resgatar \"{{name}}\" por {{cost}} pontos?",
+		"successTitle": "Recompensa resgatada!",
+		"successText": "Resgataste \"{{name}}\" com sucesso.",
+		"emailNote": "Enviámos a informação de acesso para o teu email."
 	},
 	"notifications": {
 		"title": "Notificações",

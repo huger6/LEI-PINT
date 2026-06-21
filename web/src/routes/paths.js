@@ -43,6 +43,7 @@ export const CONSULTANT = {
 	OBJECTIVES: '/objectives',
 	EVOLUTION: '/evolution',
 	RANKING: '/ranking',
+	STORE: '/store',
 	ANNOUNCEMENTS: '/announcements',
 };
 
