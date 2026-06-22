@@ -7,6 +7,7 @@ import Icon from '../Icons/Icons';
 import Tooltip from '../Tooltip/Tooltip';
 import TableSkeleton from '../Skeleton/TableSkeleton';
 import CreateRequirementModal from '../CreateRequirementModal/CreateRequirementModal';
+import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './BadgeRequirementsManager.module.css';
 
 /**
@@ -82,7 +83,7 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 							{requirements.map((req, idx) => (
 								<tr key={req.requirement_id || req.requirementId || idx}>
 									<td><span className={styles.seqBadge}>{req.requirement_sequence ?? req.requirementSequence ?? idx + 1}</span></td>
-									<td>{req.requirement_title || req.requirementTitle || '—'}</td>
+									<td><TranslatedText text={req.requirement_title || req.requirementTitle || '—'} /></td>
 									<td><span className={styles.pointsChip}>{req.badge_points ?? req.badgePoints ?? 0} pts</span></td>
 									<td>
 										<span className={`${styles.statusChip} ${req.is_active ? styles.statusOn : styles.statusOff}`}>

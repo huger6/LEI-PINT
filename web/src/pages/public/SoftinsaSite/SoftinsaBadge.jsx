@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicBadge } from '../../../features/badges/api/publicBadgesApi';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './SoftinsaBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -67,7 +68,7 @@ export default function SoftinsaBadge() {
 								<span className={styles.certified}>
 									<i className="bi bi-patch-check-fill" aria-hidden="true" /> {t('softinsaSite.badgePage.certified')}
 								</span>
-								<p className={styles.desc}>{badge.badge_description}</p>
+								<p className={styles.desc}><TranslatedText text={badge.badge_description} /></p>
 								<div className={styles.metaRow}>
 									{meta.map((m) => (
 										<div key={m.label} className={styles.metaItem}>
@@ -110,7 +111,7 @@ export default function SoftinsaBadge() {
 										<article key={i} className={styles.reqCard}>
 											<span className={styles.reqNum}>{String(i + 1).padStart(2, '0')}</span>
 											<h3>{r.title}</h3>
-											{r.description && <p>{r.description}</p>}
+											{r.description && <p><TranslatedText text={r.description} /></p>}
 										</article>
 									))}
 								</div>

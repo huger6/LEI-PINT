@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
+import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './RequirementCard.module.css';
 
 export default function RequirementCard({ title, description, status = 'pending' }) {
@@ -18,9 +19,9 @@ export default function RequirementCard({ title, description, status = 'pending'
 
 			<div className={styles.body}>
 				<div className={styles.header}>
-					<h4 className={styles.title}>{title}</h4>
+					<h4 className={styles.title}><TranslatedText text={title} /></h4>
 				</div>
-				{description && <p className={styles.description}>{description}</p>}
+				{description && <p className={styles.description}><TranslatedText text={description} /></p>}
 				<span className={`${styles.statusLabel} ${isComplete ? styles.completeLabel : styles.pendingLabel}`}>
 					{isComplete ? t('badgeDetail.complete') : t('badgeDetail.pending')}
 				</span>

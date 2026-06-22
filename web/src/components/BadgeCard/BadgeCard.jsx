@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import Tooltip from '../Tooltip/Tooltip';
+import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './BadgeCard.module.css';
 
 function getBadgeClassLabel(rawType) {
@@ -107,7 +108,7 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 
 				<div className={styles.content}>
 					<h3 className={styles.title}>{title}</h3>
-					<p className={styles.description}>{description || 'No description available.'}</p>
+					<p className={styles.description}>{description ? <TranslatedText text={description} /> : 'No description available.'}</p>
 
 					<div className={styles.metaGrid}>
 						{areaName && <span className={styles.metaChip}>{areaName}</span>}
@@ -131,8 +132,8 @@ export default function BadgeCard({ badge, to, isConsultant = true, isFavorited 
 										>
 											<Icon name={hasObtained ? 'check_circle' : 'requirement'} size={13} aria-hidden="true" />
 											<span className={styles.requirementTooltip}>
-												<strong className={styles.requirementTooltipTitle}>{reqTitle}</strong>
-												{reqDesc}
+												<strong className={styles.requirementTooltipTitle}><TranslatedText text={reqTitle} /></strong>
+												<TranslatedText text={reqDesc} />
 											</span>
 										</span>
 									);

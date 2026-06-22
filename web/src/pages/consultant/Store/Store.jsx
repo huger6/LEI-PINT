@@ -8,6 +8,7 @@ import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Modal from '../../../components/Modal/Modal';
 import Spinner from '../../../components/Spinner/Spinner';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './Store.module.css';
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
@@ -86,7 +87,7 @@ export default function Store() {
 							<ContentCard key={r.rewardGuid} className={styles.card}>
 								<div className={styles.cardIcon}><Icon name="certificate" size={26} color="var(--color-primary)" aria-hidden="true" /></div>
 								<h3 className={styles.cardTitle}>{r.name}</h3>
-								{r.description && <p className={styles.cardDesc}>{r.description}</p>}
+								{r.description && <p className={styles.cardDesc}><TranslatedText text={r.description} /></p>}
 								<div className={styles.cardFooter}>
 									<span className={styles.cost}>
 										<Icon name="star-points" size={16} color="var(--color-warning)" aria-hidden="true" /> {r.costPoints} {t('store.points')}

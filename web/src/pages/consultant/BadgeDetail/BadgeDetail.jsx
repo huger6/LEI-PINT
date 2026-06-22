@@ -14,6 +14,7 @@ import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import GdprConsentModal from '../../../components/GdprConsentModal/GdprConsentModal';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { useUser } from '../../../hooks/userContext';
 import styles from './BadgeDetail.module.css';
 
@@ -243,7 +244,7 @@ export default function BadgeDetail() {
 				<div className={styles.heroBody}>
 					<h1 className={styles.heroTitle}>{title}</h1>
 					<p className={styles.heroDescription}>
-						{description || t('badgeDetail.noDescription')}
+						{description ? <TranslatedText text={description} /> : t('badgeDetail.noDescription')}
 					</p>
 
 					<div className={styles.chipRow}>

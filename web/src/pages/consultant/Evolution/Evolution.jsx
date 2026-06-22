@@ -9,6 +9,7 @@ import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBar
 import Icon from '../../../components/Icons/Icons';
 import { getConsultantStats, getPointsHistoryAll, getLearningPathProgress, getRanking } from '../../../services/pointsService';
 import { CONSULTANT } from '../../../routes/paths';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { getProgressionTimeline } from '../../../features/goals/api/goalsApi';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
 import { getBadgesPerArea, getApplicationsWithPagination, getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
@@ -477,7 +478,7 @@ export default function Evolution() {
                                 </div>
                                 <div className={styles.activityContent}>
                                     <span className={styles.activityTitle}>{activity.title}</span>
-                                    <span className={styles.activityDesc}>{activity.description}</span>
+                                    <span className={styles.activityDesc}><TranslatedText text={activity.description} /></span>
                                 </div>
                                 <span className={styles.activityTime}>
                                     {formatTimeAgo(activity.sentAt, t)}

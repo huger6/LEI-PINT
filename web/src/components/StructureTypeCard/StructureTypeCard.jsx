@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
+import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './StructureTypeCard.module.css';
 
 export default function StructureTypeCard({ to, icon, title, description, count, tone }) {
@@ -36,7 +37,7 @@ export default function StructureTypeCard({ to, icon, title, description, count,
 						<h2 className={styles.title}>{title}</h2>
 						{renderCount()}
 					</div>
-					<p className={styles.description}>{description}</p>
+					<p className={styles.description}><TranslatedText text={description} /></p>
 				</div>
 
 				<div className={styles.trailing}>

@@ -5,6 +5,7 @@ import FilterSearchInput from '../../../components/FilterSearchInput/FilterSearc
 import Pagination from '../../../components/Pagination/Pagination';
 import Modal from '../../../components/Modal/Modal';
 import Icon from '../../../components/Icons/Icons';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './ConsultantAnnouncements.module.css';
 
 const TYPE_CLASS_MAP = {
@@ -37,10 +38,10 @@ function AnnouncementCard({ announcement, t, onOpen }) {
 				</span>
 			)}
 
-			<h3 className={styles.cardTitle}>{announcement.announcement_title}</h3>
+			<h3 className={styles.cardTitle}><TranslatedText text={announcement.announcement_title} /></h3>
 
 			<p className={`${styles.cardMessage} ${styles.cardMessageClamped}`}>
-				{message}
+				<TranslatedText text={message} />
 			</p>
 
 			<div className={styles.cardFooter}>
@@ -156,7 +157,7 @@ export default function ConsultantAnnouncements() {
 								{t(`announcements.types.${active.announcement_type}`)}
 							</span>
 						)}
-						<p className={styles.modalMessage}>{active.announcement_message}</p>
+						<p className={styles.modalMessage}><TranslatedText text={active.announcement_message} /></p>
 						<div className={styles.cardFooter}>
 							<span className={styles.cardDate}>{t('announcements.postedOn')} {formatDate(active.created_at)}</span>
 							<span className={styles.cardExpiry}>

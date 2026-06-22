@@ -1,6 +1,6 @@
 const { z } = require('zod');
 
-const SUPPORTED_TARGETS = ['en', 'es'];
+const SUPPORTED_TARGETS = ['pt', 'en', 'es'];
 const MAX_TEXTS = 100;
 const MAX_TEXT_LENGTH = 5000;
 

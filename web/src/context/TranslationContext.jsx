@@ -5,11 +5,10 @@ import api from '../services/api';
 const TranslationContext = createContext(null);
 
 const BATCH_DELAY_MS = 60;
-const SOURCE_LANG = 'pt';
 
 export function TranslationProvider({ children }) {
 	const { i18n } = useTranslation();
-	const currentLang = i18n.language?.slice(0, 2) || SOURCE_LANG;
+	const currentLang = i18n.language?.slice(0, 2) || 'pt';
 
 	const cacheRef = useRef(new Map());
 	const queueRef = useRef([]);
@@ -30,10 +29,12 @@ export function TranslationProvider({ children }) {
 				});
 
 				const translations = data.data?.translations || [];
+
 				translations.forEach(({ original, translated }) => {
 					cacheRef.current.set(`${lang}:${original}`, translated);
 				});
-			} catch {
+			} catch (err) {
+				console.error('[TranslationContext] API call failed:', err);
 				textsToTranslate.forEach((t) => {
 					cacheRef.current.set(`${lang}:${t}`, t);
 				});
@@ -48,9 +49,7 @@ export function TranslationProvider({ children }) {
 	const translateText = useCallback((text) => {
 		const lang = currentLang;
 
-		if (!text || lang === SOURCE_LANG) {
-			return Promise.resolve(text || '');
-		}
+		if (!text) return Promise.resolve('');
 
 		const cached = cacheRef.current.get(`${lang}:${text}`);
 		if (cached) return Promise.resolve(cached);
@@ -67,13 +66,10 @@ export function TranslationProvider({ children }) {
 		});
 	}, [currentLang, flushQueue]);
 
-	const isTranslationNeeded = currentLang !== SOURCE_LANG;
-
 	const value = useMemo(() => ({
 		translateText,
-		isTranslationNeeded,
 		currentLang
-	}), [translateText, isTranslationNeeded, currentLang]);
+	}), [translateText, currentLang]);
 
 	return (
 		<TranslationContext.Provider value={value}>

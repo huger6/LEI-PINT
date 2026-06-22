@@ -10,6 +10,7 @@ import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './Objectives.module.css';
 
 function getGreeting(t) {
@@ -278,7 +279,7 @@ export default function Objectives() {
 										</span>
 									</div>
 									<h3 className={styles.objectiveTitle}>{obj.title}</h3>
-									<p className={styles.objectiveDesc}>{obj.description}</p>
+									<p className={styles.objectiveDesc}><TranslatedText text={obj.description} /></p>
 									<div className={styles.objectiveProgress}>
 										<div className={styles.progressMeta}>
 											<span>{obj.completedReqs}/{obj.totalReqs} {t('objectives.reqsCompleted')}</span>
@@ -427,7 +428,7 @@ function ReminderItem({ reminder, t }) {
 					<strong className={styles.reminderTitle}>{title}</strong>
 					<span className={`${styles.severityTag} ${severity.cls}`}>{severity.label}</span>
 				</div>
-				{body && <p className={styles.reminderText}>{body}</p>}
+				{body && <p className={styles.reminderText}><TranslatedText text={body} /></p>}
 				{date && (
 					<span className={styles.reminderDate}>
 						{new Date(date).toLocaleDateString('pt-PT', {
