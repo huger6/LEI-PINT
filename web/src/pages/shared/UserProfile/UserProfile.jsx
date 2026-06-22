@@ -19,6 +19,8 @@ import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem
 import AdminUserDrawer from './AdminUserDrawer';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import { uploadProfileImageToTemp } from '../../../services/storage';
+import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
+import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
 
@@ -70,6 +72,11 @@ export default function UserProfile() {
 	const [profileUploadError, setProfileUploadError] = useState('');
 	const profileFileRef = useRef(null);
 
+	// Editable public badge gallery (own consultant profile): the consultant
+	// chooses which earned badges show on their public profile.
+	const [galleryBadges, setGalleryBadges] = useState([]);
+	const [savingBadge, setSavingBadge] = useState(null);
+
 	const initialFormRef = useRef({});
 
 	const locationOptions = useMemo(
@@ -109,6 +116,30 @@ export default function UserProfile() {
 
 		return () => { ignore = true; };
 	}, [guid, contextUser, isOwnProfile]);
+
+	// Load the consultant's earned badges to power the editable public gallery.
+	useEffect(() => {
+		if (!isOwnProfile || !isConsultant) return undefined;
+		let ignore = false;
+		getEarnedBadgesForEvolution()
+			.then((rows) => { if (!ignore) setGalleryBadges(rows || []); })
+			.catch(() => { if (!ignore) setGalleryBadges([]); });
+		return () => { ignore = true; };
+	}, [isOwnProfile, isConsultant]);
+
+	const toggleBadgeFeatured = useCallback(async (b) => {
+		if (!b.verificationLink) return;
+		const next = !b.isFeatured;
+		setSavingBadge(b.awardedBadgeId);
+		setGalleryBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: next } : x)));
+		try {
+			await setBadgeFeatured(b.verificationLink, next);
+		} catch {
+			setGalleryBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: !next } : x)));
+		} finally {
+			setSavingBadge(null);
+		}
+	}, []);
 
 	useEffect(() => {
 		let ignore = false;
@@ -678,8 +709,52 @@ export default function UserProfile() {
 				))}
 			</div>
 
-			{/* ── Badge gallery link ──────────────────────────── */}
-			{isConsultant && (
+			{/* ── Editable public badge gallery (own consultant profile) ── */}
+			{isConsultant && isOwnProfile && (
+				<ContentCard className={styles.section}>
+					<CardHeader
+						icon="badge"
+						iconBg="var(--color-primary-soft)"
+						iconColor="var(--color-primary)"
+						title={t('profile.badgeGalleryTitle')}
+					/>
+					<p className={styles.galleryHint}>{t('profile.badgeGalleryHint')}</p>
+					{galleryBadges.length === 0 ? (
+						<p className={styles.emptyText}>{t('profile.noBadgesYet')}</p>
+					) : (
+						<div className={styles.galleryGrid}>
+							{galleryBadges.map((b) => {
+								const badge = b.badge || {};
+								const on = !!b.isFeatured;
+								return (
+									<div key={b.awardedBadgeId} className={`${styles.galleryItem} ${on ? styles.galleryItemOn : ''}`}>
+										<div className={styles.galleryThumb}>
+											{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
+										</div>
+										<span className={styles.galleryName}>{badge.title || '—'}</span>
+										<Button
+											variant={on ? 'filled' : 'outlined'}
+											color="primary"
+											size="sm"
+											loading={savingBadge === b.awardedBadgeId}
+											onClick={() => toggleBadgeFeatured(b)}
+										>
+											<Icon name={on ? 'bookmark-filled' : 'bookmark'} size={14} />
+											{t(on ? 'profile.onPublicProfile' : 'profile.showOnPublicProfile')}
+										</Button>
+									</div>
+								);
+							})}
+						</div>
+					)}
+					<Link to="/achievements" className={styles.galleryViewAll}>
+						{t('profile.viewBadgeGallery')} <Icon name="chevron_forward" size={14} />
+					</Link>
+				</ContentCard>
+			)}
+
+			{/* Other roles / admin viewing: keep the simple gallery link. */}
+			{isConsultant && !isOwnProfile && (
 			<ContentCard className={styles.badgeGalleryCard}>
 				<Link to={badgesPath} className={styles.badgeGalleryLink}>
 					<div className={styles.badgeGalleryIcon}>

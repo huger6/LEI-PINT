@@ -483,8 +483,10 @@
 
 .badgeGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 1.25rem;
+	/* Slightly wider cards, and centered when a row isn't full (few badges). */
+	grid-template-columns: repeat(auto-fit, minmax(240px, 280px));
+	justify-content: center;
+	gap: 1.5rem;
 }
 
 .badgeCard {
