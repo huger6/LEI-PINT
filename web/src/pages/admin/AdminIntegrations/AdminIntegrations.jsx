@@ -28,7 +28,9 @@ export default function AdminIntegrations() {
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
-			setWebhooks(await getWebhooks());
+			// Teams-only surface (Slack is not offered); ignore any legacy rows.
+			const rows = await getWebhooks();
+			setWebhooks(rows.filter((w) => w.platform === 'teams'));
 		} catch (err) {
 			console.error(err);
 			setError(t('adminIntegrations.loadFailed'));
