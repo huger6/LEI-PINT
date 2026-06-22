@@ -394,6 +394,7 @@
 			"slas": "Manage SLAs",
 			"warnings": "Manage Warnings",
 			"notifications": "Manage Notifications",
+			"integrations": "Integrations",
 			"stats": "Statistics/Reports",
 			"rgpd": "GDPR Settings",
 			"announcements": "Announcements"
@@ -947,6 +948,36 @@
 		"errVersion": "Version is required (up to 30 characters).",
 		"errText": "Policy text is required.",
 		"types": { "Privacy": "Privacy", "Terms": "Terms", "Cookies": "Cookies" }
+	},
+	"notifPrefs": {
+		"title": "Notification preferences",
+		"hint": "Choose which notifications you receive and through which channels.",
+		"notification": "Notification",
+		"enabled": "Enabled",
+		"email": "E-mail",
+		"noEmailChannel": "This notification is not sent by e-mail.",
+		"empty": "No configurable notifications.",
+		"loadFailed": "Could not load preferences.",
+		"saveFailed": "Could not save the preference."
+	},
+	"adminIntegrations": {
+		"title": "Integrations",
+		"subtitle": "Connect Microsoft Teams to receive badge notifications in a channel.",
+		"newWebhook": "Connect Teams",
+		"empty": "No integration configured yet.",
+		"platform": "Platform",
+		"channel": "Channel",
+		"channelPlaceholder": "e.g. Team Achievements",
+		"webhookUrl": "Webhook URL (Incoming Webhook)",
+		"help": "In Microsoft Teams, add an \"Incoming Webhook\" connector to the desired channel, copy the generated URL and paste it here. Earned-badge notifications will then be posted to that channel.",
+		"test": "Send test",
+		"testSent": "Test message sent.",
+		"testFailed": "Failed to send the test message.",
+		"confirmDelete": "Remove the \"{{name}}\" integration?",
+		"loadFailed": "Could not load integrations.",
+		"saveFailed": "Could not save the integration.",
+		"errUrlRequired": "Enter the webhook URL.",
+		"errUrlHttps": "The URL must start with https://"
 	},
 	"adminSlas": {
 		"title": "SLAs",

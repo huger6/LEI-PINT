@@ -16,6 +16,7 @@ var _device_tokens = require("./device_tokens");
 var _consultants_selected_skills = require("./consultants_selected_skills");
 var _gdpr_consent_history = require("./gdpr_consent_history");
 var _gdpr_policies = require("./gdpr_policies");
+var _integration_webhooks = require("./integration_webhooks");
 var _goals = require("./goals");
 var _learning_paths = require("./learning_paths");
 var _locations = require("./locations");
@@ -61,6 +62,7 @@ function initModels(sequelize) {
   var consultants_selected_skills = _consultants_selected_skills(sequelize, DataTypes);
   var gdpr_consent_history = _gdpr_consent_history(sequelize, DataTypes);
   var gdpr_policies = _gdpr_policies(sequelize, DataTypes);
+  var integration_webhooks = _integration_webhooks(sequelize, DataTypes);
   var goals = _goals(sequelize, DataTypes);
   var learning_paths = _learning_paths(sequelize, DataTypes);
   var locations = _locations(sequelize, DataTypes);
@@ -291,6 +293,7 @@ function initModels(sequelize) {
     device_tokens,
     gdpr_consent_history,
     gdpr_policies,
+    integration_webhooks,
     goals,
     learning_paths,
     locations,

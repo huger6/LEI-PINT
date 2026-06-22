@@ -394,6 +394,7 @@
 			"slas": "Gestionar SLAs",
 			"warnings": "Gestionar Avisos",
 			"notifications": "Gestionar Notificaciones",
+			"integrations": "Integraciones",
 			"stats": "Estadísticas/Informes",
 			"rgpd": "Configuración RGPD",
 			"announcements": "Comunicados"
@@ -947,6 +948,36 @@
 		"errVersion": "La versión es obligatoria (hasta 30 caracteres).",
 		"errText": "El texto de la política es obligatorio.",
 		"types": { "Privacy": "Privacidad", "Terms": "Términos", "Cookies": "Cookies" }
+	},
+	"notifPrefs": {
+		"title": "Preferencias de notificaciones",
+		"hint": "Elija qué notificaciones recibe y por qué canales.",
+		"notification": "Notificación",
+		"enabled": "Activada",
+		"email": "Correo",
+		"noEmailChannel": "Esta notificación no se envía por correo.",
+		"empty": "No hay notificaciones configurables.",
+		"loadFailed": "No se pudieron cargar las preferencias.",
+		"saveFailed": "No se pudo guardar la preferencia."
+	},
+	"adminIntegrations": {
+		"title": "Integraciones",
+		"subtitle": "Conecte Microsoft Teams para recibir notificaciones de badges en un canal.",
+		"newWebhook": "Conectar Teams",
+		"empty": "Aún no hay ninguna integración configurada.",
+		"platform": "Plataforma",
+		"channel": "Canal",
+		"channelPlaceholder": "p. ej. Logros del Equipo",
+		"webhookUrl": "URL del Webhook (Incoming Webhook)",
+		"help": "En Microsoft Teams, añada un conector \"Incoming Webhook\" al canal deseado, copie la URL generada y péguela aquí. Las notificaciones de badges obtenidos se publicarán en ese canal.",
+		"test": "Enviar prueba",
+		"testSent": "Mensaje de prueba enviado.",
+		"testFailed": "No se pudo enviar el mensaje de prueba.",
+		"confirmDelete": "¿Eliminar la integración \"{{name}}\"?",
+		"loadFailed": "No se pudieron cargar las integraciones.",
+		"saveFailed": "No se pudo guardar la integración.",
+		"errUrlRequired": "Introduzca la URL del webhook.",
+		"errUrlHttps": "La URL debe comenzar con https://"
 	},
 	"adminSlas": {
 		"title": "SLAs",

@@ -25,6 +25,7 @@ export const ADMIN = {
 	APPLICATIONS: '/admin/applications',
 	SLAS: '/admin/slas',
 	NOTIFICATIONS: '/admin/notifications',
+	INTEGRATIONS: '/admin/integrations',
 	STATS: '/admin/stats',
 	RGPD: '/admin/rgpd',
 	ANNOUNCEMENTS: '/admin/announcements',
