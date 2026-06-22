@@ -17,3 +17,17 @@ export const markNotificationRead = (notificationId) =>
 
 export const markAllNotificationsRead = () =>
 	api.put('/notifications/read-all');
+
+// Per-user notification preferences. Each row carries the global default,
+// the user override (or null = inherit) and the effective resolved value.
+export async function getUserPreferences() {
+	const { data } = await api.get('/notifications/preferences');
+	return data?.data || [];
+}
+
+// payload: { is_enabled?, send_email?, send_push? } — each true/false to override,
+// or send all-null to reset back to the global default.
+export async function updateUserPreference(definitionId, payload) {
+	const { data } = await api.put(`/notifications/preferences/${definitionId}`, payload);
+	return data?.data;
+}

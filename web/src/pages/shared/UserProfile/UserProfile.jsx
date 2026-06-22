@@ -19,6 +19,8 @@ import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem
 import AdminUserDrawer from './AdminUserDrawer';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import { uploadProfileImageToTemp } from '../../../services/storage';
+import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
+import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
 
@@ -70,6 +72,11 @@ export default function UserProfile() {
 	const [profileUploadError, setProfileUploadError] = useState('');
 	const profileFileRef = useRef(null);
 
+	// Editable public badge gallery (own consultant profile): the consultant
+	// chooses which earned badges show on their public profile.
+	const [galleryBadges, setGalleryBadges] = useState([]);
+	const [savingBadge, setSavingBadge] = useState(null);
+
 	const initialFormRef = useRef({});
 
 	const locationOptions = useMemo(
@@ -109,6 +116,30 @@ export default function UserProfile() {
 
 		return () => { ignore = true; };
 	}, [guid, contextUser, isOwnProfile]);
+
+	// Load the consultant's earned badges to power the editable public gallery.
+	useEffect(() => {
+		if (!isOwnProfile || !isConsultant) return undefined;
+		let ignore = false;
+		getEarnedBadgesForEvolution()
+			.then((rows) => { if (!ignore) setGalleryBadges(rows || []); })
+			.catch(() => { if (!ignore) setGalleryBadges([]); });
+		return () => { ignore = true; };
+	}, [isOwnProfile, isConsultant]);
+
+	const toggleBadgeFeatured = useCallback(async (b) => {
+		if (!b.verificationLink) return;
+		const next = !b.isFeatured;
+		setSavingBadge(b.awardedBadgeId);
+		setGalleryBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: next } : x)));
+		try {
+			await setBadgeFeatured(b.verificationLink, next);
+		} catch {
+			setGalleryBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: !next } : x)));
+		} finally {
+			setSavingBadge(null);
+		}
+	}, []);
 
 	useEffect(() => {
 		let ignore = false;
@@ -218,8 +249,16 @@ export default function UserProfile() {
 				checkDirty(next);
 				return next;
 			});
-		} catch {
-			setProfileUploadError(t('register.profilePictureUploadFailed'));
+		} catch (err) {
+			URL.revokeObjectURL(localUrl);
+			setProfilePreviewUrl('');
+			// Surface the actual reason so the user knows why (size/format/config).
+			const byCode = {
+				PROFILE_IMAGE_TOO_LARGE: t('register.profilePictureTooLarge', { sizeMb: 2 }),
+				PROFILE_IMAGE_INVALID_FORMAT: t('register.profilePictureInvalidFormat'),
+				SUPABASE_CONFIG_MISSING: t('register.profilePictureConfigMissing'),
+			};
+			setProfileUploadError(byCode[err?.code] || t('register.profilePictureUploadFailed'));
 		} finally {
 			setProfileUploading(false);
 		}
@@ -601,49 +640,6 @@ export default function UserProfile() {
 				</div>
 
 				<div className="col-md-6">
-						<ContentCard>
-							<CardHeader
-								icon="skills"
-								iconBg="var(--color-orange-soft)"
-								iconColor="var(--color-orange-on-soft)"
-								title={t('profile.keyInterests')}
-							/>
-							<div className={styles.sectionBody}>
-								{isEditMode ? (
-									<>
-										<div className={styles.chipList}>
-											{(form.interests || []).map((interest, idx) => (
-												<Chip key={idx} label={interest} onRemove={() => removeInterest(idx)} />
-											))}
-										</div>
-										<div className={styles.addRow}>
-											<input
-												type="text"
-												className={`form-control ${styles.addInput}`}
-												value={interestInput}
-												onChange={(e) => setInterestInput(e.target.value)}
-												onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
-												placeholder={t('profile.addInterest')}
-											/>
-											<Button size="sm" onClick={addInterest} disabled={!interestInput.trim()}>
-												<Icon name="add" size={16} />
-											</Button>
-										</div>
-									</>
-								) : displayInterests.length > 0 ? (
-									<div className={styles.chipList}>
-										{displayInterests.map((interest, idx) => (
-											<Chip key={idx} label={interest} />
-										))}
-									</div>
-								) : (
-									<p className={styles.emptyText}>{t('profile.noInterests')}</p>
-								)}
-							</div>
-						</ContentCard>
-					</div>
-
-				<div className="col-md-6">
 					<ContentCard>
 						<CardHeader
 							icon="target"
@@ -693,6 +689,18 @@ export default function UserProfile() {
 			</div>
 			)}
 
+			{/* ── Save / Cancel buttons (edit mode) — above the stats ── */}
+			{isEditMode && (
+				<div className={styles.actionBar}>
+					<Button variant="outlined" onClick={handleCancel} disabled={saving}>
+						{t('profile.cancel')}
+					</Button>
+					<Button onClick={handleSave} loading={saving} disabled={!isDirty}>
+						{t('profile.saveChanges')}
+					</Button>
+				</div>
+			)}
+
 			{/* ── Statistics section ─────────────────────────── */}
 			<h2 className={styles.sectionTitle}>{t('profile.statistics')}</h2>
 			<div className={styles.statsGrid}>
@@ -701,8 +709,52 @@ export default function UserProfile() {
 				))}
 			</div>
 
-			{/* ── Badge gallery link ──────────────────────────── */}
-			{isConsultant && (
+			{/* ── Editable public badge gallery (own consultant profile) ── */}
+			{isConsultant && isOwnProfile && (
+				<ContentCard className={styles.section}>
+					<CardHeader
+						icon="badge"
+						iconBg="var(--color-primary-soft)"
+						iconColor="var(--color-primary)"
+						title={t('profile.badgeGalleryTitle')}
+					/>
+					<p className={styles.galleryHint}>{t('profile.badgeGalleryHint')}</p>
+					{galleryBadges.length === 0 ? (
+						<p className={styles.emptyText}>{t('profile.noBadgesYet')}</p>
+					) : (
+						<div className={styles.galleryGrid}>
+							{galleryBadges.map((b) => {
+								const badge = b.badge || {};
+								const on = !!b.isFeatured;
+								return (
+									<div key={b.awardedBadgeId} className={`${styles.galleryItem} ${on ? styles.galleryItemOn : ''}`}>
+										<div className={styles.galleryThumb}>
+											{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
+										</div>
+										<span className={styles.galleryName}>{badge.title || '—'}</span>
+										<Button
+											variant={on ? 'filled' : 'outlined'}
+											color="primary"
+											size="sm"
+											loading={savingBadge === b.awardedBadgeId}
+											onClick={() => toggleBadgeFeatured(b)}
+										>
+											<Icon name={on ? 'bookmark-filled' : 'bookmark'} size={14} />
+											{t(on ? 'profile.onPublicProfile' : 'profile.showOnPublicProfile')}
+										</Button>
+									</div>
+								);
+							})}
+						</div>
+					)}
+					<Link to="/achievements" className={styles.galleryViewAll}>
+						{t('profile.viewBadgeGallery')} <Icon name="chevron_forward" size={14} />
+					</Link>
+				</ContentCard>
+			)}
+
+			{/* Other roles / admin viewing: keep the simple gallery link. */}
+			{isConsultant && !isOwnProfile && (
 			<ContentCard className={styles.badgeGalleryCard}>
 				<Link to={badgesPath} className={styles.badgeGalleryLink}>
 					<div className={styles.badgeGalleryIcon}>
@@ -719,17 +771,6 @@ export default function UserProfile() {
 			</ContentCard>
 			)}
 
-			{/* ── Save / Cancel buttons (edit mode) ──────────── */}
-			{isEditMode && (
-				<div className={styles.actionBar}>
-					<Button variant="outlined" onClick={handleCancel} disabled={saving}>
-						{t('profile.cancel')}
-					</Button>
-					<Button onClick={handleSave} loading={saving} disabled={!isDirty}>
-						{t('profile.saveChanges')}
-					</Button>
-				</div>
-			)}
 
 			{/* ── Success toast ───────────────────────────────── */}
 			{saveSuccess && (

@@ -98,7 +98,7 @@
 }
 
 .filterCard {
-	background: #ffffff;
+	background: var(--color-surface);
 	border-radius: 14px;
 	border: 1px solid #DEE3E6;
 	padding: 20px;
@@ -194,7 +194,7 @@
 	font-size: 0.875rem;
 	font-family: var(--font-body);
 	color: var(--color-on-surface);
-	background: #fff;
+	background: var(--color-surface);
 	cursor: pointer;
 	transition: border-color 200ms ease;
 }
@@ -214,7 +214,7 @@
 
 /* ── Badge Card ───────────────────────────────────────── */
 .badgeCard {
-	background: #ffffff;
+	background: var(--color-surface);
 	border-radius: 16px;
 	border: 1px solid #e8ecef;
 	overflow: hidden;

@@ -1,18 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	getBadgesByServiceLine,
 	getBadgesByLearningPath,
 	getLevelDistribution,
+	getExpiringBadges,
 } from '../../../features/statistics/api/statisticsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
+import BadgeReports from '../../../components/BadgeReports/BadgeReports';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import StatsOverview from '../StatsOverview/StatsOverview';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './TmStats.module.css';
+
+const EXPIRING_WINDOWS = [30, 90, 180, 365, 730];
+
+function expiringClass(days) {
+	if (days <= 30) return styles.daysCritical;
+	if (days <= 90) return styles.daysWarning;
+	return styles.daysNeutral;
+}
 
 export default function TmStats() {
 	const { t } = useTranslation();
@@ -23,6 +34,24 @@ export default function TmStats() {
 	// Filters shared from the StatsOverview header; applied to the charts too.
 	const [chartFilters, setChartFilters] = useState({});
 	const filterKey = JSON.stringify(chartFilters);
+
+	// Expiring badges (named list — TM is global, so no service-line scope).
+	const [expiring, setExpiring] = useState([]);
+	const [expiringWindow, setExpiringWindow] = useState(90);
+	const [expiringLoading, setExpiringLoading] = useState(true);
+
+	const loadExpiring = useCallback(async (withinDays) => {
+		setExpiringLoading(true);
+		try {
+			setExpiring(await getExpiringBadges(withinDays));
+		} catch {
+			setExpiring([]);
+		} finally {
+			setExpiringLoading(false);
+		}
+	}, []);
+
+	useEffect(() => { loadExpiring(expiringWindow); }, [loadExpiring, expiringWindow]);
 
 	useEffect(() => {
 		let active = true;
@@ -105,8 +134,64 @@ export default function TmStats() {
 				</ContentCard>
 			</div>
 
+			{/* Mandatory reports: monthly distribution (%) + badges by date range */}
+			<BadgeReports filters={chartFilters} />
+
 			{/* Exports */}
 			<ExportsPanel />
+
+			{/* Expiring badges — named list */}
+			<ContentCard className={styles.section}>
+				<div className={styles.sectionHeaderRow}>
+					<CardHeader icon="clock" iconBg="var(--color-orange-soft)" iconColor="var(--color-orange-on-soft)" title={t('tmStats.expiring.title')} />
+					<label className={styles.inlineSelect}>
+						<span className={styles.inlineSelectLabel}>{t('tmStats.expiring.window')}</span>
+						<CustomSelect
+							name="expiringWindow"
+							value={String(expiringWindow)}
+							onChange={(e) => setExpiringWindow(Number(e.target.value))}
+							options={EXPIRING_WINDOWS.map((d) => ({ value: String(d), label: t('tmStats.expiring.days', { count: d }) }))}
+							ariaLabel={t('tmStats.expiring.window')}
+							compact
+						/>
+					</label>
+				</div>
+
+				{expiringLoading ? (
+					<p className={styles.emptyChart}>—</p>
+				) : expiring.length === 0 ? (
+					<p className={styles.emptyChart}>{t('tmStats.expiring.empty')}</p>
+				) : (
+					<div className="table-responsive">
+						<table className="table table-hover align-middle mb-0">
+							<thead>
+								<tr>
+									<th>{t('tmStats.expiring.consultant')}</th>
+									<th>{t('tmStats.expiring.badge')}</th>
+									<th>{t('tmStats.expiring.expiresOn')}</th>
+									<th className="text-end">{t('tmStats.expiring.daysRemaining')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{expiring.map((row, idx) => (
+									<tr key={`${row.user_guid}-${row.badge_slug}-${idx}`}>
+										<td>{row.full_name}</td>
+										<td>{row.badge_title}</td>
+										<td className="text-muted">
+											{new Date(row.expiration_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })}
+										</td>
+										<td className="text-end">
+											<span className={`${styles.daysChip} ${expiringClass(row.days_remaining)}`}>
+												{row.days_remaining} {t('tmStats.expiring.daysShort')}
+											</span>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
+			</ContentCard>
 		</div>
 	);
 }

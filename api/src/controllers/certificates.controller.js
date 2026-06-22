@@ -1,6 +1,7 @@
 const { logger } = require('../utils/logger');
 const validations = require('../validations/certificates.validation');
 const certificateService = require('../services/certificate.service');
+const statsService = require('../services/statistics.service');
 const { handleZodError } = require('../utils/responseHelper');
 
 /*──────────────────────────────────────────────────────────────
@@ -23,13 +24,18 @@ const generateCertificate = async (req, res) => {
         const { applicationGuid } = validations.generateCertificateParamSchema.parse(req.params);
         const { lang } = validations.generateCertificateBodySchema.parse(req.body);
 
-        // Consultants are scoped to their own applications; leadership sees all
+        // Consultants are scoped to their own applications; a Service Line Leader
+        // is scoped to their own Service Line; Talent Manager / Administrator see all.
         const requestingUserId = role === 'Consultant' ? userId : null;
+        const allowedServiceLineId = role === 'Service Line Leader'
+            ? (await statsService.resolveServiceLineForUser(userId, 'Service Line Leader')) ?? -1
+            : null;
 
         const { certificateUrl, isNew } = await certificateService.getOrCreateCertificate(
             applicationGuid,
             lang,
-            requestingUserId
+            requestingUserId,
+            allowedServiceLineId
         );
 
         return res.status(isNew ? 201 : 200).json({

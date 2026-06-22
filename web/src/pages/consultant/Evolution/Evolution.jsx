@@ -120,9 +120,13 @@ function buildPointsWeekly(pointsHistory, t) {
 
 function buildPointsMonthly(pointsHistory, t) {
     const counts = new Array(12).fill(0);
+    const currentYear = new Date().getFullYear();
     pointsHistory.forEach(p => {
         const d = new Date(p.created_at);
-        counts[d.getMonth()] += parseInt(p.points_delta, 10) || 0;
+        // Only the current year, so months from different years don't merge.
+        if (d.getFullYear() === currentYear) {
+            counts[d.getMonth()] += parseInt(p.points_delta, 10) || 0;
+        }
     });
     return counts.map((val, i) => ({ name: t(`shared.months.${MONTH_KEYS[i]}`), value: val }));
 }
@@ -276,7 +280,7 @@ export default function Evolution() {
             .catch(() => {});
     }, []);
 
-    const greeting = `${getGreeting(t)}, ${displayName || authUser?.name || t('evolution.user')}!`;
+    const greeting = `${getGreeting(t).replace(/[!！]\s*$/, '')}, ${displayName || authUser?.name || t('evolution.user')}!`;
     const averageLevel = useMemo(() => deriveAverageLevel(timeline), [timeline]);
     const competenciesCount = badgesPerArea.length;
     const appStats = useMemo(() => computeAppStats(applications), [applications]);

@@ -17,6 +17,35 @@
 	font-size: 0.9rem;
 }
 
+/* Signature / e-mail template segmented toggle */
+.viewToggle {
+	display: inline-flex;
+	gap: 0.25rem;
+	padding: 0.25rem;
+	border-radius: 999px;
+	background: var(--color-surface-overlay-85, var(--color-outline-light));
+	margin-bottom: 0.25rem;
+	flex-wrap: wrap;
+}
+
+.viewBtn {
+	border: 0;
+	background: transparent;
+	color: var(--color-outline);
+	font-size: 0.82rem;
+	font-weight: 600;
+	padding: 0.35rem 0.9rem;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease;
+}
+
+.viewBtnActive {
+	background: var(--color-surface);
+	color: var(--color-primary);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -119,7 +148,7 @@
 }
 
 .previewBox {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px dashed var(--color-outline-variant);
 	border-radius: 12px;
 	padding: 1.25rem;

@@ -3,7 +3,7 @@
 		"nav": { "sobre": "Sobre", "funcionalidades": "Funcionalidades", "badges": "Badges", "perfis": "Perfis", "comoFunciona": "Como funciona", "aceder": "Aceder à Plataforma" },
 		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Plataforma de Badges", "subtitle": "Inovação, talento e tecnologia para acelerar a transformação digital, agora também na forma como reconhecemos as competências das nossas equipas, com credenciais digitais verificáveis.", "entrar": "Entrar", "saberMais": "Saber mais", "credential": "Credencial verificada" },
 		"stats": { "learningPaths": "Learning Path inicial", "niveis": "Níveis por área", "idiomas": "Idiomas", "verificaveis": "Credenciais verificáveis" },
-		"about": { "title": "Sobre o projeto", "p1": "A Plataforma de Badges da Softinsa é um sistema de gestão de credenciais digitais que reconhece e valida as competências tecnológicas dos consultores através de badges associados a Learning Paths, Service Lines e Áreas.", "p2": "Colmata a dificuldade em evidenciar competências, introduz uma camada de gamificação que motiva a aprendizagem contínua e cria uma forma padronizada e verificável de apresentar credenciais profissionais." },
+		"about": { "title": "Sobre o projeto", "p1": "A Plataforma de Badges da Softinsa é um sistema de gestão de credenciais digitais que reconhece e valida as competências tecnológicas dos consultores através de badges associados a Learning Paths, Service Lines e Áreas.", "p2": "Colmata a dificuldade em evidenciar competências, introduz uma camada de gamificação que motiva a aprendizagem contínua e cria uma forma padronizada e verificável de apresentar credenciais profissionais.", "p3": "Está organizada numa hierarquia clara — Learning Paths que agrupam Service Lines, Áreas e níveis de progressão — em que cada nível desbloqueia badges específicos. Para usar: explore o catálogo, candidate-se a um badge, submeta as evidências e acompanhe o progresso até à validação." },
 		"features": { "title": "Funcionalidades", "items": [
 			{ "title": "Learning Paths", "desc": "Percursos técnicos organizados por Service Lines, Áreas e níveis de progressão." },
 			{ "title": "Credenciais verificáveis", "desc": "Cada badge tem uma página pública única para verificação externa e assinaturas de email." },
@@ -24,7 +24,7 @@
 			{ "title": "Decisão", "desc": "O Service Line Leader aprova ou rejeita; o badge é gerado e fica disponível." },
 			{ "title": "Partilha", "desc": "O consultor publica e partilha a credencial, com verificação pública por link." }
 		] },
-		"badges": { "title": "Badges", "subtitle": "Explore as credenciais disponíveis e as competências que cada uma reconhece.", "empty": "Sem badges para mostrar.", "other": "Outros" },
+		"badges": { "title": "Badges", "subtitle": "Alguns exemplos das credenciais disponíveis — o catálogo completo está dentro da plataforma.", "empty": "Sem badges para mostrar.", "other": "Outros" },
 		"cta": { "title": "Pronto para evidenciar as suas competências?", "subtitle": "Aceda à plataforma e comece a conquistar os seus badges.", "button": "Aceder à Plataforma" },
 		"footer": {
 			"tagline": "Fale com a equipa Softinsa e descubra como podemos impulsionar a inovação no seu negócio.",
@@ -111,6 +111,9 @@
 		"profilePictureUploading": "A carregar foto de perfil...",
 		"profilePictureUploaded": "Foto de perfil carregada: {{fileName}}",
 		"profilePictureUploadFailed": "Não foi possível carregar a sua foto de perfil. Reenvie a imagem ou tente novamente mais tarde.",
+		"profilePictureTooLarge": "A imagem excede o tamanho máximo de {{sizeMb}}MB.",
+		"profilePictureInvalidFormat": "Formato de imagem não suportado (use JPG, PNG, WEBP ou GIF).",
+		"profilePictureConfigMissing": "Armazenamento de imagens não configurado. Contacte o administrador.",
 		"profilePictureUploadInProgress": "Aguarde que o carregamento da foto de perfil termine.",
 		"biography": "Biografia",
 		"biographyPlaceholder": "Conte-nos sobre si...",
@@ -358,6 +361,7 @@
 			"objectives": "Objetivos",
 			"evolution": "Evolução",
 			"ranking": "Ranking",
+			"store": "Loja",
 			"announcements": "Comunicados",
 			"browse": "Estrutura"
 		},
@@ -390,6 +394,7 @@
 			"slas": "Gerir SLA's",
 			"warnings": "Gerir Avisos",
 			"notifications": "Gerir Notificações",
+			"integrations": "Integrações",
 			"stats": "Estatísticas/Relatórios",
 			"rgpd": "Configurações RGPD",
 			"announcements": "Comunicados"
@@ -486,6 +491,21 @@
 			"areas": "Áreas de especialização",
 			"profile_img_url": "Foto de perfil"
 		}
+	},
+	"store": {
+		"title": "Loja de Recompensas",
+		"subtitle": "Gasta os teus pontos em cursos e perks.",
+		"points": "pontos",
+		"empty": "Ainda não há recompensas disponíveis.",
+		"redeem": "Resgatar",
+		"notEnough": "Pontos insuficientes",
+		"myRedemptions": "Os meus resgates",
+		"access": "Aceder",
+		"confirmTitle": "Confirmar resgate",
+		"confirmText": "Resgatar \"{{name}}\" por {{cost}} pontos?",
+		"successTitle": "Recompensa resgatada!",
+		"successText": "Resgataste \"{{name}}\" com sucesso.",
+		"emailNote": "Enviámos a informação de acesso para o teu email."
 	},
 	"notifications": {
 		"title": "Notificações",
@@ -929,6 +949,36 @@
 		"errText": "O texto da política é obrigatório.",
 		"types": { "Privacy": "Privacidade", "Terms": "Termos", "Cookies": "Cookies" }
 	},
+	"notifPrefs": {
+		"title": "Preferências de notificações",
+		"hint": "Escolha que notificações quer receber e por que canais.",
+		"notification": "Notificação",
+		"enabled": "Ativada",
+		"email": "Email",
+		"noEmailChannel": "Esta notificação não é enviada por email.",
+		"empty": "Não há notificações configuráveis.",
+		"loadFailed": "Não foi possível carregar as preferências.",
+		"saveFailed": "Não foi possível guardar a preferência."
+	},
+	"adminIntegrations": {
+		"title": "Integrações",
+		"subtitle": "Ligue o Microsoft Teams para receber notificações de badges num canal.",
+		"newWebhook": "Ligar Teams",
+		"empty": "Ainda não há nenhuma integração configurada.",
+		"platform": "Plataforma",
+		"channel": "Canal",
+		"channelPlaceholder": "ex.: Conquistas da Equipa",
+		"webhookUrl": "URL do Webhook (Incoming Webhook)",
+		"help": "No Microsoft Teams, adicione um conector \"Incoming Webhook\" ao canal pretendido, copie o URL gerado e cole-o aqui. As notificações de badges obtidos passam a ser publicadas nesse canal.",
+		"test": "Enviar teste",
+		"testSent": "Mensagem de teste enviada.",
+		"testFailed": "Falha ao enviar a mensagem de teste.",
+		"confirmDelete": "Remover a integração \"{{name}}\"?",
+		"loadFailed": "Não foi possível carregar as integrações.",
+		"saveFailed": "Não foi possível guardar a integração.",
+		"errUrlRequired": "Indique o URL do webhook.",
+		"errUrlHttps": "O URL tem de começar por https://"
+	},
 	"adminSlas": {
 		"title": "SLAs",
 		"subtitle": "Defina os acordos de nível de serviço (tempos de resposta) das equipas.",
@@ -1102,6 +1152,7 @@
 		"progressVision": "Visão de Progresso",
 		"daysRemaining": "dias restantes",
 		"reqsCompleted": "requisitos concluídos",
+		"addToCalendar": "Adicionar ao calendário",
 		"resumeTraining": "Retomar Formação",
 		"requirements": "requisitos",
 		"completed": "Concluído",
@@ -1374,6 +1425,11 @@
 		"noLocationsAvailable": "Sem localizações disponíveis",
 		"statistics": "Estatísticas",
 		"viewBadgeGallery": "Galeria de Badges",
+		"badgeGalleryTitle": "Galeria pública de badges",
+		"badgeGalleryHint": "Escolhe quais dos teus badges obtidos aparecem no teu perfil público.",
+		"noBadgesYet": "Ainda não obtiveste badges.",
+		"showOnPublicProfile": "Mostrar no perfil",
+		"onPublicProfile": "No perfil",
 		"viewBadgeGalleryDesc": "Explorar todos os badges disponíveis e o seu progresso",
 		"profileDetails": "Detalhes do perfil",
 		"roleAndStructure": "Papel e Estrutura",
@@ -1553,7 +1609,7 @@
 		"colState": "Estado",
 		"filter": {
 			"obtained": "Obtidos",
-			"inprocess": "Em processo"
+			"inprocess": "Em processo", "submitted": "Submetidos"
 		},
 		"filters": {
 			"toggle": "Filtros",
@@ -1581,6 +1637,28 @@
 		"standard": "Standard",
 		"premium": "Premium",
 		"approvalRate": "Taxa de Aprovação"
+	},
+	"reports": {
+		"noData": "Sem dados para o período selecionado.",
+		"unassigned": "Sem categoria",
+		"groupBy": {
+			"learningPath": "Learning Path",
+			"serviceLine": "Service Line",
+			"area": "Área"
+		},
+		"monthly": {
+			"title": "% de Badges (visão mensal)",
+			"groupBy": "Agrupar por",
+			"hint": "Distribuição percentual dos badges atribuídos em cada mês, por categoria."
+		},
+		"byRange": {
+			"title": "Badges por intervalo de datas",
+			"hint": "Badges atribuídos entre {{from}} e {{to}}.",
+			"badge": "Badge",
+			"awarded": "Atribuídos",
+			"firstAwarded": "Primeira atribuição",
+			"lastAwarded": "Última atribuição"
+		}
 	},
 	"consultantDetail": {
 		"back": "Voltar",
@@ -1833,6 +1911,15 @@
 		"includePhoto": "Foto",
 		"includeName": "Nome",
 		"copySignature": "Copiar assinatura",
+		"copyEmail": "Copiar email",
+		"viewLabel": "Tipo de conteúdo",
+		"viewSignature": "Assinatura",
+		"viewEmail": "Email com badges",
+		"email": {
+			"intro": "Tenho o prazer de partilhar as competências que certifiquei na plataforma Softinsa:",
+			"closing": "Pode verificar cada credencial nos links acima. Com os melhores cumprimentos,",
+			"verify": "Verificar"
+		},
 		"copyHtml": "Copiar HTML",
 		"showHtml": "Ver código HTML",
 		"copied": "Assinatura copiada.",

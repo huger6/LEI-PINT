@@ -20,7 +20,7 @@
 .canvasWrapper {
 	border-radius: 16px;
 	box-shadow: var(--shadow-card);
-	background: #ffffff;
+	background: var(--color-surface);
 	padding: 1rem;
 	display: inline-block;
 	position: relative;

@@ -1,4 +1,5 @@
-const { models } = require('../config/db');
+const { QueryTypes } = require('sequelize');
+const { models, sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const { publicBadgeLinkParam, publicCertificateParam } = require('../validations/public.validation');
@@ -334,9 +335,11 @@ const getPublicConsultantProfile = async (req, res) => {
 		const guid = String(req.params.guid || '').trim();
 		if (!guid) return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_PARAMS' });
 
+		// Any active user has a public profile (consultants show earned badges;
+		// other roles show identity only).
 		const user = await models.users.findOne({
-			where: { user_guid: guid, user_role: 'Consultant', is_active: true },
-			attributes: ['user_id', 'full_name', 'user_guid', 'profile_img_url']
+			where: { user_guid: guid, is_active: true },
+			attributes: ['user_id', 'full_name', 'user_guid', 'profile_img_url', 'user_role']
 		});
 		if (!user) return res.status(404).json({ success: false, code: 'PUBLIC_PROFILE_NOT_FOUND' });
 
@@ -382,6 +385,7 @@ const getPublicConsultantProfile = async (req, res) => {
 				full_name: user.full_name,
 				user_guid: user.user_guid,
 				profile_img_url: user.profile_img_url || null,
+				role: user.user_role,
 				total_badges: awardedAll.length,
 				total_points: totalPoints,
 				badges
@@ -393,5 +397,47 @@ const getPublicConsultantProfile = async (req, res) => {
 	}
 };
 
-module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug, verifyAwardedBadge, getPublicConsultantProfile };
+// GET /api/public/profiles — a small showcase of profiles for the microsite:
+// one Talent Manager, one Service Line Leader and two Consultants (preferring
+// consultants who have earned badges so their profile isn't empty).
+const getFeaturedProfiles = async (req, res) => {
+	try {
+		const attrs = ['full_name', 'user_guid', 'profile_img_url', 'user_role'];
+		const pickOne = (role) => models.users.findOne({
+			where: { user_role: role, is_active: true },
+			attributes: attrs,
+			order: [['user_id', 'ASC']]
+		});
+
+		const [tm, sll] = await Promise.all([pickOne('Talent Manager'), pickOne('Service Line Leader')]);
+
+		// Two consultants that have at least one published earned badge.
+		const consultants = await sequelize.query(
+			`SELECT u.full_name, u.user_guid, u.profile_img_url, u.user_role
+			 FROM users u
+			 WHERE u.user_role = 'Consultant' AND u.is_active = true
+			 ORDER BY (u.username = 'rita.soares') DESC,
+			          (EXISTS (SELECT 1 FROM awarded_badges ab WHERE ab.user_id = u.user_id)) DESC,
+			          u.full_name
+			 LIMIT 2`,
+			{ type: QueryTypes.SELECT }
+		);
+
+		const toCard = (u) => u && ({
+			guid: u.user_guid,
+			name: u.full_name,
+			role: u.user_role,
+			img: u.profile_img_url || null
+		});
+
+		const profiles = [toCard(tm), toCard(sll), ...consultants.map(toCard)].filter(Boolean);
+
+		return res.status(200).json({ success: true, data: profiles });
+	} catch (error) {
+		logger.error('Error fetching featured profiles', { error });
+		return res.status(500).json({ success: false, code: 'PUBLIC_PROFILES_FAILED' });
+	}
+};
+
+module.exports = { viewPublicBadge, viewPublicCertificate, listPublicBadges, getPublicBadgeBySlug, verifyAwardedBadge, getPublicConsultantProfile, getFeaturedProfiles };
 

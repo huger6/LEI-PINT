@@ -17,9 +17,9 @@
 	--color-error-container: #F9DEDC;
 	--color-on-error-container: #8C1D18;
 
-	--color-background: #FDF7FF;
+	--color-background: #F7F9FB;
 	--color-on-background: #1D1B20;
-	--color-surface: #F5FAFD;
+	--color-surface: #FFFFFF;
 	--color-on-surface: #171C1E;
 	--color-outline: #70787C;
 
@@ -104,4 +104,61 @@
 
 	/* Card shadows */
 	--shadow-card: 0px 2px 4px -2px rgba(0, 0, 0, 0.10), 0px 4px 6px -1px rgba(0, 0, 0, 0.10);
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────────
+   Applied when <html data-theme="dark">. Components that use the color
+   variables follow automatically; the app shell (sidebar/topbar/footer) was
+   pointed at --color-surface so it switches too. */
+[data-theme="dark"] {
+	--color-background: #0f141a;
+	--color-on-background: #e6edf3;
+	--color-surface: #161c23;
+	--color-on-surface: #e6edf3;
+	--color-on-surface-variant: #aeb6bf;
+	--color-outline: #99a2ab;
+	--color-outline-light: #2a323b;
+	--color-outline-variant: #39424b;
+	--color-bg-card: #161c23;
+
+	--color-primary-container: #16454f;
+	--color-on-primary-container: #b9ebf6;
+	--color-secondary-container: #20344e;
+	--color-on-secondary-container: #cee8f1;
+
+	--color-primary-soft: rgba(0, 184, 224, 0.16);
+	--color-primary-hover-bg: rgba(0, 184, 224, 0.18);
+	--color-primary-hover-bg-soft: rgba(0, 184, 224, 0.12);
+
+	--color-blue-soft: #16233a;
+	--color-blue-on-soft: #9ec5ff;
+	--color-orange-soft: #3a2e16;
+	--color-orange-on-soft: #f6b352;
+	--color-green-soft: #12321f;
+	--color-green-on-soft: #4ad991;
+	--color-red-soft: #3a1c1c;
+	--color-red-on-soft: #ff7a7a;
+	--color-purple-soft: #271a3a;
+	--color-purple-on-soft: #c9a8f5;
+	--color-success-container: rgba(4, 206, 0, 0.16);
+	--color-warning-container-soft: rgba(207, 166, 0, 0.18);
+
+	--color-surface-disabled: rgba(40, 48, 56, 0.6);
+	--color-surface-overlay-50: rgba(22, 28, 35, 0.5);
+	--color-surface-overlay-60: rgba(22, 28, 35, 0.6);
+	--color-surface-overlay-62: rgba(22, 28, 35, 0.62);
+	--color-surface-overlay-72: rgba(22, 28, 35, 0.72);
+	--color-surface-overlay-85: rgba(22, 28, 35, 0.85);
+	--color-surface-overlay-88: rgba(22, 28, 35, 0.88);
+	--color-surface-overlay-90: rgba(22, 28, 35, 0.9);
+
+	--gradient-surface-field: linear-gradient(180deg, rgba(30, 38, 47, 0.95) 0%, rgba(22, 28, 35, 0.82) 100%);
+	--gradient-surface-dropdown: linear-gradient(180deg, rgba(30, 38, 47, 0.98) 0%, rgba(22, 28, 35, 0.95) 100%);
+	--gradient-surface-panel: linear-gradient(180deg, rgba(30, 38, 47, 0.98) 0%, rgba(22, 28, 35, 0.96) 100%);
+
+	--color-heatmap-empty: #21262d;
+
+	--shadow-card: 0px 2px 4px -2px rgba(0, 0, 0, 0.5), 0px 4px 6px -1px rgba(0, 0, 0, 0.45);
+
+	color-scheme: dark;
 }

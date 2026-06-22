@@ -5,6 +5,7 @@ import { SHARED, CONSULTANT } from '../../../routes/paths';
 import { getBadgeBySlug, getBadges } from '../../../features/badges/api/badgesApi';
 import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { startApplication, generateCertificate } from '../../../features/applications/api/applicationsApi';
+import { trackInteraction } from '../../../features/gamification/api/gamificationApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
@@ -120,6 +121,10 @@ export default function BadgeDetail() {
 		const shareText = t('badgeDetail.linkedInShareText', { badgeTitle, url: shareUrl });
 		const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}`;
 		window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
+
+		// Record the share (fire-and-forget; feeds recommendations/analytics).
+		const badgeId = badge.badge_id || badge.badgeId;
+		if (badgeId) trackInteraction(badgeId, 'SHARE_LINKEDIN').catch(() => {});
 	}
 
 	function scrollCarousel(direction) {

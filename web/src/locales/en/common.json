@@ -3,7 +3,7 @@
 		"nav": { "sobre": "About", "funcionalidades": "Features", "badges": "Badges", "perfis": "Profiles", "comoFunciona": "How it works", "aceder": "Go to the platform" },
 		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Badge Platform", "subtitle": "Innovation, talent and technology to accelerate digital transformation, now also in how we recognise our teams' skills, with verifiable digital credentials.", "entrar": "Sign in", "saberMais": "Learn more", "credential": "Verified credential" },
 		"stats": { "learningPaths": "Initial Learning Path", "niveis": "Levels per area", "idiomas": "Languages", "verificaveis": "Verifiable credentials" },
-		"about": { "title": "About the project", "p1": "The Softinsa Badge Platform is a digital credential management system that recognises and validates consultants' technical skills through badges tied to Learning Paths, Service Lines and Areas.", "p2": "It addresses the difficulty of evidencing skills, adds a gamification layer that drives continuous learning, and provides a standardised, verifiable way to present professional credentials." },
+		"about": { "title": "About the project", "p1": "The Softinsa Badge Platform is a digital credential management system that recognises and validates consultants' technical skills through badges tied to Learning Paths, Service Lines and Areas.", "p2": "It addresses the difficulty of evidencing skills, adds a gamification layer that drives continuous learning, and provides a standardised, verifiable way to present professional credentials.", "p3": "It is organised in a clear hierarchy — Learning Paths grouping Service Lines, Areas and progression levels — where each level unlocks specific badges. To use it: browse the catalog, apply for a badge, submit your evidence and track progress through validation." },
 		"features": { "title": "Features", "items": [
 			{ "title": "Learning Paths", "desc": "Technical paths organised by Service Lines, Areas and progression levels." },
 			{ "title": "Verifiable credentials", "desc": "Every badge has a unique public page for external verification and email signatures." },
@@ -24,7 +24,7 @@
 			{ "title": "Decision", "desc": "The Service Line Leader approves or rejects; the badge is generated and made available." },
 			{ "title": "Sharing", "desc": "The consultant publishes and shares the credential, with public link verification." }
 		] },
-		"badges": { "title": "Badges", "subtitle": "Explore the available credentials and the skills each one recognises.", "empty": "No badges to show.", "other": "Other" },
+		"badges": { "title": "Badges", "subtitle": "A few examples of the available credentials — the full catalog lives inside the platform.", "empty": "No badges to show.", "other": "Other" },
 		"cta": { "title": "Ready to evidence your skills?", "subtitle": "Go to the platform and start earning your badges.", "button": "Go to the platform" },
 		"footer": {
 			"tagline": "Talk to the Softinsa team and discover how we can drive innovation in your business.",
@@ -111,6 +111,9 @@
 		"profilePictureUploading": "Uploading profile picture...",
 		"profilePictureUploaded": "Profile picture uploaded: {{fileName}}",
 		"profilePictureUploadFailed": "We couldn't upload your profile picture. Please re-upload or try again later.",
+		"profilePictureTooLarge": "The image exceeds the maximum size of {{sizeMb}}MB.",
+		"profilePictureInvalidFormat": "Unsupported image format (use JPG, PNG, WEBP or GIF).",
+		"profilePictureConfigMissing": "Image storage is not configured. Please contact the administrator.",
 		"profilePictureUploadInProgress": "Please wait for the profile picture upload to finish.",
 		"biography": "Biography",
 		"biographyPlaceholder": "Tell us about yourself...",
@@ -358,6 +361,7 @@
 			"objectives": "Objectives",
 			"evolution": "Evolution",
 			"ranking": "Ranking",
+			"store": "Store",
 			"announcements": "Announcements",
 			"browse": "Structure"
 		},
@@ -390,6 +394,7 @@
 			"slas": "Manage SLAs",
 			"warnings": "Manage Warnings",
 			"notifications": "Manage Notifications",
+			"integrations": "Integrations",
 			"stats": "Statistics/Reports",
 			"rgpd": "GDPR Settings",
 			"announcements": "Announcements"
@@ -486,6 +491,21 @@
 			"areas": "Areas of expertise",
 			"profile_img_url": "Profile picture"
 		}
+	},
+	"store": {
+		"title": "Rewards Store",
+		"subtitle": "Spend your points on courses and perks.",
+		"points": "points",
+		"empty": "No rewards available yet.",
+		"redeem": "Redeem",
+		"notEnough": "Not enough points",
+		"myRedemptions": "My redemptions",
+		"access": "Access",
+		"confirmTitle": "Confirm redemption",
+		"confirmText": "Redeem \"{{name}}\" for {{cost}} points?",
+		"successTitle": "Reward redeemed!",
+		"successText": "You successfully redeemed \"{{name}}\".",
+		"emailNote": "We've emailed you the access details."
 	},
 	"notifications": {
 		"title": "Notifications",
@@ -929,6 +949,36 @@
 		"errText": "Policy text is required.",
 		"types": { "Privacy": "Privacy", "Terms": "Terms", "Cookies": "Cookies" }
 	},
+	"notifPrefs": {
+		"title": "Notification preferences",
+		"hint": "Choose which notifications you receive and through which channels.",
+		"notification": "Notification",
+		"enabled": "Enabled",
+		"email": "E-mail",
+		"noEmailChannel": "This notification is not sent by e-mail.",
+		"empty": "No configurable notifications.",
+		"loadFailed": "Could not load preferences.",
+		"saveFailed": "Could not save the preference."
+	},
+	"adminIntegrations": {
+		"title": "Integrations",
+		"subtitle": "Connect Microsoft Teams to receive badge notifications in a channel.",
+		"newWebhook": "Connect Teams",
+		"empty": "No integration configured yet.",
+		"platform": "Platform",
+		"channel": "Channel",
+		"channelPlaceholder": "e.g. Team Achievements",
+		"webhookUrl": "Webhook URL (Incoming Webhook)",
+		"help": "In Microsoft Teams, add an \"Incoming Webhook\" connector to the desired channel, copy the generated URL and paste it here. Earned-badge notifications will then be posted to that channel.",
+		"test": "Send test",
+		"testSent": "Test message sent.",
+		"testFailed": "Failed to send the test message.",
+		"confirmDelete": "Remove the \"{{name}}\" integration?",
+		"loadFailed": "Could not load integrations.",
+		"saveFailed": "Could not save the integration.",
+		"errUrlRequired": "Enter the webhook URL.",
+		"errUrlHttps": "The URL must start with https://"
+	},
 	"adminSlas": {
 		"title": "SLAs",
 		"subtitle": "Define the teams' service level agreements (response times).",
@@ -1102,6 +1152,7 @@
 		"progressVision": "Progress Vision",
 		"daysRemaining": "days remaining",
 		"reqsCompleted": "requirements completed",
+		"addToCalendar": "Add to calendar",
 		"resumeTraining": "Resume Training",
 		"requirements": "requirements",
 		"completed": "Completed",
@@ -1374,6 +1425,11 @@
 		"noLocationsAvailable": "No locations available",
 		"statistics": "Statistics",
 		"viewBadgeGallery": "Badge Gallery",
+		"badgeGalleryTitle": "Public badge gallery",
+		"badgeGalleryHint": "Choose which of your earned badges appear on your public profile.",
+		"noBadgesYet": "You haven't earned any badges yet.",
+		"showOnPublicProfile": "Show on profile",
+		"onPublicProfile": "On profile",
 		"viewBadgeGalleryDesc": "Explore all available badges and your progress",
 		"profileDetails": "Profile details",
 		"roleAndStructure": "Role & Structure",
@@ -1553,7 +1609,7 @@
 		"colState": "Status",
 		"filter": {
 			"obtained": "Obtained",
-			"inprocess": "In process"
+			"inprocess": "In process", "submitted": "Submitted"
 		},
 		"filters": {
 			"toggle": "Filters",
@@ -1581,6 +1637,28 @@
 		"standard": "Standard",
 		"premium": "Premium",
 		"approvalRate": "Approval Rate"
+	},
+	"reports": {
+		"noData": "No data for the selected period.",
+		"unassigned": "Uncategorized",
+		"groupBy": {
+			"learningPath": "Learning Path",
+			"serviceLine": "Service Line",
+			"area": "Area"
+		},
+		"monthly": {
+			"title": "% of Badges (monthly view)",
+			"groupBy": "Group by",
+			"hint": "Percentage share of badges awarded each month, by category."
+		},
+		"byRange": {
+			"title": "Badges by date range",
+			"hint": "Badges awarded between {{from}} and {{to}}.",
+			"badge": "Badge",
+			"awarded": "Awarded",
+			"firstAwarded": "First awarded",
+			"lastAwarded": "Last awarded"
+		}
 	},
 	"consultantDetail": {
 		"back": "Back",
@@ -1833,6 +1911,15 @@
 		"includePhoto": "Photo",
 		"includeName": "Name",
 		"copySignature": "Copy signature",
+		"copyEmail": "Copy e-mail",
+		"viewLabel": "Content type",
+		"viewSignature": "Signature",
+		"viewEmail": "E-mail with badges",
+		"email": {
+			"intro": "I'm glad to share the skills I've certified on the Softinsa platform:",
+			"closing": "You can verify each credential through the links above. Best regards,",
+			"verify": "Verify"
+		},
 		"copyHtml": "Copy HTML",
 		"showHtml": "Show HTML code",
 		"copied": "Signature copied.",

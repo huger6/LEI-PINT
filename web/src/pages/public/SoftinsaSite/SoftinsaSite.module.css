@@ -204,7 +204,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
-	background: #fff;
+	background: var(--color-surface);
 	color: var(--si-ink);
 	padding: 0.7rem 1rem;
 	border-radius: 14px;
@@ -290,7 +290,7 @@
 	max-width: 1140px;
 	margin: -2.5rem auto 0;
 	padding: 1.5rem;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 18px;
 	box-shadow: 0 20px 45px rgba(10, 37, 64, 0.1);
@@ -402,7 +402,7 @@
 
 .featCard {
 	flex: 0 0 300px;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -423,7 +423,7 @@
 }
 
 .card {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -483,8 +483,10 @@
 
 .badgeGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 1.25rem;
+	/* Slightly wider cards, and centered when a row isn't full (few badges). */
+	grid-template-columns: repeat(auto-fit, minmax(240px, 280px));
+	justify-content: center;
+	gap: 1.5rem;
 }
 
 .badgeCard {
@@ -494,7 +496,7 @@
 	text-align: center;
 	gap: 0.5rem;
 	padding: 1.5rem 1rem;
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	text-decoration: none;
@@ -573,7 +575,7 @@
 }
 
 .step {
-	background: #fff;
+	background: var(--color-surface);
 	border: 1px solid var(--si-border);
 	border-radius: 16px;
 	padding: 1.6rem;
@@ -753,3 +755,62 @@
 	.copyright { text-align: center; }
 	.toTop { bottom: 1.5rem; }
 }
+
+/* ── Featured people (clickable -> public profile) ───────────────────────── */
+.peopleRow {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1rem;
+	margin-top: 1.75rem;
+}
+
+@media (max-width: 760px) { .peopleRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .peopleRow { grid-template-columns: 1fr; } }
+
+.personCard {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.6rem;
+	padding: 0.9rem;
+	background: #ffffff;
+	border: 1px solid rgba(57, 99, 156, 0.14);
+	border-radius: 16px;
+	text-decoration: none;
+	color: inherit;
+	transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.personPhoto {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border-radius: 12px;
+	overflow: hidden;
+	background: linear-gradient(135deg, #00b8e0 0%, #39639c 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.personPhoto img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.personInitials {
+	color: #fff;
+	font-size: 2rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.personCard:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 10px 28px rgba(17, 34, 68, 0.12);
+	border-color: rgba(0, 184, 224, 0.4);
+}
+
+.personName { font-weight: 700; color: #102244; text-align: center; }
+.personRole { font-size: 0.8rem; color: #5b6b85; text-align: center; }

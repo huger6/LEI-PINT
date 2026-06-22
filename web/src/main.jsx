@@ -5,6 +5,12 @@ import './index.css'
 import './i18n'
 import App from './App.jsx'
 
+// Apply the persisted color theme before first paint (avoids a light flash).
+try {
+	const theme = localStorage.getItem('theme');
+	if (theme) document.documentElement.setAttribute('data-theme', theme);
+} catch { /* ignore */ }
+
 createRoot(document.getElementById('root')).render(
 	<StrictMode>
 		<App />

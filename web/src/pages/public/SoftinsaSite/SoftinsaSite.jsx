@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getPublicBadges } from '../../../features/badges/api/publicBadgesApi';
+import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
+import Icon from '../../../components/Icons/Icons';
 import styles from './SoftinsaSite.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -29,6 +30,13 @@ function groupBadges(badges, otherLabel) {
 		.sort((a, c) => a.label.localeCompare(c.label));
 }
 
+function initials(name = '') {
+	const parts = String(name).trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) return '?';
+	if (parts.length === 1) return parts[0][0].toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 	<a className={styles.social} href={href} target="_blank" rel="noreferrer" aria-label={label}>
 		<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">{children}</svg>
@@ -39,6 +47,7 @@ export default function SoftinsaSite() {
 	const { t, i18n } = useTranslation();
 	const rootRef = useRef(null);
 	const [badges, setBadges] = useState([]);
+	const [people, setPeople] = useState([]);
 
 	useEffect(() => {
 		const prev = document.title;
@@ -49,6 +58,7 @@ export default function SoftinsaSite() {
 	useEffect(() => {
 		let active = true;
 		getPublicBadges().then((rows) => { if (active) setBadges(rows); }).catch(() => {});
+		getFeaturedProfiles().then((rows) => { if (active) setPeople(rows); }).catch(() => {});
 		return () => { active = false; };
 	}, []);
 
@@ -149,6 +159,7 @@ export default function SoftinsaSite() {
 							<h2>{t('softinsaSite.about.title')}</h2>
 							<p>{t('softinsaSite.about.p1')}</p>
 							<p>{t('softinsaSite.about.p2')}</p>
+							<p>{t('softinsaSite.about.p3')}</p>
 						</div>
 						<div className={`${styles.aboutImg} ${styles.reveal}`}>
 							<img src={ABOUT_IMG} alt="" loading="lazy" />
@@ -180,7 +191,9 @@ export default function SoftinsaSite() {
 					</div>
 					{badges.length > 0 ? (
 						<div className={styles.badgeGroups}>
-							{groupBadges(badges, t('softinsaSite.badges.other')).map((group) => (
+							{/* Showcase a sample, not the whole catalog: up to 3 collections,
+							    4 badges each. The full catalog lives inside the app. */}
+							{groupBadges(badges, t('softinsaSite.badges.other')).slice(0, 3).map((group) => ({ ...group, items: group.items.slice(0, 4) })).map((group) => (
 								<div key={group.label} className={`${styles.badgeGroup} ${styles.reveal}`}>
 									<div className={styles.badgeGroupHead}>
 										<h3 className={styles.badgeGroupTitle}>{group.label}</h3>
@@ -190,7 +203,7 @@ export default function SoftinsaSite() {
 										{group.items.map((b) => (
 											<Link key={b.badge_slug} to={`/softinsa/badges/${b.badge_slug}`} className={styles.badgeCard}>
 												<div className={styles.badgeThumb}>
-													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <span className={styles.badgeEmoji}>🏅</span>}
+													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <Icon name="badge" size={40} color="var(--si-cyan, #00b8e0)" aria-hidden="true" />}
 													{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
 												</div>
 												<h3>{b.badge_title}</h3>
@@ -217,6 +230,22 @@ export default function SoftinsaSite() {
 							</article>
 						))}
 					</div>
+
+					{people.length > 0 && (
+						<div className={styles.peopleRow}>
+							{people.map((p) => (
+								<Link key={p.guid} to={`/softinsa/u/${p.guid}`} className={`${styles.personCard} ${styles.reveal}`}>
+									<div className={styles.personPhoto}>
+										{p.img
+											? <img src={p.img} alt={p.name} loading="lazy" />
+											: <span className={styles.personInitials}>{initials(p.name)}</span>}
+									</div>
+									<span className={styles.personName}>{p.name}</span>
+									<span className={styles.personRole}>{t(`roles.${p.role}`, p.role)}</span>
+								</Link>
+							))}
+						</div>
+					)}
 				</section>
 
 				{/* Fluxo */}

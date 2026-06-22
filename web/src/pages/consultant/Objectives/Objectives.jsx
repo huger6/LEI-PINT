@@ -5,7 +5,7 @@ import { CONSULTANT, SHARED } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
-import { getGoals, getGoalStats, getProgressionTimeline } from '../../../features/goals/api/goalsApi';
+import { getGoals, getGoalStats, getProgressionTimeline, downloadObjectivesCalendar } from '../../../features/goals/api/goalsApi';
 import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
 import Button from '../../../components/Button/Button';
@@ -155,6 +155,15 @@ export default function Objectives() {
 							reminders: urgentCount || stats.badgesExpiring,
 						})}
 					</p>
+					<Button
+						variant="outlined"
+						color="primary"
+						size="sm"
+						className={styles.calendarBtn}
+						onClick={() => downloadObjectivesCalendar().catch(() => {})}
+					>
+						<Icon name="today" size={16} /> {t('objectives.addToCalendar')}
+					</Button>
 				</div>
 			</section>
 

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicConsultant } from '../../../features/badges/api/publicBadgesApi';
 import Avatar from '../../../components/Avatar/Avatar';
+import Icon from '../../../components/Icons/Icons';
 import styles from './SoftinsaBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -64,6 +65,7 @@ export default function SoftinsaConsultant() {
 							</div>
 							<div className={styles.heroInfo}>
 								<h1>{profile.full_name}</h1>
+								{profile.role && <span className={styles.premium}>{t(`roles.${profile.role}`, profile.role)}</span>}
 								<div className={styles.metaRow}>
 									<div className={styles.metaItem}>
 										<span className={styles.metaLabel}>{t('softinsaConsultant.badges')}</span>
@@ -89,7 +91,7 @@ export default function SoftinsaConsultant() {
 												<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 													{b.image
 														? <img src={b.image} alt={b.title || ''} style={{ width: 48, height: 48, objectFit: 'contain' }} />
-														: <span style={{ fontSize: '2rem' }}>🏅</span>}
+														: <Icon name="badge" size={40} color="var(--color-secondary)" aria-hidden="true" />}
 													<div>
 														<h3 style={{ margin: 0 }}>{b.title}{b.type === 'Special' ? ' ⭐' : ''}</h3>
 														<p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.7 }}>

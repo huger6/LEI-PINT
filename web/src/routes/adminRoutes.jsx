@@ -21,6 +21,7 @@ import StatsPage from '../pages/management/StatsPage/StatsPage';
 import AdminNotifications from '../pages/admin/AdminNotifications/AdminNotifications';
 import AdminRgpd from '../pages/admin/AdminRgpd/AdminRgpd';
 import AdminSlas from '../pages/admin/AdminSlas/AdminSlas';
+import AdminIntegrations from '../pages/admin/AdminIntegrations/AdminIntegrations';
 
 const adminRoutes = [
 	{ path: ADMIN.DASHBOARD, element: <AdminDashboard /> },
@@ -38,6 +39,7 @@ const adminRoutes = [
 	{ path: ADMIN.NOTIFICATIONS, element: <AdminNotifications /> },
 	{ path: ADMIN.RGPD, element: <AdminRgpd /> },
 	{ path: ADMIN.SLAS, element: <AdminSlas /> },
+	{ path: ADMIN.INTEGRATIONS, element: <AdminIntegrations /> },
 	{ path: ADMIN.STATS, element: <StatsPage /> },
 	{ path: ADMIN.LEARNING_PATH_DETAIL, element: <LearningPathDetail /> },
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },

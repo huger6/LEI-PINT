@@ -1,0 +1,28 @@
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.hint {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.empty {
+	margin: 0;
+	padding: 1.25rem 0;
+	text-align: center;
+	color: var(--color-outline);
+}
+
+.name {
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.desc {
+	margin-top: 0.1rem;
+	max-width: 38ch;
+}

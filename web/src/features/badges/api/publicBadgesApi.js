@@ -23,3 +23,9 @@ export async function getPublicConsultant(guid) {
 	const { data } = await api.get(`/public/consultants/${encodeURIComponent(guid)}`);
 	return data?.data || null;
 }
+
+// Featured profiles (no auth) for the microsite showcase.
+export async function getFeaturedProfiles() {
+	const { data } = await api.get('/public/profiles');
+	return data?.data || [];
+}

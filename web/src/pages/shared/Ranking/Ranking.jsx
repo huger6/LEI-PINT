@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../../hooks/userContext';
 import ContentCard from '../../../components/ContentCard/ContentCard';
@@ -39,8 +40,13 @@ function PodiumCard({ entry, rank, page }) {
     const avatarSize = isFirst ? 96 : 80;
     const position = (page - 1) * PAGE_SIZE + rank;
 
+    const Wrapper = entry.user_guid ? Link : 'div';
+    const wrapperProps = entry.user_guid
+        ? { to: `/softinsa/u/${entry.user_guid}`, className: `${styles.podiumCard} ${styles.consultantLink}` }
+        : { className: styles.podiumCard };
+
     return (
-        <div className={styles.podiumCard}>
+        <Wrapper {...wrapperProps}>
             {isFirst && (
                 <div className={styles.crownIcon}>
                     <Icon name="trophy" size={24} color="var(--color-warning)" />
@@ -73,7 +79,7 @@ function PodiumCard({ entry, rank, page }) {
                 {entry.total_badges} badges
             </span>
             <span className={styles.podiumPoints}>{Number(entry.total_points).toLocaleString('pt-PT')} pts</span>
-        </div>
+        </Wrapper>
     );
 }
 
@@ -413,13 +419,6 @@ export default function Ranking() {
                                     {a.area_name}
                                 </button>
                             ))}
-                            <button
-                                type="button"
-                                className={`${styles.scopeBtn} ${sllScope === 'general' ? styles.scopeBtnActive : ''}`}
-                                onClick={() => handleSllScopeChange('general')}
-                            >
-                                {t('ranking.scopeGeneral')}
-                            </button>
                         </div>
                     </div>
                 )}
@@ -505,14 +504,19 @@ export default function Ranking() {
                                                         <PositionBadge position={position} />
                                                     </td>
                                                     <td>
-                                                        <div className={styles.consultantCell}>
-                                                            <Avatar
-                                                                src={entry.profile_img_url}
-                                                                name={entry.full_name}
-                                                                size={36}
-                                                            />
-                                                            <span>{entry.full_name}</span>
-                                                        </div>
+                                                        {entry.user_guid ? (
+                                                            <Link to={`/softinsa/u/${entry.user_guid}`} className={styles.consultantLink}>
+                                                                <div className={styles.consultantCell}>
+                                                                    <Avatar src={entry.profile_img_url} name={entry.full_name} size={36} />
+                                                                    <span>{entry.full_name}</span>
+                                                                </div>
+                                                            </Link>
+                                                        ) : (
+                                                            <div className={styles.consultantCell}>
+                                                                <Avatar src={entry.profile_img_url} name={entry.full_name} size={36} />
+                                                                <span>{entry.full_name}</span>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td>{entry.primary_area_name || '—'}</td>
                                                     <td>{entry.total_badges}</td>

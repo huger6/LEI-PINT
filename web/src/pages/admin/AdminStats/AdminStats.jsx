@@ -17,6 +17,7 @@ import ExportsPanel from '../../../components/ExportsPanel/ExportsPanel';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import StatsOverview from '../../management/StatsOverview/StatsOverview';
+import BadgeReports from '../../../components/BadgeReports/BadgeReports';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
 import styles from './AdminStats.module.css';
 
@@ -172,6 +173,9 @@ export default function AdminStats() {
 					)}
 				</ContentCard>
 			</div>
+
+			{/* Mandatory reports: monthly distribution (%) + badges by date range */}
+			<BadgeReports filters={chartFilters} />
 
 			{/* Applications pipeline + RGPD consent (admin-only) */}
 			<div className={styles.chartsGrid}>

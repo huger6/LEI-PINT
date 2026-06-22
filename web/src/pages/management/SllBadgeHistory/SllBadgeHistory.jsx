@@ -17,9 +17,11 @@ import styles from './SllBadgeHistory.module.css';
 const PAGE_SIZE = 12;
 
 // Two lenses per the Figma design: obtained badges vs in-process applications.
+// The SLL history reflects badges that were earned (Accepted) or submitted for
+// review — scoped to the leader's own Service Line by the API.
 const FILTERS = {
 	obtained: ['Accepted'],
-	inprocess: ['Open', 'Submitted', 'In validation'],
+	submitted: ['Submitted'],
 };
 
 function statePill(state) {

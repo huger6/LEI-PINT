@@ -80,6 +80,8 @@
 	background: var(--color-bg-card);
 }
 
+.section { display: flex; flex-direction: column; gap: 1rem; }
+
 /* Section header with inline control (format / window selector) */
 .sectionHeaderRow {
 	display: flex;

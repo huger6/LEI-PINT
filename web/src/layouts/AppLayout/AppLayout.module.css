@@ -17,7 +17,7 @@
 .mainContent {
     flex: 1;
     padding: 24px 28px;
-    background-color: #f8f9fa;
+    background-color: var(--color-background);
     /* Page content must never push the layout sideways: wide tables scroll
        inside their own `table-responsive` wrapper, not the whole page. */
     min-width: 0;
