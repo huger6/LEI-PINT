@@ -1,5 +1,5 @@
 % ============================================================
-%  Softinsa Badge Platform — Relatório
+%  Plataforma de Badges da Softinsa — Relatório
 %  Template com as cores do projeto
 % ============================================================
 \documentclass[12pt,a4paper]{report}
@@ -74,7 +74,7 @@
 \fancyhead[R]{\small\color{outline}\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{primary}\leaders\hrule height \headrulewidth\hfill}}
-\fancyfoot[C]{\small\color{outline}Softinsa Badge Platform}
+\fancyfoot[C]{\small\color{outline}Plataforma de Badges da Softinsa}
 
 % --- Chapter & Section Styling ---
 \usepackage{titlesec}
@@ -572,7 +572,12 @@ A segurança foi tratada como uma prioridade estrutural desde o desenho da arqui
   \item \textbf{Conformidade com o RGPD:} O sistema dispõe de um módulo dedicado à gestão de consentimentos, exportação de dados pessoais e eliminação de contas, em conformidade com o Regulamento Geral sobre a Proteção de Dados~\cite{rgpd}.
 \end{itemize}
 
-% TODO: Inserir diagrama do fluxo de autenticação — ficheiro: images/auth-flow.png
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{images/auth-flow.png}
+  \caption{Fluxo completo de autenticação da plataforma.}
+  \label{fig:auth-flow}
+\end{figure}
 
 \subsection{Usabilidade e Responsividade}
 
