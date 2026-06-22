@@ -1,0 +1,47 @@
+@startuml use-case-admin-3
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Administrador" as ADM
+
+rectangle "Plataforma Web" {
+
+  package "Conformidade e Privacidade" {
+    usecase "Gerir políticas de RGPD" as UC50
+    usecase "Gerir consentimentos" as UC51
+  }
+
+  package "SLAs (Bónus)" {
+    usecase "Definir SLAs de\nresposta" as UC55
+    usecase "Monitorizar\ncumprimento de SLAs" as UC56
+    usecase "Enviar notificações\nPUSH/e-mail por\nincumprimento" as UC57
+  }
+
+  package "Relatórios e Exportação" {
+    usecase "Visualizar estatísticas\nglobais da plataforma" as UC60
+    usecase "Exportar dados globais\n(Excel/PDF)" as UC61
+  }
+}
+
+ADM --> UC50
+ADM --> UC51
+
+ADM --> UC55
+ADM --> UC56
+ADM --> UC57
+
+ADM --> UC60
+ADM --> UC61
+
+UC56 ..> UC57 : <<extend>>
+
+@enduml

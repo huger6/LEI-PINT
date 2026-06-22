@@ -1,0 +1,43 @@
+@startuml use-case-sll-1
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Service Line\nLeader" as SLL
+
+rectangle "Plataforma Web" {
+
+  package "Autenticação e Perfil" {
+    usecase "Iniciar sessão" as UC1
+    usecase "Alterar password" as UC2
+    usecase "Editar perfil" as UC3
+    usecase "Terminar sessão" as UC4
+  }
+
+  package "Catálogo e Exploração" {
+    usecase "Consultar catálogo\nde badges" as UC10
+    usecase "Consultar requisitos\nde um badge" as UC11
+    usecase "Consultar badges\nde outras áreas" as UC12
+  }
+}
+
+SLL --> UC1
+SLL --> UC2
+SLL --> UC3
+SLL --> UC4
+
+SLL --> UC10
+SLL --> UC11
+SLL --> UC12
+
+UC10 ..> UC11 : <<extend>>
+
+@enduml

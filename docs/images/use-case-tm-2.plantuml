@@ -1,0 +1,59 @@
+@startuml use-case-tm-2
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Talent\nManager" as TM
+
+rectangle "Plataforma Web" {
+
+  package "Triagem e Validação" {
+    usecase "Validar evidências\nsubmetidas" as UC20
+    usecase "Encaminhar candidatura\npara o SLL" as UC21
+    usecase "Devolver candidatura\nao consultor" as UC22
+    usecase "Registar comentário\nde avaliação" as UC23
+    usecase "Consultar histórico\ndo processo" as UC24
+    usecase "Consultar evidências\nsubmetidas" as UC25
+  }
+
+  package "Dashboard e Métricas" {
+    usecase "Visualizar dashboard\nglobal" as UC30
+    usecase "Acompanhar progresso\nde todos os consultores" as UC31
+    usecase "Visualizar estado dos\npedidos em tempo real" as UC32
+    usecase "Visualizar pontos\ne conquistas especiais" as UC33
+    usecase "Visualizar badges\npróximos de expiração" as UC34
+  }
+}
+
+TM --> UC20
+TM --> UC21
+TM --> UC22
+TM --> UC23
+TM --> UC24
+TM --> UC25
+
+TM --> UC30
+TM --> UC31
+TM --> UC32
+TM --> UC33
+TM --> UC34
+
+UC20 ..> UC25 : <<include>>
+UC21 ..> UC23 : <<include>>
+UC22 ..> UC23 : <<include>>
+
+note right of UC20
+  Avaliação transversal:
+  o TM valida candidaturas
+  de todas as Service Lines
+end note
+
+@enduml
