@@ -48,10 +48,19 @@ async function bootstrap() {
     }
 }
 
+// A single stray promise rejection (a background worker, a Redis/email hiccup,
+// a request handler) must NOT take the whole API down — log it and keep serving.
+// Otherwise the process exits and any in-flight request (e.g. a CSV export) gets
+// a connection reset that surfaces as a generic "server error" in the UI.
 process.on('unhandledRejection', (reason) => {
-    handleFatalError('Unhandled promise rejection', reason);
+    const logArgs = reason instanceof Error
+        ? { message: reason.message, stack: reason.stack }
+        : { reason: String(reason) };
+    logger.error('Unhandled promise rejection (kept alive)', logArgs);
 });
 
+// An uncaught synchronous exception can leave state corrupted, so this one still
+// exits (a process manager / nodemon restarts it).
 process.on('uncaughtException', (error) => {
     handleFatalError('Uncaught exception', error);
 });
