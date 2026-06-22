@@ -92,5 +92,8 @@
 	"APP_ACTION_INVALID_STATE": "No se puede ejecutar esta acción en el estado actual de la candidatura.",
 	"APP_TM_CANNOT_ACCEPT": "El Talent Manager no puede aceptar directamente; reenvíela al Service Line Leader.",
 	"APP_FETCH_LIST_FAILED": "No se pudieron cargar las candidaturas.",
-	"APP_EVIDENCE_NOT_FOUND": "Evidencia no encontrada."
+	"APP_EVIDENCE_NOT_FOUND": "Evidencia no encontrada.",
+	"TRANSLATION_SUCCESS": "Traducción completada con éxito.",
+	"TRANSLATION_FAILED": "La traducción falló. Por favor inténtalo de nuevo.",
+	"TRANSLATION_VALIDATION_FAILED": "Datos de traducción inválidos."
 }

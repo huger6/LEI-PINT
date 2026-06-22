@@ -3,6 +3,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './features/auth';
 import { UserProvider } from './context/UserContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { TranslationProvider } from './context/TranslationContext';
 import AppRoutes from './routes';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
@@ -13,9 +14,11 @@ export default function App() {
 				<AuthProvider>
 					<UserProvider>
 						<LanguageProvider>
-							<ErrorBoundary>
-								<AppRoutes />
-							</ErrorBoundary>
+							<TranslationProvider>
+								<ErrorBoundary>
+									<AppRoutes />
+								</ErrorBoundary>
+							</TranslationProvider>
 						</LanguageProvider>
 					</UserProvider>
 				</AuthProvider>
