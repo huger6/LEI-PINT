@@ -1607,6 +1607,28 @@
 		"premium": "Premium",
 		"approvalRate": "Taxa de Aprovação"
 	},
+	"reports": {
+		"noData": "Sem dados para o período selecionado.",
+		"unassigned": "Sem categoria",
+		"groupBy": {
+			"learningPath": "Learning Path",
+			"serviceLine": "Service Line",
+			"area": "Área"
+		},
+		"monthly": {
+			"title": "% de Badges (visão mensal)",
+			"groupBy": "Agrupar por",
+			"hint": "Distribuição percentual dos badges atribuídos em cada mês, por categoria."
+		},
+		"byRange": {
+			"title": "Badges por intervalo de datas",
+			"hint": "Badges atribuídos entre {{from}} e {{to}}.",
+			"badge": "Badge",
+			"awarded": "Atribuídos",
+			"firstAwarded": "Primeira atribuição",
+			"lastAwarded": "Última atribuição"
+		}
+	},
 	"consultantDetail": {
 		"back": "Voltar",
 		"historyTitle": "Histórico de badges",
@@ -1858,6 +1880,15 @@
 		"includePhoto": "Foto",
 		"includeName": "Nome",
 		"copySignature": "Copiar assinatura",
+		"copyEmail": "Copiar email",
+		"viewLabel": "Tipo de conteúdo",
+		"viewSignature": "Assinatura",
+		"viewEmail": "Email com badges",
+		"email": {
+			"intro": "Tenho o prazer de partilhar as competências que certifiquei na plataforma Softinsa:",
+			"closing": "Pode verificar cada credencial nos links acima. Com os melhores cumprimentos,",
+			"verify": "Verificar"
+		},
 		"copyHtml": "Copiar HTML",
 		"showHtml": "Ver código HTML",
 		"copied": "Assinatura copiada.",

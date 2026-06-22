@@ -22,6 +22,21 @@ export async function getUserEnrollment() {
 	return data?.data || null;
 }
 
+// Monthly badge distribution (% of each month's awards) grouped by
+// learning_path | service_line | area. (Service Line Leader / Talent Manager / Administrator)
+// params: groupBy, dateFrom, dateTo
+export async function getBadgeDistribution(params = {}) {
+	const { data } = await api.get('/statistics/reports/badge-distribution', { params });
+	return data?.data || [];
+}
+
+// Badges awarded within a date range, filterable by LP/SL/area/stage.
+// params: dateFrom (req), dateTo (req), learningPathId, serviceLineId, areaId, stageId
+export async function getBadgesByRange(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-range', { params });
+	return data?.data || [];
+}
+
 // Admin-only: badge application counts grouped by workflow state.
 export async function getApplicationsByState() {
 	const { data } = await api.get('/statistics/reports/applications-by-state');

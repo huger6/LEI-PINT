@@ -83,6 +83,21 @@ BEGIN
         FROM users u
         WHERE u.user_role = 'Consultant'
           AND u.is_active = TRUE
+          -- Restrict WHO appears (not just the points math) so a scoped ranking
+          -- (e.g. a Service Line Leader's own SL) lists only consultants who
+          -- belong to that area / service line / learning path.
+          AND (p_area_id IS NULL OR EXISTS (
+                SELECT 1 FROM consultant_areas ca
+                WHERE ca.user_id = u.user_id AND ca.area_id = p_area_id))
+          AND (p_service_line_id IS NULL OR EXISTS (
+                SELECT 1 FROM consultant_areas ca
+                JOIN areas a ON a.area_id = ca.area_id
+                WHERE ca.user_id = u.user_id AND a.service_line_id = p_service_line_id))
+          AND (p_learning_path_id IS NULL OR EXISTS (
+                SELECT 1 FROM consultant_areas ca
+                JOIN areas a ON a.area_id = ca.area_id
+                JOIN service_lines sl ON sl.service_line_id = a.service_line_id
+                WHERE ca.user_id = u.user_id AND sl.learning_path_id = p_learning_path_id))
         ORDER BY total_points DESC, total_badges DESC, u.full_name ASC
     )
     SELECT

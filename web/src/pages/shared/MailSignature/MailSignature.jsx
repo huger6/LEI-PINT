@@ -92,6 +92,53 @@ function buildSignatureHtml(name, role, email, badges, photoUrl, opts = {}) {
 	return infoTable;
 }
 
+// Builds a full e-mail body template showcasing the consultant's badges
+// (BÓNUS: "template de email com badges"). Each badge is a card with its image,
+// title and a public verification link. `strings` carries the localized copy.
+function buildEmailTemplateHtml(name, role, email, badges, photoUrl, opts = {}) {
+	const { showPhoto = true, showName = true, intro = '', closing = '', verifyLabel = 'Verify' } = opts;
+
+	const cards = badges.map((b) => {
+		const link = b.verificationLink ? verifyUrl(b.verificationLink) : null;
+		const img = b.badge?.imageUrl;
+		const title = b.badge?.title || 'Badge';
+		const imgTag = img
+			? `<img src="${img}" alt="${title}" width="84" height="84" style="border:0;border-radius:12px;display:block;margin:0 auto;" />`
+			: `<div style="width:84px;height:84px;border-radius:12px;background:#eef2f7;margin:0 auto;"></div>`;
+		const verify = link
+			? `<a href="${link}" target="_blank" rel="noopener" style="font-size:11px;color:#2575bd;text-decoration:none;">${verifyLabel}</a>`
+			: '';
+		return `<td style="padding:8px;text-align:center;vertical-align:top;width:120px;">${imgTag}<div style="font-size:12px;font-weight:bold;color:#1f2937;padding-top:6px;">${title}</div><div style="padding-top:2px;">${verify}</div></td>`;
+	});
+
+	const rows = [];
+	for (let i = 0; i < cards.length; i += 3) {
+		rows.push(`<tr>${cards.slice(i, i + 3).join('')}</tr>`);
+	}
+	const grid = rows.length
+		? `<table cellpadding="0" cellspacing="0" style="margin:12px 0;">${rows.join('')}</table>`
+		: '';
+
+	const header =
+		`<table cellpadding="0" cellspacing="0" style="font-family:Arial,Helvetica,sans-serif;"><tr>` +
+		(showPhoto && photoUrl ? `<td style="padding-right:12px;vertical-align:middle;"><img src="${photoUrl}" alt="${name}" width="56" height="56" style="border:0;border-radius:50%;object-fit:cover;display:block;" /></td>` : '') +
+		`<td style="vertical-align:middle;">` +
+		(showName ? `<div style="font-size:16px;font-weight:bold;color:#1f2937;">${name}</div>` : '') +
+		`<div style="font-size:12px;color:#6b7280;">${role} · Softinsa</div>` +
+		`</td></tr></table>`;
+
+	return (
+		`<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2937;max-width:520px;">` +
+		header +
+		(intro ? `<p style="font-size:14px;line-height:1.5;color:#374151;">${intro}</p>` : '') +
+		grid +
+		(closing ? `<p style="font-size:14px;line-height:1.5;color:#374151;">${closing}</p>` : '') +
+		(showName ? `<p style="font-size:14px;font-weight:bold;color:#1f2937;margin:4px 0 0;">${name}</p>` : '') +
+		(email ? `<p style="margin:2px 0 0;"><a href="mailto:${email}" style="font-size:12px;color:#2575bd;text-decoration:none;">${email}</a></p>` : '') +
+		`</div>`
+	);
+}
+
 export default function MailSignature() {
 	const { t } = useTranslation();
 	const { user, displayName } = useUser();
@@ -101,6 +148,8 @@ export default function MailSignature() {
 	const email = user?.email || user?.email_address || '';
 	const photoUrl = user?.profileImg || user?.profile_img_url || '';
 
+	// 'signature' (BÓNUS 12) | 'email' (BÓNUS 23 — full e-mail body with badges).
+	const [view, setView] = useState('signature');
 	const [includePhoto, setIncludePhoto] = useState(true);
 	const [includeName, setIncludeName] = useState(true);
 	const [badges, setBadges] = useState([]);
@@ -139,6 +188,21 @@ export default function MailSignature() {
 		[displayName, roleLabel, email, selectedBadges, photoUrl, includePhoto, includeName]
 	);
 
+	const emailHtml = useMemo(
+		() => buildEmailTemplateHtml(displayName || '', roleLabel, email, selectedBadges, photoUrl, {
+			showPhoto: includePhoto,
+			showName: includeName,
+			intro: t('mailSignature.email.intro'),
+			closing: t('mailSignature.email.closing'),
+			verifyLabel: t('mailSignature.email.verify'),
+		}),
+		[displayName, roleLabel, email, selectedBadges, photoUrl, includePhoto, includeName, t]
+	);
+
+	// Consultants can switch to the e-mail template; other roles only get the signature.
+	const isEmailView = isConsultant && view === 'email';
+	const activeHtml = isEmailView ? emailHtml : signatureHtml;
+
 	function toggle(id) {
 		setSelected((prev) => {
 			const next = new Set(prev);
@@ -153,12 +217,12 @@ export default function MailSignature() {
 		try {
 			if (window.ClipboardItem && navigator.clipboard?.write) {
 				const item = new window.ClipboardItem({
-					'text/html': new Blob([signatureHtml], { type: 'text/html' }),
+					'text/html': new Blob([activeHtml], { type: 'text/html' }),
 					'text/plain': new Blob([`${displayName} · Softinsa`], { type: 'text/plain' }),
 				});
 				await navigator.clipboard.write([item]);
 			} else {
-				await navigator.clipboard.writeText(signatureHtml);
+				await navigator.clipboard.writeText(activeHtml);
 			}
 			setToast(t('mailSignature.copied'));
 		} catch {
@@ -220,6 +284,28 @@ export default function MailSignature() {
 				<ContentCard className={styles.card}>
 					<CardHeader icon="email" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('mailSignature.preview')} />
 					{!isConsultant && <p className={styles.note}>{t('mailSignature.noBadgesNote')}</p>}
+					{isConsultant && (
+						<div className={styles.viewToggle} role="tablist" aria-label={t('mailSignature.viewLabel')}>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={view === 'signature'}
+								className={`${styles.viewBtn} ${view === 'signature' ? styles.viewBtnActive : ''}`}
+								onClick={() => setView('signature')}
+							>
+								{t('mailSignature.viewSignature')}
+							</button>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={view === 'email'}
+								className={`${styles.viewBtn} ${view === 'email' ? styles.viewBtnActive : ''}`}
+								onClick={() => setView('email')}
+							>
+								{t('mailSignature.viewEmail')}
+							</button>
+						</div>
+					)}
 					<div className={styles.displayOptions}>
 						<span className={styles.displayOptionsLabel}>{t('mailSignature.include')}</span>
 						<label className={`form-check ${styles.optionCheck}`}>
@@ -232,11 +318,11 @@ export default function MailSignature() {
 						</label>
 					</div>
 					<div className={styles.previewBox}>
-						<div className={styles.preview} dangerouslySetInnerHTML={{ __html: signatureHtml }} />
+						<div className={styles.preview} dangerouslySetInnerHTML={{ __html: activeHtml }} />
 					</div>
 					<div className={styles.actions}>
 						<Button variant="filled" color="primary" size="md" onClick={copySignature}>
-							<Icon name="check_circle" size={18} /> {t('mailSignature.copySignature')}
+							<Icon name="check_circle" size={18} /> {isEmailView ? t('mailSignature.copyEmail') : t('mailSignature.copySignature')}
 						</Button>
 					</div>
 				</ContentCard>
@@ -261,7 +347,7 @@ export default function MailSignature() {
 
 			<details className={styles.htmlDetails}>
 				<summary className={styles.htmlSummary}>{t('mailSignature.showHtml')}</summary>
-				<textarea className={styles.htmlArea} readOnly rows={6} value={signatureHtml} />
+				<textarea className={styles.htmlArea} readOnly rows={6} value={activeHtml} />
 			</details>
 
 			<SaveToast open={Boolean(toast)} message={toast} onClose={() => setToast('')} />

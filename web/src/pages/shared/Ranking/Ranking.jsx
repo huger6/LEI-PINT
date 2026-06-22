@@ -419,13 +419,6 @@ export default function Ranking() {
                                     {a.area_name}
                                 </button>
                             ))}
-                            <button
-                                type="button"
-                                className={`${styles.scopeBtn} ${sllScope === 'general' ? styles.scopeBtnActive : ''}`}
-                                onClick={() => handleSllScopeChange('general')}
-                            >
-                                {t('ranking.scopeGeneral')}
-                            </button>
                         </div>
                     </div>
                 )}
