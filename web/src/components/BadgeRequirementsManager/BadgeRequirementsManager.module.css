@@ -49,15 +49,6 @@
 	font-size: 0.8rem;
 }
 
-.pointsChip {
-	font-size: 0.75rem;
-	font-weight: 700;
-	padding: 0.18rem 0.6rem;
-	border-radius: 999px;
-	background: var(--color-warning-container-soft);
-	color: var(--color-warning);
-}
-
 .statusChip {
 	font-size: 0.72rem;
 	font-weight: 700;

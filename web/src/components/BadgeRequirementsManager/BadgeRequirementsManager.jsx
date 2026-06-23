@@ -61,7 +61,7 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 			</div>
 
 			{loading ? (
-				<TableSkeleton rows={3} columns={5} />
+				<TableSkeleton rows={3} columns={4} />
 			) : requirements.length === 0 ? (
 				<div className={styles.empty}>
 					<Icon name="check_circle" size={32} aria-hidden="true" className={styles.emptyIcon} />
@@ -74,7 +74,6 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 							<tr>
 								<th>{t('adminRequirements.sequence')}</th>
 								<th>{t('shared.title')}</th>
-								<th>{t('shared.points')}</th>
 								<th>{t('shared.active')}</th>
 								<th className="text-end">{t('shared.actions')}</th>
 							</tr>
@@ -84,7 +83,6 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 								<tr key={req.requirement_id || req.requirementId || idx}>
 									<td><span className={styles.seqBadge}>{req.requirement_sequence ?? req.requirementSequence ?? idx + 1}</span></td>
 									<td><TranslatedText text={req.requirement_title || req.requirementTitle || '—'} /></td>
-									<td><span className={styles.pointsChip}>{req.badge_points ?? req.badgePoints ?? 0} pts</span></td>
 									<td>
 										<span className={`${styles.statusChip} ${req.is_active ? styles.statusOn : styles.statusOff}`}>
 											{req.is_active ? t('shared.yes') : t('shared.no')}

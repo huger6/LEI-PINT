@@ -11,7 +11,6 @@ function buildInitialForm(initialData) {
 		requirementTitle: initialData?.requirement_title ?? initialData?.requirementTitle ?? '',
 		requirementDescription: initialData?.requirement_description ?? initialData?.requirementDescription ?? '',
 		requirementSequence: initialData?.requirement_sequence ?? initialData?.requirementSequence ?? '',
-		badgePoints: initialData?.badge_points ?? initialData?.badgePoints ?? 0,
 	};
 }
 
@@ -48,7 +47,6 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 		if (form.requirementSequence !== '' && Number(form.requirementSequence) < 1) {
 			next.requirementSequence = t('adminRequirements.errSequence');
 		}
-		if (Number(form.badgePoints) < 0) next.badgePoints = t('adminRequirements.errPoints');
 		setErrors(next);
 		return Object.keys(next).length === 0;
 	}
@@ -63,7 +61,6 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 				requirementTitle: form.requirementTitle.trim(),
 				requirementDescription: form.requirementDescription.trim(),
 				requirementSequence: form.requirementSequence === '' ? null : Number(form.requirementSequence),
-				badgePoints: Number(form.badgePoints) || 0,
 			};
 			const result = isEdit
 				? await updateRequirement(badgeSlug, initialData.requirement_id || initialData.requirementId, payload)
@@ -114,30 +111,15 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 						<div className="invalid-feedback d-block">{errors.requirementDescription}</div>
 					)}
 				</div>
-				<div className="row g-3">
-					<div className="col-12 col-sm-6">
-						<FormInput
-							label={t('adminRequirements.sequence')}
-							name="requirementSequence"
-							type="number"
-							min={1}
-							value={form.requirementSequence}
-							onChange={handleChange}
-							error={errors.requirementSequence}
-						/>
-					</div>
-					<div className="col-12 col-sm-6">
-						<FormInput
-							label={t('shared.points')}
-							name="badgePoints"
-							type="number"
-							min={0}
-							value={form.badgePoints}
-							onChange={handleChange}
-							error={errors.badgePoints}
-						/>
-					</div>
-				</div>
+				<FormInput
+					label={t('adminRequirements.sequence')}
+					name="requirementSequence"
+					type="number"
+					min={1}
+					value={form.requirementSequence}
+					onChange={handleChange}
+					error={errors.requirementSequence}
+				/>
 				{apiError && <p className="small text-danger mb-0">{apiError}</p>}
 			</form>
 		</Modal>
