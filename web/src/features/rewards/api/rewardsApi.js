@@ -1,3 +1,4 @@
+// API for the consultant rewards store (points redemption).
 import api from '../../../services/api';
 
 // Points store for the consultant: active rewards + current balance.

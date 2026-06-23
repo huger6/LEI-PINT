@@ -13,6 +13,14 @@ function getBadgeClassLabel(rawType) {
 	return rawType || 'Standard';
 }
 
+/**
+ * Badge catalog card displaying badge image, metadata, requirements, and points.
+ * @param {Object} badge - Badge data object from the API.
+ * @param {string} to - Link destination (badge detail page).
+ * @param {boolean} [isConsultant=true] - Shows points when true, consultant count when false.
+ * @param {boolean} [isFavorited=false] - Bookmark/favorite state.
+ * @param {Function} [onToggleFavorite] - Called when the bookmark button is clicked.
+ */
 export default function BadgeCard({ badge, to, isConsultant = true, isFavorited = false, onToggleFavorite }) {
 	const { t } = useTranslation();
 	const linkRef = useRef(null);

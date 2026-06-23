@@ -2,6 +2,11 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './PasswordToggle.module.css';
 
+/**
+ * Eye icon button to toggle password field visibility.
+ * @param {boolean} show - Current visibility state.
+ * @param {Function} onToggle - Called when the toggle is clicked.
+ */
 export default function PasswordToggle({ show, onToggle }) {
 	const { t } = useTranslation();
 

@@ -1,3 +1,4 @@
+// Form-level validation functions that compose individual rules from rules.js.
 import i18n from '../i18n';
 import {
 	validateBiography,
@@ -25,12 +26,14 @@ const collect = (entries) => {
 	return errors;
 };
 
+/** Validates the login form (identifier + password). */
 export const validateLoginForm = (form) =>
 	collect([
 		['identifier', validateIdentifier(form.identifier)],
 		['password', validatePasswordPresence(form.password)],
 	]);
 
+/** Validates registration step 2 (name, username, email, password). */
 export const validateRegisterStep2 = (form) =>
 	collect([
 		['full_name', validateFullName(form.full_name)],
@@ -39,6 +42,7 @@ export const validateRegisterStep2 = (form) =>
 		['password', validatePassword(form.password)],
 	]);
 
+/** Validates registration step 3 (phone, birthdate, biography, language). Consultant role adds area validation. */
 export const validateRegisterStep3 = (form, role, { phoneMetadata } = {}) => {
 	const entries = [
 		['phone_number', validatePhoneNumber(form.phone_number, phoneMetadata)],
@@ -94,6 +98,7 @@ export const validateChangePasswordForm = (form) => {
 	return errors;
 };
 
+/** Validates the admin create-user form. Applies role-specific rules (e.g. areas for Consultant). */
 export const validateCreateUserForm = (form, role, { phoneMetadata } = {}) =>
 	collect([
 		['fullName', validateFullName(form.fullName)],
@@ -108,5 +113,6 @@ export const validateCreateUserForm = (form, role, { phoneMetadata } = {}) =>
 			: []),
 	]);
 
+/** Returns true if the errors object contains at least one non-empty error message. */
 export const hasErrors = (errors) =>
 	errors && Object.values(errors).some((v) => Boolean(v));

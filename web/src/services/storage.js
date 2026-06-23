@@ -1,3 +1,4 @@
+// Handles file uploads to Supabase Storage (profile images and badge evidence files).
 import axios from 'axios';
 
 const BUCKET_NAME = 'public-assets';
@@ -96,6 +97,7 @@ const isAllowedImageFile = (file) => {
 	return ALLOWED_IMAGE_EXTENSIONS.has(extension);
 };
 
+/** Validates a profile image file (type and size <= 2MB). Throws on failure. */
 export const validateProfileImageFile = (file) => {
 	if (!file) {
 		throw createUploadError('No file was selected.', 'PROFILE_IMAGE_MISSING');
@@ -110,6 +112,7 @@ export const validateProfileImageFile = (file) => {
 	}
 };
 
+/** Uploads a profile image to the Supabase temp folder. Returns { fileName, objectPath, publicUrl }. */
 export const uploadProfileImageToTemp = async (file, options = {}) => {
 	validateProfileImageFile(file);
 
@@ -167,6 +170,7 @@ const ALLOWED_EVIDENCE_EXTENSIONS = new Set([
 	'pdf', 'jpg', 'jpeg', 'png', 'zip',
 ]);
 
+/** Validates a badge evidence file (PDF, JPG, PNG, ZIP; <= 10MB). Throws on failure. */
 export const validateEvidenceFile = (file) => {
 	if (!file) {
 		throw createUploadError('No file was selected.', 'EVIDENCE_FILE_MISSING');
@@ -187,6 +191,7 @@ export const validateEvidenceFile = (file) => {
 
 export const EVIDENCE_ACCEPT_STRING = '.pdf,.jpg,.jpeg,.png,.zip';
 
+/** Uploads any validated file to the Supabase temp folder. Returns { fileName, objectPath, publicUrl }. */
 export const uploadFileToTemp = async (file, options = {}) => {
 	const { baseUrl, apiKey } = getStorageConfig();
 	const fileName = buildTempFileName(file.name || 'file');

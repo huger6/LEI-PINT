@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for a grid of cards (e.g. badge catalog loading state). */
 export default function CardGridSkeleton({ count = 6, columns = 3 }) {
 	const colClass = columns === 2 ? styles.gridCol2 : styles.gridCol3;
 

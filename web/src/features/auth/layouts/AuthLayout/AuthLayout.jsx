@@ -2,6 +2,7 @@ import ParticlesBackground from '../../../../components/ParticlesBackground/Part
 import Logo from '../../../../components/Logo/Logo';
 import styles from './AuthLayout.module.css';
 
+/** Full-page layout wrapper for all authentication screens (centered card with particles background). */
 export default function AuthLayout({ children }) {
 	return (
 		<div className={styles.layout}>

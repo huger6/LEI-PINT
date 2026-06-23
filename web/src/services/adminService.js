@@ -1,3 +1,4 @@
+// Admin-only user management: list, create, update, deactivate, and password reset.
 import api from './api';
 
 // ─── Users ───

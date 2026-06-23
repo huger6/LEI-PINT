@@ -19,11 +19,7 @@ const ESSENTIAL_CODES = [
 // Delivered only in-app / push (no e-mail channel).
 const EMAIL_INCAPABLE = new Set(['ANNOUNCEMENT_PUBLISHED']);
 
-/**
- * Per-user notification preferences. Lets the signed-in user override the
- * platform defaults per notification type (enabled + e-mail channel), backed by
- * GET/PUT /notifications/preferences. Rendered as a self-contained card.
- */
+/** User notification preferences panel for toggling email/push notifications per category. */
 export default function NotificationPreferences() {
 	const { t } = useTranslation();
 	const [prefs, setPrefs] = useState([]);

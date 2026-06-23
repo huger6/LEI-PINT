@@ -8,6 +8,13 @@ function formatFileSize(bytes) {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/**
+ * Drag-and-drop file upload zone with file list display.
+ * @param {Array} files - Currently attached files: { name, size, extension }.
+ * @param {Function} onAdd - Called with a File object when a file is dropped or selected.
+ * @param {Function} [onRemove] - Called with the file index to remove.
+ * @param {string} [maxSizeLabel] - Displayed max file size hint.
+ */
 export default function FileDropZone({
 	files = [],
 	onAdd,

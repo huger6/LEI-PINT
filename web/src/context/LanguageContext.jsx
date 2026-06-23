@@ -1,3 +1,4 @@
+// Fetches and caches the available platform languages (pt-PT, en-GB, es-ES) from the API.
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { extractCollection } from '../utils/collections';
@@ -6,6 +7,7 @@ const LanguageContext = createContext(null);
 
 let languagePromise = null;
 
+/** Provides the list of available languages to descendant components. Fetches once and caches. */
 export function LanguageProvider({ children }) {
 	const [languages, setLanguages] = useState([]);
 	const [loading, setLoading] = useState(true);

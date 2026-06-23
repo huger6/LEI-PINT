@@ -21,6 +21,12 @@ const EMPTY_FORM = {
 	serviceLineIds: [],
 };
 
+/**
+ * Modal form for creating or editing a platform announcement.
+ * @param {Object} [announcement] - Existing announcement to edit (null for create).
+ * @param {Function} onClose - Called when the modal is dismissed.
+ * @param {Function} onSaved - Called after successful save.
+ */
 export default function AnnouncementFormModal({ onClose, onSave, editItem, serviceLines = [] }) {
 	const { t, i18n } = useTranslation();
 	const isEdit = !!editItem;

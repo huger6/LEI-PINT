@@ -5,6 +5,7 @@ import { useLanguageContext } from '../../context/LanguageContext';
 import styles from './Footer.module.css';
 import Icon from '../Icons/Icons';
 
+/** Application footer with copyright and platform version. */
 const Footer = () => {
     const { t, i18n } = useTranslation();
     const { lang, handleLanguageChange, user } = useUser();

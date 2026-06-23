@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for structure detail pages (learning path, service line, area). */
 export default function StructureDetailSkeleton() {
 	return (
 		<div role="status" aria-label="Loading">

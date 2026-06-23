@@ -1,3 +1,4 @@
+// Data export panel for management roles (TM, SLL, Admin) with format and date range selection.
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { downloadExport } from '../../features/statistics/api/exportsApi';

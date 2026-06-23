@@ -4,6 +4,14 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './Modal.module.css';
 
+/**
+ * Accessible modal dialog using the native <dialog> element.
+ * @param {string} title - Modal header title.
+ * @param {ReactNode} children - Modal body content.
+ * @param {Function} onClose - Called when the modal is dismissed (backdrop click, Escape, or close button).
+ * @param {ReactNode} [footer] - Optional footer content (e.g. action buttons).
+ * @param {'sm'|'md'|'lg'|'xl'} [size='md'] - Modal width preset.
+ */
 export default function Modal({ title, children, onClose, footer, size = 'md' }) {
 	const { t } = useTranslation();
 	const dialogRef = useRef(null);

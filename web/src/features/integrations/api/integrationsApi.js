@@ -1,3 +1,4 @@
+// API for external integrations management (e.g. LinkedIn, Credly).
 import api from '../../../services/api';
 
 // Outbound integration webhooks (Microsoft Teams) — Administrator only.

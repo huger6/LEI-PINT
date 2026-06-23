@@ -1,3 +1,8 @@
+/**
+ * Modal form for creating a new progression Level within an Area.
+ * @param {Function} onClose - Called when the modal is dismissed.
+ * @param {Function} onCreated - Called after successful creation.
+ */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../../components/Button/Button';

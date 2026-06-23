@@ -4,6 +4,13 @@ import Icon from '../Icons/Icons';
 import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './StructureTypeCard.module.css';
 
+/**
+ * Card for selecting a structure entity type in the admin structure management page.
+ * @param {string} title - Entity type name.
+ * @param {string} icon - Icon name.
+ * @param {string} to - Link to the entity type's list page.
+ * @param {number} count - Total number of entities of this type.
+ */
 export default function StructureTypeCard({ to, icon, title, description, count, tone }) {
 	const { t } = useTranslation();
 

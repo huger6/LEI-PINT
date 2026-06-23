@@ -83,6 +83,14 @@ function getCalendarCells(monthDate, minDate, maxDate, selectedDate) {
 	});
 }
 
+/**
+ * Custom date picker with calendar grid, month/year selects, and min/max constraints.
+ * Emits dates in YYYY-MM-DD format via synthetic onChange events.
+ * @param {string} value - Selected date in YYYY-MM-DD format.
+ * @param {Function} onChange - Synthetic event: { target: { name, value } }.
+ * @param {string} [max] - Maximum selectable date (YYYY-MM-DD).
+ * @param {string} [min] - Minimum selectable date (YYYY-MM-DD).
+ */
 export default function DatePicker({
 	id,
 	name,

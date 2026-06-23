@@ -1,3 +1,4 @@
+// Public (unauthenticated) API for badge verification and public consultant profiles.
 import api from '../../../services/api';
 
 // Public badge catalog (no auth) used by the /softinsa microsite.

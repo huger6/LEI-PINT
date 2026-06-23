@@ -16,16 +16,7 @@ function defaultRange() {
 	return { from: fmt(from), to: fmt(to) };
 }
 
-/**
- * Reusable leadership reporting block (mandatory dashboard reports):
- *   1. "% de Badges com visão mensal" — monthly badge distribution, the share of
- *      each month's awards per Learning Path / Service Line / Área.
- *   2. "# de Badges por intervalo de datas" — badges awarded within a date range.
- *
- * Backed by GET /statistics/reports/badge-distribution and /badges-by-range.
- * Inherits the page filters (learningPathId/serviceLineId/areaId/dateFrom/dateTo)
- * emitted by <StatsOverview/>; falls back to the last 12 months when no dates set.
- */
+/** Report/analytics panel showing badge distribution and trend charts for admin/management dashboards. */
 export default function BadgeReports({ filters = {} }) {
 	const { t } = useTranslation();
 	const [groupBy, setGroupBy] = useState('learning_path');

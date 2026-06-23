@@ -1,3 +1,4 @@
+// API for managing badge requirements (CRUD operations).
 import api from '../../../services/api';
 
 // Badge requirements are nested under a badge: /badges/:badgeSlug/requirements

@@ -1,3 +1,4 @@
+// WebSocket (socket.io) connection manager for real-time notifications.
 import { io } from 'socket.io-client';
 import { getApiToken } from './api';
 

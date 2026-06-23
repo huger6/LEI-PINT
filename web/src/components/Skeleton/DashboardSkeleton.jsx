@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for the dashboard page during initial load. */
 export default function DashboardSkeleton() {
 	return (
 		<div role="status" aria-label="Loading">

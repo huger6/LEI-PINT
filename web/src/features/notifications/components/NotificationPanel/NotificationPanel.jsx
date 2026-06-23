@@ -8,6 +8,9 @@ import styles from './NotificationPanel.module.css';
 const TAB_RECENT = 'recent';
 const TAB_ALL = 'all';
 
+/**
+ * Slide-out notification panel with filtered tabs, infinite scroll, and mark-all-read action.
+ */
 export default function NotificationPanel({ open, onClose }) {
 	const { t } = useTranslation();
 	const {

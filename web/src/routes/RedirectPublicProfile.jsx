@@ -1,3 +1,4 @@
+// Redirects legacy /u/:guid profile URLs to the Softinsa public microsite.
 import { Navigate, useParams } from 'react-router-dom';
 
 // The canonical public profile lives on the Softinsa microsite. The legacy

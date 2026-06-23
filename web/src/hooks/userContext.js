@@ -1,3 +1,4 @@
+// Convenience hook for consuming the UserContext.
 import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 

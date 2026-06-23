@@ -1,3 +1,4 @@
+// Admin GDPR management API: consent tracking and data deletion requests.
 import api from '../../../services/api';
 
 // Admin management list: every policy of every type, active AND inactive, so

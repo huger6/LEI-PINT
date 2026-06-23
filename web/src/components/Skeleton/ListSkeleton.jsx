@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for list/table pages during loading. */
 export default function ListSkeleton({ rows = 5 }) {
 	return (
 		<div role="status" aria-label="Loading">

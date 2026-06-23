@@ -1,8 +1,13 @@
+// Route guard that requires authentication. Redirects to login if unauthenticated.
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../features/auth';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
 import { AUTH, SHARED } from './paths';
 
+/**
+ * Wraps routes that require authentication.
+ * @param {boolean} requireFpc - If true, only allows access during force-password-change flow.
+ */
 export default function ProtectedRoute({ requireFpc = false }) {
     const { isAuthenticated, fpc, isLoading } = useAuth();
 

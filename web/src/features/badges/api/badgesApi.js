@@ -1,3 +1,4 @@
+// Badge CRUD API with support for favorites, image uploads, and admin operations.
 import api from '../../../services/api';
 
 export async function getBadges(params = {}) {

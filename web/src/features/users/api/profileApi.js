@@ -1,3 +1,4 @@
+// API for user profile operations: view, update, and profile image management.
 import api from '../../../services/api';
 import { extractCollection } from '../../../utils/collections';
 

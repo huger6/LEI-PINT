@@ -1,3 +1,4 @@
+// User-facing GDPR API: consent acceptance and personal data export.
 import api from '../../../services/api';
 
 // Latest active policy of a given type ('Privacy' | 'Terms' | 'Cookies').

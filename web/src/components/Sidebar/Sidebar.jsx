@@ -6,6 +6,12 @@ import styles from './Sidebar.module.css';
 import SidebarOption from './SidebarOption/SidebarOption';
 import Icon from '../Icons/Icons';
 
+/**
+ * Responsive navigation sidebar. Collapses to icon-rail on desktop, off-canvas drawer on mobile.
+ * @param {Array} menuItems - Navigation items: { to, icon, label, notificationType? }.
+ * @param {boolean} [mobileOpen=false] - Controls the mobile drawer visibility.
+ * @param {Function} [onMobileClose] - Called when the mobile drawer should close.
+ */
 export default function Sidebar({ menuItems, mobileOpen = false, onMobileClose }) {
     const { t } = useTranslation();
     const { notifications } = useUser();

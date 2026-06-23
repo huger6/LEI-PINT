@@ -1,3 +1,4 @@
+// Provides the authenticated user's profile, language, points, and notification state.
 import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../features/auth';
 import { getMe, updateUserLanguage } from '../features/auth/api/authApi';
@@ -38,6 +39,10 @@ const getUnreadByTypeFromNotifications = (notificationsList = []) => {
 	return unreadByType;
 };
 
+/**
+ * Loads the user profile after authentication, manages notification state via WebSocket,
+ * and exposes actions for marking notifications as read and changing language.
+ */
 export function UserProvider({ children }) {
 	const { token, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
@@ -58,6 +63,7 @@ export function UserProvider({ children }) {
 		? firstAndLastName(user.fullName)
 		: user?.username || 'User';
 
+	// Fetches all unread notifications page-by-page to build the per-type unread count map.
 	const fetchUnreadByTypeSummary = useCallback(async () => {
 		const unreadByType = createEmptyUnreadByType();
 		let page = 1;
@@ -121,6 +127,7 @@ export function UserProvider({ children }) {
 			.finally(() => setIsUserLoading(false));
 	}, [isAuthLoading, isAuthenticated, token, refreshUser]);
 
+	// Switches the UI language and persists the preference to the API.
 	const handleLanguageChange = useCallback(async (languageId, languageIso) => {
 		i18next.changeLanguage(languageIso);
 		try {
@@ -162,7 +169,7 @@ export function UserProvider({ children }) {
 		};
 	}, [isAuthenticated, fetchUnreadByTypeSummary]);
 
-	// ── WebSocket ─────────────────────────────────────────────────
+	// Connects to the WebSocket for real-time notification updates.
 	useEffect(() => {
 		if (!isAuthenticated || !token) {
 			disconnectSocket();

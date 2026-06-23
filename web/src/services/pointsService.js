@@ -1,3 +1,4 @@
+// Consultant gamification data: points summary, history, earned badges, ranking, and recommendations.
 import api from './api';
 
 export async function getConsultantStats() {

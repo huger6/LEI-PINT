@@ -9,6 +9,11 @@ import {
 } from 'recharts';
 import styles from './LineAreaChart.module.css';
 
+/**
+ * Line/area chart for time-series data (e.g. points over time).
+ * @param {Array} data - Chart data entries.
+ * @param {Object} [options] - Chart.js configuration overrides.
+ */
 export default function LineAreaChart({
 	data = [],
 	xAxisKey,

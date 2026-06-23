@@ -2,6 +2,13 @@ import { useEffect } from 'react';
 import Icon from '../Icons/Icons';
 import styles from './SaveToast.module.css';
 
+/**
+ * Auto-dismissing success toast notification.
+ * @param {boolean} [open=false] - Controls visibility.
+ * @param {string} message - Success message text.
+ * @param {Function} [onClose] - Called when the toast auto-dismisses.
+ * @param {number} [duration=3000] - Auto-dismiss delay in milliseconds.
+ */
 export default function SaveToast({ open = false, message, onClose, duration = 3000 }) {
 	useEffect(() => {
 		if (!open) return;

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
 
+/** Softinsa platform logo component used in the sidebar and top bar. */
 export default function Logo() {
 	const { t } = useTranslation();
 	return (

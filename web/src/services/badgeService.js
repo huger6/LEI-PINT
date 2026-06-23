@@ -1,3 +1,4 @@
+// CRUD operations for badge entities (admin-facing).
 import api from './api';
 
 export async function getBadges(params = {}) {

@@ -8,6 +8,7 @@ import { UserContext } from '../../context/UserContext';
 import { ADMIN, SHARED } from '../../routes/paths';
 import styles from '../../pages/shared/ErrorCodePage/ErrorCodePage.module.css';
 
+/** React error boundary that catches render errors and displays a recovery page. */
 export default class ErrorBoundary extends Component {
 	static contextType = UserContext;
 

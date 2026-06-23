@@ -1,3 +1,4 @@
+// Admin API for notification templates and delivery configuration.
 import api from '../../../services/api';
 
 // Global (platform-wide) notification preferences — Administrator only.

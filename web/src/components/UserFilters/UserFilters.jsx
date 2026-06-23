@@ -1,3 +1,4 @@
+// Reusable filter bar for admin user management with search, role, status, and advanced filters.
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CustomSelect from '../CustomSelect/CustomSelect';

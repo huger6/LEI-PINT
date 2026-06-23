@@ -11,6 +11,7 @@ import styles from './WelcomeCard.module.css';
 import StatCard from './StatCard/StatCard';
 import Icon from '../Icons/Icons';
 
+// Returns a time-based or context-based greeting (first login, returning after 15+ days, or day-part).
 function getGreeting(t, authUser) {
     if (authUser?.first_login) {
         return t('welcomeCard.welcomeFirstLogin');
@@ -62,6 +63,7 @@ function ConsultantMeta({ user }) {
     );
 }
 
+/** Dashboard welcome banner showing greeting, role metadata, and role-specific KPI stats. */
 export default function WelcomeCard() {
     const { t } = useTranslation();
     const { user: authUser } = useAuth();

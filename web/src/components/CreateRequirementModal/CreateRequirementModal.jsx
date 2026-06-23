@@ -15,6 +15,12 @@ function buildInitialForm(initialData) {
 	};
 }
 
+/**
+ * Modal form for creating or editing a badge requirement.
+ * @param {Object} [requirement] - Existing requirement to edit (null for create).
+ * @param {Function} onClose - Called when the modal is dismissed.
+ * @param {Function} onSaved - Called after successful save.
+ */
 export default function CreateRequirementModal({ badgeSlug, initialData = null, onClose, onSuccess }) {
 	const { t } = useTranslation();
 	const isEdit = Boolean(initialData);

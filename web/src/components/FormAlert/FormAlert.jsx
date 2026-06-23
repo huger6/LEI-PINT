@@ -4,6 +4,11 @@ const VARIANT_CLASS = {
 	info: 'alert-info',
 };
 
+/**
+ * Inline alert banner for form-level error/warning/info messages.
+ * @param {string} message - Alert text. Renders nothing if falsy.
+ * @param {'danger'|'warning'|'info'} [variant='danger'] - Bootstrap alert variant.
+ */
 export default function FormAlert({ message, variant = 'danger', className = '' }) {
 	if (!message) return null;
 

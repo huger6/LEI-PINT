@@ -1,3 +1,4 @@
+// API for browsing the organizational hierarchy (learning paths, service lines, areas, levels).
 import api from '../../../services/api';
 
 // ─── Learning Paths ───

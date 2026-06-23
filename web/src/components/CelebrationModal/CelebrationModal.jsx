@@ -12,9 +12,7 @@ const CONFETTI_COLORS = [
 	'var(--color-badge-premium)',
 ];
 
-// Lightweight, dependency-free milestone celebration: a congratulatory card
-// over a burst of CSS-animated confetti. Shown once when a consultant reaches
-// a new badge milestone (the caller decides when to render it).
+/** Animated celebration modal shown when a consultant earns a new badge (confetti + badge preview). */
 export default function CelebrationModal({ count, onClose }) {
 	const { t } = useTranslation();
 

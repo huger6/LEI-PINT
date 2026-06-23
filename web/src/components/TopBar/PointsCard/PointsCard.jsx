@@ -1,6 +1,10 @@
 import styles from './PointsCard.module.css';
 import Icon from '../../Icons/Icons';
 
+/**
+ * Displays the consultant's gamification points total in the top bar.
+ * @param {number} points - Current point total.
+ */
 export default function PointsCard({ points }) {
     return (
         <div className={styles.pointsCard}>

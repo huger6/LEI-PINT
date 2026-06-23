@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './SearchBar.module.css';
 import Icon from '../../Icons/Icons';
 
+/**
+ * Global search bar. Renders inline on desktop, expands from icon on mobile.
+ * @param {string} [placeholder] - Input placeholder text.
+ * @param {Function} [onSearch] - Called with the trimmed query on form submit.
+ * @param {Function} [onChange] - Called on every input change (controlled mode).
+ */
 export default function SearchBar({
     id = 'topbar-search',
     value,

@@ -1,5 +1,10 @@
 import styles from './Stepper.module.css';
 
+/**
+ * Horizontal step progress indicator (e.g. for multi-step forms).
+ * @param {Array} steps - Step definitions: { label }.
+ * @param {number} [activeStep=0] - Zero-based index of the current step.
+ */
 export default function Stepper({ steps = [], activeStep = 0 }) {
 	return (
 		<div className={styles.stepper}>

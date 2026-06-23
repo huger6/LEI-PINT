@@ -1,3 +1,4 @@
+/** Animated particles canvas background used on authentication pages. */
 import { memo, useEffect, useState } from 'react';
 import Particles, { initParticlesEngine } from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';

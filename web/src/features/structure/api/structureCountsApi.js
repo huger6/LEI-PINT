@@ -1,3 +1,4 @@
+// API for fetching entity counts across the organizational structure.
 import api from '../../../services/api';
 
 export const EMPTY_STRUCTURE_COUNTS = {

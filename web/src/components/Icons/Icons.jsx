@@ -1,6 +1,12 @@
 import React from 'react';
 import { PATHS } from './icons-paths';
 
+/**
+ * SVG icon component that renders icons by name from the icon registry.
+ * @param {string} name - Icon identifier (maps to a path in icons-paths.js).
+ * @param {number} [size=24] - Icon size in pixels.
+ * @param {string} [color='currentColor'] - Icon fill/stroke color.
+ */
 export default function Icon({
     name,
     size = 24,

@@ -1,3 +1,4 @@
+// Global search across badges, users, and structure entities.
 import api from './api';
 
 export async function globalSearch(query, { limit = 50 } = {}) {

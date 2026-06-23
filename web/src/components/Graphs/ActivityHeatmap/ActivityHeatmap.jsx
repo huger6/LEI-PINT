@@ -3,6 +3,10 @@ import styles from './ActivityHeatmap.module.css';
 
 const INTENSITY_LEVELS = ['empty', 'low', 'medium', 'high', 'max'];
 
+/**
+ * GitHub-style activity heatmap showing daily activity intensity over time.
+ * @param {Array} data - Daily activity entries: { date, count }.
+ */
 export default function ActivityHeatmap({ data = [], weeks = 4, dayLabels, title }) {
 	const { t } = useTranslation();
 

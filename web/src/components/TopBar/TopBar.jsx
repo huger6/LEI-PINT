@@ -10,6 +10,10 @@ import PointsCard from './PointsCard/PointsCard';
 import SearchBar from './SearchBar/SearchBar';
 import Icon from '../Icons/Icons';
 
+/**
+ * Application header bar with logo, search, points (consultant only), notifications, and user menu.
+ * @param {Function} [onMenuToggle] - Called when the mobile hamburger menu is tapped.
+ */
 export default function TopBar({ onMenuToggle }) {
     const { user, displayName, points } = useUser();
     const { t } = useTranslation();

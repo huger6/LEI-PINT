@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for entity detail pages (badge detail, application detail). */
 export default function DetailPageSkeleton() {
 	return (
 		<div role="status" aria-label="Loading">

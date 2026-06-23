@@ -3,6 +3,12 @@ import Icon from '../Icons/Icons';
 import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './RequirementCard.module.css';
 
+/**
+ * Badge requirement card showing title, description, and completion status.
+ * @param {string} title - Requirement title (translated via TranslatedText).
+ * @param {string} [description] - Requirement description.
+ * @param {'pending'|'complete'} [status='pending'] - Completion status.
+ */
 export default function RequirementCard({ title, description, status = 'pending' }) {
 	const { t } = useTranslation();
 	const isComplete = status === 'complete';

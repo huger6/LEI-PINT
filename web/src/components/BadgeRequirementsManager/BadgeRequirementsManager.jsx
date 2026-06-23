@@ -11,9 +11,9 @@ import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './BadgeRequirementsManager.module.css';
 
 /**
- * Inline requirements manager for a single badge (used inside the badge edit
- * page). Lists requirements and supports create / edit / soft-delete, reusing
- * CreateRequirementModal. Requires the badge to already exist (a slug).
+ * Manages the list of requirements for a badge (add, edit, reorder, delete).
+ * @param {Array} requirements - Current requirement list.
+ * @param {Function} onChange - Called with the updated requirements array.
  */
 export default function BadgeRequirementsManager({ badgeSlug }) {
 	const { t } = useTranslation();

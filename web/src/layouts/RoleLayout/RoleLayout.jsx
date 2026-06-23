@@ -1,3 +1,4 @@
+// Dispatches to the correct role-specific layout (Consultant, TM, SLL, Admin) based on the user's role.
 import { Outlet } from 'react-router-dom';
 import { useUser } from '../../hooks/userContext';
 import ErrorCodePage from '../../pages/shared/ErrorCodePage/ErrorCodePage';
@@ -18,6 +19,10 @@ const LAYOUT_BY_ROLE = {
     'Administrator': AdminLayout,
 };
 
+/**
+ * Maps the authenticated user's role to its layout component.
+ * Shows a skeleton during loading and 403 if no layout matches.
+ */
 export default function RoleLayout() {
     const { user, isUserLoading } = useUser();
 

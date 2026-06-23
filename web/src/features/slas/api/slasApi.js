@@ -1,3 +1,4 @@
+// API for SLA (Service Level Agreement) configuration and monitoring.
 import api from '../../../services/api';
 
 // Returns { data, pagination }. Admins may pass isActive=false to see inactive SLAs.

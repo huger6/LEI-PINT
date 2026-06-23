@@ -1,3 +1,4 @@
+// Provides on-demand text translation via the API with batching and caching.
 import { createContext, useContext, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
@@ -6,6 +7,10 @@ const TranslationContext = createContext(null);
 
 const BATCH_DELAY_MS = 60;
 
+/**
+ * Batches translation requests within a 60ms window and caches results.
+ * Used by the TranslatedText component to translate dynamic database content.
+ */
 export function TranslationProvider({ children }) {
 	const { i18n } = useTranslation();
 	const currentLang = i18n.language?.slice(0, 2) || 'pt';
@@ -14,6 +19,7 @@ export function TranslationProvider({ children }) {
 	const queueRef = useRef([]);
 	const timerRef = useRef(null);
 
+	// Sends accumulated translation requests to the API in a single batch.
 	const flushQueue = useCallback(async (lang) => {
 		const batch = queueRef.current.splice(0);
 		if (batch.length === 0) return;
@@ -46,6 +52,7 @@ export function TranslationProvider({ children }) {
 		});
 	}, []);
 
+	// Queues a text for translation, returning a Promise that resolves with the translated string.
 	const translateText = useCallback((text) => {
 		const lang = currentLang;
 

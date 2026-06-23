@@ -7,6 +7,11 @@ import Pagination from '../../../../components/Pagination/Pagination';
 import CardGridSkeleton from '../../../../components/Skeleton/CardGridSkeleton';
 import styles from './StructureListLayout.module.css';
 
+/**
+ * Shared layout for structure list pages with search, create button, and entity card grid.
+ * @param {string} title - Page title.
+ * @param {ReactNode} children - List content (cards grid).
+ */
 export default function StructureListLayout({
 	title,
 	icon,
