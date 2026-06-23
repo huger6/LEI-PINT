@@ -246,7 +246,12 @@ export default function Points() {
 			if (statsRes.status === 'fulfilled') setStats(statsRes.value);
 			else console.error('Failed to load consultant stats', statsRes.reason);
 
-			if (allHistRes.status === 'fulfilled') setAllHistory(allHistRes.value);
+			if (allHistRes.status === 'fulfilled') {
+				// points_delta may arrive as a string from the API; coerce to a
+				// number so chart/stat sums add instead of concatenating.
+				const rows = (allHistRes.value || []).map((e) => ({ ...e, points_delta: Number(e.points_delta) || 0 }));
+				setAllHistory(rows);
+			}
 			else console.error('Failed to load points history', allHistRes.reason);
 
 			if (earnedRes.status === 'fulfilled') setEarnedBadges(earnedRes.value.badges);
