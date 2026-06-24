@@ -91,6 +91,11 @@
 
 .collapsed .nav {
     padding: 24px 8px;
+    scrollbar-width: none;
+}
+
+.collapsed .nav::-webkit-scrollbar {
+    display: none;
 }
 
 .navLink {
