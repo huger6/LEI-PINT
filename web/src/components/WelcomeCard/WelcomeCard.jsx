@@ -98,7 +98,7 @@ export default function WelcomeCard() {
         let active = true;
         (async () => {
             const [apps, goals] = await Promise.all([
-                getApplicationsPaged({ page: 1, limit: 200 }).then(r => r.data || []).catch(() => []),
+                getApplicationsPaged({ page: 1, limit: 100 }).then(r => r.data || []).catch(() => []),
                 getGoals().then(g => (Array.isArray(g) ? g : g?.data || [])).catch(() => []),
             ]);
             const earned = apps.filter(a => (a.application_state || a.state) === 'Accepted').length;

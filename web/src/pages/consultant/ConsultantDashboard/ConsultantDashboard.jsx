@@ -64,7 +64,7 @@ export default function ConsultantDashboard() {
 				const primarySlug = user?.areas?.find(a => a.isPrimary)?.slug || user?.areas?.[0]?.slug;
 				let areaId;
 				if (primarySlug) {
-					const areas = await getAreas({ limit: 200 }).catch(() => []);
+					const areas = await getAreas({ limit: 100 }).catch(() => []);
 					areaId = (areas || []).find(a => (a.area_slug || a.areaSlug) === primarySlug)?.area_id;
 				}
 				const { data } = await getBadgesCatalog(areaId ? { areaId, limit: 12 } : { limit: 12 });

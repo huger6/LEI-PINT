@@ -247,7 +247,7 @@ export default function Evolution() {
             .then(setBadgesPerArea)
             .catch(() => setBadgesPerArea([]));
 
-        getApplicationsWithPagination({ limit: 200 })
+        getApplicationsWithPagination({ limit: 100 })
             .then(res => {
                 setApplications(res.applications);
                 setAppTotal(res.pagination?.total ?? res.applications.length);

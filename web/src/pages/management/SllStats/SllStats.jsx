@@ -38,7 +38,7 @@ export default function SllStats() {
 		(async () => {
 			setLoading(true);
 			try {
-				const { data } = await getApplicationsPaged({ state: 'Accepted', page: 1, limit: 200 });
+				const { data } = await getApplicationsPaged({ state: 'Accepted', page: 1, limit: 100 });
 				if (!active) return;
 				setReport(buildMonthlyReport(data));
 				setTotal(data.length);
