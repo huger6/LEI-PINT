@@ -17,6 +17,7 @@ import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './Announcements.module.css';
 
 const TYPE_OPTIONS = ['Information', 'Warning', 'New Content', 'Other'];
@@ -241,7 +242,7 @@ export default function Announcements({ defaultType = '' }) {
 									<tr key={a.announcement_id}>
 										<td>
 											<span className={styles.titleCell} title={a.announcement_title}>
-												{a.announcement_title}
+												<TranslatedText text={a.announcement_title} />
 											</span>
 										</td>
 										<td>

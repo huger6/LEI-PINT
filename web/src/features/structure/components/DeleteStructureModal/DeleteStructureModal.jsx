@@ -5,6 +5,12 @@ import Button from '../../../../components/Button/Button';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './DeleteStructureModal.module.css';
 
+/**
+ * Confirmation modal for deleting a structure entity (learning path, service line, area, or level).
+ * @param {string} entityName - Name of the entity being deleted (shown in the confirmation message).
+ * @param {Function} onConfirm - Called when deletion is confirmed.
+ * @param {Function} onClose - Called when the modal is dismissed.
+ */
 export default function DeleteStructureModal({ entityName, onConfirm, onSuccess, onClose }) {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);

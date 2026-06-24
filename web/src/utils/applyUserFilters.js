@@ -1,3 +1,4 @@
+// Client-side filtering logic for the admin user management table.
 const toBool = (v) => v === true || v === 'true';
 
 const parseDate = (ddMmYyyy) => {
@@ -6,6 +7,11 @@ const parseDate = (ddMmYyyy) => {
 	return new Date(`${yyyy}-${mm}-${dd}T00:00:00.000Z`);
 };
 
+/**
+ * Filters a user array by search text, role, status, service line, area, date, and points range.
+ * @param {Array} users - Full user list from the API.
+ * @param {Object} filters - Active filter values (see EMPTY_FILTERS in UserFilters component).
+ */
 const applyUserFilters = (users, filters = {}) => {
 	const {
 		search,

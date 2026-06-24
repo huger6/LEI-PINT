@@ -4,6 +4,11 @@ import Icon from '../../../../components/Icons/Icons';
 import Tooltip from '../../../../components/Tooltip/Tooltip';
 import styles from './StructureItemCard.module.css';
 
+/**
+ * Card for displaying a structure entity in list views (learning paths, service lines, areas).
+ * @param {Object} item - Structure entity data.
+ * @param {string} to - Link to the entity's detail page.
+ */
 export default function StructureItemCard({ to, icon, title, description, imageUrl, isActive, meta, tone, infoItems }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';

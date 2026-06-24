@@ -1,3 +1,4 @@
+/** Capitalizes each word in a name string. */
 export function capitalizeName(name) {
     return String(name)
         .trim()
@@ -7,6 +8,7 @@ export function capitalizeName(name) {
         .join(' ');
 }
 
+/** Extracts the first and last name from a full name string. */
 export function firstAndLastName(name) {
     const parts = String(name ?? '')
         .trim()
@@ -19,6 +21,7 @@ export function firstAndLastName(name) {
     return `${parts[0]} ${parts[parts.length - 1]}`;
 }
 
+/** Partially masks an email address for display (e.g. "hu***o@gmail.com"). */
 export default function hideEmail(email) {
     const [user, domain] = email.split("@");
 

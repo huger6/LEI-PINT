@@ -1,3 +1,4 @@
+// API for the consultant evolution/progress tracking dashboard.
 import api from '../../../services/api';
 
 export async function getBadgesPerArea() {

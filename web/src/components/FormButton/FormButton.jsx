@@ -1,5 +1,10 @@
 import styles from './FormButton.module.css';
 
+/**
+ * Full-width form submit button with loading spinner.
+ * @param {'primary'|'secondary'} [variant='primary'] - Color variant.
+ * @param {boolean} [loading=false] - Shows spinner and disables the button.
+ */
 export default function FormButton({
 	children,
 	variant = 'primary',

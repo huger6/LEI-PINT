@@ -1,3 +1,4 @@
+// Date utilities for age validation (minimum age: 16).
 export const MIN_AGE = 16;
 
 export function getMinBirthdate() {

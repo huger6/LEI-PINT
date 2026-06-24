@@ -1,6 +1,7 @@
 import Skeleton from './Skeleton';
 import styles from './Skeleton.module.css';
 
+/** Skeleton placeholder for data tables during loading. */
 export default function TableSkeleton({ rows = 5, columns = 5 }) {
 	return (
 		<div role="status" aria-label="Loading">

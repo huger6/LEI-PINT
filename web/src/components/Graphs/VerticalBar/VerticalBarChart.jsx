@@ -9,6 +9,11 @@ import {
 } from 'recharts';
 import styles from './VerticalBarChart.module.css';
 
+/**
+ * Vertical bar chart for comparing values across categories.
+ * @param {Array} data - Chart data entries.
+ * @param {Object} [options] - Chart.js configuration overrides.
+ */
 export default function VerticalBarChart({
 	data = [],
 	xAxisKey,

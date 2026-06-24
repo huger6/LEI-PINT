@@ -2,6 +2,16 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Icon from '../Icons/Icons';
 import styles from './CustomSelect.module.css';
 
+/**
+ * Accessible custom dropdown select with keyboard navigation and type-ahead search.
+ * Emits synthetic onChange events compatible with standard form handlers.
+ * @param {string} id - Element id for accessibility linkage.
+ * @param {string} name - Field name emitted in onChange events.
+ * @param {string} value - Currently selected value.
+ * @param {Function} onChange - Receives a synthetic event with { target: { name, value } }.
+ * @param {Array} options - Options: { value, label }.
+ * @param {boolean} [compact=false] - Renders a smaller trigger for inline usage.
+ */
 export default function CustomSelect({
 	id,
 	name,

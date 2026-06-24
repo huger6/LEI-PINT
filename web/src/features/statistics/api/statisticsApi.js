@@ -1,3 +1,4 @@
+// API for platform statistics: consultant overviews, badge summaries, and trend data.
 import api from '../../../services/api';
 
 // General reporting (Service Line Leader / Talent Manager / Administrator).

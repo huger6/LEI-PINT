@@ -3,6 +3,14 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './Pagination.module.css';
 
+/**
+ * Responsive pagination controls with first/prev/next/last buttons and ellipsis.
+ * @param {number} currentPage - Active page number (1-indexed).
+ * @param {number} totalPages - Total number of pages.
+ * @param {number} totalItems - Total item count (shown in "Showing X of Y").
+ * @param {number} itemCount - Items on the current page.
+ * @param {Function} onPageChange - Called with the new page number.
+ */
 const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChange }) => {
     const { t } = useTranslation();
     const [maxVisible, setMaxVisible] = useState(8);

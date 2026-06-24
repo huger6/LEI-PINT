@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { verifyBadge } from '../../../features/badges/api/publicBadgesApi';
 import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './VerifyBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -107,7 +108,7 @@ export default function VerifyBadge() {
 							</div>
 						</div>
 
-						{badge?.description && <p className={styles.desc}>{badge.description}</p>}
+						{badge?.description && <p className={styles.desc}><TranslatedText text={badge.description} /></p>}
 
 						{badge?.slug && (
 							<Link to={`/softinsa/badges/${badge.slug}`} className={styles.btn}>

@@ -10,6 +10,11 @@ import styles from './PieDonutChart.module.css';
 
 const DEFAULT_COLORS = ['#00B8E0', '#39639C', '#04CE00', '#CFA600', '#B3261E'];
 
+/**
+ * Pie/donut chart for showing proportional distribution (e.g. application states).
+ * @param {Array} data - Chart data entries.
+ * @param {Object} [options] - Chart.js configuration overrides.
+ */
 export default function PieDonutChart({
 	data = [],
 	nameKey,

@@ -9,12 +9,7 @@ import { getLatestPolicy, getConsentHistory, recordConsent } from '../../feature
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import styles from './GdprConsentModal.module.css';
 
-/**
- * Reusable RGPD consent gate. Renders the latest active policy of `policyType`
- * and only resolves `onConfirm` once the user has consented. If the user has
- * already accepted the current policy version, it confirms immediately without
- * friction. Use to gate any action that publishes/shares personal data.
- */
+/** GDPR consent modal shown to consultants who haven't yet accepted the data privacy terms. */
 export default function GdprConsentModal({ policyType = 'Privacy', purpose, onConfirm, onClose }) {
 	const { t } = useTranslation();
 	const [policy, setPolicy] = useState(null);

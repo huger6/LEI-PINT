@@ -66,7 +66,6 @@ const createRequirement = async (req, res) => {
             requirementTitle,
             requirementDescription,
             requirementSequence,
-            badgePoints
         } = validations.createRequirementBodySchema.parse(req.body);
 
         const badge = await findBadgeInHierarchy({ badgeSlug, stageCode, areaSlug, slSlug, pathSlug });
@@ -80,7 +79,7 @@ const createRequirement = async (req, res) => {
             requirement_title: requirementTitle,
             requirement_description: requirementDescription,
             requirement_sequence: requirementSequence ?? null,
-            badge_points: badgePoints,
+            badge_points: 0,
             is_active: true,
             created_by: userId,
             updated_by: userId
@@ -109,7 +108,6 @@ const updateRequirement = async (req, res) => {
             requirementTitle,
             requirementDescription,
             requirementSequence,
-            badgePoints,
             isActive
         } = validations.updateRequirementBodySchema.parse(req.body);
 
@@ -129,7 +127,6 @@ const updateRequirement = async (req, res) => {
             requirement_title: requirementTitle !== undefined ? requirementTitle : requirement.requirement_title,
             requirement_description: requirementDescription !== undefined ? requirementDescription : requirement.requirement_description,
             requirement_sequence: requirementSequence !== undefined ? requirementSequence : requirement.requirement_sequence,
-            badge_points: badgePoints !== undefined ? badgePoints : requirement.badge_points,
             is_active: isActive !== undefined ? isActive : requirement.is_active,
             updated_by: userId,
             updated_at: new Date()

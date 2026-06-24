@@ -1,3 +1,4 @@
+// Debounced availability check hook (e.g. username/email uniqueness) with status tracking.
 import { useEffect, useRef, useState } from 'react';
 
 export const AVAILABILITY_STATUS = Object.freeze({
@@ -8,6 +9,14 @@ export const AVAILABILITY_STATUS = Object.freeze({
 	ERROR: 'error',
 });
 
+/**
+ * Debounces an async availability check and tracks its status.
+ * @param {string} value - The value to check (e.g. username).
+ * @param {boolean} isValid - Whether client-side validation passes (skips check if false).
+ * @param {boolean} enabled - Master toggle to enable/disable checking.
+ * @param {Function} fetcher - Async function that checks availability. Must return { available: boolean }.
+ * @param {number} delay - Debounce delay in ms (default 500).
+ */
 export function useAvailability({
 	value,
 	isValid = true,

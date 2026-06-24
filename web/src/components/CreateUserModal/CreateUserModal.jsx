@@ -1,3 +1,8 @@
+/**
+ * Admin modal form for creating a new platform user with role selection.
+ * @param {Function} onClose - Called when the modal is dismissed.
+ * @param {Function} onCreated - Called after successful user creation.
+ */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/api';

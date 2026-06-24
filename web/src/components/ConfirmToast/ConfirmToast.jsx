@@ -1,6 +1,13 @@
 import { useEffect, useRef } from 'react';
 import styles from './ConfirmToast.module.css';
 
+/**
+ * Confirmation dialog overlay (e.g. "Are you sure you want to logout?").
+ * @param {boolean} [open=false] - Controls visibility.
+ * @param {string} message - Confirmation message text.
+ * @param {Function} onConfirm - Called when the confirm button is clicked.
+ * @param {Function} onCancel - Called when cancelled (button, backdrop, or Escape key).
+ */
 export default function ConfirmToast({
     open = false,
     message,

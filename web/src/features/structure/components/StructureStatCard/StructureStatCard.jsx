@@ -1,6 +1,12 @@
 import Icon from '../../../../components/Icons/Icons';
 import styles from './StructureStatCard.module.css';
 
+/**
+ * Stat card shown on structure detail pages (e.g. total badges, consultants in area).
+ * @param {string} label - Stat description.
+ * @param {string|number} value - Stat value.
+ * @param {string} [icon] - Icon name.
+ */
 export default function StructureStatCard({ icon, label, value, accentColor, accentBg }) {
 	return (
 		<div className={styles.card}>

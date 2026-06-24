@@ -4,6 +4,10 @@ import Icon from '../../../../components/Icons/Icons';
 import styles from './SLLeaderCard.module.css';
 import { ADMIN } from '../../../../routes/paths';
 
+/**
+ * Displays the Service Line Leader's profile card on Service Line detail pages.
+ * @param {Object} leader - Leader user data (name, avatar, email).
+ */
 export default function SLLeaderCard({ leader }) {
 	const { t } = useTranslation();
 

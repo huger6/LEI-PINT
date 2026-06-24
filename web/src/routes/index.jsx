@@ -1,3 +1,4 @@
+// Root route configuration. Organizes routes by access level: public, auth-guarded, and role-specific.
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';

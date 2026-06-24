@@ -1,3 +1,4 @@
+// Centralized route path constants grouped by role (AUTH, ADMIN, CONSULTANT, SLL, TM, SHARED).
 export const AUTH = {
 	LOGIN: '/login',
 	REGISTER: '/register',
@@ -96,8 +97,7 @@ export const SHARED = {
 	STRUCTURE_LEVEL_DETAIL: '/structure/levels/:areaSlug/:stageCode',
 };
 
-// Path templates for the structure detail pages, picked by role: the
-// Administrator gets the management routes, everyone else the read-only ones.
+/** Returns structure detail path templates based on role (admin gets management routes, others get read-only). */
 export function structureDetailPaths(isAdmin) {
 	return isAdmin
 		? { lp: ADMIN.LEARNING_PATH_DETAIL, sl: ADMIN.SERVICE_LINE_DETAIL, area: ADMIN.AREA_DETAIL, level: ADMIN.LEVEL_DETAIL }

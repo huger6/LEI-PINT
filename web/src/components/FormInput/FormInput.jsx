@@ -1,5 +1,13 @@
 import styles from './FormInput.module.css';
 
+/**
+ * Form input field with label, error display, and optional trailing element.
+ * @param {string} id - Input element id.
+ * @param {string} [label] - Label text shown above the input.
+ * @param {string} [error] - Error message shown below the input with red highlight.
+ * @param {ReactNode} [trailing] - Element rendered inside the input (e.g. password toggle).
+ * @param {boolean} [required] - Shows a red asterisk on the label.
+ */
 export default function FormInput({
 	id,
 	label,

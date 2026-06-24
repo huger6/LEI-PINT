@@ -1,3 +1,4 @@
+// API calls for platform-wide announcements (CRUD + toggle active state).
 import api from '../../../services/api';
 
 export async function getAnnouncements(params = {}) {

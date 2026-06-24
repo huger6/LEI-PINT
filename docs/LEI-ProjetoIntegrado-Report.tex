@@ -1,5 +1,5 @@
 % ============================================================
-%  Softinsa Badge Platform — Relatório
+%  Plataforma de Badges da Softinsa — Relatório
 %  Template com as cores do projeto
 % ============================================================
 \documentclass[12pt,a4paper]{report}
@@ -74,7 +74,7 @@
 \fancyhead[R]{\small\color{outline}\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{primary}\leaders\hrule height \headrulewidth\hfill}}
-\fancyfoot[C]{\small\color{outline}Softinsa Badge Platform}
+\fancyfoot[C]{\small\color{outline}Plataforma de Badges da Softinsa}
 
 % --- Chapter & Section Styling ---
 \usepackage{titlesec}
@@ -572,7 +572,12 @@ A segurança foi tratada como uma prioridade estrutural desde o desenho da arqui
   \item \textbf{Conformidade com o RGPD:} O sistema dispõe de um módulo dedicado à gestão de consentimentos, exportação de dados pessoais e eliminação de contas, em conformidade com o Regulamento Geral sobre a Proteção de Dados~\cite{rgpd}.
 \end{itemize}
 
-% TODO: Inserir diagrama do fluxo de autenticação — ficheiro: images/auth-flow.png
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{images/auth-flow.png}
+  \caption{Fluxo completo de autenticação da plataforma.}
+  \label{fig:auth-flow}
+\end{figure}
 
 \subsection{Usabilidade e Responsividade}
 
@@ -610,7 +615,8 @@ O suporte multilingue foi implementado de forma transversal a todas as camadas d
   \item \textbf{Deteção automática:} Na plataforma Web, a biblioteca react-i18next~\cite{i18next} deteta automaticamente o idioma do navegador do utilizador, aplicando Português como idioma de \textit{fallback} predefinido;
   \item \textbf{Ficheiros de localização:} As traduções estão organizadas em ficheiros JSON por idioma e por domínio (\texttt{common.json} para textos da interface e \texttt{api\_codes.json} para mensagens de erro da API), garantindo a separação de contextos e a facilidade de manutenção;
   \item \textbf{Tradução \textit{offline} na aplicação Mobile:} A aplicação móvel utiliza o serviço ML Kit Translation~\cite{mlkit} para suportar traduções mesmo sem conectividade à Internet, alinhado com a arquitetura \textit{offline-first} adotada;
-  \item \textbf{Saudações dinâmicas:} O sistema implementa uma lógica de saudação contextual que apresenta \textit{``Bem-vindo!''} no primeiro acesso, \textit{``Seja bem-vindo novamente''} após uma ausência superior a 15 dias e saudações baseadas na hora do dia (\textit{``Bom dia!''}, \textit{``Boa Tarde!''}, \textit{``Boa Noite!''}) nas restantes interações, traduzidas para o idioma selecionado.
+  \item \textbf{Saudações dinâmicas:} O sistema implementa uma lógica de saudação contextual que apresenta \textit{``Bem-vindo!''} no primeiro acesso, \textit{``Seja bem-vindo novamente''} após uma ausência superior a 15 dias e saudações baseadas na hora do dia (\textit{``Bom dia!''}, \textit{``Boa Tarde!''}, \textit{``Boa Noite!''}) nas restantes interações, traduzidas para o idioma selecionado;
+  \item \textbf{Tradução automática de conteúdos dinâmicos:} Para além das strings estáticas da interface (geridas por ficheiros de localização), todos os conteúdos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são traduzidos automaticamente em tempo de execução para o idioma selecionado pelo utilizador. A API integra com a Google Cloud Translation API~\cite{googletranslate}, com cache Redis de 7 dias para otimizar custos e latência, enquanto a aplicação Web utiliza um sistema de \textit{batching} que agrega múltiplos textos num único pedido HTTP para minimizar chamadas à API. Na aplicação móvel, a tradução \textit{offline} é assegurada pelo ML Kit Translation~\cite{mlkit}.
 \end{itemize}
 
 % ============================================================

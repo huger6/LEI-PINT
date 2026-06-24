@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { ADMIN } from '../../../../routes/paths';
 import styles from './StructureBreadcrumb.module.css';
 
+/**
+ * Breadcrumb navigation for structure detail pages (Learning Path > Service Line > Area > Level).
+ * @param {Array} items - Breadcrumb entries: { label, to? }.
+ */
 export default function StructureBreadcrumb({ items }) {
 	const { t } = useTranslation();
 

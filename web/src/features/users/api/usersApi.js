@@ -1,3 +1,4 @@
+// API for user management operations used by admin and management roles.
 import api from '../../../services/api';
 
 export const fetchUsers = async ({ filters = {}, page = 1, limit = 32 } = {}) => {

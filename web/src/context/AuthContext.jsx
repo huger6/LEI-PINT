@@ -1,3 +1,4 @@
+// Manages JWT authentication, session persistence, token refresh, and inactivity logout.
 import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import * as authApi from '../features/auth/api/authApi.js';
 import { setApiToken, clearApiToken, performRefresh, setOnRefreshSuccess } from '../services/api.js';
@@ -13,6 +14,10 @@ const ACTIVITY_WINDOW_MS_EPHEMERAL = 10 * 60 * 1000;
 const INACTIVITY_CHECK_MS = 15_000;
 const TOKEN_REFRESH_THRESHOLD_S = 60;
 
+/**
+ * Provides authentication state and actions (login, logout, token refresh).
+ * Handles automatic token refresh when nearing expiry, and logs out inactive non-persistent sessions.
+ */
 export function AuthProvider({ children }) {
 	const [user, setUser] = useState(null);
 	const [token, setToken] = useState(null);
@@ -27,6 +32,7 @@ export function AuthProvider({ children }) {
 
 	const isPersistent = useRef(false);
 
+	// Clears all auth state and removes session flags from localStorage.
 	const clearAuth = useCallback(() => {
 		clearApiToken();
 		localStorage.removeItem(SESSION_FLAG);
@@ -39,6 +45,7 @@ export function AuthProvider({ children }) {
 		isPersistent.current = false;
 	}, []);
 
+	// Updates token, expiry, and user data from a refresh response.
 	const applyRefreshData = useCallback((data) => {
 		setApiToken(data.token);
 		setToken(data.token);
@@ -78,6 +85,7 @@ export function AuthProvider({ children }) {
 		return () => setOnRefreshSuccess(null);
 	}, []);
 
+	// Tracks user activity (mouse, click, keyboard) to determine session inactivity.
 	useEffect(() => {
 		const updateActivity = () => {
 			const now = Date.now();
@@ -98,6 +106,7 @@ export function AuthProvider({ children }) {
 		};
 	}, []);
 
+	// Periodically checks if the token is near expiry and refreshes it if the user is active.
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			if (!tokenExpiresAt.current) return;
@@ -163,6 +172,7 @@ export function AuthProvider({ children }) {
 			});
 	}, [applyRefreshData]);
 
+	// Authenticates the user and initializes session state. Returns true if force-password-change is required.
 	const login = useCallback(async (identifier, password, remember) => {
 		const { data } = await authApi.login(identifier, password, remember);
 		const { token: newToken, tokenExpiresIn, fpc: forcePwChange, persistent, user: userData } = data.data;
@@ -181,6 +191,7 @@ export function AuthProvider({ children }) {
 		return forcePwChange;
 	}, []);
 
+	// Completes the forced password change flow and updates token/session state.
 	const completeFpc = useCallback((data) => {
 		if (data?.token) {
 			setApiToken(data.token);

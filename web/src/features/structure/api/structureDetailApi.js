@@ -1,3 +1,4 @@
+// API for fetching detailed structure entities (learning paths, service lines, areas, levels).
 import api from '../../../services/api';
 
 export async function fetchLearningPathBySlug(slug) {

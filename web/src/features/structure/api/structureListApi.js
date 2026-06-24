@@ -1,3 +1,4 @@
+// API for listing structure entities with pagination and filtering.
 import api from '../../../services/api';
 
 const DEFAULT_PAGINATION = { totalItems: 0, totalPages: 1, currentPage: 1 };

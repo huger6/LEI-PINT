@@ -92,5 +92,8 @@
 	"APP_ACTION_INVALID_STATE": "This action cannot be performed in the application's current state.",
 	"APP_TM_CANNOT_ACCEPT": "The Talent Manager cannot accept directly; forward it to the Service Line Leader.",
 	"APP_FETCH_LIST_FAILED": "Could not load applications.",
-	"APP_EVIDENCE_NOT_FOUND": "Evidence not found."
+	"APP_EVIDENCE_NOT_FOUND": "Evidence not found.",
+	"TRANSLATION_SUCCESS": "Translation completed successfully.",
+	"TRANSLATION_FAILED": "Translation failed. Please try again.",
+	"TRANSLATION_VALIDATION_FAILED": "Invalid translation data."
 }

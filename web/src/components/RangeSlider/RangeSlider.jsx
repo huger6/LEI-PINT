@@ -1,6 +1,14 @@
 import { useCallback } from 'react';
 import styles from './RangeSlider.module.css';
 
+/**
+ * Dual-thumb range slider for selecting a min/max value range.
+ * @param {string} [label] - Label text shown above the slider.
+ * @param {number} [min=0] - Minimum selectable value.
+ * @param {number} [max=100] - Maximum selectable value.
+ * @param {number[]} [value=[0,100]] - Current [low, high] selection.
+ * @param {Function} onChange - Called with the updated [low, high] array.
+ */
 export default function RangeSlider({
 	id,
 	label,

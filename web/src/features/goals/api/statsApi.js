@@ -1,3 +1,4 @@
+// API for goal-related statistics.
 import api from '../../../services/api';
 
 export async function getLearningPathProgress() {

@@ -3,6 +3,10 @@ import { PASSWORD_RULES } from '../../validations';
 import Icon from '../Icons/Icons';
 import styles from './PasswordRules.module.css';
 
+/**
+ * Live password strength checklist that shows pass/fail status for each rule.
+ * @param {string} password - Current password value to validate against rules.
+ */
 export default function PasswordRules({ password }) {
 	const { t } = useTranslation();
 	if (!password) return null;

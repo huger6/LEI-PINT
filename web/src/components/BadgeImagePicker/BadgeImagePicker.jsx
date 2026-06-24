@@ -14,10 +14,9 @@ const ACCEPT = 'image/svg+xml,.svg';
 const isSvg = (file) => file.type === 'image/svg+xml' || /\.svg$/i.test(file.name || '');
 
 /**
- * Reusable image field for badges / requirements: live preview, file upload
- * (via the existing temp-storage flow), and an in-app SVG designer (BadgeEditor).
- * The chosen image is uploaded to /temp and the public URL is handed back via
- * onChange; the API moves it to permanent storage on save.
+ * Badge image selector allowing upload or selection from the badge editor canvas.
+ * @param {string} [value] - Current image URL.
+ * @param {Function} onChange - Called with the new image URL.
  */
 export default function BadgeImagePicker({ value, onChange, onUploadingChange, disabled = false, label }) {
 	const { t } = useTranslation();

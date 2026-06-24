@@ -4,6 +4,11 @@ import Icon from '../../../../components/Icons/Icons';
 import Tooltip from '../../../../components/Tooltip/Tooltip';
 import styles from './SubStructureCard.module.css';
 
+/**
+ * Card for displaying child entities within a parent structure detail page.
+ * @param {Object} item - Child entity data.
+ * @param {string} to - Link to the child entity's detail page.
+ */
 export default function SubStructureCard({ icon, title, description, count, isActive, tone, to, infoItems }) {
 	const { t } = useTranslation();
 	const toneClass = tone ? styles[tone] : '';

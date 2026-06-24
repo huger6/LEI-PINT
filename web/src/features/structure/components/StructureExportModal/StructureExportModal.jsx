@@ -8,11 +8,7 @@ import DatePicker from '../../../../components/DatePicker/DatePicker';
 
 const FORMATS = ['csv', 'xlsx', 'pdf'];
 
-/**
- * Export popup for a structure summary: pick a format and an optional date
- * range (applied to awarded badges) and download a general summary of the
- * Learning Path / Service Line / Area.
- */
+/** Modal for exporting structure entity data in CSV/XLSX/PDF format. */
 export default function StructureExportModal({ structureType, identifier, title, onClose }) {
 	const { t } = useTranslation();
 	const [format, setFormat] = useState('csv');

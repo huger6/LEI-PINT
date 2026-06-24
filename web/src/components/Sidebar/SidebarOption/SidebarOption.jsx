@@ -3,6 +3,14 @@ import Icon from '../../Icons/Icons';
 import Tooltip from '../../Tooltip/Tooltip';
 import styles from './SidebarOption.module.css';
 
+/**
+ * Individual sidebar navigation item with icon, label, and unread notification dot.
+ * @param {string} icon - Icon name.
+ * @param {string} label - Display label (supports i18n translation keys).
+ * @param {boolean} [active=false] - Highlights the item as currently active.
+ * @param {boolean} [news=false] - Shows a notification dot.
+ * @param {boolean} [collapsed=false] - Hides the label and shows a tooltip instead.
+ */
 export default function SidebarOption({
     as = 'button',
     icon,

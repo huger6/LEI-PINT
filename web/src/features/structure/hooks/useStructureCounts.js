@@ -1,3 +1,4 @@
+// Hook for fetching and caching entity counts across the organizational structure.
 import { useEffect, useState } from 'react';
 import { EMPTY_STRUCTURE_COUNTS, getAllStructureCounts } from '../api/structureCountsApi';
 

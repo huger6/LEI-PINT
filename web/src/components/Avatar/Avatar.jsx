@@ -8,6 +8,12 @@ function getInitials(name = '') {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/**
+ * User avatar with image fallback to initials.
+ * @param {string} [src] - Profile image URL. Falls back to initials on error.
+ * @param {string} [name] - User's name, used to generate initials.
+ * @param {number} [size=36] - Avatar diameter in pixels.
+ */
 export default function Avatar({
     src,
     name,

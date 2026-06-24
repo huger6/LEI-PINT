@@ -11,6 +11,7 @@ import Pagination from '../../../components/Pagination/Pagination';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import AdminBadgeFilters, { EMPTY_FILTERS, MAX_POINTS } from './AdminBadgeFilters/AdminBadgeFilters';
 import styles from './AdminBadges.module.css';
 
@@ -214,7 +215,7 @@ export default function AdminBadges() {
 											</div>
 											<div className={styles.content}>
 												<h3 className={styles.cardTitle} title={title}>{title}</h3>
-												<p className={styles.description}>{b.badge_description || b.badgeDescription || '—'}</p>
+												<p className={styles.description}><TranslatedText text={b.badge_description || b.badgeDescription || '—'} /></p>
 												<div className={styles.metaGrid}>
 													<span className={styles.metaChip}>{b.area?.area_name || getAreaName(b.area_id || b.areaId)}</span>
 													{stageCode && <span className={styles.metaChip}>{stageCode}</span>}

@@ -9,6 +9,7 @@ import ConfirmToast from '../../ConfirmToast/ConfirmToast';
 import DropdownOption from '../DropdownOption/DropdownOption';
 import styles from './UserDropdown.module.css';
 
+/** User avatar dropdown menu with profile link, theme toggle, settings, and logout. */
 export default function UserDropdown() {
     const { t } = useTranslation();
     const { logout } = useAuth();

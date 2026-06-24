@@ -7,12 +7,13 @@ import Icon from '../Icons/Icons';
 import Tooltip from '../Tooltip/Tooltip';
 import TableSkeleton from '../Skeleton/TableSkeleton';
 import CreateRequirementModal from '../CreateRequirementModal/CreateRequirementModal';
+import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './BadgeRequirementsManager.module.css';
 
 /**
- * Inline requirements manager for a single badge (used inside the badge edit
- * page). Lists requirements and supports create / edit / soft-delete, reusing
- * CreateRequirementModal. Requires the badge to already exist (a slug).
+ * Manages the list of requirements for a badge (add, edit, reorder, delete).
+ * @param {Array} requirements - Current requirement list.
+ * @param {Function} onChange - Called with the updated requirements array.
  */
 export default function BadgeRequirementsManager({ badgeSlug }) {
 	const { t } = useTranslation();
@@ -60,7 +61,7 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 			</div>
 
 			{loading ? (
-				<TableSkeleton rows={3} columns={5} />
+				<TableSkeleton rows={3} columns={4} />
 			) : requirements.length === 0 ? (
 				<div className={styles.empty}>
 					<Icon name="check_circle" size={32} aria-hidden="true" className={styles.emptyIcon} />
@@ -73,7 +74,6 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 							<tr>
 								<th>{t('adminRequirements.sequence')}</th>
 								<th>{t('shared.title')}</th>
-								<th>{t('shared.points')}</th>
 								<th>{t('shared.active')}</th>
 								<th className="text-end">{t('shared.actions')}</th>
 							</tr>
@@ -82,8 +82,7 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 							{requirements.map((req, idx) => (
 								<tr key={req.requirement_id || req.requirementId || idx}>
 									<td><span className={styles.seqBadge}>{req.requirement_sequence ?? req.requirementSequence ?? idx + 1}</span></td>
-									<td>{req.requirement_title || req.requirementTitle || '—'}</td>
-									<td><span className={styles.pointsChip}>{req.badge_points ?? req.badgePoints ?? 0} pts</span></td>
+									<td><TranslatedText text={req.requirement_title || req.requirementTitle || '—'} /></td>
 									<td>
 										<span className={`${styles.statusChip} ${req.is_active ? styles.statusOn : styles.statusOff}`}>
 											{req.is_active ? t('shared.yes') : t('shared.no')}

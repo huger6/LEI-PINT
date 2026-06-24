@@ -1034,15 +1034,6 @@ const reviewEvidence = async (req, res) => {
             validations_comments: reviewNotes ?? null
         }, { transaction });
 
-        // Award requirement points when evidence is approved
-        if (approved && evidence.requirement_id) {
-            await gamificationService.awardRequirementPoints(
-                application.user_id,
-                evidence.requirement_id,
-                transaction
-            );
-        }
-
         await transaction.commit();
 
         Promise.all([

@@ -9,6 +9,11 @@ import {
 } from 'recharts';
 import styles from './HorizontalBarChart.module.css';
 
+/**
+ * Horizontal bar chart for comparing categorical data (e.g. badges per area).
+ * @param {Array} data - Chart data entries.
+ * @param {Object} [options] - Chart.js configuration overrides.
+ */
 export default function HorizontalBarChart({
 	data = [],
 	xAxisKey,

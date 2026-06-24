@@ -1,3 +1,4 @@
+// Hook for accessing notification state and actions from the UserContext.
 import { useContext } from 'react';
 import { UserContext } from '../../../context/UserContext';
 

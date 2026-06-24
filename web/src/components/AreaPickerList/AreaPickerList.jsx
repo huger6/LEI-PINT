@@ -6,6 +6,11 @@ import styles from './AreaPickerList.module.css';
 
 const ITEMS_PER_PAGE = 5;
 
+/**
+ * Multi-select area picker with primary area designation for consultant registration/profile.
+ * @param {Array} selectedAreas - Currently selected areas: { area_id, is_primary }.
+ * @param {Function} onChange - Called with the updated areas array.
+ */
 export default function AreaPickerList({
 	areas = [],
 	selected = [],

@@ -1,3 +1,4 @@
+// Axios instance configured with JWT auth, automatic token refresh on 401, and dev-mode request logging.
 import axios from 'axios';
 
 const api = axios.create({
@@ -15,6 +16,7 @@ export const clearApiToken = () => { _token = null; };
 let _onRefreshSuccess = null;
 export const setOnRefreshSuccess = (cb) => { _onRefreshSuccess = cb; };
 
+// Extracts the call stack for dev-mode API logging.
 const getCaller = () => {
 	const stack = new Error().stack || '';
 	const lines = stack.split('\n').slice(1);
@@ -28,6 +30,7 @@ const getCaller = () => {
 	return callers.length ? callers.join(' ← ') : 'unknown';
 };
 
+// Attaches the JWT token to every outgoing request.
 api.interceptors.request.use((config) => {
 	if (import.meta.env.DEV) {
 		config.metadata = { startedAt: Date.now(), caller: getCaller() };
@@ -40,6 +43,7 @@ api.interceptors.request.use((config) => {
 
 let _refreshPromise = null;
 
+// Attempts to refresh the JWT token. Deduplicates concurrent calls. Dispatches auth:logout on failure.
 export const performRefresh = () => {
 	if (_refreshPromise) return _refreshPromise;
 
@@ -92,6 +96,7 @@ api.interceptors.response.use(
 			console.log('  └─ data:', error.response.data);
 		}
 
+		// On 401, retries the original request after refreshing the token.
 		const original = error.config;
 		const status = error.response?.status;
 		const url = original?.url ?? '';

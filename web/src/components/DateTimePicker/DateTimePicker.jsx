@@ -58,6 +58,12 @@ function formatDisplay(date) {
 	return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+/**
+ * Date and time picker combining a calendar grid with hour/minute inputs.
+ * Emits ISO 8601 strings via synthetic onChange events.
+ * @param {string} value - Selected datetime as ISO string.
+ * @param {Function} onChange - Synthetic event: { target: { name, value } }.
+ */
 export default function DateTimePicker({
 	id,
 	name,

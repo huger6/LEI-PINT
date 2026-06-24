@@ -1,5 +1,11 @@
+// Generic form validation hook with touched-field tracking and error visibility control.
 import { useCallback, useMemo, useState } from 'react';
 
+/**
+ * Manages form state, validation, and field-level error visibility.
+ * @param {Object} initialValues - Initial form values.
+ * @param {Function} validate - Function that returns an errors object from current values.
+ */
 export function useFormValidation({ initialValues, validate }) {
 	const [values, setValues] = useState(initialValues);
 	const [touched, setTouched] = useState({});
@@ -32,6 +38,7 @@ export function useFormValidation({ initialValues, validate }) {
 		[touched, submitAttempted, errors]
 	);
 
+	// Returns { name, value, onChange, onBlur, error } ready to spread onto an input element.
 	const getFieldProps = useCallback(
 		(name) => ({
 			name,
@@ -85,6 +92,7 @@ export function useFormValidation({ initialValues, validate }) {
 	};
 }
 
+/** Returns the first truthy error message from the arguments. */
 export const mergeError = (...messages) => {
 	for (const m of messages) {
 		if (m) return m;

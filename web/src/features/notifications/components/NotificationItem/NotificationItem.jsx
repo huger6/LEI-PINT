@@ -55,6 +55,11 @@ function parseNotificationPayload(payload) {
 	}
 }
 
+/**
+ * Individual notification list item with icon, message, timestamp, and read/unread state.
+ * @param {Object} notification - Notification data from the API.
+ * @param {Function} [onMarkRead] - Called when the notification is clicked or marked as read.
+ */
 export default function NotificationItem({ notification, onRead, onNavigate }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();

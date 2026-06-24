@@ -1,3 +1,4 @@
+// Route guard for unauthenticated pages (login, register). Redirects to home if already logged in.
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../features/auth';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';

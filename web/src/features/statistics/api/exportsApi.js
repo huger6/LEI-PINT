@@ -1,3 +1,4 @@
+// API for downloading data exports (CSV, XLSX, PDF) with date range filtering.
 import api from '../../../services/api';
 
 const EXPORT_PATHS = {

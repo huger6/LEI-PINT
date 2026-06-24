@@ -18,6 +18,7 @@ import CheckItem from '../../../components/CheckItem/CheckItem';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { uploadProfileImageToTemp } from '../../../services/storage';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
@@ -629,7 +630,7 @@ export default function UserProfile() {
 							{displayAchievements.length > 0 ? (
 								<div className={styles.achievementsList}>
 									{displayAchievements.map((item, idx) => (
-										<CheckItem key={idx}>{item.description || item.title || item}</CheckItem>
+										<CheckItem key={idx}><TranslatedText text={item.description || item.title || (typeof item === 'string' ? item : '')} /></CheckItem>
 									))}
 								</div>
 							) : (

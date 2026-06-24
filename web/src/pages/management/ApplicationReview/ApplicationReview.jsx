@@ -15,6 +15,7 @@ import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import Spinner from '../../../components/Spinner/Spinner';
 import FormAlert from '../../../components/FormAlert/FormAlert';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './ApplicationReview.module.css';
 
 const APP_STATE_KEY = {
@@ -363,7 +364,7 @@ export default function ApplicationReview({ application }) {
 									{tmComment && (
 										<div className={styles.opinionQuote}>
 											<strong>{t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned')}</strong>
-											<p>“{tmComment}”</p>
+											<p>”<TranslatedText text={tmComment} />”</p>
 										</div>
 									)}
 								</div>
@@ -425,7 +426,7 @@ export default function ApplicationReview({ application }) {
 										<Icon name="requirement" size={18} color="var(--color-secondary)" />
 										<div className={styles.reqBody}>
 											<div className={styles.reqTitleRow}>
-												<span className={styles.reqTitle}>{r.code}: {r.title}</span>
+												<span className={styles.reqTitle}>{r.code}: <TranslatedText text={r.title} /></span>
 												{r.validated ? (
 													<span className={`${styles.evPill} ${styles.evVerified}`}>
 														<Icon name="check_circle" size={12} color="var(--color-green-on-soft)" /> {t('applicationReview.validatedLabel')}
@@ -440,7 +441,7 @@ export default function ApplicationReview({ application }) {
 													<span className={`${styles.evPill} ${styles.evSubmitted}`}>{t('applicationReview.verifiedByTm')}</span>
 												)}
 											</div>
-											{r.description && <p className={styles.reqDesc}>{r.description}</p>}
+											{r.description && <p className={styles.reqDesc}><TranslatedText text={r.description} /></p>}
 										</div>
 									</div>
 

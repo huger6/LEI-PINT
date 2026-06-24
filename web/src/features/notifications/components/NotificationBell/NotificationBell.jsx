@@ -5,6 +5,7 @@ import NotificationPanel from '../NotificationPanel/NotificationPanel';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './NotificationBell.module.css';
 
+/** Top-bar notification bell that opens the notification panel and shows unread count badge. */
 export default function NotificationBell() {
 	const { t } = useTranslation();
 	const { unreadCount } = useNotifications();

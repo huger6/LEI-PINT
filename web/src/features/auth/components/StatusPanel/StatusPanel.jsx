@@ -6,6 +6,7 @@ const ICONS = {
     error: 'close',
 };
 
+/** Right-side status/info panel shown alongside auth forms on wider screens. */
 export default function StatusPanel({
     variant = 'loading',
     title,

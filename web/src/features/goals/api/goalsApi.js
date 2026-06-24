@@ -1,3 +1,4 @@
+// API for consultant learning objectives/goals.
 import api from '../../../services/api';
 
 export async function getGoals() {

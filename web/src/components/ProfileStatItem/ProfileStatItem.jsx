@@ -1,6 +1,15 @@
 import Icon from '../Icons/Icons';
 import styles from './ProfileStatItem.module.css';
 
+/**
+ * Profile statistics card with icon, value, label, and optional footer.
+ * @param {string} icon - Icon name.
+ * @param {string} accentColor - Icon and value text color.
+ * @param {string} accentBg - Background color for the icon circle.
+ * @param {string|number} value - Stat value.
+ * @param {string} label - Stat description.
+ * @param {string} [footer] - Optional footer text below the value.
+ */
 export default function ProfileStatItem({ icon, accentColor, accentBg, value, label, footer }) {
 	return (
 		<div className={styles.statItem}>

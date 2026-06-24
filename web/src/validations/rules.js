@@ -1,3 +1,4 @@
+// Individual field validation rules used across all forms. Each returns null on success or an i18n error key.
 import i18n from '../i18n';
 import { validatePhoneWithMetadata } from '../services/libphonenumber/validator';
 
@@ -47,6 +48,7 @@ export const validateIdentifier = (value) => {
 	return t('validation.identifierInvalid');
 };
 
+/** Password strength rules: min 8 chars, uppercase, lowercase, digit, and special character. */
 export const PASSWORD_RULES = [
 	{ key: 'minLength', test: (v) => typeof v === 'string' && v.length >= 8 },
 	{ key: 'uppercase', test: (v) => /[A-Z]/.test(v ?? '') },

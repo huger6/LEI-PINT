@@ -2,91 +2,36 @@ const { models, sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 
 /*──────────────────────────────────────────────────────────────
-  POINTS – REQUIREMENT COMPLETION
-  Called when a reviewer approves an evidence for a requirement.
-  Idempotent: awards points at most once per (user, requirement).
-──────────────────────────────────────────────────────────────*/
-const awardRequirementPoints = async (userId, requirementId, transaction = null) => {
-    const requirement = await models.badge_requirements.findByPk(requirementId);
-
-    if (!requirement || !requirement.is_active || requirement.badge_points <= 0) {
-        return null;
-    }
-
-    // Idempotency check – never award twice for the same requirement
-    const existing = await models.points_history.findOne({
-        where: { user_id: userId, requirement_id: requirementId }
-    });
-    if (existing) return existing;
-
-    const record = await models.points_history.create({
-        user_id: userId,
-        requirement_id: requirementId,
-        badge_id: requirement.badge_id,
-        points_delta: requirement.badge_points,
-        justification: `Requirement completed: ${requirement.requirement_title}`
-    }, { transaction });
-
-    logger.info('Requirement points awarded', {
-        userId,
-        requirementId,
-        points: requirement.badge_points
-    });
-
-    return record;
-};
-
-/*──────────────────────────────────────────────────────────────
   POINTS – BADGE COMPLETION
   Called when a badge application transitions to 'Accepted'.
-  Also awards any pending requirement points to guarantee
-  every requirement is accounted for.
   Idempotent: badge completion points awarded once per badge.
 ──────────────────────────────────────────────────────────────*/
 const awardBadgeCompletionPoints = async (userId, badgeId, transaction = null) => {
-    const badge = await models.badges.findByPk(badgeId, {
-        include: [{
-            model: models.badge_requirements,
-            as: 'badge_requirements',
-            where: { is_active: true },
-            required: false
-        }]
+    const badge = await models.badges.findByPk(badgeId);
+
+    if (!badge || badge.badge_points <= 0) return null;
+
+    const existing = await models.points_history.findOne({
+        where: { user_id: userId, badge_id: badgeId, requirement_id: null }
     });
 
-    if (!badge) return null;
+    if (existing) return null;
 
-    const results = { requirementRecords: [], badgeRecord: null };
+    const record = await models.points_history.create({
+        user_id: userId,
+        badge_id: badgeId,
+        requirement_id: null,
+        points_delta: badge.badge_points,
+        justification: `Badge completed: ${badge.badge_title}`
+    }, { transaction });
 
-    // Award any requirement points not yet credited
-    for (const req of badge.badge_requirements) {
-        const record = await awardRequirementPoints(userId, req.requirement_id, transaction);
-        if (record) results.requirementRecords.push(record);
-    }
+    logger.info('Badge completion points awarded', {
+        userId,
+        badgeId,
+        points: badge.badge_points
+    });
 
-    // Badge-level completion points (idempotency: no requirement_id on this row)
-    if (badge.badge_points > 0) {
-        const existingBadge = await models.points_history.findOne({
-            where: { user_id: userId, badge_id: badgeId, requirement_id: null }
-        });
-
-        if (!existingBadge) {
-            results.badgeRecord = await models.points_history.create({
-                user_id: userId,
-                badge_id: badgeId,
-                requirement_id: null,
-                points_delta: badge.badge_points,
-                justification: `Badge completed: ${badge.badge_title}`
-            }, { transaction });
-
-            logger.info('Badge completion points awarded', {
-                userId,
-                badgeId,
-                points: badge.badge_points
-            });
-        }
-    }
-
-    return results;
+    return record;
 };
 
 /*──────────────────────────────────────────────────────────────
@@ -331,7 +276,6 @@ const getConsultantStats = async (userId) => {
 };
 
 module.exports = {
-    awardRequirementPoints,
     awardBadgeCompletionPoints,
     getConsultantPointsSummary,
     getConsultantPointsAndRank,

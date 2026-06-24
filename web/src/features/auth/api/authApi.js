@@ -1,3 +1,4 @@
+// Authentication API: login, register, password reset, email confirmation, and session management.
 import api from '../../../services/api.js';
 
 export const login = (identifier, password, remember) =>

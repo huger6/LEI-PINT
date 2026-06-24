@@ -1,3 +1,4 @@
+// Gamification API: points, streaks, achievements, and leaderboard data.
 import api from '../../../services/api';
 
 export async function toggleFavorite(badgeSlug) {

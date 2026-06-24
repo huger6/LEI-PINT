@@ -9,6 +9,7 @@ import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import Button from '../../../components/Button/Button';
 import FormAlert from '../../../components/FormAlert/FormAlert';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './ApplicationStatus.module.css';
 
 const CERT_LANG_MAP = { pt: 'pt', en: 'en', es: 'es' };
@@ -160,7 +161,7 @@ export default function ApplicationStatus({ application, badge }) {
 								<div className={styles.badgePreview}>
 									{imgUrl && <img src={imgUrl} alt={title} className={styles.badgePreviewImg} />}
 									<h3 className={styles.badgePreviewName}>{title}</h3>
-									{description && <p className={styles.badgePreviewDesc}>{description}</p>}
+									{description && <p className={styles.badgePreviewDesc}><TranslatedText text={description} /></p>}
 								</div>
 
 								<div className={styles.infoGrid}>
@@ -260,7 +261,7 @@ export default function ApplicationStatus({ application, badge }) {
 															<span className={styles.timelineRole}>{role}</span>
 														</div>
 													)}
-													{comment && <p className={styles.timelineComment}>{comment}</p>}
+													{comment && <p className={styles.timelineComment}><TranslatedText text={comment} /></p>}
 													{date && (
 														<div className={styles.timelineDate}>
 															<Icon name="clock" size={14} color="var(--color-outline)" />
@@ -300,7 +301,7 @@ export default function ApplicationStatus({ application, badge }) {
 									{t('applicationDetail.additionalNotes')}
 								</h2>
 								<div className={styles.feedbackItem}>
-									<p className={styles.feedbackText}>{consultantNotes}</p>
+									<p className={styles.feedbackText}><TranslatedText text={consultantNotes} /></p>
 								</div>
 							</div>
 						)}
@@ -325,7 +326,7 @@ export default function ApplicationStatus({ application, badge }) {
 													<span className={styles.feedbackRole}>{role}</span>
 													{date && <span className={styles.feedbackDate}>{formatDateTime(date)}</span>}
 												</div>
-												<p className={styles.feedbackText}>{comment}</p>
+												<p className={styles.feedbackText}><TranslatedText text={comment} /></p>
 											</div>
 										);
 									})}
@@ -354,7 +355,7 @@ export default function ApplicationStatus({ application, badge }) {
 													{req.requirement_code || `A${idx + 1}`}
 												</span>
 												<div className={styles.reqContent}>
-													<span className={styles.reqName}>{reqTitle}</span>
+													<span className={styles.reqName}><TranslatedText text={reqTitle} /></span>
 													{evidence ? (
 														<div className={styles.reqEvidenceFile}>
 															<Icon name="paper" size={14} color="var(--color-secondary)" />

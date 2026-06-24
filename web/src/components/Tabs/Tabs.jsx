@@ -1,5 +1,11 @@
 import styles from './Tabs.module.css';
 
+/**
+ * Horizontal tab bar with optional badge counts.
+ * @param {Array} tabs - Tab definitions: { key, label, badge? }.
+ * @param {string} activeTab - Currently selected tab key.
+ * @param {Function} onTabChange - Called with the selected tab key.
+ */
 export default function Tabs({ tabs, activeTab, onTabChange }) {
 	return (
 		<div className={styles.tabs} role="tablist">

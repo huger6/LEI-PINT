@@ -1,3 +1,4 @@
+// Phone number formatting utilities and fallback country prefix list.
 const DIGITS_ONLY_REGEX = /\D+/g;
 
 export const FALLBACK_PHONE_PREFIXES = [
@@ -23,10 +24,12 @@ export const FALLBACK_PHONE_PREFIXES = [
 	{ value: '+1', label: 'US/CA (+1)' },
 ];
 
+/** Strips all non-digit characters from a phone number string. */
 export function normalizePhoneDigits(value) {
 	return String(value ?? '').replace(DIGITS_ONLY_REGEX, '');
 }
 
+/** Formats a phone number by grouping digits in sets of three for readability. */
 export function groupByThree(value) {
 	const digits = normalizePhoneDigits(value);
 	return digits.match(/.{1,3}/g)?.join(' ') ?? '';

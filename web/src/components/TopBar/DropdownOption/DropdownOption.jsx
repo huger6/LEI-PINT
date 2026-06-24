@@ -4,6 +4,13 @@ import styles from './DropdownOption.module.css';
 
 const FILLED_ICONS = new Set(['moon', 'privacy', 'security', 'close', 'asterisk']);
 
+/**
+ * Reusable menu option for dropdown menus with icon and label.
+ * @param {string} [icon] - Icon name.
+ * @param {string} label - Display label (supports i18n translation keys).
+ * @param {Function} [onClick] - Click handler.
+ * @param {string|Component} [as='button'] - Polymorphic root element.
+ */
 export default function DropdownOption({
     as = 'button',
     icon,

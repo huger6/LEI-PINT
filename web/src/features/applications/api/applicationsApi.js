@@ -1,3 +1,4 @@
+// API calls for badge applications: listing, paging, state transitions, and evidence management.
 import api from '../../../services/api';
 
 export async function getApplications(params = {}) {

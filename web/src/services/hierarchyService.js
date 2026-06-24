@@ -1,3 +1,4 @@
+// CRUD operations for the organizational hierarchy: Learning Paths, Service Lines, Areas, and Levels.
 import api from './api';
 
 // ─── Learning Paths ───

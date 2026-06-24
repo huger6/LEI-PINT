@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import styles from './LoadingScreen.module.css';
 
+/** Full-screen centered loading spinner shown during initial auth checks. */
 export default function LoadingScreen() {
 	const { t } = useTranslation();
 	return (

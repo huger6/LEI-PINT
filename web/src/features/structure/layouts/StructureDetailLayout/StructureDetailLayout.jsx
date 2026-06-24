@@ -10,6 +10,12 @@ import StructureBreadcrumb from '../../components/StructureBreadcrumb/StructureB
 import StructureExportModal from '../../components/StructureExportModal/StructureExportModal';
 import styles from './StructureDetailLayout.module.css';
 
+/**
+ * Shared layout for structure detail pages with breadcrumb, header, stats, and child entity grid.
+ * @param {string} title - Entity title.
+ * @param {Array} breadcrumbs - Breadcrumb navigation items.
+ * @param {ReactNode} children - Page-specific content.
+ */
 export default function StructureDetailLayout({
 	breadcrumbItems,
 	title,

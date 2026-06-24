@@ -12,6 +12,7 @@ import DashboardSkeleton from '../../../components/Skeleton/DashboardSkeleton';
 import Icon from '../../../components/Icons/Icons';
 import Button from '../../../components/Button/Button';
 import { ADMIN } from '../../../routes/paths';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './AdminDashboard.module.css';
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—');
@@ -134,8 +135,8 @@ export default function AdminDashboard() {
 								{announcements.map((a) => (
 									<li key={a.announcement_id} className={styles.annItem}>
 										<div className={styles.annText}>
-											<span className={styles.annTitle}>{a.announcement_title}</span>
-											<span className={styles.annMessage}>{a.announcement_message}</span>
+											<span className={styles.annTitle}><TranslatedText text={a.announcement_title} /></span>
+											<span className={styles.annMessage}><TranslatedText text={a.announcement_message} /></span>
 										</div>
 										<span className={styles.annDate}>{fmtDate(a.starts_at || a.created_at)}</span>
 									</li>

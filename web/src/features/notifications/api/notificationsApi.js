@@ -1,3 +1,4 @@
+// User-facing notifications API: fetch, mark read, and unread count.
 import api from '../../../services/api';
 
 export const fetchNotifications = ({ page = 1, limit = 20, type, is_read } = {}) => {
