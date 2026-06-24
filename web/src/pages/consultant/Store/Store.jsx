@@ -12,6 +12,15 @@ import styles from './Store.module.css';
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
 
+const CATEGORY_STYLE = {
+	course:       { icon: 'certificate',   bg: 'var(--color-primary-soft)',  color: 'var(--color-primary)' },
+	voucher:      { icon: 'star-points',   bg: 'var(--color-orange-soft)',   color: 'var(--color-orange-on-soft)' },
+	title:        { icon: 'badge-premium', bg: 'var(--color-purple-soft)',   color: 'var(--color-purple-on-soft)' },
+	physical:     { icon: 'trophy',        bg: 'var(--color-green-soft)',    color: 'var(--color-green-on-soft)' },
+	subscription: { icon: 'skills',        bg: 'var(--color-blue-soft)',     color: 'var(--color-blue-on-soft)' },
+};
+const DEFAULT_STYLE = { icon: 'certificate', bg: 'var(--color-primary-soft)', color: 'var(--color-primary)' };
+
 export default function Store() {
 	const { t } = useTranslation();
 	const { refreshPoints } = useUser();
@@ -82,9 +91,10 @@ export default function Store() {
 				<div className={styles.grid}>
 					{rewards.map((r) => {
 						const affordable = balance >= r.costPoints;
+						const cs = CATEGORY_STYLE[r.category] || DEFAULT_STYLE;
 						return (
 							<ContentCard key={r.rewardGuid} className={styles.card}>
-								<div className={styles.cardIcon}><Icon name="certificate" size={26} color="var(--color-primary)" aria-hidden="true" /></div>
+								<div className={styles.cardIcon} style={{ background: cs.bg }}><Icon name={cs.icon} size={26} color={cs.color} aria-hidden="true" /></div>
 								<h3 className={styles.cardTitle}>{r.name}</h3>
 								{r.description && <p className={styles.cardDesc}>{r.description}</p>}
 								<div className={styles.cardFooter}>

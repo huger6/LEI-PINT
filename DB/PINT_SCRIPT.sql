@@ -681,6 +681,7 @@ CREATE TABLE IF NOT EXISTS rewards (
    access_info          TEXT                 NULL, -- static credentials/notes emailed on redemption
    cost_points          INTEGER              NOT NULL DEFAULT 0,
    is_active            BOOLEAN              NOT NULL DEFAULT TRUE,
+   reward_category      VARCHAR(50)          NULL, -- course | voucher | title | physical | subscription
 
    CONSTRAINT pk_rewards PRIMARY KEY (reward_id)
 );

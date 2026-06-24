@@ -296,6 +296,18 @@ INSERT INTO sl_slas (service_line_id, sla_id) VALUES (1, 2);
 
 INSERT INTO rewards (reward_id, badge_id, special_title, special_portrait_svg) VALUES (1, 5, 'Hybrid Cloud Principal Excellence', NULL);
 
+-- Store rewards (redeemable with points)
+INSERT INTO rewards (reward_id, reward_name, reward_description, access_link, access_info, cost_points, is_active, reward_category) VALUES
+(2,  'CS50: Introduction to Computer Science', 'Harvard''s renowned introductory CS course. Learn programming fundamentals, algorithms, and data structures with professor David J. Malan.', 'https://cs50.harvard.edu/x/', 'You will receive an enrollment code via email. Use it at cs50.harvard.edu/x to access the full course materials and certificate.', 3500, TRUE, 'course'),
+(3,  'Hack The Box VIP+ — 1 Month', '1-month VIP+ subscription on Hack The Box. Access exclusive machines, advanced labs, and premium cybersecurity training content.', 'https://www.hackthebox.com/', 'A redemption code will be sent to your email. Activate it at hackthebox.com/redeem.', 4500, TRUE, 'voucher'),
+(4,  'Udemy Course Voucher — €20', '€20 Udemy credit for any course of your choice. Expand your skills in technology, business, or personal development.', 'https://www.udemy.com/', 'You will receive a unique gift code via email. Apply it at udemy.com/cart during checkout.', 2000, TRUE, 'voucher'),
+(5,  'AWS Solutions Architect — Exam Voucher', 'Voucher covering the AWS Solutions Architect Associate (SAA-C03) certification exam fee. Approximate value: $150 USD.', 'https://aws.amazon.com/certification/', 'The exam voucher code will be emailed to you. Schedule your exam at aws.training using the code.', 15000, TRUE, 'voucher'),
+(6,  'Exclusive Title: Tech Pioneer', 'Unlock the special "Tech Pioneer" title on your profile. Show that you are among the first to earn store rewards on the platform.', NULL, 'Your title will be applied to your profile automatically within 24 hours.', 300, TRUE, 'title'),
+(7,  'Exclusive Title: Innovation Leader', 'Unlock the exclusive "Innovation Leader" title on your profile. A symbol of excellence and leadership in technology innovation.', NULL, 'Your title will be applied to your profile automatically within 24 hours.', 600, TRUE, 'title'),
+(8,  'Mechanical Keyboard — Keychron K2 Pro', 'Premium wireless mechanical keyboard with Gateron switches and RGB backlight. Compact 75% layout, ideal for developers.', NULL, 'Our team will contact you via email to arrange delivery to your office location.', 12000, TRUE, 'physical'),
+(9,  'Amazon Gift Card — €25', '€25 Amazon gift card. Use it to buy tech books, gadgets, or anything you like.', NULL, 'The gift card code will be sent to your registered email address within 48 hours.', 2500, TRUE, 'physical'),
+(10, 'LinkedIn Learning — 3 Months', '3-month access to LinkedIn Learning with over 16,000 courses in technology, business, and creativity.', 'https://www.linkedin.com/learning/', 'An activation link will be sent to your email. Click it to unlock 3 months of LinkedIn Learning.', 9000, TRUE, 'subscription');
+
 -- 8. Sequence Resets
 
 SELECT setval(pg_get_serial_sequence('languages', 'language_id'), (SELECT COALESCE(MAX(language_id), 1) FROM languages), true);

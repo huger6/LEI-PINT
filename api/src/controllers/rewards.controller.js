@@ -13,6 +13,7 @@ const toStoreItem = (r) => ({
     name: r.reward_name,
     description: r.reward_description,
     costPoints: r.cost_points,
+    category: r.reward_category,
 });
 
 /*──────────────────────────────────────────────────────────────
@@ -174,7 +175,8 @@ const adminListRewards = async (req, res) => {
                 accessLink: r.access_link,
                 accessInfo: r.access_info,
                 costPoints: r.cost_points,
-                isActive: r.is_active
+                isActive: r.is_active,
+                category: r.reward_category
             }))
         });
     } catch (error) {
@@ -192,7 +194,8 @@ const createReward = async (req, res) => {
             access_link: body.accessLink ?? null,
             access_info: body.accessInfo ?? null,
             cost_points: body.costPoints,
-            is_active: body.isActive ?? true
+            is_active: body.isActive ?? true,
+            reward_category: body.category ?? null
         });
         return res.status(201).json({ success: true, code: 'REWARDS_CREATED', data: { rewardGuid: reward.reward_guid } });
     } catch (error) {
@@ -213,6 +216,7 @@ const updateReward = async (req, res) => {
         if (body.accessInfo !== undefined) fields.access_info = body.accessInfo;
         if (body.costPoints !== undefined) fields.cost_points = body.costPoints;
         if (body.isActive !== undefined) fields.is_active = body.isActive;
+        if (body.category !== undefined) fields.reward_category = body.category;
 
         const [updated] = await models.rewards.update(fields, { where: { reward_guid: rewardGuid } });
         if (updated === 0) return res.status(404).json({ success: false, code: 'REWARDS_NOT_FOUND' });

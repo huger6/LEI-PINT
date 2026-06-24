@@ -54,6 +54,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
+    },
+    reward_category: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     sequelize,
