@@ -17,12 +17,12 @@
 
 .typeWarning {
 	background: rgba(207, 166, 0, 0.14);
-	color: #8a6f00;
+	color: var(--color-orange-on-soft);
 }
 
 .typeNewContent {
 	background: rgba(4, 206, 0, 0.1);
-	color: #0a7a08;
+	color: var(--color-green-on-soft);
 }
 
 .typeOther {
@@ -44,7 +44,7 @@
 
 .statusActive {
 	background: rgba(4, 206, 0, 0.1);
-	color: #0a7a08;
+	color: var(--color-green-on-soft);
 }
 
 .statusInactive {
@@ -76,7 +76,7 @@
 	font-size: 0.72rem;
 	font-weight: 700;
 	background: rgba(0, 184, 224, 0.12);
-	color: #007a99;
+	color: var(--color-primary);
 }
 
 .targetList {

@@ -88,6 +88,7 @@
 
 	/* Neutral / layout */
 	--color-bg-card: #f9fafb;
+	--color-surface-variant: #f0f2f5;
 	--color-outline-light: #DEE3E6;
 	--color-outline-variant: #BFC8CC;
 
@@ -120,6 +121,7 @@
 	--color-outline-light: #2a323b;
 	--color-outline-variant: #39424b;
 	--color-bg-card: #161c23;
+	--color-surface-variant: #1e262f;
 
 	--color-primary-container: #16454f;
 	--color-on-primary-container: #b9ebf6;

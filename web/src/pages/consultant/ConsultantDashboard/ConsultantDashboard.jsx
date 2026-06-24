@@ -101,7 +101,7 @@ export default function ConsultantDashboard() {
 						<Icon name="paper" size={36} className={styles.emptyIcon} aria-hidden="true" />
 						<p className={styles.emptyTitle}>{t('consultantDashboard.noApplications')}</p>
 						<p className={styles.emptyHint}>{t('consultantDashboard.noApplicationsHint')}</p>
-						<Button as={Link} to={CONSULTANT.CATALOG} size="sm">
+						<Button as={Link} to={CONSULTANT.CATALOG}>
 							<Icon name="search" size={14} className="me-1" aria-hidden="true" />
 							{t('consultantDashboard.exploreCatalog')}
 						</Button>
@@ -154,7 +154,7 @@ export default function ConsultantDashboard() {
 							const slug = b.badge_slug || b.badgeSlug;
 							const title = b.badge_title || b.badgeTitle;
 							const img = b.badge_img_url || b.badgeImgUrl;
-							const isSpecial = (b.badge_type || b.badgeType) === 'Special';
+							const isSpecial = String(b.badge_type || b.badgeType || '').trim().toLowerCase() === 'special';
 							return (
 								<Link key={slug} to={`/badges/${slug}`} className={styles.recCard}>
 									<div className={styles.recThumb}>

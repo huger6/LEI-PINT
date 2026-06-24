@@ -4,7 +4,7 @@
 	gap: 1rem;
 	padding: 1rem 1.25rem;
 	border-radius: 14px;
-	background: linear-gradient(180deg, #ffffff 0%, #f8fcfe 100%);
+	background: var(--gradient-surface-panel);
 	border: 1px solid var(--color-primary-border-soft);
 	box-shadow: var(--shadow-card);
 	transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
@@ -60,7 +60,7 @@
 
 .active {
 	background: var(--color-green-soft);
-	color: #0f7f69;
+	color: var(--color-green-on-soft);
 }
 
 .inactive {

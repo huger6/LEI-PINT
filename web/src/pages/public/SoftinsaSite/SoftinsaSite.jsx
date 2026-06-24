@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
 import Icon from '../../../components/Icons/Icons';
+import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
 import styles from './SoftinsaSite.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -11,7 +12,6 @@ const ABOUT_IMG = 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?
 
 const FEATURE_ICONS = ['🎯', '🏅', '🎮', '✅', '📊', '🌐'];
 const STEP_NUMS = ['01', '02', '03', '04'];
-const LANGS = [{ code: 'pt', label: 'PT' }, { code: 'en', label: 'EN' }, { code: 'es', label: 'ES' }];
 
 // Group badges by their Learning Path (falling back down the hierarchy), so the
 // public showcase reads as themed collections instead of one long flat list.
@@ -44,7 +44,7 @@ const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 );
 
 export default function SoftinsaSite() {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const rootRef = useRef(null);
 	const [badges, setBadges] = useState([]);
 	const [people, setPeople] = useState([]);
@@ -103,15 +103,7 @@ export default function SoftinsaSite() {
 						<a href="#fluxo">{t('softinsaSite.nav.comoFunciona')}</a>
 					</nav>
 					<div className={styles.navRight}>
-						<div className={styles.langSwitch}>
-							{LANGS.map((l) => (
-								<button key={l.code} type="button"
-									className={`${styles.langBtn} ${i18n.resolvedLanguage === l.code ? styles.langActive : ''}`}
-									onClick={() => i18n.changeLanguage(l.code)}>
-									{l.label}
-								</button>
-							))}
-						</div>
+						<PreferencesBar className={styles.prefsInline} />
 						<Link to="/" className={styles.navCta}>{t('softinsaSite.nav.aceder')}</Link>
 					</div>
 				</div>

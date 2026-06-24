@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { verifyBadge } from '../../../features/badges/api/publicBadgesApi';
+import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
 import styles from './VerifyBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -47,6 +48,7 @@ export default function VerifyBadge() {
 					<Link to="/softinsa" className={styles.brand}>
 						<img src={LOGO_SRC} alt="Softinsa" className={styles.logoImg} />
 					</Link>
+					<PreferencesBar />
 				</div>
 			</header>
 

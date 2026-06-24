@@ -30,7 +30,7 @@
 
 .searchInput:hover {
 	border-color: rgba(0, 184, 224, 0.5);
-	background: #fcfeff;
+	background: var(--color-surface-overlay-90);
 }
 
 .filterCard {
@@ -41,7 +41,7 @@
 	overscroll-behavior: contain;
 	border: 1px solid rgba(57, 99, 156, 0.16);
 	border-radius: 16px;
-	background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
+	background: var(--gradient-surface-panel);
 	box-shadow: 0 8px 26px rgba(17, 34, 68, 0.08);
 }
 
@@ -63,7 +63,7 @@
 	font-weight: 800;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
-	color: #244469;
+	color: var(--color-on-secondary-container);
 }
 
 .filterControl {
@@ -74,20 +74,20 @@
 
 .filterControl:hover {
 	border-color: rgba(0, 184, 224, 0.44);
-	background-color: #fbfdff;
+	background-color: var(--color-surface-overlay-90);
 }
 
 .areaPickerWrap {
 	border: 1px dashed rgba(57, 99, 156, 0.24);
 	border-radius: 12px;
 	padding: 0.7rem;
-	background: rgba(255, 255, 255, 0.74);
+	background: var(--color-surface-overlay-72);
 }
 
 .areaPickerLabel {
 	font-size: 0.76rem;
 	font-weight: 700;
-	color: #2d4a6f;
+	color: var(--color-on-secondary-container);
 	margin-bottom: 0.5rem;
 }
 
@@ -100,7 +100,7 @@
 .areaTag {
 	border: 1px solid rgba(57, 99, 156, 0.28);
 	background: var(--color-surface);
-	color: #244469;
+	color: var(--color-on-secondary-container);
 	padding: 0.22rem 0.55rem;
 	border-radius: 999px;
 	font-size: 0.74rem;
@@ -116,7 +116,7 @@
 .areaTagActive {
 	background: rgba(0, 184, 224, 0.14);
 	border-color: rgba(0, 184, 224, 0.65);
-	color: #005c73;
+	color: var(--color-primary);
 }
 
 .areaEmpty {
@@ -158,7 +158,7 @@
 	border-radius: 999px;
 	font-size: 0.78rem;
 	font-weight: 700;
-	color: #3b587f;
+	color: var(--color-on-secondary-container);
 	transition: background-color 160ms ease, color 160ms ease;
 }
 
@@ -168,7 +168,7 @@
 
 .segmentedBtnActive {
 	background: var(--color-surface);
-	color: #0f4f68;
+	color: var(--color-primary);
 	box-shadow: 0 2px 6px rgba(15, 79, 104, 0.15);
 }
 
@@ -176,7 +176,7 @@
 	display: block;
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: #2d4a6f;
+	color: var(--color-on-secondary-container);
 	margin-bottom: 0.3rem;
 }
 
@@ -187,14 +187,14 @@
 .rangeValue {
 	font-size: 0.8rem;
 	font-weight: 700;
-	color: #2d4a6f;
+	color: var(--color-on-secondary-container);
 }
 
 .savedBanner {
 	padding: 0.5rem 0.85rem;
 	border-radius: 10px;
 	background: rgba(0, 184, 224, 0.1);
-	color: #005b73;
+	color: var(--color-primary);
 	font-size: 0.82rem;
 	font-weight: 600;
 }
@@ -250,7 +250,7 @@
 .drawerClose {
 	border: 0;
 	background: transparent;
-	color: #334d70;
+	color: var(--color-on-secondary-container);
 	width: 36px;
 	height: 36px;
 	display: inline-flex;
@@ -262,7 +262,7 @@
 
 .drawerClose:hover {
 	background: rgba(57, 99, 156, 0.12);
-	color: #1f385a;
+	color: var(--color-on-surface);
 }
 
 .drawerBody {

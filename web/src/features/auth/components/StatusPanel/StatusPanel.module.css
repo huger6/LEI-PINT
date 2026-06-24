@@ -4,8 +4,10 @@
     overflow: hidden;
     padding: 1.75rem 1.5rem;
     border-radius: 18px;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: var(--color-surface-overlay-90);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-outline-light);
     box-shadow: 0 18px 38px rgba(9, 20, 40, 0.12);
     display: flex;
     flex-direction: column;
@@ -44,7 +46,7 @@
 .spinner {
     width: 46px;
     height: 46px;
-    border: 3px solid rgba(0, 0, 0, 0.12);
+    border: 3px solid var(--color-outline-light);
     border-top-color: var(--panel-accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
@@ -53,7 +55,7 @@
 .title {
     font-size: 1.45rem;
     font-weight: 700;
-    color: var(--color-on-primary-container);
+    color: var(--color-on-surface);
     font-family: 'Poppins', 'Segoe UI', sans-serif;
     letter-spacing: -0.02em;
 }

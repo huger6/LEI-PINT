@@ -104,14 +104,14 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 }
 
 .alert-warning {
-	--bs-alert-color: #7a5e00;
+	--bs-alert-color: var(--color-orange-on-soft);
 	--bs-alert-bg: var(--color-warning-container-soft);
 	--bs-alert-border-color: transparent;
 }
 
 /* ── Brand card — use on any .card for consistent elevation ── */
 .card.brand-card {
-	border: 1px solid #e8ecef;
+	border: 1px solid var(--color-outline-light);
 	border-radius: 14px;
 	transition: box-shadow 250ms ease, transform 250ms ease, border-color 200ms ease;
 }
@@ -134,22 +134,22 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 
 .badge.badge-validation {
 	background: var(--color-warning-container-soft);
-	color: #7a5e00;
+	color: var(--color-orange-on-soft);
 }
 
 .badge.badge-closed {
 	background: var(--color-success-container);
-	color: #0a6e08;
+	color: var(--color-green-on-soft);
 }
 
 .badge.badge-accepted {
 	background: var(--color-success-container);
-	color: #0a6e08;
+	color: var(--color-green-on-soft);
 }
 
 .badge.badge-rejected {
-	background: #fde8e8;
-	color: #b91c1c;
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
 }
 
 .badge.badge-area {
@@ -159,7 +159,7 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 
 .badge.badge-points {
 	background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
-	color: #7a5e00;
+	color: var(--color-orange-on-soft);
 }
 
 /* ── Breadcrumb polish ───────────────────────────────────── */
@@ -244,13 +244,13 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 	letter-spacing: 0.06em;
 	color: var(--color-outline);
 	border-bottom-width: 2px;
-	border-color: #f0f2f4;
+	border-color: var(--color-outline-light);
 }
 
 .table td {
 	padding: 10px 12px;
 	vertical-align: middle;
-	border-color: #f4f5f6;
+	border-color: var(--color-outline-light);
 }
 
 /* ── Custom scrollbar ────────────────────────────────────── */
@@ -269,4 +269,58 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 
 ::-webkit-scrollbar-thumb:hover {
 	background: #b0b7bf;
+}
+
+/* ── Dark theme — Bootstrap & global overrides ──────────── */
+[data-theme="dark"] .card {
+	--bs-card-bg: var(--color-surface);
+	--bs-card-color: var(--color-on-surface);
+	--bs-card-border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .table-light {
+	--bs-table-bg: var(--color-surface);
+	--bs-table-color: var(--color-on-surface);
+	--bs-table-border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-variant);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+	color: var(--color-outline);
+}
+
+[data-theme="dark"] .modal-content {
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .modal-header {
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .modal-footer {
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .badge.badge-points {
+	background: linear-gradient(135deg, rgba(255, 204, 0, 0.2) 0%, rgba(255, 193, 7, 0.15) 100%);
+}
+
+[data-theme="dark"] .text-muted {
+	color: var(--color-outline) !important;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+	background: #3a424b;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+	background: #4a535d;
 }

@@ -106,3 +106,20 @@
         gap: 1rem;
     }
 }
+
+:global([data-theme="dark"]) .card {
+    background: linear-gradient(180deg, #39639C 0%, #2F4B54 100%);
+}
+
+:global([data-theme="dark"]) .metaIcon {
+    stroke: #F7F9FB;
+}
+
+:global([data-theme="dark"]) .metaText,
+:global([data-theme="dark"]) .metaLabel {
+    color: #F7F9FB;
+}
+
+:global([data-theme="dark"]) .userName {
+    color: #FFFFFF;
+}

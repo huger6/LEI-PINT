@@ -85,26 +85,15 @@
 	margin-left: auto;
 }
 
-.langSwitch {
-	display: inline-flex;
-	border: 1px solid var(--si-border);
-	border-radius: 999px;
-	overflow: hidden;
+.prefsInline {
+	--color-outline-light: var(--si-border);
+	--color-outline: var(--si-muted);
+	--color-on-surface: var(--si-navy);
+	--color-primary: var(--si-teal);
+	--color-on-primary: #fff;
+	--color-outline-variant: var(--si-border);
+	--color-surface-overlay-62: rgba(255, 255, 255, 0.62);
 }
-
-.langBtn {
-	border: none;
-	background: transparent;
-	color: var(--si-muted);
-	font-size: 0.78rem;
-	font-weight: 700;
-	padding: 0.3rem 0.6rem;
-	cursor: pointer;
-	transition: background 0.15s ease, color 0.15s ease;
-}
-
-.langBtn:hover { color: var(--si-navy); }
-.langActive { background: var(--si-teal); color: #fff; }
 
 .navCta {
 	background: var(--si-teal);
@@ -121,7 +110,6 @@
 
 @media (max-width: 760px) {
 	.navLinks { display: none; }
-	.navCta { margin-left: auto; }
 }
 
 /* Hero */

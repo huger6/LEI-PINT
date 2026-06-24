@@ -33,6 +33,23 @@
 
 .logoImg { height: 34px; width: auto; display: block; }
 
+.navRight {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-left: auto;
+}
+
+.prefsInline {
+	--color-outline-light: var(--si-border);
+	--color-outline: var(--si-muted);
+	--color-on-surface: var(--si-navy);
+	--color-primary: var(--si-teal);
+	--color-on-primary: #fff;
+	--color-outline-variant: var(--si-border);
+	--color-surface-overlay-62: rgba(255, 255, 255, 0.62);
+}
+
 .back {
 	color: var(--si-teal);
 	text-decoration: none;
