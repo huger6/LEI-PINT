@@ -46,7 +46,7 @@
 
 - ~~Text for requirements in edit badge page is black color in dark mode (fix).~~ [DONE]
 
-- Edit badge does not work [CRITICAL]
+- ~~Edit badge does not work [CRITICAL]~~ [DONE]
 
 - ~~Channel on integration page is black in black background (dark mode problem).~~ [DONE]
 

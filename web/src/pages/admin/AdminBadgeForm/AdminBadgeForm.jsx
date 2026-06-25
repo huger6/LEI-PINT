@@ -121,15 +121,17 @@ export default function AdminBadgeForm() {
 				? null : Number(form.expirationDurationDays);
 			const payload = {
 				badgeTitle: form.badgeTitle,
-				areaId: Number(form.areaId) || form.areaId,
-				progressionStageId: Number(form.progressionStageId) || form.progressionStageId,
+				progressionStageId: Number(form.progressionStageId) || undefined,
 				badgeType: form.badgeType,
 				badgePoints: Number(form.badgePoints),
 				expirationDurationDays: expiration,
-				badgeImgUrl: form.badgeImgUrl || null,
 				badgeDescription: form.badgeDescription,
 				isActive: form.isActive,
 			};
+			const originalImg = isEdit ? (editItem?.badge_img_url || '') : '';
+			if (form.badgeImgUrl !== originalImg) {
+				payload.badgeImgUrl = form.badgeImgUrl || null;
+			}
 			if (isEdit) await updateBadge(editItem.badge_slug || slug, payload);
 			else await createBadge(payload);
 			navigate(ADMIN.BADGES);
