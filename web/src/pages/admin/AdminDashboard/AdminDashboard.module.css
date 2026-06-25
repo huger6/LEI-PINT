@@ -93,6 +93,7 @@
 .kpiCard:hover {
 	transform: translateY(-3px);
 	box-shadow: var(--shadow-card);
+	text-decoration: none;
 }
 
 .kpiValue {
@@ -110,8 +111,9 @@
 /* ── Panels ── */
 .panels {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: 2fr 1fr;
 	gap: 1.25rem;
+	align-items: start;
 }
 
 .panel {
@@ -206,4 +208,15 @@
 
 @media (max-width: 768px) {
 	.panels { grid-template-columns: 1fr; }
+}
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .state_submitted {
+	background: var(--color-orange-soft);
+}
+
+:global([data-theme="dark"]) .expiring {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
 }

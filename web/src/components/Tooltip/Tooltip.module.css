@@ -101,3 +101,16 @@
 .wrapper:hover .right {
 	transform: translateY(-50%) translateX(0);
 }
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .bubble {
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+:global([data-theme="dark"]) .top::after    { border-top-color: var(--color-surface); }
+:global([data-theme="dark"]) .bottom::after { border-bottom-color: var(--color-surface); }
+:global([data-theme="dark"]) .left::after   { border-left-color: var(--color-surface); }
+:global([data-theme="dark"]) .right::after  { border-right-color: var(--color-surface); }

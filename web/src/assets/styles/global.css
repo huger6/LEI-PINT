@@ -253,6 +253,10 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 	border-color: var(--color-outline-light);
 }
 
+.table td.text-end {
+	white-space: nowrap;
+}
+
 /* ── Custom scrollbar ────────────────────────────────────── */
 ::-webkit-scrollbar {
 	width: 6px;
@@ -282,6 +286,19 @@ h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
 	--bs-table-bg: var(--color-surface);
 	--bs-table-color: var(--color-on-surface);
 	--bs-table-border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--color-on-surface);
+	--bs-table-border-color: var(--color-outline-light);
+	--bs-table-hover-bg: var(--color-surface-variant);
+	--bs-table-hover-color: var(--color-on-surface);
+}
+
+[data-theme="dark"] .table thead th {
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-light);
 }
 
 [data-theme="dark"] .form-control,

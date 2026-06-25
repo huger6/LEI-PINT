@@ -617,3 +617,44 @@
 		margin-left: 0;
 	}
 }
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .card {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .badgePreview {
+	background: var(--color-surface-variant);
+}
+
+:global([data-theme="dark"]) .feedbackItem {
+	background: var(--color-surface-variant);
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .timelineItem {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .timelineLatest {
+	background: var(--color-orange-soft);
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .timelineIcon {
+	background: var(--color-surface-variant);
+}
+
+:global([data-theme="dark"]) .latestBadge {
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+}
+
+:global([data-theme="dark"]) .evidenceRow {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .reqRow {
+	border-color: var(--color-outline-light);
+}

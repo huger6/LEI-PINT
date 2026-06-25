@@ -416,6 +416,10 @@
 	cursor: pointer;
 }
 
+.serviceLineLink:hover {
+	text-decoration: none;
+}
+
 .serviceLineLink span {
 	flex: 1;
 }

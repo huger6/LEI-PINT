@@ -42,7 +42,7 @@ function PodiumCard({ entry, rank, page }) {
 
     const Wrapper = entry.user_guid ? Link : 'div';
     const wrapperProps = entry.user_guid
-        ? { to: `/softinsa/u/${entry.user_guid}`, className: `${styles.podiumCard} ${styles.consultantLink}` }
+        ? { to: `/u/${entry.user_guid}`, className: `${styles.podiumCard} ${styles.consultantLink}` }
         : { className: styles.podiumCard };
 
     return (
@@ -505,7 +505,7 @@ export default function Ranking() {
                                                     </td>
                                                     <td>
                                                         {entry.user_guid ? (
-                                                            <Link to={`/softinsa/u/${entry.user_guid}`} className={styles.consultantLink}>
+                                                            <Link to={`/u/${entry.user_guid}`} className={styles.consultantLink}>
                                                                 <div className={styles.consultantCell}>
                                                                     <Avatar src={entry.profile_img_url} name={entry.full_name} size={36} />
                                                                     <span>{entry.full_name}</span>

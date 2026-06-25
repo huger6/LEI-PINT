@@ -658,6 +658,8 @@
 		"noAnnouncements": "Sem avisos.",
 		"slas": "SLA's",
 		"createSla": "Criar SLA",
+		"manageAnnouncements": "Gerir Avisos",
+		"manageSlas": "Gerir SLAs",
 		"noSlas": "Sem SLAs definidos.",
 		"slaStart": "Início",
 		"slaEnd": "Conclusão",

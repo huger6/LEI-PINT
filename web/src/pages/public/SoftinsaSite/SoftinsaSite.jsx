@@ -10,6 +10,16 @@ const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/pub
 const HERO_IMG = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80';
 const ABOUT_IMG = 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1000&q=80';
 
+const FOOTER_LINKS = [
+	'https://softinsa.pt/quem-somos/',
+	'https://softinsa.pt/responsabilidade-social/',
+	'https://softinsa.pt/servicos/',
+	'https://softinsa.pt/centros-de-inovacao/',
+	'https://softinsa.pt/carreiras/',
+	'https://softinsa.pt/destaques/',
+	'https://softinsa.pt/contactos/',
+];
+
 const FEATURE_ICONS = ['🎯', '🏅', '🎮', '✅', '📊', '🌐'];
 const STEP_NUMS = ['01', '02', '03', '04'];
 
@@ -298,8 +308,8 @@ export default function SoftinsaSite() {
 					<div className={styles.footerLinks}>
 						<h3>{t('softinsaSite.footer.ligacoesUteis')}</h3>
 						<ul>
-							{arr(links).map((l) => (
-								<li key={l}><a href="https://softinsa.pt" target="_blank" rel="noreferrer">{l}</a></li>
+							{arr(links).map((l, i) => (
+								<li key={l}><a href={FOOTER_LINKS[i] ?? 'https://softinsa.pt'} target="_blank" rel="noreferrer">{l}</a></li>
 							))}
 						</ul>
 					</div>

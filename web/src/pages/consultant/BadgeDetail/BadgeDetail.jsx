@@ -166,6 +166,8 @@ export default function BadgeDetail() {
 	const serviceLineName = serviceLine?.service_line_name || serviceLine?.serviceLineName;
 	const learningPath = badge.learning_path || badge.learningPath;
 	const learningPathName = learningPath?.path_title || learningPath?.pathTitle;
+	const learningPathSlug = learningPath?.path_slug || learningPath?.pathSlug;
+	const serviceLineSlug = serviceLine?.sl_slug || serviceLine?.slSlug;
 	const stage = badge.progression_stage || badge.progressionStage;
 	const stageCode = stage?.stage_code?.stage_code || stage?.stageCode?.stageCode;
 	const stageTitle = stage?.stage_title || stage?.stageTitle;
@@ -195,8 +197,12 @@ export default function BadgeDetail() {
 
 	const breadcrumbItems = [
 		{ label: t('sidebar.consultant.home'), to: SHARED.HOME },
-		...(learningPathName ? [{ label: learningPathName, to: catalogPath }] : []),
-		...(serviceLineName ? [{ label: serviceLineName }] : []),
+		...(learningPathName
+			? [{ label: learningPathName, to: learningPathSlug ? SHARED.STRUCTURE_LP_DETAIL.replace(':slug', learningPathSlug) : undefined }]
+			: []),
+		...(serviceLineName
+			? [{ label: serviceLineName, to: serviceLineSlug ? SHARED.STRUCTURE_SL_DETAIL.replace(':slug', serviceLineSlug) : undefined }]
+			: []),
 		{ label: title, active: true },
 	];
 

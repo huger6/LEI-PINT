@@ -227,6 +227,8 @@
 	line-height: 1.375rem;
 	text-align: justify;
 	margin: 0;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 .textarea {

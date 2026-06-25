@@ -412,6 +412,8 @@ export default function UserProfile() {
 			];
 		}
 
+		if (isAdminRole) return base;
+
 		// TM / SLL are reviewers, not badge earners — show only reviewer stats.
 		return [
 			{ icon: 'tabler_users', accentColor: 'var(--color-orange-on-soft)', accentBg: 'var(--color-orange-soft)', value: profile?.teamMembersCount ?? profile?.team_members_count ?? 0, label: t('profile.teamMembers'), footer: t('profile.statFooterTeam') },

@@ -702,3 +702,52 @@
 		gap: 6px;
 	}
 }
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .card {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .errorBanner {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+:global([data-theme="dark"]) .reqItem {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .reqIconCircle {
+	background: var(--color-surface-variant);
+}
+
+:global([data-theme="dark"]) .progressTrack {
+	background: var(--color-surface-variant);
+}
+
+:global([data-theme="dark"]) .evidenceFile {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .evidenceFileClickable:hover {
+	background: var(--color-green-soft);
+}
+
+:global([data-theme="dark"]) .reqFileLabelBtn {
+	background: var(--color-surface-variant);
+	border-color: var(--color-outline-variant);
+}
+
+:global([data-theme="dark"]) .notesTextarea {
+	background: var(--color-surface-variant);
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .cancelBtn {
+	border-color: var(--color-outline-light);
+}
+
+:global([data-theme="dark"]) .cancelBtn:hover {
+	background: var(--color-surface-variant);
+}

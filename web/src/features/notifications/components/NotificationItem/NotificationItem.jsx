@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../../components/Icons/Icons';
@@ -63,6 +64,7 @@ function parseNotificationPayload(payload) {
 export default function NotificationItem({ notification, onRead, onNavigate }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const [expanded, setExpanded] = useState(false);
 	const payload = parseNotificationPayload(notification?.notification_payload);
 	const notificationType = String(notification?.notification_type || 'SYSTEM').toUpperCase();
 	const iconName = ICONS[notificationType] || ICONS.SYSTEM;
@@ -70,11 +72,12 @@ export default function NotificationItem({ notification, onRead, onNavigate }) {
 	const rawTitle = payload.title || payload.body || notification?.definition?.name || notificationType;
 	const translated = t(rawTitle, { ns: 'api', defaultValue: '', ...meta });
 	const message = translated || rawTitle;
+	const rawBody = payload.body && payload.title ? payload.body : null;
+	const bodyTranslated = rawBody ? (t(rawBody, { ns: 'api', defaultValue: '', ...meta }) || rawBody) : null;
 	const sentAt = notification?.sent_at || notification?.created_at;
 
-	// Deep-link: an explicit payload link wins, then a specific application,
-	// otherwise the section that matches the notification type.
-	const target = payload.link
+	const target = notification.notification_url
+		|| payload.link
 		|| (meta.applicationGuid ? `/applications/${meta.applicationGuid}` : null)
 		|| ROUTE_BY_TYPE[notificationType]
 		|| '/';
@@ -83,6 +86,11 @@ export default function NotificationItem({ notification, onRead, onNavigate }) {
 		if (!notification.is_read) onRead(notification.notification_id);
 		onNavigate?.();
 		navigate(target);
+	};
+
+	const handleToggleExpand = (e) => {
+		e.stopPropagation();
+		setExpanded((prev) => !prev);
 	};
 
 	const handleMarkRead = (e) => {
@@ -102,8 +110,21 @@ export default function NotificationItem({ notification, onRead, onNavigate }) {
 				<Icon name={iconName} className={styles.icon} size={16} color="currentColor" aria-label={notificationType} />
 			</span>
 			<div className={styles.content}>
-				<p className={styles.message}>{message}</p>
-				<span className={styles.time}>{timeAgo(sentAt, t)}</span>
+				<p className={expanded ? styles.messageExpanded : styles.message}>{message}</p>
+				{expanded && bodyTranslated && (
+					<p className={styles.body}>{bodyTranslated}</p>
+				)}
+				<div className={styles.metaRow}>
+					<span className={styles.time}>{timeAgo(sentAt, t)}</span>
+					<button
+						type="button"
+						className={styles.expandBtn}
+						onClick={handleToggleExpand}
+						aria-label={expanded ? t('notifications.collapse', { defaultValue: 'Recolher' }) : t('notifications.expand', { defaultValue: 'Expandir' })}
+					>
+						<Icon name={expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'} size={14} color="currentColor" aria-hidden="true" />
+					</button>
+				</div>
 			</div>
 			{!notification.is_read && (
 				<button

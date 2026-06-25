@@ -99,8 +99,12 @@ const getApplications = async (req, res) => {
                     code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
-            // SLL only sees applications within their SL (merge with any area filter)
-            badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
+            // When viewing a specific consultant's profile (consultantGuid provided),
+            // show all their badges regardless of service line so the count matches
+            // the team list. Otherwise scope to the SLL's own service line.
+            if (!consultantGuid) {
+                badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
+            }
 
         } else if (role === 'Talent Manager' || role === 'Administrator') {
             // TM/Admin see everything, but TM doesn't see apps in 'Open' state by default

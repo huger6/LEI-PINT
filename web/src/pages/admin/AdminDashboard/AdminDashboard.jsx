@@ -75,9 +75,9 @@ export default function AdminDashboard() {
 	const kpis = [
 		{ key: 'users', value: stats.users, icon: 'tabler_users', label: t('adminDashboard.users'), link: ADMIN.USERS },
 		{ key: 'badges', value: stats.badges, icon: 'badge', label: t('adminDashboard.badges'), link: ADMIN.BADGES },
-		{ key: 'paths', value: stats.learningPaths, icon: 'learning-path', label: t('adminDashboard.learningPaths'), link: ADMIN.STRUCTURE },
-		{ key: 'serviceLines', value: stats.serviceLines, icon: 'service-line', label: t('adminDashboard.serviceLines'), link: ADMIN.STRUCTURE },
-		{ key: 'areas', value: stats.areas, icon: 'area', label: t('adminDashboard.areas'), link: ADMIN.STRUCTURE },
+		{ key: 'paths', value: stats.learningPaths, icon: 'learning-path', label: t('adminDashboard.learningPaths'), link: ADMIN.LEARNING_PATHS },
+		{ key: 'serviceLines', value: stats.serviceLines, icon: 'service-line', label: t('adminDashboard.serviceLines'), link: ADMIN.SERVICE_LINES },
+		{ key: 'areas', value: stats.areas, icon: 'area', label: t('adminDashboard.areas'), link: ADMIN.AREAS },
 		{ key: 'applications', value: stats.applications, icon: 'paper', label: t('adminDashboard.applications'), link: ADMIN.APPLICATIONS },
 	];
 
@@ -145,8 +145,7 @@ export default function AdminDashboard() {
 						)}
 					</div>
 					<Button as={Link} to={ADMIN.ANNOUNCEMENTS} className={styles.panelBtn}>
-						<Icon name="add" size={16} className="me-1" aria-hidden="true" />
-						{t('adminDashboard.createAnnouncement')}
+						{t('adminDashboard.manageAnnouncements')}
 					</Button>
 				</section>
 
@@ -179,8 +178,7 @@ export default function AdminDashboard() {
 						)}
 					</div>
 					<Button as={Link} to={ADMIN.SLAS} className={styles.panelBtn}>
-						<Icon name="add" size={16} className="me-1" aria-hidden="true" />
-						{t('adminDashboard.createSla')}
+						{t('adminDashboard.manageSlas')}
 					</Button>
 				</section>
 			</div>
