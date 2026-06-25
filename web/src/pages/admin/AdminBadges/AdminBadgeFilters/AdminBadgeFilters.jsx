@@ -25,6 +25,7 @@ export const EMPTY_FILTERS = {
 	expiringOnly: false,
 };
 
+// Returns the first non-null value among the given keys as a string, else empty.
 const idOf = (x, ...keys) => {
 	for (const k of keys) if (x[k] != null) return String(x[k]);
 	return '';
@@ -38,19 +39,24 @@ const idOf = (x, ...keys) => {
  */
 export default function AdminBadgeFilters({ filters, onChange, learningPaths, serviceLines, areas }) {
 	// Initialize translation hook for i18n support.
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
 
+	// Service lines scoped to the selected learning path.
 	const scopedServiceLines = filters.learningPathId
 		? serviceLines.filter((sl) => idOf(sl, 'learning_path_id', 'learningPathId') === String(filters.learningPathId))
 		: [];
+	// Areas scoped to the selected service line.
 	const scopedAreas = filters.serviceLineId
 		? areas.filter((a) => idOf(a, 'service_line_id', 'serviceLineId') === String(filters.serviceLineId))
 		: [];
 
+	// Build the learning path dropdown options with an "all" entry.
 	const learningPathOptions = [
 		{ value: '', label: t('badgeCatalog.filters.allLearningPaths') },
 		...learningPaths.map((lp) => ({ value: idOf(lp, 'learning_path_id', 'learningPathId'), label: lp.path_title || lp.pathTitle })),
 	];
+	// Build the service line dropdown options with an "all" entry.
 	const serviceLineOptions = [
 		{ value: '', label: t('badgeCatalog.filters.allServiceLines') },
 		...scopedServiceLines.map((sl) => ({ value: idOf(sl, 'service_line_id', 'serviceLineId'), label: sl.service_line_name || sl.serviceLineName })),

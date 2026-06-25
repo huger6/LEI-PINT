@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import Icon from '../Icons/Icons';
 import styles from './FileDropZone.module.css';
 
+// Formats a byte count into a human-readable size string (B/KB/MB).
 function formatFileSize(bytes) {
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -23,9 +24,12 @@ export default function FileDropZone({
 	dropLabel,
 	fileCountLabel,
 }) {
+	// Ref to the hidden file input element.
 	const inputRef = useRef(null);
+	// Tracks whether a file is being dragged over the zone.
 	const [dragOver, setDragOver] = useState(false);
 
+	// Handles dropped files, adding each via onAdd.
 	function handleDrop(e) {
 		e.preventDefault();
 		setDragOver(false);
@@ -34,19 +38,23 @@ export default function FileDropZone({
 		}
 	}
 
+	// Enables the drag-over highlight state.
 	function handleDragOver(e) {
 		e.preventDefault();
 		setDragOver(true);
 	}
 
+	// Clears the drag-over highlight state.
 	function handleDragLeave() {
 		setDragOver(false);
 	}
 
+	// Opens the native file picker.
 	function handleClick() {
 		inputRef.current?.click();
 	}
 
+	// Handles files chosen via the file picker, adding each via onAdd.
 	function handleFileSelect(e) {
 		if (onAdd) {
 			Array.from(e.target.files).forEach((f) => onAdd(f));

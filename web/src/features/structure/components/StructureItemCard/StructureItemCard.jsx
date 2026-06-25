@@ -10,7 +10,9 @@ import styles from './StructureItemCard.module.css';
  * @param {string} to - Link to the entity's detail page.
  */
 export default function StructureItemCard({ to, icon, title, description, imageUrl, isActive, meta, tone, infoItems }) {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Resolves the optional tone modifier CSS class
 	const toneClass = tone ? styles[tone] : '';
 
 	return (

@@ -1,3 +1,4 @@
+// Validates a full international phone number (with +country code) against metadata.
 export function validatePhoneWithMetadata(phoneNumber, metadata) {
 	if (!phoneNumber || !metadata) return { valid: false, error: 'MISSING_INPUT' };
 
@@ -41,6 +42,7 @@ export function validatePhoneWithMetadata(phoneNumber, metadata) {
 	};
 }
 
+// Validates a national number against a given calling code using metadata.
 export function validateNationalNumber(nationalNumber, callingCode, metadata) {
 	if (!nationalNumber || !callingCode || !metadata) {
 		return { valid: false, error: 'MISSING_INPUT' };
@@ -89,6 +91,7 @@ export function validateNationalNumber(nationalNumber, callingCode, metadata) {
 	return { valid: false, error: 'PATTERN_MISMATCH', country: regionCodes[0] };
 }
 
+// Matches the leading digits to a country, returning the country and national number.
 function matchCountryByNumber(digits, metadata) {
 	for (let len = 1; len <= 3; len++) {
 		if (digits.length < len) break;
@@ -126,6 +129,7 @@ function matchCountryByNumber(digits, metadata) {
 	return null;
 }
 
+// Classifies a national number as MOBILE, FIXED_LINE, or UNKNOWN.
 function detectNumberType(nationalNumber, country) {
 	if (country.mobilePattern) {
 		const mobileRegex = new RegExp(`^(?:${country.mobilePattern})$`);
@@ -140,6 +144,7 @@ function detectNumberType(nationalNumber, country) {
 	return 'UNKNOWN';
 }
 
+// Builds a sorted list of country dialing prefixes with their validation patterns.
 export function getCountryPrefixes(metadata) {
 	if (!metadata) return [];
 

@@ -8,6 +8,7 @@ import ErrorCodePage from '../pages/shared/ErrorCodePage/ErrorCodePage';
  * @param {string[]} allowedRoles - Roles permitted to access the child routes.
  */
 export default function RoleRoute({ allowedRoles }) {
+	// Reads the current user to compare their role against the allowed list.
 	const { user, isUserLoading } = useUser();
 
 	if (isUserLoading) return <Outlet />;

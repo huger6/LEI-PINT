@@ -68,6 +68,7 @@ const HINT_COLORS = {
 	muted: { color: 'var(--color-outline)' },
 };
 
+// Admin modal form for creating a new platform user with role-specific fields and validation.
 export default function CreateUserModal({ onClose, onCreated, serviceLines = [], allAreas = [] }) {
 	const { t, i18n } = useTranslation();
 	// Provides the list of available languages from context.

@@ -12,16 +12,25 @@ import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import styles from './Security.module.css';
 
+// Minimum allowed length for a new password.
 const MIN_LENGTH = 8;
 
+// Security page: shows account overview and a change-password form.
 export default function Security() {
+	// Translation helper for localized labels and messages.
 	const { t } = useTranslation();
+	// Current logged-in user data and computed display name.
 	const { user, displayName } = useUser();
+	// Password form fields (current / new / confirm).
 	const [form, setForm] = useState({ current: '', next: '', confirm: '' });
+	// Per-field and form-level validation errors.
 	const [errors, setErrors] = useState({});
+	// Whether the change request is in flight.
 	const [saving, setSaving] = useState(false);
+	// Whether the password change succeeded.
 	const [success, setSuccess] = useState(false);
 
+	// Update form state on input change and clear related errors/success.
 	function handleChange(e) {
 		const { name, value } = e.target;
 		setForm((prev) => ({ ...prev, [name]: value }));
@@ -29,6 +38,7 @@ export default function Security() {
 		setSuccess(false);
 	}
 
+	// Validate the password fields and populate per-field errors.
 	function validate() {
 		const next = {};
 		if (!form.current) next.current = t('security.errCurrent');
@@ -38,6 +48,7 @@ export default function Security() {
 		return Object.keys(next).length === 0;
 	}
 
+	// Submit handler: validate, then call the change-password API.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!validate()) return;
@@ -53,6 +64,7 @@ export default function Security() {
 		}
 	}
 
+	// Pick the user's primary area (or first area) for display.
 	const primaryArea = Array.isArray(user?.areas)
 		? (user.areas.find((a) => a.isPrimary) || user.areas[0])
 		: null;

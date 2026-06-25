@@ -25,27 +25,38 @@ export default function CustomSelect({
 	ariaLabel,
 	compact = false,
 }) {
+	// Whether the dropdown list is currently open.
 	const [open, setOpen] = useState(false);
+	// Index of the currently keyboard-focused option.
 	const [focusIndex, setFocusIndex] = useState(-1);
+	// Whether the dropdown opens upward (when there is little space below).
 	const [dropUp, setDropUp] = useState(false);
+	// Ref to the wrapper, used for outside-click detection.
 	const wrapperRef = useRef(null);
+	// Ref to the trigger button, used for positioning and focus.
 	const triggerRef = useRef(null);
+	// Ref to the options list, used for scroll-into-view.
 	const listRef = useRef(null);
+	// Accumulates typed characters for type-ahead search.
 	const searchBufferRef = useRef('');
+	// Timer that resets the type-ahead search buffer.
 	const searchTimerRef = useRef(null);
 
 	const selected = options.find((o) => String(o.value) === String(value));
 
+	// Lowercased option labels memoized for type-ahead matching.
 	const optionLabelsLower = useMemo(
 		() => options.map((o) => String(o.label).toLowerCase()),
 		[options]
 	);
 
+	// Closes the dropdown and clears the focused option.
 	const close = useCallback(() => {
 		setOpen(false);
 		setFocusIndex(-1);
 	}, []);
 
+	// Toggles the dropdown open/closed, deciding drop direction on open.
 	const toggle = () => {
 		if (disabled) return;
 		if (!open) {
@@ -58,6 +69,7 @@ export default function CustomSelect({
 		setOpen((prev) => !prev);
 	};
 
+	// Emits a synthetic onChange event for the chosen option and closes the dropdown.
 	const select = useCallback(
 		(opt) => {
 			const syntheticEvent = {
@@ -70,6 +82,7 @@ export default function CustomSelect({
 		[onChange, name, id, close]
 	);
 
+	// Closes the dropdown when a click occurs outside the component.
 	useEffect(() => {
 		if (!open) return;
 		const handleClickOutside = (e) => {
@@ -84,6 +97,7 @@ export default function CustomSelect({
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [open, close, onBlur, name, id]);
 
+	// Scrolls the currently focused option into view.
 	useEffect(() => {
 		if (open && focusIndex >= 0 && listRef.current) {
 			const items = listRef.current.querySelectorAll('[role="option"]');
@@ -91,9 +105,11 @@ export default function CustomSelect({
 		}
 	}, [open, focusIndex]);
 
+	// Handles keyboard navigation, selection, and type-ahead within the select.
 	const handleKeyDown = (e) => {
 		if (disabled) return;
 
+		// Moves focus to the first option matching the accumulated typed letters.
 		const jumpToLetter = (key) => {
 			clearTimeout(searchTimerRef.current);
 			searchBufferRef.current += key.toLowerCase();

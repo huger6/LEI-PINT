@@ -34,6 +34,7 @@ function shieldPoints(cx, cy, w, h) {
 	];
 }
 
+// Fabric.js-based visual badge designer with shapes, text, templates, zoom, and SVG export.
 export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 	const { t } = useTranslation();
 	// Ref to the HTML canvas element used by Fabric.js.

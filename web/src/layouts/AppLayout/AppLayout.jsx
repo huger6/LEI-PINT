@@ -11,6 +11,7 @@ import TopBar from '../../components/TopBar/TopBar';
  * @param {Array} menuItems - Sidebar navigation items for the current role.
  */
 export default function AppLayout({ menuItems }) {
+    // Tracks whether the mobile sidebar is currently open.
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (

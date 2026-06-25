@@ -6,7 +6,9 @@ import AuthCard from '../../../features/auth/components/AuthCard/AuthCard';
 import Button from '../../../components/Button/Button';
 import styles from './ErrorCodePage.module.css';
 
+// Renders an error page (default 404) with a localized title/description per code
 export default function ErrorCodePage({ code = 404 }) {
+	// Translation helper
 	const { t } = useTranslation();
 	const defaultTitle = t('errorCodePage.defaultTitle');
 	const defaultDescription = t('errorCodePage.defaultDescription');

@@ -4,10 +4,14 @@ import { useStructureCounts } from '../../../features/structure';
 import { ADMIN } from '../../../routes/paths';
 import styles from './AdminStructure.module.css';
 
+// Admin landing page listing the structure entity types (learning paths, service lines, areas, stages).
 export default function AdminStructure() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Fetch entity counts shown on each structure card.
 	const { counts, loading } = useStructureCounts();
 
+	// Define the structure sections rendered as navigation cards.
 	const SECTIONS = [
 		{
 			to: ADMIN.LEARNING_PATHS,

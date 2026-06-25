@@ -10,13 +10,20 @@ const FORMATS = ['csv', 'xlsx', 'pdf'];
 
 /** Modal for exporting structure entity data in CSV/XLSX/PDF format. */
 export default function StructureExportModal({ structureType, identifier, title, onClose }) {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Selected export file format (csv/xlsx/pdf)
 	const [format, setFormat] = useState('csv');
+	// Optional start date filter
 	const [from, setFrom] = useState('');
+	// Optional end date filter
 	const [to, setTo] = useState('');
+	// Tracks in-progress download request
 	const [loading, setLoading] = useState(false);
+	// Holds error message when download fails
 	const [error, setError] = useState('');
 
+	// Requests and downloads the structure summary export, applying date filters
 	async function handleDownload() {
 		setLoading(true);
 		setError('');

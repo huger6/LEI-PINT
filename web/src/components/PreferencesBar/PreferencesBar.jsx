@@ -11,6 +11,7 @@ const LANGS = [
 
 // Renders a language switcher and light/dark theme toggle bar.
 export default function PreferencesBar({ floating = false, className = '' }) {
+	// Provides the i18n instance for reading and changing the active language.
 	const { i18n } = useTranslation();
 	// Tracks the current theme, initialized from localStorage.
 	const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');

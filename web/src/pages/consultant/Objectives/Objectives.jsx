@@ -13,6 +13,7 @@ import Icon from '../../../components/Icons/Icons';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './Objectives.module.css';
 
+// Return a time-of-day greeting string based on the current hour
 function getGreeting(t) {
 	const hour = new Date().getHours();
 	if (hour >= 6 && hour < 13) return t('welcomeCard.goodMorning');
@@ -20,6 +21,7 @@ function getGreeting(t) {
 	return t('welcomeCard.goodEvening');
 }
 
+// Tag each stage as complete, in-progress or locked along the timeline
 function deriveTimelineStatus(stages) {
 	let foundInProgress = false;
 	return stages.map((s) => {
@@ -34,6 +36,7 @@ function deriveTimelineStatus(stages) {
 	});
 }
 
+// Group timeline rows by area and derive each area's stage statuses
 function groupByArea(rows) {
 	const map = new Map();
 	for (const row of rows) {
@@ -49,6 +52,7 @@ function groupByArea(rows) {
 	}));
 }
 
+// Map a goal record into the objective shape used by the UI cards
 function mapGoalToObjective(goal) {
 	const badge = goal.badge_badge;
 	const app = goal.application;
@@ -77,25 +81,41 @@ function mapGoalToObjective(goal) {
 	};
 }
 
+// Consultant objectives page: goals, area timelines, reminders and progress charts
 export default function Objectives() {
+	// Translation helper
 	const { t } = useTranslation();
+	// Router navigation helper
 	const navigate = useNavigate();
+	// Authenticated user (fallback display name)
 	const { user: authUser } = useAuth();
+	// Resolved display name from user context
 	const { displayName } = useUser();
+	// Latest notifications shown as reminders
 	const [reminders, setReminders] = useState([]);
+	// Summary objective statistics
 	const [stats, setStats] = useState({ activeObjectives: 0, daysToNext: 0, badgesExpiring: 0, completedObjectives: 0 });
+	// Active objective cards
 	const [objectives, setObjectives] = useState([]);
+	// Per-area progression timelines
 	const [areaTimelines, setAreaTimelines] = useState([]);
+	// Learning-path progress data for the donut charts
 	const [progressData, setProgressData] = useState([]);
+	// Number of timelines currently expanded
 	const [visibleTimelines, setVisibleTimelines] = useState(2);
+	// Greeting line for the welcome header
 	const greeting = getGreeting(t);
 
 	// Show the most-advanced timelines first; the rest collapse under "Show more".
+	// Score an area's advancement to sort timelines by progress
 	const advancement = (area) => area.stages.reduce(
 		(acc, s) => acc + (s.status === 'complete' ? 1 : s.status === 'inProgress' ? 0.5 : 0), 0);
+	// Timelines sorted by advancement descending
 	const sortedTimelines = [...areaTimelines].sort((a, b) => advancement(b) - advancement(a));
+	// Subset of timelines currently visible
 	const shownTimelines = sortedTimelines.slice(0, visibleTimelines);
 
+	// Fetch reminders, stats, goals, timelines and progress on mount
 	useEffect(() => {
 		fetchNotifications({ limit: 5 })
 			.then((res) => {
@@ -135,6 +155,7 @@ export default function Objectives() {
 			.catch(() => setProgressData([]));
 	}, []);
 
+	// Count of reminders flagged as urgent/warning/SLA breach
 	const urgentCount = reminders.filter(
 		(r) => r.priority === 'urgent' || r.type === 'warning' || r.type === 'sla_breach'
 	).length;
@@ -393,6 +414,7 @@ export default function Objectives() {
 
 // ── Sub-components ─────────────────────────────────────────
 
+// Compact statistic card with icon, label and value
 function StatCard({ icon, label, value, color, badge }) {
 	return (
 		<div className={styles.statCard}>
@@ -406,12 +428,18 @@ function StatCard({ icon, label, value, color, badge }) {
 	);
 }
 
+// Single reminder row with severity tag and optional date
 function ReminderItem({ reminder, t }) {
+	// Reminder title with fallbacks
 	const title = reminder.title || reminder.notification_title || t('objectives.reminder');
+	// Reminder body text with fallbacks
 	const body = reminder.message || reminder.notification_message || '';
+	// Reminder creation date
 	const date = reminder.created_at || reminder.createdAt;
+	// Reminder type used to pick severity styling
 	const type = reminder.type || 'info';
 
+	// Map reminder type to label and severity CSS class
 	const severityMap = {
 		warning: { label: t('objectives.urgent'), cls: styles.severityUrgent },
 		sla_breach: { label: t('objectives.urgent'), cls: styles.severityUrgent },
@@ -419,6 +447,7 @@ function ReminderItem({ reminder, t }) {
 		info: { label: 'Info', cls: styles.severityInfo },
 	};
 
+	// Resolved severity descriptor for this reminder
 	const severity = severityMap[type] || severityMap.info;
 
 	return (
@@ -442,6 +471,7 @@ function ReminderItem({ reminder, t }) {
 	);
 }
 
+// Quick-action button with icon and label
 function QuickAction({ icon, label, color, bg, onClick }) {
 	return (
 		<button type="button" className={styles.quickActionItem} onClick={onClick}>

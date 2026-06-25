@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchMetadata } from './metadata';
 import { getCountryPrefixes, validateNationalNumber, validatePhoneWithMetadata } from './validator';
 
+// Resolves a localized country/region display name, falling back to the code.
 function getRegionName(code, locale) {
 	try {
 		const displayNames = new Intl.DisplayNames([locale], { type: 'region' });
@@ -15,6 +16,7 @@ function getRegionName(code, locale) {
 let sharedMetadata = null;
 let sharedPromise = null;
 
+// Loads metadata once and shares the result/promise across all hook consumers.
 function loadMetadata() {
 	if (sharedMetadata) return Promise.resolve(sharedMetadata);
 	if (sharedPromise) return sharedPromise;
@@ -29,13 +31,16 @@ function loadMetadata() {
 	return sharedPromise;
 }
 
+// Hook exposing phone metadata, localized prefix options, and validation helpers.
 export function usePhoneMetadata() {
 	const { i18n } = useTranslation();
+	// Local metadata/loading/error state, seeded from the shared singleton.
 	const [metadata, setMetadata] = useState(sharedMetadata);
 	const [loading, setLoading] = useState(!sharedMetadata);
 	const [error, setError] = useState(null);
 	const mountedRef = useRef(true);
 
+	// Loads metadata once on mount (if not already shared) and tracks mount status.
 	useEffect(() => {
 		if (sharedMetadata) return;
 		mountedRef.current = true;
@@ -57,6 +62,7 @@ export function usePhoneMetadata() {
 		return () => { mountedRef.current = false; };
 	}, []);
 
+	// Memoized, locale-sorted list of country prefix options for select inputs.
 	const prefixOptions = useMemo(() => {
 		if (!metadata) return [];
 		return getCountryPrefixes(metadata)
@@ -70,11 +76,13 @@ export function usePhoneMetadata() {
 			.map(({ _sortName, ...rest }) => rest);
 	}, [metadata, i18n.language]);
 
+	// Validates a full international number once metadata is loaded.
 	const validate = (phoneNumber) => {
 		if (!metadata) return { valid: false, error: 'METADATA_NOT_LOADED' };
 		return validatePhoneWithMetadata(phoneNumber, metadata);
 	};
 
+	// Validates a national number against a calling code once metadata is loaded.
 	const validateNational = (nationalNumber, callingCode) => {
 		if (!metadata) return { valid: false, error: 'METADATA_NOT_LOADED' };
 		return validateNationalNumber(nationalNumber, callingCode, metadata);

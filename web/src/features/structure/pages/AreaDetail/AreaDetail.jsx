@@ -13,27 +13,40 @@ import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteSt
 
 const PAGE_SIZE = 32;
 
+// Detail page for a single Area, listing its child levels (progression stages)
 export default function AreaDetail() {
+	// Read the area slug from the route params
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
 	const P = structureDetailPaths(isAdmin);
+	// The loaded area entity
 	const [area, setArea] = useState(null);
+	// Child levels for the current page
 	const [levels, setLevels] = useState([]);
+	// Pagination metadata for the levels list
 	const [pagination, setPagination] = useState(null);
+	// Currently selected levels page
 	const [currentPage, setCurrentPage] = useState(1);
+	// Whether the initial data load is in progress
 	const [loading, setLoading] = useState(true);
+	// Edit area modal visibility
 	const [showEditModal, setShowEditModal] = useState(false);
+	// Create level modal visibility
 	const [showCreateLevelModal, setShowCreateLevelModal] = useState(false);
+	// Delete area modal visibility
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	// Whether an activate request is in flight
 	const [isActivating, setIsActivating] = useState(false);
 
+	// Fetch a page of levels for the current area
 	const fetchSubStructures = useCallback((page) => {
 		return fetchLevelsByArea(slug, { page, limit: PAGE_SIZE });
 	}, [slug]);
 
+	// Load the area and its first page of levels on mount / slug change
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -59,6 +72,7 @@ export default function AreaDetail() {
 		return () => { cancelled = true; };
 	}, [slug, fetchSubStructures]);
 
+	// Load a different page of levels when pagination changes
 	const handlePageChange = useCallback((page) => {
 		setCurrentPage(page);
 		fetchSubStructures(page)
@@ -69,6 +83,7 @@ export default function AreaDetail() {
 			.catch(console.error);
 	}, [fetchSubStructures]);
 
+	// Refresh the area after an edit, falling back to local merge and navigating if the slug changed
 	const handleEditSuccess = useCallback(async (updated) => {
 		const nextSlug = updated?.area_slug || slug;
 		try {
@@ -91,6 +106,7 @@ export default function AreaDetail() {
 		}
 	}, [slug, navigate]);
 
+	// Reload the area and first page of levels after creating a level
 	const handleLevelCreated = useCallback(async () => {
 		setCurrentPage(1);
 		try {
@@ -106,6 +122,7 @@ export default function AreaDetail() {
 		}
 	}, [slug, fetchSubStructures]);
 
+	// Activate the area and refresh it
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
@@ -122,6 +139,7 @@ export default function AreaDetail() {
 	if (loading) return <StructureDetailSkeleton />;
 	if (!area) return null;
 
+	// Summary stat cards shown in the detail header
 	const stats = [
 		{
 			icon: 'tabler_users',
@@ -139,10 +157,12 @@ export default function AreaDetail() {
 		},
 	];
 
+	// Optional message shown when the current user is enrolled
 	const enrollmentMessage = area.is_enrolled
 		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
 		: null;
 
+	// Map levels into the generic sub-structure card shape used by the layout
 	const subStructures = levels.map((level) => ({
 		id: level.progression_stage_id,
 		title: level.stage_title,
@@ -156,6 +176,7 @@ export default function AreaDetail() {
 		],
 	}));
 
+	// Build breadcrumb trail from the parent hierarchy (learning path > service line > area)
 	const breadcrumbItems = [];
 	const parentSl = area.service_line;
 	const parentLp = parentSl?.learning_path;

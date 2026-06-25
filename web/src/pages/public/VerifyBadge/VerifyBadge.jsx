@@ -8,13 +8,20 @@ import styles from './VerifyBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
 
+// Public page that verifies an earned badge from its unique verification link
 export default function VerifyBadge() {
+	// Translation helper and active i18n instance for date locale
 	const { t, i18n } = useTranslation();
+	// Read the verification link token from the route params
 	const { link } = useParams();
+	// Holds the fetched verification data
 	const [data, setData] = useState(null);
+	// Tracks whether the verification fetch is in progress
 	const [loading, setLoading] = useState(true);
+	// Flags when the link could not be verified
 	const [notFound, setNotFound] = useState(false);
 
+	// Verify the badge whenever the link token changes
 	useEffect(() => {
 		let active = true;
 		setLoading(true);
@@ -26,12 +33,14 @@ export default function VerifyBadge() {
 		return () => { active = false; };
 	}, [link]);
 
+	// Set the document title and restore it on unmount
 	useEffect(() => {
 		const prev = document.title;
 		document.title = `${t('verifyBadge.title')} - Softinsa`;
 		return () => { document.title = prev; };
 	}, [t]);
 
+	// Format an ISO date as a localized full date, falling back to a dash
 	const fmtDate = (iso) => {
 		if (!iso) return '—';
 		const d = new Date(iso);
@@ -39,6 +48,7 @@ export default function VerifyBadge() {
 		return d.toLocaleDateString(i18n.language, { day: '2-digit', month: 'long', year: 'numeric' });
 	};
 
+	// Convenience references to the verified badge and its expiration state
 	const badge = data?.badge;
 	const isExpired = Boolean(data?.is_expired);
 

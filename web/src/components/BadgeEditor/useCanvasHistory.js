@@ -2,6 +2,7 @@ import { useRef, useState, useCallback } from 'react';
 
 const MAX_HISTORY = 30;
 
+// Hook providing undo/redo history for the Fabric badge canvas.
 export default function useCanvasHistory(fabricRef) {
 	// Stores serialized canvas states that can be stepped back to.
 	const undoStack = useRef([]);

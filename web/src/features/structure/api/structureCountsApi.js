@@ -15,6 +15,7 @@ const STRUCTURE_COUNT_ENDPOINTS = {
 	stages: '/levels/count',
 };
 
+// Fetches active/inactive counts from an endpoint and coerces them to numbers.
 async function getCountData(endpoint) {
 	const { data } = await api.get(endpoint);
 	const rawActive = data?.data?.active;
@@ -25,22 +26,27 @@ async function getCountData(endpoint) {
 	};
 }
 
+// Returns active/inactive learning path counts.
 export async function getLearningPathsCount() {
 	return getCountData(STRUCTURE_COUNT_ENDPOINTS.learningPaths);
 }
 
+// Returns active/inactive service line counts.
 export async function getServiceLinesCount() {
 	return getCountData(STRUCTURE_COUNT_ENDPOINTS.serviceLines);
 }
 
+// Returns active/inactive area counts.
 export async function getAreasCount() {
 	return getCountData(STRUCTURE_COUNT_ENDPOINTS.areas);
 }
 
+// Returns active/inactive progression stage (level) counts.
 export async function getStagesCount() {
 	return getCountData(STRUCTURE_COUNT_ENDPOINTS.stages);
 }
 
+// Fetches all structure counts in parallel and merges them into one object.
 export async function getAllStructureCounts() {
 	const keys = Object.keys(STRUCTURE_COUNT_ENDPOINTS);
 	const values = await Promise.all(keys.map((key) => getCountData(STRUCTURE_COUNT_ENDPOINTS[key])));

@@ -79,6 +79,7 @@ const HINT_COLORS = {
 	muted: { color: 'var(--color-outline)' },
 };
 
+// Multi-step registration page for new Consultant accounts.
 export default function RegisterPage() {
 	// Access translation function and current language
 	const { t, i18n } = useTranslation();
@@ -139,6 +140,7 @@ export default function RegisterPage() {
 
 	// Initialize form state and validation with the registration initial values
 	const form = useFormValidation({ initialValues: INITIAL_FORM, validate });
+	// Destructure the form helpers used throughout the page
 	const {
 		values,
 		setFieldValue,
@@ -151,6 +153,7 @@ export default function RegisterPage() {
 		markAllTouched,
 	} = form;
 
+	// Synchronous (format) validity flags for username, email, and biography
 	const usernameSyncValid = !validateUsername(values.username);
 	const emailSyncValid = !validateEmail(values.email_address);
 	const biographySyncValid = !validateBiography(values.biography);
@@ -175,6 +178,7 @@ export default function RegisterPage() {
 		fetcher: fetchBiographyValidity,
 	});
 
+	// Derive localised async error messages from the availability check results
 	const usernameAsyncError =
 		usernameCheck.status === AVAILABILITY_STATUS.UNAVAILABLE
 			? t('register.usernameInUse')
@@ -312,6 +316,7 @@ export default function RegisterPage() {
 		clearFeedbackFor('phone_number');
 	}, [applyPhoneValue, clearFeedbackFor, phonePrefix]);
 
+	// Fetch reference data (languages, locations, areas) when entering step 2
 	useEffect(() => {
 		if (step !== 2) return;
 
@@ -330,6 +335,7 @@ export default function RegisterPage() {
 			.finally(() => setRefLoading(false));
 	}, [step, role]);
 
+	// Normalize raw language records into { id, name } select options
 	const languageOptions = useMemo(
 		() => languages
 			.map((language) => {
@@ -343,6 +349,7 @@ export default function RegisterPage() {
 		[languages]
 	);
 
+	// Normalize raw location records into { id, name } select options
 	const locationOptions = useMemo(
 		() => locations
 			.map((location) => {
@@ -356,6 +363,7 @@ export default function RegisterPage() {
 		[locations]
 	);
 
+	// Normalize raw area records into { area_id, area_name } picker options
 	const areaOptions = useMemo(
 		() => areasList
 			.map((area) => {
@@ -369,15 +377,19 @@ export default function RegisterPage() {
 		[areasList]
 	);
 
+	// Field names that belong to step 1 of the form
 	const step2Fields = useMemo(() => ['full_name', 'username', 'email_address', 'password'], []);
 
+	// True when any step 1 field has a sync or async error
 	const step2HasErrors = step2Fields.some((f) => liveErrors[f]) ||
 		Boolean(usernameAsyncError) ||
 		Boolean(emailAsyncError);
 
+	// True while username/email availability checks are still running
 	const step2HasPending =
 		isCheckPending(usernameCheck.status) || isCheckPending(emailCheck.status);
 
+	// Advance to the next step, blocking if step 1 has errors or pending checks
 	const handleNext = () => {
 		if (step === 1) {
 			step2Fields.forEach((f) => setFieldTouched(f, true));
@@ -390,12 +402,14 @@ export default function RegisterPage() {
 		setStep((s) => s + 1);
 	};
 
+	// Return to the previous step and clear API feedback
 	const handleBack = () => {
 		setApiError('');
 		setApiInfo('');
 		setStep((s) => s - 1);
 	};
 
+	// Validate all steps and submit the registration request, handling server errors
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		markAllTouched();
@@ -491,6 +505,7 @@ export default function RegisterPage() {
 		);
 	}
 
+	// Resolve the displayed error message for each field
 	const usernameError = fieldError('username', usernameAsyncError);
 	const emailError = fieldError('email_address', emailAsyncError);
 	const biographyError = fieldError('biography', biographyAsyncError);
@@ -498,6 +513,7 @@ export default function RegisterPage() {
 	const birthdateError = fieldError('birthdate');
 	const profileImageError = fieldError('profile_img_url') || profileUploadError;
 	const isProfileUploading = profileUploadStatus === PROFILE_UPLOAD_STATUS.UPLOADING;
+	// Render a label with a trailing red asterisk marking the field as mandatory
 	const withMandatoryIcon = (label) => (
 		<span className={styles.mandatoryLabel}>
 			{label}
@@ -505,6 +521,7 @@ export default function RegisterPage() {
 		</span>
 	);
 
+	// Render the availability status hint shown below the username field
 	const renderUsernameHint = () => {
 		if (usernameError) return null;
 		if (!values.username || !usernameSyncValid) return null;
@@ -515,6 +532,7 @@ export default function RegisterPage() {
 		return null;
 	};
 
+	// Render the availability status hint shown below the email field
 	const renderEmailHint = () => {
 		if (emailError) return null;
 		if (!values.email_address || !emailSyncValid) return null;
@@ -525,6 +543,7 @@ export default function RegisterPage() {
 		return null;
 	};
 
+	// Render the content-review status hint shown below the biography field
 	const renderBiographyHint = () => {
 		if (biographyError) return null;
 		if (!values.biography) return null;
@@ -535,8 +554,10 @@ export default function RegisterPage() {
 		return null;
 	};
 
+	// Compose the biography textarea class, adding invalid styling on error
 	const textareaClass = `form-control ${styles.textarea} ${biographyError ? 'is-invalid' : ''}`;
 
+	// Disable the continue button while availability checks are pending
 	const continueDisabled = step2HasPending;
 
 	return (

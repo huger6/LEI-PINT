@@ -1,6 +1,7 @@
 import { SLL } from '../../routes/paths';
 import AppLayout from '../AppLayout/AppLayout';
 
+// Sidebar navigation items for the Service Line Leader role.
 const MENU_ITEMS = [
     { to: SLL.DASHBOARD, icon: 'home', label: 'sidebar.sll.dashboard' },
     { to: SLL.VALIDATIONS, icon: 'paper', label: 'sidebar.sll.validations' },
@@ -12,6 +13,7 @@ const MENU_ITEMS = [
     { to: SLL.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.sll.announcements' },
 ];
 
+// Renders the app shell with the Service Line Leader menu.
 export default function SllLayout() {
     return <AppLayout menuItems={MENU_ITEMS} />;
 }

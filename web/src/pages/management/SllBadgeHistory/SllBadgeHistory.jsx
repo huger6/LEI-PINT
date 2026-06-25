@@ -40,6 +40,7 @@ const APP_STATE_KEY = {
 	Rejected: 'rejected',
 };
 
+// Format a date as a localized "dd Mon yyyy" string, or a dash when absent.
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
 /**

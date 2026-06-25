@@ -23,28 +23,42 @@ function statePill(state) {
 	return { key: 'pending', cls: styles.pillPending }; // Submitted / In validation
 }
 
+// Reviewer board listing badge applications to validate (TM / SLL / Admin scoped).
 export default function ValidationsBoard() {
+	// Translation function for localized labels.
 	const { t } = useTranslation();
+	// Router navigation used to open an application's detail page.
 	const navigate = useNavigate();
+	// Current authenticated user (drives role-based defaults and columns).
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
 	const isAdmin = user?.role === 'Administrator';
 
+	// Current page of applications fetched from the API.
 	const [items, setItems] = useState([]);
+	// Pagination metadata from the API response.
 	const [pagination, setPagination] = useState(null);
+	// Tracks the loading state while fetching applications.
 	const [loading, setLoading] = useState(true);
+	// Holds an error message for the applications fetch.
 	const [error, setError] = useState(null);
+	// Current page number for pagination.
 	const [page, setPage] = useState(1);
 
+	// Controls visibility of the filters bar.
 	const [showFilters, setShowFilters] = useState(false);
+	// Free-text search term (matches badge title or consultant name).
 	const [search, setSearch] = useState('');
 	// Default to the applications this reviewer must act on (TM: Submitted,
 	// SLL: In validation); the Administrator oversees everything so defaults to
 	// all states. The filter lets them switch freely.
 	const [stateFilter, setStateFilter] = useState(isAdmin ? '' : (isSll ? 'In validation' : 'Submitted'));
+	// Active sort column key.
 	const [sortKey, setSortKey] = useState('submitted');
+	// Active sort direction (asc/desc).
 	const [sortDir, setSortDir] = useState('desc');
 
+	// Fetches the current page of applications for the active state filter.
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError(null);
@@ -63,10 +77,12 @@ export default function ValidationsBoard() {
 		}
 	}, [page, stateFilter]);
 
+	// Reloads applications whenever the loader (page/filter) changes.
 	useEffect(() => { load(); }, [load]);
 
 	// Near real-time: refresh when the tab regains focus, and poll every 2 minutes.
 	useEffect(() => {
+		// Reloads only when the tab is currently visible.
 		function onVisible() {
 			if (document.visibilityState === 'visible') load();
 		}
@@ -82,6 +98,7 @@ export default function ValidationsBoard() {
 		};
 	}, [load]);
 
+	// Builds the workflow-state filter dropdown options.
 	const stateOptions = useMemo(() => [
 		{ value: '', label: t('tmValidations.filters.allStates') },
 		{ value: 'Submitted', label: t('tmValidations.tabs.submitted') },
@@ -92,6 +109,7 @@ export default function ValidationsBoard() {
 
 	// Column definitions (Service Line hidden for SLL — it's always their own).
 	const columns = useMemo(() => {
+		// Value accessors used for sorting each column.
 		const accessors = {
 			consultant: (a) => a.user?.user?.full_name || '',
 			badge: (a) => a.badge?.badge_title || '',
@@ -111,6 +129,7 @@ export default function ValidationsBoard() {
 		return base.map((c) => ({ ...c, accessor: accessors[c.key] }));
 	}, [isSll]);
 
+	// Applies the search filter and sorting to produce the displayed rows.
 	const rows = useMemo(() => {
 		const term = search.trim().toLowerCase();
 		const accessor = columns.find((c) => c.key === sortKey)?.accessor;
@@ -128,6 +147,7 @@ export default function ValidationsBoard() {
 		});
 	}, [items, search, sortKey, sortDir, columns]);
 
+	// Toggles direction if the same column is clicked, else sorts by the new one.
 	function toggleSort(key) {
 		if (sortKey === key) {
 			setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -137,11 +157,13 @@ export default function ValidationsBoard() {
 		}
 	}
 
+	// Updates the state filter and resets to the first page.
 	function handleStateFilter(e) {
 		setStateFilter(e.target.value);
 		setPage(1);
 	}
 
+	// Formats an application's submitted/opened date for display.
 	function formatDate(a) {
 		const d = a.submitted_at || a.opened_at;
 		return d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';

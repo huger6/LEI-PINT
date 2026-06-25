@@ -1,5 +1,6 @@
 import { Circle, Rect, Polygon, IText } from 'fabric';
 
+// Computes the six vertices of a hexagon centered at (cx, cy) with radius r.
 function hexagonPoints(cx, cy, r) {
 	const pts = [];
 	for (let i = 0; i < 6; i++) {
@@ -9,6 +10,7 @@ function hexagonPoints(cx, cy, r) {
 	return pts;
 }
 
+// Computes the polygon vertices for a shield shape of width w and height h.
 function shieldPoints(cx, cy, w, h) {
 	const hw = w / 2;
 	return [
@@ -20,6 +22,7 @@ function shieldPoints(cx, cy, w, h) {
 	];
 }
 
+// Computes the alternating outer/inner vertices of a multi-pointed star.
 function starPoints(cx, cy, outerR, innerR, points) {
 	const pts = [];
 	for (let i = 0; i < points * 2; i++) {
@@ -30,6 +33,7 @@ function starPoints(cx, cy, outerR, innerR, points) {
 	return pts;
 }
 
+// Preset badge templates with preview icons shown in the editor toolbar.
 export const BADGE_TEMPLATES = [
 	{
 		id: 'classic-circle',
@@ -83,6 +87,7 @@ export const BADGE_TEMPLATES = [
 	},
 ];
 
+// Clears the canvas and populates it with the shapes/text of the chosen template.
 export function applyTemplate(templateId, fc, W, H) {
 	fc.clear();
 	fc.backgroundColor = '#ffffff';

@@ -16,8 +16,10 @@ import {
 	validateUsername,
 } from './rules';
 
+// Returns the translated label for a field name.
 const tl = (field) => i18n.t(`validation.fields.${field}`, { defaultValue: field });
 
+// Reduces [field, message] entries into an errors object, keeping only non-empty messages.
 const collect = (entries) => {
 	const errors = {};
 	for (const [field, message] of entries) {
@@ -64,12 +66,15 @@ export const validateRegisterStep3 = (form, role, { phoneMetadata } = {}) => {
 	return collect(entries);
 };
 
+// Validates the forgot-password form (email only).
 export const validateForgotPasswordForm = (form) =>
 	collect([['email', validateEmail(form.email)]]);
 
+// Validates the resend-confirmation form (email only).
 export const validateResendConfirmationForm = (form) =>
 	collect([['email', validateEmail(form.email)]]);
 
+// Validates the reset-password form (new password + matching confirmation).
 export const validateResetPasswordForm = (form) =>
 	collect([
 		['newPassword', validatePassword(form.newPassword)],
@@ -79,6 +84,7 @@ export const validateResetPasswordForm = (form) =>
 		],
 	]);
 
+// Validates the change-password form and rejects reusing the current password.
 export const validateChangePasswordForm = (form) => {
 	const errors = collect([
 		['currentPassword', validatePasswordPresence(form.currentPassword)],

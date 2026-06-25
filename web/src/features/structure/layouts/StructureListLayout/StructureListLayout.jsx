@@ -33,10 +33,14 @@ export default function StructureListLayout({
 	emptyDescription,
 	renderFilters,
 }) {
+	// Translation helper
 	const { t } = useTranslation();
+	// Tone-based CSS class for theming the header/icons
 	const toneClass = tone ? styles[tone] : '';
+	// Ref to the card grid for measuring/equalizing card heights
 	const gridRef = useRef(null);
 
+	// Normalize all card heights to match the tallest card in the grid
 	const equalizeCardHeights = useCallback(() => {
 		const grid = gridRef.current;
 		if (!grid) return;
@@ -49,6 +53,7 @@ export default function StructureListLayout({
 		cards.forEach((card) => { card.style.height = `${maxH}px`; });
 	}, []);
 
+	// Re-equalize card heights after the items render or change
 	useLayoutEffect(() => {
 		equalizeCardHeights();
 	}, [items, equalizeCardHeights]);

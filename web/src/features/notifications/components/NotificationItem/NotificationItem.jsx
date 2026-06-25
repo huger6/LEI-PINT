@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../../components/Icons/Icons';
 import styles from './NotificationItem.module.css';
 
+// Maps each notification type to its display icon name.
 const ICONS = {
 	HOME: 'home',
 	BADGES: 'badge',
@@ -29,6 +30,7 @@ const ROUTE_BY_TYPE = {
 	SYSTEM: '/settings',
 };
 
+// Formats a date into a localized relative "time ago" string.
 function timeAgo(dateString, t) {
 	if (!dateString) return t('notifications.timeAgo.now');
 	const seconds = Math.floor((Date.now() - new Date(dateString)) / 1000);
@@ -43,6 +45,7 @@ function timeAgo(dateString, t) {
 	return new Date(dateString).toLocaleDateString();
 }
 
+// Parses a notification payload (object or JSON string) into an object.
 function parseNotificationPayload(payload) {
 	if (!payload) return {};
 	if (typeof payload === 'object') return payload;
@@ -62,8 +65,11 @@ function parseNotificationPayload(payload) {
  * @param {Function} [onMarkRead] - Called when the notification is clicked or marked as read.
  */
 export default function NotificationItem({ notification, onRead, onNavigate }) {
+	// Translation helper.
 	const { t } = useTranslation();
+	// Router navigation for jumping to the notification target route.
 	const navigate = useNavigate();
+	// Tracks whether the notification body is expanded.
 	const [expanded, setExpanded] = useState(false);
 	const payload = parseNotificationPayload(notification?.notification_payload);
 	const notificationType = String(notification?.notification_type || 'SYSTEM').toUpperCase();
@@ -82,17 +88,20 @@ export default function NotificationItem({ notification, onRead, onNavigate }) {
 		|| ROUTE_BY_TYPE[notificationType]
 		|| '/';
 
+	// Marks the notification read (if unread) and navigates to its target route.
 	const handleClick = () => {
 		if (!notification.is_read) onRead(notification.notification_id);
 		onNavigate?.();
 		navigate(target);
 	};
 
+	// Toggles the expanded/collapsed state of the notification body.
 	const handleToggleExpand = (e) => {
 		e.stopPropagation();
 		setExpanded((prev) => !prev);
 	};
 
+	// Marks the notification as read without navigating.
 	const handleMarkRead = (e) => {
 		e.stopPropagation();
 		if (!notification.is_read) onRead(notification.notification_id);

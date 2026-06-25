@@ -16,13 +16,20 @@ const LANGUAGES = [
 	{ code: 'es', iso: 'es-ES', label: 'Español' },
 ];
 
+// Settings page: appearance (theme), language, notifications and account links.
 export default function Settings() {
+	// Translation helper plus the i18n instance for language switching.
 	const { t, i18n } = useTranslation();
+	// Context handler that persists the user's language choice.
 	const { handleLanguageChange } = useUser();
+	// Available languages loaded from the backend.
 	const { languages } = useLanguageContext();
+	// Current short language code (e.g. 'pt') derived from i18n.
 	const currentLang = (i18n.language || 'pt').split('-')[0];
 
+	// Active UI theme, initialized from localStorage (defaults to light).
 	const [theme, setTheme] = useState(() => (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || 'light');
+	// Apply and persist a theme choice on the document root.
 	const applyTheme = (next) => {
 		setTheme(next);
 		localStorage.setItem('theme', next);

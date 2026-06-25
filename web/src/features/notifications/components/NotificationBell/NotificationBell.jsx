@@ -12,6 +12,7 @@ export default function NotificationBell() {
 	const [open, setOpen] = useState(false);
 	const wrapperRef = useRef(null);
 
+	// Closes the panel when the Escape key is pressed while open.
 	useEffect(() => {
 		const handleKeyDown = (e) => {
 			if (e.key === 'Escape') setOpen(false);

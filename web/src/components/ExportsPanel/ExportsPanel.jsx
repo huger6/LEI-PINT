@@ -32,13 +32,20 @@ const EXPORT_BUTTONS = [
  * so this component is role-agnostic.
  */
 export default function ExportsPanel() {
+	// Translation function for localized labels.
 	const { t } = useTranslation();
+	// Selected export file format.
 	const [format, setFormat] = useState('xlsx');
+	// Start date of the export range.
 	const [from, setFrom] = useState('');
+	// End date of the export range.
 	const [to, setTo] = useState('');
+	// Key of the export button currently downloading, or null.
 	const [busy, setBusy] = useState(null);
+	// Error message from a failed export, or null.
 	const [error, setError] = useState(null);
 
+	// Triggers a download for the given export button, handling busy/error state.
 	async function handleExport(btn) {
 		setError(null);
 		setBusy(btn.key);

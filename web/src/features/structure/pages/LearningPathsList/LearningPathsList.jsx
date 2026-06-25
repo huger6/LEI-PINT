@@ -11,25 +11,40 @@ import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 const DEBOUNCE_MS = 400;
 const PAGE_SIZE = 32;
 
+// Paginated, filterable list page of all Learning Paths
 export default function LearningPathsList() {
 	const { t } = useTranslation();
 
+	// All learning paths fetched from the API (filtered/paginated client-side)
 	const [allItems, setAllItems] = useState([]);
+	// Whether the list is currently loading
 	const [loading, setLoading] = useState(true);
+	// Current page number
 	const [page, setPage] = useState(1);
+	// Raw search input value
 	const [search, setSearch] = useState('');
+	// Debounced search value used for fetching
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	// Create learning path modal visibility
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	// Bumped to force a re-fetch after a create
 	const [refreshKey, setRefreshKey] = useState(0);
 
+	// Active/inactive status filter
 	const [statusFilter, setStatusFilter] = useState('all');
+	// Max consultant count for the range slider bounds
 	const [consultantMax, setConsultantMax] = useState(0);
+	// Selected consultant count range
 	const [consultantRange, setConsultantRange] = useState([0, 0]);
+	// Max service line count for the range slider bounds
 	const [serviceLineMax, setServiceLineMax] = useState(0);
+	// Selected service line count range
 	const [serviceLineRange, setServiceLineRange] = useState([0, 0]);
 
+	// Aggregate stats used to initialise the filter sliders
 	const [filterStats, setFilterStats] = useState(null);
 
+	// Load filter stats once and initialise the range sliders
 	useEffect(() => {
 		fetchLearningPathsFilterStats()
 			.then((stats) => {
@@ -42,6 +57,7 @@ export default function LearningPathsList() {
 			.catch(() => {});
 	}, []);
 
+	// Debounce the search input before triggering a fetch
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearch(search);
@@ -50,6 +66,7 @@ export default function LearningPathsList() {
 		return () => clearTimeout(timer);
 	}, [search]);
 
+	// Fetch learning paths whenever the debounced search or refresh key changes
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -66,6 +83,7 @@ export default function LearningPathsList() {
 		return () => { cancelled = true; };
 	}, [debouncedSearch, refreshKey]);
 
+	// Apply status and count-range filters client-side
 	const filtered = useMemo(() => {
 		let result = allItems;
 
@@ -92,6 +110,7 @@ export default function LearningPathsList() {
 		return result;
 	}, [allItems, statusFilter, consultantRange, consultantMax, serviceLineRange, serviceLineMax]);
 
+	// Derive pagination values and the current page's slice
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
 	const paginatedItems = filtered.slice(
@@ -99,20 +118,24 @@ export default function LearningPathsList() {
 		currentPage * PAGE_SIZE,
 	);
 
+	// Reset to the first page whenever a filter changes
 	useEffect(() => {
 		setPage(1);
 	}, [statusFilter, consultantRange, serviceLineRange]);
 
+	// Options for the status filter select
 	const statusOptions = useMemo(() => [
 		{ value: 'all', label: t('shared.allStatuses', { defaultValue: 'All Statuses' }) },
 		{ value: 'active', label: t('shared.active', { defaultValue: 'Active' }) },
 		{ value: 'inactive', label: t('shared.inactive', { defaultValue: 'Inactive' }) },
 	], [t]);
 
+	// Update the status filter from the select
 	const handleStatusChange = useCallback((e) => {
 		setStatusFilter(e.target.value);
 	}, []);
 
+	// Render the filter controls passed into the list layout
 	const renderFilters = useCallback(() => (
 		<>
 			<div style={{ minWidth: 160 }}>
@@ -149,6 +172,7 @@ export default function LearningPathsList() {
 		</>
 	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, serviceLineMax, serviceLineRange, t]);
 
+	// Reset to page one and trigger a re-fetch after creating a learning path
 	const handleCreated = useCallback(() => {
 		setPage(1);
 		setRefreshKey((prev) => prev + 1);

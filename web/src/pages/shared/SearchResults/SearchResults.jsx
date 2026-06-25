@@ -18,6 +18,7 @@ const SECTION_CONFIG = {
 
 const SECTION_ORDER = ['learning_path', 'service_line', 'area', 'badge', 'skill', 'user'];
 
+// Builds a "parent > parent" breadcrumb string from an item's ancestry fields
 function buildBreadcrumb(item) {
     const parts = [];
     if (item.parent_learning_path) parts.push(item.parent_learning_path.path_title);
@@ -28,6 +29,7 @@ function buildBreadcrumb(item) {
     return parts.join(' > ');
 }
 
+// Returns the detail route for a search result, or null when not navigable
 function getResultLink(item) {
     // `subtitle` carries the slug for badge / structure entities.
     switch (item.entity_type) {
@@ -46,8 +48,11 @@ function getResultLink(item) {
     }
 }
 
+// Renders a single search result row, wrapped in a link when navigable
 function ResultRow({ item }) {
+    // Breadcrumb shown for non-badge entities
     const breadcrumb = item.entity_type === 'badge' ? null : buildBreadcrumb(item);
+    // Detail link for this result, if any
     const link = getResultLink(item);
 
     const content = (
@@ -82,16 +87,24 @@ function ResultRow({ item }) {
     return <div className={styles.resultItem}>{content}</div>;
 }
 
+// Global search results page grouped by entity type
 export default function SearchResults() {
+    // URL search params; the query lives in the `q` param
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
+    // Translation helper
     const { t } = useTranslation();
 
+    // Flat list of search results
     const [results, setResults] = useState([]);
+    // Loading state for the search request
     const [loading, setLoading] = useState(false);
+    // Total number of matching items reported by the API
     const [totalItems, setTotalItems] = useState(0);
+    // Whether the search request failed
     const [error, setError] = useState(false);
 
+    // Run the global search whenever the query changes (with cancellation)
     useEffect(() => {
         if (!query.trim()) {
             setResults([]);
@@ -120,6 +133,7 @@ export default function SearchResults() {
         return () => { cancelled = true; };
     }, [query]);
 
+    // Group results by entity type, preserving the configured section order
     const grouped = SECTION_ORDER.reduce((acc, type) => {
         const items = results.filter((r) => r.entity_type === type);
         if (items.length > 0) acc.push({ type, items });

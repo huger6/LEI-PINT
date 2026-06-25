@@ -4,6 +4,7 @@ const SNAP_THRESHOLD = 8;
 const GUIDE_COLOR = '#ff4081';
 const GUIDE_DASH = [6, 4];
 
+// Hook that snaps dragged objects to the canvas center axes and draws guide lines.
 export default function useSnapGuidelines(fabricRef, canvasW, canvasH) {
 	// Tracks whether the vertical and horizontal guide lines should be drawn.
 	const guides = useRef({ showV: false, showH: false });

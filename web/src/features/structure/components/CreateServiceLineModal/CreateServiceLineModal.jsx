@@ -45,6 +45,7 @@ const EMPTY_FORM = {
 
 const SLUG_REGEX = /^[a-z0-9-]+$/;
 
+// Normalizes a string into a URL-safe slug
 function slugify(value) {
 	return String(value ?? '')
 		.normalize('NFD')
@@ -58,6 +59,7 @@ function slugify(value) {
 		.replace(/-+$/, '');
 }
 
+// Maps incoming edit data onto the form shape, coercing types to strings
 function normalizeInitialData(initialData) {
 	return {
 		learningPathId: initialData?.learningPathId ? String(initialData.learningPathId) : '',
@@ -68,6 +70,7 @@ function normalizeInitialData(initialData) {
 	};
 }
 
+// Synchronous client-side validation for the service line form fields
 function validateServiceLineForm(values, t) {
 	const errors = {};
 	const learningPathLabel = t('shared.structureLabels.learningPaths', { defaultValue: 'Learning Paths' });
@@ -106,6 +109,7 @@ function validateServiceLineForm(values, t) {
 	return errors;
 }
 
+// Maps server validation errors onto per-field messages
 function extractServiceLineFieldErrors(error, fallbackMessage) {
 	const issues = error?.response?.data?.errors;
 	if (!Array.isArray(issues)) return {};
@@ -127,6 +131,7 @@ function extractServiceLineFieldErrors(error, fallbackMessage) {
 	return parsed;
 }
 
+// Translates an image-upload error code into a user-facing message
 function resolveImageErrorMessage(error, t) {
 	if (!error?.code) return t('register.profilePictureUploadFailed');
 	if (error.code === 'PROFILE_IMAGE_INVALID_FORMAT') return t('validation.profileImageInvalidFormat');
@@ -148,33 +153,52 @@ export default function CreateServiceLineModal({
 	onClose,
 	onSuccess,
 }) {
+	// i18n translation function
 	const { t } = useTranslation();
 	const isEditMode = mode === 'edit';
+	// Initial form values: existing data in edit mode, empty otherwise
 	const initialForm = useMemo(
 		() => (isEditMode ? normalizeInitialData(initialData) : EMPTY_FORM),
 		[isEditMode, initialData],
 	);
 
+	// Tracks the in-flight save request
 	const [saving, setSaving] = useState(false);
+	// Global API error message
 	const [apiError, setApiError] = useState('');
+	// Per-field errors returned by the server
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	// Controls the discard-changes confirmation toast
 	const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+	// True once the user types in the slug field (disables auto-suggestion)
 	const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+	// True while an available slug is being suggested
 	const [slugSuggestionPending, setSlugSuggestionPending] = useState(false);
+	// True once the name changes (gates slug auto-suggestion in edit mode)
 	const [nameChangedSinceOpen, setNameChangedSinceOpen] = useState(false);
 
+	// Currently displayed image preview URL
 	const [imagePreviewUrl, setImagePreviewUrl] = useState(initialForm.imgUrl || '');
+	// True while an image upload is in progress
 	const [imageUploading, setImageUploading] = useState(false);
+	// Image-specific error message
 	const [imageError, setImageError] = useState('');
 
+	// Learning path select options
 	const [learningPathOptions, setLearningPathOptions] = useState([]);
 
+	// Tracks whether the user has modified the form
 	const isDirty = useRef(false);
+	// Reference to the hidden file input
 	const imageInputRef = useRef(null);
+	// Holds the local object URL so it can be revoked
 	const localPreviewRef = useRef('');
+	// Monotonic id to ignore stale slug-suggestion responses
 	const slugSuggestionRequestRef = useRef(0);
+	// Normalized default learning path id passed via props
 	const normalizedDefaultLearningPathId = defaultLearningPathId ? String(defaultLearningPathId) : '';
 
+	// Memoized validator bound to the current translation function
 	const validate = useCallback((values) => validateServiceLineForm(values, t), [t]);
 	const form = useFormValidation({ initialValues: initialForm, validate });
 	const {
@@ -188,6 +212,7 @@ export default function CreateServiceLineModal({
 		touched,
 	} = form;
 
+	// Loads learning path options once on mount
 	useEffect(() => {
 		fetchAllLearningPaths()
 			.then((result) => {
@@ -203,6 +228,7 @@ export default function CreateServiceLineModal({
 			.catch(() => setLearningPathOptions([]));
 	}, []);
 
+	// Pre-selects the learning path from the default id or slug prop
 	useEffect(() => {
 		if (values.learningPathId) return;
 		if (normalizedDefaultLearningPathId) {
@@ -223,9 +249,12 @@ export default function CreateServiceLineModal({
 
 	const initialSlugTrimmed = initialForm.slSlug.trim();
 	const currentSlugTrimmed = values.slSlug.trim();
+	// True when editing and the slug has not changed (skips availability check)
 	const isSlugUnchangedInEdit = isEditMode && currentSlugTrimmed === initialSlugTrimmed;
 
+	// Whether the slug passes synchronous validation
 	const slugSyncValid = !validateServiceLineForm(values, t).slSlug;
+	// Debounced async slug availability check
 	const slugCheck = useAvailability({
 		value: currentSlugTrimmed,
 		isValid: slugSyncValid,
@@ -234,11 +263,13 @@ export default function CreateServiceLineModal({
 		delay: 350,
 	});
 
+	// Error message when the slug is already taken
 	const slugAsyncError =
 		slugCheck.status === AVAILABILITY_STATUS.UNAVAILABLE && !isSlugUnchangedInEdit
 			? t('structureList.slugInUse', { defaultValue: 'This slug is already in use.' })
 			: null;
 
+	// Resolves the error message to show for a field, merging sync and async sources
 	const fieldError = useCallback(
 		(name, asyncError) => {
 			if (serverFieldErrors[name]) return serverFieldErrors[name];
@@ -249,10 +280,12 @@ export default function CreateServiceLineModal({
 		[serverFieldErrors, isErrorVisible, liveErrors, touched],
 	);
 
+	// Revokes any leftover object URL when the component unmounts
 	useEffect(() => () => {
 		if (localPreviewRef.current) URL.revokeObjectURL(localPreviewRef.current);
 	}, []);
 
+	// Auto-suggests an available slug as the name changes (unless manually edited)
 	useEffect(() => {
 		if (slugManuallyEdited) return undefined;
 		if (isEditMode && !nameChangedSinceOpen) return undefined;
@@ -294,6 +327,7 @@ export default function CreateServiceLineModal({
 		return () => clearTimeout(timer);
 	}, [values.serviceLineName, slugManuallyEdited, setFieldValue, isEditMode, nameChangedSinceOpen]);
 
+	// Field change handler: updates value, marks dirty, clears errors, tracks slug/name edits
 	const onChange = useCallback((event) => {
 		const { name } = event.target;
 		handleChange(event);
@@ -304,6 +338,7 @@ export default function CreateServiceLineModal({
 		if (name === 'serviceLineName') setNameChangedSinceOpen(true);
 	}, [handleChange]);
 
+	// Uploads the chosen image to temp storage and updates the preview
 	const onImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
@@ -341,6 +376,7 @@ export default function CreateServiceLineModal({
 		}
 	}, [setFieldValue, t, values.imgUrl]);
 
+	// Clears the selected image and resets the file input
 	const clearImage = useCallback(() => {
 		if (localPreviewRef.current) {
 			URL.revokeObjectURL(localPreviewRef.current);
@@ -353,6 +389,7 @@ export default function CreateServiceLineModal({
 		if (imageInputRef.current) imageInputRef.current.value = '';
 	}, [setFieldValue]);
 
+	// Validates, blocks on pending checks, then creates or updates the service line
 	const handleSubmit = useCallback(async (event) => {
 		event.preventDefault();
 		markAllTouched();
@@ -415,6 +452,7 @@ export default function CreateServiceLineModal({
 		onClose,
 	]);
 
+	// Prompts for confirmation if dirty, otherwise closes immediately
 	const handleClose = useCallback(() => {
 		if (isDirty.current) {
 			setShowCloseConfirm(true);
@@ -423,10 +461,12 @@ export default function CreateServiceLineModal({
 		onClose();
 	}, [onClose]);
 
+	// Derived disabled/error flags for the form controls
 	const learningPathDisabled = lockLearningPath || (isEditMode && Boolean(initialForm.learningPathId || defaultLearningPathSlug));
 	const slugError = fieldError('slSlug', slugAsyncError);
 	const submitDisabled = saving || isCheckPending(slugCheck.status) || imageUploading || slugSuggestionPending;
 
+	// Renders the contextual slug availability hint below the slug input
 	const renderSlugHint = () => {
 		if (slugError) return null;
 		if (!values.slSlug || !slugSyncValid) return null;

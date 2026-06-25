@@ -1,6 +1,7 @@
 import WelcomeCard from '../../components/WelcomeCard/WelcomeCard';
 import Pagination from '../../components/Pagination/Pagination';
 
+// Admin dashboard page: shows welcome card and paginated overview
 export default function AdminDashboard() {
     return (<div>
         <WelcomeCard />

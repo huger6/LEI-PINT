@@ -22,6 +22,7 @@ const STATE_COLOR_MAP = {
 	Rejected: 'var(--color-red-on-soft, #dc2626)',
 };
 
+// Renders placeholder loading cards while applications are being fetched
 function SkeletonCards() {
 	return (
 		<div className={styles.skeletonGrid}>
@@ -41,18 +42,27 @@ function SkeletonCards() {
 	);
 }
 
+// Consultant page listing all their badge applications with stats and tab filtering
 export default function MyApplications() {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Programmatic navigation to application detail pages
 	const navigate = useNavigate();
+	// Holds the fetched list of applications
 	const [applications, setApplications] = useState([]);
+	// Tracks whether applications are still loading
 	const [loading, setLoading] = useState(true);
+	// Stores any error message from the fetch
 	const [error, setError] = useState(null);
+	// Currently selected state filter tab
 	const [activeTab, setActiveTab] = useState('all');
 
+	// Fetch applications once on mount
 	useEffect(() => {
 		loadApplications();
 	}, []);
 
+	// Loads the consultant's applications from the API
 	async function loadApplications() {
 		try {
 			const data = await getApplications();
@@ -64,6 +74,7 @@ export default function MyApplications() {
 		}
 	}
 
+	// Builds the localized tab definitions for each application state
 	const tabs = useMemo(() => [
 		{ key: 'all', label: t('myApplications.tabs.all') },
 		{ key: 'Open', label: t('myApplications.tabs.open') },
@@ -73,6 +84,7 @@ export default function MyApplications() {
 		{ key: 'Rejected', label: t('myApplications.tabs.rejected') },
 	], [t]);
 
+	// Computes per-state counts shown in the stat cards
 	const stats = useMemo(() => {
 		const total = applications.length;
 		const open = applications.filter((a) => (a.application_state || a.state) === 'Open').length;
@@ -82,6 +94,7 @@ export default function MyApplications() {
 		return { total, open, submitted, accepted, rejected };
 	}, [applications]);
 
+	// Filters applications by the active tab's state
 	const filtered = useMemo(() => {
 		if (activeTab === 'all') return applications;
 		return applications.filter((a) => (a.application_state || a.state) === activeTab);
@@ -94,6 +107,7 @@ export default function MyApplications() {
 		{ label: t('myApplications.stats.accepted'), value: stats.accepted, icon: 'check_circle', color: 'var(--color-green-on-soft, #007a55)', bg: 'var(--color-green-soft, #ecfdf5)' },
 	];
 
+	// Formats an application's relevant date into a localized string
 	function formatDate(app) {
 		const dateStr = app.submitted_at || app.submittedAt || app.opened_at || app.createdAt;
 		if (!dateStr) return '—';
@@ -104,6 +118,7 @@ export default function MyApplications() {
 		});
 	}
 
+	// Maps an application state to its localized display label
 	function getStateLabel(state) {
 		const map = {
 			Open: t('myApplications.tabs.open'),

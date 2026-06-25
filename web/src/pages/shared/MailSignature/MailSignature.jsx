@@ -18,6 +18,7 @@ const ROLE_KEY = {
 	Administrator: 'admin',
 };
 
+// Builds the public verification URL for a badge from its verification link
 function verifyUrl(link) {
 	return `${window.location.origin}/verify/${link}`;
 }
@@ -139,8 +140,11 @@ function buildEmailTemplateHtml(name, role, email, badges, photoUrl, opts = {}) 
 	);
 }
 
+// Page for generating an e-mail signature / template embedding earned badges
 export default function MailSignature() {
+	// Translation helper
 	const { t } = useTranslation();
+	// Current user and their display name from context
 	const { user, displayName } = useUser();
 	// Per the project rules, only consultants may place badges in the signature.
 	const isConsultant = user?.role === 'Consultant';
@@ -150,14 +154,22 @@ export default function MailSignature() {
 
 	// 'signature' (BÓNUS 12) | 'email' (BÓNUS 23 — full e-mail body with badges).
 	const [view, setView] = useState('signature');
+	// Whether to include the profile photo in the output
 	const [includePhoto, setIncludePhoto] = useState(true);
+	// Whether to include the user's name in the output
 	const [includeName, setIncludeName] = useState(true);
+	// Earned badges fetched for the consultant
 	const [badges, setBadges] = useState([]);
+	// Set of selected badge ids to embed
 	const [selected, setSelected] = useState(() => new Set());
+	// Loading state for the initial badge fetch
 	const [loading, setLoading] = useState(true);
+	// Error message for fetch/copy failures
 	const [error, setError] = useState(null);
+	// Toast message shown after copying
 	const [toast, setToast] = useState('');
 
+	// Fetch earned badges on mount (consultants only) and pre-select published ones
 	useEffect(() => {
 		let active = true;
 		(async () => {
@@ -178,16 +190,19 @@ export default function MailSignature() {
 		return () => { active = false; };
 	}, [isConsultant]);
 
+	// Badges currently selected for inclusion (empty for non-consultants)
 	const selectedBadges = useMemo(
 		() => (isConsultant ? badges.filter((b) => selected.has(b.awardedBadgeId)) : []),
 		[isConsultant, badges, selected]
 	);
 
+	// Rendered HTML for the compact e-mail signature
 	const signatureHtml = useMemo(
 		() => buildSignatureHtml(displayName || '', roleLabel, email, selectedBadges, photoUrl, { showPhoto: includePhoto, showName: includeName }),
 		[displayName, roleLabel, email, selectedBadges, photoUrl, includePhoto, includeName]
 	);
 
+	// Rendered HTML for the full e-mail body template
 	const emailHtml = useMemo(
 		() => buildEmailTemplateHtml(displayName || '', roleLabel, email, selectedBadges, photoUrl, {
 			showPhoto: includePhoto,
@@ -203,6 +218,7 @@ export default function MailSignature() {
 	const isEmailView = isConsultant && view === 'email';
 	const activeHtml = isEmailView ? emailHtml : signatureHtml;
 
+	// Toggles a badge id in/out of the selected set
 	function toggle(id) {
 		setSelected((prev) => {
 			const next = new Set(prev);

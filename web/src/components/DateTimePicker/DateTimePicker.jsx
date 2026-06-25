@@ -4,32 +4,38 @@ import CustomSelect from '../CustomSelect/CustomSelect';
 import Icon from '../Icons/Icons';
 import styles from './DateTimePicker.module.css';
 
+// Strips the time portion, returning a date at midnight local time.
 function toDateOnly(date) {
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+// Parses an ISO string into a Date, or null if invalid.
 function parseIso(value) {
 	if (!value) return null;
 	const d = new Date(value);
 	return Number.isNaN(d.getTime()) ? null : d;
 }
 
+// Returns true if two dates fall on the same calendar day.
 function isSameDay(a, b) {
 	return a.getFullYear() === b.getFullYear() &&
 		a.getMonth() === b.getMonth() &&
 		a.getDate() === b.getDate();
 }
 
+// Returns the first day of the month for the given date.
 function getMonthStart(date) {
 	return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+// Clamps a month within the allowed min/max month bounds.
 function clampMonth(month, minMonth, maxMonth) {
 	if (minMonth && month < minMonth) return minMonth;
 	if (maxMonth && month > maxMonth) return maxMonth;
 	return month;
 }
 
+// Builds the 42-cell calendar grid with selected/today flags.
 function getCalendarCells(monthDate, selectedDate) {
 	const monthStart = getMonthStart(monthDate);
 	const offsetToMonday = (monthStart.getDay() + 6) % 7;
@@ -49,10 +55,12 @@ function getCalendarCells(monthDate, selectedDate) {
 	});
 }
 
+// Left-pads a number to two digits.
 function pad(n) {
 	return String(n).padStart(2, '0');
 }
 
+// Formats a Date as a DD-MM-YYYY HH:mm display string.
 function formatDisplay(date) {
 	if (!date) return null;
 	return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -76,20 +84,28 @@ export default function DateTimePicker({
 	placeholder = 'DD-MM-YYYY HH:mm',
 	locale = 'en-US',
 }) {
+	// Translation function for localized labels.
 	const { t } = useTranslation();
+	// Ref to the wrapper element for outside-click detection.
 	const wrapperRef = useRef(null);
+	// Tracks whether the calendar panel is open.
 	const [open, setOpen] = useState(false);
 
+	// Selected datetime parsed from the value prop.
 	const selectedDate = useMemo(() => parseIso(value), [value]);
 
+	// Hour input state.
 	const [hours, setHours] = useState(() => selectedDate ? selectedDate.getHours() : 0);
+	// Minute input state.
 	const [minutes, setMinutes] = useState(() => selectedDate ? selectedDate.getMinutes() : 0);
 
+	// Currently displayed month, initialized to the selected/current month.
 	const [visibleMonth, setVisibleMonth] = useState(() => {
 		const focusDate = selectedDate ?? new Date();
 		return getMonthStart(focusDate);
 	});
 
+	// Syncs hour/minute inputs when the selected date changes externally.
 	useEffect(() => {
 		if (selectedDate) {
 			setHours(selectedDate.getHours());
@@ -97,16 +113,19 @@ export default function DateTimePicker({
 		}
 	}, [selectedDate]);
 
+	// Fires the onBlur callback with a synthetic event.
 	const emitBlur = useCallback(() => {
 		if (!onBlur) return;
 		onBlur({ target: { name: name || id } });
 	}, [id, name, onBlur]);
 
+	// Closes the panel and optionally emits a blur event.
 	const closePicker = useCallback((triggerBlur = true) => {
 		setOpen(false);
 		if (triggerBlur) emitBlur();
 	}, [emitBlur]);
 
+	// Closes the panel when clicking outside while it is open.
 	useEffect(() => {
 		if (!open) return undefined;
 		const handleOutsideClick = (event) => {
@@ -118,6 +137,7 @@ export default function DateTimePicker({
 		return () => document.removeEventListener('mousedown', handleOutsideClick);
 	}, [closePicker, open]);
 
+	// Fires the onChange callback with a synthetic event carrying the ISO value.
 	const emitChange = useCallback((isoValue) => {
 		if (!onChange) return;
 		onChange({
@@ -129,6 +149,7 @@ export default function DateTimePicker({
 		});
 	}, [id, name, onChange]);
 
+	// Opens the panel and focuses the relevant month.
 	const openPicker = useCallback(() => {
 		if (disabled) return;
 		const focusDate = selectedDate ?? new Date();
@@ -136,11 +157,13 @@ export default function DateTimePicker({
 		setOpen(true);
 	}, [disabled, selectedDate]);
 
+	// Toggles the panel open/closed.
 	const togglePicker = () => {
 		if (open) { closePicker(true); return; }
 		openPicker();
 	};
 
+	// Combines the chosen day with the current time and emits the ISO value.
 	const selectDate = useCallback((date) => {
 		const h = selectedDate ? selectedDate.getHours() : hours;
 		const m = selectedDate ? selectedDate.getMinutes() : minutes;
@@ -148,6 +171,7 @@ export default function DateTimePicker({
 		emitChange(combined.toISOString());
 	}, [emitChange, hours, minutes, selectedDate]);
 
+	// Sanitizes and clamps the hour input, emitting the updated datetime.
 	const handleHoursChange = (e) => {
 		let val = e.target.value.replace(/\D/g, '');
 		if (val === '') { setHours(''); return; }
@@ -160,6 +184,7 @@ export default function DateTimePicker({
 		}
 	};
 
+	// Sanitizes and clamps the minute input, emitting the updated datetime.
 	const handleMinutesChange = (e) => {
 		let val = e.target.value.replace(/\D/g, '');
 		if (val === '') { setMinutes(''); return; }
@@ -172,14 +197,17 @@ export default function DateTimePicker({
 		}
 	};
 
+	// Defaults the hour input to 0 when left empty.
 	const handleHoursBlur = () => {
 		if (hours === '' || hours === undefined) setHours(0);
 	};
 
+	// Defaults the minute input to 0 when left empty.
 	const handleMinutesBlur = () => {
 		if (minutes === '' || minutes === undefined) setMinutes(0);
 	};
 
+	// Clears the selected datetime and closes the panel.
 	const handleClear = () => {
 		emitChange('');
 		setHours(0);
@@ -187,6 +215,7 @@ export default function DateTimePicker({
 		closePicker(true);
 	};
 
+	// Localized short weekday labels starting on Monday.
 	const weekdayLabels = useMemo(() => {
 		const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
 		const monday = new Date(2024, 0, 1);
@@ -197,6 +226,7 @@ export default function DateTimePicker({
 		});
 	}, [locale]);
 
+	// Localized month name options for the month select.
 	const monthOptions = useMemo(() => {
 		const formatter = new Intl.DateTimeFormat(locale, { month: 'long' });
 		return Array.from({ length: 12 }, (_, index) => ({
@@ -206,6 +236,7 @@ export default function DateTimePicker({
 	}, [locale]);
 
 	const currentYear = new Date().getFullYear();
+	// Year options spanning a range around the current year.
 	const yearOptions = useMemo(
 		() => Array.from({ length: 11 }, (_, idx) => ({
 			value: currentYear - 1 + idx,
@@ -214,6 +245,7 @@ export default function DateTimePicker({
 		[currentYear]
 	);
 
+	// Calendar cells for the visible month.
 	const cells = useMemo(
 		() => getCalendarCells(visibleMonth, selectedDate),
 		[visibleMonth, selectedDate]
@@ -221,11 +253,13 @@ export default function DateTimePicker({
 
 	const displayValue = selectedDate ? formatDisplay(selectedDate) : placeholder;
 
+	// Updates the visible month when the month select changes.
 	const handleMonthChange = (e) => {
 		const month = Number(e.target.value);
 		setVisibleMonth(new Date(visibleMonth.getFullYear(), month, 1));
 	};
 
+	// Updates the visible month when the year select changes.
 	const handleYearChange = (e) => {
 		const year = Number(e.target.value);
 		setVisibleMonth(new Date(year, visibleMonth.getMonth(), 1));

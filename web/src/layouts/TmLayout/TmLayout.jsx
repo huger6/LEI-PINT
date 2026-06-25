@@ -1,6 +1,7 @@
 import { TM } from '../../routes/paths';
 import AppLayout from '../AppLayout/AppLayout';
 
+// Sidebar navigation items for the Talent Manager role.
 const MENU_ITEMS = [
     { to: TM.DASHBOARD, icon: 'home', label: 'sidebar.tm.dashboard' },
     { to: TM.VALIDATIONS, icon: 'paper', label: 'sidebar.tm.validations' },
@@ -11,6 +12,7 @@ const MENU_ITEMS = [
     { to: TM.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.tm.announcements' },
 ];
 
+// Renders the app shell with the Talent Manager menu.
 export default function TmLayout() {
     return <AppLayout menuItems={MENU_ITEMS} />;
 }

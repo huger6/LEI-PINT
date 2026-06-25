@@ -13,7 +13,9 @@ const DASHBOARDS = {
     'Service Line Leader': SllDashboard,
 };
 
+// Role-based router: renders the dashboard matching the current user's role
 export default function Dashboard() {
+    // Get the authenticated user from context
     const { user } = useUser();
     const DashboardComponent = DASHBOARDS[user?.role];
 

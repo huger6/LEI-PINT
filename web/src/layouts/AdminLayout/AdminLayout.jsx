@@ -1,6 +1,7 @@
 import { ADMIN } from '../../routes/paths';
 import AppLayout from '../AppLayout/AppLayout';
 
+// Sidebar navigation items for the Administrator role.
 const MENU_ITEMS = [
     { to: ADMIN.DASHBOARD, icon: 'home', label: 'sidebar.admin.dashboard' },
     { to: ADMIN.USERS, icon: 'user', label: 'sidebar.admin.users' },
@@ -15,6 +16,7 @@ const MENU_ITEMS = [
     { to: ADMIN.RGPD, icon: 'privacy', label: 'sidebar.admin.rgpd' },
 ];
 
+// Renders the app shell with the Administrator menu.
 export default function AdminLayout() {
     return <AppLayout menuItems={MENU_ITEMS} />;
 }

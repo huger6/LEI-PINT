@@ -29,6 +29,7 @@ export function connectSocket(token) {
 	return socket;
 }
 
+// Closes the active socket connection and clears the reference.
 export function disconnectSocket() {
 	if (socket) {
 		socket.disconnect();
@@ -36,6 +37,7 @@ export function disconnectSocket() {
 	}
 }
 
+// Returns the current socket instance (or null if not connected).
 export function getSocket() {
 	return socket;
 }

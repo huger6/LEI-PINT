@@ -30,9 +30,11 @@ const ALLOWED_IMAGE_EXTENSIONS = new Set([
 	'heif',
 ]);
 
+// Returns a trimmed string, or empty string for non-string input.
 const asString = (value) =>
 	typeof value === 'string' ? value.trim() : '';
 
+// Builds an Error with a machine-readable code and optional details.
 const createUploadError = (message, code = 'PROFILE_IMAGE_UPLOAD_FAILED', details = null) => {
 	const error = new Error(message);
 	error.code = code;
@@ -40,6 +42,7 @@ const createUploadError = (message, code = 'PROFILE_IMAGE_UPLOAD_FAILED', detail
 	return error;
 };
 
+// Reads and validates the Supabase storage base URL and API key from env.
 const getStorageConfig = () => {
 	const baseUrl = asString(import.meta.env.VITE_SUPABASE_STORAGE_URL || import.meta.env.SUPABASE_STORAGE_URL);
 	const apiKey = asString(import.meta.env.VITE_SUPABASE_STORAGE_API_KEY || import.meta.env.SUPABASE_STORAGE_API_KEY);
@@ -57,12 +60,14 @@ const getStorageConfig = () => {
 	};
 };
 
+// Extracts the lowercase file extension (without the dot).
 const getExtension = (fileName = '') => {
 	const index = fileName.lastIndexOf('.');
 	if (index < 1) return '';
 	return fileName.slice(index + 1).toLowerCase();
 };
 
+// Strips the extension and replaces unsafe characters in the base file name.
 const sanitizeFileBaseName = (fileName = '') => {
 	const base = fileName.replace(/\.[^.]+$/, '');
 	const safe = base
@@ -73,6 +78,7 @@ const sanitizeFileBaseName = (fileName = '') => {
 	return safe || DEFAULT_IMAGE_NAME;
 };
 
+// Builds a unique temp file name by appending a timestamp to the sanitized base.
 const buildTempFileName = (originalFileName = DEFAULT_IMAGE_NAME) => {
 	const extension = getExtension(originalFileName);
 	const safeBase = sanitizeFileBaseName(originalFileName);
@@ -81,9 +87,11 @@ const buildTempFileName = (originalFileName = DEFAULT_IMAGE_NAME) => {
 	return `${safeBase}_${timestamp}${suffix}`;
 };
 
+// URL-encodes each path segment while preserving the slash separators.
 const encodePath = (path) =>
 	path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
 
+// Checks whether a file is an allowed image by MIME type and/or extension.
 const isAllowedImageFile = (file) => {
 	const mimeType = asString(file?.type).toLowerCase();
 	const extension = getExtension(file?.name);

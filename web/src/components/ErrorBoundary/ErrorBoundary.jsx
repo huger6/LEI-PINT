@@ -12,25 +12,30 @@ import styles from '../../pages/shared/ErrorCodePage/ErrorCodePage.module.css';
 export default class ErrorBoundary extends Component {
 	static contextType = UserContext;
 
+	// Initializes the error-tracking state.
 	constructor(props) {
 		super(props);
 		this.state = { hasError: false, error: null };
 	}
 
+	// Updates state to render the fallback UI when a render error occurs.
 	static getDerivedStateFromError(error) {
 		return { hasError: true, error };
 	}
 
+	// Logs caught render errors for debugging.
 	componentDidCatch(error, errorInfo) {
 		console.error('ErrorBoundary caught an error:', error, errorInfo);
 	}
 
+	// Resolves the dashboard path based on the current user's role.
 	getDashboardPath() {
 		const role = this.context?.user?.role;
 		if (role === 'Administrator') return ADMIN.DASHBOARD;
 		return SHARED.HOME;
 	}
 
+	// Renders the recovery page on error, otherwise the wrapped children.
 	render() {
 		if (this.state.hasError) {
 			const t = i18n.t.bind(i18n);

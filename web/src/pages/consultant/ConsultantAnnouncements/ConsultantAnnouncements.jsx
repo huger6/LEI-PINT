@@ -71,6 +71,7 @@ function SkeletonCards() {
 	));
 }
 
+// Consultant page listing searchable, paginated announcements with a detail modal
 export default function ConsultantAnnouncements() {
 	// Initialize translation utility
 	const { t } = useTranslation();

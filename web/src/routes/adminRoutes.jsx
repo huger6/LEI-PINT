@@ -23,6 +23,7 @@ import AdminRgpd from '../pages/admin/AdminRgpd/AdminRgpd';
 import AdminSlas from '../pages/admin/AdminSlas/AdminSlas';
 import AdminIntegrations from '../pages/admin/AdminIntegrations/AdminIntegrations';
 
+// Administrator-only routes: dashboard, structure, users, badges, and management pages.
 const adminRoutes = [
 	{ path: ADMIN.DASHBOARD, element: <AdminDashboard /> },
 	{ path: ADMIN.STRUCTURE, element: <AdminStructure /> },

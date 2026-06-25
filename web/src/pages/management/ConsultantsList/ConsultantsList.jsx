@@ -19,6 +19,7 @@ const PAGE_SIZE = 20;
 const MAX_POINTS = 2000;
 const EMPTY_APPLIED = { search: '', serviceLineId: '', areaId: '', pointsMin: '', pointsMax: '', sort: 'points_desc' };
 
+// Format a date as a short localized pt-PT string, or null when absent.
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : null);
 
 /**

@@ -56,6 +56,7 @@ function normalizeFilters(filters) {
 	};
 }
 
+// Consultant page listing the filterable, paginated badge catalog with desktop and mobile filters
 export default function BadgeCatalog() {
 	// Initialize translation utility
 	const { t } = useTranslation();

@@ -18,6 +18,7 @@ export default function FormInput({
 	required,
 	...inputProps
 }) {
+	// Builds the input's class list, applying trailing-element and error styling variants.
 	const inputClassNames = `form-control ${styles.input} ${trailing ? styles.inputWithTrailing : ''} ${error ? `is-invalid ${styles.inputError}` : ''} ${inputClassName ?? ''}`.trim();
 
 	return (

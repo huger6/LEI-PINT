@@ -10,23 +10,35 @@ import Modal from '../../../components/Modal/Modal';
 import TableSkeleton from '../../../components/Skeleton/TableSkeleton';
 import styles from './Privacy.module.css';
 
+// Formats a date value into a localized pt-PT date/time string
 function formatDateTime(value) {
 	if (!value) return '—';
 	return new Date(value).toLocaleString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+// GDPR privacy page: consent history, data export, and account deletion
 export default function Privacy() {
+	// Translation helper
 	const { t } = useTranslation();
+	// Router navigation helper
 	const navigate = useNavigate();
+	// Logout action from auth context
 	const { logout } = useAuth();
 
+	// Consent history records
 	const [history, setHistory] = useState([]);
+	// Loading state for the history fetch
 	const [loading, setLoading] = useState(true);
+	// Whether a data export is in progress
 	const [exporting, setExporting] = useState(false);
+	// Whether an account deletion is in progress
 	const [deleting, setDeleting] = useState(false);
+	// Whether the delete confirmation modal is open
 	const [confirmDelete, setConfirmDelete] = useState(false);
+	// Error message shown to the user
 	const [error, setError] = useState('');
 
+	// Loads the consent history from the API
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -38,8 +50,10 @@ export default function Privacy() {
 		}
 	}, []);
 
+	// Load consent history on mount
 	useEffect(() => { load(); }, [load]);
 
+	// Requests the user's data and triggers a JSON file download
 	async function handleExport() {
 		setExporting(true);
 		setError('');
@@ -61,6 +75,7 @@ export default function Privacy() {
 		}
 	}
 
+	// Requests account deletion, then logs out and redirects to login
 	async function handleDelete() {
 		setDeleting(true);
 		setError('');

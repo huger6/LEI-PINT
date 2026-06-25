@@ -4,22 +4,29 @@ import { SHARED } from '../../../routes/paths';
 import Icon from '../../../components/Icons/Icons';
 import styles from './SubmissionConfirmation.module.css';
 
+// Confirmation page shown after a consultant submits a badge application
 export default function SubmissionConfirmation() {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Programmatic navigation to application pages
 	const navigate = useNavigate();
+	// Access route state passed from the submission flow
 	const location = useLocation();
 
+	// Extract submission details forwarded via navigation state
 	const {
 		applicationGuid,
 		badgeTitle,
 		submittedAt,
 	} = location.state || {};
 
+	// Redirect to the applications list if accessed without submission data
 	if (!applicationGuid) {
 		navigate(SHARED.APPLICATIONS, { replace: true });
 		return null;
 	}
 
+	// Format the submission timestamp into a localized date string
 	const formattedDate = submittedAt
 		? new Date(submittedAt).toLocaleDateString(undefined, {
 			year: 'numeric',

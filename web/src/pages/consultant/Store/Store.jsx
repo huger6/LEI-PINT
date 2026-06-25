@@ -11,6 +11,7 @@ import Spinner from '../../../components/Spinner/Spinner';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './Store.module.css';
 
+// Format a date string into a localized "dd month year" label
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
 
 const CATEGORY_STYLE = {
@@ -22,18 +23,28 @@ const CATEGORY_STYLE = {
 };
 const DEFAULT_STYLE = { icon: 'certificate', bg: 'var(--color-primary-soft)', color: 'var(--color-primary)' };
 
+// Rewards store page: lists rewards, handles point redemption and history
 export default function Store() {
+	// Translation helper
 	const { t } = useTranslation();
+	// Refresh the user's point balance after a redemption
 	const { refreshPoints } = useUser();
+	// Current point balance
 	const [balance, setBalance] = useState(0);
+	// Available rewards catalog
 	const [rewards, setRewards] = useState([]);
+	// Past redemption history
 	const [redemptions, setRedemptions] = useState([]);
+	// Initial load flag
 	const [loading, setLoading] = useState(true);
 	const [confirm, setConfirm] = useState(null);   // reward pending confirmation
+	// In-flight redemption flag
 	const [busy, setBusy] = useState(false);
 	const [result, setResult] = useState(null);     // { name, accessLink, accessInfo }
+	// Error message to display
 	const [error, setError] = useState(null);
 
+	// Load rewards, balance and redemption history together
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -48,8 +59,10 @@ export default function Store() {
 		}
 	}, []);
 
+	// Run the initial data load on mount
 	useEffect(() => { load(); }, [load]);
 
+	// Redeem the confirmed reward and refresh state on success
 	async function handleRedeem() {
 		if (!confirm) return;
 		setBusy(true);

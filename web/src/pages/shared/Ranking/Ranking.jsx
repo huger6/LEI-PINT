@@ -14,14 +14,17 @@ import { getRanking, getMyRankingPosition } from '../../../services/pointsServic
 import { getServiceLines, getAreas } from '../../../services/hierarchyService';
 import styles from './Ranking.module.css';
 
+// Number of ranking rows per page.
 const PAGE_SIZE = 30;
 
+// Border/badge colors for the top-3 podium positions.
 const PODIUM_COLORS = {
     1: { border: 'var(--color-warning)', badge: 'var(--color-warning)' },
     2: { border: '#adb5bd', badge: '#adb5bd' },
     3: { border: 'var(--color-orange-on-soft)', badge: '#cd7f32' },
 };
 
+// Pick the page subtitle text based on the viewer's role.
 function getSubtitle(role, t) {
     switch (role) {
         case 'Service Line Leader':
@@ -34,13 +37,20 @@ function getSubtitle(role, t) {
     }
 }
 
+// Podium card for one of the top-3 ranked consultants.
 function PodiumCard({ entry, rank, page }) {
+    // Colors for this podium rank.
     const colors = PODIUM_COLORS[rank];
+    // Whether this is the first-place card (larger, with crown).
     const isFirst = rank === 1;
+    // Avatar size depends on whether it's first place.
     const avatarSize = isFirst ? 96 : 80;
+    // Absolute ranking position accounting for the current page.
     const position = (page - 1) * PAGE_SIZE + rank;
 
+    // Link to the user's profile when a guid exists, otherwise a plain div.
     const Wrapper = entry.user_guid ? Link : 'div';
+    // Props for the wrapper element (link target + classes).
     const wrapperProps = entry.user_guid
         ? { to: `/u/${entry.user_guid}`, className: `${styles.podiumCard} ${styles.consultantLink}` }
         : { className: styles.podiumCard };
@@ -83,8 +93,11 @@ function PodiumCard({ entry, rank, page }) {
     );
 }
 
+// Small "#N" badge shown in the ranking table, highlighted for the top 3.
 function PositionBadge({ position }) {
+    // Whether this position is within the top 3.
     const isTop3 = position <= 3;
+    // Background color per top-3 position.
     const colorMap = { 1: 'var(--color-warning)', 2: '#adb5bd', 3: '#cd7f32' };
 
     return (
@@ -97,10 +110,14 @@ function PositionBadge({ position }) {
     );
 }
 
+// Scope buttons (my area / my service line / general) shown to consultants.
 function ConsultantScopeFilter({ user, serviceLines, areas, appliedScope, onScopeChange, t }) {
+    // The consultant's primary area, if any.
     const userPrimaryArea = user?.areas?.find((a) => a.isPrimary);
+    // The consultant's service line, if any.
     const userSl = user?.serviceLine;
 
+    // Build the available scope options based on the user's area/service line.
     const scopeOptions = useMemo(() => {
         const opts = [];
         if (userPrimaryArea) {
@@ -137,21 +154,26 @@ function ConsultantScopeFilter({ user, serviceLines, areas, appliedScope, onScop
     );
 }
 
+// Service-line/area dropdown filters for Talent Managers and Administrators.
 function ManagementFilter({
     role, serviceLines, areas, selectedSl, selectedArea, onSlChange, onAreaChange, onFilter, t
 }) {
+    // Only TM/Admin can filter by service line.
     const showSlFilter = role === 'Talent Manager' || role === 'Administrator';
 
+    // Restrict areas to the selected service line (or all if none selected).
     const filteredAreas = useMemo(() => {
         if (!selectedSl) return areas;
         return areas.filter((a) => String(a.service_line_id) === String(selectedSl));
     }, [areas, selectedSl]);
 
+    // Build area select options with an "all areas" entry.
     const areaOptions = useMemo(() => [
         { value: '', label: t('ranking.allAreas') },
         ...filteredAreas.map((a) => ({ value: String(a.area_id), label: a.area_name })),
     ], [filteredAreas, t]);
 
+    // Build service-line select options with an "all service lines" entry.
     const slOptions = useMemo(() => [
         { value: '', label: t('ranking.allServiceLines') },
         ...serviceLines.map((sl) => ({ value: String(sl.service_line_id), label: sl.service_line_name })),
@@ -190,33 +212,54 @@ function ManagementFilter({
     );
 }
 
+// Ranking page: role-aware leaderboard with podium, table and scope filters.
 export default function Ranking() {
+    // Translation helper for localized labels.
     const { t } = useTranslation();
+    // Current logged-in user.
     const { user } = useUser();
+    // The viewer's role, which drives available filters and scope.
     const role = user?.role;
 
+    // Ranking rows for the current page.
     const [rankings, setRankings] = useState([]);
+    // Pagination metadata returned by the API.
     const [pagination, setPagination] = useState(null);
+    // Currently displayed page number.
     const [currentPage, setCurrentPage] = useState(1);
+    // Whether the ranking is loading.
     const [loading, setLoading] = useState(true);
 
+    // Service lines for management filters.
     const [serviceLines, setServiceLines] = useState([]);
+    // Areas for management/scope filters.
     const [areas, setAreas] = useState([]);
+    // Whether the hierarchy (service lines + areas) has finished loading.
     const [hierarchyLoaded, setHierarchyLoaded] = useState(false);
 
+    // Service line selected in the management filter (not yet applied).
     const [selectedSl, setSelectedSl] = useState('');
+    // Area selected in the management filter (not yet applied).
     const [selectedArea, setSelectedArea] = useState('');
+    // Applied service line filter used in API calls.
     const [appliedSl, setAppliedSl] = useState('');
+    // Applied area filter used in API calls.
     const [appliedArea, setAppliedArea] = useState('');
 
+    // Consultant ranking scope ('initial' until resolved, then area/sl/general).
     const [consultantScope, setConsultantScope] = useState('initial');
     // SLL ranking scope: 'sl' (own Service Line, default) | 'area:<id>' | 'general' (all)
     const [sllScope, setSllScope] = useState('sl');
+    // Whether the "find my position" lookup is running.
     const [findingPosition, setFindingPosition] = useState(false);
+    // Flag to scroll to the current user's row once loaded.
     const [scrollToMe, setScrollToMe] = useState(false);
+    // Ref to the current user's table row for scroll-into-view.
     const myRowRef = useRef(null);
+    // Skips the next data fetch (set when find-my-position already loaded data).
     const skipNextFetchRef = useRef(false);
 
+    // Load service lines and areas once on mount.
     useEffect(() => {
         Promise.all([getServiceLines(), getAreas()])
             .then(([slData, areaData]) => {
@@ -227,6 +270,7 @@ export default function Ranking() {
             .catch(() => setHierarchyLoaded(true));
     }, []);
 
+    // Resolve a consultant's default ranking scope (general, see note below).
     const resolveInitialConsultantScope = useCallback(() => {
         if (role !== 'Consultant' || !hierarchyLoaded) return null;
 
@@ -237,6 +281,7 @@ export default function Ranking() {
         return 'general';
     }, [role, hierarchyLoaded]);
 
+    // Set the consultant's initial scope once the hierarchy is available.
     useEffect(() => {
         if (role === 'Consultant' && hierarchyLoaded && consultantScope === 'initial') {
             const resolved = resolveInitialConsultantScope();
@@ -244,6 +289,7 @@ export default function Ranking() {
         }
     }, [role, hierarchyLoaded, consultantScope, resolveInitialConsultantScope]);
 
+    // Resolve the service-line id matching an SLL's own service line.
     const resolveSlFilterForSll = useCallback(() => {
         if (role !== 'Service Line Leader' || !hierarchyLoaded) return null;
         const userSl = user?.serviceLine;
@@ -252,6 +298,7 @@ export default function Ranking() {
         return matched ? String(matched.service_line_id) : null;
     }, [role, user, hierarchyLoaded, serviceLines]);
 
+    // Build the ranking API query params from the role and active scope/filters.
     const buildApiParams = useCallback(() => {
         const params = { page: currentPage, limit: PAGE_SIZE };
 
@@ -277,6 +324,7 @@ export default function Ranking() {
         return params;
     }, [currentPage, role, consultantScope, sllScope, appliedSl, appliedArea, resolveSlFilterForSll]);
 
+    // Fetch the ranking whenever the scope, filters or page change.
     useEffect(() => {
         if (!hierarchyLoaded) return;
         if (role === 'Consultant' && consultantScope === 'initial') return;
@@ -298,26 +346,31 @@ export default function Ranking() {
             .finally(() => setLoading(false));
     }, [hierarchyLoaded, consultantScope, buildApiParams, role]);
 
+    // Apply the management filter selections and reset to the first page.
     const handleFilter = () => {
         setAppliedSl(selectedSl);
         setAppliedArea(selectedArea);
         setCurrentPage(1);
     };
 
+    // Change the consultant scope and reset to the first page.
     const handleConsultantScopeChange = (scope) => {
         setConsultantScope(scope);
         setCurrentPage(1);
     };
 
+    // Change the SLL scope and reset to the first page.
     const handleSllScopeChange = (scope) => {
         setSllScope(scope);
         setCurrentPage(1);
     };
 
+    // Change the current page.
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
 
+    // Look up the current user's ranking page, load it and scroll to their row.
     const handleFindMyPosition = async () => {
         if (findingPosition) return;
         setFindingPosition(true);
@@ -360,6 +413,7 @@ export default function Ranking() {
         }
     };
 
+    // Scroll the current user's row into view once data has loaded.
     useEffect(() => {
         if (scrollToMe && !loading && myRowRef.current) {
             myRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -367,12 +421,17 @@ export default function Ranking() {
         }
     }, [scrollToMe, loading]);
 
+    // Top-3 entries, shown as a podium only on the first page.
     const top3 = currentPage === 1 ? rankings.slice(0, 3) : [];
+    // Total number of pages from pagination metadata.
     const totalPages = pagination?.totalPages || 1;
+    // Total number of ranked items from pagination metadata.
     const totalItems = pagination?.totalItems || 0;
 
+    // Role-specific page subtitle.
     const subtitle = getSubtitle(role, t);
 
+    // Areas restricted to an SLL's own service line, for their scope buttons.
     const sllFilteredAreas = useMemo(() => {
         if (role !== 'Service Line Leader') return [];
         const sllSlId = resolveSlFilterForSll();

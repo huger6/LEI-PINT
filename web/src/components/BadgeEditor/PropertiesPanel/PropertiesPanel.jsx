@@ -10,6 +10,7 @@ const FONT_OPTIONS = [
 	{ value: 'Oswald, sans-serif', label: 'Oswald' },
 ];
 
+// Editor side panel for editing the selected object's transform, fill, typography, and canvas background.
 export default function PropertiesPanel({
 	selected, props, onUpdateProp, onSaveState,
 	canvasBg, onUpdateCanvasBg, t,

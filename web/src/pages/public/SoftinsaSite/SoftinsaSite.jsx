@@ -40,6 +40,7 @@ function groupBadges(badges, otherLabel) {
 		.sort((a, c) => a.label.localeCompare(c.label));
 }
 
+// Derive up-to-two-letter initials from a full name for avatar fallbacks
 function initials(name = '') {
 	const parts = String(name).trim().split(/\s+/).filter(Boolean);
 	if (parts.length === 0) return '?';
@@ -47,24 +48,32 @@ function initials(name = '') {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// Renders a single social-media icon link with the given SVG path children
 const Social = ({ label, children, href = 'https://softinsa.pt' }) => (
 	<a className={styles.social} href={href} target="_blank" rel="noreferrer" aria-label={label}>
 		<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">{children}</svg>
 	</a>
 );
 
+// Public marketing landing page for the Softinsa badge platform
 export default function SoftinsaSite() {
+	// Translation helper for localized content
 	const { t } = useTranslation();
+	// Ref to the page root used for scroll-reveal observation
 	const rootRef = useRef(null);
+	// Holds the public badges shown in the showcase section
 	const [badges, setBadges] = useState([]);
+	// Holds the featured consultant profiles
 	const [people, setPeople] = useState([]);
 
+	// Set the document title and restore it on unmount
 	useEffect(() => {
 		const prev = document.title;
 		document.title = `${t('softinsaSite.hero.title')} - Softinsa`;
 		return () => { document.title = prev; };
 	}, [t]);
 
+	// Fetch public badges and featured profiles on mount
 	useEffect(() => {
 		let active = true;
 		getPublicBadges().then((rows) => { if (active) setBadges(rows); }).catch(() => {});
@@ -72,6 +81,7 @@ export default function SoftinsaSite() {
 		return () => { active = false; };
 	}, []);
 
+	// Reveal elements on scroll via IntersectionObserver, re-running when badges load
 	useEffect(() => {
 		const root = rootRef.current;
 		if (!root) return undefined;
@@ -89,13 +99,16 @@ export default function SoftinsaSite() {
 		return () => io.disconnect();
 	}, [badges]);
 
+	// Smoothly scroll the window back to the top
 	const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+	// Localized arrays of content used to render the page sections
 	const features = t('softinsaSite.features.items', { returnObjects: true });
 	const profiles = t('softinsaSite.profiles.items', { returnObjects: true });
 	const steps = t('softinsaSite.flow.items', { returnObjects: true });
 	const links = t('softinsaSite.footer.links', { returnObjects: true });
 	const policies = t('softinsaSite.footer.policies', { returnObjects: true });
+	// Coerce a value into an array, returning empty when it is not one
 	const arr = (v) => (Array.isArray(v) ? v : []);
 
 	return (

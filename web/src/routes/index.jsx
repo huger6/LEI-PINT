@@ -26,6 +26,7 @@ import ValidationsBoard from '../pages/management/ValidationsBoard/ValidationsBo
 import StatsPage from '../pages/management/StatsPage/StatsPage';
 import BadgeCatalog from '../pages/consultant/BadgeCatalog/BadgeCatalog';
 
+// Top-level router assembling public, auth-guarded, and role-gated route trees.
 export default function AppRoutes() {
 	return (
 		<Routes>

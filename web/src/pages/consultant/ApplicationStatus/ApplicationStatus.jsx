@@ -29,6 +29,7 @@ function getActiveStep(state) {
 	return 3;
 }
 
+// Consultant page showing an application's workflow status, badge info, timeline, feedback, and requirements
 export default function ApplicationStatus({ application, badge }) {
 	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();

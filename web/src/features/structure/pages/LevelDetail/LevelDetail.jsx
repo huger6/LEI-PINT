@@ -12,25 +12,37 @@ import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteSt
 
 const PAGE_SIZE = 32;
 
+// Detail page for a single level (progression stage), listing its child badges
 export default function LevelDetail() {
+	// Read the parent area slug and stage code from the route params
 	const { areaSlug, stageCode: stageCodeParam } = useParams();
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
 	const P = structureDetailPaths(isAdmin);
+	// The loaded level entity
 	const [level, setLevel] = useState(null);
+	// Child badges for the current page
 	const [badges, setBadges] = useState([]);
+	// Pagination metadata for the badges list
 	const [pagination, setPagination] = useState(null);
+	// Currently selected badges page
 	const [currentPage, setCurrentPage] = useState(1);
+	// Whether the initial data load is in progress
 	const [loading, setLoading] = useState(true);
+	// Edit level modal visibility
 	const [showEditModal, setShowEditModal] = useState(false);
+	// Delete level modal visibility
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	// Whether an activate request is in flight
 	const [isActivating, setIsActivating] = useState(false);
 
+	// Fetch a page of badges for the current level
 	const fetchSubStructures = useCallback((page) => {
 		return fetchBadgesByLevel(areaSlug, stageCodeParam, { page, limit: PAGE_SIZE });
 	}, [areaSlug, stageCodeParam]);
 
+	// Load the level and its first page of badges on mount / param change
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -56,6 +68,7 @@ export default function LevelDetail() {
 		return () => { cancelled = true; };
 	}, [areaSlug, stageCodeParam, fetchSubStructures]);
 
+	// Load a different page of badges when pagination changes
 	const handlePageChange = useCallback((page) => {
 		setCurrentPage(page);
 		fetchSubStructures(page)
@@ -66,6 +79,7 @@ export default function LevelDetail() {
 			.catch(console.error);
 	}, [fetchSubStructures]);
 
+	// Refresh the level after a successful edit
 	const handleEditSuccess = useCallback(async () => {
 		try {
 			const refreshed = await fetchLevelByCode(areaSlug, stageCodeParam);
@@ -75,6 +89,7 @@ export default function LevelDetail() {
 		}
 	}, [areaSlug, stageCodeParam]);
 
+	// Activate the level and refresh it
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
@@ -93,12 +108,14 @@ export default function LevelDetail() {
 	if (loading) return <StructureDetailSkeleton />;
 	if (!level) return null;
 
+	// Derive the stage code, parent area slug, and display title from the level
 	const stageCode = level.stage_code?.stage_code;
 	const parentAreaSlug = level.area?.area_slug;
 	const title = level.stage_sequence != null
 		? `#${level.stage_sequence} ${level.stage_title}`
 		: level.stage_title;
 
+	// Summary stat cards shown in the detail header
 	const stats = [
 		{
 			icon: 'tabler_users',
@@ -116,10 +133,12 @@ export default function LevelDetail() {
 		},
 	];
 
+	// Optional message shown when the current user is enrolled
 	const enrollmentMessage = level.is_enrolled
 		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
 		: null;
 
+	// Map badges into the generic sub-structure card shape used by the layout
 	const subStructures = badges.map((badge) => ({
 		id: badge.badge_id,
 		title: badge.badge_title,
@@ -131,6 +150,7 @@ export default function LevelDetail() {
 		],
 	}));
 
+	// Build breadcrumb trail from the parent hierarchy (learning path > service line > area > level)
 	const breadcrumbItems = [];
 	const parentArea = level.area;
 	const parentSl = parentArea?.service_line;

@@ -21,10 +21,12 @@ export async function updateUser(userGuid, payload) {
 	return data?.data;
 }
 
+// Deactivates (soft-deletes) a user account via the admin endpoint.
 export async function deactivateUser(userGuid) {
 	await api.delete(`/admin/users/${userGuid}`);
 }
 
+// Triggers a password reset for the given user via the admin endpoint.
 export async function resetUserPassword(userGuid) {
 	const { data } = await api.post(`/admin/users/${userGuid}/reset-password`);
 	return data?.data;

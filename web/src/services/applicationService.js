@@ -1,11 +1,13 @@
 // Badge application lifecycle: creation, evidence upload, and submission.
 import api from './api';
 
+// Fetches a filtered list of badge applications.
 export async function getApplications(params = {}) {
 	const { data } = await api.get('/applications', { params });
 	return data?.data || [];
 }
 
+// Fetches a single application by its GUID.
 export async function getApplicationById(guid) {
 	const { data } = await api.get(`/applications/${guid}`);
 	return data?.data;

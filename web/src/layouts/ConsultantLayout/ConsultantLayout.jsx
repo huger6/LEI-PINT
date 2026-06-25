@@ -1,6 +1,7 @@
 import { CONSULTANT } from '../../routes/paths';
 import AppLayout from '../AppLayout/AppLayout';
 
+// Sidebar navigation items for the Consultant role.
 const MENU_ITEMS = [
     { to: CONSULTANT.HOME, icon: 'home', label: 'sidebar.consultant.home', notificationType: 'HOME' },
     { to: CONSULTANT.CATALOG, icon: 'badge', label: 'sidebar.consultant.badges', notificationType: 'BADGES' },
@@ -14,6 +15,7 @@ const MENU_ITEMS = [
     { to: CONSULTANT.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.consultant.announcements', notificationType: 'ANNOUNCEMENTS' },
 ];
 
+// Renders the app shell with the Consultant menu.
 export default function ConsultantLayout() {
     return <AppLayout menuItems={MENU_ITEMS} />;
 }

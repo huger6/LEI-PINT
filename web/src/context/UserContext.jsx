@@ -108,6 +108,7 @@ export function UserProvider({ children }) {
 	}, []);
 
 	// ── User profile ──────────────────────────────────────────────
+	// Refreshes the user's total points from the points summary endpoint.
 	const refreshPoints = useCallback(async () => {
 		try {
 			const data = await getPointsSummary();

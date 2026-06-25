@@ -43,6 +43,7 @@ const LP_COLORS = [
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
+// Return a time-of-day greeting string based on the current hour
 function getGreeting(t) {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 13) return t('welcomeCard.goodMorning');
@@ -50,6 +51,7 @@ function getGreeting(t) {
     return t('welcomeCard.goodEvening');
 }
 
+// Format an average validation duration in ms into a "Xd Yh" / "Yh" string
 function formatValidationTime(avgMs, t) {
     if (!avgMs || avgMs <= 0) return '—';
     const totalHours = Math.floor(avgMs / (1000 * 60 * 60));
@@ -59,6 +61,7 @@ function formatValidationTime(avgMs, t) {
     return `${hours}h`;
 }
 
+// Compute total count, approval rate and average validation time from applications
 function computeAppStats(applications) {
     const total = applications.length;
     const accepted = applications.filter(a => a.application_state === 'Accepted').length;
@@ -78,6 +81,7 @@ function computeAppStats(applications) {
     return { total, approvalRate, avgValidationMs };
 }
 
+// Derive the highest progression stage with earned badges from the timeline
 function deriveAverageLevel(timeline) {
     if (!timeline || timeline.length === 0) return { code: '—', title: '' };
     const sorted = [...timeline].sort((a, b) => (b.stage_sequence ?? 0) - (a.stage_sequence ?? 0));
@@ -86,6 +90,7 @@ function deriveAverageLevel(timeline) {
     return { code: highest.code, title: highest.title };
 }
 
+// Build per-month badge counts for the current year for the chart
 function buildBadgeEvolutionMonthly(earnedBadges, t) {
     const counts = new Array(12).fill(0);
     const currentYear = new Date().getFullYear();
@@ -99,6 +104,7 @@ function buildBadgeEvolutionMonthly(earnedBadges, t) {
     return counts.map((val, i) => ({ name: t(`shared.months.${MONTH_KEYS[i]}`), value: val }));
 }
 
+// Build per-year badge counts for the chart
 function buildBadgeEvolutionAnnual(earnedBadges) {
     const yearMap = {};
     earnedBadges.forEach(b => {
@@ -110,6 +116,7 @@ function buildBadgeEvolutionAnnual(earnedBadges) {
     return years.map(y => ({ name: y, value: yearMap[y] }));
 }
 
+// Build per-weekday point totals for the chart
 function buildPointsWeekly(pointsHistory, t) {
     const counts = new Array(7).fill(0);
     pointsHistory.forEach(p => {
@@ -119,6 +126,7 @@ function buildPointsWeekly(pointsHistory, t) {
     return counts.map((val, i) => ({ name: t(`shared.days.${DAY_KEYS[i]}`), value: val }));
 }
 
+// Build per-month point totals for the current year for the chart
 function buildPointsMonthly(pointsHistory, t) {
     const counts = new Array(12).fill(0);
     const currentYear = new Date().getFullYear();
@@ -132,6 +140,7 @@ function buildPointsMonthly(pointsHistory, t) {
     return counts.map((val, i) => ({ name: t(`shared.months.${MONTH_KEYS[i]}`), value: val }));
 }
 
+// Map a notification record into a recent-activity item (title, icon, color, timestamp)
 function mapNotificationToActivity(notification, t) {
     const defName = notification.definition?.name || notification.definition?.code || '';
     const defCode = (notification.definition?.code || '').toLowerCase();
@@ -174,6 +183,7 @@ function mapNotificationToActivity(notification, t) {
     return { title, description, icon, iconColor, sentAt: notification.sent_at };
 }
 
+// Compute last-7-days deltas for badges, in-progress applications and points
 function computeDeltas(earnedBadges, applications, pointsHistory) {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -194,6 +204,7 @@ function computeDeltas(earnedBadges, applications, pointsHistory) {
     return { badgesDelta, progressDelta, pointsDelta };
 }
 
+// Format a date string into a localized "day month year" label
 function formatBadgeDate(dateStr) {
     if (!dateStr) return '';
     return new Date(dateStr).toLocaleDateString('pt-PT', {
@@ -201,6 +212,7 @@ function formatBadgeDate(dateStr) {
     });
 }
 
+// Format a date string into a relative "minutes/hours/days ago" label
 function formatTimeAgo(dateStr, t) {
     if (!dateStr) return '';
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -213,24 +225,41 @@ function formatTimeAgo(dateStr, t) {
     return t('evolution.daysAgo', { count: days });
 }
 
+// Consultant evolution dashboard: stats, charts, activity and learning-path progress
 export default function Evolution() {
+    // Translation helper
     const { t } = useTranslation();
+    // Authenticated user (fallback display name)
     const { user: authUser } = useAuth();
+    // Resolved display name from user context
     const { displayName } = useUser();
+    // Toggle between monthly/annual badge evolution chart
     const [badgeChartMode, setBadgeChartMode] = useState('monthly');
+    // Toggle between weekly/monthly points chart
     const [pointsChartMode, setPointsChartMode] = useState('weekly');
 
+    // Consultant aggregate stats (badges, points, ranking position)
     const [stats, setStats] = useState(null);
+    // List of badges the consultant has earned
     const [earnedBadges, setEarnedBadges] = useState([]);
+    // Progression timeline across stages
     const [timeline, setTimeline] = useState([]);
+    // Badge counts grouped per area
     const [badgesPerArea, setBadgesPerArea] = useState([]);
+    // Recent applications used for stats
     const [applications, setApplications] = useState([]);
+    // Total application count (from pagination)
     const [appTotal, setAppTotal] = useState(0);
+    // Full points history for chart aggregation
     const [pointsHistory, setPointsHistory] = useState([]);
+    // Latest notifications shown as recent activity
     const [notifications, setNotifications] = useState([]);
+    // Learning-path progress entries
     const [learningPaths, setLearningPaths] = useState([]);
+    // Consultant's ranking percentile
     const [rankPercentile, setRankPercentile] = useState(null);
 
+    // Fetch all dashboard datasets in parallel on mount
     useEffect(() => {
         getConsultantStats()
             .then(setStats)
@@ -281,20 +310,32 @@ export default function Evolution() {
             .catch(() => {});
     }, []);
 
+    // Personalized greeting line with display name
     const greeting = `${getGreeting(t).replace(/[!！]\s*$/, '')}, ${displayName || authUser?.name || t('evolution.user')}!`;
+    // Highest attained stage level derived from the timeline
     const averageLevel = useMemo(() => deriveAverageLevel(timeline), [timeline]);
+    // Number of distinct areas with badges (skills count)
     const competenciesCount = badgesPerArea.length;
+    // Aggregated application stats (total, approval, validation time)
     const appStats = useMemo(() => computeAppStats(applications), [applications]);
+    // Last-7-days deltas for the stat cards
     const deltas = useMemo(() => computeDeltas(earnedBadges, applications, pointsHistory), [earnedBadges, applications, pointsHistory]);
 
+    // Monthly badge chart series
     const badgeEvolutionMonthly = useMemo(() => buildBadgeEvolutionMonthly(earnedBadges, t), [earnedBadges, t]);
+    // Annual badge chart series
     const badgeEvolutionAnnual = useMemo(() => buildBadgeEvolutionAnnual(earnedBadges), [earnedBadges]);
+    // Active badge chart series based on selected mode
     const badgeChartData = badgeChartMode === 'monthly' ? badgeEvolutionMonthly : badgeEvolutionAnnual;
 
+    // Weekly points chart series
     const pointsWeekly = useMemo(() => buildPointsWeekly(pointsHistory, t), [pointsHistory, t]);
+    // Monthly points chart series
     const pointsMonthly = useMemo(() => buildPointsMonthly(pointsHistory, t), [pointsHistory, t]);
+    // Active points chart series based on selected mode
     const pointsChartData = pointsChartMode === 'weekly' ? pointsWeekly : pointsMonthly;
 
+    // Build radar chart data: aggregated earned badges per stage code
     const radarData = useMemo(() => {
         if (!timeline || timeline.length === 0) return [];
         const codeMap = new Map();
@@ -310,14 +351,18 @@ export default function Evolution() {
         return Array.from(codeMap.values()).sort((a, b) => a.stage_sequence - b.stage_sequence);
     }, [timeline]);
 
+    // Upper bound for the radar chart radius axis
     const radarMax = useMemo(() => {
         if (radarData.length === 0) return 1;
         return Math.max(1, ...radarData.map(r => r.value));
     }, [radarData]);
 
+    // Recent-activity items derived from notifications
     const activities = useMemo(() => notifications.map(n => mapNotificationToActivity(n, t)), [notifications, t]);
+    // Three most recent earned badges for the achievements panel
     const recentAchievements = useMemo(() => earnedBadges.slice(0, 3), [earnedBadges]);
 
+    // Stat card definitions rendered in the stats row
     const statCards = [
         { key: 'badgesObtained', icon: 'badge', value: stats?.earnedBadges ?? '—', delta: deltas.badgesDelta },
         { key: 'badgesInProgress', icon: 'progress', value: stats?.badgesInProgress ?? '—', delta: deltas.progressDelta },
@@ -566,7 +611,9 @@ export default function Evolution() {
     );
 }
 
+// Single stat card showing an icon, label, value and optional delta
 function EvolutionStatCard({ stat, t }) {
+    // Map stat keys to their value text color
     const colorMap = {
         badgesObtained: 'var(--color-primary)',
         badgesInProgress: 'var(--color-on-background)',
@@ -597,6 +644,7 @@ function EvolutionStatCard({ stat, t }) {
     );
 }
 
+// Segmented pill control for switching chart modes
 function TogglePill({ options, active, onChange }) {
     return (
         <div className={styles.togglePill}>

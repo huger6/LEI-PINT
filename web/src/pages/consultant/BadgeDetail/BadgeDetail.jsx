@@ -20,6 +20,7 @@ import styles from './BadgeDetail.module.css';
 
 const SERVICE_LINES_LIMIT = 5;
 
+// Consultant badge detail page: shows badge info, requirements, rewards, related badges, and apply/share actions
 export default function BadgeDetail() {
 	// Access the current authenticated user and their role
 	const { user } = useUser();
@@ -27,6 +28,7 @@ export default function BadgeDetail() {
 	const { t, i18n } = useTranslation();
 	// Read the badge slug from the URL params
 	const { slug } = useParams();
+	// Get the imperative navigation function for redirects
 	const navigate = useNavigate();
 	// Store the badge detail data
 	const [badge, setBadge] = useState(null);

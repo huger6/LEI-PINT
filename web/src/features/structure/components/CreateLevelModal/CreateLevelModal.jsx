@@ -25,6 +25,7 @@ const EMPTY_FORM = {
 	stageDescription: '',
 };
 
+// Maps incoming edit data onto the form shape, coercing types to strings
 function normalizeInitialData(initialData) {
 	return {
 		stageTitle: initialData?.stageTitle ?? '',
@@ -34,6 +35,7 @@ function normalizeInitialData(initialData) {
 	};
 }
 
+// Synchronous client-side validation for the level form fields
 function validateLevelForm(values, t) {
 	const errors = {};
 
@@ -72,6 +74,7 @@ function validateLevelForm(values, t) {
 	return errors;
 }
 
+// Maps server validation errors onto per-field messages
 function extractLevelFieldErrors(error, fallbackMessage) {
 	const issues = error?.response?.data?.errors;
 	if (!Array.isArray(issues)) return {};
@@ -102,20 +105,28 @@ export default function CreateLevelModal({
 	onClose,
 	onSuccess,
 }) {
+	// i18n translation function
 	const { t } = useTranslation();
 	const isEditMode = mode === 'edit';
+	// Initial form values: existing data in edit mode, empty otherwise
 	const initialForm = useMemo(
 		() => (isEditMode ? normalizeInitialData(initialData) : EMPTY_FORM),
 		[isEditMode, initialData],
 	);
 
+	// Tracks the in-flight save request
 	const [saving, setSaving] = useState(false);
+	// Global API error message
 	const [apiError, setApiError] = useState('');
+	// Per-field errors returned by the server
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	// Controls the discard-changes confirmation toast
 	const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
+	// Tracks whether the user has modified the form
 	const isDirty = useRef(false);
 
+	// Memoized validator bound to the current translation function
 	const validate = useCallback((values) => validateLevelForm(values, t), [t]);
 	const form = useFormValidation({ initialValues: initialForm, validate });
 	const {
@@ -127,6 +138,7 @@ export default function CreateLevelModal({
 		isErrorVisible,
 	} = form;
 
+	// Resolves the error message to show for a field (server error takes priority)
 	const fieldError = useCallback(
 		(name) => {
 			if (serverFieldErrors[name]) return serverFieldErrors[name];
@@ -135,6 +147,7 @@ export default function CreateLevelModal({
 		[serverFieldErrors, isErrorVisible, liveErrors],
 	);
 
+	// Field change handler: updates value, marks dirty, clears prior errors
 	const onChange = useCallback((event) => {
 		const { name } = event.target;
 		handleChange(event);
@@ -143,6 +156,7 @@ export default function CreateLevelModal({
 		setApiError('');
 	}, [handleChange]);
 
+	// Validates then creates or updates the level and reports success/errors
 	const handleSubmit = useCallback(async (event) => {
 		event.preventDefault();
 		markAllTouched();
@@ -189,6 +203,7 @@ export default function CreateLevelModal({
 		t,
 	]);
 
+	// Prompts for confirmation if dirty, otherwise closes immediately
 	const handleClose = useCallback(() => {
 		if (isDirty.current) {
 			setShowCloseConfirm(true);

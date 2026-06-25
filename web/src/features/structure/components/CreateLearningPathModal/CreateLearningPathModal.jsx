@@ -41,6 +41,7 @@ const EMPTY_FORM = {
 
 const SLUG_REGEX = /^[a-z0-9-]+$/;
 
+// Normalizes a string into a URL-safe slug
 function slugify(value) {
 	return String(value ?? '')
 		.normalize('NFD')
@@ -54,6 +55,7 @@ function slugify(value) {
 		.replace(/-+$/, '');
 }
 
+// Maps incoming edit data onto the form shape
 function normalizeInitialData(initialData) {
 	return {
 		pathTitle: initialData?.pathTitle ?? '',
@@ -63,6 +65,7 @@ function normalizeInitialData(initialData) {
 	};
 }
 
+// Synchronous client-side validation for the learning path form fields
 function validateLearningPathForm(values, t) {
 	const errors = {};
 	const title = values.pathTitle.trim();
@@ -98,6 +101,7 @@ function validateLearningPathForm(values, t) {
 	return errors;
 }
 
+// Maps server validation errors onto per-field messages
 function extractLearningPathFieldErrors(error, fallbackMessage) {
 	const issues = error?.response?.data?.errors;
 	if (!Array.isArray(issues)) return {};
@@ -121,6 +125,7 @@ function extractLearningPathFieldErrors(error, fallbackMessage) {
 	return fieldErrors;
 }
 
+// Translates an image-upload error code into a user-facing message
 function resolveImageErrorMessage(error, t) {
 	if (!error?.code) return t('register.profilePictureUploadFailed');
 	if (error.code === 'PROFILE_IMAGE_INVALID_FORMAT') {
@@ -142,30 +147,47 @@ export default function CreateLearningPathModal({
 	onSuccess,
 	onCreated,
 }) {
+	// i18n translation function
 	const { t } = useTranslation();
 	const isEditMode = mode === 'edit';
+	// Initial form values: existing data in edit mode, empty otherwise
 	const initialForm = useMemo(
 		() => (isEditMode ? normalizeInitialData(initialData) : EMPTY_FORM),
 		[isEditMode, initialData],
 	);
 
+	// Tracks the in-flight save request
 	const [saving, setSaving] = useState(false);
+	// Global API error message
 	const [apiError, setApiError] = useState('');
+	// Per-field errors returned by the server
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	// Controls the discard-changes confirmation toast
 	const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+	// True once the user types in the slug field (disables auto-suggestion)
 	const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+	// True while an available slug is being suggested
 	const [slugSuggestionPending, setSlugSuggestionPending] = useState(false);
+	// True once the title changes (gates slug auto-suggestion in edit mode)
 	const [titleChangedSinceOpen, setTitleChangedSinceOpen] = useState(false);
 
+	// Currently displayed image preview URL
 	const [imagePreviewUrl, setImagePreviewUrl] = useState(initialForm.imgUrl || '');
+	// True while an image upload is in progress
 	const [imageUploading, setImageUploading] = useState(false);
+	// Image-specific error message
 	const [imageError, setImageError] = useState('');
 
+	// Tracks whether the user has modified the form
 	const isDirty = useRef(false);
+	// Reference to the hidden file input
 	const imageInputRef = useRef(null);
+	// Holds the local object URL so it can be revoked
 	const localPreviewRef = useRef('');
+	// Monotonic id to ignore stale slug-suggestion responses
 	const slugSuggestionRequestRef = useRef(0);
 
+	// Memoized validator bound to the current translation function
 	const validate = useCallback((values) => validateLearningPathForm(values, t), [t]);
 	const form = useFormValidation({ initialValues: initialForm, validate });
 	const {
@@ -181,9 +203,12 @@ export default function CreateLearningPathModal({
 
 	const initialSlugTrimmed = initialForm.pathSlug.trim();
 	const currentSlugTrimmed = values.pathSlug.trim();
+	// True when editing and the slug has not changed (skips availability check)
 	const isSlugUnchangedInEdit = isEditMode && currentSlugTrimmed === initialSlugTrimmed;
 
+	// Whether the slug passes synchronous validation
 	const slugSyncValid = !validateLearningPathForm(values, t).pathSlug;
+	// Debounced async slug availability check
 	const slugCheck = useAvailability({
 		value: currentSlugTrimmed,
 		isValid: slugSyncValid,
@@ -192,11 +217,13 @@ export default function CreateLearningPathModal({
 		delay: 350,
 	});
 
+	// Error message when the slug is already taken
 	const slugAsyncError =
 		slugCheck.status === AVAILABILITY_STATUS.UNAVAILABLE && !isSlugUnchangedInEdit
 			? t('structureList.slugInUse', { defaultValue: 'This slug is already in use.' })
 			: null;
 
+	// Resolves the error message to show for a field, merging sync and async sources
 	const fieldError = useCallback(
 		(name, asyncError) => {
 			if (serverFieldErrors[name]) return serverFieldErrors[name];
@@ -207,12 +234,14 @@ export default function CreateLearningPathModal({
 		[serverFieldErrors, isErrorVisible, liveErrors, touched],
 	);
 
+	// Revokes any leftover object URL when the component unmounts
 	useEffect(() => () => {
 		if (localPreviewRef.current) {
 			URL.revokeObjectURL(localPreviewRef.current);
 		}
 	}, []);
 
+	// Auto-suggests an available slug as the title changes (unless manually edited)
 	useEffect(() => {
 		if (slugManuallyEdited) return undefined;
 		if (isEditMode && !titleChangedSinceOpen) return undefined;
@@ -255,6 +284,7 @@ export default function CreateLearningPathModal({
 		return () => clearTimeout(timer);
 	}, [values.pathTitle, slugManuallyEdited, setFieldValue, isEditMode, titleChangedSinceOpen]);
 
+	// Field change handler: updates value, marks dirty, clears errors, tracks slug/title edits
 	const onChange = useCallback((event) => {
 		const { name } = event.target;
 		handleChange(event);
@@ -265,6 +295,7 @@ export default function CreateLearningPathModal({
 		if (name === 'pathTitle') setTitleChangedSinceOpen(true);
 	}, [handleChange]);
 
+	// Uploads the chosen image to temp storage and updates the preview
 	const onImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
@@ -302,6 +333,7 @@ export default function CreateLearningPathModal({
 		}
 	}, [setFieldValue, t, values.imgUrl]);
 
+	// Clears the selected image and resets the file input
 	const clearImage = useCallback(() => {
 		if (localPreviewRef.current) {
 			URL.revokeObjectURL(localPreviewRef.current);
@@ -314,6 +346,7 @@ export default function CreateLearningPathModal({
 		if (imageInputRef.current) imageInputRef.current.value = '';
 	}, [setFieldValue]);
 
+	// Validates, blocks on pending checks, then creates or updates the learning path
 	const handleSubmit = useCallback(async (event) => {
 		event.preventDefault();
 		markAllTouched();
@@ -377,6 +410,7 @@ export default function CreateLearningPathModal({
 		onClose,
 	]);
 
+	// Prompts for confirmation if dirty, otherwise closes immediately
 	const handleClose = useCallback(() => {
 		if (isDirty.current) {
 			setShowCloseConfirm(true);
@@ -385,9 +419,11 @@ export default function CreateLearningPathModal({
 		onClose();
 	}, [onClose]);
 
+	// Derived error/disabled flags for the form controls
 	const slugError = fieldError('pathSlug', slugAsyncError);
 	const submitDisabled = saving || isCheckPending(slugCheck.status) || imageUploading || slugSuggestionPending;
 
+	// Renders the contextual slug availability hint below the slug input
 	const renderSlugHint = () => {
 		if (slugError) return null;
 		if (!values.pathSlug || !slugSyncValid) return null;

@@ -8,6 +8,7 @@ import styles from './StructureBreadcrumb.module.css';
  * @param {Array} items - Breadcrumb entries: { label, to? }.
  */
 export default function StructureBreadcrumb({ items }) {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
 
 	if (!items || items.length === 0) return null;

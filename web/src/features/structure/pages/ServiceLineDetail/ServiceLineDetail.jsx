@@ -14,27 +14,45 @@ import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteSt
 
 const PAGE_SIZE = 32;
 
+// Detail page for a single service line showing its info, stats, and child areas
 export default function ServiceLineDetail() {
+	// Service line slug from the route
 	const { slug } = useParams();
+	// Router navigation helper
 	const navigate = useNavigate();
+	// Translation helper
 	const { t } = useTranslation();
+	// Current authenticated user
 	const { user } = useUser();
+	// Whether the current user is an administrator (controls management actions)
 	const isAdmin = user?.role === 'Administrator';
+	// Route path builder scoped to the user's role
 	const P = structureDetailPaths(isAdmin);
+	// The loaded service line entity
 	const [sl, setSl] = useState(null);
+	// Child areas for the current page
 	const [areas, setAreas] = useState([]);
+	// Pagination metadata for the areas list
 	const [pagination, setPagination] = useState(null);
+	// Current areas pagination page
 	const [currentPage, setCurrentPage] = useState(1);
+	// Loading flag for the initial fetch
 	const [loading, setLoading] = useState(true);
+	// Edit service line modal visibility
 	const [showEditModal, setShowEditModal] = useState(false);
+	// Create area modal visibility
 	const [showCreateAreaModal, setShowCreateAreaModal] = useState(false);
+	// Delete confirmation modal visibility
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	// Flag while an activation request is in flight
 	const [isActivating, setIsActivating] = useState(false);
 
+	// Fetch a page of child areas for this service line
 	const fetchSubStructures = useCallback((page) => {
 		return fetchAreasByServiceLine(slug, { page, limit: PAGE_SIZE });
 	}, [slug]);
 
+	// Load the service line and its first page of areas on slug change
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -60,6 +78,7 @@ export default function ServiceLineDetail() {
 		return () => { cancelled = true; };
 	}, [slug, fetchSubStructures]);
 
+	// Load a different page of areas when pagination changes
 	const handlePageChange = useCallback((page) => {
 		setCurrentPage(page);
 		fetchSubStructures(page)
@@ -70,6 +89,7 @@ export default function ServiceLineDetail() {
 			.catch(console.error);
 	}, [fetchSubStructures]);
 
+	// Refresh after an edit, falling back to local merge and navigating if the slug changed
 	const handleServiceLineEdited = useCallback(async (updated) => {
 		const nextSlug = updated?.sl_slug || slug;
 		try {
@@ -92,6 +112,7 @@ export default function ServiceLineDetail() {
 		}
 	}, [slug, navigate]);
 
+	// Activate the service line then reload its data
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
@@ -105,6 +126,7 @@ export default function ServiceLineDetail() {
 		}
 	}, [slug]);
 
+	// Reload the service line and first page of areas after a new area is created
 	const handleAreaCreated = useCallback(async () => {
 		setCurrentPage(1);
 		try {
@@ -123,6 +145,7 @@ export default function ServiceLineDetail() {
 	if (loading) return <StructureDetailSkeleton />;
 	if (!sl) return null;
 
+	// Stat cards shown in the detail header
 	const stats = [
 		{
 			icon: 'tabler_users',
@@ -140,10 +163,12 @@ export default function ServiceLineDetail() {
 		},
 	];
 
+	// Enrollment banner message shown when the user is enrolled
 	const enrollmentMessage = sl.is_enrolled
 		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
 		: null;
 
+	// Map child areas into the sub-structure card shape expected by the layout
 	const subStructures = areas.map((area) => ({
 		id: area.area_id,
 		title: area.area_name,
@@ -156,6 +181,7 @@ export default function ServiceLineDetail() {
 		],
 	}));
 
+	// Build breadcrumb trail from the parent learning path down to this service line
 	const breadcrumbItems = [];
 	const parentLp = sl.learning_path;
 

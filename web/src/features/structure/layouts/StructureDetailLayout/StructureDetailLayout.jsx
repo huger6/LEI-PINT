@@ -46,8 +46,11 @@ export default function StructureDetailLayout({
 	// action (edit / activate / delete / export / add sub-structure).
 	canManage = true,
 }) {
+	// Translation helper
 	const { t } = useTranslation();
+	// Tone-based CSS class for theming the panel
 	const toneClass = tone ? styles[tone] : '';
+	// Export summary modal visibility
 	const [showExport, setShowExport] = useState(false);
 	// When export metadata is provided, the download button opens the summary
 	// popup; otherwise it falls back to the legacy onExport handler.

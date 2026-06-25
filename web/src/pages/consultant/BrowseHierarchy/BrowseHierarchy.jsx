@@ -16,6 +16,7 @@ const STEP_ICON_MAP = {
 	detail: 'paper',
 };
 
+// Consultant page for drilling down the learning path -> service line -> area -> level -> badge hierarchy
 export default function BrowseHierarchy() {
 	// Initialize translation utility
 	const { t } = useTranslation();

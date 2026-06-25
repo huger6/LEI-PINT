@@ -9,6 +9,7 @@ import { AUTH, SHARED } from './paths';
  * @param {boolean} requireFpc - If true, only allows access during force-password-change flow.
  */
 export default function ProtectedRoute({ requireFpc = false }) {
+    // Reads auth state to gate access and handle the force-password-change flow.
     const { isAuthenticated, fpc, isLoading } = useAuth();
 
     if (isLoading) {

@@ -1,3 +1,4 @@
+// Registry mapping icon names to their SVG <path> attribute arrays.
 export const PATHS = {
     'add': [
         {

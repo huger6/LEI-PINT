@@ -1,6 +1,8 @@
 // Client-side filtering logic for the admin user management table.
+// Coerces a boolean or "true"/"false" string into a boolean.
 const toBool = (v) => v === true || v === 'true';
 
+// Parses a "dd-mm-yyyy" string into a UTC Date, or null if absent.
 const parseDate = (ddMmYyyy) => {
 	if (!ddMmYyyy) return null;
 	const [dd, mm, yyyy] = ddMmYyyy.split('-');

@@ -19,27 +19,37 @@ import styles from './TmStats.module.css';
 
 const EXPIRING_WINDOWS = [30, 90, 180, 365, 730];
 
+// Picks a styling class based on how soon a badge expires.
 function expiringClass(days) {
 	if (days <= 30) return styles.daysCritical;
 	if (days <= 90) return styles.daysWarning;
 	return styles.daysNeutral;
 }
 
+// Talent Manager statistics page: badge charts, reports, exports, expiring list.
 export default function TmStats() {
+	// Translation function for localized labels.
 	const { t } = useTranslation();
+	// Holds the fetched chart datasets (by service line, learning path, level).
 	const [data, setData] = useState(null);
+	// Tracks the loading state of the main chart data.
 	const [loading, setLoading] = useState(true);
+	// Holds an error message for the main chart data fetch.
 	const [error, setError] = useState(null);
 
 	// Filters shared from the StatsOverview header; applied to the charts too.
 	const [chartFilters, setChartFilters] = useState({});
+	// Stable string key of the filters to drive the chart-loading effect.
 	const filterKey = JSON.stringify(chartFilters);
 
 	// Expiring badges (named list — TM is global, so no service-line scope).
 	const [expiring, setExpiring] = useState([]);
+	// Selected look-ahead window (in days) for the expiring-badges list.
 	const [expiringWindow, setExpiringWindow] = useState(90);
+	// Tracks the loading state of the expiring-badges list.
 	const [expiringLoading, setExpiringLoading] = useState(true);
 
+	// Fetches badges expiring within the given number of days.
 	const loadExpiring = useCallback(async (withinDays) => {
 		setExpiringLoading(true);
 		try {
@@ -51,8 +61,10 @@ export default function TmStats() {
 		}
 	}, []);
 
+	// Reloads the expiring list whenever the selected window changes.
 	useEffect(() => { loadExpiring(expiringWindow); }, [loadExpiring, expiringWindow]);
 
+	// Loads the chart datasets in parallel whenever the filters change.
 	useEffect(() => {
 		let active = true;
 		(async () => {

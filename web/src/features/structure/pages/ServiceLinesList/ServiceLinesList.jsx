@@ -11,25 +11,41 @@ import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 const DEBOUNCE_MS = 400;
 const PAGE_SIZE = 32;
 
+// Admin page listing all service lines with search, filters, and pagination
 export default function ServiceLinesList() {
+	// Translation helper
 	const { t } = useTranslation();
 
+	// All fetched service line items (unfiltered)
 	const [allItems, setAllItems] = useState([]);
+	// Loading flag for the list fetch
 	const [loading, setLoading] = useState(true);
+	// Current pagination page
 	const [page, setPage] = useState(1);
+	// Raw search input value
 	const [search, setSearch] = useState('');
+	// Debounced search value used for fetching
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	// Create service line modal visibility
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	// Key bumped to force a list refresh after creation
 	const [refreshKey, setRefreshKey] = useState(0);
 
+	// Active/inactive status filter selection
 	const [statusFilter, setStatusFilter] = useState('all');
+	// Maximum consultant count for the range slider bound
 	const [consultantMax, setConsultantMax] = useState(0);
+	// Selected consultant count range
 	const [consultantRange, setConsultantRange] = useState([0, 0]);
+	// Maximum area count for the range slider bound
 	const [areaMax, setAreaMax] = useState(0);
+	// Selected area count range
 	const [areaRange, setAreaRange] = useState([0, 0]);
 
+	// Filter statistics (slider bounds) fetched from the API
 	const [filterStats, setFilterStats] = useState(null);
 
+	// Load filter stats once on mount and initialize slider bounds
 	useEffect(() => {
 		fetchServiceLinesFilterStats()
 			.then((stats) => {
@@ -42,6 +58,7 @@ export default function ServiceLinesList() {
 			.catch(() => {});
 	}, []);
 
+	// Debounce the search input before triggering a fetch
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearch(search);
@@ -50,6 +67,7 @@ export default function ServiceLinesList() {
 		return () => clearTimeout(timer);
 	}, [search]);
 
+	// Fetch service lines whenever the debounced search or refresh key changes
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -66,6 +84,7 @@ export default function ServiceLinesList() {
 		return () => { cancelled = true; };
 	}, [debouncedSearch, refreshKey]);
 
+	// Apply status, consultant-range, and area-range filters client-side
 	const filtered = useMemo(() => {
 		let result = allItems;
 
@@ -92,6 +111,7 @@ export default function ServiceLinesList() {
 		return result;
 	}, [allItems, statusFilter, consultantRange, consultantMax, areaRange, areaMax]);
 
+	// Derive pagination bounds and slice the current page from the filtered list
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
 	const paginatedItems = filtered.slice(
@@ -99,20 +119,24 @@ export default function ServiceLinesList() {
 		currentPage * PAGE_SIZE,
 	);
 
+	// Reset to the first page whenever filters change
 	useEffect(() => {
 		setPage(1);
 	}, [statusFilter, consultantRange, areaRange]);
 
+	// Build the status dropdown options (memoized on translation)
 	const statusOptions = useMemo(() => [
 		{ value: 'all', label: t('shared.allStatuses', { defaultValue: 'All Statuses' }) },
 		{ value: 'active', label: t('shared.active', { defaultValue: 'Active' }) },
 		{ value: 'inactive', label: t('shared.inactive', { defaultValue: 'Inactive' }) },
 	], [t]);
 
+	// Update the status filter from the select control
 	const handleStatusChange = useCallback((e) => {
 		setStatusFilter(e.target.value);
 	}, []);
 
+	// Render the status select and range sliders for the layout toolbar
 	const renderFilters = useCallback(() => (
 		<>
 			<div style={{ minWidth: 160 }}>
@@ -149,6 +173,7 @@ export default function ServiceLinesList() {
 		</>
 	), [statusFilter, handleStatusChange, statusOptions, filterStats, consultantMax, consultantRange, areaMax, areaRange, t]);
 
+	// Reset to page one and trigger a list refresh after a service line is created
 	const handleCreated = useCallback(() => {
 		setPage(1);
 		setRefreshKey((prev) => prev + 1);

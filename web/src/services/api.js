@@ -9,11 +9,13 @@ const api = axios.create({
 
 let _token = null;
 
+// In-memory JWT accessors used across the app and the socket connection.
 export const getApiToken = () => _token;
 export const setApiToken = (token) => { _token = token; };
 export const clearApiToken = () => { _token = null; };
 
 let _onRefreshSuccess = null;
+// Registers a callback invoked after a successful token refresh (e.g. to sync auth state).
 export const setOnRefreshSuccess = (cb) => { _onRefreshSuccess = cb; };
 
 // Extracts the call stack for dev-mode API logging.
@@ -68,6 +70,7 @@ export const performRefresh = () => {
 	return _refreshPromise;
 };
 
+// Logs responses/errors in dev and transparently refreshes-and-retries on 401.
 api.interceptors.response.use(
 	(response) => {
 		if (import.meta.env.DEV) {

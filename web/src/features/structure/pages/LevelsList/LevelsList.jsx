@@ -10,21 +10,33 @@ import RangeSlider from '../../../../components/RangeSlider/RangeSlider';
 const DEBOUNCE_MS = 400;
 const PAGE_SIZE = 32;
 
+// Admin page listing all progression levels with search, filters, and pagination
 export default function LevelsList() {
+	// Translation helper
 	const { t } = useTranslation();
 
+	// All fetched level items (unfiltered)
 	const [allItems, setAllItems] = useState([]);
+	// Loading flag for the list fetch
 	const [loading, setLoading] = useState(true);
+	// Current pagination page
 	const [page, setPage] = useState(1);
+	// Raw search input value
 	const [search, setSearch] = useState('');
+	// Debounced search value used for fetching
 	const [debouncedSearch, setDebouncedSearch] = useState('');
 
+	// Active/inactive status filter selection
 	const [statusFilter, setStatusFilter] = useState('all');
+	// Maximum consultant count for the range slider bound
 	const [consultantMax, setConsultantMax] = useState(0);
+	// Selected consultant count range
 	const [consultantRange, setConsultantRange] = useState([0, 0]);
 
+	// Filter statistics (slider bounds) fetched from the API
 	const [filterStats, setFilterStats] = useState(null);
 
+	// Load filter stats once on mount and initialize slider bounds
 	useEffect(() => {
 		fetchLevelsFilterStats()
 			.then((stats) => {
@@ -35,6 +47,7 @@ export default function LevelsList() {
 			.catch(() => {});
 	}, []);
 
+	// Debounce the search input before triggering a fetch
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearch(search);
@@ -43,6 +56,7 @@ export default function LevelsList() {
 		return () => clearTimeout(timer);
 	}, [search]);
 
+	// Fetch levels whenever the debounced search changes
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -59,6 +73,7 @@ export default function LevelsList() {
 		return () => { cancelled = true; };
 	}, [debouncedSearch]);
 
+	// Apply status and consultant-range filters client-side
 	const filtered = useMemo(() => {
 		let result = allItems;
 
@@ -78,6 +93,7 @@ export default function LevelsList() {
 		return result;
 	}, [allItems, statusFilter, consultantRange, consultantMax]);
 
+	// Derive pagination bounds and slice the current page from the filtered list
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
 	const paginatedItems = filtered.slice(
@@ -85,20 +101,24 @@ export default function LevelsList() {
 		currentPage * PAGE_SIZE,
 	);
 
+	// Reset to the first page whenever filters change
 	useEffect(() => {
 		setPage(1);
 	}, [statusFilter, consultantRange]);
 
+	// Build the status dropdown options (memoized on translation)
 	const statusOptions = useMemo(() => [
 		{ value: 'all', label: t('shared.allStatuses', { defaultValue: 'All Statuses' }) },
 		{ value: 'active', label: t('shared.active', { defaultValue: 'Active' }) },
 		{ value: 'inactive', label: t('shared.inactive', { defaultValue: 'Inactive' }) },
 	], [t]);
 
+	// Update the status filter from the select control
 	const handleStatusChange = useCallback((e) => {
 		setStatusFilter(e.target.value);
 	}, []);
 
+	// Render the status select and consultant range slider for the layout toolbar
 	const renderFilters = useCallback(() => (
 		<>
 			<div style={{ minWidth: 160 }}>

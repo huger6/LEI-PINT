@@ -92,6 +92,7 @@ export default function ApplicationReview({ application }) {
 	const tmAction = tmLog?.validator_action || tmLog?.validatorAction || '';
 	// Real parecer derived from the TM's logged action (forward = positive, else returned).
 	const tmPositive = /in validation/i.test(tmAction);
+	// Format a date as a short localized pt-PT string, or a dash when absent.
 	const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 	// Store the reviewer's feedback notes text.

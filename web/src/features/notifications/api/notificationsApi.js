@@ -1,6 +1,7 @@
 // User-facing notifications API: fetch, mark read, and unread count.
 import api from '../../../services/api';
 
+// Fetches a paginated list of the current user's notifications (GET /notifications).
 export const fetchNotifications = ({ page = 1, limit = 20, type, is_read } = {}) => {
 	const params = { page, limit };
 
@@ -10,12 +11,15 @@ export const fetchNotifications = ({ page = 1, limit = 20, type, is_read } = {})
 	return api.get('/notifications', { params });
 };
 
+// Returns the count of the current user's unread notifications.
 export const fetchUnreadCount = () =>
 	api.get('/notifications/unread-count');
 
+// Marks a single notification as read by its ID.
 export const markNotificationRead = (notificationId) =>
 	api.put(`/notifications/${notificationId}/read`);
 
+// Marks all of the current user's notifications as read.
 export const markAllNotificationsRead = () =>
 	api.put('/notifications/read-all');
 

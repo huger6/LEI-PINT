@@ -11,11 +11,14 @@ import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './ApplicationDetail.module.css';
 
+// Consultant page to upload evidence, accept terms, and submit a badge application
 export default function ApplicationDetail({ application, onReload }) {
 	// Initialize translation utility
 	const { t } = useTranslation();
+	// Programmatic navigation between application pages
 	const navigate = useNavigate();
 
+	// Derive badge, requirements, existing evidence and GUID from the application
 	const badge = application?.badge;
 	const requirements = badge?.badge_requirements || [];
 	const evidencesRaw = application?.requirements_evidences || [];
@@ -67,11 +70,13 @@ export default function ApplicationDetail({ application, onReload }) {
 		return !!evidenceMap[reqId];
 	}
 
+	// Count how many requirements already have uploaded evidence
 	const completedCount = requirements.filter((req) => {
 		const reqId = req.requirement_id || req.requirementId;
 		return hasEvidence(reqId);
 	}).length;
 
+	// Whether every requirement has evidence, and whether the form can be submitted
 	const allEvidencesUploaded = requirements.length > 0 && completedCount === requirements.length;
 	const canSubmit = allEvidencesUploaded && termsAccepted;
 
@@ -178,6 +183,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		}
 	}
 
+	// Derive display fields from the badge (handles snake_case/camelCase shapes)
 	const title = badge?.badge_title || badge?.badgeTitle || '';
 	const description = badge?.badge_description || badge?.badgeDescription;
 	const points = badge?.badge_points || badge?.badgePoints;
@@ -187,8 +193,10 @@ export default function ApplicationDetail({ application, onReload }) {
 	const stageTitle = badge?.progression_stage?.stage_title || badge?.progressionStage?.stageTitle;
 	const stageCode = badge?.progression_stage?.stage_code || badge?.progressionStage?.stageCode;
 
+	// Determine the active stepper step based on progress
 	const activeStep = canSubmit ? 3 : allEvidencesUploaded ? 2 : 1;
 
+	// Localized labels for the submission stepper
 	const steps = [
 		{ label: t('applicationDetail.stepSelectBadge') },
 		{ label: t('applicationDetail.stepUploadEvidence') },

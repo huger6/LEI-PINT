@@ -12,7 +12,9 @@ const TAB_ALL = 'all';
  * Slide-out notification panel with filtered tabs, infinite scroll, and mark-all-read action.
  */
 export default function NotificationPanel({ open, onClose }) {
+	// Translation helper.
 	const { t } = useTranslation();
+	// Notification state and action helpers from UserContext.
 	const {
 		notifications,
 		pagination,
@@ -22,12 +24,15 @@ export default function NotificationPanel({ open, onClose }) {
 		fetchNotifications,
 	} = useNotifications();
 
+	// Currently selected tab (recent vs all).
 	const [activeTab, setActiveTab] = useState(TAB_RECENT);
 
+	// Loads the first page of notifications whenever the panel opens.
 	useEffect(() => {
 		if (open) fetchNotifications({ page: 1, limit: 20 });
 	}, [open, fetchNotifications]);
 
+	// Filters notifications shown based on the active tab.
 	const visibleNotifications = useMemo(
 		() =>
 			activeTab === TAB_RECENT
@@ -36,6 +41,7 @@ export default function NotificationPanel({ open, onClose }) {
 		[activeTab, notifications],
 	);
 
+	// Fetches and appends the next page of notifications if more exist.
 	const handleLoadMore = useCallback(() => {
 		const currentPage = pagination?.currentPage ?? pagination?.page ?? 1;
 		const totalPages = pagination?.totalPages ?? 1;

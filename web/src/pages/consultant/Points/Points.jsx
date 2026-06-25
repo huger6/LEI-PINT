@@ -30,6 +30,7 @@ const LP_PROGRESS_COLORS = [
 	'var(--color-success)',
 ];
 
+// Sums point deltas into the last 6 calendar months
 function aggregateByMonth(history) {
 	const map = {};
 	const now = new Date();
@@ -46,6 +47,7 @@ function aggregateByMonth(history) {
 	return Object.values(map);
 }
 
+// Sums point deltas per weekday for the current week
 function aggregateByDayOfWeek(history) {
 	const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 	const now = new Date();
@@ -69,6 +71,7 @@ function aggregateByDayOfWeek(history) {
 	}));
 }
 
+// Builds a 28-day intensity heatmap (levels 0-4) from point history
 function buildHeatmap(history) {
 	const now = new Date();
 	const cells = new Array(28).fill(0);
@@ -95,6 +98,7 @@ function buildHeatmap(history) {
 	});
 }
 
+// Compares this week's points against last week's and returns the percent change
 function computeWeekOverWeek(history) {
 	const now = new Date();
 	const thisWeekStart = new Date(now);
@@ -115,6 +119,7 @@ function computeWeekOverWeek(history) {
 	return { thisWeek, lastWeek, change: lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : (thisWeek > 0 ? 100 : 0) };
 }
 
+// Compares this month's points against last month's and returns the percent change
 function computeMonthOverMonth(history) {
 	const now = new Date();
 	const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -131,32 +136,56 @@ function computeMonthOverMonth(history) {
 
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
+// Consultant points dashboard: balance, trends, charts, recommendations and history
 export default function Points() {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Programmatic navigation between pages
 	const navigate = useNavigate();
+	// Tracks initial dashboard load state
 	const [loading, setLoading] = useState(true);
+	// Consultant stats (total points, ranking position, etc.)
 	const [stats, setStats] = useState(null);
+	// Full points history used for charts and aggregations
 	const [allHistory, setAllHistory] = useState([]);
+	// Total number of consultants for percentile/ranking display
 	const [totalConsultants, setTotalConsultants] = useState(0);
+	// Badges the consultant has earned
 	const [earnedBadges, setEarnedBadges] = useState([]);
+	// Recommended next badges
 	const [recommendations, setRecommendations] = useState([]);
+	// Learning path progress data for milestones
 	const [lpProgress, setLpProgress] = useState([]);
 
+	// Current page of the paginated history table
 	const [historyPage, setHistoryPage] = useState(1);
+	// Raw search input for the history table
 	const [historySearch, setHistorySearch] = useState('');
+	// Debounced search term used for the actual query
 	const [historySearchDebounced, setHistorySearchDebounced] = useState('');
+	// Paginated history rows and pagination metadata
 	const [historyData, setHistoryData] = useState({ history: [], pagination: null });
+	// Tracks loading state of the history table
 	const [historyLoading, setHistoryLoading] = useState(false);
 
+	// Whether the filter dropdown is open
 	const [filterOpen, setFilterOpen] = useState(false);
+	// Selected service line filter
 	const [filterServiceLine, setFilterServiceLine] = useState('');
+	// Selected area filter
 	const [filterArea, setFilterArea] = useState('');
+	// Start date filter
 	const [filterDateFrom, setFilterDateFrom] = useState('');
+	// End date filter
 	const [filterDateTo, setFilterDateTo] = useState('');
+	// Available service lines for the filter dropdown
 	const [serviceLines, setServiceLines] = useState([]);
+	// Available areas for the filter dropdown
 	const [areas, setAreas] = useState([]);
+	// Ref to the filter container for outside-click detection
 	const filterRef = useRef(null);
 
+	// Debounces the history search input before triggering a query
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setHistorySearchDebounced(historySearch);
@@ -165,6 +194,7 @@ export default function Points() {
 		return () => clearTimeout(timer);
 	}, [historySearch]);
 
+	// Loads service lines and areas for the filter dropdown on mount
 	useEffect(() => {
 		(async () => {
 			try {
@@ -175,6 +205,7 @@ export default function Points() {
 		})();
 	}, []);
 
+	// Closes the filter dropdown when clicking outside of it
 	useEffect(() => {
 		const handleClickOutside = (e) => {
 			if (filterRef.current && !filterRef.current.contains(e.target)) {
@@ -185,8 +216,10 @@ export default function Points() {
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [filterOpen]);
 
+	// Number of filters currently applied
 	const activeFilterCount = [filterServiceLine, filterArea, filterDateFrom, filterDateTo].filter(Boolean).length;
 
+	// Resets all history filters and returns to the first page
 	const clearFilters = () => {
 		setFilterServiceLine('');
 		setFilterArea('');
@@ -195,6 +228,7 @@ export default function Points() {
 		setHistoryPage(1);
 	};
 
+	// Exports the filtered points history as a downloadable CSV file
 	const handleExport = async () => {
 		try {
 			const params = { page: 1, limit: 100 };
@@ -228,6 +262,7 @@ export default function Points() {
 		}
 	};
 
+	// Loads all dashboard data in parallel on mount
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
@@ -273,6 +308,7 @@ export default function Points() {
 		return () => { cancelled = true; };
 	}, []);
 
+	// Fetches a page of the points history table with current filters
 	const fetchHistory = useCallback(async () => {
 		setHistoryLoading(true);
 		try {
@@ -291,10 +327,14 @@ export default function Points() {
 		}
 	}, [historyPage, historySearchDebounced, filterServiceLine, filterArea, filterDateFrom, filterDateTo]);
 
+	// Re-fetches the history table whenever filters or page change
 	useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
+	// Week-over-week points comparison
 	const weekStats = useMemo(() => computeWeekOverWeek(allHistory), [allHistory]);
+	// Month-over-month points comparison
 	const monthStats = useMemo(() => computeMonthOverMonth(allHistory), [allHistory]);
+	// Average points earned per week over the full history
 	const weeklyAvg = useMemo(() => {
 		if (!allHistory.length) return 0;
 		const oldest = new Date(allHistory[allHistory.length - 1]?.created_at);
@@ -303,6 +343,7 @@ export default function Points() {
 		return Math.round(total / weeks);
 	}, [allHistory]);
 
+	// Monthly bar chart data with localized month labels
 	const monthlyChartData = useMemo(() =>
 		aggregateByMonth(allHistory).map(d => ({
 			month: t(`shared.months.${MONTH_KEYS[d.date.getMonth()]}`),
@@ -311,6 +352,7 @@ export default function Points() {
 		[allHistory, t]
 	);
 
+	// Weekly line chart data with localized day labels
 	const weeklyChartData = useMemo(() =>
 		aggregateByDayOfWeek(allHistory).map(d => ({
 			day: t(`shared.days.${d.key}`),
@@ -319,13 +361,16 @@ export default function Points() {
 		[allHistory, t]
 	);
 
+	// Heatmap intensity data for the activity calendar
 	const heatmapData = useMemo(() => buildHeatmap(allHistory), [allHistory]);
 
+	// Consultant's ranking percentile among all consultants
 	const percentile = useMemo(() => {
 		if (!stats?.rankingPosition || !totalConsultants) return null;
 		return Math.max(1, Math.round((stats.rankingPosition / totalConsultants) * 100));
 	}, [stats, totalConsultants]);
 
+	// Top 3 learning path progress milestones for display
 	const milestones = useMemo(() =>
 		lpProgress.slice(0, 3).map((lp, i) => ({
 			id: lp.learning_path_id,
@@ -338,11 +383,13 @@ export default function Points() {
 		[lpProgress]
 	);
 
+	// Total bonus points from all earned badges
 	const achievementBonus = useMemo(() =>
 		earnedBadges.reduce((sum, b) => sum + (b.badge?.pointsValue ?? 0), 0),
 		[earnedBadges]
 	);
 
+	// Derived display values from stats and history
 	const totalPoints = stats?.totalPoints ?? 0;
 	const rankPosition = stats?.rankingPosition;
 	const milestoneIcons = ['badge', 'certificate', 'spark'];

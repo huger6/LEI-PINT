@@ -16,15 +16,22 @@ const STATE_BADGE_MAP = {
 	Rejected: 'badge-rejected',
 };
 
+// Consultant dashboard page: shows application stats and recent applications
 export default function ConsultantDashboard() {
+	// Translation helper for localized labels
 	const { t } = useTranslation();
+	// Router navigation for clicking through to an application
 	const navigate = useNavigate();
+	// Aggregated application counts shown in the stat cards
 	const [stats, setStats] = useState({ total: 0, open: 0, submitted: 0, accepted: 0 });
+	// Most recent applications shown in the table
 	const [recentApps, setRecentApps] = useState([]);
 
+	// On mount, fetch applications/badges and compute dashboard stats
 	useEffect(() => {
 		let ignore = false;
 
+		// Loads applications and badges, then derives the stats and recent list
 		async function load() {
 			try {
 				setLoading(true);

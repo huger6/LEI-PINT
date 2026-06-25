@@ -4,7 +4,9 @@ import { useAuth } from '../features/auth';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
 import { AUTH, SHARED } from './paths';
 
+// Guard component: renders public pages only when the user is not authenticated.
 export default function PublicRoute() {
+	// Reads auth state to decide whether to redirect an already-logged-in user.
 	const { isAuthenticated, fpc, isLoading } = useAuth();
 
 	if (isLoading) return <LoadingScreen />;

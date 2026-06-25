@@ -9,13 +9,20 @@ import styles from './SoftinsaBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
 
+// Public page that shows a consultant's profile and earned badges by GUID
 export default function SoftinsaConsultant() {
+	// Translation helper and active i18n instance for date locale
 	const { t, i18n } = useTranslation();
+	// Read the consultant GUID from the route params
 	const { guid } = useParams();
+	// Holds the fetched consultant profile
 	const [profile, setProfile] = useState(null);
+	// Tracks whether the profile fetch is in progress
 	const [loading, setLoading] = useState(true);
+	// Flags when no profile matched the GUID
 	const [notFound, setNotFound] = useState(false);
 
+	// Fetch the public consultant profile whenever the GUID changes
 	useEffect(() => {
 		let active = true;
 		setLoading(true);
@@ -27,12 +34,14 @@ export default function SoftinsaConsultant() {
 		return () => { active = false; };
 	}, [guid]);
 
+	// Sync the document title with the loaded profile and restore it on unmount
 	useEffect(() => {
 		const prev = document.title;
 		if (profile) document.title = `${profile.full_name} - Softinsa`;
 		return () => { document.title = prev; };
 	}, [profile]);
 
+	// Format an ISO date as a localized month/year string
 	const fmtDate = (iso) => {
 		if (!iso) return '';
 		const d = new Date(iso);

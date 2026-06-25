@@ -29,29 +29,44 @@ function getInitials(name = '') {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// Admin page for listing, filtering, creating and (de)activating platform users.
 export default function AdminUsers() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
 
+	// Store the paginated list of users.
 	const [users, setUsers] = useState([]);
+	// Track whether the users list is loading.
 	const [loading, setLoading] = useState(true);
+	// Store service lines for the filter dropdowns.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store areas for the filter dropdowns.
 	const [areas, setAreas] = useState([]);
+	// Hold the currently applied filter values.
 	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	// Track the current page number.
 	const [page, setPage] = useState(1);
+	// Hold pagination metadata returned by the API.
 	const [pagination, setPagination] = useState(null);
 
+	// Control create-user modal visibility.
 	const [showModal, setShowModal] = useState(false);
+	// Hold the user targeted for (de)activation confirmation.
 	const [confirmTarget, setConfirmTarget] = useState(null);
+	// Track whether a (de)activation request is in progress.
 	const [deactivating, setDeactivating] = useState(false);
 
+	// Load filter dropdown data once on mount.
 	useEffect(() => {
 		loadHierarchy();
 	}, []);
 
+	// Reload users whenever filters or page change.
 	useEffect(() => {
 		loadUsers(filters, page);
 	}, [filters, page]);
 
+	// Fetch users for the given filters and page, then update state.
 	async function loadUsers(activeFilters, activePage) {
 		try {
 			setLoading(true);
@@ -65,11 +80,13 @@ export default function AdminUsers() {
 		}
 	}
 
+	// Apply new filters and reset to the first page.
 	function handleFiltersChange(newFilters) {
 		setFilters(newFilters);
 		setPage(1);
 	}
 
+	// Clear all filters and reset to the first page.
 	function handleFiltersClear() {
 		setFilters(EMPTY_FILTERS);
 		setPage(1);
@@ -87,14 +104,17 @@ export default function AdminUsers() {
 		}
 	}
 
+	// Open the create-user modal.
 	function openCreate() {
 		setShowModal(true);
 	}
 
+	// Reload the users list after a new user is created.
 	function handleUserCreated() {
 		loadUsers(filters, page);
 	}
 
+	// Confirm and toggle the target user's active status, then refresh the list.
 	async function handleToggleActiveConfirm() {
 		if (!confirmTarget) return;
 		const guid = confirmTarget.user_guid || confirmTarget.userGuid;

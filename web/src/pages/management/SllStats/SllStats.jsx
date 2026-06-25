@@ -27,6 +27,7 @@ function buildMonthlyReport(apps) {
 	return [...buckets.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
 
+// Service Line Leader stats page: filters/KPIs plus an awarded-badges-per-month report.
 export default function SllStats() {
 	// Access translation function.
 	const { t } = useTranslation();

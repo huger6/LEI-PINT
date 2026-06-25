@@ -10,9 +10,12 @@ import styles from './SubStructureCard.module.css';
  * @param {string} to - Link to the child entity's detail page.
  */
 export default function SubStructureCard({ icon, title, description, count, isActive, tone, to, infoItems }) {
+	// Translation helper for i18n labels
 	const { t } = useTranslation();
+	// Resolves the optional tone modifier CSS class
 	const toneClass = tone ? styles[tone] : '';
 
+	// Shared inner card markup reused for both linked and static variants
 	const content = (
 		<>
 			<div className={styles.iconWrap} aria-hidden="true">

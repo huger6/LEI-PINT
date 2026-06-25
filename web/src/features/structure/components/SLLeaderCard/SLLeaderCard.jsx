@@ -9,10 +9,12 @@ import { ADMIN } from '../../../../routes/paths';
  * @param {Object} leader - Leader user data (name, avatar, email).
  */
 export default function SLLeaderCard({ leader }) {
+	// i18n translation function
 	const { t } = useTranslation();
 
 	if (!leader) return null;
 
+	// Build the leader's profile route by injecting their guid
 	const profilePath = ADMIN.USER_PROFILE.replace(':guid', leader.user_guid);
 
 	return (

@@ -6,6 +6,7 @@ import styles from './ToolbarPanel.module.css';
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
+// Badge editor toolbar with shape, text, image, action, and template controls.
 export default function ToolbarPanel({
 	onAddShape, onAddText, onBringFront, onSendBack, onDelete, onClear,
 	onDuplicate, onUndo, onRedo, onImportImage, onSelectTemplate,

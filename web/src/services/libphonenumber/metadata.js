@@ -5,6 +5,7 @@ const CACHE_VERSION_KEY = 'libphonenumber_metadata_version';
 const CACHE_VERSION = '1.11.20';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 
+// Returns cached metadata from localStorage if present, valid, and not expired.
 function getCachedMetadata() {
 	try {
 		const version = localStorage.getItem(CACHE_VERSION_KEY);
@@ -27,6 +28,7 @@ function getCachedMetadata() {
 	}
 }
 
+// Persists parsed metadata to localStorage with the current version and timestamp.
 function setCachedMetadata(data) {
 	try {
 		localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
@@ -34,6 +36,7 @@ function setCachedMetadata(data) {
 	} catch { /* quota exceeded - non-critical */ }
 }
 
+// Returns phone metadata, using the cache or fetching and parsing it from the CDN.
 export async function fetchMetadata() {
 	const cached = getCachedMetadata();
 	if (cached) return cached;
@@ -49,6 +52,7 @@ export async function fetchMetadata() {
 	return parsed;
 }
 
+// Normalizes raw libphonenumber JSON into a simplified countries/callingCodes structure.
 export function parseMetadata(raw) {
 	const countryCallingCodes = raw.country_calling_codes || {};
 	const countriesRaw = raw.countries || {};

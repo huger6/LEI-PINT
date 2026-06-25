@@ -9,6 +9,7 @@ import enApi from './locales/en/api_codes.json';
 import esCommon from './locales/es/common.json';
 import esApi from './locales/es/api_codes.json';
 
+// Initializes i18next with pt/en/es resources, browser language detection, and React bindings.
 i18n.use(LanguageDetector) // Detects browser language automatically
     .use(initReactI18next)
     .init({

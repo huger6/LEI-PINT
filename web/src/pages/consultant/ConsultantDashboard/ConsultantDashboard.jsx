@@ -29,6 +29,7 @@ function statusOf(state) {
 	return { key: 'pending', cls: 'statusPending' };
 }
 
+// Consultant landing page: recent applications plus area-based badge recommendations
 export default function ConsultantDashboard() {
 	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();

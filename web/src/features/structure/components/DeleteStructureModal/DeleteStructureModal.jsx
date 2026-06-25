@@ -12,13 +12,19 @@ import styles from './DeleteStructureModal.module.css';
  * @param {Function} onClose - Called when the modal is dismissed.
  */
 export default function DeleteStructureModal({ entityName, onConfirm, onSuccess, onClose }) {
+	// i18n translation function
 	const { t } = useTranslation();
+	// Tracks the in-flight delete request
 	const [loading, setLoading] = useState(false);
+	// Holds blocking dependency counts returned on a 409 conflict
 	const [dependencies, setDependencies] = useState(null);
+	// Flags an unexpected (non-409) failure
 	const [genericError, setGenericError] = useState(false);
 
+	// True once dependencies block the deletion
 	const hasDeps = dependencies !== null;
 
+	// Runs the deletion and surfaces dependency or generic errors
 	async function handleConfirm() {
 		setLoading(true);
 		setDependencies(null);
@@ -37,6 +43,7 @@ export default function DeleteStructureModal({ entityName, onConfirm, onSuccess,
 		}
 	}
 
+	// Footer switches between a single close button (blocked) and cancel/delete actions
 	const footer = hasDeps ? (
 		<Button variant="outlined" onClick={onClose}>
 			{t('shared.close', { defaultValue: 'Close' })}

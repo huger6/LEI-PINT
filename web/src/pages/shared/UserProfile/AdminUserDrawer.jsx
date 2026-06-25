@@ -21,8 +21,10 @@ import Chip from '../../../components/Chip/Chip';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import styles from './AdminUserDrawer.module.css';
 
+// Roles an admin may assign through this drawer (Administrator excluded).
 const CHANGEABLE_ROLES = ['Consultant', 'Talent Manager', 'Service Line Leader'];
 
+// Labeled divider used to separate sections within the drawer.
 function SectionDivider({ label }) {
 	return (
 		<div className={styles.sectionDivider}>
@@ -32,6 +34,7 @@ function SectionDivider({ label }) {
 	);
 }
 
+// Read-only label/value row for displaying account details.
 function DetailRow({ label, children }) {
 	return (
 		<div className={styles.detailRow}>
@@ -41,6 +44,7 @@ function DetailRow({ label, children }) {
 	);
 }
 
+// Derive avatar initials from a full name (first + last initial).
 function getInitials(name = '') {
 	const parts = name.trim().split(/\s+/);
 	if (parts.length === 0 || !parts[0]) return '?';
@@ -48,33 +52,55 @@ function getInitials(name = '') {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// Admin-only side drawer for viewing and editing a user's full profile.
 export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid }) {
+	// Translation helper for localized labels and messages.
 	const { t } = useTranslation();
+	// Ref to the drawer panel element.
 	const panelRef = useRef(null);
 
+	// Editable form state for the user being managed.
 	const [form, setForm] = useState({});
+	// Per-field validation errors.
 	const [errors, setErrors] = useState({});
+	// Whether a save request is in flight.
 	const [saving, setSaving] = useState(false);
+	// Whether the form differs from its initial loaded state.
 	const [isDirty, setIsDirty] = useState(false);
+	// Snapshot of the initial form values for dirty-checking and diffing.
 	const initialRef = useRef({});
 
+	// Service line options loaded from the API.
 	const [serviceLines, setServiceLines] = useState([]);
+	// All areas loaded from the API.
 	const [allAreas, setAllAreas] = useState([]);
+	// Available locations loaded from the API.
 	const [locations, setLocations] = useState([]);
+	// Whether to show the "last SLL" confirmation warning.
 	const [showSllWarning, setShowSllWarning] = useState(false);
+	// Role change awaiting confirmation via the warning toast.
 	const [pendingRoleChange, setPendingRoleChange] = useState(null);
 
+	// Text input for adding a new interest chip.
 	const [interestInput, setInterestInput] = useState('');
+	// Text input for adding a new goal.
 	const [goalInput, setGoalInput] = useState('');
 
+	// Local preview URL for the (possibly unsaved) profile image.
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	// Whether a profile image upload is in progress.
 	const [profileUploading, setProfileUploading] = useState(false);
+	// Error message for a failed profile image upload.
 	const [profileUploadError, setProfileUploadError] = useState('');
+	// Ref to the hidden file input for profile image selection.
 	const profileFileRef = useRef(null);
 
+	// Resolve the user's role from the various possible profile shapes.
 	const displayRole = profile?.role?.role_name || profile?.role_name || profile?.role || '';
+	// Whether the managed user is an Administrator (role not editable).
 	const isAdminRole = displayRole === 'Administrator';
 
+	// Map locations into valid select options.
 	const locationOptions = useMemo(
 		() => locations.map((l) => {
 			const id = Number(l.location_id ?? l.id);
@@ -84,6 +110,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		[locations],
 	);
 
+	// Populate the form from the profile when the drawer opens.
 	useEffect(() => {
 		if (open && profile) {
 			const photoUrl = profile.profileImg || profile.profile_img_url || '';
@@ -118,6 +145,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		}
 	}, [open, profile, displayRole]);
 
+	// Load service lines, areas and locations once the drawer opens.
 	useEffect(() => {
 		if (!open) return;
 		Promise.all([
@@ -131,6 +159,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		});
 	}, [open]);
 
+	// Close the drawer on Escape while it is open.
 	useEffect(() => {
 		if (!open) return;
 		const handleKey = (e) => {
@@ -140,14 +169,19 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		return () => window.removeEventListener('keydown', handleKey);
 	}, [open, onClose]);
 
+	// Trimmed username for change detection and availability checks.
 	const trimmedUsername = form.username?.trim() || '';
+	// Trimmed email for change detection and availability checks.
 	const trimmedEmail = form.email?.trim() || '';
 
+	// True when a valid username differs from the original.
 	const usernameChanged = trimmedUsername !== (initialRef.current.username?.trim() || '')
 		&& trimmedUsername.length >= 3;
+	// True when a valid email differs from the original.
 	const emailChanged = trimmedEmail !== (initialRef.current.email?.trim() || '')
 		&& /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
 
+	// Debounced availability check for the username field.
 	const usernameCheck = useAvailability({
 		value: trimmedUsername,
 		isValid: trimmedUsername.length >= 3,
@@ -155,6 +189,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		fetcher: fetchUsernameAvailability,
 	});
 
+	// Debounced availability check for the email field.
 	const emailCheck = useAvailability({
 		value: trimmedEmail,
 		isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail),
@@ -162,6 +197,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		fetcher: fetchEmailAvailability,
 	});
 
+	// Compare a candidate form state against the initial snapshot to set dirty flag.
 	const checkDirty = useCallback((next) => {
 		const initial = initialRef.current;
 		const changed = next.fullName !== initial.fullName
@@ -181,6 +217,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		setIsDirty(changed);
 	}, []);
 
+	// Curried change handler that updates a single form field and rechecks dirtiness.
 	const handleChange = (field) => (e) => {
 		const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
 		setForm((prev) => {
@@ -192,6 +229,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	};
 
 	// ── Interest chips ───────────────────────────────────────────
+	// Add the typed interest as a chip if non-empty and not a duplicate.
 	const addInterest = () => {
 		const val = interestInput.trim();
 		if (!val || form.interests?.includes(val)) return;
@@ -203,6 +241,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		setInterestInput('');
 	};
 
+	// Remove the interest chip at the given index.
 	const removeInterest = (idx) => {
 		setForm((prev) => {
 			const next = { ...prev, interests: prev.interests.filter((_, i) => i !== idx) };
@@ -212,6 +251,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	};
 
 	// ── Goals list ───────────────────────────────────────────────
+	// Add the typed goal to the list if non-empty.
 	const addGoal = () => {
 		const val = goalInput.trim();
 		if (!val) return;
@@ -223,6 +263,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		setGoalInput('');
 	};
 
+	// Remove the goal at the given index.
 	const removeGoal = (idx) => {
 		setForm((prev) => {
 			const next = { ...prev, goals: prev.goals.filter((_, i) => i !== idx) };
@@ -232,6 +273,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	};
 
 	// ── Profile image ────────────────────────────────────────────
+	// Handle file selection: preview locally, then upload to temp storage.
 	const onProfileImageChange = useCallback(async (e) => {
 		const file = e.target.files?.[0];
 		e.target.value = '';
@@ -259,6 +301,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		}
 	}, [t, checkDirty]);
 
+	// Clear the selected/existing profile image.
 	const clearProfileImage = useCallback(() => {
 		setProfilePreviewUrl('');
 		setProfileUploadError('');
@@ -270,6 +313,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		if (profileFileRef.current) profileFileRef.current.value = '';
 	}, [checkDirty]);
 
+	// Apply a role change, resetting service line / areas to match the new role.
 	const applyRoleChange = (newRole) => {
 		setForm((prev) => {
 			const next = { ...prev, role: newRole };
@@ -283,6 +327,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		});
 	};
 
+	// Handle role select change, warning when demoting the last SLL of a service line.
 	const handleRoleChange = async (e) => {
 		const newRole = e.target.value;
 		const currentRole = initialRef.current.role;
@@ -303,6 +348,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		applyRoleChange(newRole);
 	};
 
+	// Validate required fields and role-specific requirements before saving.
 	const validate = () => {
 		const errs = {};
 		if (!form.fullName?.trim()) errs.fullName = t('profile.errors.nameRequired');
@@ -322,6 +368,7 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		return Object.keys(errs).length === 0;
 	};
 
+	// Validate, build a diff-only payload and persist the user changes.
 	const handleSave = async () => {
 		if (!validate()) return;
 		if (usernameChanged && isCheckBlocking(usernameCheck.status)) {
@@ -390,9 +437,12 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		}
 	};
 
+	// Account creation timestamp (handles camelCase/snake_case).
 	const joinedAt = profile?.createdAt || profile?.created_at;
+	// Last login timestamp (handles the various field names).
 	const lastLogin = profile?.lastLogin || profile?.last_login || profile?.last_online;
 
+	// Format an ISO date string as a localized pt-PT date and time.
 	const formatDate = (str) => {
 		if (!str) return '—';
 		return new Date(str).toLocaleDateString('pt-PT', {
@@ -401,11 +451,13 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 		});
 	};
 
+	// Map service lines into select options.
 	const serviceLineOptions = serviceLines.map((sl) => ({
 		value: String(sl.service_line_id ?? sl.id),
 		label: sl.service_line_name ?? sl.name ?? '',
 	}));
 
+	// Map areas into the shape expected by the area picker.
 	const areaOptions = allAreas.map((a) => ({
 		area_id: a.area_id ?? a.id,
 		area_name: a.area_name ?? a.name ?? '',

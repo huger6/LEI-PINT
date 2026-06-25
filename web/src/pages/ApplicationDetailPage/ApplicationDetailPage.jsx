@@ -8,13 +8,20 @@ import ApplicationDetail from '../consultant/ApplicationDetail/ApplicationDetail
 import ApplicationStatus from '../consultant/ApplicationStatus/ApplicationStatus';
 import ApplicationReview from '../management/ApplicationReview/ApplicationReview';
 
+// Page that resolves which application view to render based on state and user role
 export default function ApplicationDetailPage() {
+	// Read the application id from the route params
 	const { id } = useParams();
+	// Get the authenticated user (used for role-based view selection)
 	const { user } = useUser();
+	// Holds the fetched application data
 	const [application, setApplication] = useState(null);
+	// Tracks whether the application is still loading
 	const [loading, setLoading] = useState(true);
+	// Stores any error message from the fetch
 	const [error, setError] = useState(null);
 
+	// Fetches the application by id and updates state/error accordingly
 	const loadApplication = useCallback(async () => {
 		try {
 			const app = await getApplicationById(id);
@@ -27,6 +34,7 @@ export default function ApplicationDetailPage() {
 		}
 	}, [id]);
 
+	// Load the application on mount and whenever the loader changes
 	useEffect(() => {
 		loadApplication();
 	}, [loadApplication]);

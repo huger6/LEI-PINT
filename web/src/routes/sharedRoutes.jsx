@@ -14,6 +14,7 @@ import Security from '../pages/shared/Security/Security';
 import RedirectPublicProfile from './RedirectPublicProfile';
 import { LearningPathDetail, ServiceLineDetail, AreaDetail, LevelDetail } from '../features/structure';
 
+// Routes available to every authenticated role (search, profile, settings, etc.).
 const sharedRoutes = [
 	{ path: SHARED.SEARCH, element: <SearchResults /> },
 	{ path: SHARED.APPLICATIONS, element: <ApplicationsPage /> },

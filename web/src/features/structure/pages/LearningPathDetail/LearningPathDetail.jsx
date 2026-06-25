@@ -13,27 +13,40 @@ import DeleteStructureModal from '../../components/DeleteStructureModal/DeleteSt
 
 const PAGE_SIZE = 32;
 
+// Detail page for a single Learning Path, listing its child service lines
 export default function LearningPathDetail() {
+	// Read the learning path slug from the route params
 	const { slug } = useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
 	const P = structureDetailPaths(isAdmin);
+	// The loaded learning path entity
 	const [lp, setLp] = useState(null);
+	// Child service lines for the current page
 	const [serviceLines, setServiceLines] = useState([]);
+	// Pagination metadata for the service lines list
 	const [pagination, setPagination] = useState(null);
+	// Currently selected service lines page
 	const [currentPage, setCurrentPage] = useState(1);
+	// Whether the initial data load is in progress
 	const [loading, setLoading] = useState(true);
+	// Edit learning path modal visibility
 	const [showEditModal, setShowEditModal] = useState(false);
+	// Create service line modal visibility
 	const [showCreateServiceLineModal, setShowCreateServiceLineModal] = useState(false);
+	// Delete learning path modal visibility
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	// Whether an activate request is in flight
 	const [isActivating, setIsActivating] = useState(false);
 
+	// Fetch a page of service lines for the current learning path
 	const fetchSubStructures = useCallback((page) => {
 		return fetchServiceLinesByLearningPath(slug, { page, limit: PAGE_SIZE });
 	}, [slug]);
 
+	// Load the learning path and its first page of service lines on mount / slug change
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
@@ -59,6 +72,7 @@ export default function LearningPathDetail() {
 		return () => { cancelled = true; };
 	}, [slug, fetchSubStructures]);
 
+	// Load a different page of service lines when pagination changes
 	const handlePageChange = useCallback((page) => {
 		setCurrentPage(page);
 		fetchSubStructures(page)
@@ -69,6 +83,7 @@ export default function LearningPathDetail() {
 			.catch(console.error);
 	}, [fetchSubStructures]);
 
+	// Refresh the learning path after an edit, falling back to local merge and navigating if the slug changed
 	const handleEditSuccess = useCallback(async (updated) => {
 		const nextSlug = updated?.path_slug || slug;
 		try {
@@ -91,6 +106,7 @@ export default function LearningPathDetail() {
 		}
 	}, [slug, navigate]);
 
+	// Activate the learning path and refresh it
 	const handleActivate = useCallback(async () => {
 		setIsActivating(true);
 		try {
@@ -104,6 +120,7 @@ export default function LearningPathDetail() {
 		}
 	}, [slug]);
 
+	// Reload the learning path and first page of service lines after creating one
 	const handleServiceLineCreated = useCallback(async () => {
 		setCurrentPage(1);
 		try {
@@ -122,6 +139,7 @@ export default function LearningPathDetail() {
 	if (loading) return <StructureDetailSkeleton />;
 	if (!lp) return null;
 
+	// Summary stat cards shown in the detail header
 	const stats = [
 		{
 			icon: 'tabler_users',
@@ -139,10 +157,12 @@ export default function LearningPathDetail() {
 		},
 	];
 
+	// Optional message shown when the current user is enrolled
 	const enrollmentMessage = lp.is_enrolled
 		? t('structureDetail.enrolled', { defaultValue: 'You are enrolled in this structure' })
 		: null;
 
+	// Map service lines into the generic sub-structure card shape used by the layout
 	const subStructures = serviceLines.map((sl) => ({
 		id: sl.service_line_id,
 		title: sl.service_line_name,
@@ -155,6 +175,7 @@ export default function LearningPathDetail() {
 		],
 	}));
 
+	// Breadcrumb trail (learning path is the top of this hierarchy)
 	const breadcrumbItems = [
 		{
 			label: lp.path_title,

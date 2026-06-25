@@ -25,6 +25,7 @@ import { setBadgeFeatured } from '../../../features/gamification/api/gamificatio
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
 
+// Format an ISO date string as a localized pt-PT date.
 function formatDate(dateStr) {
 	if (!dateStr) return '—';
 	return new Date(dateStr).toLocaleDateString('pt-PT', {
@@ -34,6 +35,7 @@ function formatDate(dateStr) {
 	});
 }
 
+// Derive avatar initials from a full name (first + last initial).
 function getInitials(name = '') {
 	const parts = name.trim().split(/\s+/);
 	if (parts.length === 0 || !parts[0]) return '?';
@@ -41,45 +43,75 @@ function getInitials(name = '') {
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// User profile page: views or edits own/other user profiles (with admin drawer).
 export default function UserProfile() {
+	// Translation helper for localized labels and messages.
 	const { t } = useTranslation();
+	// Optional user guid from the route (absent for own profile).
 	const { guid } = useParams();
+	// Current location, used to detect edit mode.
 	const location = useLocation();
+	// Programmatic navigation helper.
 	const navigate = useNavigate();
+	// Authenticated user from the auth hook.
 	const { user: authUser } = useAuth();
+	// Context user and a function to refresh it.
 	const { user: contextUser, refreshUser } = useUser();
 
+	// Whether the page is in edit mode (path ends with /edit).
 	const isEditMode = location.pathname.endsWith('/edit');
+	// Whether this is the logged-in user's own profile.
 	const isOwnProfile = !guid;
+	// Whether the viewer is an Administrator.
 	const isAdmin = contextUser?.role === 'Administrator' || authUser?.role === 'Administrator';
+	// Loaded profile data being displayed/edited.
 	const [profile, setProfile] = useState(null);
+	// Whether the profile is loading.
 	const [loading, setLoading] = useState(true);
+	// Available locations for the edit form.
 	const [locations, setLocations] = useState([]);
 
+	// Editable form state in edit mode.
 	const [form, setForm] = useState({});
+	// Per-field validation errors.
 	const [formErrors, setFormErrors] = useState({});
+	// Whether the form has unsaved changes.
 	const [isDirty, setIsDirty] = useState(false);
+	// Whether a save request is in flight.
 	const [saving, setSaving] = useState(false);
+	// Whether a save just succeeded (drives the success toast).
 	const [saveSuccess, setSaveSuccess] = useState(false);
+	// Whether the unsaved-changes confirmation is shown.
 	const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+	// Pending navigation target held while confirming leave.
 	const pendingNavRef = useRef(null);
 
+	// Whether the admin edit drawer is open.
 	const [drawerOpen, setDrawerOpen] = useState(false);
+	// Text input for adding a new interest chip.
 	const [interestInput, setInterestInput] = useState('');
+	// Text input for adding a new goal.
 	const [goalInput, setGoalInput] = useState('');
 
+	// Local preview URL for the (possibly unsaved) profile image.
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	// Whether a profile image upload is in progress.
 	const [profileUploading, setProfileUploading] = useState(false);
+	// Error message for a failed profile image upload.
 	const [profileUploadError, setProfileUploadError] = useState('');
+	// Ref to the hidden file input for profile image selection.
 	const profileFileRef = useRef(null);
 
 	// Editable public badge gallery (own consultant profile): the consultant
 	// chooses which earned badges show on their public profile.
 	const [galleryBadges, setGalleryBadges] = useState([]);
+	// Id of the badge currently being toggled as featured.
 	const [savingBadge, setSavingBadge] = useState(null);
 
+	// Snapshot of the initial form values for dirty-checking.
 	const initialFormRef = useRef({});
 
+	// Map locations into valid select options.
 	const locationOptions = useMemo(
 		() => locations.map((l) => {
 			const id = Number(l.location_id ?? l.id);
@@ -89,12 +121,15 @@ export default function UserProfile() {
 		[locations],
 	);
 
+	// Resolve the profile's role from the various possible shapes.
 	const userRole = profile?.role?.role_name || profile?.role_name || profile?.role || '';
+	// Role flags driving conditional sections and stats.
 	const isConsultant = userRole === 'Consultant';
 	const isTm = userRole === 'Talent Manager';
 	const isAdminRole = userRole === 'Administrator';
 
 	// ── Load profile ─────────────────────────────────────────────
+	// Load the profile: own profile from context, others from the public API.
 	useEffect(() => {
 		let ignore = false;
 		setLoading(true);
@@ -128,6 +163,7 @@ export default function UserProfile() {
 		return () => { ignore = true; };
 	}, [isOwnProfile, isConsultant]);
 
+	// Toggle whether a badge is featured on the public profile (optimistic update).
 	const toggleBadgeFeatured = useCallback(async (b) => {
 		if (!b.verificationLink) return;
 		const next = !b.isFeatured;
@@ -142,6 +178,7 @@ export default function UserProfile() {
 		}
 	}, []);
 
+	// Load available locations once on mount.
 	useEffect(() => {
 		let ignore = false;
 		getLocations()
@@ -151,6 +188,7 @@ export default function UserProfile() {
 	}, []);
 
 	// ── Init form in edit mode ───────────────────────────────────
+	// Populate the form from the profile when entering edit mode.
 	useEffect(() => {
 		if (isEditMode && profile) {
 			const locId = profile.location_id ?? profile.locationId ?? '';
@@ -175,10 +213,12 @@ export default function UserProfile() {
 	}, [isEditMode, profile]);
 
 	// ── Dirty check ──────────────────────────────────────────────
+	// Set the dirty flag by comparing the form against its initial snapshot.
 	const checkDirty = useCallback((newForm) => {
 		setIsDirty(JSON.stringify(newForm) !== JSON.stringify(initialFormRef.current));
 	}, []);
 
+	// Curried change handler that updates one field and rechecks dirtiness.
 	const handleChange = (field) => (e) => {
 		const value = e.target.value;
 		setForm((prev) => {
@@ -190,6 +230,7 @@ export default function UserProfile() {
 	};
 
 	// ── Interest chips ───────────────────────────────────────────
+	// Add the typed interest as a chip if non-empty and not a duplicate.
 	const addInterest = () => {
 		const val = interestInput.trim();
 		if (!val || form.interests?.includes(val)) return;
@@ -201,6 +242,7 @@ export default function UserProfile() {
 		setInterestInput('');
 	};
 
+	// Remove the interest chip at the given index.
 	const removeInterest = (idx) => {
 		setForm((prev) => {
 			const next = { ...prev, interests: prev.interests.filter((_, i) => i !== idx) };
@@ -210,6 +252,7 @@ export default function UserProfile() {
 	};
 
 	// ── Goals list ───────────────────────────────────────────────
+	// Add the typed goal to the list if non-empty.
 	const addGoal = () => {
 		const val = goalInput.trim();
 		if (!val) return;
@@ -221,6 +264,7 @@ export default function UserProfile() {
 		setGoalInput('');
 	};
 
+	// Remove the goal at the given index.
 	const removeGoal = (idx) => {
 		setForm((prev) => {
 			const next = { ...prev, goals: prev.goals.filter((_, i) => i !== idx) };
@@ -230,6 +274,7 @@ export default function UserProfile() {
 	};
 
 	// ── Profile image ────────────────────────────────────────────
+	// Handle file selection: preview locally, upload, and surface specific errors.
 	const onProfileImageChange = useCallback(async (e) => {
 		const file = e.target.files?.[0];
 		e.target.value = '';
@@ -265,6 +310,7 @@ export default function UserProfile() {
 		}
 	}, [t, checkDirty]);
 
+	// Clear the selected/existing profile image.
 	const clearProfileImage = useCallback(() => {
 		setProfilePreviewUrl('');
 		setProfileUploadError('');
@@ -277,6 +323,7 @@ export default function UserProfile() {
 	}, [checkDirty]);
 
 	// ── Validation ───────────────────────────────────────────────
+	// Validate required fields before saving.
 	const validate = () => {
 		const errs = {};
 		if (!form.fullName?.trim()) errs.fullName = t('profile.errors.nameRequired');
@@ -285,6 +332,7 @@ export default function UserProfile() {
 	};
 
 	// ── Reload profile from server ───────────────────────────────
+	// Re-fetch the profile after a save (own via context, others via API).
 	const reloadProfile = useCallback(async () => {
 		if (isOwnProfile) {
 			await refreshUser();
@@ -295,6 +343,7 @@ export default function UserProfile() {
 	}, [isOwnProfile, guid, refreshUser]);
 
 	// ── Save ─────────────────────────────────────────────────────
+	// Validate, build the payload, persist the profile and navigate back.
 	const handleSave = async () => {
 		if (!validate()) return;
 		setSaving(true);
@@ -334,12 +383,14 @@ export default function UserProfile() {
 	};
 
 	// ── Navigation ───────────────────────────────────────────────
+	// Enter edit mode for the user's own profile.
 	const handleEdit = () => {
 		if (isOwnProfile) {
 			navigate(`${SHARED.PROFILE}/edit`);
 		}
 	};
 
+	// Cancel editing, prompting to confirm if there are unsaved changes.
 	const handleCancel = () => {
 		const viewPath = isOwnProfile ? SHARED.PROFILE : `${ADMIN.USERS}/${guid}`;
 		if (isDirty) {
@@ -350,6 +401,7 @@ export default function UserProfile() {
 		}
 	};
 
+	// Confirm leaving with unsaved changes and navigate to the pending target.
 	const confirmLeave = () => {
 		setIsDirty(false);
 		setShowLeaveConfirm(false);
@@ -359,11 +411,13 @@ export default function UserProfile() {
 		}
 	};
 
+	// Dismiss the leave confirmation and clear the pending navigation.
 	const cancelLeave = () => {
 		setShowLeaveConfirm(false);
 		pendingNavRef.current = null;
 	};
 
+	// Warn before unloading the tab while there are unsaved edits.
 	useEffect(() => {
 		if (!isDirty || !isEditMode) return;
 		const handler = (e) => {
@@ -374,6 +428,7 @@ export default function UserProfile() {
 		return () => window.removeEventListener('beforeunload', handler);
 	}, [isDirty, isEditMode]);
 
+	// Auto-hide the success toast a few seconds after a successful save.
 	useEffect(() => {
 		if (!saveSuccess) return;
 		const timer = setTimeout(() => setSaveSuccess(false), 3500);
@@ -381,6 +436,7 @@ export default function UserProfile() {
 	}, [saveSuccess]);
 
 	// ── Derived display values ───────────────────────────────────
+	// Computed read-only values for rendering the profile (name, location, etc.).
 	const displayName = profile?.fullName || profile?.full_name || profile?.username || '';
 	const displayEmail = profile?.email || '';
 	const displayLocation = profile?.location?.location_name || profile?.location?.name || profile?.location || '';
@@ -398,6 +454,7 @@ export default function UserProfile() {
 	const showServiceLine = !isTm && !isAdminRole && !!displayServiceLine;
 
 	// ── Stats by role ────────────────────────────────────────────
+	// Build the role-specific list of profile stat cards.
 	const getStats = () => {
 		const base = [
 			{ icon: 'badge', accentColor: 'var(--color-blue-on-soft)', accentBg: 'var(--color-blue-soft)', value: profile?.badgesCount ?? profile?.badges_count ?? 0, label: t('profile.badgesEarned'), footer: t('profile.statFooterBadges') },
@@ -438,9 +495,12 @@ export default function UserProfile() {
 		);
 	}
 
+	// Page heading text (own vs. another user's profile).
 	const pageTitle = isOwnProfile ? t('profile.myProfile') : t('profile.profileOf', { name: displayName });
+	// Resolved stat cards for the current role.
 	const stats = getStats();
 
+	// Path to the badges gallery.
 	const badgesPath = isOwnProfile ? SHARED.BADGES : SHARED.BADGES;
 
 	return (
