@@ -119,7 +119,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     final tr = LanguageScope.of(context);
 
     try {
-      final startResult = await appStore.startApplication(badgeId: badge.id);
+      final startResult = await appStore.startApplication(badgeSlug: badge.slug);
       final isExisting = startResult['code'] == 'APP_ALREADY_EXISTS';
       if (startResult['success'] != true && !isExisting) {
         final msg = startResult['message']?.toString() ?? tr.tr('applicationStartError');
@@ -171,24 +171,27 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         for (final file in entry.value) {
           if (file.filePath == null) continue;
           uploadFutures.add(() async {
+            final localFile = File(file.filePath!);
+            final fileLength = await localFile.length();
+            final contentType = _mimeTypeForFile(file.name);
+
             final urlResult = await appStore.getUploadUrl(
               applicationGuid: applicationGuid,
               requirementId: requirementId,
               fileName: file.name,
+              contentType: contentType,
+              fileSize: fileLength.toInt(),
             );
             if (urlResult['success'] != true) {
               throw Exception(urlResult['message'] ?? 'Failed to get upload URL');
             }
             final uploadUrl = urlResult['uploadUrl'] as String;
             final finalFileUrl = urlResult['finalFileUrl'] as String;
-
-            final localFile = File(file.filePath!);
-            final fileLength = await localFile.length();
             await dio_pkg.Dio().put(
               uploadUrl,
               data: localFile.openRead(),
               options: dio_pkg.Options(
-                contentType: _mimeTypeForFile(file.name),
+                contentType: contentType,
                 headers: {
                   'Content-Length': fileLength,
                 },
@@ -200,7 +203,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
               requirementId: requirementId,
               evidenceFileUrl: finalFileUrl,
               evidenceTitle: file.name,
-              evidenceFileType: _mimeTypeForFile(file.name),
+              evidenceFileType: contentType,
             );
           }());
         }

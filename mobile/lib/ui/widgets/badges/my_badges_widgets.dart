@@ -484,6 +484,7 @@ class BadgeMedalIcon extends StatelessWidget {
     final ribbonIconSize = compact ? 18.0 : 22.0;
     final iconSize = compact ? 25.0 : 33.0;
     final topOffset = compact ? 35.0 : 45.0;
+    final borderWidth = compact ? 1.5 : 2.0;
 
     return SizedBox(
       width: compact ? 54 : 72,
@@ -507,11 +508,11 @@ class BadgeMedalIcon extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: medalColor,
-              border: Border.all(color: const Color(0xFF7A7A7A), width: 1.4),
+              border: Border.all(color: const Color(0xFF876E2C), width: borderWidth),
             ),
             child: Icon(
               Icons.star,
-              color: Colors.white,
+              color: const Color(0xFFFFF6C7),
               size: iconSize,
             ),
           ),

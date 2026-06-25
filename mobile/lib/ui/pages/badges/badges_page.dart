@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../models/badge_model.dart';
@@ -177,10 +178,21 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: LargeBadgeIcon(
-                        medalColor: badge.medalColor,
-                        ribbonColor: badge.ribbonColor,
-                        imageUrl: badge.imageUrl,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (badge.slug.trim().isEmpty) return;
+                          final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
+                              ? dotenv.env['FRONTEND_URL']!.trim()
+                              : 'https://softinsa.pt';
+                          final uri = Uri.tryParse('$baseUrl/softinsa/badges/${badge.slug}');
+                          if (uri != null) {
+                            launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        child: LargeBadgeIcon(
+                          medalColor: badge.medalColor,
+                          ribbonColor: badge.ribbonColor,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),

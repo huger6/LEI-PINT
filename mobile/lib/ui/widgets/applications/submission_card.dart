@@ -129,9 +129,9 @@ class _MedalIcon extends StatelessWidget {
             top: 30,
             child: Row(
               children: [
-                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 20),
+                Icon(Icons.bookmark, color: ribbonColor, size: 20),
                 const SizedBox(width: 1),
-                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 20),
+                Icon(Icons.bookmark, color: ribbonColor, size: 20),
               ],
             ),
           ),
@@ -141,11 +141,11 @@ class _MedalIcon extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: medalColor,
-              border: Border.all(color: const Color(0xFF7A7A7A), width: 1.5),
+              border: Border.all(color: const Color(0xFF876E2C), width: 1.5),
             ),
-            child: const AppIcon(
-              AppIcons.star,
-              color: Colors.white,
+            child: const Icon(
+              Icons.star,
+              color: Color(0xFFFFF6C7),
               size: 24,
             ),
           ),

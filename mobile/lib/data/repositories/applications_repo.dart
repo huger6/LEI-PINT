@@ -136,13 +136,13 @@ class ApplicationsRepository {
   );
 
   Future<Map<String, dynamic>> startApplication({
-    required int badgeId,
+    required String badgeSlug,
     int? goalId,
   }) async {
     final payload = await _apiClient.post(
       ApiEndpoints.startApplication,
       data: {
-        'badgeId': badgeId,
+        'badgeSlug': badgeSlug,
         ...?(goalId == null ? null : {'goalId': goalId}),
       },
       options: _longTimeout,
@@ -155,12 +155,16 @@ class ApplicationsRepository {
     required String applicationGuid,
     required int requirementId,
     required String fileName,
+    required String contentType,
+    required int fileSize,
   }) async {
     final payload = await _apiClient.post(
       ApiEndpoints.getUploadUrl(applicationGuid),
       data: {
         'requirementId': requirementId,
         'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': fileSize,
       },
     );
 

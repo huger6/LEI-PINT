@@ -61,7 +61,7 @@ class ExploreBadgeCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _MedalBadgeIcon(medalColor: medalColor, ribbonColor: ribbonColor, imageUrl: imageUrl),
+            _MedalBadgeIcon(medalColor: medalColor, ribbonColor: ribbonColor),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -187,16 +187,13 @@ class _DetailItem extends StatelessWidget {
 }
 
 class _MedalBadgeIcon extends StatelessWidget {
-  const _MedalBadgeIcon({required this.medalColor, required this.ribbonColor, this.imageUrl});
+  const _MedalBadgeIcon({required this.medalColor, required this.ribbonColor});
 
   final Color medalColor;
   final Color ribbonColor;
-  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
-
     return SizedBox(
       width: 82,
       height: 132,
@@ -218,26 +215,14 @@ class _MedalBadgeIcon extends StatelessWidget {
             height: 68,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: hasImage ? Colors.white : medalColor,
+              color: medalColor,
               border: Border.all(color: const Color(0xFF876E2C), width: 2),
             ),
-            child: hasImage
-                ? ClipOval(
-                    child: Image.network(
-                      imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(
-                        Icons.star,
-                        color: Color(0xFFFFF6C7),
-                        size: 40,
-                      ),
-                    ),
-                  )
-                : const Icon(
-                    Icons.star,
-                    color: Color(0xFFFFF6C7),
-                    size: 40,
-                  ),
+            child: const Icon(
+              Icons.star,
+              color: Color(0xFFFFF6C7),
+              size: 40,
+            ),
           ),
         ],
       ),
