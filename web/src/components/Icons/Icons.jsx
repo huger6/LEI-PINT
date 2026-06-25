@@ -7,6 +7,7 @@ import { PATHS } from './icons-paths';
  * @param {number} [size=24] - Icon size in pixels.
  * @param {string} [color='currentColor'] - Icon fill/stroke color.
  */
+// Looks up the named icon paths and renders them as an SVG element.
 export default function Icon({
     name,
     size = 24,

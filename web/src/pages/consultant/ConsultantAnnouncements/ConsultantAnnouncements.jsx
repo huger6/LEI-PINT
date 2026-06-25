@@ -15,11 +15,13 @@ const TYPE_CLASS_MAP = {
 	'Other': 'typeOther',
 };
 
+// Format an ISO date string into a short human-readable locale date
 function formatDate(iso) {
 	if (!iso) return null;
 	return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+// Render a single announcement card that opens a detail modal on click
 function AnnouncementCard({ announcement, t, onOpen }) {
 	const message = announcement.announcement_message || '';
 
@@ -56,6 +58,7 @@ function AnnouncementCard({ announcement, t, onOpen }) {
 	);
 }
 
+// Render a grid of placeholder skeleton cards while data is loading
 function SkeletonCards() {
 	return Array.from({ length: 6 }).map((_, i) => (
 		<div key={i} className={styles.skeletonCard}>
@@ -69,15 +72,23 @@ function SkeletonCards() {
 }
 
 export default function ConsultantAnnouncements() {
+	// Initialize translation utility
 	const { t } = useTranslation();
 
+	// Store the current page of announcement results
 	const [announcements, setAnnouncements] = useState([]);
+	// Store pagination metadata from the API response
 	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	// Track whether a fetch is in progress
 	const [loading, setLoading] = useState(true);
+	// Track the currently active page number
 	const [page, setPage] = useState(1);
+	// Store the current search text filter
 	const [search, setSearch] = useState('');
+	// Store the announcement currently open in the detail modal, or null
 	const [active, setActive] = useState(null);
 
+	// Fetch announcements from the API with current page and search params
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -93,10 +104,12 @@ export default function ConsultantAnnouncements() {
 		}
 	}, [page, search]);
 
+	// Re-fetch announcements whenever the load callback changes (page or search)
 	useEffect(() => {
 		load();
 	}, [load]);
 
+	// Update the search text and reset to page 1 when the user types
 	function handleSearchChange(e) {
 		setSearch(e.target.value);
 		setPage(1);

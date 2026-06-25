@@ -9,7 +9,9 @@ import styles from './RequirementCard.module.css';
  * @param {string} [description] - Requirement description.
  * @param {'pending'|'complete'} [status='pending'] - Completion status.
  */
+// Renders a badge requirement card with completion status icon and translated content.
 export default function RequirementCard({ title, description, status = 'pending' }) {
+	// Provides translated status label strings.
 	const { t } = useTranslation();
 	const isComplete = status === 'complete';
 

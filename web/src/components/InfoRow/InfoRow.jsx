@@ -6,6 +6,7 @@ import styles from './InfoRow.module.css';
  * @param {string} icon - Icon name displayed on the left.
  * @param {ReactNode} children - Text or content to display.
  */
+// Renders a labeled icon-and-text row for profile detail display.
 export default function InfoRow({ icon, children }) {
 	return (
 		<div className={styles.infoRow}>

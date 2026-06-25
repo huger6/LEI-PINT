@@ -33,6 +33,7 @@ const particlesConfig = {
 };
 
 let engineInitPromise = null;
+// Returns a singleton promise that initializes the tsParticles engine once.
 function getEngine() {
 	if (!engineInitPromise) {
 		engineInitPromise = initParticlesEngine(async (engine) => {
@@ -42,9 +43,12 @@ function getEngine() {
 	return engineInitPromise;
 }
 
+// Memoized particles canvas component that renders after the engine initializes.
 const ParticlesBackground = memo(function ParticlesBackground() {
+	// Tracks whether the tsParticles engine has finished initializing.
 	const [engineReady, setEngineReady] = useState(false);
 
+	// Initializes the particles engine and marks it ready when the promise resolves.
 	useEffect(() => {
 		getEngine().then(() => setEngineReady(true));
 	}, []);

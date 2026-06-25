@@ -7,6 +7,7 @@ import AdminStats from '../../admin/AdminStats/AdminStats';
 
 // Dispatches the statistics/reports page by role (shared /stats path).
 export default function StatsPage() {
+	// Retrieve the current authenticated user to determine which stats view to render.
 	const { user } = useUser();
 
 	// The Administrator gets a dedicated, richer view (platform-wide enrollment,

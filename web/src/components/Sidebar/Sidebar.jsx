@@ -12,13 +12,17 @@ import Icon from '../Icons/Icons';
  * @param {boolean} [mobileOpen=false] - Controls the mobile drawer visibility.
  * @param {Function} [onMobileClose] - Called when the mobile drawer should close.
  */
+// Renders a responsive sidebar that collapses to an icon rail on desktop or a drawer on mobile.
 export default function Sidebar({ menuItems, mobileOpen = false, onMobileClose }) {
     const { t } = useTranslation();
+    // Provides unread notification counts to show dots on menu items.
     const { notifications } = useUser();
+    // Tracks whether the viewport is in mobile breakpoint.
     const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 991px)').matches);
     // Desktop-only icon-rail collapse. On mobile we use an off-canvas drawer with full labels instead.
     const [collapsed, setCollapsed] = useState(false);
 
+    // Listens for viewport breakpoint changes to switch between mobile and desktop sidebar modes.
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 991px)');
         const handler = (e) => setIsMobile(e.matches);
@@ -28,6 +32,7 @@ export default function Sidebar({ menuItems, mobileOpen = false, onMobileClose }
 
     const railCollapsed = !isMobile && collapsed;
 
+    // Closes the mobile drawer or toggles the desktop collapsed state on header button click.
     function handleHeaderToggle() {
         if (isMobile) onMobileClose?.();
         else setCollapsed(prev => !prev);

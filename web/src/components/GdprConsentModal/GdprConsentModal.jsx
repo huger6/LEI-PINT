@@ -12,12 +12,18 @@ import styles from './GdprConsentModal.module.css';
 /** GDPR consent modal shown to consultants who haven't yet accepted the data privacy terms. */
 export default function GdprConsentModal({ policyType = 'Privacy', purpose, onConfirm, onClose }) {
 	const { t } = useTranslation();
+	// Holds the fetched policy object to display.
 	const [policy, setPolicy] = useState(null);
+	// Tracks whether the policy is still being fetched.
 	const [loading, setLoading] = useState(true);
+	// Stores any error message from fetching or submitting consent.
 	const [error, setError] = useState('');
+	// Tracks whether the user has checked the agreement checkbox.
 	const [agreed, setAgreed] = useState(false);
+	// Tracks whether the consent submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetches the latest policy and consent history; skips the modal if already accepted.
 	useEffect(() => {
 		let active = true;
 		(async () => {
@@ -47,6 +53,7 @@ export default function GdprConsentModal({ policyType = 'Privacy', purpose, onCo
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [policyType]);
 
+	// Records the user's consent and closes the modal on success.
 	async function handleAccept() {
 		if (!policy || !agreed) return;
 		setSaving(true);

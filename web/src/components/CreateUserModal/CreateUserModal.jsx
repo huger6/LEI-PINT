@@ -70,33 +70,51 @@ const HINT_COLORS = {
 
 export default function CreateUserModal({ onClose, onCreated, serviceLines = [], allAreas = [] }) {
 	const { t, i18n } = useTranslation();
+	// Provides the list of available languages from context.
 	const { languages } = useLanguageContext();
 
+	// Tracks whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
+	// Holds the top-level API error message shown after a failed submission.
 	const [apiError, setApiError] = useState('');
+	// Holds field-specific error messages returned by the server.
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	// Controls whether the password is visible as plain text.
 	const [showPassword, setShowPassword] = useState(false);
+	// Controls whether the advanced configuration section is expanded.
 	const [showAdvanced, setShowAdvanced] = useState(false);
+	// Controls whether the discard-changes confirmation toast is shown.
 	const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+	// Ref that tracks whether any form field has been modified.
 	const isDirty = useRef(false);
 
+	// Holds the list of available location options fetched from the API.
 	const [locations, setLocations] = useState([]);
 
+	// Holds the selected phone country prefix (e.g. "+351").
 	const [phonePrefix, setPhonePrefix] = useState('+351');
+	// Holds the formatted local part of the phone number for display.
 	const [phoneLocalDisplay, setPhoneLocalDisplay] = useState('');
+	// Custom hook providing phone metadata and formatted prefix options.
 	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
 	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
 
+	// Holds the URL of the profile image preview (local blob or uploaded URL).
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	// Tracks whether a profile image upload is in progress.
 	const [profileUploading, setProfileUploading] = useState(false);
+	// Holds any profile image upload error message.
 	const [profileError, setProfileError] = useState('');
+	// Ref to the hidden profile image file input.
 	const profileFileRef = useRef(null);
 
+	// Memoized validator that incorporates phone metadata for phone validation.
 	const validate = useCallback(
 		(vals) => validateCreateUserForm(vals, vals.userRole, { phoneMetadata }),
 		[phoneMetadata],
 	);
 
+	// Custom hook providing live field validation, touched tracking, and field setters.
 	const form = useFormValidation({ initialValues: EMPTY_FORM, validate });
 	const {
 		values,
@@ -112,11 +130,13 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 	const usernameSyncValid = !validateUsername(values.username);
 	const emailSyncValid = !validateEmail(values.emailAddress);
 
+	// Custom hook that debounces username availability checks against the API.
 	const usernameCheck = useAvailability({
 		value: values.username.trim(),
 		isValid: usernameSyncValid,
 		fetcher: fetchUsernameAvailability,
 	});
+	// Custom hook that debounces email availability checks against the API.
 	const emailCheck = useAvailability({
 		value: values.emailAddress.trim(),
 		isValid: emailSyncValid,
@@ -132,6 +152,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 			? t('register.emailInUse')
 			: null;
 
+	// Returns the merged error message for a field, preferring server errors over client ones.
 	const fieldError = useCallback(
 		(name, asyncError) => {
 			if (serverFieldErrors[name]) return serverFieldErrors[name];
@@ -143,6 +164,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[serverFieldErrors, isErrorVisible, liveErrors, touched],
 	);
 
+	// Handles any input change by delegating to the form handler and marking the form dirty.
 	const onChange = (e) => {
 		form.handleChange(e);
 		isDirty.current = true;
@@ -150,12 +172,14 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		setApiError('');
 	};
 
+	// Fetches the list of available locations from the API on mount.
 	useEffect(() => {
 		api.get('/locations')
 			.then((res) => setLocations(extractCollection(res)))
 			.catch(() => setLocations([]));
 	}, []);
 
+	// Pre-selects the Portuguese language option when languages load and none is chosen.
 	useEffect(() => {
 		if (languages.length === 0 || values.languageId) return;
 		const ptLang = languages.find((l) => {
@@ -168,6 +192,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		}
 	}, [languages]);
 
+	// Derives the sorted list of language options for the select dropdown.
 	const languageOptions = useMemo(
 		() => languages
 			.map((l) => {
@@ -179,6 +204,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[languages],
 	);
 
+	// Derives the sorted list of location options for the select dropdown.
 	const locationOptions = useMemo(
 		() => locations
 			.map((l) => {
@@ -190,6 +216,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[locations],
 	);
 
+	// Derives the list of service line options for the SLL role select.
 	const serviceLineOptions = useMemo(
 		() => serviceLines.map((sl) => ({
 			value: sl.service_line_id ?? sl.id,
@@ -198,6 +225,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[serviceLines],
 	);
 
+	// Normalizes the allAreas array into the shape expected by AreaPickerList.
 	const areaOptions = useMemo(
 		() => allAreas.map((a) => ({
 			area_id: a.area_id ?? a.id,
@@ -207,6 +235,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		[allAreas],
 	);
 
+	// Formats and stores the combined phone number from prefix and local digits.
 	const applyPhoneValue = useCallback((prefix, rawLocalValue) => {
 		const prefixDigitsCount = normalizePhoneDigits(prefix).length;
 		const maxLocalDigits = Math.max(0, 15 - prefixDigitsCount);
@@ -216,6 +245,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		setFieldValue('phoneNumber', localDigits ? `${prefix}${localDigits}` : '');
 	}, [setFieldValue]);
 
+	// Uploads the selected profile image to temporary storage and updates the preview.
 	const onProfileImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
@@ -240,6 +270,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		}
 	}, [t, setFieldValue]);
 
+	// Clears the profile image preview and resets the file input.
 	const clearProfileImage = () => {
 		setProfilePreviewUrl('');
 		setProfileError('');
@@ -247,6 +278,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		if (profileFileRef.current) profileFileRef.current.value = '';
 	};
 
+	// Validates the form and submits the new user payload to the API.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		markAllTouched();
@@ -301,6 +333,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		}
 	};
 
+	// Shows a discard-changes confirmation if the form is dirty, otherwise closes immediately.
 	const handleClose = () => {
 		if (isDirty.current) {
 			setShowCloseConfirm(true);
@@ -314,6 +347,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 	const phoneError = fieldError('phone_number');
 	const birthdateError = fieldError('birthdate');
 
+	// Renders an availability hint below the username field when no error is shown.
 	const renderUsernameHint = () => {
 		if (usernameError) return null;
 		if (!values.username || !usernameSyncValid) return null;
@@ -324,6 +358,7 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		return null;
 	};
 
+	// Renders an availability hint below the email field when no error is shown.
 	const renderEmailHint = () => {
 		if (emailError) return null;
 		if (!values.emailAddress || !emailSyncValid) return null;

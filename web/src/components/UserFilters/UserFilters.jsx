@@ -49,6 +49,7 @@ export const EMPTY_FILTERS = {
  *   serviceLines   {Array}    Service line list fetched from the API.
  *   areas          {Array}    Full area list; narrowed by selected service line.
  */
+// Renders the filter bar with search, role, status, and collapsible advanced filter controls.
 export default function UserFilters({
 	filters,
 	onChange,
@@ -57,6 +58,7 @@ export default function UserFilters({
 	areas = [],
 }) {
 	const { t } = useTranslation();
+	// Tracks whether the advanced filters section is expanded.
 	const [expanded, setExpanded] = useState(false);
 
 	// Count how many advanced filters are active to render on the toggle badge.
@@ -65,30 +67,34 @@ export default function UserFilters({
 		[filters],
 	);
 
+	// Determines whether the clear-all button should be enabled.
 	const hasAnyFilter = useMemo(
 		() => Object.values(filters).some((v) => v !== ''),
 		[filters],
 	);
 
 	// Option lists use t() so labels render in the active locale.
+	// Builds the role dropdown options list with a catch-all "all roles" entry.
 	const roleOptions = useMemo(() => [
 		{ value: '', label: t('shared.allRoles') },
 		...ROLE_VALUES.map((r) => ({ value: r, label: t(`roles.${r}`, r) })),
 	], [t]);
 
+	// Builds the active/inactive status dropdown options.
 	const statusOptions = useMemo(() => [
 		{ value: '', label: t('shared.allStatuses') },
 		{ value: 'true', label: t('shared.active') },
 		{ value: 'false', label: t('shared.inactive') },
 	], [t]);
 
+	// Builds yes/no/all boolean filter options used for email and GDPR fields.
 	const boolOptions = useMemo(() => [
 		{ value: '', label: t('shared.all') },
 		{ value: 'true', label: t('shared.yes') },
 		{ value: 'false', label: t('shared.no') },
 	], [t]);
 
-	// Build service line options from API data.
+	// Builds the service line dropdown options from the API data.
 	const serviceLineOptions = useMemo(() => [
 		{ value: '', label: t('shared.all') },
 		...serviceLines.map((sl) => ({
@@ -97,7 +103,7 @@ export default function UserFilters({
 		})),
 	], [serviceLines, t]);
 
-	// When a service line is selected, narrow the available areas for that line.
+	// Builds area dropdown options, filtered to the selected service line if one is active.
 	const areaOptions = useMemo(() => {
 		const pool = filters.serviceLine
 			? areas.filter(
@@ -123,7 +129,7 @@ export default function UserFilters({
 		filters.role === 'Service Line Leader' ||
 		filters.role === 'Talent Manager';
 
-	// Centralised change handler — resets downstream fields when a parent changes.
+	// Handles filter field changes and resets dependent fields when role or service line changes.
 	function handleChange(e) {
 		const { name, value } = e.target;
 		if (name === 'serviceLine') {

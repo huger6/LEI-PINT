@@ -14,11 +14,13 @@ export async function createWebhook(payload) {
 	return data?.data;
 }
 
+// Permanently removes a webhook integration by its ID.
 export async function deleteWebhook(id) {
 	const { data } = await api.delete(`/integrations/${id}`);
 	return data;
 }
 
+// Toggles the active/inactive state of a webhook integration.
 export async function toggleWebhook(id) {
 	const { data } = await api.patch(`/integrations/${id}/toggle`);
 	return data?.data;

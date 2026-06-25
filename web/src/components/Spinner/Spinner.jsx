@@ -4,6 +4,7 @@ import styles from './Spinner.module.css';
  * Centered loading spinner using Bootstrap's spinner-border.
  * @param {'sm'|'md'|'lg'} [size='md'] - Spinner size.
  */
+// Renders a centered Bootstrap spinner with size variant support.
 export default function Spinner({ size = 'md', className = '' }) {
 	const sizeClass = styles[size] || styles.md;
 	return (

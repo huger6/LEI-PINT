@@ -7,7 +7,9 @@ import styles from './PasswordToggle.module.css';
  * @param {boolean} show - Current visibility state.
  * @param {Function} onToggle - Called when the toggle is clicked.
  */
+// Renders an eye icon button that toggles a password field between visible and hidden.
 export default function PasswordToggle({ show, onToggle }) {
+	// Provides translated aria-label for the toggle button.
 	const { t } = useTranslation();
 
 	return (

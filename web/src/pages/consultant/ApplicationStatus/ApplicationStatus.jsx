@@ -21,6 +21,7 @@ const WORKFLOW_STEPS = [
 	{ label: 'Closed', key: 'Closed' },
 ];
 
+// Map an application state string to its corresponding stepper index
 function getActiveStep(state) {
 	if (state === 'Open') return 0;
 	if (state === 'Submitted') return 1;
@@ -29,9 +30,13 @@ function getActiveStep(state) {
 }
 
 export default function ApplicationStatus({ application, badge }) {
+	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();
+	// Control whether the badge info accordion is expanded
 	const [badgeInfoOpen, setBadgeInfoOpen] = useState(true);
+	// Track whether a certificate download is in progress
 	const [certLoading, setCertLoading] = useState(false);
+	// Store any certificate download error message
 	const [certError, setCertError] = useState(null);
 
 	const state = application?.application_state || application?.state;
@@ -59,6 +64,7 @@ export default function ApplicationStatus({ application, badge }) {
 	const userLogs = logs.filter((l) => !SYSTEM_FUNCTIONS.includes(l.validator_function || l.validatorFunction));
 	const sortedLogs = [...userLogs].sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
 
+	// Format a date string into a localized date and time string
 	function formatDateTime(dateStr) {
 		if (!dateStr) return '';
 		const d = new Date(dateStr);
@@ -67,12 +73,14 @@ export default function ApplicationStatus({ application, badge }) {
 			+ d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 	}
 
+	// Find the uploaded evidence record matching a given requirement ID
 	function getEvidenceForRequirement(reqId) {
 		return evidences.find(
 			(ev) => String(ev.requirement_id || ev.requirementId) === String(reqId)
 		);
 	}
 
+	// Request a signed download URL for an evidence file and open it
 	async function handleDownloadEvidence(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
@@ -82,6 +90,7 @@ export default function ApplicationStatus({ application, badge }) {
 		}
 	}
 
+	// Generate and download a completion certificate for this application
 	async function handleDownloadCertificate() {
 		setCertError(null);
 		setCertLoading(true);

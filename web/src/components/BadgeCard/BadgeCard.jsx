@@ -6,6 +6,7 @@ import Tooltip from '../Tooltip/Tooltip';
 import TranslatedText from '../TranslatedText/TranslatedText';
 import styles from './BadgeCard.module.css';
 
+// Normalizes raw badge type strings to a display label.
 function getBadgeClassLabel(rawType) {
 	const normalized = String(rawType || '').trim().toLowerCase();
 	if (normalized === 'standard') return 'Standard';
@@ -23,7 +24,9 @@ function getBadgeClassLabel(rawType) {
  */
 export default function BadgeCard({ badge, to, isConsultant = true, isFavorited = false, onToggleFavorite }) {
 	const { t } = useTranslation();
+	// Ref to the card link element used for IntersectionObserver scroll detection.
 	const linkRef = useRef(null);
+	// Tracks whether the entrance animation has already played for special badges.
 	const [hasAnimated, setHasAnimated] = useState(false);
 
 	const title = badge.badge_title || badge.badgeTitle;

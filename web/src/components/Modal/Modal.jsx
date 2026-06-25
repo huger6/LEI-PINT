@@ -12,15 +12,20 @@ import styles from './Modal.module.css';
  * @param {ReactNode} [footer] - Optional footer content (e.g. action buttons).
  * @param {'sm'|'md'|'lg'|'xl'} [size='md'] - Modal width preset.
  */
+// Renders a native <dialog> element as a modal with header, body, and optional footer.
 export default function Modal({ title, children, onClose, footer, size = 'md' }) {
 	const { t } = useTranslation();
+	// Ref to the native <dialog> element for programmatic control.
 	const dialogRef = useRef(null);
+	// Ref to keep the latest onClose callback without re-registering event listeners.
 	const onCloseRef = useRef(onClose);
 
+	// Keeps onCloseRef in sync with the latest onClose prop on every render.
 	useEffect(() => {
 		onCloseRef.current = onClose;
 	});
 
+	// Opens the dialog on mount and attaches a cancel (Escape) listener; closes on unmount.
 	useEffect(() => {
 		const dialog = dialogRef.current;
 		if (!dialog) return;

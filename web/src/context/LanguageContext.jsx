@@ -9,9 +9,12 @@ let languagePromise = null;
 
 /** Provides the list of available languages to descendant components. Fetches once and caches. */
 export function LanguageProvider({ children }) {
+	// Holds the list of available platform languages fetched from the API.
 	const [languages, setLanguages] = useState([]);
+	// Tracks whether the language list is still being fetched.
 	const [loading, setLoading] = useState(true);
 
+	// Fetches available languages once on mount using a shared singleton promise.
 	useEffect(() => {
 		let ignore = false;
 		if (!languagePromise) {
@@ -38,7 +41,9 @@ export function LanguageProvider({ children }) {
 	);
 }
 
+// Returns the languages list and loading state from LanguageContext.
 export function useLanguageContext() {
+	// Reads the LanguageContext value and throws if used outside its provider.
 	const ctx = useContext(LanguageContext);
 	if (!ctx) throw new Error('useLanguageContext must be used inside LanguageProvider');
 	return ctx;

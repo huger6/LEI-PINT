@@ -28,31 +28,47 @@ const TYPE_CLASS_MAP = {
 	'Other': 'typeOther',
 };
 
+// Formats an ISO date string to a short human-readable date.
 function formatDate(iso) {
 	if (!iso) return null;
 	return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export default function Announcements({ defaultType = '' }) {
+	// Access translation function and current user context.
 	const { t } = useTranslation();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
 
+	// Store the fetched announcements list.
 	const [announcements, setAnnouncements] = useState([]);
+	// Track pagination metadata from the API response.
 	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	// Track the loading state while fetching announcements.
 	const [loading, setLoading] = useState(true);
+	// Track the current page number for pagination.
 	const [page, setPage] = useState(1);
 
+	// Store the search query string for filtering announcements.
 	const [search, setSearch] = useState('');
+	// Store the selected type filter value.
 	const [typeFilter, setTypeFilter] = useState(defaultType);
+	// Store the selected active/inactive status filter.
 	const [statusFilter, setStatusFilter] = useState('');
 
+	// Control visibility of the create/edit announcement modal.
 	const [showModal, setShowModal] = useState(false);
+	// Hold the announcement being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Store the list of service lines for targeting options.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Hold the announcement targeted for activate/deactivate confirmation.
 	const [confirmTarget, setConfirmTarget] = useState(null);
+	// Track whether a deactivation/reactivation request is in progress.
 	const [deactivating, setDeactivating] = useState(false);
 
+	// Fetch announcements from the API with current filters and pagination.
 	const loadAnnouncements = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -70,39 +86,47 @@ export default function Announcements({ defaultType = '' }) {
 		}
 	}, [page, search, typeFilter, statusFilter]);
 
+	// Re-fetch announcements whenever filters or page change.
 	useEffect(() => {
 		loadAnnouncements();
 	}, [loadAnnouncements]);
 
+	// Load all service lines once for targeting options in the form modal.
 	useEffect(() => {
 		getServiceLines({ limit: 100 }).then(setServiceLines).catch(() => {});
 	}, []);
 
+	// Update the search state and reset to page 1 on input change.
 	function handleSearchChange(e) {
 		setSearch(e.target.value);
 		setPage(1);
 	}
 
+	// Update the type filter and reset to page 1.
 	function handleTypeChange(e) {
 		setTypeFilter(e.target.value);
 		setPage(1);
 	}
 
+	// Update the status filter and reset to page 1.
 	function handleStatusChange(e) {
 		setStatusFilter(e.target.value);
 		setPage(1);
 	}
 
+	// Open the create announcement modal with no pre-populated item.
 	function openCreate() {
 		setEditItem(null);
 		setShowModal(true);
 	}
 
+	// Open the edit announcement modal pre-populated with the given item.
 	function openEdit(item) {
 		setEditItem(item);
 		setShowModal(true);
 	}
 
+	// Save a new or updated announcement and refresh the list.
 	async function handleSave(payload, existing) {
 		if (existing) {
 			await updateAnnouncement(existing.announcement_id, payload);
@@ -114,6 +138,7 @@ export default function Announcements({ defaultType = '' }) {
 		loadAnnouncements();
 	}
 
+	// Toggle the active state of the confirmation target announcement.
 	async function handleToggleActiveConfirm() {
 		if (!confirmTarget) return;
 		const isActive = confirmTarget.is_active;
@@ -129,10 +154,12 @@ export default function Announcements({ defaultType = '' }) {
 		}
 	}
 
+	// Determine if the current user can manage (edit/deactivate) the given announcement.
 	function canManage(item) {
 		return isAdmin || item.creator?.user_guid === user?.guid;
 	}
 
+	// Render the targeting label (global, roles, or service lines) for an announcement.
 	function renderTarget(item) {
 		if (item.is_global) return <span className={styles.targetGlobal}>{t('announcements.target.global')}</span>;
 
@@ -146,6 +173,7 @@ export default function Announcements({ defaultType = '' }) {
 		return <span className={styles.targetList}>{parts.join(', ') || '—'}</span>;
 	}
 
+	// Render the start and end date range for an announcement row.
 	function renderDates(item) {
 		const start = formatDate(item.starts_at);
 		const end = formatDate(item.ends_at);

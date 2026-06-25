@@ -17,11 +17,16 @@ import styles from './BadgeRequirementsManager.module.css';
  */
 export default function BadgeRequirementsManager({ badgeSlug }) {
 	const { t } = useTranslation();
+	// Holds the fetched requirements for the current badge.
 	const [requirements, setRequirements] = useState([]);
+	// Tracks whether the requirements list is currently being fetched.
 	const [loading, setLoading] = useState(true);
+	// Controls whether the create/edit requirement modal is open.
 	const [modalOpen, setModalOpen] = useState(false);
+	// Holds the requirement being edited, or null when creating a new one.
 	const [editItem, setEditItem] = useState(null);
 
+	// Fetches the requirements for the badge from the API.
 	const load = useCallback(async () => {
 		if (!badgeSlug) { setRequirements([]); setLoading(false); return; }
 		setLoading(true);
@@ -34,11 +39,15 @@ export default function BadgeRequirementsManager({ badgeSlug }) {
 		}
 	}, [badgeSlug]);
 
+	// Loads requirements whenever the badge slug changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Opens the modal in create mode by clearing any existing edit item.
 	function openCreate() { setEditItem(null); setModalOpen(true); }
+	// Opens the modal pre-filled with the given requirement for editing.
 	function openEdit(req) { setEditItem(req); setModalOpen(true); }
 
+	// Prompts for confirmation then deletes the given requirement.
 	async function handleDelete(req) {
 		const title = req.requirement_title || req.requirementTitle;
 		if (!window.confirm(t('shared.confirmDelete', { name: title }))) return;

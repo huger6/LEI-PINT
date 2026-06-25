@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import styles from './Avatar.module.css';
 
+// Derives up to two initials from the user's full name.
 function getInitials(name = '') {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 0 || !parts[0]) return '?';
@@ -21,13 +22,16 @@ export default function Avatar({
     className = '',
     fallbackLabel
 }) {
+    // Tracks whether the profile image failed to load.
     const [hasImageError, setHasImageError] = useState(false);
     const shouldShowImage = Boolean(src) && !hasImageError;
 
+    // Resets the image error state whenever the src URL changes.
     useEffect(() => {
         setHasImageError(false);
     }, [src]);
 
+    // Computes the inline size styles only when the size prop changes.
     const avatarSize = useMemo(
         () => ({ width: `${size}px`, height: `${size}px`, fontSize: `${size * 0.38}px` }),
         [size]

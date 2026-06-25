@@ -13,12 +13,18 @@ const MILESTONES = [1, 3, 5, 10, 25];
 const CELEBRATED_KEY = 'softinsa.achievements.celebratedMilestone';
 
 export default function Achievements() {
+	// Initialize translation and navigation utilities
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
+	// Store the list of earned badges
 	const [badges, setBadges] = useState([]);
+	// Track whether the initial data fetch is in progress
 	const [loading, setLoading] = useState(true);
+	// Track whether the data fetch encountered an error
 	const [error, setError] = useState(false);
+	// Store the milestone count to celebrate, or null when not celebrating
 	const [celebrate, setCelebrate] = useState(null);
+	// Track which badge is currently being saved as featured
 	const [savingFeatured, setSavingFeatured] = useState(null);
 
 	// Curate the public gallery: toggle whether an earned badge is shown publicly.
@@ -37,6 +43,7 @@ export default function Achievements() {
 		}
 	}
 
+	// Fetch earned badges on mount and clean up on unmount
 	useEffect(() => {
 		let active = true;
 		setLoading(true);
@@ -60,20 +67,24 @@ export default function Achievements() {
 		}
 	}, [loading, error, badges.length]);
 
+	// Compute the total points accumulated across all earned badges
 	const totalPoints = useMemo(
 		() => badges.reduce((sum, b) => sum + (b.pointsSnapshot ?? b.badge?.pointsValue ?? 0), 0),
 		[badges],
 	);
+	// Determine the next milestone the user has not yet reached
 	const nextMilestone = useMemo(
 		() => MILESTONES.find((m) => m > badges.length) ?? null,
 		[badges.length],
 	);
 
+	// Format an ISO date string into a human-readable locale date
 	const fmtDate = (iso) => {
 		if (!iso) return '—';
 		const d = new Date(iso);
 		return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' });
 	};
+	// Check whether a badge's expiration date has already passed
 	const isExpired = (iso) => iso && new Date(iso) < new Date();
 
 	return (

@@ -17,16 +17,23 @@ const STEP_ICON_MAP = {
 };
 
 export default function BrowseHierarchy() {
+	// Initialize translation utility
 	const { t } = useTranslation();
+	// Track the current navigation step in the hierarchy
 	const [step, setStep] = useState('lp');
+	// Store the user's selected IDs and names at each hierarchy level
 	const [selection, setSelection] = useState({});
+	// Store the list of items to display at the current step
 	const [items, setItems] = useState([]);
+	// Track whether a list fetch is in progress
 	const [loading, setLoading] = useState(true);
 
+	// Load learning paths on initial mount
 	useEffect(() => {
 		loadItems('lp');
 	}, []);
 
+	// Fetch the items appropriate to the given hierarchy step and parent context
 	async function loadItems(stepKey, parent = null) {
 		try {
 			setLoading(true);
@@ -58,6 +65,7 @@ export default function BrowseHierarchy() {
 		}
 	}
 
+	// Record the selected item, advance to the next step, and load its children
 	function handleSelect(item, stepKey) {
 		const nextSteps = { lp: 'sl', sl: 'area', area: 'level', level: 'badge', badge: 'detail' };
 		const next = nextSteps[stepKey];
@@ -95,6 +103,7 @@ export default function BrowseHierarchy() {
 		}
 	}
 
+	// Navigate back to a specific breadcrumb step and reload its items
 	function handleBreadcrumb(targetStep) {
 		const steps = ['lp', 'sl', 'area', 'level', 'badge'];
 		const targetIdx = steps.indexOf(targetStep);

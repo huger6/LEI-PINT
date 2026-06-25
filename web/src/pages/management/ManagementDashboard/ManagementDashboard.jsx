@@ -25,18 +25,28 @@ const VALIDATIONS_PATH = '/validations';
 const TOP_CONSULTANTS = 5;
 
 export default function ManagementDashboard() {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
 
+	// Store application counts grouped by workflow state.
 	const [counts, setCounts] = useState(null);
+	// Store the total number of consultants in scope.
 	const [consultantsTotal, setConsultantsTotal] = useState(0);
+	// Store the count of badges expiring within the next year.
 	const [expiringCount, setExpiringCount] = useState(0);
+	// Store badges awarded grouped by service line for the bar chart.
 	const [bySl, setBySl] = useState([]);
+	// Store badge counts grouped by progression level for the donut chart.
 	const [levels, setLevels] = useState([]);
+	// Store the top-ranked consultants for the leaderboard section.
 	const [topConsultants, setTopConsultants] = useState([]);
+	// Track whether the dashboard data is still loading.
 	const [loading, setLoading] = useState(true);
 
+	// Fetch all dashboard data in parallel on mount.
 	useEffect(() => {
 		let active = true;
 		(async () => {

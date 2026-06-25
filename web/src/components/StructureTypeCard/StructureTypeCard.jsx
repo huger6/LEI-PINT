@@ -11,9 +11,12 @@ import styles from './StructureTypeCard.module.css';
  * @param {string} to - Link to the entity type's list page.
  * @param {number} count - Total number of entities of this type.
  */
+// Renders a linked card for a structure entity type with title, description, and count badge.
 export default function StructureTypeCard({ to, icon, title, description, count, tone }) {
+	// Provides translated strings for active/inactive count labels.
 	const { t } = useTranslation();
 
+	// Returns the appropriate count display element based on the count value type.
 	const renderCount = () => {
 		if (count === '...') return <span className={`${styles.count} ${styles.loading}`}>...</span>;
 		if (typeof count === 'string') return <span className={styles.count}>{count}</span>;

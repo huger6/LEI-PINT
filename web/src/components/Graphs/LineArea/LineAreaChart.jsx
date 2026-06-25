@@ -14,6 +14,7 @@ import styles from './LineAreaChart.module.css';
  * @param {Array} data - Chart data entries.
  * @param {Object} [options] - Chart.js configuration overrides.
  */
+// Renders a filled area chart for time-series data using Recharts.
 export default function LineAreaChart({
 	data = [],
 	xAxisKey,

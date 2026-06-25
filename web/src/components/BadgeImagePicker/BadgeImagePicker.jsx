@@ -11,6 +11,7 @@ import styles from './BadgeImagePicker.module.css';
 // must match, so the field accepts SVG exclusively.
 const ACCEPT = 'image/svg+xml,.svg';
 
+// Returns true if the given file is an SVG by MIME type or extension.
 const isSvg = (file) => file.type === 'image/svg+xml' || /\.svg$/i.test(file.name || '');
 
 /**
@@ -20,16 +21,22 @@ const isSvg = (file) => file.type === 'image/svg+xml' || /\.svg$/i.test(file.nam
  */
 export default function BadgeImagePicker({ value, onChange, onUploadingChange, disabled = false, label }) {
 	const { t } = useTranslation();
+	// Ref to the hidden file input for triggering the OS file picker.
 	const fileInputRef = useRef(null);
+	// Tracks whether an upload is currently in progress.
 	const [uploading, setUploading] = useState(false);
+	// Holds the current upload or validation error message.
 	const [error, setError] = useState('');
+	// Controls whether the in-app badge designer modal is open.
 	const [showDesigner, setShowDesigner] = useState(false);
 
+	// Sets the uploading state and notifies the parent via onUploadingChange.
 	const setBusy = useCallback((busy) => {
 		setUploading(busy);
 		onUploadingChange?.(busy);
 	}, [onUploadingChange]);
 
+	// Uploads the given SVG file to temporary storage and calls onChange with the URL.
 	const upload = useCallback(async (file) => {
 		setError('');
 		setBusy(true);
@@ -44,6 +51,7 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 		}
 	}, [onChange, setBusy, t]);
 
+	// Validates that the selected file is an SVG before uploading it.
 	const onFileChange = useCallback((event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';
@@ -55,12 +63,14 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 		upload(file);
 	}, [upload, t]);
 
+	// Converts the exported SVG string to a File object and uploads it.
 	const onDesignerExport = useCallback((svg) => {
 		setShowDesigner(false);
 		const file = new File([svg], `badge_${Date.now()}.svg`, { type: 'image/svg+xml' });
 		upload(file);
 	}, [upload]);
 
+	// Clears the current image URL and any error state.
 	const clear = useCallback(() => {
 		setError('');
 		onChange('');

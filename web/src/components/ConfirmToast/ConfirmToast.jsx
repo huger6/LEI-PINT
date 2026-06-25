@@ -16,12 +16,15 @@ export default function ConfirmToast({
     onConfirm,
     onCancel,
 }) {
+    // Ref to the confirm button so it can receive focus when the dialog opens.
     const confirmRef = useRef(null);
 
+    // Focuses the confirm button whenever the dialog becomes visible.
     useEffect(() => {
         if (open) confirmRef.current?.focus();
     }, [open]);
 
+    // Closes the dialog when the Escape key is pressed while it is open.
     useEffect(() => {
         if (!open) return;
         const handleKey = (e) => {

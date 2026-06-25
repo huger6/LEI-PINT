@@ -15,14 +15,22 @@ const emptyForm = {
 };
 
 export default function AdminLearningPaths() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of learning paths fetched from the API.
 	const [paths, setPaths] = useState([]);
+	// Track whether data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Control modal visibility.
 	const [showModal, setShowModal] = useState(false);
+	// Track the item being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetch all learning paths from the API and update state.
 	async function loadPaths() {
 		try {
 			setLoading(true);
@@ -35,16 +43,19 @@ export default function AdminLearningPaths() {
 		}
 	}
 
+	// Load paths on initial mount.
 	useEffect(() => {
 		loadPaths();
 	}, []);
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setEditItem(null);
 		setForm(emptyForm);
 		setShowModal(true);
 	}
 
+	// Open the modal in edit mode pre-populated with the selected path's data.
 	function openEdit(item) {
 		setEditItem(item);
 		setForm({
@@ -55,6 +66,7 @@ export default function AdminLearningPaths() {
 		setShowModal(true);
 	}
 
+	// Confirm and delete the specified learning path.
 	async function handleDelete(item) {
 		if (!window.confirm(t('shared.confirmDelete', { name: item.path_title }))) return;
 		try {
@@ -65,6 +77,7 @@ export default function AdminLearningPaths() {
 		}
 	}
 
+	// Submit the form to create or update a learning path.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		setSaving(true);
@@ -84,6 +97,7 @@ export default function AdminLearningPaths() {
 		}
 	}
 
+	// Update the form state when any input changes.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));

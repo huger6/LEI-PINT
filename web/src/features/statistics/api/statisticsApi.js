@@ -8,16 +8,19 @@ export async function getBadgesByServiceLine(params = {}) {
 	return data?.data || [];
 }
 
+// Fetches badge counts grouped by learning path for reporting charts.
 export async function getBadgesByLearningPath(params = {}) {
 	const { data } = await api.get('/statistics/reports/badges-by-learning-path', { params });
 	return data?.data || [];
 }
 
+// Fetches the distribution of earned badges across progression levels.
 export async function getLevelDistribution(params = {}) {
 	const { data } = await api.get('/statistics/reports/level-distribution', { params });
 	return data?.data || [];
 }
 
+// Fetches aggregate user enrollment statistics for the platform.
 export async function getUserEnrollment() {
 	const { data } = await api.get('/statistics/reports/user-enrollment');
 	return data?.data || null;
@@ -45,11 +48,13 @@ export async function getApplicationsByState() {
 }
 
 // Team scope KPIs
+// Fetches the total count of applications currently pending review.
 export async function getPendingApplicationsCount() {
 	const { data } = await api.get('/statistics/team/applications-pending');
 	return data?.data?.total ?? 0;
 }
 
+// Fetches team-scoped badge counts and distinct consultant metrics.
 export async function getTeamBadgesCount(params = {}) {
 	const { data } = await api.get('/statistics/team/badges-count', { params });
 	return {

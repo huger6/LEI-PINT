@@ -22,26 +22,36 @@ import {
 } from '../../../../validations';
 
 export default function ChangePasswordPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Accesses the function to mark force-password-change as complete.
 	const { completeFpc } = useAuth();
+	// Provides programmatic navigation after a successful password change.
 	const navigate = useNavigate();
 
+	// Initialises the form state with server-error support and change-password validation.
 	const form = useFormWithServerErrors({
 		initialValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
 		validate: validateChangePasswordForm,
 	});
 
+	// Tracks visibility toggle state for the current password field.
 	const [showCurrent, setShowCurrent] = useState(false);
+	// Tracks visibility toggle state for the new password field.
 	const [showNew, setShowNew] = useState(false);
+	// Tracks whether the form submission is in progress.
 	const [loading, setLoading] = useState(false);
+	// Tracks whether the password change completed successfully.
 	const [success, setSuccess] = useState(false);
 
+	// Redirects to the home page two seconds after a successful password change.
 	useEffect(() => {
 		if (!success) return;
 		const timer = setTimeout(() => navigate(SHARED.HOME, { replace: true }), 2000);
 		return () => clearTimeout(timer);
 	}, [success, navigate]);
 
+	// Validates and submits the change-password form, handling server errors.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		form.markAllTouched();

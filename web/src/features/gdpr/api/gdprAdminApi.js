@@ -33,6 +33,7 @@ export async function updatePolicy(policyId, payload) {
 	return data?.data;
 }
 
+// Deactivates a policy version so it is no longer the active one of its type.
 export async function deactivatePolicy(policyId) {
 	const { data } = await api.patch(`/gdpr/admin/policies/${policyId}/deactivate`);
 	return data;

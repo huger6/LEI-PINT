@@ -11,7 +11,7 @@ import styles from './WelcomeCard.module.css';
 import StatCard from './StatCard/StatCard';
 import Icon from '../Icons/Icons';
 
-// Returns a time-based or context-based greeting (first login, returning after 15+ days, or day-part).
+// Determines the greeting string based on first login, return visit, or current time of day.
 function getGreeting(t, authUser) {
     if (authUser?.first_login) {
         return t('welcomeCard.welcomeFirstLogin');
@@ -32,7 +32,9 @@ function getGreeting(t, authUser) {
 
 // Service line / area meta shown to a consultant. Each opens the badge catalog
 // scoped to that service line / area (the consultant's "relative page").
+// Renders the consultant's service line and primary area as linked metadata items.
 function ConsultantMeta({ user }) {
+    // Provides translated label strings for service line and area fields.
     const { t } = useTranslation();
     const serviceLine = user?.serviceLine?.name;
     const serviceLineSlug = user?.serviceLine?.slug;
@@ -64,9 +66,12 @@ function ConsultantMeta({ user }) {
 }
 
 /** Dashboard welcome banner showing greeting, role metadata, and role-specific KPI stats. */
+// Renders the dashboard welcome banner with greeting, role info, and KPI stat cards.
 export default function WelcomeCard() {
     const { t } = useTranslation();
+    // Provides the raw auth user object used for greeting and first-login detection.
     const { user: authUser } = useAuth();
+    // Provides the enriched user profile and display name.
     const { user, displayName } = useUser();
 
     const role = user?.role;
@@ -75,9 +80,12 @@ export default function WelcomeCard() {
     const isLeader = isTm || isSll;
     const isAdmin = role === 'Administrator';
 
+    // Stores KPI stats (pending count, consultants, badges) fetched for leader roles.
     const [leaderStats, setLeaderStats] = useState(null);
+    // Stores KPI stats (earned badges, goals) fetched for the consultant role.
     const [consultantStats, setConsultantStats] = useState(null);
 
+    // Fetches pending validations, consultant count, and badge totals for TM/SLL roles.
     useEffect(() => {
         if (!isLeader) return undefined;
         let active = true;
@@ -95,6 +103,7 @@ export default function WelcomeCard() {
 
     // Consultant KPIs: one call over their own applications → earned (Accepted)
     // and in-progress (Open / Submitted / In validation) counts.
+    // Fetches earned badge count and active goals count for the consultant role.
     useEffect(() => {
         if (role !== 'Consultant') return undefined;
         let active = true;
@@ -113,7 +122,9 @@ export default function WelcomeCard() {
     const serviceLine = user?.serviceLine?.name;
     const streakDays = user?.currentStreakDays ?? authUser?.current_streak_days ?? 0;
 
+    // Returns the value if leader stats are loaded, otherwise returns an em-dash placeholder.
     const leaderValue = (v) => (leaderStats ? v : '—');
+    // Returns the value if consultant stats are loaded, otherwise returns an em-dash placeholder.
     const consultantValue = (v) => (consultantStats ? v : '—');
     const consultantsPath = isSll ? SLL.TEAM : TM.CONSULTANTS;
     const stats = isAdmin

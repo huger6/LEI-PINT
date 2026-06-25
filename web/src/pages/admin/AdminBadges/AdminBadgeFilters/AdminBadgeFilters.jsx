@@ -37,6 +37,7 @@ const idOf = (x, ...keys) => {
  * selections when a parent changes.
  */
 export default function AdminBadgeFilters({ filters, onChange, learningPaths, serviceLines, areas }) {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
 
 	const scopedServiceLines = filters.learningPathId

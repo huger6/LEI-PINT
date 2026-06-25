@@ -27,30 +27,46 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  * Line Leader get the columns and filters defined in the Figma designs.
  */
 export default function ConsultantsList() {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Allow programmatic navigation to consultant detail.
 	const navigate = useNavigate();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
 	const detailBase = isSll ? SLL.TEAM : TM.CONSULTANTS;
 
+	// Store the consultant rows returned from the API.
 	const [rows, setRows] = useState([]);
+	// Store pagination metadata from the API.
 	const [pagination, setPagination] = useState(null);
+	// Track the current page number.
 	const [page, setPage] = useState(1);
+	// Track whether the consultant list is loading.
 	const [loading, setLoading] = useState(true);
+	// Store any error message from the data fetch.
 	const [error, setError] = useState('');
 
-	// Filters
+	// Control visibility of the filter panel.
 	const [showFilters, setShowFilters] = useState(false);
+	// Store the search input value.
 	const [search, setSearch] = useState('');
+	// Store the selected service line filter ID.
 	const [serviceLineId, setServiceLineId] = useState('');
+	// Store the selected area filter ID.
 	const [areaId, setAreaId] = useState('');
+	// Store the minimum points range value.
 	const [pointsMin, setPointsMin] = useState('');
+	// Store the maximum points range value.
 	const [pointsMax, setPointsMax] = useState('');
+	// Store the current sort key selection.
 	const [sort, setSort] = useState('points_desc');
 	// Filters apply only on "Aplicar" (or page change), not on every keystroke/tick.
 	const [applied, setApplied] = useState(EMPTY_APPLIED);
 
+	// Store the list of service lines for filter options.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store the list of areas for filter options.
 	const [areas, setAreas] = useState([]);
 
 	// Filter option sources.
@@ -68,6 +84,7 @@ export default function ConsultantsList() {
 		return () => { active = false; };
 	}, [isSll]);
 
+	// Fetch the consultants list with applied filters and pagination params.
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
@@ -90,13 +107,16 @@ export default function ConsultantsList() {
 		}
 	}, [page, applied, isSll]);
 
+	// Re-fetch the list whenever filters or page changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Apply the current filter form values and reset to page 1.
 	function applyFilters() {
 		setApplied({ search, serviceLineId, areaId, pointsMin, pointsMax, sort });
 		setPage(1);
 	}
 
+	// Reset all filter fields and applied state to defaults.
 	function clearFilters() {
 		setSearch('');
 		setServiceLineId('');

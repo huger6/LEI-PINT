@@ -23,21 +23,30 @@ import {
 } from '../../../../validations';
 
 export default function ResetPasswordPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Reads query parameters from the URL to extract the reset token.
 	const [searchParams] = useSearchParams();
 	const token = searchParams.get('token');
 
+	// Initialises the form state with server-error support and reset-password validation.
 	const form = useFormWithServerErrors({
 		initialValues: { newPassword: '', confirmPassword: '' },
 		validate: validateResetPasswordForm,
 	});
 
+	// Tracks the token validation status: 'loading', 'valid', or 'invalid'.
 	const [tokenStatus, setTokenStatus] = useState('loading');
+	// Stores the error message to display when the token is invalid or expired.
 	const [tokenErrorMsg, setTokenErrorMsg] = useState('');
+	// Tracks visibility toggle state for the password fields.
 	const [showPassword, setShowPassword] = useState(false);
+	// Tracks whether the password reset submission is in progress.
 	const [loading, setLoading] = useState(false);
+	// Tracks whether the password reset completed successfully.
 	const [success, setSuccess] = useState(false);
 
+	// Validates the reset token on mount and updates token status accordingly.
 	useEffect(() => {
 		if (!token) {
 			setTokenErrorMsg(t('resetPassword.noTokenFound'));
@@ -56,6 +65,7 @@ export default function ResetPasswordPage() {
 			});
 	}, [token, t]);
 
+	// Validates and submits the new password, handling token and server errors.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		form.markAllTouched();

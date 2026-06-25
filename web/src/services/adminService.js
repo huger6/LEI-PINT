@@ -3,16 +3,19 @@ import api from './api';
 
 // ─── Users ───
 
+// Fetches a filtered list of users for admin management.
 export async function getUsers(params = {}) {
 	const { data } = await api.get('/admin/users', { params });
 	return data?.data || [];
 }
 
+// Creates a new user account via the admin endpoint.
 export async function createUser(payload) {
 	const { data } = await api.post('/admin/users', payload);
 	return data?.data;
 }
 
+// Updates a user's profile fields via the admin endpoint.
 export async function updateUser(userGuid, payload) {
 	const { data } = await api.put(`/admin/users/${userGuid}`, payload);
 	return data?.data;

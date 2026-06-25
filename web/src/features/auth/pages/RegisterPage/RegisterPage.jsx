@@ -80,32 +80,55 @@ const HINT_COLORS = {
 };
 
 export default function RegisterPage() {
+	// Access translation function and current language
 	const { t, i18n } = useTranslation();
+	// Track the current registration step (1 or 2)
 	const [step, setStep] = useState(1);
+	// Track the selected user role
 	const [role, setRole] = useState('Consultant');
+	// Store field-level errors returned from the server
 	const [serverFieldErrors, setServerFieldErrors] = useState({});
+	// Toggle password visibility
 	const [showPassword, setShowPassword] = useState(false);
+	// Track form submission loading state
 	const [loading, setLoading] = useState(false);
+	// Store global API error message
 	const [apiError, setApiError] = useState('');
+	// Store global API informational message
 	const [apiInfo, setApiInfo] = useState('');
+	// Track whether registration was successful
 	const [success, setSuccess] = useState(false);
 
+	// Store available language options from the API
 	const [languages, setLanguages] = useState([]);
+	// Store available location options from the API
 	const [locations, setLocations] = useState([]);
+	// Store available areas list from the API
 	const [areasList, setAreasList] = useState([]);
+	// Track loading state for reference data (languages, locations, areas)
 	const [refLoading, setRefLoading] = useState(false);
+	// Store the selected phone country prefix
 	const [phonePrefix, setPhonePrefix] = useState('+351');
+	// Store the local phone number display value (without prefix)
 	const [phoneLocalDisplay, setPhoneLocalDisplay] = useState('');
+	// Track the current profile image upload status
 	const [profileUploadStatus, setProfileUploadStatus] = useState(PROFILE_UPLOAD_STATUS.IDLE);
+	// Store any profile image upload error message
 	const [profileUploadError, setProfileUploadError] = useState('');
+	// Store the uploaded profile image file name
 	const [profileUploadFileName, setProfileUploadFileName] = useState('');
+	// Store the profile image preview URL (remote or object URL)
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
+	// Store the temporary local object URL for profile image preview
 	const [profilePreviewObjectUrl, setProfilePreviewObjectUrl] = useState('');
+	// Ref for the hidden file input used to pick profile images
 	const profileFileInputRef = useRef(null);
 
+	// Load phone metadata and prefix options from the phone metadata hook
 	const { metadata: phoneMetadata, prefixOptions: phonePrefixOptions } = usePhoneMetadata();
 	const phonePrefixes = phonePrefixOptions.length > 0 ? phonePrefixOptions : FALLBACK_PHONE_PREFIXES;
 
+	// Build a merged validator combining step 2 and step 3 validation rules
 	const validate = useCallback(
 		(vals) => ({
 			...validateRegisterStep2(vals),
@@ -114,6 +137,7 @@ export default function RegisterPage() {
 		[role, phoneMetadata]
 	);
 
+	// Initialize form state and validation with the registration initial values
 	const form = useFormValidation({ initialValues: INITIAL_FORM, validate });
 	const {
 		values,
@@ -131,16 +155,19 @@ export default function RegisterPage() {
 	const emailSyncValid = !validateEmail(values.email_address);
 	const biographySyncValid = !validateBiography(values.biography);
 
+	// Check username availability asynchronously as the user types
 	const usernameCheck = useAvailability({
 		value: values.username.trim(),
 		isValid: usernameSyncValid,
 		fetcher: fetchUsernameAvailability,
 	});
+	// Check email availability asynchronously as the user types
 	const emailCheck = useAvailability({
 		value: values.email_address.trim(),
 		isValid: emailSyncValid,
 		fetcher: fetchEmailAvailability,
 	});
+	// Validate biography content asynchronously when a value is present
 	const biographyCheck = useAvailability({
 		value: values.biography,
 		isValid: biographySyncValid && Boolean(values.biography),
@@ -161,6 +188,7 @@ export default function RegisterPage() {
 			? resolveApiCodeMessage(biographyCheck.result?.code, t('register.biographyNotAllowed'))
 			: null;
 
+	// Resolve the highest-priority error for a field, merging server, sync, and async sources
 	const fieldError = useCallback(
 		(name, asyncError) => {
 			if (serverFieldErrors[name]) return serverFieldErrors[name];
@@ -172,6 +200,7 @@ export default function RegisterPage() {
 		[serverFieldErrors, isErrorVisible, liveErrors, touched]
 	);
 
+	// Handle input changes and clear all related error feedback
 	const onChange = (e) => {
 		handleChange(e);
 		setServerFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
@@ -179,12 +208,14 @@ export default function RegisterPage() {
 		setApiInfo('');
 	};
 
+	// Clear server and API feedback messages for a specific field
 	const clearFeedbackFor = useCallback((field) => {
 		setServerFieldErrors((prev) => ({ ...prev, [field]: '' }));
 		setApiError('');
 		setApiInfo('');
 	}, []);
 
+	// Map a profile image upload error object to a user-facing message
 	const resolveProfileUploadError = useCallback((error) => {
 		const sizeMb = PROFILE_IMAGE_MAX_FILE_SIZE_BYTES / (1024 * 1024);
 		switch (error?.code) {
@@ -199,12 +230,14 @@ export default function RegisterPage() {
 		}
 	}, [t]);
 
+	// Revoke the profile preview object URL when it changes to free memory
 	useEffect(() => () => {
 		if (profilePreviewObjectUrl) {
 			URL.revokeObjectURL(profilePreviewObjectUrl);
 		}
 	}, [profilePreviewObjectUrl]);
 
+	// Reset all profile image state and revoke any existing object URL
 	const clearProfileImage = useCallback(() => {
 		if (profilePreviewObjectUrl) {
 			URL.revokeObjectURL(profilePreviewObjectUrl);
@@ -220,10 +253,12 @@ export default function RegisterPage() {
 		if (profileFileInputRef.current) profileFileInputRef.current.value = '';
 	}, [clearFeedbackFor, profilePreviewObjectUrl, setFieldTouched, setFieldValue]);
 
+	// Programmatically open the hidden file input for profile image selection
 	const openProfileImagePicker = useCallback(() => {
 		profileFileInputRef.current?.click();
 	}, []);
 
+	// Handle profile image file selection, preview generation, and upload
 	const onProfileImageChange = useCallback(async (event) => {
 		const file = event.target.files?.[0];
 		event.target.value = '';

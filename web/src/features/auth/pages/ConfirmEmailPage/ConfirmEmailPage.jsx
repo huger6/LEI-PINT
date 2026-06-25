@@ -9,13 +9,19 @@ import Button from '../../../../components/Button/Button';
 import { resolveErrorMessage } from '../../../../validations';
 
 export default function ConfirmEmailPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Reads query parameters from the current URL to extract the confirmation token.
 	const [searchParams] = useSearchParams();
 	const token = searchParams.get('token');
+	// Tracks the confirmation status: 'loading', 'success', or 'error'.
 	const [status, setStatus] = useState('loading');
+	// Stores the error message to display when confirmation fails.
 	const [errorMsg, setErrorMsg] = useState('');
+	// Guards against running the confirmation API call more than once.
 	const requestRef = useRef(false);
 
+	// Confirms the email address on mount using the token from the URL.
 	useEffect(() => {
 		if (requestRef.current) return;
 		requestRef.current = true;

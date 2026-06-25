@@ -36,6 +36,7 @@ function PercentRing({ pct }) {
 	);
 }
 
+// Find the evidence record that matches a given requirement ID.
 function evidenceForRequirement(evidences, reqId) {
 	return evidences.find((ev) => String(ev.requirement_id) === String(reqId));
 }
@@ -43,8 +44,11 @@ function evidenceForRequirement(evidences, reqId) {
 const CERT_LANG_MAP = { pt: 'pt', en: 'en', es: 'es' };
 
 export default function ApplicationReview({ application }) {
+	// Access translation and language helpers.
 	const { t, i18n } = useTranslation();
+	// Allow programmatic navigation after a decision.
 	const navigate = useNavigate();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isAdmin = user?.role === 'Administrator';
 
@@ -64,6 +68,7 @@ export default function ApplicationReview({ application }) {
 	const validationsPath = isAdmin ? ADMIN.APPLICATIONS : (isSll ? SLL.VALIDATIONS : TM.VALIDATIONS);
 	const badge = application?.badge || {};
 	const requirements = badge.badge_requirements || [];
+	// Store the live list of evidence records, updated on toggle.
 	const [evidences, setEvidences] = useState(application?.requirements_evidences || []);
 
 	const consultantName = application?.user?.user?.full_name || '—';
@@ -89,14 +94,23 @@ export default function ApplicationReview({ application }) {
 	const tmPositive = /in validation/i.test(tmAction);
 	const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+	// Store the reviewer's feedback notes text.
 	const [reviewerNotes, setReviewerNotes] = useState('');
+	// Track whether the decision submission is in progress.
 	const [submitting, setSubmitting] = useState(false);
+	// Hold the pending action awaiting confirmation ('accept', 'reject', etc.).
 	const [confirmAction, setConfirmAction] = useState(null);
+	// Track which evidence item is currently being toggled.
 	const [evidenceBusy, setEvidenceBusy] = useState(null);
+	// Store an error message to display in the form alert.
 	const [error, setError] = useState(null);
+	// Store the action key of the completed decision for the result screen.
 	const [result, setResult] = useState(null); // post-decision result screen
+	// Store the reviewer note shown on the post-decision result screen.
 	const [resultNote, setResultNote] = useState(''); // reviewer reason shown on result
+	// Track whether the certificate download is in progress.
 	const [certLoading, setCertLoading] = useState(false);
+	// Store a certificate download error message.
 	const [certError, setCertError] = useState(null);
 
 	const RESULT_META = {
@@ -114,6 +128,7 @@ export default function ApplicationReview({ application }) {
 		reject: { cls: styles.confirmBad, icon: 'close_circle', iconColor: 'var(--color-red-on-soft)', yesColor: 'danger' },
 	};
 
+	// Build enriched row objects for each requirement with its evidence and validation state.
 	const reqRows = useMemo(() => requirements.map((req, idx) => {
 		const reqId = req.requirement_id || idx;
 		const ev = evidenceForRequirement(evidences, reqId);
@@ -147,6 +162,7 @@ export default function ApplicationReview({ application }) {
 
 	const NEEDS_NOTE = ['send_back', 'reject'];
 
+	// Download the evidence file for the given evidence ID.
 	async function handleDownload(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
@@ -156,6 +172,7 @@ export default function ApplicationReview({ application }) {
 		}
 	}
 
+	// Toggle the validated state of a single evidence item.
 	async function toggleEvidence(evId, currentlyValidated) {
 		setError(null);
 		setEvidenceBusy(evId);
@@ -170,6 +187,7 @@ export default function ApplicationReview({ application }) {
 		}
 	}
 
+	// Validate the reviewer's notes requirement and open the confirmation panel.
 	function requestDecision(action) {
 		setError(null);
 		if (NEEDS_NOTE.includes(action) && !reviewerNotes.trim()) {
@@ -179,6 +197,7 @@ export default function ApplicationReview({ application }) {
 		setConfirmAction(action);
 	}
 
+	// Submit the reviewer's decision to the API and show the result screen.
 	async function handleDecision(action) {
 		setConfirmAction(null);
 		setSubmitting(true);
@@ -193,6 +212,7 @@ export default function ApplicationReview({ application }) {
 		}
 	}
 
+	// Download the certificate PDF for the accepted application.
 	async function handleDownloadCertificate() {
 		setCertError(null);
 		setCertLoading(true);
@@ -231,7 +251,7 @@ export default function ApplicationReview({ application }) {
 							{showReason && (
 								<div className={styles.resultReason}>
 									<span className={styles.resultReasonLabel}>{t('applicationReview.result.reasonLabel')}</span>
-									<p className={styles.resultReasonText}>“{resultNote}”</p>
+									<p className={styles.resultReasonText}>"{resultNote}"</p>
 								</div>
 							)}
 							<p className={styles.resultNotified}>
@@ -364,7 +384,7 @@ export default function ApplicationReview({ application }) {
 									{tmComment && (
 										<div className={styles.opinionQuote}>
 											<strong>{t(tmPositive ? 'applicationReview.opinionPositive' : 'applicationReview.opinionReturned')}</strong>
-											<p>”<TranslatedText text={tmComment} />”</p>
+											<p>"<TranslatedText text={tmComment} />"</p>
 										</div>
 									)}
 								</div>

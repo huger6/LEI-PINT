@@ -16,23 +16,36 @@ import styles from './StatsOverview.module.css';
  * scoped server-side and hides the Service Line filter.
  */
 export default function StatsOverview({ onFiltersChange }) {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
 
+	// Store the badges summary KPI data from the API.
 	const [summary, setSummary] = useState(null);
+	// Track whether the summary data is loading.
 	const [loading, setLoading] = useState(true);
 
+	// Store the selected learning path filter ID.
 	const [learningPathId, setLearningPathId] = useState('');
+	// Store the selected service line filter ID.
 	const [serviceLineId, setServiceLineId] = useState('');
+	// Store the selected area filter ID.
 	const [areaId, setAreaId] = useState('');
+	// Store the selected "from" date filter value.
 	const [dateFrom, setDateFrom] = useState('');
+	// Store the selected "to" date filter value.
 	const [dateTo, setDateTo] = useState('');
 
+	// Store the list of learning paths for filter options.
 	const [learningPaths, setLearningPaths] = useState([]);
+	// Store the list of service lines for filter options.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store the list of areas for filter options.
 	const [areas, setAreas] = useState([]);
 
+	// Load hierarchy filter options on mount, skipping service lines for SLL.
 	useEffect(() => {
 		let active = true;
 		(async () => {
@@ -49,6 +62,7 @@ export default function StatsOverview({ onFiltersChange }) {
 		return () => { active = false; };
 	}, [isSll]);
 
+	// Fetch the badges summary whenever filter values change.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -66,6 +80,7 @@ export default function StatsOverview({ onFiltersChange }) {
 		}
 	}, [isSll, learningPathId, serviceLineId, areaId, dateFrom, dateTo]);
 
+	// Re-fetch summary whenever active filters change.
 	useEffect(() => { load(); }, [load]);
 
 	// Notify the parent so it can apply the same filters to its charts.
@@ -100,7 +115,9 @@ export default function StatsOverview({ onFiltersChange }) {
 			.filter((a) => !serviceLineId || String(a.service_line_id) === String(serviceLineId))
 			.map((a) => ({ value: String(a.area_id), label: a.area_name }))];
 
+	// Reset cascading filters when the learning path changes.
 	const onLpChange = (e) => { setLearningPathId(e.target.value); setServiceLineId(''); setAreaId(''); };
+	// Reset area when service line changes.
 	const onSlChange = (e) => { setServiceLineId(e.target.value); setAreaId(''); };
 
 	return (

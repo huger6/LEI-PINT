@@ -13,18 +13,29 @@ import styles from './AdminIntegrations.module.css';
 const emptyForm = { channelName: '', webhookUrl: '' };
 
 export default function AdminIntegrations() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of Teams webhooks fetched from the API.
 	const [webhooks, setWebhooks] = useState([]);
+	// Track whether the webhook list is loading.
 	const [loading, setLoading] = useState(true);
+	// Hold any page-level error message.
 	const [error, setError] = useState('');
+	// Hold the message shown in the toast notification.
 	const [toast, setToast] = useState('');
 
+	// Control the create-webhook modal visibility.
 	const [modalOpen, setModalOpen] = useState(false);
+	// Hold the current form field values.
 	const [form, setForm] = useState(emptyForm);
+	// Hold field-level validation errors for the form.
 	const [errors, setErrors] = useState({});
+	// Track whether a form save is in progress.
 	const [saving, setSaving] = useState(false);
+	// Track the ID of the webhook currently being acted upon.
 	const [busyId, setBusyId] = useState(null);
 
+	// Fetch all Teams webhooks from the API, filtering out non-Teams entries.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -39,20 +50,24 @@ export default function AdminIntegrations() {
 		}
 	}, [t]);
 
+	// Load webhooks on mount and whenever load changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Open the create modal with a cleared form.
 	function openCreate() {
 		setForm(emptyForm);
 		setErrors({});
 		setModalOpen(true);
 	}
 
+	// Update form state and clear the corresponding field error on change.
 	function handleChange(e) {
 		const { name, value } = e.target;
 		setForm((prev) => ({ ...prev, [name]: value }));
 		setErrors((prev) => ({ ...prev, [name]: '' }));
 	}
 
+	// Validate the webhook form fields and set inline errors.
 	function validate() {
 		const next = {};
 		const url = form.webhookUrl.trim();
@@ -62,6 +77,7 @@ export default function AdminIntegrations() {
 		return Object.keys(next).length === 0;
 	}
 
+	// Submit the new webhook to the API and reload the list.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!validate()) return;
@@ -82,6 +98,7 @@ export default function AdminIntegrations() {
 		}
 	}
 
+	// Optimistically toggle a webhook's active state and revert on failure.
 	async function handleToggle(wh) {
 		setBusyId(wh.webhook_id);
 		setWebhooks((prev) => prev.map((w) => (w.webhook_id === wh.webhook_id ? { ...w, is_active: !w.is_active } : w)));
@@ -95,6 +112,7 @@ export default function AdminIntegrations() {
 		}
 	}
 
+	// Send a test message to the webhook and show a toast with the result.
 	async function handleTest(wh) {
 		setBusyId(wh.webhook_id);
 		try {
@@ -108,6 +126,7 @@ export default function AdminIntegrations() {
 		}
 	}
 
+	// Confirm and delete the specified webhook, then reload the list.
 	async function handleDelete(wh) {
 		if (!window.confirm(t('adminIntegrations.confirmDelete', { name: wh.channel_name || 'Microsoft Teams' }))) return;
 		setBusyId(wh.webhook_id);

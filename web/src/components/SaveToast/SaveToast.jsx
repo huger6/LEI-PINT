@@ -9,7 +9,9 @@ import styles from './SaveToast.module.css';
  * @param {Function} [onClose] - Called when the toast auto-dismisses.
  * @param {number} [duration=3000] - Auto-dismiss delay in milliseconds.
  */
+// Renders a brief success toast that auto-dismisses after a configurable delay.
 export default function SaveToast({ open = false, message, onClose, duration = 3000 }) {
+	// Starts a timer to auto-dismiss the toast when it becomes visible.
 	useEffect(() => {
 		if (!open) return;
 		const timer = setTimeout(() => onClose?.(), duration);

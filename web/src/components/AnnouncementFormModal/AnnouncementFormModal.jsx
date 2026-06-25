@@ -31,10 +31,14 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 	const { t, i18n } = useTranslation();
 	const isEdit = !!editItem;
 
+	// Holds the current form field values for the announcement being created or edited.
 	const [form, setForm] = useState(EMPTY_FORM);
+	// Stores field-level validation error messages.
 	const [errors, setErrors] = useState({});
+	// Tracks whether a save request is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Populates the form with the existing announcement data when editing.
 	useEffect(() => {
 		if (editItem) {
 			setForm({
@@ -50,6 +54,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		}
 	}, [editItem]);
 
+	// Updates a single form field and clears its validation error on change.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -62,6 +67,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		setForm(prev => ({ ...prev, [name]: value }));
 	}
 
+	// Toggles a role in/out of the selected roles list.
 	function handleRoleToggle(role) {
 		setErrors(prev => ({ ...prev, target: undefined }));
 		setForm(prev => ({
@@ -72,6 +78,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		}));
 	}
 
+	// Toggles a service line in/out of the selected service lines list.
 	function handleSlToggle(slId) {
 		setErrors(prev => ({ ...prev, target: undefined }));
 		setForm(prev => ({
@@ -82,6 +89,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		}));
 	}
 
+	// Selects or deselects all service lines at once.
 	function handleSelectAllSl() {
 		setErrors(prev => ({ ...prev, target: undefined }));
 		const allIds = serviceLines.map(sl => sl.service_line_id);
@@ -92,6 +100,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		}));
 	}
 
+	// Validates the form fields and returns an object of error messages.
 	function validate() {
 		const errs = {};
 		if (!form.announcementTitle.trim()) errs.announcementTitle = t('announcements.form.validation.titleRequired');
@@ -106,6 +115,7 @@ export default function AnnouncementFormModal({ onClose, onSave, editItem, servi
 		return errs;
 	}
 
+	// Validates and submits the announcement form to the save handler.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		const errs = validate();

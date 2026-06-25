@@ -15,10 +15,14 @@ const PAGE_SIZE = 8;
  * Operates over the already-loaded team/area consultants (client-side).
  */
 export default function PeerPickerModal({ consultants, excludeGuid, currentGuid, onSelect, onClose }) {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Store the current search input value.
 	const [search, setSearch] = useState('');
+	// Track the current page number for paginating the filtered list.
 	const [page, setPage] = useState(1);
 
+	// Filter out the excluded consultant and apply the search term client-side.
 	const filtered = useMemo(() => {
 		const term = search.trim().toLowerCase();
 		return consultants
@@ -29,6 +33,7 @@ export default function PeerPickerModal({ consultants, excludeGuid, currentGuid,
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+	// Select the given peer GUID and close the modal.
 	function choose(guid) {
 		onSelect(guid);
 		onClose();

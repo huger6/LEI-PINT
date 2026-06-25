@@ -23,6 +23,7 @@ import styles from './AdminStats.module.css';
 
 const EXPIRING_WINDOWS = [30, 90, 180, 365, 730];
 
+// Return the CSS class for the days-remaining chip based on urgency.
 function expiringClass(days) {
 	if (days <= 30) return styles.daysCritical;
 	if (days <= 90) return styles.daysWarning;
@@ -35,21 +36,33 @@ function expiringClass(days) {
  * admin may see: user enrollment by role and the named expiring-badges list.
  */
 export default function AdminStats() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the main chart data (badges by SL, LP, and level).
 	const [data, setData] = useState(null);
+	// Store user enrollment breakdown by role.
 	const [enrollment, setEnrollment] = useState(null);
+	// Store applications grouped by workflow state.
 	const [byState, setByState] = useState([]);
+	// Store the GDPR consent summary counts.
 	const [consent, setConsent] = useState(null);
+	// Track whether the main data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Hold any error message if data loading fails.
 	const [error, setError] = useState(null);
 
+	// Store the list of expiring badge records.
 	const [expiring, setExpiring] = useState([]);
+	// Track the selected expiry window in days.
 	const [expiringWindow, setExpiringWindow] = useState(90);
+	// Track whether expiring badges are loading.
 	const [expiringLoading, setExpiringLoading] = useState(true);
 
+	// Hold the current chart filter values as an object.
 	const [chartFilters, setChartFilters] = useState({});
 	const filterKey = JSON.stringify(chartFilters);
 
+	// Load all primary statistics data in parallel when filters change.
 	useEffect(() => {
 		let active = true;
 		(async () => {
@@ -75,6 +88,7 @@ export default function AdminStats() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [filterKey]);
 
+	// Fetch the list of expiring badges for the given window in days.
 	const loadExpiring = useCallback(async (withinDays) => {
 		setExpiringLoading(true);
 		try {
@@ -86,6 +100,7 @@ export default function AdminStats() {
 		}
 	}, []);
 
+	// Reload expiring badges whenever the selected window changes.
 	useEffect(() => { loadExpiring(expiringWindow); }, [loadExpiring, expiringWindow]);
 
 	if (loading && !data) {

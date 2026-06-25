@@ -5,8 +5,10 @@ const GUIDE_COLOR = '#ff4081';
 const GUIDE_DASH = [6, 4];
 
 export default function useSnapGuidelines(fabricRef, canvasW, canvasH) {
+	// Tracks whether the vertical and horizontal guide lines should be drawn.
 	const guides = useRef({ showV: false, showH: false });
 
+	// Registers snap and draw handlers on the Fabric canvas for center-axis snapping.
 	useEffect(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -14,6 +16,7 @@ export default function useSnapGuidelines(fabricRef, canvasW, canvasH) {
 		const cx = canvasW / 2;
 		const cy = canvasH / 2;
 
+		// Snaps a moving object to the canvas center axes when within the threshold.
 		const onMoving = (e) => {
 			const obj = e.target;
 			if (!obj) return;
@@ -39,12 +42,14 @@ export default function useSnapGuidelines(fabricRef, canvasW, canvasH) {
 			if (snapped) obj.setCoords();
 		};
 
+		// Hides all guide lines after an object finishes moving.
 		const onModified = () => {
 			guides.current.showV = false;
 			guides.current.showH = false;
 			fc.requestRenderAll();
 		};
 
+		// Draws the visible snap guide lines on the canvas overlay context.
 		const drawGuides = () => {
 			const ctx = fc.contextTop;
 			if (!ctx) return;

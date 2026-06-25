@@ -12,6 +12,7 @@ import { getAreas } from '../../../features/badges/api/hierarchyApi';
 import styles from './ConsultantDashboard.module.css';
 
 // Localised "x days ago" without extra translation keys.
+// Return a relative time string (e.g. "2 days ago") for a given date
 function relativeTime(dateStr, lang) {
 	if (!dateStr) return '';
 	const diffDays = Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000);
@@ -21,6 +22,7 @@ function relativeTime(dateStr, lang) {
 	return rtf.format(-diffDays, 'day');
 }
 
+// Map an application state string to a display key and CSS class name
 function statusOf(state) {
 	if (state === 'Accepted') return { key: 'approved', cls: 'statusApproved' };
 	if (state === 'Rejected') return { key: 'rejected', cls: 'statusRejected' };
@@ -28,15 +30,22 @@ function statusOf(state) {
 }
 
 export default function ConsultantDashboard() {
+	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
+	// Access the current authenticated user
 	const { user } = useUser();
 
+	// Store the four most recent applications for the submissions section
 	const [recentApps, setRecentApps] = useState([]);
+	// Store badge recommendations based on the consultant's primary area
 	const [recommendations, setRecommendations] = useState([]);
+	// Track whether the initial data fetch is in progress
 	const [loading, setLoading] = useState(true);
+	// Hold a ref to the recommendations carousel DOM element for scrolling
 	const carouselRef = useRef(null);
 
+	// Fetch and sort the consultant's recent applications on mount
 	useEffect(() => {
 		let ignore = false;
 		(async () => {
@@ -57,6 +66,7 @@ export default function ConsultantDashboard() {
 	}, []);
 
 	// Recommendations: not-yet-earned badges in the consultant's primary area.
+	// Fetch badge recommendations scoped to the consultant's primary area
 	useEffect(() => {
 		let ignore = false;
 		(async () => {
@@ -77,6 +87,7 @@ export default function ConsultantDashboard() {
 		return () => { ignore = true; };
 	}, [user]);
 
+	// Scroll the recommendations carousel left or right by a fixed amount
 	function scrollCarousel(dir) {
 		carouselRef.current?.scrollBy({ left: dir === 'next' ? 320 : -320, behavior: 'smooth' });
 	}

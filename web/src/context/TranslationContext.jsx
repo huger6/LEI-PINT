@@ -11,12 +11,17 @@ const BATCH_DELAY_MS = 60;
  * Batches translation requests within a 60ms window and caches results.
  * Used by the TranslatedText component to translate dynamic database content.
  */
+// Provides batched translation functionality and the active language to descendants.
 export function TranslationProvider({ children }) {
+	// Accesses the i18n instance to read the currently active language.
 	const { i18n } = useTranslation();
 	const currentLang = i18n.language?.slice(0, 2) || 'pt';
 
+	// Stores already-translated strings keyed by "<lang>:<original>" to avoid repeat API calls.
 	const cacheRef = useRef(new Map());
+	// Holds pending translation requests waiting to be batched and sent.
 	const queueRef = useRef([]);
+	// Holds the active debounce timer ID for the next batch flush.
 	const timerRef = useRef(null);
 
 	// Sends accumulated translation requests to the API in a single batch.
@@ -73,6 +78,7 @@ export function TranslationProvider({ children }) {
 		});
 	}, [currentLang, flushQueue]);
 
+	// Memoizes the context value to prevent unnecessary re-renders of consumers.
 	const value = useMemo(() => ({
 		translateText,
 		currentLang
@@ -85,7 +91,9 @@ export function TranslationProvider({ children }) {
 	);
 }
 
+// Returns the translateText function and currentLang from TranslationContext.
 export function useTranslationContext() {
+	// Reads the TranslationContext value and throws if used outside its provider.
 	const ctx = useContext(TranslationContext);
 	if (!ctx) throw new Error('useTranslationContext must be used inside TranslationProvider');
 	return ctx;

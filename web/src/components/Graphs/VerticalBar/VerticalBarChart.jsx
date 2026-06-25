@@ -14,6 +14,7 @@ import styles from './VerticalBarChart.module.css';
  * @param {Array} data - Chart data entries.
  * @param {Object} [options] - Chart.js configuration overrides.
  */
+// Renders a vertical bar chart for categorical comparison using Recharts.
 export default function VerticalBarChart({
 	data = [],
 	xAxisKey,

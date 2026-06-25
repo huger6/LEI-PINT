@@ -3,6 +3,7 @@ import Icon from '../Icons/Icons';
 import styles from './PlaceholderPage.module.css';
 
 /** Temporary placeholder page for features that are not yet implemented. */
+// Renders a centered icon card indicating the page is under construction.
 export default function PlaceholderPage({ icon = 'progress', title, description }) {
 	return (
 		<div className={styles.page}>

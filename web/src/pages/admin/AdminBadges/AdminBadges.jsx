@@ -19,19 +19,33 @@ const PAGE_SIZE = 12;
 const idEq = (a, b) => a != null && b != null && String(a) === String(b);
 
 export default function AdminBadges() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Access the router navigation function.
 	const navigate = useNavigate();
+	// Store the current page of badge results.
 	const [badges, setBadges] = useState([]);
+	// Store pagination metadata from the API response.
 	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	// Track the current page number for pagination.
 	const [page, setPage] = useState(1);
+	// Store all areas for filter options.
 	const [areas, setAreas] = useState([]);
+	// Store all service lines for filter options.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store all learning paths for filter options.
 	const [learningPaths, setLearningPaths] = useState([]);
+	// Hold the currently active filter values.
 	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	// Control visibility of the filter sidebar.
 	const [showFilters, setShowFilters] = useState(false);
+	// Track whether badge data is loading.
 	const [loading, setLoading] = useState(true);
+	// Hold the badge targeted for deactivation confirmation.
 	const [confirmTarget, setConfirmTarget] = useState(null);
+	// Track whether a deactivation or reactivation action is in progress.
 	const [busy, setBusy] = useState(false);
+	// Store any action error message to display in the confirm modal.
 	const [actionError, setActionError] = useState('');
 
 	// Filter option sources (loaded once).
@@ -51,6 +65,7 @@ export default function AdminBadges() {
 		return () => { active = false; };
 	}, []);
 
+	// Fetch a page of badges applying current filters, memoized to avoid stale closure.
 	const loadBadges = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -76,23 +91,28 @@ export default function AdminBadges() {
 		}
 	}, [page, filters]);
 
+	// Reload badges whenever the page or filters change.
 	useEffect(() => { loadBadges(); }, [loadBadges]);
 
+	// Apply a partial patch to the active filters and reset to page 1.
 	function patchFilters(patch) {
 		setFilters((prev) => ({ ...prev, ...patch }));
 		setPage(1);
 	}
 
+	// Clear all active filters and reset to page 1.
 	function clearFilters() {
 		setFilters(EMPTY_FILTERS);
 		setPage(1);
 	}
 
+	// Resolve an area's display name by its ID.
 	function getAreaName(areaId) {
 		const area = areas.find((a) => idEq(a.area_id ?? a.areaId, areaId));
 		return area ? (area.area_name || area.areaName) : '—';
 	}
 
+	// Deactivate the badge currently set as the confirmation target.
 	async function doDeactivate() {
 		if (!confirmTarget) return;
 		const slug = confirmTarget.badge_slug || confirmTarget.badgeSlug;
@@ -115,6 +135,7 @@ export default function AdminBadges() {
 		}
 	}
 
+	// Reactivate an inactive badge by its slug.
 	async function handleReactivate(item) {
 		const slug = item.badge_slug || item.badgeSlug;
 		try {
@@ -194,6 +215,7 @@ export default function AdminBadges() {
 									const active = b.is_active;
 									const slug = b.badge_slug || b.badgeSlug;
 									const stageCode = b.progression_stage?.stage_code?.stage_code;
+									// Navigate to the badge detail page when the card is clicked.
 									const openBadge = () => navigate(`/badges/${slug}`);
 									return (
 										<article

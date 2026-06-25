@@ -5,6 +5,7 @@ import styles from './Stepper.module.css';
  * @param {Array} steps - Step definitions: { label }.
  * @param {number} [activeStep=0] - Zero-based index of the current step.
  */
+// Renders a horizontal step progress indicator with numbered circles and connecting lines.
 export default function Stepper({ steps = [], activeStep = 0 }) {
 	return (
 		<div className={styles.stepper}>

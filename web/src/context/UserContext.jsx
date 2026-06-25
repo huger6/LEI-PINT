@@ -11,21 +11,25 @@ import i18next from 'i18next';
 export const UserContext = createContext(null);
 const NOTIFICATION_TYPES = ['HOME', 'BADGES', 'APPLICATIONS', 'ACHIEVEMENTS', 'POINTS', 'OBJECTIVES', 'EVOLUTION', 'ANNOUNCEMENTS', 'SYSTEM'];
 
+// Creates a zeroed unread-count map keyed by each notification type.
 const createEmptyUnreadByType = () =>
 	NOTIFICATION_TYPES.reduce((acc, type) => {
 		acc[type] = 0;
 		return acc;
 	}, {});
 
+// Normalizes a raw notification type string to an uppercase known type, or null if unrecognized.
 const normalizeNotificationType = (type) => {
 	if (!type) return null;
 	const normalizedType = String(type).toUpperCase();
 	return NOTIFICATION_TYPES.includes(normalizedType) ? normalizedType : null;
 };
 
+// Extracts and normalizes the type field from a notification object.
 const getNotificationType = (notification) =>
 	normalizeNotificationType(notification?.notification_type || notification?.type);
 
+// Counts unread notifications per type from a list and returns the totals map.
 const getUnreadByTypeFromNotifications = (notificationsList = []) => {
 	const unreadByType = createEmptyUnreadByType();
 
@@ -43,21 +47,32 @@ const getUnreadByTypeFromNotifications = (notificationsList = []) => {
  * Loads the user profile after authentication, manages notification state via WebSocket,
  * and exposes actions for marking notifications as read and changing language.
  */
+// Provides user profile, points, language, and notification state to the component tree.
 export function UserProvider({ children }) {
+	// Reads auth state (token, authentication flag, loading flag) from AuthContext.
 	const { token, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
 	// ── User & language state ─────────────────────────────────────
+	// Stores the authenticated user's profile object.
 	const [user, setUser] = useState(null);
+	// Stores the user's currently selected language object.
 	const [lang, setLang] = useState(null);
+	// Indicates the user profile fetch is still in progress.
 	const [isUserLoading, setIsUserLoading] = useState(true);
+	// Stores the user's total accumulated points.
 	const [points, setPoints] = useState(0);
 
 	// ── Notification state ────────────────────────────────────────
+	// Holds the current page of fetched notifications.
 	const [notificationsList, setNotificationsList] = useState([]);
+	// Stores pagination metadata for the notifications list.
 	const [notificationsPagination, setNotificationsPagination] = useState(null);
+	// Tracks the total number of unread notifications across all types.
 	const [unreadCount, setUnreadCount] = useState(0);
+	// Tracks unread notification counts broken down by notification type.
 	const [unreadByType, setUnreadByType] = useState(() => createEmptyUnreadByType());
 
+	// Holds a ref to the active WebSocket instance for cleanup.
 	const socketRef = useRef(null);
 	const displayName = user?.fullName
 		? firstAndLastName(user.fullName)
@@ -100,6 +115,7 @@ export function UserProvider({ children }) {
 		} catch { /* non-blocking */ }
 	}, []);
 
+	// Fetches the current user's full profile and updates user and language state.
 	const refreshUser = useCallback(async () => {
 		const { data } = await getMe();
 		const { lang: langData, ...userProfile } = data.data;
@@ -108,6 +124,7 @@ export function UserProvider({ children }) {
 		if (userProfile.role === 'Consultant') refreshPoints();
 	}, [refreshPoints]);
 
+	// Loads the user profile whenever auth state changes, resetting it on logout.
 	useEffect(() => {
 		if (isAuthLoading) {
 			setIsUserLoading(true);
@@ -139,6 +156,7 @@ export function UserProvider({ children }) {
 	}, []);
 
 	// ── Unread count ──────────────────────────────────────────────
+	// Fetches unread notification counts when auth state changes, resetting them on logout.
 	useEffect(() => {
 		if (!isAuthenticated) {
 			setUnreadCount(0);
@@ -221,14 +239,17 @@ export function UserProvider({ children }) {
 
 	// ── Actions ───────────────────────────────────────────────────
 
+	// Marks a single notification as read via the API.
 	const markAsRead = useCallback(async (notificationId) => {
 		await notificationsApi.markNotificationRead(notificationId);
 	}, []);
 
+	// Marks all notifications as read via the API.
 	const markAllAsRead = useCallback(async () => {
 		await notificationsApi.markAllNotificationsRead();
 	}, []);
 
+	// Fetches a page of notifications and updates the list, optionally appending to existing results.
 	const fetchNotifications = useCallback(async (params = {}) => {
 		const { append = false, ...query } = params;
 		const { data } = await notificationsApi.fetchNotifications(query);

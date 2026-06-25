@@ -16,15 +16,24 @@ const emptyForm = {
 };
 
 export default function AdminServiceLines() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of service lines fetched from the API.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store available learning paths for the dropdown.
 	const [learningPaths, setLearningPaths] = useState([]);
+	// Track whether data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Control modal visibility.
 	const [showModal, setShowModal] = useState(false);
+	// Track the item being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetch both service lines and learning paths in parallel.
 	async function loadData() {
 		try {
 			setLoading(true);
@@ -38,21 +47,25 @@ export default function AdminServiceLines() {
 		}
 	}
 
+	// Load data on initial mount.
 	useEffect(() => {
 		loadData();
 	}, []);
 
+	// Resolve a learning path's display name by its ID.
 	function getLpName(lpId) {
 		const lp = learningPaths.find((p) => p.learning_path_id === lpId || p.learningPathId === lpId);
 		return lp ? (lp.path_title || lp.pathTitle) : '—';
 	}
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setEditItem(null);
 		setForm(emptyForm);
 		setShowModal(true);
 	}
 
+	// Open the modal in edit mode pre-populated with the selected service line's data.
 	function openEdit(item) {
 		setEditItem(item);
 		setForm({
@@ -64,6 +77,7 @@ export default function AdminServiceLines() {
 		setShowModal(true);
 	}
 
+	// Confirm and delete the specified service line.
 	async function handleDelete(item) {
 		if (!window.confirm(t('shared.confirmDelete', { name: item.service_line_name || item.serviceLineName }))) return;
 		try {
@@ -74,6 +88,7 @@ export default function AdminServiceLines() {
 		}
 	}
 
+	// Submit the form to create or update a service line.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		setSaving(true);
@@ -93,6 +108,7 @@ export default function AdminServiceLines() {
 		}
 	}
 
+	// Update the form state when any input changes.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));

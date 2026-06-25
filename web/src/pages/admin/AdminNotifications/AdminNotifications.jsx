@@ -23,12 +23,18 @@ const ESSENTIAL_CODES = [
 const EMAIL_INCAPABLE = new Set(['ANNOUNCEMENT_PUBLISHED']);
 
 export default function AdminNotifications() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the global notification preference rows.
 	const [prefs, setPrefs] = useState([]);
+	// Track whether preferences are still loading.
 	const [loading, setLoading] = useState(true);
+	// Track the preference ID currently being saved to disable its row.
 	const [savingId, setSavingId] = useState(null);
+	// Hold any page-level error message.
 	const [error, setError] = useState('');
 
+	// Fetch all global notification preferences from the API.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -42,6 +48,7 @@ export default function AdminNotifications() {
 		}
 	}, [t]);
 
+	// Load preferences on mount and whenever load changes.
 	useEffect(() => { load(); }, [load]);
 
 	// Show only the essential/functional notifications, one row per definition
@@ -60,9 +67,12 @@ export default function AdminNotifications() {
 			.sort((a, b) => order.get(a.definition.code) - order.get(b.definition.code));
 	}, [prefs]);
 
+	// Resolve the display label for a notification preference.
 	const labelFor = (pref) => t(`notifDefs.${pref.definition?.code}.name`, { defaultValue: pref.definition?.name || pref.definition?.code || `#${pref.definition_id}` });
+	// Resolve the description text for a notification preference.
 	const descFor = (pref) => t(`notifDefs.${pref.definition?.code}.desc`, { defaultValue: pref.definition?.description || '' });
 
+	// Optimistically toggle a preference field and revert on API failure.
 	async function toggle(pref, field) {
 		const id = pref.preference_id;
 		const next = !pref[field];

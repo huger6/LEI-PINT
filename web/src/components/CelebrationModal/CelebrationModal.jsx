@@ -16,6 +16,7 @@ const CONFETTI_COLORS = [
 export default function CelebrationModal({ count, onClose }) {
 	const { t } = useTranslation();
 
+	// Closes the modal when the Escape key is pressed.
 	useEffect(() => {
 		const onKey = (e) => { if (e.key === 'Escape') onClose(); };
 		document.addEventListener('keydown', onKey);

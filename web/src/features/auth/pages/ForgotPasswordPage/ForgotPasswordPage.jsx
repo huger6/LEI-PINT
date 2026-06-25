@@ -20,12 +20,18 @@ import {
 } from '../../../../validations';
 
 export default function ForgotPasswordPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Stores the email address entered by the user.
 	const [email, setEmail] = useState('');
+	// Tracks whether the reset-link request is in progress.
 	const [loading, setLoading] = useState(false);
+	// Stores any validation or server error message to display.
 	const [error, setError] = useState('');
+	// Tracks whether the reset email has been successfully sent.
 	const [sent, setSent] = useState(false);
 
+	// Validates the email and submits the forgot-password request.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 

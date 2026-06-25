@@ -12,6 +12,7 @@ import styles from './BadgeEditor.module.css';
 const CANVAS_W = 450;
 const CANVAS_H = 450;
 
+// Computes the six vertex points of a regular hexagon centered at (cx, cy) with radius r.
 function hexagonPoints(cx, cy, r) {
 	const pts = [];
 	for (let i = 0; i < 6; i++) {
@@ -21,6 +22,7 @@ function hexagonPoints(cx, cy, r) {
 	return pts;
 }
 
+// Computes the five vertex points of a shield shape centered at (cx, cy).
 function shieldPoints(cx, cy, w, h) {
 	const hw = w / 2;
 	return [
@@ -34,16 +36,25 @@ function shieldPoints(cx, cy, w, h) {
 
 export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 	const { t } = useTranslation();
+	// Ref to the HTML canvas element used by Fabric.js.
 	const canvasRef = useRef(null);
+	// Ref to the Fabric.js Canvas instance for imperative access.
 	const fabricRef = useRef(null);
+	// Holds the currently selected Fabric.js object on the canvas.
 	const [selected, setSelected] = useState(null);
+	// Holds the editable properties of the currently selected object.
 	const [props, setProps] = useState({});
+	// Stores the exported SVG string for display in standalone mode.
 	const [svgOutput, setSvgOutput] = useState(null);
+	// Tracks the current canvas background color.
 	const [canvasBg, setCanvasBg] = useState('#ffffff');
+	// Tracks the current zoom level of the canvas.
 	const [zoomLevel, setZoomLevel] = useState(1);
 
+	// Custom hook providing undo/redo history management for the canvas.
 	const { saveState, undo, redo, canUndo, canRedo, isRestoring } = useCanvasHistory(fabricRef);
 
+	// Reads the selected Fabric object's properties into the props state.
 	const syncSelection = useCallback((obj) => {
 		if (!obj) return;
 		setSelected(obj);
@@ -68,6 +79,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		});
 	}, []);
 
+	// Initializes the Fabric.js canvas and registers event listeners on mount.
 	useEffect(() => {
 		const fc = new Canvas(canvasRef.current, {
 			width: CANVAS_W,
@@ -89,6 +101,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 
 		setTimeout(() => saveState(), 0);
 
+		// Handles Ctrl+Z / Ctrl+Y keyboard shortcuts for undo and redo.
 		const handleKeyDown = (e) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
 				e.preventDefault();
@@ -108,8 +121,10 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+	// Custom hook that draws snap guidelines when dragging objects to the canvas center.
 	useSnapGuidelines(fabricRef, CANVAS_W, CANVAS_H);
 
+	// Adds a new shape of the given type to the center of the canvas.
 	const addShape = useCallback((type) => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -161,6 +176,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [saveState]);
 
+	// Adds a default editable text object to the center of the canvas.
 	const addText = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -176,6 +192,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [saveState]);
 
+	// Updates a visual property of the selected canvas object and triggers a re-render.
 	const updateProp = useCallback((key, value) => {
 		const fc = fabricRef.current;
 		if (!fc || !selected) return;
@@ -228,6 +245,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		setProps((p) => ({ ...p, [key]: value }));
 	}, [selected, props.gradientStart, props.gradientEnd, props.fill, saveState]);
 
+	// Removes the currently selected object from the canvas.
 	const deleteSelected = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc || !selected) return;
@@ -239,6 +257,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [selected, saveState]);
 
+	// Clears all objects from the canvas and resets the background color.
 	const clearCanvas = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -251,6 +270,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [saveState]);
 
+	// Moves the selected object to the front of the canvas stacking order.
 	const bringToFront = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc || !selected) return;
@@ -259,6 +279,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [selected, saveState]);
 
+	// Moves the selected object to the back of the canvas stacking order.
 	const sendToBack = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc || !selected) return;
@@ -267,6 +288,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [selected, saveState]);
 
+	// Clones the selected object and places the copy slightly offset.
 	const duplicateSelected = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc || !selected) return;
@@ -282,6 +304,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		});
 	}, [selected, saveState]);
 
+	// Reads a file from disk and adds it as an image object on the canvas.
 	const importImage = useCallback((file) => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -304,6 +327,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		reader.readAsDataURL(file);
 	}, [saveState]);
 
+	// Applies a predefined template to the canvas after user confirmation.
 	const selectTemplate = useCallback((templateId) => {
 		if (!window.confirm(t('badgeEditor.templateConfirm'))) return;
 		const fc = fabricRef.current;
@@ -315,6 +339,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		saveState();
 	}, [t, saveState]);
 
+	// Updates the canvas background color without saving a history state.
 	const updateCanvasBg = useCallback((color) => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -323,6 +348,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		setCanvasBg(color);
 	}, []);
 
+	// Increases the canvas zoom level by 25%, up to a maximum of 3x.
 	const zoomIn = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -332,6 +358,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		setZoomLevel(z);
 	}, [zoomLevel]);
 
+	// Decreases the canvas zoom level by 25%, down to a minimum of 0.25x.
 	const zoomOut = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -341,6 +368,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		setZoomLevel(z);
 	}, [zoomLevel]);
 
+	// Resets the canvas zoom level back to 100%.
 	const zoomReset = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;
@@ -349,6 +377,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 		setZoomLevel(1);
 	}, []);
 
+	// Exports the canvas as an SVG string, temporarily resetting zoom to 1x.
 	const exportSvg = useCallback(() => {
 		const fc = fabricRef.current;
 		if (!fc) return;

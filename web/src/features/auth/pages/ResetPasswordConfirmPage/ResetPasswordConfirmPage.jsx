@@ -9,15 +9,22 @@ import Button from '../../../../components/Button/Button';
 import { isCode, resolveErrorMessage } from '../../../../validations';
 
 export default function ResetPasswordConfirmPage() {
+    // Provides translation function for localised strings.
     const { t } = useTranslation();
+    // Reads query parameters from the URL to extract the reset token.
     const [searchParams] = useSearchParams();
+    // Provides programmatic navigation to the reset password form on valid token.
     const navigate = useNavigate();
     const token = searchParams.get('token');
 
+    // Tracks the token validation status: 'loading' or 'error'.
     const [status, setStatus] = useState('loading');
+    // Stores the error message to display when token validation fails.
     const [errorMsg, setErrorMsg] = useState('');
+    // Guards against running the token validation API call more than once.
     const requestRef = useRef(false);
 
+    // Validates the reset token on mount and navigates to the reset form if valid.
     useEffect(() => {
         if (requestRef.current) return;
         requestRef.current = true;

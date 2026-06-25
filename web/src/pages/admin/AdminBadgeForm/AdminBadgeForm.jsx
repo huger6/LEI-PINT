@@ -22,23 +22,38 @@ const emptyForm = {
 };
 
 export default function AdminBadgeForm() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Access the router navigation function.
 	const navigate = useNavigate();
+	// Get the badge slug from the URL if editing an existing badge.
 	const { slug } = useParams();
 	const isEdit = Boolean(slug);
 
+	// Hold the badge form field values.
 	const [form, setForm] = useState(emptyForm);
+	// Store available learning paths for the cascade select.
 	const [learningPaths, setLearningPaths] = useState([]);
+	// Store available service lines for the cascade select.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store available areas for the cascade select.
 	const [areas, setAreas] = useState([]);
+	// Store all progression levels to filter available stages.
 	const [allLevels, setAllLevels] = useState([]);
+	// Store all badges to determine which stages are already taken.
 	const [badges, setBadges] = useState([]);
+	// Hold the existing badge data when in edit mode.
 	const [editItem, setEditItem] = useState(null);
+	// Track whether initial data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Track whether the form save is in progress.
 	const [saving, setSaving] = useState(false);
+	// Track whether an image upload is in progress.
 	const [imageUploading, setImageUploading] = useState(false);
+	// Hold any error message to display to the user.
 	const [error, setError] = useState('');
 
+	// Load all hierarchy data and the current badge on mount or slug change.
 	useEffect(() => {
 		(async () => {
 			try {
@@ -77,14 +92,17 @@ export default function AdminBadgeForm() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [slug]);
 
+	// Derive the service lines available under the selected learning path.
 	const slOptions = useMemo(
 		() => serviceLines.filter((sl) => idEq(sl.learning_path_id, form.learningPathId)),
 		[serviceLines, form.learningPathId],
 	);
+	// Derive the areas available under the selected service line.
 	const areaOptions = useMemo(
 		() => areas.filter((a) => idEq(a.service_line_id, form.serviceLineId)),
 		[areas, form.serviceLineId],
 	);
+	// Collect stage IDs already assigned to other badges to prevent duplicate assignments.
 	const takenStageIds = useMemo(() => badges
 		.filter((b) => {
 			const stageId = b.progression_stage_id;
@@ -92,11 +110,13 @@ export default function AdminBadgeForm() {
 			return editItem ? !idEq(stageId, editItem.progression_stage_id) : true;
 		})
 		.map((b) => b.progression_stage_id), [badges, editItem]);
+	// Derive the levels available under the selected area, excluding already-taken stages.
 	const levelOptions = useMemo(() => allLevels.filter((l) => {
 		if (!idEq(l.area_id, form.areaId)) return false;
 		return !takenStageIds.includes(l.progression_stage_id || l.progressionStageId);
 	}), [allLevels, form.areaId, takenStageIds]);
 
+	// Set a single form field, resetting cascade downstream selections when a parent changes.
 	function setField(name, value) {
 		setForm((prev) => {
 			const next = { ...prev, [name]: value };
@@ -106,11 +126,13 @@ export default function AdminBadgeForm() {
 			return next;
 		});
 	}
+	// Handle generic input changes and delegate to setField.
 	function handleInput(e) {
 		const { name, value, type, checked } = e.target;
 		setField(name, type === 'checkbox' ? checked : value);
 	}
 
+	// Validate and submit the form to create or update the badge.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (imageUploading) return;

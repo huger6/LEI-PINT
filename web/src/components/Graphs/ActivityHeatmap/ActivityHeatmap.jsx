@@ -7,7 +7,9 @@ const INTENSITY_LEVELS = ['empty', 'low', 'medium', 'high', 'max'];
  * GitHub-style activity heatmap showing daily activity intensity over time.
  * @param {Array} data - Daily activity entries: { date, count }.
  */
+// Renders a weekly activity grid with intensity-based cell coloring.
 export default function ActivityHeatmap({ data = [], weeks = 4, dayLabels, title }) {
+	// Provides translated day and week label strings.
 	const { t } = useTranslation();
 
 	const defaultDayLabels = dayLabels || [

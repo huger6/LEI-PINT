@@ -24,6 +24,7 @@ const FILTERS = {
 	submitted: ['Submitted'],
 };
 
+// Return the CSS class for the state pill for a given application state.
 function statePill(state) {
 	if (state === 'Accepted') return { cls: styles.pillApproved };
 	if (state === 'Rejected') return { cls: styles.pillRejected };
@@ -47,21 +48,34 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-di
  * Service Line), with area / badge / date filters.
  */
 export default function SllBadgeHistory() {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
+	// Allow programmatic navigation to application detail.
 	const navigate = useNavigate();
+	// Store the active history filter key ('obtained' or 'submitted').
 	const [filter, setFilter] = useState('obtained');
+	// Store the application rows returned from the API.
 	const [rows, setRows] = useState([]);
+	// Store pagination metadata from the API.
 	const [pagination, setPagination] = useState(null);
+	// Track the current page number.
 	const [page, setPage] = useState(1);
+	// Track whether the history list is loading.
 	const [loading, setLoading] = useState(true);
+	// Store any error message from the data fetch.
 	const [error, setError] = useState('');
 
-	// Filters
+	// Control visibility of the filter panel.
 	const [showFilters, setShowFilters] = useState(false);
+	// Store the selected area filter ID.
 	const [areaId, setAreaId] = useState('');
+	// Store the selected "from" date filter value.
 	const [dateFrom, setDateFrom] = useState('');
+	// Store the selected "to" date filter value.
 	const [dateTo, setDateTo] = useState('');
+	// Store the list of areas scoped to the leader's service line.
 	const [areas, setAreas] = useState([]);
 
 	// Area options scoped to the leader's Service Line (so picking one always
@@ -81,6 +95,7 @@ export default function SllBadgeHistory() {
 		return () => { active = false; };
 	}, [user]);
 
+	// Fetch badge history rows with the current filter and pagination state.
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
@@ -101,13 +116,16 @@ export default function SllBadgeHistory() {
 		}
 	}, [filter, page, areaId, dateFrom, dateTo]);
 
+	// Re-fetch history whenever filter, page, or date range changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Switch the history filter and reset to page 1.
 	function changeFilter(next) {
 		setFilter(next);
 		setPage(1);
 	}
 
+	// Clear all filter fields and reset to page 1.
 	function clearFilters() {
 		setAreaId('');
 		setDateFrom('');

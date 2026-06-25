@@ -22,18 +22,28 @@ const POLICY_TYPES = ['Privacy', 'Terms', 'Cookies'];
 const emptyForm = { policy_type: 'Privacy', version: '', policy_text: '', is_mandatory: true };
 
 export default function AdminRgpd() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of GDPR policies fetched from the API.
 	const [policies, setPolicies] = useState([]);
+	// Track whether policies are still loading.
 	const [loading, setLoading] = useState(true);
+	// Hold any page-level error message.
 	const [error, setError] = useState('');
 
 	// modal: { mode: 'create' | 'version', policy? }
+	// Track which modal mode is active and the policy being versioned.
 	const [modal, setModal] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Hold field-level validation errors for the form.
 	const [errors, setErrors] = useState({});
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
+	// Track which policy's text is expanded in the table.
 	const [expanded, setExpanded] = useState(null);
 
+	// Fetch all GDPR policies from the API and update state.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -46,26 +56,31 @@ export default function AdminRgpd() {
 		}
 	}, [t]);
 
+	// Load policies on mount and whenever load changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setForm(emptyForm);
 		setErrors({});
 		setModal({ mode: 'create' });
 	}
 
+	// Open the modal to add a new version for an existing policy.
 	function openVersion(policy) {
 		setForm({ policy_type: policy.policy_type, version: '', policy_text: policy.policy_text || '', is_mandatory: policy.is_mandatory });
 		setErrors({});
 		setModal({ mode: 'version', policy });
 	}
 
+	// Update form state and clear the corresponding field error on change.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
 		setErrors((prev) => ({ ...prev, [name]: '' }));
 	}
 
+	// Validate the policy form fields and set inline errors.
 	function validate() {
 		const next = {};
 		if (!form.version.trim() || form.version.trim().length > 30) next.version = t('adminRgpd.errVersion');
@@ -74,6 +89,7 @@ export default function AdminRgpd() {
 		return Object.keys(next).length === 0;
 	}
 
+	// Submit the form to create a new policy or add a new version.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!validate()) return;
@@ -103,6 +119,7 @@ export default function AdminRgpd() {
 		}
 	}
 
+	// Toggle the mandatory flag for a policy and update state optimistically.
 	async function toggleMandatory(policy) {
 		try {
 			await updatePolicy(policy.policy_id, { is_mandatory: !policy.is_mandatory });
@@ -112,6 +129,7 @@ export default function AdminRgpd() {
 		}
 	}
 
+	// Confirm and deactivate the specified policy, then reload.
 	async function handleDeactivate(policy) {
 		if (!window.confirm(t('adminRgpd.confirmDeactivate', { type: policy.policy_type, version: policy.version }))) return;
 		try {
@@ -122,6 +140,7 @@ export default function AdminRgpd() {
 		}
 	}
 
+	// Activate an inactive policy and reload the list.
 	async function handleActivate(policy) {
 		try {
 			await activatePolicy(policy.policy_id);

@@ -19,18 +19,26 @@ import {
 } from '../../../../validations';
 
 export default function ResendConfirmationPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Reads the current location to extract any state passed from a redirect.
 	const location = useLocation();
+	// Reads query parameters from the URL to pre-fill the email field.
 	const [searchParams] = useSearchParams();
 	const queryEmail = searchParams.get('email')?.trim() ?? '';
 	const { email: stateEmail = '', message: redirectMessage = '' } = location.state ?? {};
 	const initialEmail = queryEmail || String(stateEmail).trim();
 
+	// Stores the email address pre-filled or entered by the user.
 	const [email, setEmail] = useState(initialEmail);
+	// Tracks whether the resend request is in progress.
 	const [loading, setLoading] = useState(false);
+	// Stores any validation or server error message to display.
 	const [error, setError] = useState('');
+	// Tracks whether the confirmation email has been successfully resent.
 	const [sent, setSent] = useState(false);
 
+	// Validates the email and submits the resend-confirmation request.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 

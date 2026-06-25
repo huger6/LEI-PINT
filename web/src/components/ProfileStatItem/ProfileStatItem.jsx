@@ -10,6 +10,7 @@ import styles from './ProfileStatItem.module.css';
  * @param {string} label - Stat description.
  * @param {string} [footer] - Optional footer text below the value.
  */
+// Renders a stat card with an icon, value, label, and optional footer text.
 export default function ProfileStatItem({ icon, accentColor, accentBg, value, label, footer }) {
 	return (
 		<div className={styles.statItem}>

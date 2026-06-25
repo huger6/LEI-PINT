@@ -34,18 +34,29 @@ function toLocalInput(iso) {
 }
 
 export default function AdminSlas() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of SLAs fetched from the API.
 	const [slas, setSlas] = useState([]);
+	// Store available service lines for the SLA scope selector.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Track whether data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Hold any page-level error message.
 	const [error, setError] = useState('');
 
+	// Control the create/edit modal visibility.
 	const [modalOpen, setModalOpen] = useState(false);
+	// Track the SLA being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Hold field-level validation errors for the form.
 	const [errors, setErrors] = useState({});
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetch all SLAs and service lines in parallel.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -60,15 +71,19 @@ export default function AdminSlas() {
 		}
 	}, [t]);
 
+	// Load data on mount and whenever load changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Return the display name of a service line object.
 	function slName(sl) {
 		return sl.service_line_name || sl.serviceLineName;
 	}
+	// Return the ID of a service line object.
 	function slId(sl) {
 		return sl.service_line_id || sl.serviceLineId;
 	}
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setEditItem(null);
 		setForm(emptyForm);
@@ -76,6 +91,7 @@ export default function AdminSlas() {
 		setModalOpen(true);
 	}
 
+	// Open the modal in edit mode pre-populated with the selected SLA's data.
 	function openEdit(sla) {
 		setEditItem(sla);
 		setForm({
@@ -92,12 +108,14 @@ export default function AdminSlas() {
 		setModalOpen(true);
 	}
 
+	// Update form state and clear the corresponding field error on change.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
 		setErrors((prev) => ({ ...prev, [name]: '' }));
 	}
 
+	// Toggle a service line's inclusion in the SLA scope list.
 	function toggleServiceLine(id) {
 		setForm((prev) => ({
 			...prev,
@@ -107,6 +125,7 @@ export default function AdminSlas() {
 		}));
 	}
 
+	// Validate the SLA form fields and set inline errors.
 	function validate() {
 		const next = {};
 		if (form.slaName.trim().length < 2) next.slaName = t('adminSlas.errName');
@@ -120,6 +139,7 @@ export default function AdminSlas() {
 		return Object.keys(next).length === 0;
 	}
 
+	// Submit the form to create or update an SLA.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!validate()) return;
@@ -150,6 +170,7 @@ export default function AdminSlas() {
 		}
 	}
 
+	// Confirm and deactivate the specified SLA, then reload.
 	async function handleDeactivate(sla) {
 		if (!window.confirm(t('adminSlas.confirmDeactivate', { name: sla.sla_name }))) return;
 		try {
@@ -160,6 +181,7 @@ export default function AdminSlas() {
 		}
 	}
 
+	// Reactivate an inactive SLA and reload the list.
 	async function handleReactivate(sla) {
 		try {
 			await updateSLA(sla.sla_id, { isActive: true });

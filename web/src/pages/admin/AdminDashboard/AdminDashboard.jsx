@@ -17,6 +17,7 @@ import styles from './AdminDashboard.module.css';
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—');
 
+// Determine the status classification of an SLA based on its end date.
 function slaStatus(sla) {
 	const now = Date.now();
 	const end = sla.end_date ? new Date(sla.end_date).getTime() : null;
@@ -26,13 +27,20 @@ function slaStatus(sla) {
 }
 
 export default function AdminDashboard() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store aggregated platform KPI counts.
 	const [stats, setStats] = useState({ users: 0, badges: 0, learningPaths: 0, serviceLines: 0, areas: 0, applications: 0 });
+	// Store the applications count grouped by workflow state.
 	const [byState, setByState] = useState([]);
+	// Store the most recent announcements for the panel.
 	const [announcements, setAnnouncements] = useState([]);
+	// Store the most recent SLAs for the panel.
 	const [slas, setSlas] = useState([]);
+	// Track whether the dashboard data is still loading.
 	const [loading, setLoading] = useState(true);
 
+	// Load all dashboard data in parallel on mount.
 	useEffect(() => {
 		let active = true;
 		(async () => {

@@ -14,16 +14,19 @@ export default function PropertiesPanel({
 	selected, props, onUpdateProp, onSaveState,
 	canvasBg, onUpdateCanvasBg, t,
 }) {
+	// Updates a color property on the selected object and saves the canvas state.
 	const handleColorCommit = (key, value) => {
 		onUpdateProp(key, value);
 		onSaveState();
 	};
 
+	// Updates the appropriate gradient color stop (start or end) on the selected object.
 	const handleGradientColor = (which, value) => {
 		if (which === 'start') onUpdateProp('gradientStart', value);
 		else onUpdateProp('gradientEnd', value);
 	};
 
+	// Saves the canvas history state after a gradient color change is committed.
 	const handleGradientCommit = () => {
 		onSaveState();
 	};

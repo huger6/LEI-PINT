@@ -15,6 +15,7 @@ const DEFAULT_COLORS = ['#00B8E0', '#39639C', '#04CE00', '#CFA600', '#B3261E'];
  * @param {Array} data - Chart data entries.
  * @param {Object} [options] - Chart.js configuration overrides.
  */
+// Renders a pie or donut chart for proportional data using Recharts.
 export default function PieDonutChart({
 	data = [],
 	nameKey,

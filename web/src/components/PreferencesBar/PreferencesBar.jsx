@@ -9,10 +9,13 @@ const LANGS = [
 	{ code: 'es', label: 'ES' },
 ];
 
+// Renders a language switcher and light/dark theme toggle bar.
 export default function PreferencesBar({ floating = false, className = '' }) {
 	const { i18n } = useTranslation();
+	// Tracks the current theme, initialized from localStorage.
 	const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
+	// Toggles between light and dark theme and persists the choice to localStorage.
 	const toggleTheme = () => {
 		const next = theme === 'dark' ? 'light' : 'dark';
 		setTheme(next);

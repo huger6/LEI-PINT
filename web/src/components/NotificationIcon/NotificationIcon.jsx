@@ -5,6 +5,7 @@ import Icon from '../Icons/Icons';
  * Bell icon with unread notification count badge.
  * @param {number} [count=0] - Number of unread notifications. Badge hidden when 0.
  */
+// Renders a bell icon with a badge showing the unread notification count.
 export default function NotificationIcon({ count = 0 }) {
     return (
         <div className={styles.notificationIcon}>

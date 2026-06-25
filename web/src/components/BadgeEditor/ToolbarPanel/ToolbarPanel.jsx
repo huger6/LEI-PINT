@@ -11,8 +11,10 @@ export default function ToolbarPanel({
 	onDuplicate, onUndo, onRedo, onImportImage, onSelectTemplate,
 	canUndo, canRedo, hasSelection, t,
 }) {
+	// Ref to the hidden file input used to trigger the OS file picker.
 	const fileRef = useRef(null);
 
+	// Validates the selected image file size then passes it to the import handler.
 	const handleImageFile = (e) => {
 		const file = e.target.files?.[0];
 		e.target.value = '';

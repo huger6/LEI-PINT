@@ -7,7 +7,9 @@ import styles from './PasswordRules.module.css';
  * Live password strength checklist that shows pass/fail status for each rule.
  * @param {string} password - Current password value to validate against rules.
  */
+// Renders a checklist of password rules with pass/fail indicators for each.
 export default function PasswordRules({ password }) {
+	// Provides translated rule label strings.
 	const { t } = useTranslation();
 	if (!password) return null;
 

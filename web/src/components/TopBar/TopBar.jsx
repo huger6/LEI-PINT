@@ -14,11 +14,15 @@ import Icon from '../Icons/Icons';
  * Application header bar with logo, search, points (consultant only), notifications, and user menu.
  * @param {Function} [onMenuToggle] - Called when the mobile hamburger menu is tapped.
  */
+// Renders the application top bar with logo, search, points, notifications, and user menu.
 export default function TopBar({ onMenuToggle }) {
+    // Provides the current user object, display name, and gamification points.
     const { user, displayName, points } = useUser();
     const { t } = useTranslation();
+    // Provides programmatic navigation for the search redirect.
     const navigate = useNavigate();
 
+    // Navigates to the search results page with the given query string.
     const handleSearch = (query) => {
         if (!query) return;
         navigate(`${SHARED.SEARCH}?q=${encodeURIComponent(query)}`);

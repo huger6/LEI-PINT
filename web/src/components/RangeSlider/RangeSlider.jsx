@@ -9,6 +9,7 @@ import styles from './RangeSlider.module.css';
  * @param {number[]} [value=[0,100]] - Current [low, high] selection.
  * @param {Function} onChange - Called with the updated [low, high] array.
  */
+// Renders a dual-thumb range slider for selecting a min/max value range.
 export default function RangeSlider({
 	id,
 	label,
@@ -23,6 +24,7 @@ export default function RangeSlider({
 	const pctLow = range > 0 ? ((low - min) / range) * 100 : 0;
 	const pctHigh = range > 0 ? ((high - min) / range) * 100 : 100;
 
+	// Handles the low (minimum) thumb input and clamps it below the high value.
 	const handleLow = useCallback(
 		(e) => {
 			const v = Number(e.target.value);
@@ -31,6 +33,7 @@ export default function RangeSlider({
 		[onChange, high],
 	);
 
+	// Handles the high (maximum) thumb input and clamps it above the low value.
 	const handleHigh = useCallback(
 		(e) => {
 			const v = Number(e.target.value);

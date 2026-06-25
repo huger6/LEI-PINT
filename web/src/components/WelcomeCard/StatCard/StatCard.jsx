@@ -10,6 +10,7 @@ import Icon from '../../Icons/Icons';
  * @param {string} [icon] - Icon name.
  * @param {string} [to] - Link destination. If provided, the card becomes clickable.
  */
+// Renders a KPI card with icon, label, and value; wraps in a link if a destination is provided.
 export default function StatCard({ label, value, variant, iconName, icon, iconColor = 'var(--color-on-primary)', to }) {
     const variantClass = variant === 'accent' ? styles.accent
         : variant === 'success' ? styles.success

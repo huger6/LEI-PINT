@@ -21,6 +21,7 @@ const HISTORY_FILTERS = { obtained: ['Accepted'], inprocess: ['Open', 'Submitted
 const APP_STATE_KEY = { Open: 'open', Submitted: 'submitted', 'In validation': 'inValidation', Accepted: 'accepted', Rejected: 'rejected' };
 const fmtHistDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
+// Return the CSS class for the state pill badge on a history row.
 function histStatePill(state) {
 	if (state === 'Accepted') return styles.pillApproved;
 	if (state === 'Rejected') return styles.pillRejected;
@@ -34,25 +35,40 @@ function histStatePill(state) {
  * (earned vs in-process). Opened from the consultants/team list.
  */
 export default function ConsultantDetail() {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Extract the consultant's GUID from the URL params.
 	const { userGuid } = useParams();
+	// Allow programmatic navigation.
 	const navigate = useNavigate();
+	// Retrieve the current authenticated user.
 	const { user } = useUser();
 	const isSll = user?.role === 'Service Line Leader';
 	const listPath = isSll ? SLL.TEAM : TM.CONSULTANTS;
 
+	// Store the evolution timeline data for the line chart.
 	const [timeline, setTimeline] = useState([]);
+	// Store peer comparison data including averages and ranked peers.
 	const [comparison, setComparison] = useState(null);
+	// Store all consultants for the peer picker dropdown.
 	const [consultants, setConsultants] = useState([]);
+	// Store the GUID of the manually chosen comparison peer.
 	const [compareGuid, setCompareGuid] = useState('');
+	// Control visibility of the peer picker modal.
 	const [showPicker, setShowPicker] = useState(false);
+	// Track the loading state for the initial data fetch.
 	const [loading, setLoading] = useState(true);
+	// Store any error message from the data fetch.
 	const [error, setError] = useState('');
 
+	// Store the active history filter key ('obtained' or 'inprocess').
 	const [historyFilter, setHistoryFilter] = useState('obtained');
+	// Store the badge/application history rows for the selected filter.
 	const [history, setHistory] = useState([]);
+	// Track loading state for the history section separately.
 	const [historyLoading, setHistoryLoading] = useState(true);
 
+	// Load timeline, comparison, and consultants list in parallel.
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
@@ -72,8 +88,10 @@ export default function ConsultantDetail() {
 		}
 	}, [userGuid]);
 
+	// Trigger the main data load when the consultant GUID changes.
 	useEffect(() => { load(); }, [load]);
 
+	// Fetch the badge history whenever the consultant or filter changes.
 	useEffect(() => {
 		let active = true;
 		setHistoryLoading(true);

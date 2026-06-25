@@ -7,10 +7,14 @@ import { useTranslationContext } from '../../context/TranslationContext';
  * @param {string} text - Original text to translate.
  * @param {string|Component} [as='span'] - HTML element or component to render.
  */
+// Renders database text translated to the user's active language via the translation context.
 export default function TranslatedText({ text, as: Tag = 'span', className, style }) {
+	// Provides the async translateText function and current language from context.
 	const { translateText, currentLang } = useTranslationContext();
+	// Holds the translated text string to render.
 	const [translated, setTranslated] = useState(text || '');
 
+	// Re-translates the text whenever the source text or active language changes.
 	useEffect(() => {
 		if (!text) {
 			setTranslated('');

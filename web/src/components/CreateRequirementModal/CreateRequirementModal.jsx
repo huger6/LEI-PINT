@@ -6,6 +6,7 @@ import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
 import FormInput from '../FormInput/FormInput';
 
+// Builds the initial form values from existing requirement data or empty defaults.
 function buildInitialForm(initialData) {
 	return {
 		requirementTitle: initialData?.requirement_title ?? initialData?.requirementTitle ?? '',
@@ -23,21 +24,28 @@ function buildInitialForm(initialData) {
 export default function CreateRequirementModal({ badgeSlug, initialData = null, onClose, onSuccess }) {
 	const { t } = useTranslation();
 	const isEdit = Boolean(initialData);
+	// Holds the current form values, initialized lazily from initialData.
 	const [form, setForm] = useState(() => buildInitialForm(initialData));
+	// Stores field-level validation error messages.
 	const [errors, setErrors] = useState({});
+	// Holds any API-level error message returned after a failed save.
 	const [apiError, setApiError] = useState('');
+	// Tracks whether a save request is currently in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Updates a single form field and clears its validation and API errors.
 	function setField(name, value) {
 		setForm((prev) => ({ ...prev, [name]: value }));
 		setErrors((prev) => ({ ...prev, [name]: '' }));
 		setApiError('');
 	}
 
+	// Delegates a change event to setField using the input's name and value.
 	function handleChange(e) {
 		setField(e.target.name, e.target.value);
 	}
 
+	// Validates the form fields and returns true if there are no errors.
 	function validate() {
 		const next = {};
 		const title = form.requirementTitle.trim();
@@ -51,6 +59,7 @@ export default function CreateRequirementModal({ badgeSlug, initialData = null, 
 		return Object.keys(next).length === 0;
 	}
 
+	// Validates then creates or updates the requirement via the API.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!validate()) return;

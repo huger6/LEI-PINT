@@ -11,6 +11,7 @@ import styles from './SidebarOption.module.css';
  * @param {boolean} [news=false] - Shows a notification dot.
  * @param {boolean} [collapsed=false] - Hides the label and shows a tooltip instead.
  */
+// Renders a single sidebar nav item with icon, translated label, and optional notification dot.
 export default function SidebarOption({
     as = 'button',
     icon,
@@ -22,6 +23,7 @@ export default function SidebarOption({
     className = '',
     ...rest
 }) {
+    // Provides the translation function for resolving i18n label keys.
     const { t } = useTranslation();
     const Component = as;
     const isTranslationKey = typeof label === 'string' && label.includes('.');

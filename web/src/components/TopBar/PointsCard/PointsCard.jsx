@@ -7,6 +7,7 @@ import Icon from '../../Icons/Icons';
  * Displays the consultant's gamification points total in the top bar.
  * @param {number} points - Current point total.
  */
+// Renders a linked points badge displaying the consultant's current gamification total.
 export default function PointsCard({ points }) {
     return (
         <Link to={CONSULTANT.POINTS} className={styles.pointsCard}>

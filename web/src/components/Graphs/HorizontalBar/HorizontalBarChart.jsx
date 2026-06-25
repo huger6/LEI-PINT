@@ -14,6 +14,7 @@ import styles from './HorizontalBarChart.module.css';
  * @param {Array} data - Chart data entries.
  * @param {Object} [options] - Chart.js configuration overrides.
  */
+// Renders a horizontal (vertical-layout) bar chart using Recharts.
 export default function HorizontalBarChart({
 	data = [],
 	xAxisKey,

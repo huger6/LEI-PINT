@@ -7,6 +7,7 @@ import { TranslationProvider } from './context/TranslationContext';
 import AppRoutes from './routes';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
+// Composes all global context providers and renders the application route tree.
 export default function App() {
 	return (
 		<HelmetProvider>

@@ -21,19 +21,32 @@ import styles from './BadgeDetail.module.css';
 const SERVICE_LINES_LIMIT = 5;
 
 export default function BadgeDetail() {
+	// Access the current authenticated user and their role
 	const { user } = useUser();
+	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();
+	// Read the badge slug from the URL params
 	const { slug } = useParams();
 	const navigate = useNavigate();
+	// Store the badge detail data
 	const [badge, setBadge] = useState(null);
+	// Store the badge's requirement list
 	const [requirements, setRequirements] = useState([]);
+	// Store the list of all service lines for the sidebar
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store related badges for the carousel section
 	const [relatedBadges, setRelatedBadges] = useState([]);
+	// Track whether the page data is loading
 	const [loading, setLoading] = useState(true);
+	// Track whether an application is being started
 	const [applying, setApplying] = useState(false);
+	// Track whether a certificate is being downloaded
 	const [downloading, setDownloading] = useState(false);
+	// Store any error message from failed API calls
 	const [error, setError] = useState(null);
+	// Control visibility of the GDPR consent modal before sharing
 	const [showConsent, setShowConsent] = useState(false);
+	// Hold a ref to the related badges carousel DOM element for scrolling
 	const carouselRef = useRef(null);
 
 	// Catalog list lives at different paths per role: Consultants use /catalog,
@@ -43,10 +56,12 @@ export default function BadgeDetail() {
 	// TM, SLL and Admin view the badge as a catalogue entry (requirements only).
 	const isConsultant = user?.role === 'Consultant';
 
+	// Reload badge data whenever the slug URL parameter changes
 	useEffect(() => {
 		loadData();
 	}, [slug]);
 
+	// Fetch badge details, service lines, and related badges in parallel
 	async function loadData() {
 		setLoading(true);
 		try {
@@ -74,6 +89,7 @@ export default function BadgeDetail() {
 		}
 	}
 
+	// Start a new badge application and navigate to its detail page
 	async function handleApply() {
 		setApplying(true);
 		try {
@@ -86,6 +102,7 @@ export default function BadgeDetail() {
 		}
 	}
 
+	// Generate and open the PDF certificate for the earned badge
 	async function handleDownloadCertificate() {
 		setDownloading(true);
 		try {
@@ -107,10 +124,12 @@ export default function BadgeDetail() {
 	}
 
 	// Publishing/sharing a credential exposes personal data — gate behind RGPD consent.
+	// Open the GDPR consent modal before proceeding with LinkedIn share
 	function handleShareLinkedIn() {
 		setShowConsent(true);
 	}
 
+	// Perform the LinkedIn share after the user has given GDPR consent
 	function doShareLinkedIn() {
 		const badgeTitle = badge.badge_title || badge.badgeTitle;
 		const verificationLink = badge.user_award?.public_verification_link;
@@ -128,6 +147,7 @@ export default function BadgeDetail() {
 		if (badgeId) trackInteraction(badgeId, 'SHARE_LINKEDIN').catch(() => {});
 	}
 
+	// Scroll the related badges carousel left or right by a fixed amount
 	function scrollCarousel(direction) {
 		if (!carouselRef.current) return;
 		const scrollAmount = 280;

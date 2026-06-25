@@ -28,11 +28,16 @@ function buildMonthlyReport(apps) {
 }
 
 export default function SllStats() {
+	// Access translation function.
 	const { t } = useTranslation();
+	// Store the monthly report data for the bar chart.
 	const [report, setReport] = useState([]);
+	// Store the total count of accepted applications in scope.
 	const [total, setTotal] = useState(0);
+	// Track whether the report data is loading.
 	const [loading, setLoading] = useState(true);
 
+	// Fetch accepted applications and build the monthly report on mount.
 	useEffect(() => {
 		let active = true;
 		(async () => {

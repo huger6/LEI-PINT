@@ -11,6 +11,7 @@ const FILLED_ICONS = new Set(['moon', 'privacy', 'security', 'close', 'asterisk'
  * @param {Function} [onClick] - Click handler.
  * @param {string|Component} [as='button'] - Polymorphic root element.
  */
+// Renders a polymorphic dropdown menu item with an optional icon and translated label.
 export default function DropdownOption({
     as = 'button',
     icon,
@@ -20,6 +21,7 @@ export default function DropdownOption({
     className = '',
     ...rest
 }) {
+    // Provides the translation function for resolving i18n label keys.
     const { t } = useTranslation();
     const Component = as;
     const isTranslationKey = typeof label === 'string' && label.includes('.');

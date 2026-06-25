@@ -10,18 +10,26 @@ import DropdownOption from '../DropdownOption/DropdownOption';
 import styles from './UserDropdown.module.css';
 
 /** User avatar dropdown menu with profile link, theme toggle, settings, and logout. */
+// Renders the avatar trigger button and a dropdown menu with user-related navigation actions.
 export default function UserDropdown() {
     const { t } = useTranslation();
+    // Provides the logout function from the auth context.
     const { logout } = useAuth();
+    // Provides the current user object and display name.
     const { user, displayName } = useUser();
+    // Provides programmatic navigation for post-logout and menu item redirects.
     const navigate = useNavigate();
+    // Tracks whether the dropdown menu is currently open.
     const [open, setOpen] = useState(false);
+    // Controls visibility of the logout confirmation toast.
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     // Light/dark theme toggle. Dark styling is not built yet, so this only flips
     // the preference + data-theme attribute (placeholder for the future theme).
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    // Ref to the dropdown wrapper element for detecting outside clicks.
     const dropdownRef = useRef(null);
 
+    // Toggles between light and dark theme and persists the selection to localStorage.
     const toggleTheme = () => {
         const next = theme === 'dark' ? 'light' : 'dark';
         setTheme(next);
@@ -29,10 +37,12 @@ export default function UserDropdown() {
         document.documentElement.setAttribute('data-theme', next);
     };
 
+    // Applies the current theme to the document root element whenever it changes.
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
+    // Attaches outside-click and Escape key listeners to close the dropdown when open.
     useEffect(() => {
         if (!open) return;
         const handleClickOutside = (e) => {
@@ -51,6 +61,7 @@ export default function UserDropdown() {
         };
     }, [open]);
 
+    // Logs the user out and redirects to the login page.
     const handleLogout = async () => {
         setShowLogoutConfirm(false);
         setOpen(false);
@@ -58,6 +69,7 @@ export default function UserDropdown() {
         navigate(AUTH.LOGIN);
     };
 
+    // Closes the dropdown and navigates to the specified route path.
     const handleOptionClick = (path) => {
         setOpen(false);
         navigate(path);

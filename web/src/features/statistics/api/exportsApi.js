@@ -58,6 +58,7 @@ async function downloadBlob(path, { format = 'csv', ...params }, fallbackStem) {
  * @param {string} type   one of EXPORT_PATHS keys
  * @param {object} params { format, state, from, to, q, active }
  */
+// Resolves the export path and delegates to downloadBlob to trigger a file download.
 export async function downloadExport(type, { format = 'csv', ...params } = {}) {
 	const path = EXPORT_PATHS[type];
 	if (!path) throw new Error(`Unknown export type: ${type}`);
@@ -70,6 +71,7 @@ export async function downloadExport(type, { format = 'csv', ...params } = {}) {
  * @param {string} identifier  the structure slug
  * @param {object} params      { format, from, to }
  */
+// Downloads a structure-scoped summary export for a learning path, service line, or area.
 export async function downloadStructureSummary(structureType, identifier, { format = 'csv', ...params } = {}) {
 	const path = `/exports/structure/${structureType}/${encodeURIComponent(identifier)}`;
 	return downloadBlob(path, { format, ...params }, `resumo_${structureType}`);

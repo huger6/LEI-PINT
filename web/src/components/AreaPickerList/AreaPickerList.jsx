@@ -19,9 +19,12 @@ export default function AreaPickerList({
 	error,
 }) {
 	const { t } = useTranslation();
+	// Tracks the current search query for filtering areas.
 	const [search, setSearch] = useState('');
+	// Tracks the current page number for the paginated area list.
 	const [page, setPage] = useState(1);
 
+	// Filters areas by the current search query, case-insensitively.
 	const filtered = useMemo(() => {
 		if (!search.trim()) return areas;
 		const q = search.toLowerCase();
@@ -35,9 +38,12 @@ export default function AreaPickerList({
 	const safePage = Math.min(page, totalPages);
 	const pageItems = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
+	// Returns true if the given area is currently selected.
 	const isSelected = (areaId) => selected.some((s) => s.area_id === areaId);
+	// Returns true if the given area is marked as the primary area.
 	const isPrimary = (areaId) => selected.some((s) => s.area_id === areaId && s.is_primary);
 
+	// Adds or removes an area from the selected list, maintaining primary assignment.
 	const toggle = (areaId) => {
 		if (isSelected(areaId)) {
 			const next = selected.filter((s) => s.area_id !== areaId);
@@ -51,10 +57,12 @@ export default function AreaPickerList({
 		}
 	};
 
+	// Marks the given area as the primary area and unmarks all others.
 	const setPrimary = (areaId) => {
 		onChange(selected.map((s) => ({ ...s, is_primary: s.area_id === areaId })));
 	};
 
+	// Looks up and returns the display name of an area by its ID.
 	const getAreaName = (areaId) => {
 		const area = areas.find((a) => (a.area_id ?? a.id) === areaId);
 		return area?.area_name ?? area?.name ?? '';

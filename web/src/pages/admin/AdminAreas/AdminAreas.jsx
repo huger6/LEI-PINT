@@ -16,15 +16,24 @@ const emptyForm = {
 };
 
 export default function AdminAreas() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of areas fetched from the API.
 	const [areas, setAreas] = useState([]);
+	// Store the list of service lines for the dropdown.
 	const [serviceLines, setServiceLines] = useState([]);
+	// Track whether data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Control modal visibility.
 	const [showModal, setShowModal] = useState(false);
+	// Track the item being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetch both areas and service lines in parallel.
 	async function loadData() {
 		try {
 			setLoading(true);
@@ -38,21 +47,25 @@ export default function AdminAreas() {
 		}
 	}
 
+	// Load data on initial mount.
 	useEffect(() => {
 		loadData();
 	}, []);
 
+	// Resolve a service line's display name by its ID.
 	function getSlName(slId) {
 		const sl = serviceLines.find((s) => s.service_line_id === slId || s.serviceLineId === slId);
 		return sl ? (sl.service_line_name || sl.serviceLineName) : '—';
 	}
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setEditItem(null);
 		setForm(emptyForm);
 		setShowModal(true);
 	}
 
+	// Open the modal in edit mode pre-populated with the selected area's data.
 	function openEdit(item) {
 		setEditItem(item);
 		setForm({
@@ -64,6 +77,7 @@ export default function AdminAreas() {
 		setShowModal(true);
 	}
 
+	// Confirm and delete the specified area.
 	async function handleDelete(item) {
 		if (!window.confirm(t('shared.confirmDelete', { name: item.area_name || item.areaName }))) return;
 		try {
@@ -74,6 +88,7 @@ export default function AdminAreas() {
 		}
 	}
 
+	// Submit the form to create or update an area.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		setSaving(true);
@@ -93,6 +108,7 @@ export default function AdminAreas() {
 		}
 	}
 
+	// Update the form state when any input changes.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));

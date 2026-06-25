@@ -15,20 +15,31 @@ import styles from './LoginPage.module.css';
 import { resolveErrorMessage, isCode } from '../../../../validations';
 
 export default function LoginPage() {
+	// Provides translation function for localised strings.
 	const { t } = useTranslation();
+	// Accesses the login action and authentication status from auth context.
 	const { login, isAuthenticated } = useAuth();
+	// Provides programmatic navigation after a successful login.
 	const navigate = useNavigate();
+	// Reads the current location to retrieve the redirect path after login.
 	const location = useLocation();
 
+	// Stores the login form field values including identifier, password, and remember flag.
 	const [form, setForm] = useState({ identifier: '', password: '', remember: false });
+	// Tracks visibility toggle state for the password field.
 	const [showPassword, setShowPassword] = useState(false);
+	// Stores a general error message from failed login attempts.
 	const [error, setError] = useState('');
+	// Stores per-field validation error messages for identifier and password.
 	const [fieldErrors, setFieldErrors] = useState({ identifier: '', password: '' });
+	// Tracks whether the login failed specifically because the email is unconfirmed.
 	const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
+	// Tracks whether the login request is in progress.
 	const [loading, setLoading] = useState(false);
 
 	const from = location.state?.from?.pathname || '/';
 
+	// Redirects already-authenticated users to their intended destination.
 	useEffect(() => {
 		if (isAuthenticated) {
 			navigate(from, { replace: true });
@@ -37,6 +48,7 @@ export default function LoginPage() {
 
 	const loginEmail = form.identifier.trim().includes('@') ? form.identifier.trim() : '';
 
+	// Updates the form state and clears related errors on each field change.
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -47,6 +59,7 @@ export default function LoginPage() {
 		}
 	};
 
+	// Validates the form and submits the login request, handling auth errors.
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const nextFieldErrors = {

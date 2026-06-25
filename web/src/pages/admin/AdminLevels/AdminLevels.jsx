@@ -18,15 +18,24 @@ const emptyForm = {
 };
 
 export default function AdminLevels() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of progression levels fetched from the API.
 	const [levels, setLevels] = useState([]);
+	// Store available areas for the dropdown selector.
 	const [areas, setAreas] = useState([]);
+	// Track whether data is still loading.
 	const [loading, setLoading] = useState(true);
+	// Control modal visibility.
 	const [showModal, setShowModal] = useState(false);
+	// Track the item being edited, or null for create mode.
 	const [editItem, setEditItem] = useState(null);
+	// Hold the current modal form values.
 	const [form, setForm] = useState(emptyForm);
+	// Track whether the form submission is in progress.
 	const [saving, setSaving] = useState(false);
 
+	// Fetch both levels and areas in parallel.
 	async function loadData() {
 		try {
 			setLoading(true);
@@ -40,21 +49,25 @@ export default function AdminLevels() {
 		}
 	}
 
+	// Load data on initial mount.
 	useEffect(() => {
 		loadData();
 	}, []);
 
+	// Resolve an area's display name by its ID.
 	function getAreaName(areaId) {
 		const area = areas.find((a) => a.area_id === areaId || a.areaId === areaId);
 		return area ? (area.area_name || area.areaName) : '—';
 	}
 
+	// Open the modal in create mode with a blank form.
 	function openCreate() {
 		setEditItem(null);
 		setForm(emptyForm);
 		setShowModal(true);
 	}
 
+	// Open the modal in edit mode pre-populated with the selected level's data.
 	function openEdit(item) {
 		setEditItem(item);
 		setForm({
@@ -68,6 +81,7 @@ export default function AdminLevels() {
 		setShowModal(true);
 	}
 
+	// Confirm and delete the specified progression level.
 	async function handleDelete(item) {
 		const code = item.stage_code?.stage_code || item.stageCode;
 		if (!window.confirm(t('shared.confirmDelete', { name: code }))) return;
@@ -79,6 +93,7 @@ export default function AdminLevels() {
 		}
 	}
 
+	// Submit the form to create or update a progression level.
 	async function handleSubmit(e) {
 		e.preventDefault();
 		setSaving(true);
@@ -104,6 +119,7 @@ export default function AdminLevels() {
 		}
 	}
 
+	// Update the form state when any input changes.
 	function handleChange(e) {
 		const { name, value, type, checked } = e.target;
 		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));

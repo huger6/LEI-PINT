@@ -19,12 +19,18 @@ function defaultRange() {
 /** Report/analytics panel showing badge distribution and trend charts for admin/management dashboards. */
 export default function BadgeReports({ filters = {} }) {
 	const { t } = useTranslation();
+	// Tracks the selected grouping dimension for the distribution chart.
 	const [groupBy, setGroupBy] = useState('learning_path');
+	// Holds the badge distribution rows returned from the API.
 	const [distribution, setDistribution] = useState([]);
+	// Holds the badges-by-range rows returned from the API.
 	const [byRange, setByRange] = useState([]);
+	// Tracks the loading state of the distribution fetch.
 	const [loadingDist, setLoadingDist] = useState(true);
+	// Tracks the loading state of the by-range fetch.
 	const [loadingRange, setLoadingRange] = useState(true);
 
+	// Resolves the effective date range from filters or falls back to the last 12 months.
 	const range = useMemo(() => {
 		const d = defaultRange();
 		return { from: filters.dateFrom || d.from, to: filters.dateTo || d.to };
@@ -74,7 +80,9 @@ export default function BadgeReports({ filters = {} }) {
 			}));
 	}, [distribution]);
 
+	// Formats a YYYY-MM date string to a localized month and year label.
 	const fmtMonth = (m) => new Date(m).toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+	// Formats an ISO date string to a short localized date label.
 	const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
 
 	const groupByOptions = [

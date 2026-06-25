@@ -11,14 +11,19 @@ const STATE_BADGE_CLASS = {
 };
 
 export default function AdminApplications() {
+	// Initialize translation hook for i18n support.
 	const { t } = useTranslation();
+	// Store the list of fetched applications.
 	const [applications, setApplications] = useState([]);
+	// Track whether data is still being loaded.
 	const [loading, setLoading] = useState(true);
 
+	// Fetch applications on initial mount.
 	useEffect(() => {
 		loadApplications();
 	}, []);
 
+	// Fetch all applications from the API and update state.
 	async function loadApplications() {
 		try {
 			const data = await getApplications();

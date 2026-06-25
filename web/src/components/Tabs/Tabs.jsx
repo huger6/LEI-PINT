@@ -6,6 +6,7 @@ import styles from './Tabs.module.css';
  * @param {string} activeTab - Currently selected tab key.
  * @param {Function} onTabChange - Called with the selected tab key.
  */
+// Renders a horizontal tab bar where each tab can optionally display a numeric badge.
 export default function Tabs({ tabs, activeTab, onTabChange }) {
 	return (
 		<div className={styles.tabs} role="tablist">

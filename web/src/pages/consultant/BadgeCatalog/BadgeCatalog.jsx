@@ -37,6 +37,7 @@ const EMPTY_FILTERS = {
 	obtained: 'all',
 };
 
+// Clamp a numeric filter value to the valid 0–MAX_POINTS range
 function normalizeNumericInput(value) {
 	if (value === '' || value === null || value === undefined) return 0;
 	const parsed = Number(value);
@@ -44,6 +45,7 @@ function normalizeNumericInput(value) {
 	return Math.min(MAX_POINTS, Math.max(0, parsed));
 }
 
+// Ensure minPoints never exceeds maxPoints in the filter object
 function normalizeFilters(filters) {
 	const minPoints = normalizeNumericInput(filters.minPoints);
 	const maxPoints = normalizeNumericInput(filters.maxPoints);
@@ -55,29 +57,48 @@ function normalizeFilters(filters) {
 }
 
 export default function BadgeCatalog() {
+	// Initialize translation utility
 	const { t } = useTranslation();
+	// Access the current authenticated user
 	const { user } = useUser();
+	// Read URL search parameters for deep-linking
 	const [searchParams] = useSearchParams();
 
+	// Track whether the initial filter options are loading
 	const [loadingPage, setLoadingPage] = useState(true);
+	// Track whether a badge list fetch is in progress
 	const [loadingBadges, setLoadingBadges] = useState(false);
+	// Store any error message from failed fetches
 	const [error, setError] = useState(null);
+	// Store the current page of badge results
 	const [badges, setBadges] = useState([]);
+	// Store pagination metadata from the API response
 	const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
+	// Track the currently active page number
 	const [currentPage, setCurrentPage] = useState(1);
 
+	// Store available learning path options for the filter
 	const [learningPaths, setLearningPaths] = useState([]);
+	// Store available service line options for the filter
 	const [serviceLines, setServiceLines] = useState([]);
+	// Store available area options for the filter
 	const [areas, setAreas] = useState([]);
 
+	// Store the currently applied filter state
 	const [filters, setFilters] = useState(EMPTY_FILTERS);
+	// Store the draft filter state while the mobile drawer is open
 	const [mobileDraftFilters, setMobileDraftFilters] = useState(EMPTY_FILTERS);
+	// Control whether the mobile filter drawer is open
 	const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+	// Track whether the default area pre-filter has been applied
 	const [defaultAreaApplied, setDefaultAreaApplied] = useState(false);
 
+	// Store the set of badge slugs the user has favourited
 	const [favoriteSlugs, setFavoriteSlugs] = useState(new Set());
+	// Track whether the catalog is showing only saved/favourited badges
 	const [showingSaved, setShowingSaved] = useState(false);
 
+	// Load learning paths, service lines, and areas for the filter dropdowns on mount
 	useEffect(() => {
 		let ignore = false;
 
@@ -106,6 +127,7 @@ export default function BadgeCatalog() {
 		return () => { ignore = true; };
 	}, []);
 
+	// Load the consultant's favourite badge slugs when the user role is known
 	useEffect(() => {
 		if (user?.role !== 'Consultant') return;
 		let ignore = false;
@@ -125,6 +147,7 @@ export default function BadgeCatalog() {
 		return () => { ignore = true; };
 	}, [user?.role]);
 
+	// Toggle a badge's favourite status with optimistic UI update
 	const handleToggleFavorite = useCallback(async (badge) => {
 		const slug = badge.badge_slug || badge.badgeSlug;
 		if (!slug) return;
@@ -155,6 +178,7 @@ export default function BadgeCatalog() {
 		}
 	}, [favoriteSlugs]);
 
+	// Build a lookup map from service line ID to service line object
 	const serviceLineById = useMemo(() => {
 		const map = new Map();
 		serviceLines.forEach((sl) => {
@@ -165,6 +189,7 @@ export default function BadgeCatalog() {
 		return map;
 	}, [serviceLines]);
 
+	// Apply the default area filter from URL params or the user's primary area once data is ready
 	useEffect(() => {
 		if (defaultAreaApplied || areas.length === 0 || serviceLines.length === 0) return;
 
@@ -221,6 +246,7 @@ export default function BadgeCatalog() {
 		setDefaultAreaApplied(true);
 	}, [areas, defaultAreaApplied, serviceLineById, serviceLines, user, searchParams]);
 
+	// Fetch the badge list whenever the current page or active filters change
 	useEffect(() => {
 		let ignore = false;
 
@@ -262,6 +288,7 @@ export default function BadgeCatalog() {
 		return () => { ignore = true; };
 	}, [currentPage, filters]);
 
+	// Attach Escape key listener and body scroll lock when the filter drawer is open
 	useEffect(() => {
 		if (!isFilterDrawerOpen) return undefined;
 
@@ -278,6 +305,7 @@ export default function BadgeCatalog() {
 		};
 	}, [isFilterDrawerOpen]);
 
+	// Apply a filter update and reset pagination to page 1
 	function updateFilters(updater) {
 		setFilters((prev) => {
 			const next = normalizeFilters(typeof updater === 'function' ? updater(prev) : updater);
@@ -286,10 +314,12 @@ export default function BadgeCatalog() {
 		setCurrentPage(1);
 	}
 
+	// Update the desktop search text filter
 	function handleDesktopSearchChange(value) {
 		updateFilters((prev) => ({ ...prev, search: value }));
 	}
 
+	// Update the desktop learning path filter and clear dependent filters
 	function handleDesktopLearningPathChange(value) {
 		updateFilters((prev) => ({
 			...prev,
@@ -299,6 +329,7 @@ export default function BadgeCatalog() {
 		}));
 	}
 
+	// Update the desktop service line filter and clear the area filter
 	function handleDesktopServiceLineChange(value) {
 		updateFilters((prev) => ({
 			...prev,
@@ -307,10 +338,12 @@ export default function BadgeCatalog() {
 		}));
 	}
 
+	// Toggle the desktop area filter on or off
 	function handleDesktopAreaChange(areaId) {
 		updateFilters((prev) => ({ ...prev, areaId: String(areaId) === String(prev.areaId) ? '' : areaId }));
 	}
 
+	// Toggle a progression tier in the desktop stage code filter list
 	function handleDesktopTierToggle(code) {
 		updateFilters((prev) => ({
 			...prev,
@@ -320,10 +353,12 @@ export default function BadgeCatalog() {
 		}));
 	}
 
+	// Update the desktop badge class (all/standard/special) filter
 	function handleDesktopBadgeClassChange(value) {
 		updateFilters((prev) => ({ ...prev, badgeClass: value }));
 	}
 
+	// Update a points range endpoint (min or max) and enforce valid ordering
 	function handleDesktopPointsChange(field, value) {
 		const nextValue = normalizeNumericInput(value);
 		updateFilters((prev) => {
@@ -342,23 +377,28 @@ export default function BadgeCatalog() {
 		});
 	}
 
+	// Toggle the desktop "expiring soon only" filter
 	function handleDesktopExpiringToggle(checked) {
 		updateFilters((prev) => ({ ...prev, expiringOnly: checked }));
 	}
 
+	// Update the desktop obtained status filter
 	function handleDesktopObtainedChange(value) {
 		updateFilters((prev) => ({ ...prev, obtained: value }));
 	}
 
+	// Reset all desktop filters to their default empty state
 	function resetDesktopFilters() {
 		updateFilters(EMPTY_FILTERS);
 	}
 
+	// Copy current filters to the mobile draft and open the filter drawer
 	function openDrawer() {
 		setMobileDraftFilters(filters);
 		setIsFilterDrawerOpen(true);
 	}
 
+	// Apply the mobile draft filters as the active filters and close the drawer
 	function applyMobileFilters() {
 		const nextFilters = normalizeFilters(mobileDraftFilters);
 		setFilters(nextFilters);
@@ -366,10 +406,12 @@ export default function BadgeCatalog() {
 		setIsFilterDrawerOpen(false);
 	}
 
+	// Update a field in the mobile draft filters without affecting the active filters
 	function updateMobileFilters(updater) {
 		setMobileDraftFilters((prev) => normalizeFilters(typeof updater === 'function' ? updater(prev) : updater));
 	}
 
+	// Reset the mobile draft filters to the empty state
 	function resetMobileFilters() {
 		setMobileDraftFilters(EMPTY_FILTERS);
 	}
@@ -414,6 +456,7 @@ export default function BadgeCatalog() {
 		? badges.filter((b) => favoriteSlugs.has(b.badge_slug || b.badgeSlug))
 		: badges;
 
+	// Render the shared filter group sections for both desktop sidebar and mobile drawer
 	function renderFilterGroups(state, handlers, keyPrefix = 'desktop') {
 		const scopedServiceLines = state.learningPathId
 			? serviceLines.filter((sl) => String(sl.learning_path_id || sl.learningPathId) === String(state.learningPathId))

@@ -12,6 +12,7 @@ import Tooltip from '../../../components/Tooltip/Tooltip';
 import styles from './ApplicationDetail.module.css';
 
 export default function ApplicationDetail({ application, onReload }) {
+	// Initialize translation utility
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 
@@ -20,19 +21,32 @@ export default function ApplicationDetail({ application, onReload }) {
 	const evidencesRaw = application?.requirements_evidences || [];
 	const appGuid = application?.application_guid;
 
+	// Map requirement IDs to their uploaded evidence objects
 	const [evidenceMap, setEvidenceMap] = useState({});
+	// Store the consultant's optional notes text
 	const [notes, setNotes] = useState(application?.consultant_notes || application?.consultantNotes || '');
+	// Track which requirements are currently uploading a file
 	const [uploading, setUploading] = useState({});
+	// Track which requirement accordion panels are expanded
 	const [expandedReqs, setExpandedReqs] = useState({});
+	// Track whether the user has accepted the terms checkbox
 	const [termsAccepted, setTermsAccepted] = useState(false);
+	// Track whether the application is currently being submitted
 	const [submitting, setSubmitting] = useState(false);
+	// Store a global submission error message
 	const [error, setError] = useState(null);
+	// Store per-requirement file upload error messages
 	const [uploadErrors, setUploadErrors] = useState({});
+	// Control visibility of the auto-save toast notification
 	const [showSaveToast, setShowSaveToast] = useState(false);
+	// Track whether notes are currently being auto-saved
 	const [savingNotes, setSavingNotes] = useState(false);
+	// Keep a ref to the last saved notes value to detect unsaved changes
 	const notesRef = useRef(application?.consultant_notes || application?.consultantNotes || '');
+	// Hold refs to each requirement's file input element for programmatic reset
 	const fileInputRefs = useRef({});
 
+	// Build the evidence map and expand all requirement panels on mount
 	useEffect(() => {
 		const map = {};
 		const expanded = {};
@@ -48,6 +62,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		setExpandedReqs(expanded);
 	}, []);
 
+	// Check whether a given requirement already has an evidence upload
 	function hasEvidence(reqId) {
 		return !!evidenceMap[reqId];
 	}
@@ -60,6 +75,7 @@ export default function ApplicationDetail({ application, onReload }) {
 	const allEvidencesUploaded = requirements.length > 0 && completedCount === requirements.length;
 	const canSubmit = allEvidencesUploaded && termsAccepted;
 
+	// Map an upload error code to a user-facing translated message
 	function getUploadErrorMessage(err) {
 		const code = err.code;
 		if (code === 'EVIDENCE_FILE_MISSING') return t('applicationDetail.errors.noFile');
@@ -70,6 +86,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		return t('applicationDetail.errors.uploadFailed');
 	}
 
+	// Validate, upload to storage, and record evidence for a given requirement
 	async function handleFileUpload(requirementId, file) {
 		if (!file) return;
 
@@ -114,6 +131,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		}
 	}
 
+	// Submit the application and navigate to the confirmation page
 	async function handleSubmit() {
 		setSubmitting(true);
 		setError(null);
@@ -135,6 +153,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		}
 	}
 
+	// Auto-save the consultant notes to the API when the textarea loses focus
 	async function handleNotesSave() {
 		if (notes === notesRef.current || savingNotes) return;
 		setSavingNotes(true);
@@ -149,6 +168,7 @@ export default function ApplicationDetail({ application, onReload }) {
 		}
 	}
 
+	// Request a signed download URL and open the evidence file in a new tab
 	async function handleDownloadEvidence(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);

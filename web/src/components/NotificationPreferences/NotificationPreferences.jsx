@@ -20,13 +20,19 @@ const ESSENTIAL_CODES = [
 const EMAIL_INCAPABLE = new Set(['ANNOUNCEMENT_PUBLISHED']);
 
 /** User notification preferences panel for toggling email/push notifications per category. */
+// Loads user notification preferences and allows toggling in-app and email channels.
 export default function NotificationPreferences() {
 	const { t } = useTranslation();
+	// Stores the list of notification preference objects from the API.
 	const [prefs, setPrefs] = useState([]);
+	// Tracks whether preferences are being fetched.
 	const [loading, setLoading] = useState(true);
+	// Holds the definition_id of the preference currently being saved.
 	const [savingId, setSavingId] = useState(null);
+	// Stores any error message from loading or saving preferences.
 	const [error, setError] = useState('');
 
+	// Fetches all user notification preferences from the API.
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
@@ -39,8 +45,10 @@ export default function NotificationPreferences() {
 		}
 	}, [t]);
 
+	// Triggers the initial load of preferences when the component mounts.
 	useEffect(() => { load(); }, [load]);
 
+	// Filters and sorts preferences to only the essential notification codes in display order.
 	const visible = useMemo(() => {
 		const order = new Map(ESSENTIAL_CODES.map((c, i) => [c, i]));
 		return prefs
@@ -48,9 +56,12 @@ export default function NotificationPreferences() {
 			.sort((a, b) => order.get(a.code) - order.get(b.code));
 	}, [prefs]);
 
+	// Returns the translated display name for a given notification preference.
 	const labelFor = (p) => t(`notifDefs.${p.code}.name`, { defaultValue: p.name || p.code });
+	// Returns the translated description for a given notification preference.
 	const descFor = (p) => t(`notifDefs.${p.code}.desc`, { defaultValue: p.description || '' });
 
+	// Optimistically toggles a notification channel field and persists the change to the API.
 	async function toggle(pref, field) {
 		const id = pref.definition_id;
 		const next = !pref.effective?.[field];

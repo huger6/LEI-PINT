@@ -19,17 +19,27 @@ const TOKEN_REFRESH_THRESHOLD_S = 60;
  * Handles automatic token refresh when nearing expiry, and logs out inactive non-persistent sessions.
  */
 export function AuthProvider({ children }) {
+	// Stores the authenticated user object.
 	const [user, setUser] = useState(null);
+	// Stores the current JWT access token string.
 	const [token, setToken] = useState(null);
+	// Tracks whether a forced password change is required.
 	const [fpc, setFpc] = useState(false);
+	// Reflects whether the user is currently authenticated.
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	// Indicates the initial session restore is still in progress.
 	const [isLoading, setIsLoading] = useState(true);
+	// Prevents duplicate refresh attempts on mount.
 	const refreshAttempted = useRef(false);
 
+	// Holds the Unix timestamp (seconds) when the current token expires.
 	const tokenExpiresAt = useRef(null);
+	// Records the timestamp of the most recent detected user activity.
 	const lastActivityAt = useRef(Date.now());
+	// Tracks the last time the activity timestamp was updated to debounce rapid events.
 	const lastActivityUpdate = useRef(0);
 
+	// Tracks whether the current session is persistent (remember me).
 	const isPersistent = useRef(false);
 
 	// Clears all auth state and removes session flags from localStorage.
@@ -60,6 +70,7 @@ export function AuthProvider({ children }) {
 		if (data.fpc !== undefined) setFpc(data.fpc);
 	}, []);
 
+	// Calls the logout API endpoint and clears all local auth state.
 	const logout = useCallback(async () => {
 		try {
 			await authApi.logout();
@@ -70,12 +81,14 @@ export function AuthProvider({ children }) {
 		}
 	}, [clearAuth]);
 
+	// Listens for a global 'auth:logout' event to force-clear auth state.
 	useEffect(() => {
 		const handleForceLogout = () => clearAuth();
 		window.addEventListener('auth:logout', handleForceLogout);
 		return () => window.removeEventListener('auth:logout', handleForceLogout);
 	}, [clearAuth]);
 
+	// Registers a callback to update token expiry whenever a background refresh succeeds.
 	useEffect(() => {
 		setOnRefreshSuccess((data) => {
 			if (data.tokenExpiresIn) {
@@ -145,6 +158,7 @@ export function AuthProvider({ children }) {
 		return () => clearInterval(interval);
 	}, [logout]);
 
+	// Restores a previous session on mount by attempting a token refresh.
 	useEffect(() => {
 		if (!localStorage.getItem(SESSION_FLAG)) {
 			setIsLoading(false);

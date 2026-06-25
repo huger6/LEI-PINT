@@ -11,10 +11,13 @@ import styles from './Pagination.module.css';
  * @param {number} itemCount - Items on the current page.
  * @param {Function} onPageChange - Called with the new page number.
  */
+// Renders page number buttons with first/prev/next/last navigation and responsive ellipsis.
 const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChange }) => {
     const { t } = useTranslation();
+    // Tracks how many page buttons to show based on viewport width.
     const [maxVisible, setMaxVisible] = useState(8);
 
+    // Adjusts the visible page count when the viewport width changes.
     useEffect(() => {
         const updateMaxVisible = () => {
             const width = window.innerWidth;
@@ -31,6 +34,7 @@ const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChan
         return null;
     }
 
+    // Computes the array of page numbers and ellipsis markers to display.
     const getPageNumbers = () => {
         if (totalPages <= maxVisible) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);

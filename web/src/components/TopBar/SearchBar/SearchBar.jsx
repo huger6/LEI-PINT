@@ -8,6 +8,7 @@ import Icon from '../../Icons/Icons';
  * @param {Function} [onSearch] - Called with the trimmed query on form submit.
  * @param {Function} [onChange] - Called on every input change (controlled mode).
  */
+// Renders an inline search form on desktop and an expandable icon-button on mobile.
 export default function SearchBar({
     id = 'topbar-search',
     value,
@@ -18,15 +19,21 @@ export default function SearchBar({
     onChange,
     onSearch
 }) {
+    // Holds the uncontrolled input value when the component is used without a value prop.
     const [internalValue, setInternalValue] = useState(defaultValue);
+    // Tracks whether to render icon-only mode based on the current viewport width.
     const [isIconOnly, setIsIconOnly] = useState(() => window.matchMedia('(max-width: 991px)').matches);
+    // Tracks whether the mobile search overlay is expanded.
     const [isExpanded, setIsExpanded] = useState(false);
+    // Ref to the text input for programmatic focus when the overlay opens.
     const inputRef = useRef(null);
+    // Ref to the overlay form element for detecting outside clicks.
     const overlayRef = useRef(null);
 
     const isControlled = value !== undefined;
     const inputValue = isControlled ? value : internalValue;
 
+    // Watches the mobile breakpoint media query and collapses the overlay when switching to desktop.
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 991px)');
         const handler = (e) => {
@@ -37,10 +44,12 @@ export default function SearchBar({
         return () => mq.removeEventListener('change', handler);
     }, []);
 
+    // Focuses the input element whenever the mobile search overlay becomes expanded.
     useEffect(() => {
         if (isExpanded && inputRef.current) inputRef.current.focus();
     }, [isExpanded]);
 
+    // Attaches outside-click and Escape key listeners to collapse the mobile overlay.
     useEffect(() => {
         if (!isExpanded) return;
         const handleMouseDown = (e) => {
@@ -55,11 +64,13 @@ export default function SearchBar({
         };
     }, [isExpanded]);
 
+    // Updates the internal value for uncontrolled usage and forwards the event to onChange.
     const handleInputChange = (event) => {
         if (!isControlled) setInternalValue(event.target.value);
         onChange?.(event);
     };
 
+    // Prevents default form submission and passes the trimmed query to the onSearch callback.
     const handleSubmit = (event) => {
         event.preventDefault();
         onSearch?.(inputValue.trim(), event);
