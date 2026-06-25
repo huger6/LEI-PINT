@@ -8,6 +8,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    reward_guid: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4
+    },
     badge_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -22,6 +27,36 @@ module.exports = function (sequelize, DataTypes) {
     },
     special_portrait_svg: {
       type: DataTypes.TEXT,
+      allowNull: true
+    },
+    reward_name: {
+      type: DataTypes.STRING(150),
+      allowNull: true
+    },
+    reward_description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    access_link: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    access_info: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    cost_points: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+    reward_category: {
+      type: DataTypes.STRING(50),
       allowNull: true
     }
   }, {

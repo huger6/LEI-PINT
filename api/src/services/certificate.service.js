@@ -14,14 +14,14 @@ const CERTIFICATE_BUCKET = 'public-assets';
  * @param {number} requestingUserId - used for ownership check (pass null to skip)
  * @returns {Promise<object|null>}
  */
-const fetchCertificateData = async (applicationGuid, requestingUserId = null) => {
+const fetchCertificateData = async (applicationGuid, requestingUserId = null, allowedServiceLineId = null) => {
     const application = await models.badge_applications.findOne({
         where: { application_guid: applicationGuid },
         include: [
             {
                 model: models.badges,
                 as: 'badge',
-                attributes: ['badge_title', 'badge_description', 'badge_img_url', 'badge_points']
+                attributes: ['badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'service_line_id']
             },
             {
                 model: models.consultants,
@@ -52,6 +52,10 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null) =>
 
     // Ownership guard: consultants can only fetch their own
     if (requestingUserId !== null && application.user_id !== requestingUserId) return null;
+
+    // Service Line scope guard: a Service Line Leader may only generate
+    // certificates for applications inside their own Service Line.
+    if (allowedServiceLineId !== null && application.badge?.service_line_id !== allowedServiceLineId) return null;
 
     if (application.application_state !== 'Accepted') return null;
 
@@ -105,8 +109,8 @@ const extractStoragePath = (url) => {
  * @param {number|null} requestingUserId
  * @returns {Promise<{ certificateUrl: string, isNew: boolean }>}
  */
-const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = null) => {
-    const data = await fetchCertificateData(applicationGuid, requestingUserId);
+const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = null, allowedServiceLineId = null) => {
+    const data = await fetchCertificateData(applicationGuid, requestingUserId, allowedServiceLineId);
 
     if (!data) {
         const err = new Error('Application not found, not accepted, or access denied');

@@ -6,6 +6,7 @@ const validations = require('../validations/applications.validation');
 const { generateSignedUploadUrl, generateSignedDownloadUrl } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
+const { broadcastToWebhooks } = require('../services/integrations.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const {
     sendApplicationSubmittedEmail,
@@ -98,8 +99,12 @@ const getApplications = async (req, res) => {
                     code: "APP_SLL_NOT_CONFIGURED"
                 });
             }
-            // SLL only sees applications within their SL (merge with any area filter)
-            badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
+            // When viewing a specific consultant's profile (consultantGuid provided),
+            // show all their badges regardless of service line so the count matches
+            // the team list. Otherwise scope to the SLL's own service line.
+            if (!consultantGuid) {
+                badgeInclude.where = { ...(badgeInclude.where || {}), service_line_id: sllInfo.service_line_id };
+            }
 
         } else if (role === 'Talent Manager' || role === 'Administrator') {
             // TM/Admin see everything, but TM doesn't see apps in 'Open' state by default
@@ -783,6 +788,8 @@ const validateApplication = async (req, res) => {
             appUrl: `${FRONTEND_URL}/applications/${application.application_guid}`,
             applicationGuid: application.application_guid,
             badgeTitle: application.badge.badge_title,
+            badgeImgUrl: application.badge.badge_img_url,
+            verificationLink: awardedBadge?.public_verification_link || null,
             serviceLineId: application.badge.service_line_id,
             newState,
             reviewerNotes
@@ -802,6 +809,27 @@ const validateApplication = async (req, res) => {
                         meta: badgeMeta,
                         url: `/applications/${applicationGuid}`
                     });
+
+                    // Broadcast the new public credential to external channels
+                    // (Microsoft Teams). Decoupled from the in-app notification type:
+                    // a badge award is a BADGES-class event regardless of the
+                    // APPLICATIONS notification the consultant receives.
+                    try {
+                        const recipient = await getConsultantEmailData(userId);
+                        const verifyUrl = postCommitContext.verificationLink
+                            ? `${FRONTEND_URL}/verify/${postCommitContext.verificationLink}`
+                            : null;
+                        broadcastToWebhooks(models, {
+                            title: `🏅 ${badgeTitle}`,
+                            body: recipient?.name
+                                ? `${recipient.name} conquistou o badge "${badgeTitle}".`
+                                : `Novo badge conquistado: "${badgeTitle}".`,
+                            badgeImageUrl: postCommitContext.badgeImgUrl || null,
+                            verificationUrl: verifyUrl
+                        });
+                    } catch (broadcastErr) {
+                        logger.error('Teams broadcast on badge award failed', { error: broadcastErr.message });
+                    }
                 } else if (postCommitContext.newState === 'Rejected') {
                     await notificationsService.createNotification({
                         userId,
@@ -1009,15 +1037,6 @@ const reviewEvidence = async (req, res) => {
             validator_action: approved ? 'Approve Evidence' : 'Reject Evidence',
             validations_comments: reviewNotes ?? null
         }, { transaction });
-
-        // Award requirement points when evidence is approved
-        if (approved && evidence.requirement_id) {
-            await gamificationService.awardRequirementPoints(
-                application.user_id,
-                evidence.requirement_id,
-                transaction
-            );
-        }
 
         await transaction.commit();
 

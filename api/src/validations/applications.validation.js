@@ -63,7 +63,7 @@ const getApplicationsQuerySchema = z.object({
     dateTo: z.coerce.date().optional(),
 
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().default(20)
+    limit: z.coerce.number().int().positive().max(100).default(20)
 });
 
 const MAX_EVIDENCE_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB

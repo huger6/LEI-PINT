@@ -24,6 +24,7 @@ const search = require('./search.routes');
 const exportsRoutes = require('./exports.routes');
 const gdpr = require('./gdpr.routes');
 const integrations = require('./integrations.routes');
+const translation = require('./translation.routes');
 
 // --- Auth & user session ---
 router.use('/auth', auth);
@@ -47,6 +48,7 @@ router.use('/goals', goals);
 // --- Gamification & rankings ---
 router.use('/ranking', ranking);
 router.use('/gamification', gamification);
+router.use('/rewards', require('./rewards.routes'));
 router.use('/notifications', notifications);
 router.use('/statistics', statistics);
 
@@ -61,6 +63,9 @@ router.use('/utils', utils);
 router.use('/admin', admin);
 router.use('/gdpr', gdpr);
 router.use('/integrations', integrations);
+
+// --- Translation ---
+router.use('/translate', translation);
 
 // --- Public (no auth) ---
 router.use('/public', require('./publicCatalog.routes'));

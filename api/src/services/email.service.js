@@ -809,6 +809,39 @@ const sendBadgeExpiredEmail = (email, { name, badgeTitle, badgeUrl, lang }) =>
 const sendObjectiveReminderEmail = (email, { name, title, objectivesUrl, lang }) =>
     sendReminderEmail('objective', email, { name, title }, objectivesUrl, lang);
 
+// Sent when a consultant redeems a points-store reward. Carries the (static)
+// access info / link for the course or perk.
+const sendRewardRedemptionEmail = async (email, name, { rewardName, accessLink, accessInfo, costPoints }) => {
+    const safeName = escapeHtml(name);
+    const safeReward = escapeHtml(rewardName);
+    const safeInfo = escapeHtml(accessInfo || '');
+    const uniqueId = Date.now().toString(36);
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">Olá ${safeName},</p>
+                <p style="margin-bottom:16px;">Resgataste com sucesso a recompensa <strong>${safeReward}</strong>${costPoints != null ? ` (${costPoints} pontos)` : ''}.</p>
+                ${safeInfo ? `<p style="margin-bottom:16px;color:#555555;">${safeInfo}</p>` : ''}
+                ${accessLink ? ctaButton('Aceder', accessLink) : ''}
+                <p style="margin-top:24px;margin-bottom:0;">— Equipa Softinsa</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'A tua recompensa Softinsa',
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending reward redemption email', { error });
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
     sendResetPasswordEmail,
@@ -820,5 +853,6 @@ module.exports = {
     sendCustomSlaBreachAlert,
     sendBadgeExpiringEmail,
     sendBadgeExpiredEmail,
-    sendObjectiveReminderEmail
+    sendObjectiveReminderEmail,
+    sendRewardRedemptionEmail
 };

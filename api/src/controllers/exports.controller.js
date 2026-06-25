@@ -42,29 +42,33 @@ const buildPdf = async (title, columns, rows) => new Promise((resolve, reject) =
     const usableWidth = doc.page.width - margin * 2;
     const columnWidth = usableWidth / columns.length;
     const fontSize = columns.length > 9 ? 7 : (columns.length > 6 ? 8 : 9);
-    const rowHeight = fontSize + 7;
-    const bottomLimit = doc.page.height - margin - rowHeight;
+    const bottomLimit = doc.page.height - margin;
 
     doc.fontSize(16).text(title, { align: 'center' });
     doc.moveDown(0.8);
     let rowY = doc.y;
 
-    // Each cell is clipped to a single line (ellipsis) so rows never overlap.
     const drawRow = (cells, bold) => {
         doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(fontSize);
+
+        const cellHeights = cells.map(text =>
+            doc.heightOfString(String(text ?? ''), { width: columnWidth - 4 })
+        );
+        const rowHeight = Math.max(...cellHeights) + 4;
+
+        if (rowY + rowHeight > bottomLimit) {
+            doc.addPage();
+            rowY = margin;
+        }
+
         cells.forEach((text, index) => {
             doc.text(String(text ?? ''), margin + (index * columnWidth), rowY, {
                 width: columnWidth - 4,
                 height: rowHeight,
-                ellipsis: true,
-                lineBreak: false,
             });
         });
+
         rowY += rowHeight;
-        if (rowY > bottomLimit) {
-            doc.addPage();
-            rowY = margin;
-        }
     };
 
     drawRow(columns.map((c) => c.header), true);
@@ -196,7 +200,7 @@ const fetchApplicationRows = async ({ from, to, state, userId, role }) => {
     const stateFilters = [];
 
     if (state && state.length > 0) {
-        stateFilters.push('ba.application_state = ANY(:state)');
+        stateFilters.push('ba.application_state IN (:state)');
         replacements.state = state;
     }
 

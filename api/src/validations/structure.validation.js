@@ -260,8 +260,6 @@ const createRequirementBodySchema = z.object({
 	requirementDescription: z.string().trim().min(1, 'VALIDATION_REQUIREMENT_DESCRIPTION_REQUIRED').max(5000, 'VALIDATION_REQUIREMENT_DESCRIPTION_MAX'),
 
 	requirementSequence: z.coerce.number().int().positive().optional().nullable(),
-
-	badgePoints: z.coerce.number().int().min(0).default(0)
 });
 
 const updateRequirementBodySchema = createRequirementBodySchema.extend({

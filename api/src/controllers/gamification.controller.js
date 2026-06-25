@@ -328,7 +328,7 @@ const getEarnedBadges = async (req, res) => {
             });
         }
 
-        const { page, limit } = validations.getRecommendationsQuerySchema.parse(req.query);
+        const { page, limit } = validations.getPointsHistoryQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         // Check if consultant exists

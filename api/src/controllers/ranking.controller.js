@@ -3,12 +3,28 @@ const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 const validations = require('../validations/ranking.validation');
 const { handleZodError } = require('../utils/responseHelper');
+const statsService = require('../services/statistics.service');
+
+/*──────────────────────────────────────────────────────────────
+  A Service Line Leader may only see the ranking of consultants
+  within their own Service Line, so we ignore any client-supplied
+  serviceLineId and force their registered SL server-side. An SLL
+  with no SL configured gets an impossible id (empty leaderboard).
+  Consultants / Talent Managers / Administrators keep the requested
+  (possibly null/global) scope.
+──────────────────────────────────────────────────────────────*/
+const scopeServiceLineId = async (req, requested) => {
+    if (req.user.role !== 'Service Line Leader') return requested ?? null;
+    const slId = await statsService.resolveServiceLineForUser(req.user.sub, 'Service Line Leader');
+    return slId ?? -1;
+};
 
 const getRanking = async (req, res) => {
     try {
         // Validations
         const validation = validations.rankingQuerySchema.parse(req.query);
-        const { page, limit, learningPathId, serviceLineId, areaId } = validation;
+        const { page, limit, learningPathId, areaId } = validation;
+        const serviceLineId = await scopeServiceLineId(req, validation.serviceLineId);
 
         let results;
         try {
@@ -166,7 +182,8 @@ const getRanking = async (req, res) => {
 const getMyPosition = async (req, res) => {
     try {
         const validation = validations.myPositionQuerySchema.parse(req.query);
-        const { limit, learningPathId, serviceLineId, areaId } = validation;
+        const { limit, learningPathId, areaId } = validation;
+        const serviceLineId = await scopeServiceLineId(req, validation.serviceLineId);
         const userId = req.user.sub;
 
         const filters = {
