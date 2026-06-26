@@ -124,10 +124,11 @@ const wasAlreadyAlerted = async (slaId, applicationId, userId) => {
 };
 
 const markAlerted = async (slaId, applicationId, userId) => {
-    await models.sla_breach_alerts.create({
-        sla_id: slaId,
-        application_id: applicationId,
-        user_id: userId
+    // Idempotent: concurrent worker runs can race past wasAlreadyAlerted, so use
+    // findOrCreate to avoid the unique-constraint violation (and its log noise).
+    await models.sla_breach_alerts.findOrCreate({
+        where: { sla_id: slaId, application_id: applicationId, user_id: userId },
+        defaults: { sla_id: slaId, application_id: applicationId, user_id: userId }
     });
 };
 
