@@ -1,39 +1,162 @@
 {
 	"softinsaSite": {
-		"nav": { "sobre": "About", "funcionalidades": "Features", "badges": "Badges", "perfis": "Profiles", "comoFunciona": "How it works", "aceder": "Go to the platform" },
-		"hero": { "eyebrow": "Softinsa · An IBM Subsidiary", "title": "Badge Platform", "subtitle": "Innovation, talent and technology to accelerate digital transformation, now also in how we recognise our teams' skills, with verifiable digital credentials.", "entrar": "Sign in", "saberMais": "Learn more", "credential": "Verified credential" },
-		"stats": { "learningPaths": "Initial Learning Path", "niveis": "Levels per area", "idiomas": "Languages", "verificaveis": "Verifiable credentials" },
-		"about": { "title": "About the project", "p1": "The Softinsa Badge Platform is a digital credential management system that recognises and validates consultants' technical skills through badges tied to Learning Paths, Service Lines and Areas.", "p2": "It addresses the difficulty of evidencing skills, adds a gamification layer that drives continuous learning, and provides a standardised, verifiable way to present professional credentials.", "p3": "It is organised in a clear hierarchy — Learning Paths grouping Service Lines, Areas and progression levels — where each level unlocks specific badges. To use it: browse the catalog, apply for a badge, submit your evidence and track progress through validation." },
-		"features": { "title": "Features", "items": [
-			{ "title": "Learning Paths", "desc": "Technical paths organised by Service Lines, Areas and progression levels." },
-			{ "title": "Verifiable credentials", "desc": "Every badge has a unique public page for external verification and email signatures." },
-			{ "title": "Gamification", "desc": "Points, achievements and ranking that encourage continuous learning." },
-			{ "title": "Expert validation", "desc": "Two-stage validation flow: Talent Manager and Service Line Leader." },
-			{ "title": "Statistics & reports", "desc": "KPIs, badge distribution and Excel/PDF exports." },
-			{ "title": "Multilingual", "desc": "Available in Portuguese, English and Spanish." }
-		] },
-		"profiles": { "title": "User profiles", "items": [
-			{ "title": "Consultant", "desc": "Applies for badges, submits evidence, tracks progress and shares credentials." },
-			{ "title": "Talent Manager", "desc": "Verifies the evidence of every application, regardless of Service Line." },
-			{ "title": "Service Line Leader", "desc": "Makes the final decision on applications within their Service Line." },
-			{ "title": "Administrator", "desc": "Manages users, content, the points engine and platform policies." }
-		] },
-		"flow": { "title": "How it works", "items": [
-			{ "title": "Application", "desc": "The consultant applies for a badge with the required evidence." },
-			{ "title": "Verification", "desc": "The Talent Manager validates the evidence and forwards it to the Service Line Leader." },
-			{ "title": "Decision", "desc": "The Service Line Leader approves or rejects; the badge is generated and made available." },
-			{ "title": "Sharing", "desc": "The consultant publishes and shares the credential, with public link verification." }
-		] },
-		"badges": { "title": "Badges", "subtitle": "A few examples of the available credentials — the full catalog lives inside the platform.", "empty": "No badges to show.", "other": "Other" },
-		"cta": { "title": "Ready to evidence your skills?", "subtitle": "Go to the platform and start earning your badges.", "button": "Go to the platform" },
+		"nav": {
+			"sobre": "About",
+			"funcionalidades": "Features",
+			"badges": "Badges",
+			"perfis": "Profiles",
+			"comoFunciona": "How it works",
+			"aceder": "Go to the platform"
+		},
+		"hero": {
+			"eyebrow": "Softinsa · An IBM Subsidiary",
+			"title": "Badge Platform",
+			"subtitle": "Innovation, talent and technology to accelerate digital transformation, now also in how we recognise our teams' skills, with verifiable digital credentials.",
+			"entrar": "Sign in",
+			"saberMais": "Learn more",
+			"credential": "Verified credential"
+		},
+		"stats": {
+			"learningPaths": "Initial Learning Path",
+			"niveis": "Levels per area",
+			"idiomas": "Languages",
+			"verificaveis": "Verifiable credentials"
+		},
+		"about": {
+			"title": "About the project",
+			"p1": "The Softinsa Badge Platform is a digital credential management system that recognises and validates consultants' technical skills through badges tied to Learning Paths, Service Lines and Areas.",
+			"p2": "It addresses the difficulty of evidencing skills, adds a gamification layer that drives continuous learning, and provides a standardised, verifiable way to present professional credentials.",
+			"p3": "It is organised in a clear hierarchy — Learning Paths grouping Service Lines, Areas and progression levels — where each level unlocks specific badges. To use it: browse the catalog, apply for a badge, submit your evidence and track progress through validation."
+		},
+		"features": {
+			"title": "Features",
+			"items": [
+				{
+					"title": "Learning Paths",
+					"desc": "Technical paths organised by Service Lines, Areas and progression levels."
+				},
+				{
+					"title": "Verifiable credentials",
+					"desc": "Every badge has a unique public page for external verification and email signatures."
+				},
+				{
+					"title": "Gamification",
+					"desc": "Points, achievements and ranking that encourage continuous learning."
+				},
+				{
+					"title": "Expert validation",
+					"desc": "Two-stage validation flow: Talent Manager and Service Line Leader."
+				},
+				{
+					"title": "Statistics & reports",
+					"desc": "KPIs, badge distribution and Excel/PDF exports."
+				},
+				{
+					"title": "Multilingual",
+					"desc": "Available in Portuguese, English and Spanish."
+				}
+			]
+		},
+		"profiles": {
+			"title": "User profiles",
+			"items": [
+				{
+					"title": "Consultant",
+					"desc": "Applies for badges, submits evidence, tracks progress and shares credentials."
+				},
+				{
+					"title": "Talent Manager",
+					"desc": "Verifies the evidence of every application, regardless of Service Line."
+				},
+				{
+					"title": "Service Line Leader",
+					"desc": "Makes the final decision on applications within their Service Line."
+				},
+				{
+					"title": "Administrator",
+					"desc": "Manages users, content, the points engine and platform policies."
+				}
+			]
+		},
+		"flow": {
+			"title": "How it works",
+			"items": [
+				{
+					"title": "Application",
+					"desc": "The consultant applies for a badge with the required evidence."
+				},
+				{
+					"title": "Verification",
+					"desc": "The Talent Manager validates the evidence and forwards it to the Service Line Leader."
+				},
+				{
+					"title": "Decision",
+					"desc": "The Service Line Leader approves or rejects; the badge is generated and made available."
+				},
+				{
+					"title": "Sharing",
+					"desc": "The consultant publishes and shares the credential, with public link verification."
+				}
+			]
+		},
+		"badges": {
+			"title": "Badges",
+			"subtitle": "A few examples of the available credentials — the full catalog lives inside the platform.",
+			"empty": "No badges to show.",
+			"other": "Other"
+		},
+		"cta": {
+			"title": "Ready to evidence your skills?",
+			"subtitle": "Go to the platform and start earning your badges.",
+			"button": "Go to the platform"
+		},
 		"footer": {
 			"tagline": "Talk to the Softinsa team and discover how we can drive innovation in your business.",
-			"contacteNos": "Contact us", "localizacao": "Location", "vamosConversar": "Let's talk?", "envie": "Send us a message here.", "formulario": "Form", "ligacoesUteis": "Useful Links",
-			"copyright": "© Softinsa {{year}}. All rights reserved.", "toTop": "Back to top",
-			"links": ["About us", "Social Responsibility", "Services", "Innovation Centers", "Careers", "Highlights", "Contacts"],
-			"policies": ["Privacy Policy", "Terms of Use", "Environmental Policy", "Whistleblowing Channel"]
+			"contacteNos": "Contact us",
+			"localizacao": "Location",
+			"vamosConversar": "Let's talk?",
+			"envie": "Send us a message here.",
+			"formulario": "Form",
+			"ligacoesUteis": "Useful Links",
+			"copyright": "© Softinsa {{year}}. All rights reserved.",
+			"toTop": "Back to top",
+			"links": [
+				"About us",
+				"Social Responsibility",
+				"Services",
+				"Innovation Centers",
+				"Careers",
+				"Highlights",
+				"Contacts"
+			],
+			"policies": [
+				"Privacy Policy",
+				"Terms of Use",
+				"Environmental Policy",
+				"Whistleblowing Channel"
+			]
 		},
-		"badgePage": { "back": "All badges", "points": "Points", "validity": "Validity", "days": "{{count}} days", "competencies": "Skills", "competenciesSub": "Skills this badge certifies.", "noCompetencies": "No skills associated with this badge.", "requirements": "Requirements", "requirementsSub": "What you must evidence to earn this badge.", "noRequirements": "No detailed requirements for this badge.", "notFound": "Badge not found", "viewAll": "See all badges", "loading": "Loading…", "premium": "Premium", "certified": "Official credential certified by Softinsa · Active", "nivel": "Level", "area": "Area", "serviceLine": "Service Line", "learningPath": "Learning Path" }
+		"badgePage": {
+			"back": "All badges",
+			"points": "Points",
+			"validity": "Validity",
+			"days": "{{count}} days",
+			"competencies": "Skills",
+			"competenciesSub": "Skills this badge certifies.",
+			"noCompetencies": "No skills associated with this badge.",
+			"requirements": "Requirements",
+			"requirementsSub": "What you must evidence to earn this badge.",
+			"noRequirements": "No detailed requirements for this badge.",
+			"notFound": "Badge not found",
+			"viewAll": "See all badges",
+			"loading": "Loading…",
+			"premium": "Premium",
+			"certified": "Official credential certified by Softinsa · Active",
+			"nivel": "Level",
+			"area": "Area",
+			"serviceLine": "Service Line",
+			"learningPath": "Learning Path"
+		}
 	},
 	"roles": {
 		"Consultant": "Consultant",
@@ -317,7 +440,10 @@
 		"policy": "Policy",
 		"action": "Action",
 		"date": "Date",
-		"actions": { "ACCEPTED": "Accepted", "REVOKED": "Revoked" },
+		"actions": {
+			"ACCEPTED": "Accepted",
+			"REVOKED": "Revoked"
+		},
 		"deleteTitle": "Delete account",
 		"deleteHint": "Permanently delete your account and anonymise your data.",
 		"deleteButton": "Delete my account",
@@ -606,7 +732,7 @@
 		"edit": "Edit",
 		"delete": "Delete",
 		"remove": "Remove",
-			"deactivate": "Deactivate",
+		"deactivate": "Deactivate",
 		"select": "Select...",
 		"name": "Name",
 		"title": "Title",
@@ -633,8 +759,8 @@
 		"quickActions": "Quick Actions",
 		"confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
 		"confirmDeactivate": "Are you sure you want to deactivate \"{{name}}\"?",
-			"confirmReactivate": "Are you sure you want to reactivate \"{{name}}\"?",
-			"reactivate": "Reactivate",
+		"confirmReactivate": "Are you sure you want to reactivate \"{{name}}\"?",
+		"reactivate": "Reactivate",
 		"noResults": "No results found.",
 		"badge": "Badge",
 		"state": "State",
@@ -699,7 +825,11 @@
 		"noSlas": "No SLAs defined.",
 		"slaStart": "Start",
 		"slaEnd": "End",
-		"slaStatus": { "active": "Active", "expiring": "Expiring soon", "expired": "Expired" }
+		"slaStatus": {
+			"active": "Active",
+			"expiring": "Expiring soon",
+			"expired": "Expired"
+		}
 	},
 	"adminUsers": {
 		"title": "Users",
@@ -959,14 +1089,38 @@
 		"noEmailChannel": "This notification is only sent in-app (no email)."
 	},
 	"notifDefs": {
-		"ANNOUNCEMENT_PUBLISHED": { "name": "New announcement", "desc": "When a new announcement is published." },
-		"APPLICATION_SUBMITTED": { "name": "Application submitted", "desc": "When an application is submitted or moves to a new validation step." },
-		"APPLICATION_APPROVED": { "name": "Application approved", "desc": "When an application is approved and the badge is awarded." },
-		"APPLICATION_REJECTED": { "name": "Application rejected", "desc": "When an application is rejected." },
-		"OBJECTIVE_DUE": { "name": "Objective due soon", "desc": "Reminder for an objective nearing its deadline." },
-		"BADGE_EXPIRING_SOON": { "name": "Badge expiring soon", "desc": "When an awarded badge is close to expiring." },
-		"BADGE_EXPIRED": { "name": "Badge expired", "desc": "When an awarded badge has expired." },
-		"SLA_BREACH": { "name": "SLA exceeded", "desc": "When a response SLA is breached." }
+		"ANNOUNCEMENT_PUBLISHED": {
+			"name": "New announcement",
+			"desc": "When a new announcement is published."
+		},
+		"APPLICATION_SUBMITTED": {
+			"name": "Application submitted",
+			"desc": "When an application is submitted or moves to a new validation step."
+		},
+		"APPLICATION_APPROVED": {
+			"name": "Application approved",
+			"desc": "When an application is approved and the badge is awarded."
+		},
+		"APPLICATION_REJECTED": {
+			"name": "Application rejected",
+			"desc": "When an application is rejected."
+		},
+		"OBJECTIVE_DUE": {
+			"name": "Objective due soon",
+			"desc": "Reminder for an objective nearing its deadline."
+		},
+		"BADGE_EXPIRING_SOON": {
+			"name": "Badge expiring soon",
+			"desc": "When an awarded badge is close to expiring."
+		},
+		"BADGE_EXPIRED": {
+			"name": "Badge expired",
+			"desc": "When an awarded badge has expired."
+		},
+		"SLA_BREACH": {
+			"name": "SLA exceeded",
+			"desc": "When a response SLA is breached."
+		}
 	},
 	"adminRgpd": {
 		"title": "GDPR",
@@ -986,7 +1140,11 @@
 		"saveFailed": "Could not save the policy.",
 		"errVersion": "Version is required (up to 30 characters).",
 		"errText": "Policy text is required.",
-		"types": { "Privacy": "Privacy", "Terms": "Terms", "Cookies": "Cookies" }
+		"types": {
+			"Privacy": "Privacy",
+			"Terms": "Terms",
+			"Cookies": "Cookies"
+		}
 	},
 	"notifPrefs": {
 		"title": "Notification preferences",
@@ -1044,7 +1202,13 @@
 		"errName": "Enter a name.",
 		"errCost": "Invalid cost.",
 		"errUrl": "Invalid URL (must start with http).",
-		"categories": { "course": "Course", "voucher": "Voucher", "title": "Title", "physical": "Physical", "subscription": "Subscription" }
+		"categories": {
+			"course": "Course",
+			"voucher": "Voucher",
+			"title": "Title",
+			"physical": "Physical",
+			"subscription": "Subscription"
+		}
 	},
 	"adminSlas": {
 		"title": "SLAs",
@@ -1103,7 +1267,11 @@
 		"proposedObjective": "Suggested objective",
 		"resume": "Resume",
 		"start": "Start",
-		"status": { "approved": "Approved", "pending": "Pending", "rejected": "Rejected" },
+		"status": {
+			"approved": "Approved",
+			"pending": "Pending",
+			"rejected": "Rejected"
+		},
 		"noApplications": "You have no applications yet.",
 		"noApplicationsHint": "Explore the catalog and apply for your first badge.",
 		"exploreCatalog": "Explore Catalog",
@@ -1196,7 +1364,7 @@
 		"requirementsDescription": "Complete all requirements to earn this badge.",
 		"progress": "Progress",
 		"completed": "completed",
-		"complete": "Complete",
+		"complete": "Completed",
 		"pending": "Pending",
 		"expiresOn": "Expires on",
 		"related": "Related",
@@ -1690,7 +1858,8 @@
 		"colState": "Status",
 		"filter": {
 			"obtained": "Obtained",
-			"inprocess": "In process", "submitted": "Submitted"
+			"inprocess": "In process",
+			"submitted": "Submitted"
 		},
 		"filters": {
 			"toggle": "Filters",
@@ -1801,7 +1970,9 @@
 		"boardTitle": "Badge Application Management",
 		"registered": "{{count}} applications registered",
 		"filtersBtn": "Filters",
-		"filters": { "allStates": "All states" },
+		"filters": {
+			"allStates": "All states"
+		},
 		"cols": {
 			"consultant": "Consultant",
 			"badge": "Badge",
@@ -1859,7 +2030,13 @@
 		"confirmReject": "Reject this application? This action closes the application.",
 		"confirmSendBack": "Return this application to the consultant for correction? It goes back to the Open state.",
 		"backToList": "Back to applications",
-		"appState": { "open": "Open", "submitted": "Submitted", "inValidation": "In validation", "accepted": "Accepted", "rejected": "Rejected" },
+		"appState": {
+			"open": "Open",
+			"submitted": "Submitted",
+			"inValidation": "In validation",
+			"accepted": "Accepted",
+			"rejected": "Rejected"
+		},
 		"summaryTitle": "Validation Summary",
 		"decisionPanelTitle": "Decision Panel",
 		"strategicTitle": "Strategic Decision Zone",
@@ -1909,19 +2086,47 @@
 			"box": "{{consultant}} — {{badge}}. The consultant will be notified by email.",
 			"reasonLabel": "Reason",
 			"notified": "The consultant will be notified by email.",
-			"accept": { "title": "Application Approved!", "desc": "The consultant has been notified and can now publish and share the badge." },
-			"review": { "title": "Application forwarded!", "desc": "Sent to the Service Line Leader for the final decision." },
-			"send_back": { "title": "Application returned!", "desc": "Returned to the consultant for correction." },
-			"reject": { "title": "Application Rejected!", "desc": "The application has been closed with feedback to the consultant." }
+			"accept": {
+				"title": "Application Approved!",
+				"desc": "The consultant has been notified and can now publish and share the badge."
+			},
+			"review": {
+				"title": "Application forwarded!",
+				"desc": "Sent to the Service Line Leader for the final decision."
+			},
+			"send_back": {
+				"title": "Application returned!",
+				"desc": "Returned to the consultant for correction."
+			},
+			"reject": {
+				"title": "Application Rejected!",
+				"desc": "The application has been closed with feedback to the consultant."
+			}
 		},
 		"rejectConfirmTitle": "Reject application?",
 		"rejectConfirmText": "This closes {{consultant}}'s application and notifies them by email with the reason provided.",
 		"rejectConfirmYes": "Yes, reject",
 		"confirm": {
-			"review": { "title": "Forward to the Service Line Leader?", "text": "{{consultant}}'s application moves on for final validation.", "yes": "Yes, forward" },
-			"accept": { "title": "Approve and publish?", "text": "{{consultant}}'s badge will be generated and published.", "yes": "Yes, approve" },
-			"send_back": { "title": "Return to the consultant?", "text": "{{consultant}} gets the application back for correction, with your comment.", "yes": "Yes, return" },
-			"reject": { "title": "Reject application?", "text": "This closes {{consultant}}'s application and notifies them by email with the reason provided.", "yes": "Yes, reject" }
+			"review": {
+				"title": "Forward to the Service Line Leader?",
+				"text": "{{consultant}}'s application moves on for final validation.",
+				"yes": "Yes, forward"
+			},
+			"accept": {
+				"title": "Approve and publish?",
+				"text": "{{consultant}}'s badge will be generated and published.",
+				"yes": "Yes, approve"
+			},
+			"send_back": {
+				"title": "Return to the consultant?",
+				"text": "{{consultant}} gets the application back for correction, with your comment.",
+				"yes": "Yes, return"
+			},
+			"reject": {
+				"title": "Reject application?",
+				"text": "This closes {{consultant}}'s application and notifies them by email with the reason provided.",
+				"yes": "Yes, reject"
+			}
 		},
 		"toast": {
 			"evidenceApproved": "Evidence approved.",
