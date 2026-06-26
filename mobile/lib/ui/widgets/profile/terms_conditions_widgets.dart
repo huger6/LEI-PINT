@@ -19,10 +19,24 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
   List<GdprPolicyModel>? _policies;
   bool _loading = true;
 
+  // Translated body texts parallel to _policies. Null = not yet translated.
+  List<String>? _translatedBodies;
+  String _currentLang = 'pt';
+
   @override
   void initState() {
     super.initState();
     _loadPolicies();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tr = LanguageScope.of(context);
+    if (tr.languageCode != _currentLang) {
+      _currentLang = tr.languageCode;
+      _translateBodies(tr);
+    }
   }
 
   Future<void> _loadPolicies() async {
@@ -31,10 +45,13 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
     // Offline-first: show whatever is cached locally first.
     final cached = await dao.getAll();
     if (mounted) {
+      final tr = LanguageScope.of(context);
+      _currentLang = tr.languageCode;
       setState(() {
         _policies = cached;
         _loading = false;
       });
+      _translateBodies(tr);
     }
 
     // Then refresh from the API (privacy / terms / cookies policies) and cache.
@@ -50,12 +67,39 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
       if (policies.isNotEmpty) {
         await dao.replaceAll(policies);
         if (mounted) {
+          final tr = LanguageScope.of(context);
           setState(() => _policies = policies);
+          _translateBodies(tr);
         }
       }
     } catch (_) {
       // Keep the cached/fallback content when offline.
     }
+  }
+
+  void _translateBodies(LanguageController tr) {
+    final policies = _policies;
+    if (policies == null || policies.isEmpty) return;
+
+    // Portuguese is the source language — no translation needed.
+    if (tr.languageCode == 'pt') {
+      setState(() {
+        _translatedBodies = policies.map((p) => p.policyText).toList();
+      });
+      return;
+    }
+
+    Future.wait(
+      policies.map((p) => tr.translateText(p.policyText, namespace: 'gdpr')),
+    ).then((translated) {
+      if (mounted) setState(() => _translatedBodies = translated);
+    }).catchError((_) {
+      if (mounted) {
+        setState(() {
+          _translatedBodies = policies.map((p) => p.policyText).toList();
+        });
+      }
+    });
   }
 
   @override
@@ -70,10 +114,12 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final policy in _policies!)
+          for (var i = 0; i < _policies!.length; i++)
             _SectionCard(
-              title: _policyTypeLabel(policy.policyType, tr),
-              body: policy.policyText,
+              title: _policyTypeLabel(_policies![i].policyType, tr),
+              body: (_translatedBodies != null && i < _translatedBodies!.length)
+                  ? _translatedBodies![i]
+                  : _policies![i].policyText,
             ),
           const SizedBox(height: 8),
           if (_policies!.first.createdAt != null)
@@ -114,7 +160,7 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
     );
   }
 
-  String _policyTypeLabel(String type, dynamic tr) {
+  String _policyTypeLabel(String type, LanguageController tr) {
     switch (type) {
       case 'Privacy':
         return tr.tr('policyTypePrivacy');
