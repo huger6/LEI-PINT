@@ -1,0 +1,166 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.kpiRow {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 1rem;
+}
+
+.kpiCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 1.1rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	background: var(--color-bg-card);
+}
+
+.kpiIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+}
+
+.kpiValue {
+	font-size: 1.6rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	line-height: 1.1;
+}
+
+.kpiLabel {
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.chartsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 1rem;
+}
+
+.chartCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.chartCardWide {
+	grid-column: 1 / -1;
+}
+
+.emptyChart {
+	margin: 0;
+	padding: 2rem 0;
+	text-align: center;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+.errorCard {
+	padding: 1rem;
+	border: 1px solid var(--color-error);
+	border-radius: 12px;
+	color: var(--color-error);
+	background: var(--color-bg-card);
+}
+
+.section { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Section header with inline control (format / window selector) */
+.sectionHeaderRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.inlineSelect {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+}
+
+.inlineSelectLabel {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.inlineSelect select {
+	width: auto;
+	min-width: 92px;
+}
+
+/* Export buttons */
+.exportButtons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+/* Expiring badges days chip */
+.daysChip {
+	display: inline-block;
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+
+.daysCritical {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.daysWarning {
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.daysNeutral {
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+/* Points-per-badge + special badges sections */
+.sectionNote {
+	margin: 0;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.scrollTable {
+	max-height: 360px;
+	overflow-y: auto;
+}
+
+.pointsValue {
+	font-weight: 700;
+	color: var(--color-orange-on-soft);
+	white-space: nowrap;
+}
+
+.specialGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 1rem;
+}

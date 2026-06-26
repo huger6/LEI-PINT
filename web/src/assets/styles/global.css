@@ -1,0 +1,343 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 16px;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	font-family: var(--font-body);
+	background: var(--color-background);
+	color: var(--color-on-background);
+	line-height: 1.5;
+	min-height: 100dvh;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+}
+
+a {
+	color: var(--color-primary);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Never underline link-wrapped buttons */
+a:has(> button),
+a:has(> .btn),
+a:has(> button):hover,
+a:has(> .btn):hover,
+a:has(> button):focus,
+a:has(> .btn):focus {
+	text-decoration: none;
+}
+
+input,
+button,
+textarea,
+select {
+	font: inherit;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-heading);
+	color: var(--color-on-surface);
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+}
+
+h1, .h1 { font-weight: 800; letter-spacing: -0.02em; }
+h2, .h2 { font-weight: 700; letter-spacing: -0.015em; }
+
+/* Bootstrap overrides — align with brand colours */
+.form-control:focus,
+.form-select:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 0.25rem var(--color-primary-focus-ring-strong);
+}
+
+.form-check-input:checked {
+	background-color: var(--color-primary);
+	border-color: var(--color-primary);
+}
+
+.form-check-input:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 0.25rem var(--color-primary-focus-ring-strong);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+	background-image: none;
+	padding-right: 0.75rem;
+}
+
+.alert-danger {
+	--bs-alert-color: var(--color-on-error-container);
+	--bs-alert-bg: var(--color-error-container);
+	--bs-alert-border-color: transparent;
+}
+
+.alert-warning {
+	--bs-alert-color: var(--color-orange-on-soft);
+	--bs-alert-bg: var(--color-warning-container-soft);
+	--bs-alert-border-color: transparent;
+}
+
+/* ── Brand card — use on any .card for consistent elevation ── */
+.card.brand-card {
+	border: 1px solid var(--color-outline-light);
+	border-radius: 14px;
+	transition: box-shadow 250ms ease, transform 250ms ease, border-color 200ms ease;
+}
+
+.card.brand-card:hover {
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+	border-color: var(--color-primary-border-soft);
+}
+
+/* ── Brand badges — semantic status pills ────────────────── */
+.badge.badge-open {
+	background: var(--color-primary-container);
+	color: var(--color-on-primary-container);
+}
+
+.badge.badge-submitted {
+	background: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+}
+
+.badge.badge-validation {
+	background: var(--color-warning-container-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.badge.badge-closed {
+	background: var(--color-success-container);
+	color: var(--color-green-on-soft);
+}
+
+.badge.badge-accepted {
+	background: var(--color-success-container);
+	color: var(--color-green-on-soft);
+}
+
+.badge.badge-rejected {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.badge.badge-area {
+	background: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+}
+
+.badge.badge-points {
+	background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+	color: var(--color-orange-on-soft);
+}
+
+/* ── Breadcrumb polish ───────────────────────────────────── */
+.breadcrumb {
+	font-size: 0.8125rem;
+	margin-bottom: 0;
+}
+
+.breadcrumb-item a {
+	color: var(--color-primary);
+	font-weight: 500;
+}
+
+.breadcrumb-item.active {
+	color: var(--color-outline);
+}
+
+/* ── Page title utility ──────────────────────────────────── */
+.page-title {
+	font-size: 1.5rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+/* ── Section title ───────────────────────────────────────── */
+.section-title {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--color-outline);
+	margin-bottom: 12px;
+}
+
+/* ── Bootstrap Button Overrides ──────────────────────────── */
+.btn {
+	font-family: var(--font-body);
+	font-weight: 600;
+	border-radius: 10px;
+	transition: all 200ms ease;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.97);
+}
+
+.btn-primary {
+	--bs-btn-bg: var(--color-primary);
+	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-hover-bg: var(--color-primary-hover-solid);
+	--bs-btn-hover-border-color: var(--color-primary-hover-solid);
+	--bs-btn-active-bg: var(--color-primary-hover-solid);
+	--bs-btn-active-border-color: var(--color-primary-hover-solid);
+	--bs-btn-disabled-bg: var(--color-primary);
+	--bs-btn-disabled-border-color: var(--color-primary);
+}
+
+.btn-outline-primary {
+	--bs-btn-color: var(--color-primary);
+	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-hover-bg: var(--color-primary);
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-border-color: var(--color-primary);
+	--bs-btn-active-bg: var(--color-primary-hover-solid);
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-border-color: var(--color-primary-hover-solid);
+}
+
+/* ── Table polish ────────────────────────────────────────── */
+.table {
+	--bs-table-bg: transparent;
+	--bs-table-hover-bg: var(--color-primary-hover-bg-soft);
+	font-size: 0.875rem;
+}
+
+.table th {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--color-outline);
+	border-bottom-width: 2px;
+	border-color: var(--color-outline-light);
+}
+
+.table td {
+	padding: 10px 12px;
+	vertical-align: middle;
+	border-color: var(--color-outline-light);
+}
+
+.table td.text-end {
+	white-space: nowrap;
+}
+
+/* ── Custom scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #d0d5dd;
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #b0b7bf;
+}
+
+/* ── Dark theme — Bootstrap & global overrides ──────────── */
+[data-theme="dark"] .card {
+	--bs-card-bg: var(--color-surface);
+	--bs-card-color: var(--color-on-surface);
+	--bs-card-border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .table-light {
+	--bs-table-bg: var(--color-surface);
+	--bs-table-color: var(--color-on-surface);
+	--bs-table-border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .table {
+	--bs-table-bg: transparent;
+	--bs-table-color: var(--color-on-surface);
+	--bs-table-border-color: var(--color-outline-light);
+	--bs-table-hover-bg: var(--color-surface-variant);
+	--bs-table-hover-color: var(--color-on-surface);
+}
+
+[data-theme="dark"] .table thead th {
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-variant);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+	color: var(--color-outline);
+}
+
+[data-theme="dark"] .modal-content {
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .modal-header {
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .modal-footer {
+	border-color: var(--color-outline-light);
+}
+
+[data-theme="dark"] .badge.badge-points {
+	background: linear-gradient(135deg, rgba(255, 204, 0, 0.2) 0%, rgba(255, 193, 7, 0.15) 100%);
+}
+
+[data-theme="dark"] .text-muted {
+	color: var(--color-outline) !important;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+	background: #3a424b;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+	background: #4a535d;
+}

@@ -1,0 +1,100 @@
+// API for platform statistics: consultant overviews, badge summaries, and trend data.
+import api from '../../../services/api';
+
+// General reporting (Service Line Leader / Talent Manager / Administrator).
+// Optional params: serviceLineId, areaId, dateFrom, dateTo.
+export async function getBadgesByServiceLine(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-service-line', { params });
+	return data?.data || [];
+}
+
+// Fetches badge counts grouped by learning path for reporting charts.
+export async function getBadgesByLearningPath(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-learning-path', { params });
+	return data?.data || [];
+}
+
+// Fetches the distribution of earned badges across progression levels.
+export async function getLevelDistribution(params = {}) {
+	const { data } = await api.get('/statistics/reports/level-distribution', { params });
+	return data?.data || [];
+}
+
+// Fetches aggregate user enrollment statistics for the platform.
+export async function getUserEnrollment() {
+	const { data } = await api.get('/statistics/reports/user-enrollment');
+	return data?.data || null;
+}
+
+// Monthly badge distribution (% of each month's awards) grouped by
+// learning_path | service_line | area. (Service Line Leader / Talent Manager / Administrator)
+// params: groupBy, dateFrom, dateTo
+export async function getBadgeDistribution(params = {}) {
+	const { data } = await api.get('/statistics/reports/badge-distribution', { params });
+	return data?.data || [];
+}
+
+// Badges awarded within a date range, filterable by LP/SL/area/stage.
+// params: dateFrom (req), dateTo (req), learningPathId, serviceLineId, areaId, stageId
+export async function getBadgesByRange(params = {}) {
+	const { data } = await api.get('/statistics/reports/badges-by-range', { params });
+	return data?.data || [];
+}
+
+// Admin-only: badge application counts grouped by workflow state.
+export async function getApplicationsByState() {
+	const { data } = await api.get('/statistics/reports/applications-by-state');
+	return data?.data || [];
+}
+
+// Team scope KPIs
+// Fetches the total count of applications currently pending review.
+export async function getPendingApplicationsCount() {
+	const { data } = await api.get('/statistics/team/applications-pending');
+	return data?.data?.total ?? 0;
+}
+
+// Fetches team-scoped badge counts and distinct consultant metrics.
+export async function getTeamBadgesCount(params = {}) {
+	const { data } = await api.get('/statistics/team/badges-count', { params });
+	return {
+		totalBadges: data?.data?.total_badges ?? 0,
+		distinctConsultants: data?.data?.distinct_consultants ?? 0,
+	};
+}
+
+// Awarded badges expiring within `withinDays` (Talent Manager / Administrator)
+export async function getExpiringBadges(withinDays = 90) {
+	const { data } = await api.get('/statistics/reports/expiring-badges', { params: { withinDays } });
+	return data?.data || [];
+}
+
+// Consultants overview (leadership). SLL is scoped server-side to their Service Line.
+// params: search, serviceLineId, areaId, pointsMin, pointsMax, sort, page, limit
+export async function getConsultantsOverview(params = {}) {
+	const { data } = await api.get('/statistics/consultants', { params });
+	return { rows: data?.data || [], pagination: data?.pagination || null };
+}
+
+// Badge KPI summary (leadership). SLL scoped server-side.
+// params: serviceLineId, areaId, dateFrom, dateTo
+export async function getBadgesSummary(params = {}) {
+	const { data } = await api.get('/statistics/badges-summary', { params });
+	return data?.data || { total: 0, standard: 0, premium: 0, accepted: 0, rejected: 0, approvalRate: 0 };
+}
+
+// A consultant's acquisition timeline (badges/points per month + cumulative).
+// Leaders pass userGuid to inspect a specific consultant.
+export async function getAcquisitionTimeline(userGuid) {
+	const { data } = await api.get('/statistics/consultant/timeline', { params: userGuid ? { userGuid } : {} });
+	return data?.data || [];
+}
+
+// Peer comparison for a consultant (same area + similar tenure).
+export async function getPeerComparison(userGuid, tolerance) {
+	const params = {};
+	if (userGuid) params.userGuid = userGuid;
+	if (tolerance != null) params.tolerance = tolerance;
+	const { data } = await api.get('/statistics/consultants/comparison', { params });
+	return data?.data || { target: null, peers: [], peerCount: 0, averages: { points: 0, badges: 0 } };
+}

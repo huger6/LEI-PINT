@@ -1,0 +1,39 @@
+.pointsCard {
+    min-width: 96px;
+    padding: 5px 12px;
+    background: linear-gradient(180deg, var(--color-primary-container-hover-selected-strong) 0%, var(--color-background) 100%);
+    border-radius: 12px;
+    outline: 1px solid var(--color-secondary-border-soft);
+    outline-offset: -1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.iconWrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.pointsValue {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-secondary);
+    font-size: 16px;
+    line-height: 24px;
+    padding-right: 4px;
+}
+
+:global([data-theme="dark"]) .pointsCard {
+    background: linear-gradient(180deg, var(--color-primary-container) 0%, var(--color-surface) 100%);
+    outline-color: var(--color-outline-variant);
+}
+
+:global([data-theme="dark"]) .pointsValue {
+    color: var(--color-on-primary-container);
+}

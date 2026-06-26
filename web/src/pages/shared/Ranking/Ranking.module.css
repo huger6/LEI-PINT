@@ -1,0 +1,322 @@
+.page {
+	padding: 24px 0;
+}
+
+.header {
+	margin-bottom: 20px;
+}
+
+.title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+	margin: 0 0 4px;
+}
+
+.subtitle {
+	font-size: 0.9375rem;
+	color: var(--color-outline);
+	margin: 0;
+}
+
+/* ─── Filter Bar ─────────────────────── */
+
+.filterBar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 24px;
+	flex-wrap: wrap;
+}
+
+.filterSelect {
+	min-width: 180px;
+}
+
+/* ─── Consultant Scope Buttons ───────── */
+
+.scopeButtons {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.scopeBtn {
+	padding: 8px 20px;
+	border-radius: 10px;
+	border: 1.5px solid var(--color-outline-light);
+	background: var(--color-surface);
+	color: var(--color-on-background);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.scopeBtn:hover {
+	border-color: var(--color-primary);
+	background: var(--color-primary-hover-bg-soft);
+}
+
+.scopeBtnActive {
+	border-color: var(--color-primary);
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+}
+
+.scopeBtnActive:hover {
+	background: var(--color-primary-hover-solid);
+}
+
+/* ─── Podium Section ─────────────────── */
+
+.podiumSection {
+	margin-bottom: 24px;
+}
+
+.podiumContainer {
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	gap: 40px;
+	padding: 32px 16px 24px;
+	flex-wrap: wrap;
+}
+
+.podiumCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	min-width: 120px;
+}
+
+.crownIcon {
+	margin-bottom: 4px;
+}
+
+.podiumAvatarWrapper {
+	position: relative;
+	margin-bottom: 4px;
+}
+
+.podiumAvatarRing {
+	border-radius: 50%;
+	border: 3px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.podiumRankBadge {
+	position: absolute;
+	bottom: -4px;
+	right: -4px;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	border: 2px solid #fff;
+}
+
+.podiumName {
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--color-on-background);
+	text-align: center;
+}
+
+.podiumBadges {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+}
+
+.podiumPoints {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--color-secondary);
+}
+
+/* ─── Table Section ──────────────────── */
+
+.tableSection {
+	margin-bottom: 24px;
+}
+
+.tableHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.tableWrapper {
+	overflow-x: auto;
+	margin-top: 16px;
+}
+
+.rankingTable {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.rankingTable thead th {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-outline);
+	text-align: left;
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--color-heatmap-empty);
+	white-space: nowrap;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.rankingTable tbody tr {
+	transition: background 0.12s;
+}
+
+.rankingTable tbody tr:hover {
+	background: var(--color-primary-hover-bg-soft);
+}
+
+.rankingTable tbody td {
+	padding: 14px 16px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+	font-size: 0.875rem;
+	color: var(--color-on-background);
+	vertical-align: middle;
+}
+
+.positionBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	background: var(--color-surface);
+	color: var(--color-outline);
+}
+
+.consultantCell {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.consultantLink {
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.consultantLink:hover { text-decoration: none; }
+.consultantLink:hover .consultantCell span { color: var(--color-primary); }
+
+.pointsCell {
+	font-weight: 600;
+	color: var(--color-secondary);
+}
+
+.emptyRow {
+	text-align: center;
+	color: var(--color-outline);
+	padding: 32px 16px !important;
+}
+
+.highlightedRow {
+	background: var(--color-primary-hover-bg-soft) !important;
+}
+
+.highlightedRow td:first-child {
+	border-left: 3px solid var(--color-primary);
+}
+
+/* ─── Responsive ─────────────────────── */
+
+@media (max-width: 768px) {
+	.podiumContainer {
+		gap: 24px;
+		padding: 24px 8px 16px;
+	}
+
+	.podiumCard {
+		min-width: 100px;
+	}
+
+	.podiumPoints {
+		font-size: 1rem;
+	}
+
+	.rankingTable thead th,
+	.rankingTable tbody td {
+		padding: 10px 8px;
+		font-size: 0.8125rem;
+	}
+
+	.filterSelect {
+		min-width: 150px;
+	}
+}
+
+@media (max-width: 576px) {
+	.page {
+		padding: 16px 0;
+	}
+
+	.title {
+		font-size: 1.375rem;
+	}
+
+	.podiumContainer {
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+	}
+
+	.filterBar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.filterSelect {
+		min-width: unset;
+	}
+
+	.scopeButtons {
+		width: 100%;
+	}
+
+	.scopeBtn {
+		flex: 1;
+		text-align: center;
+		padding: 8px 12px;
+		font-size: 0.8125rem;
+	}
+
+	.rankingTable thead th:nth-child(3),
+	.rankingTable tbody td:nth-child(3) {
+		display: none;
+	}
+}
+
+@media (max-width: 400px) {
+	.rankingTable thead th:nth-child(4),
+	.rankingTable tbody td:nth-child(4) {
+		display: none;
+	}
+
+	.scopeBtn {
+		padding: 6px 8px;
+		font-size: 0.75rem;
+	}
+}

@@ -1,0 +1,50 @@
+@startuml use-case-admin-2
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Administrador" as ADM
+
+rectangle "Plataforma Web" {
+
+  package "Gestão de Badges" {
+    usecase "Criar badge" as UC30
+    usecase "Editar badge" as UC31
+    usecase "Eliminar badge" as UC32
+    usecase "Definir pontos\npor badge" as UC33
+    usecase "Definir regras\nde expiração" as UC34
+    usecase "Consultar e gerir\ntodos os pedidos" as UC35
+  }
+
+  package "Comunicação e Avisos" {
+    usecase "Criar aviso/informação\ngenérica" as UC40
+    usecase "Editar aviso" as UC41
+    usecase "Ativar/desativar aviso" as UC42
+    usecase "Configurar notificações\ndo sistema" as UC43
+  }
+}
+
+ADM --> UC30
+ADM --> UC31
+ADM --> UC32
+ADM --> UC33
+ADM --> UC34
+ADM --> UC35
+
+ADM --> UC40
+ADM --> UC41
+ADM --> UC42
+ADM --> UC43
+
+UC30 ..> UC33 : <<include>>
+UC30 ..> UC34 : <<include>>
+
+@enduml

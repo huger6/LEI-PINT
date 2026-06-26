@@ -1,0 +1,144 @@
+.sidebarShell {
+    width: 280px;
+    min-width: 280px;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-outline-light);
+    display: flex;
+    flex-direction: column;
+    transition: width 250ms ease, min-width 250ms ease;
+    overflow: hidden;
+}
+
+.collapsed {
+    width: 74px;
+    min-width: 74px;
+}
+
+.header {
+    height: 57px;
+    min-height: 57px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-outline-light);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toggleButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 200ms ease;
+}
+
+.sidebarShell:not(.collapsed) .toggleButton {
+    margin-left: 6px;
+}
+
+.toggleButton:hover {
+    background: var(--color-primary-hover-bg);
+}
+
+.toggleButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.toggleIcon {
+    transition: transform 250ms ease;
+}
+
+.toggleIconCollapsed {
+    transform: rotate(180deg);
+}
+
+.headerTitle {
+    color: var(--color-on-background);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 28px;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 200ms ease;
+}
+
+.collapsed .headerTitle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nav {
+    flex: 1 1 0;
+    padding: 24px 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: padding 250ms ease;
+}
+
+.collapsed .nav {
+    padding: 24px 8px;
+    scrollbar-width: none;
+}
+
+.collapsed .nav::-webkit-scrollbar {
+    display: none;
+}
+
+.navLink {
+    text-decoration: none;
+    border-radius: 10px;
+}
+
+.navLink:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+/* ── Mobile: off-canvas drawer ───────────────────────────────────────────── */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+}
+
+.backdropOpen {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: 280px;
+    min-width: 280px;
+    max-width: 85vw;
+    z-index: 1100;
+    transform: translateX(-100%);
+    transition: transform 250ms ease;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
+}
+
+.mobileOpen {
+    transform: translateX(0);
+}

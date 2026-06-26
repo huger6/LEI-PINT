@@ -1,0 +1,57 @@
+@startuml use-case-consultor-1
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Consultor" as C
+
+rectangle "Plataforma Web & Mobile" {
+
+  package "Autenticação e Perfil" {
+    usecase "Registar-se" as UC1
+    usecase "Iniciar sessão" as UC2
+    usecase "Alterar password\n(obrigatório no 1.º acesso)" as UC3
+    usecase "Recuperar password" as UC4
+    usecase "Selecionar área\nde interesse" as UC5
+    usecase "Editar perfil" as UC6
+    usecase "Terminar sessão" as UC7
+    usecase "Aceitar termos RGPD" as UC8
+  }
+
+  package "Catálogo e Exploração" {
+    usecase "Consultar catálogo\nde badges" as UC10
+    usecase "Consultar requisitos\nde um badge" as UC11
+    usecase "Consultar badges\nde outras áreas" as UC12
+    usecase "Explorar Learning Paths" as UC13
+    usecase "Pesquisa global" as UC14
+  }
+}
+
+C --> UC1
+C --> UC2
+C --> UC3
+C --> UC4
+C --> UC5
+C --> UC6
+C --> UC7
+C --> UC8
+
+C --> UC10
+C --> UC11
+C --> UC12
+C --> UC13
+C --> UC14
+
+UC1 ..> UC5 : <<include>>
+UC2 ..> UC3 : <<extend>>
+UC10 ..> UC11 : <<extend>>
+
+@enduml

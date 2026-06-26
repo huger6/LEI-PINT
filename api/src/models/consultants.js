@@ -18,6 +18,10 @@ module.exports = function(sequelize, DataTypes) {
     biography: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    active_title: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     }
   }, {
     sequelize,

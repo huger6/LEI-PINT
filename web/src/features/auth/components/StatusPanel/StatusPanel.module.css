@@ -1,0 +1,108 @@
+.panel {
+    --panel-accent: var(--color-primary);
+    position: relative;
+    overflow: hidden;
+    padding: 1.75rem 1.5rem;
+    border-radius: 18px;
+    background: var(--color-surface-overlay-90);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-outline-light);
+    box-shadow: 0 18px 38px rgba(9, 20, 40, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+    animation: rise 0.45s ease-out;
+}
+
+.loading {
+    --panel-accent: var(--color-primary);
+}
+
+.success {
+    --panel-accent: var(--color-success);
+}
+
+.error {
+    --panel-accent: var(--color-error);
+}
+
+.icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: var(--panel-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+    animation: float 3s ease-in-out infinite;
+}
+
+.spinner {
+    width: 46px;
+    height: 46px;
+    border: 3px solid var(--color-outline-light);
+    border-top-color: var(--panel-accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+.title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--color-on-surface);
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.message {
+    max-width: 24rem;
+    color: var(--color-outline);
+    line-height: 1.6;
+}
+
+.actions {
+    width: 100%;
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
+}
+
+.actions a {
+    display: block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}

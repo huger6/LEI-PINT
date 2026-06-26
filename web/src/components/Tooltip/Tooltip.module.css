@@ -1,0 +1,116 @@
+.wrapper {
+	position: relative;
+	display: inline-flex;
+}
+
+.bubble {
+	position: absolute;
+	z-index: 9999;
+	padding: 6px 12px;
+	border-radius: 8px;
+	background: var(--color-on-background, #1d1b20);
+	color: #fff;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 150ms ease, transform 150ms ease;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bubble::after {
+	content: '';
+	position: absolute;
+	border: 5px solid transparent;
+}
+
+/* ─── Positions ─── */
+
+.top {
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+}
+
+.top::after {
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border-top-color: var(--color-on-background, #1d1b20);
+}
+
+.bottom {
+	top: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%) translateY(-4px);
+}
+
+.bottom::after {
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border-bottom-color: var(--color-on-background, #1d1b20);
+}
+
+.left {
+	right: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%) translateX(4px);
+}
+
+.left::after {
+	left: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	border-left-color: var(--color-on-background, #1d1b20);
+}
+
+.right {
+	left: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%) translateX(-4px);
+}
+
+.right::after {
+	right: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	border-right-color: var(--color-on-background, #1d1b20);
+}
+
+/* ─── Visible state ─── */
+
+.wrapper:hover .bubble {
+	opacity: 1;
+}
+
+.wrapper:hover .top {
+	transform: translateX(-50%) translateY(0);
+}
+
+.wrapper:hover .bottom {
+	transform: translateX(-50%) translateY(0);
+}
+
+.wrapper:hover .left {
+	transform: translateY(-50%) translateX(0);
+}
+
+.wrapper:hover .right {
+	transform: translateY(-50%) translateX(0);
+}
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .bubble {
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+:global([data-theme="dark"]) .top::after    { border-top-color: var(--color-surface); }
+:global([data-theme="dark"]) .bottom::after { border-bottom-color: var(--color-surface); }
+:global([data-theme="dark"]) .left::after   { border-left-color: var(--color-surface); }
+:global([data-theme="dark"]) .right::after  { border-right-color: var(--color-surface); }

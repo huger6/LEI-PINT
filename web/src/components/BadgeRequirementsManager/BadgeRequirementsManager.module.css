@@ -1,0 +1,72 @@
+.wrap {
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-light);
+	border-radius: 16px;
+	box-shadow: var(--shadow-card);
+	padding: 1.5rem;
+}
+
+.headerRow {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin-bottom: 1rem;
+}
+
+.title {
+	font-size: 1.1rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-surface);
+}
+
+.table {
+	margin-bottom: 0;
+}
+
+.table thead th {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	color: var(--color-outline);
+	border-bottom: 1px solid var(--color-outline-light);
+	background: transparent;
+}
+
+.seqBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 0.4rem;
+	border-radius: 999px;
+	background: var(--color-primary-soft);
+	color: var(--color-primary);
+	font-weight: 700;
+	font-size: 0.8rem;
+}
+
+.statusChip {
+	font-size: 0.72rem;
+	font-weight: 700;
+	padding: 0.18rem 0.6rem;
+	border-radius: 999px;
+}
+
+.statusOn { background: var(--color-success-container); color: var(--color-green-on-soft); }
+.statusOff { background: var(--color-surface-overlay-85); color: var(--color-outline); }
+
+.empty {
+	text-align: center;
+	padding: 2rem 1rem;
+	color: var(--color-outline);
+}
+
+.emptyIcon { color: var(--color-outline-variant); margin-bottom: 0.5rem; }
+
+@media (max-width: 360px) {
+	.wrap { padding: 1rem; }
+}

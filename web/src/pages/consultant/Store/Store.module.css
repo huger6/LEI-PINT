@@ -1,0 +1,162 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.subtitle {
+	margin: 0.2rem 0 0;
+	font-size: 0.9rem;
+	color: var(--color-outline);
+}
+
+.balance {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4rem;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-light);
+	border-radius: 12px;
+	padding: 0.6rem 1rem;
+}
+
+.balanceValue { font-size: 1.4rem; font-weight: 700; color: var(--color-on-background); }
+.balanceLabel { font-size: 0.8rem; color: var(--color-outline); }
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1.1rem;
+}
+
+@media (max-width: 992px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.cardIcon {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+/* Reward image (preferred over the category icon when available). */
+.cardImg {
+	width: 100%;
+	height: 130px;
+	object-fit: cover;
+	border-radius: 12px;
+	flex-shrink: 0;
+	background: var(--color-background);
+}
+
+.cardTitle { font-size: 1.02rem; font-weight: 700; margin: 0; color: var(--color-on-background); }
+.cardDesc { font-size: 0.86rem; color: var(--color-on-surface-variant, #555); margin: 0; line-height: 1.5; flex: 1; }
+
+.cardFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-top: 0.4rem;
+	padding-top: 0.7rem;
+	border-top: 1px solid var(--color-outline-light);
+}
+
+.cost { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--color-on-background); }
+
+.empty { margin: 0; color: var(--color-outline); text-align: center; padding: 1rem 0; }
+
+.historyCard { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.historyList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.historyItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.6rem 0.2rem;
+	border-bottom: 1px solid var(--color-outline-light);
+}
+
+.historyInfo { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.historyName { font-weight: 600; color: var(--color-on-background); }
+.historyMeta { font-size: 0.78rem; color: var(--color-outline); }
+
+.historyLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.modalText { margin: 0 0 1rem; line-height: 1.55; color: var(--color-on-surface); }
+
+.modalActions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+.successBody { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; }
+.successIcon { display: flex; }
+.accessInfo {
+	width: 100%;
+	background: var(--color-background);
+	border: 1px dashed var(--color-outline-light);
+	border-radius: 10px;
+	padding: 0.7rem 0.9rem;
+	font-size: 0.88rem;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+.emailNote { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--color-outline); margin: 0.3rem 0 0; }
+
+/* ── My title (pick the publicly displayed title from unlocked ones) ── */
+.titlesCard { }
+.titlesHint { font-size: 0.86rem; color: var(--color-on-surface-variant, #555); margin: 0 0 0.75rem; }
+.titlesRow { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.titleChip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.4rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--color-outline-light);
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.titleChip:hover { background: var(--color-primary-soft); }
+.titleChipActive {
+	background: var(--color-purple-soft);
+	border-color: var(--color-purple-on-soft);
+	color: var(--color-purple-on-soft);
+}

@@ -819,6 +819,20 @@ const deactivateUser = async (req, res) => {
             });
         }
 
+        // The platform must always keep at least one active Administrator: refuse
+        // to deactivate the last remaining one.
+        if (user.user_role === 'Administrator') {
+            const activeAdmins = await models.users.count({
+                where: { user_role: 'Administrator', is_active: true }
+            });
+            if (activeAdmins <= 1) {
+                return res.status(400).json({
+                    success: false,
+                    code: 'ADMIN_CANNOT_DEACTIVATE_LAST_ADMIN'
+                });
+            }
+        }
+
         if (!user.is_active) {
             return res.status(400).json({
                 success: false,

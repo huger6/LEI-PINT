@@ -1,0 +1,105 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.showingText {
+    color: var(--color-outline);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pageBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid var(--color-primary-outline-30);
+    border-radius: 10px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+    background: var(--color-primary-hover-bg);
+    color: var(--color-primary-hover-solid);
+    transform: translateY(-2px);
+}
+
+.pageBtn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.pageBtn:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.active {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 4px 6px -1px rgba(0, 184, 224, 0.35);
+}
+
+.active:hover:not(:disabled) {
+    background: var(--color-primary-hover-solid);
+    color: var(--color-on-primary);
+}
+
+.disabled {
+    background: var(--color-surface-disabled);
+    color: var(--color-outline);
+    cursor: not-allowed;
+}
+
+.ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    color: var(--color-outline);
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
+}
+
+@media (max-width: 576px) {
+    .wrapper {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .pageBtn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .ellipsis {
+        min-width: 32px;
+        height: 32px;
+    }
+}

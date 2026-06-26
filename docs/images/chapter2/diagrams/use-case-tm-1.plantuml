@@ -1,0 +1,44 @@
+@startuml use-case-tm-1
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Talent\nManager" as TM
+
+rectangle "Plataforma Web" {
+
+  package "Autenticação e Perfil" {
+    usecase "Iniciar sessão" as UC1
+    usecase "Alterar password" as UC2
+    usecase "Editar perfil" as UC3
+    usecase "Terminar sessão" as UC4
+  }
+
+  package "Catálogo e Exploração" {
+    usecase "Consultar catálogo\nde badges" as UC10
+    usecase "Consultar requisitos\nde um badge" as UC11
+    usecase "Consultar descrições\ndetalhadas" as UC12
+  }
+}
+
+TM --> UC1
+TM --> UC2
+TM --> UC3
+TM --> UC4
+
+TM --> UC10
+TM --> UC11
+TM --> UC12
+
+UC10 ..> UC11 : <<extend>>
+UC10 ..> UC12 : <<extend>>
+
+@enduml

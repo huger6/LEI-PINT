@@ -1,0 +1,657 @@
+/* ─── Page ─────────────────────────────── */
+
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	max-width: 1150px;
+	margin: 0 auto;
+	padding-bottom: 48px;
+}
+
+/* ─── Welcome Header ──────────────────── */
+
+.welcomeCard {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.welcomeAvatar {
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	background: var(--color-blue-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.welcomeTitle {
+	font-size: 1.5rem;
+	font-weight: 800;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.welcomeSubtitle {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	margin: 4px 0 0;
+}
+
+.welcomeBody {
+	flex: 1;
+}
+
+/* ─── Stats Cards ─────────────────────── */
+
+.statsRow {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+}
+
+.statCard {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 20px;
+	border-radius: 16px;
+	background: var(--color-surface);
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 2px 8px rgba(19, 36, 66, 0.04);
+}
+
+.statIconWrap {
+	position: relative;
+	width: fit-content;
+}
+
+.statBadge {
+	position: absolute;
+	top: -6px;
+	right: -18px;
+	font-size: 0.625rem;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 999px;
+	background: var(--color-error);
+	color: #fff;
+}
+
+.statLabel {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	font-weight: 500;
+}
+
+.statValue {
+	font-size: 1.75rem;
+	font-weight: 800;
+	line-height: 1;
+}
+
+/* ─── Shared Section ──────────────────── */
+
+.section {
+	padding: 28px 32px;
+	border-radius: 18px;
+	background: var(--color-surface);
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+	overflow: hidden;
+}
+
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 800;
+	margin: 0 0 20px;
+	color: var(--color-on-background);
+}
+
+/* ─── Professional Timeline ───────────── */
+
+.areaTimelineGroup {
+	margin-bottom: 24px;
+}
+
+.areaTimelineGroup:last-child {
+	margin-bottom: 0;
+}
+
+.areaTimelineTitle {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--color-primary);
+	margin: 0 0 8px;
+	padding-left: 4px;
+}
+
+.timeline {
+	display: flex;
+	justify-content: space-between;
+	padding: 16px 0 8px;
+	overflow-x: auto;
+}
+
+.timelineStep {
+	flex: 1;
+	min-width: 120px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	position: relative;
+}
+
+.timelineIndicator {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	justify-content: center;
+	margin-bottom: 14px;
+}
+
+.timelineDot {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1;
+	flex-shrink: 0;
+}
+
+.dotComplete {
+	background: var(--color-green-soft);
+}
+
+.dotInProgress {
+	background: var(--color-surface);
+	border: 3px solid var(--color-primary);
+}
+
+.dotLocked {
+	background: var(--color-surface);
+	border: 2px solid rgba(57, 99, 156, 0.15);
+}
+
+.timelineLine {
+	position: absolute;
+	top: 50%;
+	left: calc(50% + 18px);
+	width: calc(100% - 36px);
+	height: 3px;
+	transform: translateY(-50%);
+}
+
+.lineComplete {
+	background: var(--color-success);
+}
+
+.linePending {
+	background: rgba(57, 99, 156, 0.12);
+}
+
+.timelineContent {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-width: 160px;
+}
+
+.timelineCode {
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+
+.codeComplete {
+	color: var(--color-success);
+}
+
+.codeInProgress {
+	color: var(--color-primary);
+}
+
+.codeLocked {
+	color: var(--color-outline);
+}
+
+.timelineTitle {
+	font-size: 0.8125rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+}
+
+.timelineReqs {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+}
+
+.timelineDetail {
+	font-size: 0.6875rem;
+	color: var(--color-outline);
+	margin-top: 2px;
+}
+
+.detailWarning {
+	color: var(--color-warning);
+	font-weight: 600;
+}
+
+/* ─── Two-column Layout ───────────────── */
+
+.twoColumn {
+	display: grid;
+	grid-template-columns: 1fr 360px;
+	gap: 24px;
+	align-items: start;
+}
+
+.objectivesColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.objectivesList {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.sideColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+/* ─── Objective Card ──────────────────── */
+
+.objectiveCard {
+	padding: 24px;
+	border-radius: 18px;
+	background: var(--color-surface);
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.objectiveHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.objectiveTags {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.stageTag {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	padding: 3px 10px;
+	border-radius: 999px;
+	background: var(--color-blue-soft);
+	color: var(--color-secondary);
+}
+
+.pathTag {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	padding: 3px 10px;
+	border-radius: 999px;
+	background: var(--color-green-soft);
+	color: var(--color-success);
+}
+
+.daysRemaining {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-warning);
+}
+
+.objectiveTitle {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 0 0 4px;
+	color: var(--color-on-background);
+}
+
+.objectiveDesc {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	margin: 0 0 16px;
+	line-height: 1.5;
+}
+
+.objectiveProgress {
+	margin-bottom: 16px;
+}
+
+.progressMeta {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 6px;
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	font-weight: 600;
+}
+
+.progressTrack {
+	height: 8px;
+	border-radius: 999px;
+	background: rgba(57, 99, 156, 0.1);
+	overflow: hidden;
+}
+
+.progressFill {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+	transition: width 400ms ease;
+}
+
+.objectiveAction {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.resumeBtn {
+	font-size: 0.8125rem !important;
+}
+
+/* ─── Reminders Card ──────────────────── */
+
+.remindersCard {
+	padding: 24px;
+	border-radius: 18px;
+	background: var(--color-surface);
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.remindersHeader {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 16px;
+}
+
+.remindersTitle {
+	font-size: 1rem;
+	font-weight: 800;
+	margin: 0;
+	color: var(--color-on-background);
+	flex: 1;
+}
+
+.urgentBadge {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	padding: 3px 10px;
+	border-radius: 999px;
+	background: var(--color-error);
+	color: #fff;
+}
+
+.remindersList {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.reminderItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px;
+	border-radius: 12px;
+	border: 1px solid rgba(57, 99, 156, 0.08);
+	background: var(--color-surface);
+	cursor: pointer;
+	transition: border-color 150ms ease;
+}
+
+.reminderItem:hover {
+	border-color: rgba(0, 184, 224, 0.25);
+}
+
+.reminderBody {
+	flex: 1;
+	min-width: 0;
+}
+
+.reminderTitleRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 4px;
+	flex-wrap: wrap;
+}
+
+.reminderTitle {
+	font-size: 0.8125rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+}
+
+.severityTag {
+	font-size: 0.625rem;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 999px;
+}
+
+.severityUrgent {
+	background: var(--color-error);
+	color: #fff;
+}
+
+.severityAttention {
+	background: var(--color-warning);
+	color: #fff;
+}
+
+.severityInfo {
+	background: var(--color-success);
+	color: #fff;
+}
+
+.reminderText {
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	margin: 0 0 4px;
+	line-height: 1.4;
+}
+
+.reminderDate {
+	font-size: 0.6875rem;
+	color: var(--color-outline);
+}
+
+.noReminders {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	margin: 0;
+}
+
+/* ─── Quick Actions ───────────────────── */
+
+.quickActionsCard {
+	padding: 24px;
+	border-radius: 18px;
+	background: var(--color-surface);
+	border: 1px solid rgba(57, 99, 156, 0.1);
+	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
+}
+
+.quickActionsTitle {
+	font-size: 1rem;
+	font-weight: 800;
+	margin: 0 0 16px;
+	color: var(--color-on-background);
+}
+
+.quickActionsGrid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.quickActionItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 16px 12px;
+	border-radius: 14px;
+	border: 1px solid rgba(57, 99, 156, 0.08);
+	background: var(--color-surface);
+	cursor: pointer;
+	transition: border-color 150ms ease, box-shadow 150ms ease;
+	text-align: center;
+}
+
+.quickActionItem:hover {
+	border-color: rgba(0, 184, 224, 0.25);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.quickActionIcon {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.quickActionLabel {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-on-background);
+	line-height: 1.3;
+}
+
+/* ─── Progress Vision / Donut Charts ──── */
+
+.donutRow {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 32px;
+}
+
+.donutCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	border-radius: 14px;
+	border: 1px solid transparent;
+	transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Clear hover feedback on the progress-vision donuts (was barely visible). */
+.donutCard:hover {
+	background: var(--color-primary-soft);
+	border-color: var(--color-primary-border-medium);
+	box-shadow: var(--shadow-card);
+}
+
+.showMoreBtn {
+	align-self: center;
+	margin-top: 0.5rem;
+	border: 1px solid var(--color-outline-light);
+	background: var(--color-surface);
+	color: var(--color-secondary);
+	font-weight: 600;
+	font-size: 0.88rem;
+	padding: 0.5rem 1.25rem;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.showMoreBtn:hover {
+	background: var(--color-primary-soft);
+	border-color: var(--color-primary-border-medium);
+}
+
+.donutLabel {
+	text-align: center;
+}
+
+.donutLabel strong {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--color-on-background);
+}
+
+.donutLabel span {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+}
+
+/* ─── Responsive ──────────────────────── */
+
+@media (max-width: 1024px) {
+	.twoColumn {
+		grid-template-columns: 1fr;
+	}
+
+	.timeline {
+		flex-wrap: wrap;
+		gap: 20px;
+		justify-content: center;
+	}
+
+	.timelineStep {
+		flex: 0 0 auto;
+		width: 140px;
+	}
+
+	.timelineLine {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.statsRow {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.donutRow {
+		grid-template-columns: 1fr;
+	}
+
+	.section {
+		padding: 20px;
+	}
+
+	.welcomeTitle {
+		font-size: 1.25rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.statsRow {
+		grid-template-columns: 1fr;
+	}
+
+	.quickActionsGrid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.calendarBtn {
+	margin-top: 0.85rem;
+}

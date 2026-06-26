@@ -1,0 +1,84 @@
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1080;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.45);
+	overflow: hidden;
+	padding: 1rem;
+}
+
+.card {
+	position: relative;
+	z-index: 2;
+	background: var(--color-surface);
+	border-radius: 24px;
+	padding: 2rem 2.25rem;
+	text-align: center;
+	max-width: 380px;
+	width: 100%;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+	animation: pop 0.3s ease-out;
+}
+
+@keyframes pop {
+	from { transform: scale(0.8); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+.emoji {
+	font-size: 3.25rem;
+	line-height: 1;
+	margin-bottom: 0.5rem;
+	animation: bounce 0.9s ease infinite alternate;
+}
+
+@keyframes bounce {
+	from { transform: translateY(0); }
+	to { transform: translateY(-8px); }
+}
+
+.title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+	color: var(--color-on-surface);
+}
+
+.message {
+	color: var(--color-outline);
+	margin-bottom: 1.25rem;
+}
+
+.confetti {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.piece {
+	position: absolute;
+	top: -12px;
+	width: 10px;
+	height: 16px;
+	border-radius: 2px;
+	opacity: 0;
+	animation-name: fall;
+	animation-timing-function: linear;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+}
+
+@keyframes fall {
+	0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+	100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.piece { display: none; }
+	.emoji { animation: none; }
+	.card { animation: none; }
+}

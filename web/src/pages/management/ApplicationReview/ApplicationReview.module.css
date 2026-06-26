@@ -1,0 +1,853 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	position: relative;
+}
+
+.submitOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.55);
+	backdrop-filter: blur(1px);
+}
+
+.breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.breadcrumbLink {
+	color: var(--color-secondary);
+	text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+	text-decoration: underline;
+}
+
+.breadcrumbActive {
+	color: var(--color-on-surface);
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 45vw;
+}
+
+.pageTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 340px;
+	gap: 1.25rem;
+	align-items: start;
+}
+
+.mainColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	min-width: 0;
+}
+
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	position: sticky;
+	top: 1rem;
+}
+
+.card {
+	background: var(--color-bg-card);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 16px;
+	padding: 1.15rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+
+/* Consultant header */
+.consultantRow {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	flex-wrap: wrap;
+}
+
+.consultantInfo {
+	min-width: 0;
+	flex: 1;
+}
+
+.consultantName {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.consultantMeta {
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.consultantSide {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.35rem;
+}
+
+.consultantStats {
+	display: flex;
+	align-items: stretch;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.statChip {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.4rem 0.75rem;
+	background: var(--color-surface-alt, #f7f7f8);
+	border: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+	border-radius: 0.85rem;
+}
+
+.statChipBody {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.1;
+}
+
+.statChipLabel {
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--color-text-muted, #6b7280);
+}
+
+.statChipValue {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+}
+
+.statePill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	padding: 0.25rem 0.6rem;
+	border-radius: 999px;
+	background: var(--color-orange-soft);
+	color: var(--color-orange-on-soft);
+}
+
+.stateDot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.dateMeta {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+/* Badge + progress */
+.badgeRow {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+}
+
+.badgeIcon {
+	flex-shrink: 0;
+	width: 56px;
+	height: 56px;
+	border-radius: 14px;
+	background: var(--color-secondary-container);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.badgeImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.badgeInfo {
+	flex: 1;
+	min-width: 0;
+}
+
+.badgeTitle {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.badgeLp {
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.expire {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--color-orange-on-soft);
+	white-space: nowrap;
+}
+
+.progressHead {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.progressCount {
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.progressTrack {
+	height: 8px;
+	border-radius: 999px;
+	background: var(--color-outline-variant);
+	overflow: hidden;
+}
+
+.progressFill {
+	height: 100%;
+	background: var(--color-secondary);
+	border-radius: 999px;
+	transition: width 0.3s ease;
+}
+
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	color: var(--color-outline);
+}
+
+.chipDone {
+	background: var(--color-green-soft);
+	border-color: transparent;
+	color: var(--color-green-on-soft);
+}
+
+/* Sections */
+.sectionHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.sectionTitle {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--color-on-surface);
+	margin: 0;
+}
+
+.validatedPill {
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	background: var(--color-secondary-container);
+	color: var(--color-secondary);
+}
+
+.muted {
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.9rem;
+}
+
+/* Requirement card */
+.reqCard {
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 12px;
+	padding: 0.85rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+
+.reqTop {
+	display: flex;
+	gap: 0.6rem;
+}
+
+.reqBody {
+	min-width: 0;
+	flex: 1;
+}
+
+.reqTitleRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.reqTitle {
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.evPill {
+	font-size: 0.72rem;
+	font-weight: 600;
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+
+.evSubmitted {
+	background: var(--color-primary-soft);
+	color: var(--color-secondary);
+}
+
+.evMissing {
+	background: var(--color-red-soft);
+	color: var(--color-red-on-soft);
+}
+
+.evVerified {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+}
+
+/* SLL: process history */
+.history {
+	display: flex;
+	gap: 0.5rem;
+	overflow-x: auto;
+	padding-bottom: 0.25rem;
+}
+
+.histStep {
+	flex: 1;
+	min-width: 130px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.2rem;
+	position: relative;
+}
+
+.histStep:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	top: 16px;
+	left: calc(50% + 20px);
+	right: calc(-50% + 20px);
+	height: 2px;
+	background: var(--color-outline-variant);
+}
+
+.histIcon {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	z-index: 1;
+}
+
+.histDone {
+	background: var(--color-green-on-soft);
+	border-color: var(--color-green-on-soft);
+}
+
+.histLabel {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	margin-top: 0.2rem;
+}
+
+.histDate {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-outline);
+}
+
+.histDesc {
+	font-size: 0.72rem;
+	color: var(--color-outline);
+}
+
+/* SLL: TM prior opinion */
+.opinionBox {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding: 0.85rem;
+	border-radius: 12px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+}
+
+.opinionHead {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--color-on-surface);
+}
+
+.opinionDate {
+	font-size: 0.78rem;
+	color: var(--color-outline);
+}
+
+.opinionQuote {
+	margin-top: 0.3rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 8px;
+	background: var(--color-green-soft);
+	color: var(--color-green-on-soft);
+	font-size: 0.84rem;
+}
+
+.opinionQuote strong {
+	display: block;
+	margin-bottom: 0.2rem;
+}
+
+.opinionQuote p {
+	margin: 0;
+	color: var(--color-on-surface);
+	font-style: italic;
+}
+
+/* Post-decision result screen */
+.resultWrap {
+	display: flex;
+	justify-content: center;
+	padding: 2rem 1rem;
+}
+
+.resultCard {
+	max-width: 520px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 1rem;
+	padding: 2.5rem 1.75rem;
+	background: var(--color-bg-card);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 20px;
+	border-top-width: 4px;
+}
+
+.toneOk { border-top-color: var(--color-green-on-soft); }
+.toneWarn { border-top-color: var(--color-orange-on-soft); }
+.toneBad { border-top-color: var(--color-red-on-soft); }
+
+.resultIcon {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 0 0 8px var(--color-surface);
+}
+
+.resOk { background: var(--color-green-on-soft); }
+.resWarn { background: var(--color-orange-on-soft); }
+.resBad { background: var(--color-red-on-soft); }
+
+.resultTitle {
+	font-size: 1.45rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-surface);
+}
+
+.resultDesc {
+	margin: 0;
+	color: var(--color-outline);
+	max-width: 40ch;
+}
+
+.resultBox {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 14px;
+	padding: 1rem;
+	text-align: left;
+}
+
+.resultBadge {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.resultConsultant {
+	display: block;
+	font-weight: 700;
+	font-size: 0.92rem;
+	color: var(--color-on-surface);
+}
+
+.resultBadgeTitle {
+	display: block;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+}
+
+.resultReason {
+	border-left: 3px solid var(--color-red-on-soft);
+	background: var(--color-red-soft);
+	border-radius: 0 8px 8px 0;
+	padding: 0.6rem 0.85rem;
+}
+
+.resultReasonLabel {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--color-red-on-soft);
+}
+
+.resultReasonText {
+	margin: 0.25rem 0 0;
+	font-size: 0.88rem;
+	font-style: italic;
+	color: var(--color-on-surface);
+}
+
+.resultNotified {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+.resultActions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+/* Explicit reject confirmation panel */
+/* Inline decision confirmation panel (per action) */
+.confirmPanel {
+	margin-top: 0.85rem;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 12px;
+	padding: 0.85rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.confirmOk {
+	border-color: var(--color-green-on-soft);
+	background: var(--color-green-soft);
+}
+
+.confirmWarn {
+	border-color: var(--color-orange-on-soft);
+	background: var(--color-orange-soft);
+}
+
+.confirmBad {
+	border-color: var(--color-red-on-soft);
+	background: var(--color-red-soft);
+}
+
+.confirmHead {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 700;
+	font-size: 0.92rem;
+	color: var(--color-on-surface);
+}
+
+.confirmText {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--color-on-surface);
+}
+
+.confirmActions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+}
+
+.reqDesc {
+	margin: 0.3rem 0 0;
+	font-size: 0.84rem;
+	color: var(--color-outline);
+	line-height: 1.45;
+}
+
+.evBox {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 10px;
+	background: var(--color-surface);
+}
+
+.evMeta {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.evName {
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.evType {
+	font-size: 0.72rem;
+	color: var(--color-outline);
+}
+
+.viewBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	border: 1px solid var(--color-outline-variant);
+	background: var(--color-bg-card);
+	border-radius: 8px;
+	padding: 0.3rem 0.6rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--color-secondary);
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.viewBtn:hover {
+	background: var(--color-secondary-container);
+}
+
+.reqActions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.reqActionLabel {
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+/* Sidebar: validation summary */
+.summaryList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.summaryRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.45rem 0.6rem;
+	border-radius: 8px;
+	background: var(--color-surface);
+}
+
+.summaryCode {
+	font-weight: 600;
+	font-size: 0.85rem;
+	color: var(--color-on-surface);
+}
+
+.summaryState {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.8rem;
+	color: var(--color-outline);
+}
+
+.summaryDone {
+	color: var(--color-green-on-soft);
+}
+
+.ringWrap {
+	display: flex;
+	justify-content: center;
+	padding-top: 0.5rem;
+}
+
+/* Decision panel */
+.feedbackLabel {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.required {
+	color: var(--color-red-on-soft);
+	font-weight: 600;
+}
+
+.textarea {
+	width: 100%;
+	border: 1px solid var(--color-outline-variant);
+	border-radius: 10px;
+	padding: 0.6rem;
+	font-size: 0.85rem;
+	resize: vertical;
+	background: var(--color-surface);
+	color: var(--color-on-surface);
+}
+
+.textarea:focus {
+	outline: none;
+	border-color: var(--color-primary);
+}
+
+.decisionButtons {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.approveHint {
+	margin: 0.25rem 0 0;
+	font-size: 0.78rem;
+	color: var(--color-outline);
+	text-align: center;
+}
+
+.backLink {
+	display: block;
+	text-align: center;
+	margin-top: 0.5rem;
+	font-size: 0.82rem;
+	color: var(--color-outline);
+	text-decoration: none;
+}
+
+.backLink:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.sidebar {
+		position: static;
+	}
+}
+
+/* Consultant header: stack cleanly on narrow widths so it doesn't break. */
+@media (max-width: 640px) {
+	.consultantRow {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.consultantInfo {
+		flex: none;
+	}
+
+	.consultantStats {
+		width: 100%;
+	}
+
+	.statChip {
+		flex: 1;
+	}
+
+	.consultantSide {
+		align-items: flex-start;
+	}
+}

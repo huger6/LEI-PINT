@@ -1,0 +1,10 @@
+.policyText {
+	white-space: pre-wrap;
+	background: var(--color-surface);
+	border-radius: 12px;
+	padding: 1rem;
+	font-size: 0.875rem;
+	color: var(--color-on-surface);
+	max-height: 320px;
+	overflow-y: auto;
+}

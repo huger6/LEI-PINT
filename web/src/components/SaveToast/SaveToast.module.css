@@ -1,0 +1,40 @@
+.toast {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 20px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-green-on-soft);
+	border-radius: 14px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+	z-index: 9999;
+	animation: slideIn 300ms ease;
+}
+
+.message {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 400px) {
+	.toast {
+		right: 12px;
+		bottom: 12px;
+		left: 12px;
+	}
+}

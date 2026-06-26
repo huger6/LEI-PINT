@@ -1,0 +1,187 @@
+@startuml auth-flow
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Inter
+skinparam defaultFontSize 12
+
+skinparam activity {
+  BackgroundColor #F5FAFD
+  BorderColor #39639C
+  FontColor #171C1E
+  DiamondBackgroundColor #B9EBF6
+  DiamondBorderColor #39639C
+  ArrowColor #39639C
+  StartColor #00B8E0
+  EndColor #39639C
+  BarColor #00B8E0
+}
+
+skinparam note {
+  BackgroundColor #B9EBF6
+  BorderColor #00B8E0
+  FontColor #171C1E
+}
+
+skinparam partition {
+  BackgroundColor #FDF7FF
+  BorderColor #39639C
+  FontColor #39639C
+}
+
+title <b>Fluxo de Autenticação</b>\nPlataforma de Badges da Softinsa
+
+|Cliente (Web / Mobile)|
+start
+
+:Utilizador acede à plataforma;
+
+if (Tem conta?) then (não)
+
+  |Cliente (Web / Mobile)|
+  :Preenche formulário\nde registo;
+
+  |API REST|
+  :Valida dados (Zod);
+  :Hash da password\n(bcrypt, 12 salt rounds);
+  :Cria utilizador + perfil\ndo papel (transação atómica);
+  :Ativa flag\n**force_password_change**;
+  :Gera token de\nconfirmação de email;
+  :Envia email de\nconfirmação;
+
+  |Cliente (Web / Mobile)|
+  :Utilizador clica no\nlink de confirmação;
+
+  |API REST|
+  :Valida token\n(existência, propósito, prazo);
+  :Marca **email_confirmed**\ncomo verdadeiro;
+
+  |Cliente (Web / Mobile)|
+  :Redireciona para Login;
+
+else (sim)
+endif
+
+|Cliente (Web / Mobile)|
+:Submete credenciais\n(email/username + password);
+
+|API REST|
+:Verifica rate limit\n(10 tentativas / 15 min);
+
+if (Limite excedido?) then (sim)
+  :Devolve HTTP 429\n(Too Many Requests);
+  |Cliente (Web / Mobile)|
+  :Mostra erro de\nlimite excedido;
+  stop
+else (não)
+endif
+
+:Valida credenciais\n(bcrypt.compare);
+
+if (Credenciais válidas?) then (não)
+  :Devolve HTTP 401\n(Unauthorized);
+  |Cliente (Web / Mobile)|
+  :Mostra erro de\ncredenciais inválidas;
+  stop
+else (sim)
+endif
+
+:Gera **Access Token** (JWT)\nsub: user_id, role, fpc;
+:Gera **Refresh Token**\n(hash armazenado na BD);
+:Atualiza **last_login_at**;
+
+|Cliente (Web / Mobile)|
+:Armazena Access Token\nem memória (não localStorage);
+:Armazena flags de sessão\n(hasSession, sessionPersistent);
+
+if (Flag **fpc** ativa?) then (sim)
+  :Redireciona para\n/change-password;
+  :Bloqueia todos os\nendpoints exceto\nalteração de password;
+
+  :Utilizador submete\nnova password;
+
+  |API REST|
+  :Valida password atual;
+  :Hash da nova password;
+  :Desativa flag **fpc**;
+
+  |Cliente (Web / Mobile)|
+  :Redireciona para\nDashboard;
+
+else (não)
+  :Redireciona para\nDashboard;
+endif
+
+note right
+  **Monitorização de Atividade**
+  Eventos: mousemove, click, keydown
+  Debounce: 10s
+  Verificação: a cada 30s
+  Refresh: quando < 60s restantes
+end note
+
+|Cliente (Web / Mobile)|
+:Utilizador interage\ncom a plataforma;
+
+repeat
+
+  if (Token expira em < 60s?) then (sim)
+
+    |API REST|
+    :Valida Refresh Token\n(hash, revogação, expiração);
+
+    if (Refresh Token válido?) then (sim)
+      :Emite novo\nAccess Token;
+
+      |Cliente (Web / Mobile)|
+      :Atualiza token\nem memória;
+
+    else (não)
+      :Devolve HTTP 401;
+
+      |Cliente (Web / Mobile)|
+      :Dispara evento\n**auth:logout**;
+      :Limpa sessão e\nredireciona para Login;
+      stop
+    endif
+
+  else (não)
+  endif
+
+  |Cliente (Web / Mobile)|
+  if (Inatividade excede limite?) then (sim)
+    note right
+      Persistente: 5 min
+      Efémera: 10 min
+    end note
+    :Encerra sessão\npor inatividade;
+    stop
+  else (não)
+  endif
+
+  :Continua a utilizar\na plataforma;
+
+repeat while (Utilizador ativo?) is (sim)
+
+|Cliente (Web / Mobile)|
+:Clica em Terminar Sessão;
+
+|API REST|
+:Revoga Refresh Token\nna base de dados;
+
+|Cliente (Web / Mobile)|
+:Limpa token da memória\ne flags de sessão;
+:Redireciona para Login;
+
+stop
+
+legend right
+  |= Cor |= Significado |
+  |<#00B8E0> | Cor primária / início |
+  |<#39639C> | Cor secundária / decisão |
+  |<#B9EBF6> | Notas informativas |
+  |<#F5FAFD> | Atividades |
+endlegend
+
+footer Diagrama gerado com PlantUML — Projeto Integrado 2026
+
+@enduml

@@ -1,0 +1,69 @@
+.card {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 16px;
+	border-radius: 14px;
+	border: 1px solid rgba(57, 99, 156, 0.12);
+	background: var(--color-surface);
+	/* Read-only status display — must not look or behave like a form field. */
+	cursor: default;
+}
+
+.complete {
+	border-left: 3px solid var(--color-success);
+}
+
+.statusIcon {
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.emptyCircle {
+	display: block;
+	width: 10px;
+	height: 10px;
+	margin: 6px;
+	border-radius: 50%;
+	background: var(--color-outline-light, #cfd6dc);
+}
+
+.body {
+	flex: 1;
+	min-width: 0;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.title {
+	flex: 1;
+	font-size: 0.875rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.description {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	margin: 0 0 6px;
+	line-height: 1.4;
+}
+
+.statusLabel {
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.completeLabel {
+	color: var(--color-success);
+}
+
+.pendingLabel {
+	color: var(--color-outline);
+}

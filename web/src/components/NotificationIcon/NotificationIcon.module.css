@@ -1,0 +1,20 @@
+.notificationIcon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.notificationCount {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background-color: var(--color-error);
+    color: var(--color-on-error);
+    font-size: 11px;
+    line-height: 18px;
+}

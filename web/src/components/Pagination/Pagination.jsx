@@ -1,0 +1,140 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import Icon from '../Icons/Icons';
+import styles from './Pagination.module.css';
+
+/**
+ * Responsive pagination controls with first/prev/next/last buttons and ellipsis.
+ * @param {number} currentPage - Active page number (1-indexed).
+ * @param {number} totalPages - Total number of pages.
+ * @param {number} totalItems - Total item count (shown in "Showing X of Y").
+ * @param {number} itemCount - Items on the current page.
+ * @param {Function} onPageChange - Called with the new page number.
+ */
+// Renders page number buttons with first/prev/next/last navigation and responsive ellipsis.
+const Pagination = ({ currentPage, totalPages, totalItems, itemCount, onPageChange }) => {
+    const { t } = useTranslation();
+    // Tracks how many page buttons to show based on viewport width.
+    const [maxVisible, setMaxVisible] = useState(8);
+
+    // Adjusts the visible page count when the viewport width changes.
+    useEffect(() => {
+        const updateMaxVisible = () => {
+            const width = window.innerWidth;
+            if (width < 576) setMaxVisible(3);
+            else if (width < 768) setMaxVisible(5);
+            else setMaxVisible(8);
+        };
+        updateMaxVisible();
+        window.addEventListener('resize', updateMaxVisible);
+        return () => window.removeEventListener('resize', updateMaxVisible);
+    }, []);
+
+    if (totalPages <= 1) {
+        return null;
+    }
+
+    // Computes the array of page numbers and ellipsis markers to display.
+    const getPageNumbers = () => {
+        if (totalPages <= maxVisible) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+
+        const pages = [];
+        const sideCount = Math.floor((maxVisible - 3) / 2);
+        let start = Math.max(2, currentPage - sideCount);
+        let end = Math.min(totalPages - 1, currentPage + sideCount);
+
+        if (currentPage - sideCount <= 2) {
+            end = Math.min(totalPages - 1, maxVisible - 2);
+        }
+        if (currentPage + sideCount >= totalPages - 1) {
+            start = Math.max(2, totalPages - maxVisible + 3);
+        }
+
+        pages.push(1);
+
+        if (start > 2) {
+            pages.push('start-ellipsis');
+        }
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (end < totalPages - 1) {
+            pages.push('end-ellipsis');
+        }
+
+        pages.push(totalPages);
+
+        return pages;
+    };
+
+    const pageNumbers = getPageNumbers();
+
+    return (
+        <nav className={styles.wrapper} aria-label={t('pagination.navigation')}>
+            <span className={styles.showingText}>
+                {t('pagination.showing', { itemCount: itemCount ?? '-', totalItems: totalItems ?? '-' })}
+            </span>
+
+            <div className={styles.controls}>
+                <button
+                    className={`${styles.pageBtn} ${currentPage === 1 ? styles.disabled : ''}`}
+                    onClick={() => onPageChange(1)}
+                    disabled={currentPage === 1}
+                    aria-label={t('pagination.first')}
+                >
+                    <Icon name="double_chevron_backward" size={16} aria-hidden="true" aria-label={t('pagination.first')} />
+                </button>
+
+                <button
+                    className={`${styles.pageBtn} ${currentPage === 1 ? styles.disabled : ''}`}
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    aria-label={t('pagination.previous')}
+                >
+                    <Icon name="chevron_backward" size={16} aria-hidden="true" aria-label={t('pagination.previous')} />
+                </button>
+
+                {pageNumbers.map((page) => {
+                    if (page === 'start-ellipsis' || page === 'end-ellipsis') {
+                        return (
+                            <span key={page} className={styles.ellipsis}>…</span>
+                        );
+                    }
+                    return (
+                        <button
+                            key={page}
+                            className={`${styles.pageBtn} ${currentPage === page ? styles.active : ''}`}
+                            onClick={() => onPageChange(page)}
+                        >
+                            {page}
+                        </button>
+                    );
+                })}
+
+                <button
+                    className={`${styles.pageBtn} ${currentPage === totalPages ? styles.disabled : ''}`}
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    aria-label={t('pagination.next')}
+                >
+                    <Icon name="chevron_forward" size={16} aria-hidden="true" aria-label={t('pagination.next')} />
+                </button>
+
+                <button
+                    className={`${styles.pageBtn} ${currentPage === totalPages ? styles.disabled : ''}`}
+                    onClick={() => onPageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    aria-label={t('pagination.last')}
+                >
+                    <Icon name="double_chevron_forward" size={16} aria-hidden="true" aria-label={t('pagination.last')} />
+                </button>
+            </div>
+        </nav>
+    );
+};
+
+export default Pagination;

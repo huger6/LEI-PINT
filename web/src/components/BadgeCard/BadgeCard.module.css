@@ -1,0 +1,472 @@
+/* ─── Link wrapper ─── */
+
+.link {
+	color: inherit;
+	display: block;
+	position: relative;
+	height: 100%;
+	border-radius: 18px;
+}
+
+.link:has(.requirementIcon:hover) {
+	z-index: 10;
+}
+
+/* ─── Card ─── */
+
+.card {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid rgba(57, 99, 156, 0.14);
+	border-radius: 18px;
+	background: var(--gradient-surface-panel);
+	box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08);
+	transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+	position: relative;
+}
+
+.card:hover {
+	transform: translateY(-5px);
+	border-color: rgba(0, 184, 224, 0.4);
+	box-shadow: 0 14px 30px rgba(19, 36, 66, 0.14);
+}
+
+/* ─── Special card: persistent golden styling ─── */
+
+.specialCard {
+	border-color: rgba(255, 193, 7, 0.45);
+	box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 12px 2px rgba(255, 193, 7, 0.15);
+}
+
+.specialCard:hover {
+	border-color: rgba(255, 193, 7, 0.65);
+	box-shadow: 0 14px 30px rgba(19, 36, 66, 0.14), 0 0 16px 3px rgba(255, 193, 7, 0.22);
+}
+
+/* ─── Obtained card: subtle green border ─── */
+
+.obtainedCard {
+	border-color: rgba(4, 206, 0, 0.35);
+}
+
+.obtainedCard:hover {
+	border-color: rgba(4, 206, 0, 0.55);
+}
+
+/* ─── Special card: glow animation (plays once on enter) ─── */
+
+.specialGlow {
+	animation: cardGlow 3.6s ease-out forwards;
+}
+
+@keyframes cardGlow {
+	0% {
+		border-color: rgba(255, 193, 7, 0.15);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08);
+	}
+	30% {
+		border-color: rgba(255, 170, 0, 0.55);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 18px 4px rgba(255, 180, 0, 0.28);
+	}
+	55% {
+		border-color: rgba(255, 150, 0, 0.7);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 26px 6px rgba(255, 170, 0, 0.35);
+	}
+	75% {
+		border-color: rgba(255, 180, 0, 0.55);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 16px 3px rgba(255, 193, 7, 0.2);
+	}
+	100% {
+		border-color: rgba(255, 193, 7, 0.45);
+		box-shadow: 0 8px 24px rgba(19, 36, 66, 0.08), 0 0 12px 2px rgba(255, 193, 7, 0.15);
+	}
+}
+
+/* ─── Fuse trace animation (border reveal from top center both ways) ─── */
+
+@property --fuse-spread {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false;
+}
+
+.fuseActive {
+	isolation: isolate;
+}
+
+/* Trail: full sweep revealed, but opacity fades quickly so it dissolves behind the tip */
+.fuseActive::before {
+	content: '';
+	position: absolute;
+	inset: -2.5px;
+	border-radius: 20px;
+	background: conic-gradient(
+		from 0deg at 50% 5%,
+		#ff8c00, #ffb300 40deg, #ffc107 90deg,
+		#ffb300 135deg, #ff8c00 180deg,
+		#ffb300 225deg, #ffc107 270deg,
+		#ffb300 320deg, #ff8c00 360deg
+	);
+	pointer-events: none;
+	z-index: -1;
+	--fuse-spread: 0deg;
+	-webkit-mask: conic-gradient(
+		from 0deg at 50% 5%,
+		black 0deg, black var(--fuse-spread),
+		transparent var(--fuse-spread),
+		transparent calc(360deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)), black 360deg
+	);
+	mask: conic-gradient(
+		from 0deg at 50% 5%,
+		black 0deg, black var(--fuse-spread),
+		transparent var(--fuse-spread),
+		transparent calc(360deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)), black 360deg
+	);
+	animation:
+		fuseTrace 2.8s ease-in-out forwards,
+		trailFade 2.8s ease-in forwards;
+}
+
+/* Tip: tight bright dot at each leading edge, blurred into a round spark */
+.fuseActive::after {
+	content: '';
+	position: absolute;
+	inset: -6px;
+	border-radius: 24px;
+	pointer-events: none;
+	z-index: -1;
+	--fuse-spread: 0deg;
+	background: conic-gradient(
+		from 0deg at 50% 5%,
+		#ffdd44, #ffe88a 40deg, #fff3b0 90deg,
+		#ffe88a 135deg, #ffdd44 180deg,
+		#ffe88a 225deg, #fff3b0 270deg,
+		#ffe88a 320deg, #ffdd44 360deg
+	);
+	filter: blur(8px);
+	-webkit-mask: conic-gradient(
+		from 0deg at 50% 5%,
+		transparent 0deg,
+		transparent calc(var(--fuse-spread) - 8deg),
+		black calc(var(--fuse-spread) - 1deg),
+		black var(--fuse-spread),
+		transparent calc(var(--fuse-spread) + 1deg),
+		transparent calc(359deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)),
+		black calc(361deg - var(--fuse-spread)),
+		transparent calc(368deg - var(--fuse-spread)),
+		transparent 360deg
+	);
+	mask: conic-gradient(
+		from 0deg at 50% 5%,
+		transparent 0deg,
+		transparent calc(var(--fuse-spread) - 8deg),
+		black calc(var(--fuse-spread) - 1deg),
+		black var(--fuse-spread),
+		transparent calc(var(--fuse-spread) + 1deg),
+		transparent calc(359deg - var(--fuse-spread)),
+		black calc(360deg - var(--fuse-spread)),
+		black calc(361deg - var(--fuse-spread)),
+		transparent calc(368deg - var(--fuse-spread)),
+		transparent 360deg
+	);
+	animation:
+		fuseTrace 2.8s ease-in-out forwards,
+		tipFadeOut 0.6s 2.8s ease-out forwards;
+}
+
+@keyframes fuseTrace {
+	from { --fuse-spread: 0deg; }
+	to { --fuse-spread: 180deg; }
+}
+
+@keyframes trailFade {
+	0% { opacity: 0.7; }
+	25% { opacity: 0.5; }
+	55% { opacity: 0.25; }
+	85% { opacity: 0.08; }
+	100% { opacity: 0; }
+}
+
+@keyframes tipFadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+/* ─── Image section ─── */
+
+.imageWrap {
+	position: relative;
+	min-height: 130px;
+	padding: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 18px 18px 0 0;
+	overflow: visible;
+	background: radial-gradient(circle at top right, rgba(0, 184, 224, 0.17), transparent 62%),
+		radial-gradient(circle at left bottom, rgba(57, 99, 156, 0.16), transparent 68%),
+		var(--gradient-surface-panel);
+}
+
+.image {
+	max-height: 94px;
+	object-fit: contain;
+	filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.15));
+}
+
+.imageFallback {
+	color: rgba(57, 99, 156, 0.56);
+}
+
+.topLeftIcons {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.obtainedIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background: var(--color-surface-overlay-85);
+	backdrop-filter: blur(4px);
+	color: var(--color-success);
+}
+
+.bookmarkBtn {
+	border: 0;
+	background: var(--color-surface-overlay-85);
+	backdrop-filter: blur(4px);
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	color: var(--color-secondary);
+	cursor: pointer;
+	transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.bookmarkBtn:hover {
+	background: var(--color-surface-overlay-90);
+	color: var(--color-secondary);
+	transform: scale(1.1);
+}
+
+.bookmarkActive {
+	color: var(--color-secondary);
+}
+
+.typePill {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.28rem;
+	padding: 0.24rem 0.62rem;
+	border-radius: 999px;
+	font-size: 0.67rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.standard {
+	background: rgba(0, 184, 224, 0.12);
+	color: var(--color-blue-on-soft);
+}
+
+.special {
+	background: rgba(255, 193, 7, 0.2);
+	color: var(--color-orange-on-soft);
+}
+
+/* ─── Content ─── */
+
+.content {
+	padding: 16px 16px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.title {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 0;
+	line-height: 1.3;
+}
+
+.description {
+	margin: 0;
+	color: var(--color-outline);
+	font-size: 0.84rem;
+	line-height: 1.45;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	min-height: 3.65rem;
+}
+
+.metaGrid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.metaChip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.19rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.68rem;
+	font-weight: 600;
+	background: rgba(57, 99, 156, 0.1);
+	color: var(--color-on-secondary-container);
+}
+
+/* ─── Requirements ─── */
+
+.requirementsSection {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 2px;
+}
+
+.requirementsLabel {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: var(--color-outline);
+	white-space: nowrap;
+}
+
+.requirementsRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.requirementIcon {
+	position: relative;
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: rgba(57, 99, 156, 0.08);
+	color: var(--color-on-secondary-container);
+	border: 1px solid rgba(57, 99, 156, 0.15);
+	cursor: default;
+	transition: background 150ms ease, border-color 150ms ease;
+}
+
+.requirementIcon:hover {
+	background: rgba(57, 99, 156, 0.15);
+	border-color: rgba(57, 99, 156, 0.3);
+}
+
+.requirementObtained {
+	background: rgba(4, 164, 0, 0.1);
+	color: var(--color-success);
+	border-color: rgba(4, 164, 0, 0.2);
+}
+
+.requirementObtained:hover {
+	background: rgba(4, 164, 0, 0.18);
+	border-color: rgba(4, 164, 0, 0.35);
+}
+
+.requirementTooltip {
+	display: none;
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--color-secondary);
+	color: var(--color-on-secondary);
+	font-size: 0.72rem;
+	font-weight: 500;
+	line-height: 1.4;
+	padding: 12px 14px;
+	border-radius: 10px;
+	white-space: normal;
+	max-width: 180px;
+	min-width: 100px;
+	width: max-content;
+	z-index: 20;
+	box-shadow: 0 4px 16px rgba(57, 99, 156, 0.25);
+	pointer-events: none;
+	text-align: left;
+}
+
+.requirementTooltipTitle {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 3px;
+}
+
+.requirementTooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 6px solid transparent;
+	border-top-color: var(--color-secondary);
+}
+
+.requirementIcon:hover .requirementTooltip {
+	display: block;
+}
+
+/* ─── Footer ─── */
+
+.footer {
+	margin-top: auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 12px 16px 14px;
+	border-top: 1px solid rgba(57, 99, 156, 0.12);
+}
+
+.metrics {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.metric {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--color-on-secondary-container);
+}
+
+.viewHint {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--color-primary);
+}

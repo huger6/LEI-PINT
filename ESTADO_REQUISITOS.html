@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Estado dos Requisitos &mdash; Plataforma de Badges Softinsa</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <span id="markdown-mermaid" aria-hidden="true" data-config="{&quot;darkModeTheme&quot;:&quot;vscode&quot;,&quot;lightModeTheme&quot;:&quot;vscode&quot;,&quot;maxTextSize&quot;:50000,&quot;clickDrag&quot;:&quot;alt&quot;,&quot;showControls&quot;:&quot;onHoverOrFocus&quot;,&quot;resizable&quot;:true,&quot;maxHeight&quot;:&quot;&quot;}"></span>
+				<h1 id="estado-dos-requisitos--plataforma-de-badges-softinsa">Estado dos Requisitos — Plataforma de Badges Softinsa</h1>
+<blockquote>
+<p>Auditoria do estado de implementação de cada requisito do <code>Enunciado_PINT.pdf</code>, por perfil.
+<strong>Âmbito:</strong> Web (React/Vite/Bootstrap) + API (Node/Express/Sequelize/PostgreSQL). <strong>Mobile fica fora</strong> (plataforma separada).
+<strong>Branch auditada:</strong> <code>web-new</code> · <strong>Data:</strong> 2026-06-12 (atualizado após as correções TM/SLL do mesmo dia)</p>
+</blockquote>
+<blockquote>
+<p><strong>Atualização (14/06/2026):</strong> Após a auditoria inicial foram fechadas várias lacunas TM/SLL — histórico do processo exposto ao TM (req 21), páginas de consultores (TM) e equipa (SLL) com filtros, histórico de badges da SL, email ao SLL em nova validação (req 16), alinhamento com o Figma (consultores, histórico, dashboard, estatísticas, exports, ranking), polish do painel de revisão (rejeição explícita, ecrã de resultado com motivo, timeline data-driven), auto-refresh das listas, e os <strong>dois bónus</strong> (Timeline de evolução do TM e Comparação com pares do SLL, na nova página ConsultantDetail). <strong>TM e SLL: obrigatórios + bónus completos.</strong> As tabelas abaixo já refletem este estado.</p>
+</blockquote>
+<h2 id="legenda">Legenda</h2>
+<table>
+<thead>
+<tr>
+<th>Símbolo</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td>Done — implementado em web+API, integrado com API real</td>
+</tr>
+<tr>
+<td>🟡</td>
+<td>Partial — parcial, só UI/sem integração, falta endpoint ou caso de borda</td>
+</tr>
+<tr>
+<td>❌</td>
+<td>Missing — sem implementação</td>
+</tr>
+<tr>
+<td>⚪</td>
+<td>N/A — não aplicável a este perfil</td>
+</tr>
+</tbody>
+</table>
+<h2 id="resumo-global">Resumo global</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th style="text-align:center">✅ Done</th>
+<th style="text-align:center">🟡 Partial</th>
+<th style="text-align:center">❌ Missing</th>
+<th style="text-align:center">⚪ N/A</th>
+<th style="text-align:center">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consultor</td>
+<td style="text-align:center">19</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">28</td>
+</tr>
+<tr>
+<td>Talent Manager</td>
+<td style="text-align:center">18</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">22</td>
+</tr>
+<tr>
+<td>Service Line Leader</td>
+<td style="text-align:center">17</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">20</td>
+</tr>
+<tr>
+<td>Administrador</td>
+<td style="text-align:center">7</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">13</td>
+</tr>
+<tr>
+<td>Requisitos Gerais</td>
+<td style="text-align:center">10</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">15</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Leitura rápida:</strong> o <strong>TM e o SLL estão completos</strong> (requisitos obrigatórios + os dois bónus). O que sobra nesses perfis são apenas detalhes menores (🟡): &quot;tempo real&quot; por refresh/polling em vez de websocket, e o botão de certificado PDF no fluxo SLL. As lacunas mais relevantes do projeto estão agora no <strong>Admin</strong> (endpoints completos sem UI: RGPD, SLAs, gestão de requisitos, ações sobre pedidos) e no <strong>Consultor</strong> (página pública de verificação <code>/verify/:link</code> sem rota no web; integração <a href="http://softinsa.pt">softinsa.pt</a>).</p>
+<hr>
+<h2 id="1-perfil-consultor">1. Perfil Consultor</h2>
+<table>
+<thead>
+<tr>
+<th>Nº</th>
+<th>Requisito</th>
+<th>Estado</th>
+<th>Evidência (ficheiros)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Email de confirmação antes de usar; 1º login muda password</td>
+<td>✅</td>
+<td><code>api/src/controllers/auth.controller.js:214,463-472,543</code>; <code>LoginPage.jsx:57-65</code>; <code>ChangePasswordPage.jsx</code>; <code>email.service.js:22</code></td>
+<td>API-integrado. Login força mudança de password no 1º acesso.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Escolhe área no registo; ao iniciar mostra badges preferidos da área</td>
+<td>✅</td>
+<td><code>RegisterPage.jsx:63,287,408</code>; <code>BadgeCatalog.jsx:167-188</code></td>
+<td>&quot;Preferidos&quot; = filtro default pela área primária.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Ver badges disponíveis fora da sua área</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx</code> (filtro de área limpável); <code>badgesApi.getBadges</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Dashboard pessoal com progresso nos Learning Paths</td>
+<td>✅</td>
+<td><code>Evolution.jsx</code> (<code>getLearningPathProgress</code>); <code>statsApi.js</code>; <code>Objectives.jsx</code></td>
+<td>Detalhe LP em Evolution/Objectives.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Upload de evidências (certificados, diplomas, relatórios)</td>
+<td>✅</td>
+<td><code>applicationsApi.js getUploadUrl/upsertEvidence</code>; <code>ApplicationDetail.jsx</code></td>
+<td>Upload via signed URL.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Visualização em tempo real do estado do pedido</td>
+<td>🟡</td>
+<td><code>ConsultantDashboard.jsx</code>; <code>MyApplications.jsx</code>; <code>ApplicationStatus.jsx</code></td>
+<td>Por fetch/refresh; sem websocket/polling.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Histórico de badges obtidos e em processo</td>
+<td>✅</td>
+<td><code>Evolution.jsx</code> (<code>/gamification/earned-badges</code>); <code>MyApplications.jsx</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Catálogo de badges com descrições</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx</code>; <code>BadgeDetail.jsx</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Ver requisitos de cada badge</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx</code> (<code>RequirementCard</code>)</td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Aceitação RGPD para publicar/partilhar badges</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx</code>→<code>GdprConsentModal</code>; <code>gdprApi.js</code>→<code>/gdpr/consent</code></td>
+<td>Partilha bloqueada atrás de consentimento.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Partilhar badge no LinkedIn</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx doShareLinkedIn</code></td>
+<td>Após consentimento RGPD.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>(BÓNUS) Badge na assinatura de email</td>
+<td>✅</td>
+<td><code>shared/MailSignature/MailSignature.jsx</code></td>
+<td>HTML copiável com badges.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Sistema de pontos por badges obtidos</td>
+<td>✅</td>
+<td><code>Points.jsx</code>; <code>applications.controller.js:699</code>; <code>points_history</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Badges especiais (ex. certificações pagas / Premium)</td>
+<td>🟡</td>
+<td><code>DB/PINT_SCRIPT.sql:219</code>; <code>applications.controller.js:721</code>; <code>Points.jsx</code>/<code>Evolution.jsx</code></td>
+<td>Modelo distingue Special; sem visual &quot;Premium&quot; dedicado no catálogo.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Métricas visuais de progresso</td>
+<td>✅</td>
+<td><code>Evolution.jsx</code> (recharts); <code>Objectives.jsx</code>; <code>Points.jsx</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Celebração de marcos</td>
+<td>🟡</td>
+<td><code>Points.jsx:444</code>; notif <code>NOTIF_APP_BADGE_AWARDED</code></td>
+<td>Sem celebração visual (confetti/modal).</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Recomendações de próximos badges</td>
+<td>✅</td>
+<td><code>Points.jsx:238,524</code>; <code>gamification.controller.js:179</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Download de certificados PDF</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx</code>; <code>certificate.service.js</code>; <code>certificate.generator</code></td>
+<td>Gera/armazena PDF.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Email de confirmação de candidatura</td>
+<td>✅</td>
+<td><code>applications.controller.js:504</code>; <code>email.service.js:385</code></td>
+<td>No submit.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Notificações de aprovação/rejeição</td>
+<td>✅</td>
+<td><code>applications.controller.js:721-775</code>; <code>email.service.js:425,466</code></td>
+<td>In-app + email.</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Alertas de expiração de badges (opcional por badge)</td>
+<td>✅</td>
+<td><code>workers/badge_expiration.worker.js</code>; <code>BadgeDetail.jsx</code></td>
+<td>Só dispara se <code>expiration_at</code> definido.</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Lembretes (objetivos/prazos)</td>
+<td>✅</td>
+<td><code>workers/goal_reminder.worker.js</code>; <code>Objectives.jsx</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>23</td>
+<td>(BÓNUS) Config. template de assinatura com badges</td>
+<td>✅</td>
+<td><code>MailSignature.jsx</code></td>
+<td>Cobre bónus 12/23.</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Galeria pública de badges obtidos</td>
+<td>🟡</td>
+<td><code>UserProfile.jsx:714</code>; <code>getEarnedBadges</code></td>
+<td>Link para catálogo; sem galeria pública dedicada.</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Página Softinsa individual por badge (url/badge/assinatura)</td>
+<td>🟡</td>
+<td><code>public.routes.js /badge/:link</code>; <code>BadgeDetail.jsx</code>/<code>MailSignature.jsx</code> geram <code>/verify/:link</code></td>
+<td>Página pública existe na API; <strong>link web <code>/verify/:link</code> não tem rota</strong> — desalinhamento.</td>
+</tr>
+<tr>
+<td>26</td>
+<td>Sistema de verificação por link único</td>
+<td>🟡</td>
+<td><code>awarded_badges.public_verification_link</code>; <code>public.controller.js</code> (+QR)</td>
+<td>Backend completo; mesmo bug de wiring do nº25.</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Info detalhada de competências certificadas</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx</code> (skills); <code>consultants_selected_skills</code></td>
+<td>API-integrado.</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Integração na página de badges com <a href="http://www.softinsa.pt">www.softinsa.pt</a></td>
+<td>❌</td>
+<td>Sem referências a <code>softinsa.pt</code> (só texto i18n)</td>
+<td>Não implementado.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resumo-consultor">Resumo Consultor</h3>
+<ul>
+<li>✅ 19 · 🟡 8 · ❌ 1 (total 28)</li>
+<li><strong>Lacunas principais:</strong> (28) sem integração <a href="http://softinsa.pt">softinsa.pt</a>; (25/26) link público <code>/verify/:link</code> não resolve no router web — partilha/assinatura quebradas; (24) sem galeria pública dedicada; (16) sem celebração visual; (6) estado por fetch, não tempo real.</li>
+</ul>
+<hr>
+<h2 id="2-perfil-talent-manager">2. Perfil Talent Manager</h2>
+<table>
+<thead>
+<tr>
+<th>Nº</th>
+<th>Requisito</th>
+<th>Estado</th>
+<th>Evidência (ficheiros)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Ver badges disponíveis</td>
+<td>✅</td>
+<td><code>routes/index.jsx:82</code> (TM.BADGES→<code>BadgeCatalog</code>); <code>BadgeCatalog.jsx:8</code></td>
+<td>Catálogo partilhado, API real.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Dashboard com progresso de todos os consultores</td>
+<td>✅</td>
+<td><code>ManagementDashboard.jsx</code> (KPIs + gráficos); <code>ConsultantsList.jsx</code> (via <code>TmConsultants</code>); API <code>GET /statistics/consultants</code></td>
+<td>Página de consultores com pontos/badges/candidaturas/último login + filtros; dashboard com KPIs e gráficos.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Sistema de verificação de evidências</td>
+<td>✅</td>
+<td><code>ApplicationReview.jsx:134-146,48</code> (<code>tm_reviewed</code>)</td>
+<td>TM marca cada evidência; API real.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Visualização em tempo real do estado</td>
+<td>🟡</td>
+<td><code>ValidationsBoard.jsx:64-75</code></td>
+<td>Refresh on-focus/visibility; sem websocket.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Histórico de badges obtidos/em processo</td>
+<td>🟡</td>
+<td><code>ValidationsBoard.jsx:77-83</code>; <code>ManagementDashboard.jsx:18-23</code></td>
+<td>Por estado (global); sem vista por consultor.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Catálogo de badges com descrições</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx</code>; <code>BadgeCard.jsx:110-111</code></td>
+<td>API real.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Ver requisitos de cada badge</td>
+<td>✅</td>
+<td><code>ApplicationReview.jsx:91-102,336-399</code>; <code>sharedRoutes.jsx:15</code></td>
+<td>Na review e no detalhe.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Relatórios de badges por área/período</td>
+<td>✅</td>
+<td><code>TmStats.jsx:128-155</code>; <code>exports.routes.js:11-24</code> (<code>from</code>/<code>to</code>)</td>
+<td>Gráficos por SL/LP/nível + exports por período.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Exportar pedidos para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:19</code>; <code>exports.routes.js:18</code></td>
+<td>csv/xlsx/pdf.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Exportar badges para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:22</code>; <code>exports.routes.js:21</code></td>
+<td>API real.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Exportar consultores para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:18</code>; <code>exports.routes.js:12</code></td>
+<td>API real.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Exportar aprovações para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:20</code> (<code>state:'Accepted'</code>)</td>
+<td>API real.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Exportar rejeições para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:21</code> (<code>state:'Rejected'</code>)</td>
+<td>API real.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Badge na assinatura de email</td>
+<td>⚪</td>
+<td><code>MailSignature.jsx:40</code></td>
+<td>Só consultores ganham badges.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Ver sistema de pontos por badge</td>
+<td>✅</td>
+<td><code>BadgeCard.jsx</code>; <code>BadgeDetail.jsx</code>; <code>TmStats.jsx:100</code></td>
+<td>Pontos visíveis (partilhados).</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Ver badges de conquista especial (Premium)</td>
+<td>✅</td>
+<td><code>BadgeCard.jsx:11,35,79</code>; <code>BadgeCatalog.jsx:31</code></td>
+<td>Special distinguido no catálogo.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Descarregar certificados PDF</td>
+<td>⚪</td>
+<td><code>applications.routes.js:78</code>; <code>certificate.service.js:17</code> (ownership)</td>
+<td>Geração scoped ao dono (consultor).</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Receber emails de pedidos de aplicação</td>
+<td>✅</td>
+<td><code>applications.controller.js:532-544</code></td>
+<td>Notificação in-app a todos os TMs no submit.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Notificações de aprovação/rejeição ao consultor</td>
+<td>✅</td>
+<td><code>applications.controller.js:717-755,760-785</code></td>
+<td>TM 'review'→In validation notifica consultor.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Ver badges próximos da expiração</td>
+<td>✅</td>
+<td><code>TmStats.jsx:65-79,160-211</code>; <code>statistics.controller.js:329</code></td>
+<td>Tabela com janelas (30/90/180/365/730d).</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Ver histórico de cada processo de aplicação</td>
+<td>✅</td>
+<td><code>ApplicationReview.jsx</code> (bloco &quot;Histórico do Processo&quot;)</td>
+<td>Exposto também ao TM (removido o gate <code>isSll &amp;&amp;</code>).</td>
+</tr>
+<tr>
+<td>B1</td>
+<td>(BÓNUS) Timeline de evolução por consultor</td>
+<td>✅</td>
+<td><code>ConsultantDetail.jsx</code>; <code>statistics.service.js getAcquisitionTimeline</code>; <code>GET /statistics/consultant/timeline?userGuid</code></td>
+<td>Página por-consultor (clique na lista) com timeline de badges acumulados.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resumo-talent-manager">Resumo Talent Manager</h3>
+<ul>
+<li>✅ 18 · 🟡 2 · ❌ 0 · ⚪ 2 (total 22) — <strong>obrigatórios + bónus completos</strong></li>
+<li><strong>Resolvido:</strong> (2) página de consultores + dashboard com KPIs/gráficos; (21) histórico do processo visível ao TM; (B1, bónus) Timeline de evolução por consultor (ConsultantDetail).</li>
+<li><strong>Lacunas que sobram (menores, 🟡):</strong> (5) sem vista de histórico dedicada por consultor; (4) &quot;tempo real&quot; por refresh/polling em vez de websocket.</li>
+<li><strong>Nota:</strong> TM corretamente sem ação 'accept' (<code>ApplicationReview.jsx</code>); exports scoped por role no backend.</li>
+</ul>
+<hr>
+<h2 id="3-perfil-service-line-leader">3. Perfil Service Line Leader</h2>
+<table>
+<thead>
+<tr>
+<th>Nº</th>
+<th>Requisito</th>
+<th>Estado</th>
+<th>Evidência (ficheiros)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Ver badges fora da sua área</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx</code>; <code>routes/index.jsx:82</code></td>
+<td>Catálogo não scoped (correto).</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Dashboard com progresso de TODOS os consultores da SL</td>
+<td>✅</td>
+<td><code>ManagementDashboard.jsx</code> (KPIs + gráficos); <code>ConsultantsList.jsx</code> (via <code>SllTeam</code>, scoped); API <code>GET /statistics/consultants</code></td>
+<td>Página de equipa scoped à SL com pontos/badges/cand. em aberto/último login + filtros.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Tempo real do estado dos pedidos da SL</td>
+<td>🟡</td>
+<td><code>ValidationsBoard.jsx:64-75</code>; <code>applications.controller.js:62-72</code></td>
+<td>API scoped; &quot;tempo real&quot; = refresh on-focus.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Histórico de badges da SL (obtidos e em curso)</td>
+<td>✅</td>
+<td><code>SllBadgeHistory.jsx</code>; <code>getApplications</code> (scoped)</td>
+<td>2 tabs (Obtidos/Em Processo), coluna Nível, filtros Área/Badge/datas.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Catálogo de badges com descrições</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx</code>; <code>BadgeCard</code></td>
+<td>Partilhado, API real.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Ver requisitos de cada badge</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx:51,437-445</code>; <code>ApplicationReview.jsx</code></td>
+<td>No detalhe e na revisão.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Ver sistema de pontos por badge</td>
+<td>✅</td>
+<td><code>BadgeDetail.jsx:148,233-236</code></td>
+<td><code>badge_points</code>; pode ser nulo.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Ver badges de conquista especial (Premium)</td>
+<td>✅</td>
+<td><code>BadgeCatalog.jsx:491-503</code>; <code>BadgeDetail.jsx:324,352-379</code></td>
+<td>Classe special/Premium visível.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Relatórios de badges por área/período</td>
+<td>✅</td>
+<td><code>SllStats.jsx</code> + <code>StatsOverview.jsx</code>; API <code>GET /statistics/badges-summary</code></td>
+<td>KPIs + filtros Área/Período (scoped à SL) + relatório mensal + exports.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Exportar candidaturas Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:19-21</code>; <code>exports.controller.js:202-208</code></td>
+<td>Scoped por SL.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Exportar badges Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:22</code>; <code>exports.controller.js:269-298</code></td>
+<td>Scoped <code>b.service_line_id</code>.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Exportar consultores Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:18</code>; <code>exports.controller.js:138-155</code></td>
+<td>Scoped via <code>CONSULTANTS_IN_SL_SUBQUERY</code>.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Exportar aprovações Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx:20-21,24</code>; <code>exports.controller.js:165-181</code></td>
+<td>Logs scoped por SL.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Descarregar certificados PDF</td>
+<td>🟡</td>
+<td><code>certificates.controller.js:14-33</code> (SLL autorizado)</td>
+<td>API permite, mas sem botão/UI no fluxo SLL.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Receber emails de pedidos/validações</td>
+<td>✅</td>
+<td><code>applications.controller.js</code> (loop SLL &quot;In validation&quot;); <code>email.service.js</code> <code>sendApplicationPendingSllReviewEmail</code></td>
+<td>Email a cada SLL ao chegar a &quot;In validation&quot; (respeita preferências).</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Notificações de aprovação/rejeição</td>
+<td>✅</td>
+<td><code>applications.controller.js</code>; <code>notifications.service.js</code></td>
+<td>Notif in-app + email ao SLL na nova validação.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Ver/comparar ranking dos consultores da SL</td>
+<td>✅</td>
+<td><code>shared/Ranking/Ranking.jsx:247-276,392-414</code></td>
+<td>Scoped client-side a <code>user.serviceLine</code> + filtro por área.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Ver histórico de cada processo de candidatura</td>
+<td>✅</td>
+<td><code>ApplicationReview.jsx:69-298</code>; <code>ApplicationDetailPage.jsx:64-66</code></td>
+<td>Timeline + parecer do TM.</td>
+</tr>
+<tr>
+<td>B1</td>
+<td>(BÓNUS) Métricas de comparação entre consultores</td>
+<td>✅</td>
+<td><code>ConsultantDetail.jsx</code>; <code>statistics.service.js getPeerComparison</code>; <code>GET /statistics/consultants/comparison?userGuid</code></td>
+<td>Compara o consultor com pares da mesma área e experiência semelhante (médias, posição, tabela).</td>
+</tr>
+<tr>
+<td>B7</td>
+<td>(BÓNUS) Badge na assinatura de email</td>
+<td>⚪</td>
+<td><code>MailSignature.jsx:40</code></td>
+<td>Só consultores ganham badges.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resumo-service-line-leader">Resumo Service Line Leader</h3>
+<ul>
+<li>✅ 17 · 🟡 2 · ❌ 0 · ⚪ 1 (total 20) — <strong>obrigatórios + bónus completos</strong></li>
+<li><strong>SL-scoping</strong> bem aplicado no backend (candidaturas, exports, consultores e badges-summary scoped à SL).</li>
+<li><strong>Resolvido:</strong> (16) email ao SLL na nova validação; (4) histórico de badges da SL; (2) página de equipa; (10) relatórios com filtros Área/Período + KPIs; (17) notificações in-app + email; (B1, bónus) métricas de comparação entre consultores (ConsultantDetail).</li>
+<li><strong>Lacunas que sobram (menores, 🟡):</strong> (15) certificado PDF sem UI no fluxo SLL; (3) &quot;tempo real&quot; por refresh/polling. &quot;Ferramenta de Comparação&quot; no header continua omitida (decisão de âmbito).</li>
+</ul>
+<hr>
+<h2 id="4-perfil-administrador">4. Perfil Administrador</h2>
+<table>
+<thead>
+<tr>
+<th>Nº</th>
+<th>Requisito</th>
+<th>Estado</th>
+<th>Evidência (ficheiros)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Gestão de utilizadores e permissões</td>
+<td>✅</td>
+<td><code>admin/AdminUsers/AdminUsers.jsx</code>; <code>users/api/usersApi.js</code>; <code>user.controller.js</code></td>
+<td>Lista/filtros/criar/editar/desativar — API real.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Criar utilizadores e atribuir perfil</td>
+<td>✅</td>
+<td><code>CreateUserModal.jsx</code>; <code>AdminUsers.jsx:300-307</code></td>
+<td>Modal com role/SL/área.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Adicionar e remover badges</td>
+<td>✅</td>
+<td><code>admin/AdminBadges/AdminBadges.jsx:88-111</code>; <code>badges.routes.js</code></td>
+<td>CRUD completo via API.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add/del LP / SL / Áreas / Níveis / Requisitos</td>
+<td>🟡</td>
+<td><code>features/structure/*</code>; <code>LevelsList.jsx:134</code> (no-op); <code>AdminRequirements.jsx</code> (só leitura)</td>
+<td>LP/SL/Áreas full CRUD. <strong>Requisitos sem CRUD UI nem endpoint.</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Exportar dados para Excel/PDF</td>
+<td>✅</td>
+<td><code>ExportsPanel.jsx</code>; <code>exports.routes.js:12-24</code></td>
+<td>CSV/XLSX/PDF, 5 entidades.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Gestão de badges (expiração, pontos)</td>
+<td>🟡</td>
+<td><code>AdminBadges.jsx:284-291</code> (pontos); <code>models/badges.js:61-64</code></td>
+<td>Pontos editáveis. <strong>Campo de expiração não está no formulário web.</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Configuração de notificações</td>
+<td>❌</td>
+<td><code>notifications.routes.js</code> (só inbox+prefs)</td>
+<td>Sem UI nem endpoints admin para templates/alertas globais.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Configuração de políticas RGPD</td>
+<td>🟡</td>
+<td><code>gdpr.routes.js:17-20</code> (admin endpoints); <code>gdprApi.js</code> (só consumer)</td>
+<td>API admin completa; <strong>sem UI admin.</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Ver e gerir todos os pedidos de badge</td>
+<td>🟡</td>
+<td><code>admin/AdminApplications/AdminApplications.jsx:33-83</code>; <code>applications.controller.js:74-79</code></td>
+<td>API dá acesso total; <strong>web só-leitura, sem detalhe/ações.</strong></td>
+</tr>
+<tr>
+<td>12</td>
+<td>Informação genérica e Anúncios Ativos/Inativos</td>
+<td>✅</td>
+<td><code>management/Announcements/Announcements.jsx</code>; <code>announcements.controller.js</code></td>
+<td>CRUD + toggle ativo/inativo.</td>
+</tr>
+<tr>
+<td>B1</td>
+<td>(BÓNUS) Email à equipa quando SLA excedido</td>
+<td>✅</td>
+<td><code>workers/sla.worker.js:172</code>; <code>custom_sla.worker.js:182</code>; <code>email.service.js:540,630</code></td>
+<td>Cron 15min + email trilingue.</td>
+</tr>
+<tr>
+<td>B10</td>
+<td>(BÓNUS) Definir e gerir SLAs das equipas</td>
+<td>🟡</td>
+<td><code>slas.routes.js:12-40</code>; <code>slas.controller.js</code>; <code>AdminLayout.jsx:10</code> (link morto)</td>
+<td>CRUD API completo; <strong>sem página web nem cliente.</strong></td>
+</tr>
+<tr>
+<td>B11</td>
+<td>(BÓNUS) Notificação PUSH de SLAs excedidos</td>
+<td>✅</td>
+<td><code>workers/sla.worker.js:154</code>; <code>notifications.service.js:9-27</code> (<code>emitToUser</code>)</td>
+<td>Notif na plataforma + push WebSocket.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resumo-administrador">Resumo Administrador</h3>
+<ul>
+<li>✅ 7 · 🟡 5 · ❌ 1 (total 13)</li>
+<li><strong>Padrão:</strong> backend mais maduro que o front-office admin — vários endpoints completos sem UI (RGPD, SLAs, expiração de badge, ações sobre pedidos).</li>
+<li><strong>Lacunas principais:</strong> (7) configuração de notificações — único totalmente em falta; (9) gerir pedidos só-leitura (falta detalhe+ações); (4) CRUD de requisitos A1..An inexistente (UI e API); (B10) SLAs com link de sidebar morto; (8/6) RGPD e expiração de badge só faltam UI.</li>
+<li><strong>Nota de arquitetura:</strong> páginas admin mortas (<code>AdminLearningPaths/ServiceLines/Areas/Levels</code>) não importadas em <code>adminRoutes.jsx</code> — limpeza recomendada.</li>
+</ul>
+<hr>
+<h2 id="5-requisitos-gerais-transversais">5. Requisitos Gerais (transversais)</h2>
+<table>
+<thead>
+<tr>
+<th>Nº</th>
+<th>Requisito</th>
+<th>Estado</th>
+<th>Evidência (ficheiros)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>Dashboard responsivo mobile/desktop (~300px)</td>
+<td>🟡</td>
+<td><code>WelcomeCard/</code>; 33 ficheiros com <code>@media</code>; <code>ProfileStatItem.module.css:10</code></td>
+<td>Responsivo extenso; sem breakpoint explícito ~300px na maioria — carece verificação visual.</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Workflow de aprovação auditável (log imutável)</td>
+<td>✅</td>
+<td><code>models/application_validation_logs.js</code>; <code>applications.controller.js:468,685,899</code></td>
+<td>Registo em cada transição.</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>KPIs em dashboards de gestores</td>
+<td>✅</td>
+<td><code>admin/AdminDashboard/AdminDashboard.jsx:23-46</code>; <code>TmStats.jsx:47-103</code>; <code>SllStats/</code></td>
+<td>KPIs com dados reais.</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Comunicação cliente-servidor via HTTPS</td>
+<td>🟡</td>
+<td><code>api/server.js:1,18</code> (<code>http.createServer</code>); <code>app.js:37</code> (<code>helmet()</code>)</td>
+<td>Servidor HTTP puro; TLS delegado a proxy externo.</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>Login com Email + Password obrigatórios</td>
+<td>✅</td>
+<td><code>auth/pages/LoginPage/LoginPage.jsx:48,116-138</code>; <code>auth.controller.js:389</code></td>
+<td>Valida front+back.</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>&quot;Remember me&quot; / sessão persistente</td>
+<td>✅</td>
+<td><code>LoginPage.jsx:143-152</code>; <code>AuthContext.jsx:101-138</code>; <code>auth.controller.js:493,520-526</code></td>
+<td>Refresh token 30d vs 1h.</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>Validação login com destaque vermelho por campo</td>
+<td>🟡</td>
+<td><code>FormInput.jsx:13,32</code> (<code>is-invalid</code>); <code>LoginPage.jsx:48-50,159</code></td>
+<td>Login mostra erro geral (FormAlert), não highlight por campo vazio.</td>
+</tr>
+<tr>
+<td>G8</td>
+<td>Recuperação de password</td>
+<td>🟡</td>
+<td><code>ForgotPasswordPage.jsx</code>; <code>ResetPasswordPage.jsx:120-160</code></td>
+<td>Fluxo por link/token; mensagem &quot;Palavra-passe redefinida!&quot; (≈, não literal).</td>
+</tr>
+<tr>
+<td>G9</td>
+<td>Logout com confirmação</td>
+<td>🟡</td>
+<td><code>TopBar/UserDropdown/UserDropdown.jsx:147,154-161</code>; <code>pt/common.json:242</code></td>
+<td>ConfirmToast com confirmar/cancelar; não página dedicada nem texto literal.</td>
+</tr>
+<tr>
+<td>G10</td>
+<td>Quatro perfis de utilizador</td>
+<td>✅</td>
+<td><code>routes/{admin,consultant,sll,tm}Routes.jsx</code>; <code>responseCodes.json:77-79</code></td>
+<td>Consultant/Admin/TM/SLL em rotas e RBAC.</td>
+</tr>
+<tr>
+<td>G11</td>
+<td>Relatórios mínimos (% badges, mensal, intervalo, LP, níveis, # users)</td>
+<td>✅</td>
+<td><code>statistics.routes.js:84-120</code>; <code>statistics.controller.js:210-299</code>; <code>statisticsApi.js:4-31</code></td>
+<td>Todos presentes e consumidos.</td>
+</tr>
+<tr>
+<td>G12</td>
+<td>(BÓNUS) 3 idiomas (PT/EN/ES)</td>
+<td>✅</td>
+<td><code>i18n.js:15-18</code>; <code>locales/{pt,en,es}/common.json</code></td>
+<td>Configurado.</td>
+</tr>
+<tr>
+<td>G13</td>
+<td>(BÓNUS) Saudação por tempo/contexto, localizada</td>
+<td>✅</td>
+<td><code>WelcomeCard/WelcomeCard.jsx:9-25</code>; <code>pt/common.json:174-178</code></td>
+<td>first_login/&gt;15d/parte do dia nos 3 idiomas.</td>
+</tr>
+<tr>
+<td>G14</td>
+<td>Página de Anúncios/Informações (criar/ver/editar, imediato)</td>
+<td>✅</td>
+<td><code>announcements.routes.js:12-40</code>; <code>management/Announcements/</code>; <code>consultant/ConsultantAnnouncements/</code></td>
+<td>CRUD com guard <code>leadership</code>.</td>
+</tr>
+<tr>
+<td>G15</td>
+<td>(BÓNUS) Integração Teams/Slack</td>
+<td>✅</td>
+<td><code>integrations.service.js:6,62,106-118</code>; <code>notifications.service.js:3,39</code></td>
+<td>Webhooks reais Teams+Slack.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resumo-requisitos-gerais">Resumo Requisitos Gerais</h3>
+<ul>
+<li>✅ 10 · 🟡 5 · ❌ 0 (total 15)</li>
+<li><strong>Parciais a fechar:</strong> (G4) servidor HTTP puro (TLS por proxy); (G8) texto de sucesso ≠ literal e fluxo por link; (G9) ConfirmToast vs página dedicada; (G7) erro geral em vez de highlight por campo no login; (G1) responsividade a ~300px por confirmar visualmente.</li>
+</ul>
+<hr>
+<h2 id="mobile-fora-de-âmbito-desta-auditoria">Mobile (fora de âmbito desta auditoria)</h2>
+<p>O enunciado lista um perfil Mobile-Consultor (26 requisitos + bónus a/b). Esta auditoria cobre apenas Web + API, conforme âmbito do trabalho. O estado do Mobile deve ser avaliado separadamente sobre <code>Mobile/</code>.</p>
+<hr>
+<h2 id="foco-o-que-falta-no-tm-e-no-sll">Foco: o que falta no TM e no SLL</h2>
+<p><strong>TM e SLL estão completos</strong> (obrigatórios + os dois bónus). Sobram apenas detalhes menores (🟡):</p>
+<p><strong>Talent Manager</strong></p>
+<ul>
+<li>Vista de histórico dedicada por consultor (req 5); &quot;tempo real&quot; (req 4) por refresh/polling em vez de websocket.</li>
+</ul>
+<p><strong>Service Line Leader</strong></p>
+<ul>
+<li>Botão de certificado PDF no fluxo SLL (req 15, API já permite); &quot;tempo real&quot; (req 3) por refresh.</li>
+<li>&quot;Ferramenta de Comparação&quot; no header SLL — omitida por decisão de âmbito (substituída pela página ConsultantDetail de comparação).</li>
+</ul>
+<p><strong>Fechado:</strong> tabela de validações; redesign do painel de revisão (TM+SLL) com rejeição explícita e ecrã de resultado com motivo; blocos exclusivos SLL (Histórico/Parecer/Verificado pelo TM + Pontos/Ranking no header); timeline do processo data-driven; gate de consentimento RGPD; histórico do processo exposto ao TM (req 21); páginas de consultores (TM) e equipa (SLL) com filtros e colunas Figma; histórico de badges da SL; email ao SLL na nova validação (req 16); dashboard com KPIs + gráficos; estatísticas alinhadas ao Figma (filtros avançados + KPI cards); exports redesenhados; ranking SLL scoped; auto-refresh das listas; e os <strong>bónus</strong> Timeline (TM) + Comparação com pares (SLL) na página <strong>ConsultantDetail</strong>. Endpoints novos/corrigidos: <code>GET /statistics/consultants</code>, <code>GET /statistics/badges-summary</code>, <code>getApplications</code> (+<code>progression_stage</code>, filtros área/badge/datas), pontos+ranking do consultor no detalhe, e reescrita de <code>timeline</code>/<code>peer-comparison</code> (funções SQL em falta).</p>
+
+            
+            
+        </body>
+        </html>

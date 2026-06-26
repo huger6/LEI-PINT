@@ -3,4 +3,5 @@
 *.log
 CLAUDE.MD
 firebase.json
+.mcp.json
 docs/referencias.bib

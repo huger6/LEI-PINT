@@ -1,0 +1,53 @@
+@startuml use-case-consultor-2
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Consultor" as C
+
+rectangle "Plataforma Web & Mobile" {
+
+  package "Candidaturas" {
+    usecase "Submeter candidatura\na badge" as UC20
+    usecase "Fazer upload\nde evidências" as UC21
+    usecase "Acompanhar estado\ndo pedido" as UC22
+    usecase "Consultar histórico\nde badges" as UC23
+  }
+
+  package "Gamificação e Progresso" {
+    usecase "Visualizar dashboard\npessoal" as UC30
+    usecase "Visualizar pontos\nacumulados" as UC31
+    usecase "Visualizar conquistas\nespeciais" as UC32
+    usecase "Consultar métricas\nde progresso" as UC33
+    usecase "Celebrar marcos\nalcançados" as UC34
+    usecase "Consultar recomendações\nde próximos badges" as UC35
+    usecase "Consultar ranking" as UC36
+    usecase "Consultar objetivos\npessoais" as UC37
+  }
+}
+
+C --> UC20
+C --> UC21
+C --> UC22
+C --> UC23
+
+C --> UC30
+C --> UC31
+C --> UC32
+C --> UC33
+C --> UC34
+C --> UC35
+C --> UC36
+C --> UC37
+
+UC20 ..> UC21 : <<include>>
+
+@enduml

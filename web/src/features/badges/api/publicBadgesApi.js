@@ -1,0 +1,34 @@
+// Public (unauthenticated) API for badge verification and public consultant profiles.
+import api from '../../../services/api';
+
+// Public badge catalog (no auth) used by the /softinsa microsite.
+// Fetches all publicly visible badges for the microsite catalog.
+export async function getPublicBadges() {
+	const { data } = await api.get('/public/badges');
+	return data?.data || [];
+}
+
+// Fetches the details of a single public badge by its slug.
+export async function getPublicBadge(slug) {
+	const { data } = await api.get(`/public/badges/${slug}`);
+	return data?.data || null;
+}
+
+// Verifies an earned credential by its unique public link (no auth).
+// Returns the verification payload, or null if not found / not published.
+export async function verifyBadge(link) {
+	const { data } = await api.get(`/public/verify/${encodeURIComponent(link)}`);
+	return data?.data || null;
+}
+
+// Public consultant profile (no auth) for the microsite.
+export async function getPublicConsultant(guid) {
+	const { data } = await api.get(`/public/consultants/${encodeURIComponent(guid)}`);
+	return data?.data || null;
+}
+
+// Featured profiles (no auth) for the microsite showcase.
+export async function getFeaturedProfiles() {
+	const { data } = await api.get('/public/profiles');
+	return data?.data || [];
+}

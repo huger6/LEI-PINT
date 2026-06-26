@@ -1,0 +1,44 @@
+.chartWrapper {
+	width: 100%;
+}
+
+.chartWrapper :global(.recharts-cartesian-grid) line {
+	stroke: var(--color-outline-light);
+}
+
+.chartWrapper :global(.recharts-xAxis .recharts-cartesian-axis-tick-value),
+.chartWrapper :global(.recharts-yAxis .recharts-cartesian-axis-tick-value) {
+	font-size: 12px;
+	fill: var(--color-outline);
+}
+
+.chartWrapper :global(.recharts-xAxis .recharts-cartesian-axis-line) {
+	stroke: var(--color-outline-light);
+}
+
+.chartWrapper :global(.recharts-yAxis .recharts-cartesian-axis-line) {
+	stroke: transparent;
+}
+
+.chartWrapper :global(.recharts-xAxis .recharts-cartesian-axis-tick-line),
+.chartWrapper :global(.recharts-yAxis .recharts-cartesian-axis-tick-line) {
+	display: none;
+}
+
+.chartWrapper :global(.recharts-tooltip-wrapper .recharts-default-tooltip) {
+	border-radius: 8px !important;
+	border: 1px solid var(--color-outline-light) !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .chartWrapper :global(.recharts-tooltip-wrapper .recharts-default-tooltip) {
+	background-color: var(--color-surface) !important;
+	color: var(--color-on-surface) !important;
+}
+
+:global([data-theme="dark"]) .chartWrapper :global(.recharts-default-tooltip .recharts-tooltip-label),
+:global([data-theme="dark"]) .chartWrapper :global(.recharts-default-tooltip .recharts-tooltip-item) {
+	color: var(--color-on-surface) !important;
+}

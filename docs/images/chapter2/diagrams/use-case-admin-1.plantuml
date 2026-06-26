@@ -1,0 +1,65 @@
+@startuml use-case-admin-1
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Administrador" as ADM
+
+rectangle "Plataforma Web" {
+
+  package "Autenticação" {
+    usecase "Iniciar sessão" as UC1
+    usecase "Alterar password" as UC2
+    usecase "Terminar sessão" as UC3
+  }
+
+  package "Gestão de Utilizadores" {
+    usecase "Criar utilizador" as UC10
+    usecase "Editar utilizador" as UC11
+    usecase "Eliminar utilizador" as UC12
+    usecase "Atribuir perfil\n(Consultor, TM, SLL)" as UC13
+    usecase "Gerir permissões" as UC14
+  }
+
+  package "Gestão de Conteúdos" {
+    usecase "Gerir Learning Paths\n(CRUD)" as UC20
+    usecase "Gerir Service Lines\n(CRUD)" as UC21
+    usecase "Gerir Áreas\n(CRUD)" as UC22
+    usecase "Gerir Níveis\n(CRUD)" as UC23
+    usecase "Gerir Requisitos\n(CRUD)" as UC24
+  }
+}
+
+ADM --> UC1
+ADM --> UC2
+ADM --> UC3
+
+ADM --> UC10
+ADM --> UC11
+ADM --> UC12
+ADM --> UC13
+ADM --> UC14
+
+ADM --> UC20
+ADM --> UC21
+ADM --> UC22
+ADM --> UC23
+ADM --> UC24
+
+UC10 ..> UC13 : <<include>>
+
+note right of ADM
+  Acesso total:
+  pode visualizar e gerir
+  qualquer entidade do sistema
+end note
+
+@enduml

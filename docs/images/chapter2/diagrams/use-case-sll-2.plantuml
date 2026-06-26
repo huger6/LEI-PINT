@@ -1,0 +1,62 @@
+@startuml use-case-sll-2
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Service Line\nLeader" as SLL
+
+rectangle "Plataforma Web" {
+
+  package "Validação de Candidaturas" {
+    usecase "Aprovar candidatura" as UC20
+    usecase "Rejeitar candidatura" as UC21
+    usecase "Devolver candidatura\nao consultor (Send Back)" as UC22
+    usecase "Registar comentário\nde feedback" as UC23
+    usecase "Consultar histórico\ndo processo" as UC24
+    usecase "Consultar evidências\nsubmetidas" as UC25
+  }
+
+  package "Dashboard e Métricas" {
+    usecase "Visualizar dashboard\nda Service Line" as UC30
+    usecase "Acompanhar progresso\ndos consultores" as UC31
+    usecase "Visualizar estado dos\npedidos em tempo real" as UC32
+    usecase "Visualizar ranking\nde consultores da SL" as UC33
+    usecase "Visualizar pontos\npor badges da SL" as UC34
+    usecase "Consultar Badges\nPremium" as UC35
+  }
+}
+
+SLL --> UC20
+SLL --> UC21
+SLL --> UC22
+SLL --> UC23
+SLL --> UC24
+SLL --> UC25
+
+SLL --> UC30
+SLL --> UC31
+SLL --> UC32
+SLL --> UC33
+SLL --> UC34
+SLL --> UC35
+
+UC20 ..> UC23 : <<include>>
+UC21 ..> UC23 : <<include>>
+UC22 ..> UC23 : <<include>>
+UC20 ..> UC25 : <<include>>
+UC21 ..> UC25 : <<include>>
+
+note right of UC20
+  Restrito às candidaturas
+  da sua Service Line
+end note
+
+@enduml

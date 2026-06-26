@@ -5,6 +5,7 @@ const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/rewards.validation');
 const gamificationService = require('../services/gamification.service');
 const { sendRewardRedemptionEmail } = require('../services/email.service');
+const redis = require('../config/redis');
 
 // Public store shape — never leaks access_link/access_info (those are revealed
 // only to the owner after redemption / by email).
@@ -14,6 +15,7 @@ const toStoreItem = (r) => ({
     description: r.reward_description,
     costPoints: r.cost_points,
     category: r.reward_category,
+    imgUrl: r.img_url || null,
 });
 
 /*──────────────────────────────────────────────────────────────
@@ -193,6 +195,7 @@ const createReward = async (req, res) => {
             reward_description: body.description ?? null,
             access_link: body.accessLink ?? null,
             access_info: body.accessInfo ?? null,
+            img_url: body.imgUrl ?? null,
             cost_points: body.costPoints,
             is_active: body.isActive ?? true,
             reward_category: body.category ?? null
@@ -214,6 +217,7 @@ const updateReward = async (req, res) => {
         if (body.description !== undefined) fields.reward_description = body.description;
         if (body.accessLink !== undefined) fields.access_link = body.accessLink;
         if (body.accessInfo !== undefined) fields.access_info = body.accessInfo;
+        if (body.imgUrl !== undefined) fields.img_url = body.imgUrl;
         if (body.costPoints !== undefined) fields.cost_points = body.costPoints;
         if (body.isActive !== undefined) fields.is_active = body.isActive;
         if (body.category !== undefined) fields.reward_category = body.category;
@@ -242,6 +246,78 @@ const deleteReward = async (req, res) => {
     }
 };
 
+// Strip a leading "Exclusive Title: " / "Título Exclusivo: " marker so the
+// displayed title is just the title itself.
+const cleanTitle = (name) => String(name || '').replace(/^\s*(Exclusive Title|T[íi]tulo Exclusivo)\s*:\s*/i, '').trim();
+
+/*──────────────────────────────────────────────────────────────
+  GET /api/rewards/titles
+  The titles the consultant has unlocked (redeemed title rewards),
+  plus the one they currently display.
+──────────────────────────────────────────────────────────────*/
+const getOwnedTitles = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const redemptions = await models.reward_redemptions.findAll({
+            where: { user_id: userId },
+            include: [{
+                model: models.rewards, as: 'reward',
+                attributes: ['reward_name', 'special_title', 'reward_category'],
+                where: { reward_category: 'title' }
+            }]
+        });
+        const titles = [...new Set(redemptions.map((r) => cleanTitle(r.reward?.special_title || r.reward?.reward_name)).filter(Boolean))];
+        const consultant = await models.consultants.findOne({ where: { user_id: userId }, attributes: ['active_title'] });
+        return res.status(200).json({ success: true, data: { titles, activeTitle: consultant?.active_title || null } });
+    } catch (error) {
+        logger.error('Error fetching owned titles', { error });
+        return res.status(500).json({ success: false, code: 'REWARDS_TITLES_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  PATCH /api/rewards/active-title   Body: { title: string|null }
+  Sets (or clears) the consultant's publicly displayed title; the
+  title must be one they have unlocked.
+──────────────────────────────────────────────────────────────*/
+const setActiveTitle = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { title } = req.body || {};
+
+        if (title !== null && typeof title !== 'string') {
+            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_DATA' });
+        }
+
+        if (title) {
+            const owned = await models.reward_redemptions.findOne({
+                where: { user_id: userId },
+                include: [{ model: models.rewards, as: 'reward', attributes: ['reward_name', 'special_title'], where: { reward_category: 'title' } }]
+            });
+            const ownedTitles = owned
+                ? (await models.reward_redemptions.findAll({
+                    where: { user_id: userId },
+                    include: [{ model: models.rewards, as: 'reward', attributes: ['reward_name', 'special_title'], where: { reward_category: 'title' } }]
+                })).map((r) => cleanTitle(r.reward?.special_title || r.reward?.reward_name))
+                : [];
+            if (!ownedTitles.includes(cleanTitle(title))) {
+                return res.status(403).json({ success: false, code: 'REWARDS_TITLE_NOT_OWNED' });
+            }
+        }
+
+        await models.consultants.update(
+            { active_title: title ? cleanTitle(title) : null },
+            { where: { user_id: userId } }
+        );
+        // Invalidate the cached /me profile so the new title shows immediately.
+        await redis.del(`user:profile:${userId}`).catch(() => {});
+        return res.status(200).json({ success: true, code: 'REWARDS_ACTIVE_TITLE_UPDATED', data: { activeTitle: title ? cleanTitle(title) : null } });
+    } catch (error) {
+        logger.error('Error setting active title', { error });
+        return res.status(500).json({ success: false, code: 'REWARDS_ACTIVE_TITLE_FAILED' });
+    }
+};
+
 module.exports = {
     listRewards,
     getMyRedemptions,
@@ -249,5 +325,7 @@ module.exports = {
     adminListRewards,
     createReward,
     updateReward,
-    deleteReward
+    deleteReward,
+    getOwnedTitles,
+    setActiveTitle
 };

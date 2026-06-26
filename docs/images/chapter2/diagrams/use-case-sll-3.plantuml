@@ -1,0 +1,43 @@
+@startuml use-case-sll-3
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F5FAFD
+skinparam usecaseBorderColor #39639C
+skinparam actorBackgroundColor #B9EBF6
+skinparam actorBorderColor #00B8E0
+skinparam arrowColor #39639C
+skinparam packageBorderColor #39639C
+skinparam packageFontColor #39639C
+skinparam defaultFontName Inter
+
+actor "Service Line\nLeader" as SLL
+
+rectangle "Plataforma Web" {
+
+  package "Relatórios e Exportação" {
+    usecase "Gerar relatórios\npor área e período" as UC40
+    usecase "Exportar pedidos\n(Excel/PDF)" as UC41
+    usecase "Exportar badges\n(Excel/PDF)" as UC42
+    usecase "Exportar consultores\n(Excel/PDF)" as UC43
+    usecase "Exportar aprovações\n(Excel/PDF)" as UC44
+    usecase "Descarregar certificados\nem PDF" as UC45
+  }
+
+  package "Notificações" {
+    usecase "Receber notificação de\ncandidaturas pendentes" as UC50
+    usecase "Receber notificação de\naprovação/rejeição" as UC51
+  }
+}
+
+SLL --> UC40
+SLL --> UC41
+SLL --> UC42
+SLL --> UC43
+SLL --> UC44
+SLL --> UC45
+
+SLL --> UC50
+SLL --> UC51
+
+@enduml

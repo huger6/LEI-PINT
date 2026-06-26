@@ -1,0 +1,173 @@
+.editor {
+	display: flex;
+	gap: 1.25rem;
+	padding: 1.5rem;
+	min-height: 520px;
+	font-family: var(--font-body);
+	color: var(--color-on-background);
+}
+
+/* ── Canvas Area ── */
+.canvasArea {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	min-width: 0;
+}
+
+.canvasWrapper {
+	border-radius: 16px;
+	box-shadow: var(--shadow-card);
+	background: var(--color-surface);
+	padding: 1rem;
+	display: inline-block;
+	position: relative;
+	overflow: auto;
+	max-width: 100%;
+	max-height: 520px;
+}
+
+.canvasWrapper canvas {
+	border-radius: 8px;
+	display: block;
+}
+
+.controlBar {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.zoomControls {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	border: 1px solid var(--color-outline);
+	border-radius: 10px;
+	padding: 0.2rem;
+	background: var(--color-surface);
+}
+
+.zoomBtn {
+	width: 28px;
+	height: 28px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	cursor: pointer;
+	font-size: 1rem;
+	color: var(--color-on-surface);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s ease;
+}
+
+.zoomBtn:hover {
+	background: var(--color-primary-hover-bg);
+	color: var(--color-primary);
+}
+
+.zoomLabel {
+	font-size: 0.75rem;
+	font-weight: 600;
+	min-width: 40px;
+	text-align: center;
+	color: var(--color-on-surface);
+}
+
+.exportBtn {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.625rem 1.25rem;
+	border: none;
+	border-radius: 10px;
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	font-weight: 600;
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.exportBtn:hover {
+	background: var(--color-primary-hover-solid);
+}
+
+/* ── SVG Output Modal ── */
+.svgOverlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.svgModal {
+	background: var(--color-surface);
+	border-radius: 16px;
+	padding: 1.5rem;
+	width: 90%;
+	max-width: 640px;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.svgModal h3 {
+	margin: 0;
+	font-size: 1.1rem;
+	color: var(--color-on-surface);
+}
+
+.svgTextarea {
+	flex: 1;
+	min-height: 240px;
+	padding: 0.75rem;
+	border: 1px solid var(--color-outline);
+	border-radius: 10px;
+	font-family: 'Consolas', 'Monaco', monospace;
+	font-size: 0.75rem;
+	resize: vertical;
+	background: var(--gradient-surface-field);
+	color: var(--color-on-surface);
+}
+
+.svgModal button {
+	align-self: flex-end;
+	padding: 0.5rem 1.25rem;
+	border: none;
+	border-radius: 8px;
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+	.editor {
+		flex-direction: column;
+		align-items: center;
+	}
+}
+
+@media (max-width: 540px) {
+	.editor {
+		padding: 0.75rem;
+	}
+
+	.canvasWrapper {
+		padding: 0.5rem;
+		width: 100%;
+	}
+}

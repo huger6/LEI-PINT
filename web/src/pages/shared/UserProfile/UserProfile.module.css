@@ -1,0 +1,538 @@
+/* ─── Page layout ────────────────────────────── */
+.pageLayout {
+	display: flex;
+	gap: 24px;
+}
+
+.page {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 24px 0;
+}
+
+.pageTitle {
+	color: var(--color-on-background);
+	font-size: 1.5rem;
+	font-weight: 500;
+	line-height: 1.5rem;
+	margin: 0;
+}
+
+/* ─── Info card ──────────────────────────────── */
+.infoCard {
+	width: 100%;
+}
+
+.infoCardInner {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.infoLeft {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	flex: 1;
+	min-width: 0;
+}
+
+.avatarWrapper {
+	position: relative;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.avatar {
+	position: relative;
+	width: 128px;
+	height: 128px;
+	border-radius: 50%;
+	background: linear-gradient(180deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+	box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+	outline: 4px white solid;
+	outline-offset: -4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.avatarImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 50%;
+}
+
+.avatarFallback {
+	color: white;
+	font-size: 2.5rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	user-select: none;
+}
+
+.avatarOverlay {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.35);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.avatar:hover .avatarOverlay {
+	opacity: 1;
+}
+
+.avatarRemoveBtn {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-variant, #e0e0e0);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.avatarRemoveBtn:hover {
+	background: var(--color-error-container);
+	transform: scale(1.1);
+}
+
+.avatarError {
+	display: block;
+	margin-top: 6px;
+	font-size: 0.75rem;
+	color: var(--color-error);
+	text-align: center;
+	max-width: 128px;
+}
+
+.infoDetails {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 4px;
+}
+
+.userName {
+	color: var(--color-on-background);
+	font-size: 1.75rem;
+	font-weight: 500;
+	line-height: 1.875rem;
+	margin: 0;
+}
+
+.userTitle {
+	color: var(--color-secondary);
+	font-size: 1.125rem;
+	font-weight: 400;
+	line-height: 1.5rem;
+	margin: 0;
+}
+
+.infoRows {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	margin-top: 2px;
+}
+
+.pairedRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 16px;
+}
+
+.infoActions {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.editBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	transition: background 0.2s ease, transform 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.editBtn:hover {
+	background: var(--color-primary-soft);
+	transform: scale(1.08);
+}
+
+.editBtn:active {
+	transform: scale(0.95);
+}
+
+
+.fieldLabel {
+	font-weight: 500;
+	color: var(--color-on-primary-container);
+	margin-bottom: 0.25rem;
+}
+
+/* ─── About section (inside info card) ──────────  */
+.aboutSection {
+	margin-top: 24px;
+	padding-top: 24px;
+	border-top: 1px solid var(--color-outline-variant, #e0e0e0);
+}
+
+/* ─── Section body (below card headers) ──────── */
+.sectionBody {
+	margin-top: 12px;
+}
+
+/* ─── About text ─────────────────────────────── */
+.aboutText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.375rem;
+	text-align: justify;
+	margin: 0;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.textarea {
+	border: 1px solid var(--color-outline);
+	border-radius: 10px;
+	font-size: 0.875rem;
+	line-height: 1.375rem;
+	color: var(--color-on-background);
+	resize: vertical;
+}
+
+.textarea:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+}
+
+/* ─── Chips / Tags ───────────────────────────── */
+.chipList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+/* ─── Add row (interests / goals) ────────────── */
+.addRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.addInput {
+	flex: 1;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	border: 1px solid var(--color-outline);
+}
+
+.addInput:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+}
+
+/* ─── Bullet list (goals) ────────────────────── */
+.goalsList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.goalEditRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+.goalText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	line-height: 1.3125rem;
+	flex: 1;
+}
+
+.removeBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s;
+}
+
+.removeBtn:hover {
+	background: var(--color-error-container);
+}
+
+/* ─── Check list (achievements) ──────────────── */
+.achievementsList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* ─── Empty state text ───────────────────────── */
+.emptyText {
+	color: var(--color-outline);
+	font-size: 0.875rem;
+	font-style: italic;
+	margin: 0;
+}
+
+/* ─── Statistics section ─────────────────────── */
+.sectionTitle {
+	color: var(--color-on-background);
+	font-size: 1.25rem;
+	font-weight: 500;
+	line-height: 1.5rem;
+	margin: 0;
+}
+
+.statsGrid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+/* ─── Badge gallery link card ────────────────── */
+.badgeGalleryCard {
+	margin-top: 0;
+}
+
+.badgeGalleryLink {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.badgeGalleryLink:hover {
+	text-decoration: none;
+}
+
+.badgeGalleryArrow {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: background 0.2s ease;
+}
+
+.badgeGalleryLink:hover .badgeGalleryArrow {
+	background: var(--color-primary-soft);
+}
+
+.badgeGalleryIcon {
+	width: 56px;
+	height: 56px;
+	background: var(--color-primary-soft);
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.badgeGalleryText {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.badgeGalleryTitle {
+	color: var(--color-on-background);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.badgeGalleryDesc {
+	color: var(--color-outline);
+	font-size: 0.8125rem;
+	line-height: 1.3;
+}
+
+/* ─── Action bar (edit mode) ─────────────────── */
+.actionBar {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	padding-top: 8px;
+}
+
+/* ─── Success toast ──────────────────────────── */
+.successToast {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 20px;
+	background: var(--color-green-soft);
+	border: 1px solid var(--color-green-on-soft);
+	border-radius: 10px;
+	box-shadow: var(--shadow-card);
+	color: var(--color-green-on-soft);
+	font-size: 0.875rem;
+	font-weight: 500;
+	z-index: 1000;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Responsive ─────────────────────────────── */
+@media (max-width: 767px) {
+	.infoCardInner {
+		align-items: center;
+	}
+
+	.infoLeft {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.infoDetails {
+		align-items: center;
+	}
+
+	.infoRows {
+		align-items: center;
+	}
+
+	.avatar {
+		width: 96px;
+		height: 96px;
+	}
+
+	.avatarFallback {
+		font-size: 2rem;
+	}
+
+	.userName {
+		font-size: 1.5rem;
+	}
+
+	.page {
+		padding: 16px 0;
+	}
+}
+
+/* ── Editable public badge gallery ───────────────────────────────────────── */
+.galleryHint {
+	margin: 0 0 0.75rem;
+	font-size: 0.85rem;
+	color: var(--color-outline);
+}
+
+.galleryGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 0.85rem;
+}
+
+.galleryItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.9rem 0.6rem;
+	border: 1px solid var(--color-outline-light);
+	border-radius: 14px;
+	background: var(--color-surface);
+	text-align: center;
+	transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.galleryItemOn {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px var(--color-primary-focus-ring);
+}
+
+.galleryThumb {
+	width: 64px;
+	height: 64px;
+	border-radius: 12px;
+	background: var(--color-primary-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.galleryThumb img { width: 80%; height: 80%; object-fit: contain; }
+
+.galleryName {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-on-surface);
+	line-height: 1.3;
+}
+
+.galleryViewAll {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-top: 0.9rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	text-decoration: none;
+}

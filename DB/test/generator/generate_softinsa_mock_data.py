@@ -24,13 +24,10 @@ OUTPUT_SQL_FILE = "softinsa_mock_data.sql"
 RANDOM_SEED = 20260521
 BASE_NOW = datetime(2026, 5, 21, 12, 0, 0, tzinfo=timezone.utc)
 
-NUM_LEARNING_PATHS = 3
-NUM_SERVICE_LINES_PER_PATH = 5
-NUM_AREAS_PER_SERVICE_LINE = 2
 NUM_CONSULTANTS = 50
 NUM_TALENT_MANAGERS = 3
 NUM_ADMINISTRATORS = 2
-NUM_SL_LEADERS = NUM_LEARNING_PATHS * NUM_SERVICE_LINES_PER_PATH
+NUM_SL_LEADERS = 15
 NUM_BADGE_APPLICATIONS = 150
 
 NUM_REQUIREMENTS_PER_BADGE = 3
@@ -118,7 +115,165 @@ SKILL_CATALOG = [
     ("Quality Assurance", "Test strategy, automation and defect prevention."),
     ("Test Automation", "Automated regression coverage and maintainable test suites."),
     ("Accessibility", "Inclusive interface design and WCAG-oriented quality practices."),
+    ("OutSystems", "Low-code application development on the OutSystems platform."),
+    ("Ansible", "Infrastructure automation, configuration management and orchestration with Ansible."),
+    ("Prometheus", "Time-series metrics collection, alerting rules and PromQL querying."),
+    ("Grafana", "Observability dashboards, data visualization and alerting."),
+    ("ELK Stack", "Centralized logging with Elasticsearch, Logstash and Kibana."),
+    ("OpenTelemetry", "Vendor-neutral instrumentation for traces, metrics and logs."),
+    ("SAP", "SAP ERP system administration, ABAP development and S/4HANA migration."),
+    ("Selenium", "Browser-based UI test automation with Selenium WebDriver."),
+    ("Cypress", "Modern end-to-end testing framework for web applications."),
+    ("JMeter", "Load testing, performance benchmarking and capacity planning with Apache JMeter."),
+    ("C# / .NET", "Enterprise application development with the .NET ecosystem."),
+    ("Power Apps", "Low-code business application development on Microsoft Power Platform."),
+    ("Power Automate", "Workflow automation and process orchestration with Microsoft Power Automate."),
+    ("SharePoint", "SharePoint administration, SPFx development and collaboration solutions."),
+    ("Microsoft 365", "Microsoft 365 tenant administration and cloud productivity services."),
+    ("Penetration Testing", "Offensive security assessment, vulnerability exploitation and reporting."),
+    ("Talent Management", "Technical recruitment, skills assessment and workforce development."),
+    ("Workforce Analytics", "People analytics, workforce planning dashboards and HR data insights."),
 ]
+
+# Maps area name fragments to the skills associated with badges in that area.
+THEME_BADGE_SKILLS: dict[str, list[str]] = {
+    "LowCode": ["OutSystems", "REST APIs", "JavaScript", "React", "PostgreSQL", "Agile Delivery", "C# / .NET"],
+    "Cloud Native": ["Docker", "Kubernetes", "OpenShift", "Linux", "Terraform", "Microservices", "AWS Cloud", "Azure Cloud", "IBM Cloud"],
+    "DevSecOps": ["DevSecOps", "GitHub Actions", "Jenkins", "Terraform", "Ansible", "Docker", "Kubernetes", "Cybersecurity", "Linux"],
+    "Observability": ["Prometheus", "Grafana", "ELK Stack", "OpenTelemetry", "Observability", "Linux", "Kubernetes"],
+    "Sourcing": ["Talent Management", "Workforce Analytics", "Business Analysis", "Agile Delivery"],
+    "Data Engineering": ["Data Engineering", "Python", "Apache Spark", "dbt", "PostgreSQL", "SQL Server", "Kafka", "Power BI"],
+    "Machine Learning": ["Machine Learning", "MLOps", "Python", "Apache Spark", "Data Engineering"],
+    "Security Operations": ["Cybersecurity", "Penetration Testing", "Identity and Access Management", "Linux", "DevSecOps"],
+    "Microsoft 365": ["Microsoft 365", "Power Apps", "Power Automate", "SharePoint", "Power BI"],
+    "SAP": ["SAP", "ITIL", "Business Analysis", "Java", "REST APIs"],
+    "Test Automation": ["Test Automation", "Selenium", "Cypress", "JMeter", "Quality Assurance", "REST APIs"],
+}
+DEFAULT_BADGE_SKILLS = ["Agile Delivery", "Scrum", "Quality Assurance", "Business Analysis", "REST APIs"]
+
+# Service line hex colors (no #) used in badge SVG generation.
+SL_COLORS: dict[str, str] = {
+    "Hybrid Cloud": "1565C0",
+    "Application Operations": "2E7D32",
+    "Sourcing & Talent Management": "6A1B9A",
+    "Data & AI": "E65100",
+    "Cybersecurity": "C62828",
+    "Digital Workplace": "00838F",
+    "Enterprise Applications": "4527A0",
+    "Quality Engineering": "558B2F",
+}
+
+# The single learning path and its full structure.
+# Dict: LP title -> { SL title -> { area title -> [(badge_title, badge_description), ...] } }
+PLATFORM_STRUCTURE: dict[str, dict[str, dict[str, list[tuple[str, str]]]]] = {
+    "Jornada Técnica": {
+        "Hybrid Cloud": {
+            "LowCode (OutSystems)": [
+                ("OutSystems Reactive Web Fundamentals", "Foundation concepts of reactive web development in OutSystems including UI patterns, data models and server actions."),
+                ("OutSystems Integration Specialist", "Integration of OutSystems applications with REST APIs, external databases and enterprise connectors."),
+                ("OutSystems Architecture Patterns", "Advanced architectural patterns including multi-tenant design, scalability and performance optimization in OutSystems."),
+                ("OutSystems Security & Governance", "Enterprise security practices, role-based access, code quality and governance frameworks in the OutSystems platform."),
+                ("OutSystems Technical Lead", "Strategic platform leadership for solution architecture, team mentoring and enterprise-scale OutSystems deployments."),
+            ],
+            "Cloud Native & Containers": [
+                ("Container Fundamentals", "Docker containerization basics, image building, multi-stage builds, networking and local orchestration with Docker Compose."),
+                ("Kubernetes Operations", "Kubernetes cluster operations, deployment strategies, service discovery, ConfigMaps, Secrets and resource management."),
+                ("Cloud Native Architecture", "Designing cloud-native microservices with service meshes, API gateways, circuit breakers and distributed patterns."),
+                ("OpenShift Enterprise Platform", "Red Hat OpenShift administration, Operator framework, S2I builds, routes and enterprise platform operations."),
+                ("Multi-Cloud Strategy Lead", "Hybrid and multi-cloud architecture governance, cost optimization, vendor management and cross-provider resilience."),
+            ],
+        },
+        "Application Operations": {
+            "DevSecOps & IT Automation": [
+                ("CI/CD Pipeline Fundamentals", "Building continuous integration and delivery pipelines with Jenkins, GitHub Actions or Azure DevOps including build, test and deploy stages."),
+                ("Infrastructure as Code", "Provisioning and managing cloud infrastructure using Terraform modules, state management, providers and drift detection."),
+                ("DevSecOps Practitioner", "Embedding SAST, DAST and SCA security scanning into CI/CD pipelines with automated compliance and vulnerability gates."),
+                ("Ansible Automation Expert", "Enterprise IT automation with Ansible for configuration management, playbook design, roles and orchestration workflows."),
+                ("DevSecOps Architect", "End-to-end DevSecOps platform design with policy-as-code, GitOps, supply chain security and shift-left organizational strategy."),
+            ],
+            "Observability & SRE": [
+                ("Monitoring Fundamentals", "Metrics collection with Prometheus, Grafana dashboards, alerting rules and infrastructure monitoring patterns."),
+                ("Log Management & Analysis", "Centralized log aggregation with ELK Stack or Loki, structured logging, correlation IDs and log-based alerting."),
+                ("Distributed Tracing", "Implementing distributed tracing with OpenTelemetry, Jaeger and context propagation for microservices observability."),
+                ("SRE Practices & Reliability", "Site Reliability Engineering including SLOs, SLIs, error budgets, blameless postmortems and chaos engineering."),
+                ("Observability Platform Lead", "Enterprise observability strategy, tool standardization, AIOps integration and operational excellence frameworks."),
+            ],
+        },
+        "Sourcing & Talent Management": {
+            "Sourcing & Talent Management": [
+                ("Technical Recruiting Fundamentals", "Core IT recruitment competencies, Boolean search techniques, sourcing strategies and candidate screening for technical roles."),
+                ("Talent Pipeline Management", "Building sustainable talent pipelines, employer branding, candidate experience optimization and recruitment analytics."),
+                ("Skills Assessment & Evaluation", "Designing technical assessment frameworks, competency matrices, structured interviews and evaluation scoring systems."),
+                ("Workforce Planning & Analytics", "Strategic workforce planning, talent analytics dashboards, succession planning and skills gap analysis methodologies."),
+                ("Talent Strategy Leader", "Organizational talent strategy, diversity and inclusion programs, retention frameworks and business transformation alignment."),
+            ],
+        },
+        "Data & AI": {
+            "Data Engineering": [
+                ("SQL & Relational Databases", "Advanced SQL querying, data modeling, indexing strategies, query optimization and PostgreSQL or SQL Server administration."),
+                ("ETL & Data Integration", "Building ETL and ELT pipelines with Apache NiFi, Talend or Azure Data Factory for batch and streaming data integration."),
+                ("Big Data Processing", "Distributed data processing with Apache Spark, batch analytics, streaming with Spark Structured Streaming and data lake patterns."),
+                ("Data Warehouse Architecture", "Designing modern data warehouses with dimensional modeling, dbt transformations, data marts and analytics engineering practices."),
+                ("Data Platform Lead", "Enterprise data platform strategy, data governance frameworks, data mesh architecture and organizational data maturity leadership."),
+            ],
+            "Machine Learning & AI": [
+                ("Python for Data Science", "Python data analysis with pandas, NumPy, matplotlib, scikit-learn and Jupyter for exploratory data analysis and feature engineering."),
+                ("Machine Learning Fundamentals", "Supervised and unsupervised learning algorithms, model evaluation metrics, cross-validation, hyperparameter tuning and bias detection."),
+                ("Deep Learning & Neural Networks", "Deep learning with TensorFlow or PyTorch, CNNs for image recognition, RNNs for sequence data and transfer learning techniques."),
+                ("MLOps & Model Deployment", "ML model lifecycle management, model serving with MLflow, monitoring for drift, A/B testing and production ML pipelines."),
+                ("AI Solutions Architect", "Enterprise AI strategy, responsible AI frameworks, LLM integration patterns and large-scale ML system design and governance."),
+            ],
+        },
+        "Cybersecurity": {
+            "Security Operations": [
+                ("Cybersecurity Fundamentals", "Core security concepts, threat landscape awareness, CIA triad, security controls and CompTIA Security+ aligned knowledge."),
+                ("Network Security", "Network security architecture, firewall configuration, IDS/IPS systems, VPN technologies and network segmentation strategies."),
+                ("Vulnerability Management", "Vulnerability scanning with Nessus or Qualys, penetration testing methodology, CVSS scoring and remediation prioritization."),
+                ("Security Incident Response", "SIEM operations with Splunk or Sentinel, incident response procedures, digital forensics basics and SOC analyst workflows."),
+                ("Security Architecture Lead", "Enterprise security architecture, zero-trust frameworks, threat modeling, compliance automation and security governance leadership."),
+            ],
+        },
+        "Digital Workplace": {
+            "Microsoft 365 & Power Platform": [
+                ("Microsoft 365 Administration", "Microsoft 365 tenant administration, user lifecycle management, Exchange Online, Teams and SharePoint Online configuration."),
+                ("Power Platform Development", "Power Apps canvas and model-driven app development, Power Automate cloud flows and Power BI report creation."),
+                ("SharePoint & Teams Solutions", "SharePoint Framework development, Teams app customization, Graph API integration and collaborative platform solutions."),
+                ("Power Platform Advanced", "Custom connectors, Dataverse advanced modeling, AI Builder integration, CoE toolkit and governance policies for Power Platform."),
+                ("Digital Workplace Architect", "Enterprise digital workplace strategy, Microsoft 365 governance, adoption frameworks and modern workplace transformation."),
+            ],
+        },
+        "Enterprise Applications": {
+            "SAP & ERP Integration": [
+                ("SAP Fundamentals", "SAP system navigation, core modules overview covering FI, CO, MM and SD, transaction codes and basic customizing."),
+                ("SAP ABAP Development", "ABAP programming fundamentals, data dictionary, ALV reports, function modules, BAPIs and enhancement framework techniques."),
+                ("SAP Integration & BTP", "SAP Business Technology Platform, API management, CPI integration flows and cloud-to-on-premise connectivity patterns."),
+                ("SAP S/4HANA Migration", "S/4HANA conversion planning, data migration with LTMC, custom code adaptation, Fiori UX and cutover testing strategies."),
+                ("ERP Solutions Architect", "Enterprise ERP architecture, multi-system landscape design, integration patterns and digital transformation program leadership."),
+            ],
+        },
+        "Quality Engineering": {
+            "Test Automation & QA": [
+                ("Software Testing Fundamentals", "Test planning, test case design techniques, ISTQB-aligned testing concepts, defect management and test reporting."),
+                ("Automated UI Testing", "UI test automation with Selenium WebDriver or Cypress, page object model patterns, test data management and CI integration."),
+                ("API & Contract Testing", "REST and GraphQL API testing with Postman, contract testing with Pact, schema validation and API quality gates in pipelines."),
+                ("Performance Testing", "Load testing with JMeter or k6, stress testing, performance benchmarking, bottleneck analysis and capacity planning."),
+                ("Quality Engineering Lead", "Test strategy design, quality metrics frameworks, shift-left testing culture, test architecture and organizational QA leadership."),
+            ],
+        },
+    },
+}
+
+
+def badge_svg_data_uri(stage_letter: str, color: str) -> str:
+    """Return a compact URL-encoded SVG data URI for a hexagonal badge."""
+    svg = (
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 110'%3E"
+        f"%3Cpolygon points='50,5 95,30 95,80 50,105 5,80 5,30' fill='%23{color}'/%3E"
+        "%3Cpolygon points='50,12 89,34 89,76 50,98 11,76 11,34' fill='none' stroke='%23fff' stroke-width='1.5' opacity='.3'/%3E"
+        f"%3Ctext x='50' y='63' text-anchor='middle' fill='%23fff' font-size='32' font-weight='bold' font-family='Arial'%3E{stage_letter}%3C/text%3E"
+        "%3C/svg%3E"
+    )
+    return f"data:image/svg+xml,{svg}"
 
 FIRST_NAMES = [
     "Ana", "Andre", "Beatriz", "Bruno", "Carla", "Carlos", "Catarina",
@@ -137,34 +292,8 @@ LAST_NAMES = [
     "Vieira",
 ]
 
-LEARNING_PATH_BASES = [
-    "Hybrid Cloud Academy",
-    "Automation and Integration",
-    "Data and AI Engineering",
-    "Digital Product Delivery",
-    "Cybersecurity and Governance",
-]
 
-SERVICE_LINE_BASES = [
-    "Hybrid Cloud",
-    "Automation",
-    "Data Engineering",
-    "Application Modernization",
-    "DevSecOps Platform",
-    "Integration APIs",
-    "Quality Engineering",
-    "Business Analysis",
-    "AI Solutions",
-    "Cyber Resilience",
-]
 
-AREA_BASES = [
-    "Core Delivery",
-    "Advanced Engineering",
-    "Platform Operations",
-    "Solution Architecture",
-    "Client Excellence",
-]
 
 TARGET_PROFILES = ["Consultant", "Talent Manager", "Service Line Leader", "Administrator"]
 DEFAULT_GLOBAL_SLAS = [
@@ -197,6 +326,91 @@ INTERACTION_TYPES = ["VIEW", "SHARE_LINKEDIN", "FAVORITE"]
 
 CONFIRMED_PASSWORD_HASH = "$2b$10$HeVPLvvIURQ2EyMdp3frJ.snlFd5F4EqF646Fss4f5LNBzoykYG9G"
 UNCONFIRMED_PASSWORD_HASH = "$2b$10$softinsa.mock.hash.for.local.testing"
+
+
+STORE_REWARDS: list[dict[str, object]] = [
+    {
+        "reward_name": "CS50: Introduction to Computer Science",
+        "reward_description": "Harvard's renowned introductory CS course. Learn programming fundamentals, algorithms, and data structures with professor David J. Malan.",
+        "access_link": "https://cs50.harvard.edu/x/",
+        "access_info": "You will receive an enrollment code via email. Use it at cs50.harvard.edu/x to access the full course materials and certificate.",
+        "cost_points": 3500,
+        "is_active": True,
+        "reward_category": "course",
+    },
+    {
+        "reward_name": "Hack The Box VIP+ — 1 Month",
+        "reward_description": "1-month VIP+ subscription on Hack The Box. Access exclusive machines, advanced labs, and premium cybersecurity training content.",
+        "access_link": "https://www.hackthebox.com/",
+        "access_info": "A redemption code will be sent to your email. Activate it at hackthebox.com/redeem.",
+        "cost_points": 4500,
+        "is_active": True,
+        "reward_category": "voucher",
+    },
+    {
+        "reward_name": "Udemy Course Voucher — €20",
+        "reward_description": "€20 Udemy credit for any course of your choice. Expand your skills in technology, business, or personal development.",
+        "access_link": "https://www.udemy.com/",
+        "access_info": "You will receive a unique gift code via email. Apply it at udemy.com/cart during checkout.",
+        "cost_points": 2000,
+        "is_active": True,
+        "reward_category": "voucher",
+    },
+    {
+        "reward_name": "AWS Solutions Architect — Exam Voucher",
+        "reward_description": "Voucher covering the AWS Solutions Architect Associate (SAA-C03) certification exam fee. Approximate value: $150 USD.",
+        "access_link": "https://aws.amazon.com/certification/",
+        "access_info": "The exam voucher code will be emailed to you. Schedule your exam at aws.training using the code.",
+        "cost_points": 15000,
+        "is_active": True,
+        "reward_category": "voucher",
+    },
+    {
+        "reward_name": "Exclusive Title: Tech Pioneer",
+        "reward_description": 'Unlock the special "Tech Pioneer" title on your profile. Show that you are among the first to earn store rewards on the platform.',
+        "access_link": None,
+        "access_info": "Your title will be applied to your profile automatically within 24 hours.",
+        "cost_points": 300,
+        "is_active": True,
+        "reward_category": "title",
+    },
+    {
+        "reward_name": "Exclusive Title: Innovation Leader",
+        "reward_description": 'Unlock the exclusive "Innovation Leader" title on your profile. A symbol of excellence and leadership in technology innovation.',
+        "access_link": None,
+        "access_info": "Your title will be applied to your profile automatically within 24 hours.",
+        "cost_points": 600,
+        "is_active": True,
+        "reward_category": "title",
+    },
+    {
+        "reward_name": "Mechanical Keyboard — Keychron K2 Pro",
+        "reward_description": "Premium wireless mechanical keyboard with Gateron switches and RGB backlight. Compact 75% layout, ideal for developers.",
+        "access_link": None,
+        "access_info": "Our team will contact you via email to arrange delivery to your office location.",
+        "cost_points": 12000,
+        "is_active": True,
+        "reward_category": "physical",
+    },
+    {
+        "reward_name": "Amazon Gift Card — €25",
+        "reward_description": "€25 Amazon gift card. Use it to buy tech books, gadgets, or anything you like.",
+        "access_link": None,
+        "access_info": "The gift card code will be sent to your registered email address within 48 hours.",
+        "cost_points": 2500,
+        "is_active": True,
+        "reward_category": "physical",
+    },
+    {
+        "reward_name": "LinkedIn Learning — 3 Months",
+        "reward_description": "3-month access to LinkedIn Learning with over 16,000 courses in technology, business, and creativity.",
+        "access_link": "https://www.linkedin.com/learning/",
+        "access_info": "An activation link will be sent to your email. Click it to unlock 3 months of LinkedIn Learning.",
+        "cost_points": 9000,
+        "is_active": True,
+        "reward_category": "subscription",
+    },
+]
 
 
 class IdFactory:
@@ -287,9 +501,6 @@ def sql_value(value: object) -> str:
 
 def validate_config() -> None:
     minimums = {
-        "NUM_LEARNING_PATHS": NUM_LEARNING_PATHS,
-        "NUM_SERVICE_LINES_PER_PATH": NUM_SERVICE_LINES_PER_PATH,
-        "NUM_AREAS_PER_SERVICE_LINE": NUM_AREAS_PER_SERVICE_LINE,
         "NUM_CONSULTANTS": NUM_CONSULTANTS,
         "NUM_TALENT_MANAGERS": NUM_TALENT_MANAGERS,
         "NUM_ADMINISTRATORS": NUM_ADMINISTRATORS,
@@ -744,43 +955,104 @@ def generate_sql() -> str:
         sql.insert("system_announcements", row)
 
     sql.section("5. Core Platform Architecture")
-    for index in range(NUM_LEARNING_PATHS):
-        base = LEARNING_PATH_BASES[index % len(LEARNING_PATH_BASES)]
-        title = f"{base} {index + 1}"
-        row = {
+
+    sl_counter = 0
+    area_counter = 0
+    for lp_title, sl_map in PLATFORM_STRUCTURE.items():
+        lp_row = {
             "learning_path_id": ids.next("learning_paths"),
-            "path_title": title,
-            "path_slug": slugify(title),
-            "path_description": f"Structured Softinsa path for {base.lower()} capabilities.",
+            "path_title": lp_title,
+            "path_slug": slugify(lp_title),
+            "path_description": f"Structured Softinsa learning path for professional growth across all service lines.",
             "img_url": None,
             "is_active": True,
             "created_by": random.choice(admin_ids),
             "updated_by": random.choice(admin_ids),
-            "created_at": BASE_NOW - timedelta(days=180 - index),
-            "updated_at": BASE_NOW - timedelta(days=30 - index),
+            "created_at": BASE_NOW - timedelta(days=180),
+            "updated_at": BASE_NOW - timedelta(days=30),
         }
-        learning_paths.append(row)
-        sql.insert("learning_paths", row)
+        learning_paths.append(lp_row)
+        sql.insert("learning_paths", lp_row)
 
-    for path in learning_paths:
-        for index in range(NUM_SERVICE_LINES_PER_PATH):
-            base = SERVICE_LINE_BASES[index % len(SERVICE_LINE_BASES)]
-            title = f"{base} LP{path['learning_path_id']}-{index + 1}"
-            row = {
+        for sl_title, area_map in sl_map.items():
+            sl_row = {
                 "service_line_id": ids.next("service_lines"),
-                "learning_path_id": path["learning_path_id"],
-                "service_line_name": title,
-                "sl_slug": slugify(title),
-                "service_line_description": f"Service line for {base.lower()} delivery, mentoring and operational excellence.",
+                "learning_path_id": lp_row["learning_path_id"],
+                "service_line_name": sl_title,
+                "sl_slug": slugify(sl_title),
+                "service_line_description": f"Service line for {sl_title.lower()} delivery, mentoring and operational excellence.",
                 "img_url": None,
                 "is_active": True,
                 "created_by": random.choice(admin_ids),
                 "updated_by": random.choice(admin_ids),
-                "created_at": BASE_NOW - timedelta(days=150 - index),
-                "updated_at": BASE_NOW - timedelta(days=20 - index),
+                "created_at": BASE_NOW - timedelta(days=150 - sl_counter),
+                "updated_at": BASE_NOW - timedelta(days=20 - min(sl_counter, 19)),
             }
-            service_lines.append(row)
-            sql.insert("service_lines", row)
+            service_lines.append(sl_row)
+            sql.insert("service_lines", sl_row)
+            sl_counter += 1
+
+            for area_title, badge_defs in area_map.items():
+                area_row = {
+                    "area_id": ids.next("areas"),
+                    "service_line_id": sl_row["service_line_id"],
+                    "area_name": area_title,
+                    "area_slug": slugify(area_title),
+                    "area_description": f"Area focused on {area_title.lower()} practices within {sl_title}.",
+                    "img_url": None,
+                    "is_active": True,
+                    "created_by": random.choice(admin_ids),
+                    "updated_by": random.choice(admin_ids),
+                    "created_at": BASE_NOW - timedelta(days=130 - area_counter),
+                    "updated_at": BASE_NOW - timedelta(days=10 - min(area_counter, 9)),
+                }
+                areas.append(area_row)
+                sql.insert("areas", area_row)
+                area_counter += 1
+
+                sl_color = SL_COLORS.get(sl_title, "555555")
+                for stage_idx, code in enumerate(STAGE_CODES):
+                    stage_name, sequence, description = STAGE_NAMES[code]
+                    stage_title_str = f"{area_title} - {stage_name}"
+                    stage_row = {
+                        "progression_stage_id": ids.next("progression_stages"),
+                        "area_id": area_row["area_id"],
+                        "stage_code_id": stage_codes[code],
+                        "stage_title": stage_title_str[:100],
+                        "stage_sequence": sequence,
+                        "stage_description": f"{description} Area context: {area_title}.",
+                        "created_by": random.choice(admin_ids),
+                        "updated_by": random.choice(admin_ids),
+                        "created_at": BASE_NOW - timedelta(days=110 - sequence),
+                        "updated_at": BASE_NOW - timedelta(days=8 - min(sequence, 7)),
+                    }
+                    progression_stages.append(stage_row)
+                    sql.insert("progression_stages", stage_row)
+
+                    badge_title_str, badge_desc = badge_defs[stage_idx]
+                    badge_type = "Special" if sequence == 5 else "Standard"
+                    badge_row = {
+                        "badge_id": ids.next("badges"),
+                        "progression_stage_id": stage_row["progression_stage_id"],
+                        "area_id": area_row["area_id"],
+                        "service_line_id": sl_row["service_line_id"],
+                        "learning_path_id": lp_row["learning_path_id"],
+                        "badge_title": badge_title_str[:100],
+                        "badge_slug": slugify(badge_title_str)[:100],
+                        "badge_type": badge_type,
+                        "badge_points": sequence * 125,
+                        "expiration_duration_days": 730 if badge_type == "Special" else None,
+                        "badge_description": badge_desc,
+                        "badge_img_url": badge_svg_data_uri(code, sl_color),
+                        "is_active": True,
+                        "created_by": random.choice(admin_ids),
+                        "updated_by": random.choice(admin_ids),
+                        "created_at": BASE_NOW - timedelta(days=100),
+                        "updated_at": BASE_NOW - timedelta(days=random.randint(1, 20)),
+                        "_area_name": area_title,
+                    }
+                    badges.append(badge_row)
+                    sql.insert("badges", {k: v for k, v in badge_row.items() if not k.startswith("_")})
 
     sql.comment("Service Line Leader profiles are emitted here, after service_lines, to satisfy service_line_id FK.")
     for index, leader_user_id in enumerate(sll_user_ids):
@@ -790,77 +1062,6 @@ def generate_sql() -> str:
             "service_line_id": service_line["service_line_id"],
             "biography": f"Service Line Leader accountable for {service_line['service_line_name']} capability growth.",
         })
-
-    for service_line in service_lines:
-        for index in range(NUM_AREAS_PER_SERVICE_LINE):
-            base = AREA_BASES[index % len(AREA_BASES)]
-            title = f"{service_line['service_line_name']} {base}"
-            row = {
-                "area_id": ids.next("areas"),
-                "service_line_id": service_line["service_line_id"],
-                "area_name": title,
-                "area_slug": slugify(title),
-                "area_description": f"Area focused on {base.lower()} practices within {service_line['service_line_name']}.",
-                "img_url": None,
-                "is_active": True,
-                "created_by": random.choice(admin_ids),
-                "updated_by": random.choice(admin_ids),
-                "created_at": BASE_NOW - timedelta(days=130 - index),
-                "updated_at": BASE_NOW - timedelta(days=10 - index),
-            }
-            areas.append(row)
-            sql.insert("areas", row)
-
-    for area in areas:
-        for code in STAGE_CODES:
-            stage_name, sequence, description = STAGE_NAMES[code]
-            title = f"{area['area_name']} {stage_name}"
-            row = {
-                "progression_stage_id": ids.next("progression_stages"),
-                "area_id": area["area_id"],
-                "stage_code_id": stage_codes[code],
-                "stage_title": title[:100],
-                "stage_sequence": sequence,
-                "stage_description": f"{description} Area context: {area['area_name']}.",
-                "created_by": random.choice(admin_ids),
-                "updated_by": random.choice(admin_ids),
-                "created_at": BASE_NOW - timedelta(days=110 - sequence),
-                "updated_at": BASE_NOW - timedelta(days=8 - min(sequence, 7)),
-            }
-            progression_stages.append(row)
-            sql.insert("progression_stages", row)
-
-    area_by_id = {int(area["area_id"]): area for area in areas}
-    service_line_by_id = {int(sl["service_line_id"]): sl for sl in service_lines}
-    learning_path_by_id = {int(lp["learning_path_id"]): lp for lp in learning_paths}
-
-    for stage in progression_stages:
-        area = area_by_id[int(stage["area_id"])]
-        service_line = service_line_by_id[int(area["service_line_id"])]
-        learning_path = learning_path_by_id[int(service_line["learning_path_id"])]
-        title = f"{area['area_name']} Badge {stage['stage_sequence']}"
-        badge_type = "Special" if int(stage["stage_sequence"]) == 5 else "Standard"
-        row = {
-            "badge_id": ids.next("badges"),
-            "progression_stage_id": stage["progression_stage_id"],
-            "area_id": area["area_id"],
-            "service_line_id": service_line["service_line_id"],
-            "learning_path_id": learning_path["learning_path_id"],
-            "badge_title": title[:100],
-            "badge_slug": slugify(title)[:100],
-            "badge_type": badge_type,
-            "badge_points": int(stage["stage_sequence"]) * 125,
-            "expiration_duration_days": 730 if badge_type == "Special" else None,
-            "badge_description": f"Recognizes validated capability in {area['area_name']} at stage {stage['stage_sequence']}.",
-            "badge_img_url": None,
-            "is_active": True,
-            "created_by": random.choice(admin_ids),
-            "updated_by": random.choice(admin_ids),
-            "created_at": BASE_NOW - timedelta(days=100),
-            "updated_at": BASE_NOW - timedelta(days=random.randint(1, 20)),
-        }
-        badges.append(row)
-        sql.insert("badges", row)
 
     for badge in badges:
         requirements_by_badge[int(badge["badge_id"])] = []
@@ -880,7 +1081,6 @@ def generate_sql() -> str:
                 "requirement_title": f"{template_title} {sequence} - {badge['badge_title']}"[:150],
                 "requirement_sequence": sequence,
                 "requirement_description": f"{template_description} Badge context: {badge['badge_title']}.",
-                "requirement_img_url": None,
                 "badge_points": max(10, int(badge["badge_points"]) // NUM_REQUIREMENTS_PER_BADGE),
                 "is_active": True,
                 "created_by": random.choice(admin_ids),
@@ -920,6 +1120,26 @@ def generate_sql() -> str:
             sql.insert("consultants_selected_skills", {
                 "user_id": consultant["user_id"],
                 "skills_id": skill["skills_id"],
+            })
+
+    skill_id_by_name = {skill["skill_name"]: skill["skills_id"] for skill in skills}
+    for badge in badges:
+        area_name = badge.get("_area_name", badge["badge_title"])
+        theme_skills = next(
+            (names for theme, names in THEME_BADGE_SKILLS.items() if theme in area_name),
+            DEFAULT_BADGE_SKILLS,
+        )
+        pool = [skill_id_by_name[name] for name in theme_skills if name in skill_id_by_name]
+        if not pool:
+            continue
+        badge_id = int(badge["badge_id"])
+        count = min(len(pool), 4 + (badge_id % 3))
+        start = badge_id % len(pool)
+        chosen = sorted({pool[(start + offset) % len(pool)] for offset in range(count)})
+        for skills_id in chosen:
+            sql.insert("badge_skills", {
+                "badge_id": badge_id,
+                "skills_id": skills_id,
             })
 
     for announcement in system_announcements:
@@ -1013,7 +1233,12 @@ def generate_sql() -> str:
         badge_requirements = requirements_by_badge[int(application["badge_id"])]
         if application["application_state"] == "Open":
             continue
-        evidence_count = len(badge_requirements) if application["application_state"] in {"Accepted", "Rejected"} else random.randint(1, len(badge_requirements))
+        # An application can only leave 'Open' with evidence for EVERY requirement
+        # (the API enforces this on submit), so only Open apps may have partial evidence.
+        if application["application_state"] in {"Submitted", "In validation", "Accepted", "Rejected"}:
+            evidence_count = len(badge_requirements)
+        else:
+            evidence_count = random.randint(0, len(badge_requirements))
         for requirement in badge_requirements[:evidence_count]:
             uploaded_at = application["opened_at"] + timedelta(days=random.randint(1, 10), hours=random.randint(1, 6))  # type: ignore[operator]
             if application["submitted_at"]:
@@ -1022,7 +1247,8 @@ def generate_sql() -> str:
                 "evidence_id": ids.next("requirements_evidences"),
                 "application_id": application["application_id"],
                 "requirement_id": requirement["requirement_id"],
-                "evidence_file_url": f"https://files.softinsa.pt/evidence/app-{application['application_id']}-req-{requirement['requirement_id']}.pdf",
+                # A real, publicly reachable sample file so "view document" works in tests.
+                "evidence_file_url": "https://www.africau.edu/images/default/sample.pdf",
                 "evidence_title": f"Evidence for {requirement['requirement_title']}"[:150],
                 "evidence_description": "Submitted project artefact, certification proof or review note for validation.",
                 "evidence_file_type": "application/pdf",
@@ -1084,7 +1310,7 @@ def generate_sql() -> str:
             "certificate_title": f"Softinsa Certificate - Application {application['application_id']}",
             "issuing_entity": "Softinsa",
             "issue_date": issue_dt,
-            "certificate_file_url": f"https://files.softinsa.pt/certificates/app-{application['application_id']}.pdf",
+            "certificate_file_url": "https://www.africau.edu/images/default/sample.pdf",
         }
         certificates.append(row)
         sql.insert("certificates", row)
@@ -1134,6 +1360,12 @@ def generate_sql() -> str:
                 "</svg>"
             ),
         })
+
+    sql.comment("Store rewards (redeemable with points)")
+    for reward in STORE_REWARDS:
+        row = {"reward_id": ids.next("rewards")}
+        row.update(reward)
+        sql.insert("rewards", row)
 
     for index in range(NUM_NOTIFICATIONS):
         definition = notification_definitions[index % len(notification_definitions)]

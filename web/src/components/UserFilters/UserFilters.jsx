@@ -1,0 +1,363 @@
+// Reusable filter bar for admin user management with search, role, status, and advanced filters.
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import CustomSelect from '../CustomSelect/CustomSelect';
+import DatePicker from '../DatePicker/DatePicker';
+import Button from '../Button/Button';
+import Icon from '../Icons/Icons';
+import FilterSearchInput from '../FilterSearchInput/FilterSearchInput';
+import styles from './UserFilters.module.css';
+
+// Role values must match the strings stored in the database / returned by the API.
+const ROLE_VALUES = ['Administrator', 'Consultant', 'Talent Manager', 'Service Line Leader'];
+
+// Keys that live in the collapsible "advanced" section — used to count the badge.
+const ADVANCED_KEYS = [
+	'emailConfirmed',
+	'gdprAccepted',
+	'serviceLine',
+	'area',
+	'dateFrom',
+	'pointsMin',
+	'pointsMax',
+];
+
+// ── Default / empty filter state (exported so callers can reset to it) ───────
+
+export const EMPTY_FILTERS = {
+	search: '',
+	role: '',
+	isActive: '',
+	emailConfirmed: '',
+	gdprAccepted: '',
+	serviceLine: '',
+	area: '',
+	dateFrom: '',
+	pointsMin: '',
+	pointsMax: '',
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+/**
+ * UserFilters — reusable filter bar for the User Management page.
+ *
+ * Props:
+ *   filters        {Object}   Current filter state (shape: EMPTY_FILTERS).
+ *   onChange       {Function} Called with the full updated filters object.
+ *   onClear        {Function} Resets all filters (caller sets state to EMPTY_FILTERS).
+ *   serviceLines   {Array}    Service line list fetched from the API.
+ *   areas          {Array}    Full area list; narrowed by selected service line.
+ */
+// Renders the filter bar with search, role, status, and collapsible advanced filter controls.
+export default function UserFilters({
+	filters,
+	onChange,
+	onClear,
+	serviceLines = [],
+	areas = [],
+}) {
+	const { t } = useTranslation();
+	// Tracks whether the advanced filters section is expanded.
+	const [expanded, setExpanded] = useState(false);
+
+	// Count how many advanced filters are active to render on the toggle badge.
+	const activeAdvancedCount = useMemo(
+		() => ADVANCED_KEYS.reduce((n, k) => n + (filters[k] !== '' ? 1 : 0), 0),
+		[filters],
+	);
+
+	// Determines whether the clear-all button should be enabled.
+	const hasAnyFilter = useMemo(
+		() => Object.values(filters).some((v) => v !== ''),
+		[filters],
+	);
+
+	// Option lists use t() so labels render in the active locale.
+	// Builds the role dropdown options list with a catch-all "all roles" entry.
+	const roleOptions = useMemo(() => [
+		{ value: '', label: t('shared.allRoles') },
+		...ROLE_VALUES.map((r) => ({ value: r, label: t(`roles.${r}`, r) })),
+	], [t]);
+
+	// Builds the active/inactive status dropdown options.
+	const statusOptions = useMemo(() => [
+		{ value: '', label: t('shared.allStatuses') },
+		{ value: 'true', label: t('shared.active') },
+		{ value: 'false', label: t('shared.inactive') },
+	], [t]);
+
+	// Builds yes/no/all boolean filter options used for email and GDPR fields.
+	const boolOptions = useMemo(() => [
+		{ value: '', label: t('shared.all') },
+		{ value: 'true', label: t('shared.yes') },
+		{ value: 'false', label: t('shared.no') },
+	], [t]);
+
+	// Builds the service line dropdown options from the API data.
+	const serviceLineOptions = useMemo(() => [
+		{ value: '', label: t('shared.all') },
+		...serviceLines.map((sl) => ({
+			value: String(sl.service_line_id || sl.id || ''),
+			label: sl.service_line_name || sl.name,
+		})),
+	], [serviceLines, t]);
+
+	// Builds area dropdown options, filtered to the selected service line if one is active.
+	const areaOptions = useMemo(() => {
+		const pool = filters.serviceLine
+			? areas.filter(
+				(a) =>
+					String(a.service_line_id || a.serviceLineId || '') ===
+					String(filters.serviceLine),
+			)
+			: areas;
+		return [
+			{ value: '', label: t('shared.all') },
+			...pool.map((a) => ({
+				value: String(a.area_id || a.id || ''),
+				label: a.area_name || a.name,
+			})),
+		];
+	}, [areas, filters.serviceLine, t]);
+
+	// Talent Manager has no service line or area scope.
+	// Service Line Leader is scoped to a line but not an area.
+	const isServiceLineDisabled = filters.role === 'Talent Manager';
+	const isAreaDisabled =
+		!filters.serviceLine ||
+		filters.role === 'Service Line Leader' ||
+		filters.role === 'Talent Manager';
+
+	// Handles filter field changes and resets dependent fields when role or service line changes.
+	function handleChange(e) {
+		const { name, value } = e.target;
+		if (name === 'serviceLine') {
+			onChange({ ...filters, serviceLine: value, area: '' });
+		} else if (name === 'role') {
+			const next = { ...filters, role: value };
+			if (value === 'Talent Manager') {
+				next.serviceLine = '';
+				next.area = '';
+			} else if (value === 'Service Line Leader') {
+				next.area = '';
+			}
+			onChange(next);
+		} else {
+			onChange({ ...filters, [name]: value });
+		}
+	}
+
+	return (
+		<div className="card border-0 shadow-sm mb-3">
+			<div className="card-body">
+
+				{/* ── Row 1: full-width search input ────────────────────────────── */}
+				<div className={styles.searchRow}>
+					<FilterSearchInput
+						name="search"
+						value={filters.search}
+						onChange={handleChange}
+						placeholder={t('adminUsers.searchPlaceholder')}
+						ariaLabel={t('adminUsers.searchPlaceholder')}
+					/>
+				</div>
+
+				{/* ── Row 2: quick-select filters + toggle + clear ──────────────── */}
+				<div className={styles.filtersRow}>
+
+					{/* Role quick-filter */}
+					<div className={styles.selectWrapper}>
+						<CustomSelect
+							id="filter_role"
+							name="role"
+							value={filters.role}
+							onChange={handleChange}
+							options={roleOptions}
+							placeholder={t('shared.allRoles')}
+							ariaLabel={t('adminUsers.filterByRole')}
+						/>
+					</div>
+
+					{/* Active / Inactive status quick-filter */}
+					<div className={styles.selectWrapper}>
+						<CustomSelect
+							id="filter_status"
+							name="isActive"
+							value={filters.isActive}
+							onChange={handleChange}
+							options={statusOptions}
+							placeholder={t('shared.allStatuses')}
+							ariaLabel={t('adminUsers.filterByStatus')}
+						/>
+					</div>
+
+					{/* Toggle for the collapsible advanced filter section */}
+					<button
+						type="button"
+						className={[
+							styles.advancedToggle,
+							expanded && styles.advancedToggleActive,
+						]
+							.filter(Boolean)
+							.join(' ')}
+						onClick={() => setExpanded((v) => !v)}
+						aria-expanded={expanded}
+						aria-controls="user-advanced-filters"
+					>
+						<span>{t('shared.moreFilters')}</span>
+						{activeAdvancedCount > 0 && (
+							<span
+								className={styles.activeBadge}
+								aria-label={`${activeAdvancedCount} active advanced filters`}
+							>
+								{activeAdvancedCount}
+							</span>
+						)}
+						<Icon
+							name={expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+							size={14}
+							aria-hidden="true"
+						/>
+					</button>
+
+					{/* Reset all active filters */}
+					<Button
+						variant="outlined"
+						onClick={onClear}
+						disabled={!hasAnyFilter}
+						aria-label={t('shared.clearAll')}
+						className={styles.clearBtn}
+					>
+						{t('shared.clearAll')}
+					</Button>
+				</div>
+
+				{/* ── Advanced filters (collapsible) ────────────────────────────── */}
+				{expanded && (
+					<div id="user-advanced-filters" className={styles.advancedRow}>
+
+						{/* Service Line — selecting this cascades into Area */}
+						<div className={styles.selectWrapper}>
+							<label className={styles.filterLabel}>
+								{t('shared.serviceLine')}
+							</label>
+							<CustomSelect
+								id="filter_service_line"
+								name="serviceLine"
+								value={filters.serviceLine}
+								onChange={handleChange}
+								options={serviceLineOptions}
+								placeholder={t('shared.all')}
+								ariaLabel={t('shared.serviceLine')}
+								disabled={isServiceLineDisabled}
+							/>
+						</div>
+
+						{/* Area — list narrows based on the selected service line */}
+						<div className={styles.selectWrapper}>
+							<label className={styles.filterLabel}>
+								{t('shared.area')}
+							</label>
+							<CustomSelect
+								id="filter_area"
+								name="area"
+								value={filters.area}
+								onChange={handleChange}
+								options={areaOptions}
+								placeholder={t('shared.all')}
+								ariaLabel={t('shared.area')}
+								disabled={isAreaDisabled}
+							/>
+						</div>
+
+						{/* Email confirmation status */}
+						<div className={styles.selectWrapper}>
+							<label className={styles.filterLabel}>
+								{t('shared.emailConfirmed')}
+							</label>
+							<CustomSelect
+								id="filter_email_confirmed"
+								name="emailConfirmed"
+								value={filters.emailConfirmed}
+								onChange={handleChange}
+								options={boolOptions}
+								placeholder={t('shared.all')}
+								ariaLabel={t('shared.emailConfirmed')}
+							/>
+						</div>
+
+						{/* GDPR accepted (public-profile sharing consent) */}
+						<div className={styles.selectWrapper}>
+							<label className={styles.filterLabel}>
+								{t('shared.gdpr')}
+							</label>
+							<CustomSelect
+								id="filter_gdpr"
+								name="gdprAccepted"
+								value={filters.gdprAccepted}
+								onChange={handleChange}
+								options={boolOptions}
+								placeholder={t('shared.all')}
+								ariaLabel={t('shared.gdpr')}
+							/>
+						</div>
+
+						{/* Registration date range — From */}
+						<div className={styles.dateWrapper}>
+							<label className={styles.filterLabel}>
+								{t('shared.registeredFrom')}
+							</label>
+							<DatePicker
+								id="filter_date_from"
+								name="dateFrom"
+								value={filters.dateFrom}
+								onChange={handleChange}
+								ariaLabel={t('shared.registeredFrom')}
+								placeholder="DD-MM-YYYY"
+							/>
+						</div>
+
+						{/* Gamification points — minimum */}
+						<div className={styles.numberWrapper}>
+							<label htmlFor="filter_points_min" className={styles.filterLabel}>
+								{t('shared.pointsMin')}
+							</label>
+							<input
+								id="filter_points_min"
+								type="number"
+								className={`form-control form-control-sm ${styles.numberInput}`}
+								name="pointsMin"
+								value={filters.pointsMin}
+								onChange={handleChange}
+								min={0}
+								placeholder="0"
+								aria-label={t('shared.pointsMin')}
+								disabled={filters.role !== '' && filters.role !== 'Consultant'}
+							/>
+						</div>
+
+						{/* Gamification points — maximum */}
+						<div className={styles.numberWrapper}>
+							<label htmlFor="filter_points_max" className={styles.filterLabel}>
+								{t('shared.pointsMax')}
+							</label>
+							<input
+								id="filter_points_max"
+								type="number"
+								className={`form-control form-control-sm ${styles.numberInput}`}
+								name="pointsMax"
+								value={filters.pointsMax}
+								onChange={handleChange}
+								min={0}
+								placeholder="∞"
+								aria-label={t('shared.pointsMax')}
+								disabled={filters.role !== '' && filters.role !== 'Consultant'}
+							/>
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}

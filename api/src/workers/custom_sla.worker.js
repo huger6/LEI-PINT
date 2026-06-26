@@ -135,10 +135,10 @@ const wasAlreadyAlerted = async (slaId, userId) => {
 };
 
 const markAlerted = async (slaId, userId) => {
-    await models.sla_breach_alerts.create({
-        sla_id: slaId,
-        application_id: null,
-        user_id: userId
+    // Idempotent insert to avoid unique-constraint violations on concurrent runs.
+    await models.sla_breach_alerts.findOrCreate({
+        where: { sla_id: slaId, application_id: null, user_id: userId },
+        defaults: { sla_id: slaId, application_id: null, user_id: userId }
     });
 };
 
