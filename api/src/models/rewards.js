@@ -29,6 +29,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    img_url: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     reward_name: {
       type: DataTypes.STRING(150),
       allowNull: true

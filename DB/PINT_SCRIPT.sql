@@ -674,6 +674,7 @@ CREATE TABLE IF NOT EXISTS rewards (
    badge_id             INTEGER                 NULL, -- FK -> badges(badge_id)
    special_title        VARCHAR(255)         NULL,
    special_portrait_svg TEXT                 NULL,
+   img_url              TEXT                 NULL,
    -- Points store: a redeemable course/perk with a (static) access link.
    reward_name          VARCHAR(150)         NULL,
    reward_description   TEXT                 NULL,

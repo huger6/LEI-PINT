@@ -14,6 +14,7 @@ const toStoreItem = (r) => ({
     description: r.reward_description,
     costPoints: r.cost_points,
     category: r.reward_category,
+    imgUrl: r.img_url || null,
 });
 
 /*──────────────────────────────────────────────────────────────
@@ -193,6 +194,7 @@ const createReward = async (req, res) => {
             reward_description: body.description ?? null,
             access_link: body.accessLink ?? null,
             access_info: body.accessInfo ?? null,
+            img_url: body.imgUrl ?? null,
             cost_points: body.costPoints,
             is_active: body.isActive ?? true,
             reward_category: body.category ?? null
@@ -214,6 +216,7 @@ const updateReward = async (req, res) => {
         if (body.description !== undefined) fields.reward_description = body.description;
         if (body.accessLink !== undefined) fields.access_link = body.accessLink;
         if (body.accessInfo !== undefined) fields.access_info = body.accessInfo;
+        if (body.imgUrl !== undefined) fields.img_url = body.imgUrl;
         if (body.costPoints !== undefined) fields.cost_points = body.costPoints;
         if (body.isActive !== undefined) fields.is_active = body.isActive;
         if (body.category !== undefined) fields.reward_category = body.category;

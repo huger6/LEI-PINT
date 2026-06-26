@@ -43,6 +43,8 @@ export default function Store() {
 	const [result, setResult] = useState(null);     // { name, accessLink, accessInfo }
 	// Error message to display
 	const [error, setError] = useState(null);
+	// Reward guids whose image failed to load (fall back to the category icon)
+	const [failedImg, setFailedImg] = useState({});
 
 	// Load rewards, balance and redemption history together
 	const load = useCallback(async () => {
@@ -108,7 +110,17 @@ export default function Store() {
 						const cs = CATEGORY_STYLE[r.category] || DEFAULT_STYLE;
 						return (
 							<ContentCard key={r.rewardGuid} className={styles.card}>
-								<div className={styles.cardIcon} style={{ background: cs.bg }}><Icon name={cs.icon} size={26} color={cs.color} aria-hidden="true" /></div>
+								{r.imgUrl && !failedImg[r.rewardGuid] ? (
+									<img
+										className={styles.cardImg}
+										src={r.imgUrl}
+										alt={r.name}
+										loading="lazy"
+										onError={() => setFailedImg((prev) => ({ ...prev, [r.rewardGuid]: true }))}
+									/>
+								) : (
+									<div className={styles.cardIcon} style={{ background: cs.bg }}><Icon name={cs.icon} size={26} color={cs.color} aria-hidden="true" /></div>
+								)}
 								<h3 className={styles.cardTitle}>{r.name}</h3>
 								{r.description && <p className={styles.cardDesc}><TranslatedText text={r.description} /></p>}
 								<div className={styles.cardFooter}>
