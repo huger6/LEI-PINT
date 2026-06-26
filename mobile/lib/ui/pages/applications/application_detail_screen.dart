@@ -145,6 +145,7 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
                         ApplicationRequirementsList(
                           requirements: badge.requirements,
                           evidences: _application.evidences,
+                          applicationGuid: _application.applicationGuid,
                         ),
                       ],
                     ],

@@ -8,6 +8,9 @@ import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
 import '../data/local/current_user_dao.dart';
 import '../data/local/gdpr_policy_dao.dart';
+import '../data/local/redemption_dao.dart';
+import '../data/local/reward_dao.dart';
+import '../data/local/title_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
@@ -27,6 +30,7 @@ import '../data/repositories/ranking_repo.dart';
 import '../data/repositories/statistics_repo.dart';
 import '../data/repositories/goals_repo.dart';
 import '../data/repositories/notification_repo.dart';
+import '../data/repositories/reward_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 import 'services/connectivity_service.dart';
@@ -178,6 +182,24 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<RewardDao>()) {
+    getIt.registerLazySingleton<RewardDao>(
+      () => RewardDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<RedemptionDao>()) {
+    getIt.registerLazySingleton<RedemptionDao>(
+      () => RedemptionDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<TitleDao>()) {
+    getIt.registerLazySingleton<TitleDao>(
+      () => TitleDao(getIt<LocalDatabase>()),
+    );
+  }
+
   // ── Services ──────────────────────────────────────────────────────────────
 
   if (!getIt.isRegistered<TranslationService>()) {
@@ -260,6 +282,18 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<NotificationRepository>()) {
     getIt.registerLazySingleton<NotificationRepository>(
       () => NotificationRepository(getIt<ApiClient>(), getIt<NotificationDao>()),
+    );
+  }
+
+  if (!getIt.isRegistered<RewardRepository>()) {
+    getIt.registerLazySingleton<RewardRepository>(
+      () => RewardRepository(
+        getIt<ApiClient>(),
+        getIt<RewardDao>(),
+        getIt<RedemptionDao>(),
+        getIt<TitleDao>(),
+        getIt<CurrentUserDao>(),
+      ),
     );
   }
 

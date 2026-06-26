@@ -5,11 +5,13 @@ class EvidenceSummary {
     required this.requirementId,
     required this.fileUrl,
     required this.title,
+    this.evidenceId,
     this.fileType,
     this.requirementTitle,
   });
 
   final int requirementId;
+  final int? evidenceId;
   final String fileUrl;
   final String title;
   final String? fileType;
@@ -19,6 +21,7 @@ class EvidenceSummary {
     final req = json['requirement'];
     return EvidenceSummary(
       requirementId: json['requirement_id'] as int? ?? 0,
+      evidenceId: json['evidence_id'] as int?,
       fileUrl: (json['evidence_file_url'] ?? '').toString(),
       title: (json['evidence_title'] ?? '').toString(),
       fileType: json['evidence_file_type']?.toString(),

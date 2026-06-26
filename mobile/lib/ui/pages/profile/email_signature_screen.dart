@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:super_clipboard/super_clipboard.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_links.dart';
@@ -27,6 +31,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   bool _includePhoto = true;
   bool _includeName = true;
   String _viewMode = 'signature'; // 'signature' | 'email'
+  bool _isCopying = false;
 
   @override
   void initState() {
@@ -70,12 +75,106 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         .toList();
   }
 
+  Future<String> _imageUrlToBase64(String url) async {
+    try {
+      final response = await Dio().get<List<int>>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      if (response.data != null) {
+        final contentType =
+            response.headers.value('content-type') ?? 'image/svg+xml';
+        final mimeType = contentType.split(';').first.trim();
+        final encoded = base64Encode(response.data!);
+        return 'data:$mimeType;base64,$encoded';
+      }
+    } catch (_) {}
+    return url;
+  }
+
+  Future<void> _copySignatureToClipboard({
+    required List<EarnedBadge> earned,
+    required String userName,
+    required String roleLabel,
+    required String userEmail,
+    required String? photoUrl,
+  }) async {
+    final tr = LanguageScope.of(context);
+    setState(() => _isCopying = true);
+
+    try {
+      final selectedBadges =
+          earned.where((e) => _selectedBadgeIds.contains(e.badge.id)).toList();
+
+      final imageOverrides = <int, String>{};
+      for (final eb in selectedBadges) {
+        final url = eb.badge.imageUrl?.trim() ?? '';
+        if (url.isNotEmpty) {
+          imageOverrides[eb.badge.id] = await _imageUrlToBase64(url);
+        }
+      }
+
+      final html = _viewMode == 'email'
+          ? _generateEmailTemplateHtml(
+              earned: earned,
+              userName: userName,
+              roleLabel: roleLabel,
+              userEmail: userEmail,
+              photoUrl: photoUrl,
+              imageOverrides: imageOverrides,
+            )
+          : _generateSignatureHtml(
+              earned: earned,
+              userName: userName,
+              roleLabel: roleLabel,
+              userEmail: userEmail,
+              photoUrl: photoUrl,
+              imageOverrides: imageOverrides,
+            );
+
+      final clipboard = SystemClipboard.instance;
+      if (clipboard != null) {
+        final item = DataWriterItem();
+        item.add(Formats.htmlText(html));
+        item.add(Formats.plainText('$userName · Softinsa'));
+        await clipboard.write([item]);
+      } else {
+        await Clipboard.setData(ClipboardData(text: html));
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.tr('htmlCopied')),
+            backgroundColor: const Color(0xFF2E9E4D),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.tr('genericError')),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCopying = false);
+      }
+    }
+  }
+
   String _generateSignatureHtml({
     required List<EarnedBadge> earned,
     required String userName,
     required String roleLabel,
     required String userEmail,
     required String? photoUrl,
+    Map<int, String>? imageOverrides,
   }) {
     final selectedBadges =
         earned.where((e) => _selectedBadgeIds.contains(e.badge.id)).toList();
@@ -84,7 +183,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
       final badge = eb.badge;
       final verifyUrl =
           AppLinks.verificationUrl(eb.award.verificationLink ?? '');
-      final imageUrl = badge.imageUrl?.trim() ?? '';
+      final imageUrl = imageOverrides?[badge.id] ?? badge.imageUrl?.trim() ?? '';
       final imgTag = imageUrl.isNotEmpty
           ? '<img src="$imageUrl" alt="${badge.title}" height="56" width="56" style="border:0;border-radius:8px;vertical-align:middle;" />'
           : '<span style="display:inline-block;padding:4px 10px;margin-right:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#1f2937;">${badge.title}</span>';
@@ -128,6 +227,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
     required String roleLabel,
     required String userEmail,
     required String? photoUrl,
+    Map<int, String>? imageOverrides,
   }) {
     final selectedBadges =
         earned.where((e) => _selectedBadgeIds.contains(e.badge.id)).toList();
@@ -136,7 +236,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
       final badge = eb.badge;
       final verifyUrl =
           AppLinks.verificationUrl(eb.award.verificationLink ?? '');
-      final imageUrl = badge.imageUrl?.trim() ?? '';
+      final imageUrl = imageOverrides?[badge.id] ?? badge.imageUrl?.trim() ?? '';
       final imgTag = imageUrl.isNotEmpty
           ? '<img src="$imageUrl" alt="${badge.title}" width="84" height="84" style="border:0;border-radius:12px;display:block;margin:0 auto;" />'
           : '<div style="width:84px;height:84px;border-radius:12px;background:#eef2f7;margin:0 auto;"></div>';
@@ -516,17 +616,25 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: activeHtml));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(tr.tr('htmlCopied')),
-                        backgroundColor: const Color(0xFF2E9E4D),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.copy_rounded, size: 20),
+                  onPressed: _isCopying
+                      ? null
+                      : () => _copySignatureToClipboard(
+                            earned: earned,
+                            userName: userName,
+                            roleLabel: roleLabel,
+                            userEmail: userEmail,
+                            photoUrl: photoUrl,
+                          ),
+                  icon: _isCopying
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.copy_rounded, size: 20),
                   label: Text(_viewMode == 'email'
                       ? tr.tr('copyEmailTemplate')
                       : tr.tr('copySignature')),

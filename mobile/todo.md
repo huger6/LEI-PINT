@@ -12,8 +12,6 @@
 
 - ~~Badge gallery DOES NOT WORK. It does not allow to either save the badges presentable OR see the gallery. It seems to call this URL: {"level":"debug","message":"Request completed","method":"PATCH","requestId":"1782489709285-yifgfchz","responseSize":251,"responseTimeMs":1.14,"statusCode":404,"timestamp":"2026-06-26T16:01:49.287Z","url":"/api/gamification/earned-badges/https://badges.softinsa.pt/verify/d12a0050-8cb7-5cf7-8676-6ee7adbd02ec/featured. Analyse why and fix it.[CRITICAL]~~ DONE
 
-- Notifications preferences DO NOT EXIST. [CRITICAL]
-
 - Check email signature - seems not to be working as expected for mobile. Copy from web. [HIGH]
 
 - Terms and conditions hold all policies (can be) but the title is in variable style. They are not being dynamically translated. [CRITICAL]
@@ -27,3 +25,6 @@
 - Rewards shop.
 
 - Implement rewards on badges detail page.
+
+
+## Note: review all (not sure if implemented)

@@ -377,6 +377,7 @@ class AuthRepository {
         await _apiClient.post(
           ApiEndpoints.resendConfirmation,
           data: {'email': email},
+          options: Options(extra: {'skipAuth': true}),
         ),
       );
 
@@ -392,15 +393,142 @@ class AuthRepository {
         ),
       };
     } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
+      final code = data['code']?.toString() ?? '';
+
+      if (e.response?.statusCode == 429 &&
+          code == 'AUTH_RESEND_RATE_LIMITED') {
+        final nested = _asMap(data['data']);
+        final retryAfter = nested['retryAfter'] ?? 120;
+        return {
+          'success': false,
+          'code': code,
+          'retryAfter': retryAfter is int ? retryAfter : int.tryParse(retryAfter.toString()) ?? 120,
+          'message': _extractMessage(data, fallback: 'Aguarde antes de tentar novamente.'),
+        };
+      }
+
       return {
         'success': false,
         'message': _extractMessage(
-          _asMap(e.response?.data),
+          data,
           fallback: 'Erro ao reenviar email de confirmação.',
         ),
       };
     } catch (e) {
       return {'success': false, 'message': 'Erro ao reenviar email: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> validateResetToken(String token) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.get(
+          '${ApiEndpoints.validateResetToken}/$token',
+          options: Options(extra: {'skipAuth': true}),
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'code': responseMap['code']?.toString() ?? '',
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Token inválido ou expirado.',
+        ),
+      };
+    } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
+      return {
+        'success': false,
+        'code': data['code']?.toString() ?? '',
+        'message': _extractMessage(
+          data,
+          fallback: 'Token inválido ou expirado.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'code': '', 'message': 'Erro ao validar token: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(
+    String token,
+    String newPassword,
+  ) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.post(
+          ApiEndpoints.resetPassword,
+          data: {'token': token, 'newPassword': newPassword},
+          options: Options(extra: {'skipAuth': true}),
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'code': responseMap['code']?.toString() ?? '',
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao redefinir password.',
+        ),
+      };
+    } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
+      return {
+        'success': false,
+        'code': data['code']?.toString() ?? '',
+        'message': _extractMessage(
+          data,
+          fallback: 'Erro ao redefinir password.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'code': '', 'message': 'Erro ao redefinir password: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> confirmEmail(String token) async {
+    try {
+      final responseMap = _asMap(
+        await _apiClient.get(
+          '${ApiEndpoints.confirmEmail}?token=$token',
+          options: Options(extra: {'skipAuth': true}),
+        ),
+      );
+
+      if (responseMap['success'] == true) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'code': responseMap['code']?.toString() ?? '',
+        'message': _extractMessage(
+          responseMap,
+          fallback: 'Erro ao confirmar email.',
+        ),
+      };
+    } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
+      return {
+        'success': false,
+        'code': data['code']?.toString() ?? '',
+        'message': _extractMessage(
+          data,
+          fallback: 'Erro ao confirmar email.',
+        ),
+      };
+    } catch (e) {
+      return {'success': false, 'code': '', 'message': 'Erro ao confirmar email: $e'};
     }
   }
 

@@ -69,6 +69,25 @@ class CurrentUserDao {
 
   /// Mirrors the server-side RGPD consent state locally so the offline-first UI
   /// stops re-prompting once the consent has been recorded on the API.
+  Future<void> updateActiveTitle(String? title) async {
+    final db = await _database.database;
+    await db.update(
+      LocalDatabase.currentUserTable,
+      {'active_title': title},
+    );
+  }
+
+  Future<String?> getActiveTitle() async {
+    final db = await _database.database;
+    final rows = await db.query(
+      LocalDatabase.currentUserTable,
+      columns: ['active_title'],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['active_title'] as String?;
+  }
+
   Future<void> setGdprAccepted(bool accepted) async {
     final db = await _database.database;
     await db.update(

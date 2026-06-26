@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ import '../../../data/repositories/lang_repo.dart';
 import '../../../injection_container.dart';
 import '../../widgets/shared/app_icon/app_icon.dart';
 import '../../widgets/shared/app_icon/app_icon_data.dart';
+import '../../widgets/auth/auth_language_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -505,6 +507,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onPressed: _goBackToLogin,
         ),
         title: Text(tr.tr('createAccount')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: AuthLanguageButton(),
+          ),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -954,7 +962,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               ?.copyWith(
                                                 color: colorScheme.primary,
                                                 fontWeight: FontWeight.w600,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                decorationColor:
+                                                    colorScheme.primary,
                                               ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () => context.push(
+                                                  AppRouter.termsConditions,
+                                                ),
                                         ),
                                       ],
                                     ),

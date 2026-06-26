@@ -13,6 +13,7 @@ import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/app_icon/app_icon.dart';
 import '../../widgets/shared/app_icon/app_icon_data.dart';
+import '../../widgets/auth/auth_language_button.dart';
 
 class NewUserConfirmScreen extends StatefulWidget {
   const NewUserConfirmScreen({
@@ -107,6 +108,12 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(tr.tr('confirmRegister')),
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: AuthLanguageButton(),
+            ),
+          ],
         ),
         body: Stack(
           fit: StackFit.expand,
@@ -231,7 +238,7 @@ class _NewUserConfirmScreenState extends State<NewUserConfirmScreen> {
                       ),
                       const SizedBox(height: 32),
                       CustomButton(
-                        text: tr.tr('registerUser'),
+                        text: tr.tr('register'),
                         isLoading: _isLoading,
                         onPressed: _handleRegister,
                       ),

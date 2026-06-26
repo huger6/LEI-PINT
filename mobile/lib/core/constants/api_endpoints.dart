@@ -83,6 +83,10 @@ class ApiEndpoints {
   static String upsertEvidence(String applicationGuid) =>
       '/api/applications/$applicationGuid/evidences';
 
+  // GET /applications/:applicationGuid/evidences/:evidenceId/download
+  static String downloadEvidence(String applicationGuid, int evidenceId) =>
+      '/api/applications/$applicationGuid/evidences/$evidenceId/download';
+
   // POST /applications/:applicationId/submit
   static String submitApplication(String applicationId) =>
       '/api/applications/$applicationId/submit';
@@ -158,4 +162,11 @@ class ApiEndpoints {
       '/api/statistics/consultant/timeline';
   static const String getLearningPathProgress =
       '/api/statistics/consultant/learning-paths';
+
+  // === Rewards Store ===
+  static const String getRewards = '/api/rewards';
+  static const String getRedemptions = '/api/rewards/redemptions';
+  static String redeemReward(String guid) => '/api/rewards/$guid/redeem';
+  static const String getTitles = '/api/rewards/titles';
+  static const String setActiveTitle = '/api/rewards/active-title';
 }

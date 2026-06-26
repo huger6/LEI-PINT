@@ -7,3 +7,4 @@ export 'presentation/state/form_validators.dart';
 export 'presentation/state/goals_store.dart';
 export 'presentation/state/language_controller.dart';
 export 'presentation/state/notification_store.dart';
+export 'presentation/state/reward_store.dart';

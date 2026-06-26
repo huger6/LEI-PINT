@@ -4,6 +4,9 @@ import 'dart:io';
 import '../../data/local/announcement_dao.dart';
 import '../../data/local/area_dao.dart';
 import '../../data/local/gdpr_policy_dao.dart';
+import '../../data/local/redemption_dao.dart';
+import '../../data/local/reward_dao.dart';
+import '../../data/local/title_dao.dart';
 import '../../data/local/awarded_badge_dao.dart';
 import '../../data/local/badge_dao.dart';
 import '../../data/local/current_user_dao.dart';
@@ -19,6 +22,8 @@ import '../../data/local/sync_metadata_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../models/announcement_model.dart';
 import '../../models/gdpr_policy_model.dart';
+import '../../models/redemption_model.dart';
+import '../../models/reward_model.dart';
 import '../../models/area_model.dart';
 import '../../models/awarded_badge_model.dart';
 import '../../models/learning_path_model.dart';
@@ -55,6 +60,9 @@ class SyncService {
   late final _skillDao = SkillDao(_database);
   late final _mySkillDao = MySkillDao(_database);
   late final _gdprPolicyDao = GdprPolicyDao(_database);
+  late final _rewardDao = RewardDao(_database);
+  late final _redemptionDao = RedemptionDao(_database);
+  late final _titleDao = TitleDao(_database);
 
   String? _activeRoute;
 
@@ -125,6 +133,8 @@ class SyncService {
         return _syncNotifications();
       case SyncCodes.gdprPolicies:
         return _syncGdprPolicies();
+      case SyncCodes.rewards:
+        return _syncRewards();
       default:
         return Future.value(true);
     }
@@ -180,6 +190,8 @@ class SyncService {
         success = await _syncNotifications();
       case SyncCodes.gdprPolicies:
         success = await _syncGdprPolicies();
+      case SyncCodes.rewards:
+        success = await _syncRewards();
       default:
         return;
     }
@@ -518,6 +530,62 @@ class SyncService {
         page++;
       }
       await _notificationDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _syncRewards() async {
+    try {
+      // 1. Sync rewards catalog
+      final storeResponse = await _apiClient.get(ApiEndpoints.getRewards);
+      final storeData = storeResponse is Map<String, dynamic>
+          ? (storeResponse['data'] ?? storeResponse)
+          : storeResponse;
+      if (storeData is Map) {
+        final rewardsList = (storeData['rewards'] as List?) ?? [];
+        final rewards = rewardsList
+            .whereType<Map>()
+            .map((e) => RewardModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        await _rewardDao.replaceAll(rewards);
+      }
+
+      // 2. Sync redemption history
+      final redemptionsResponse =
+          await _apiClient.get(ApiEndpoints.getRedemptions);
+      final redemptionsData = redemptionsResponse is Map<String, dynamic>
+          ? (redemptionsResponse['data'] ?? redemptionsResponse)
+          : redemptionsResponse;
+      final redemptionsList =
+          redemptionsData is List ? redemptionsData : <dynamic>[];
+      final redemptions = redemptionsList
+          .whereType<Map>()
+          .map((e) => RedemptionModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      await _redemptionDao.replaceAll(redemptions);
+
+      // 3. Sync unlocked titles + active title
+      final titlesResponse = await _apiClient.get(ApiEndpoints.getTitles);
+      final titlesData = titlesResponse is Map<String, dynamic>
+          ? (titlesResponse['data'] ?? titlesResponse)
+          : titlesResponse;
+      if (titlesData is Map) {
+        final titlesList = (titlesData['titles'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+        await _titleDao.replaceAll(titlesList);
+
+        final activeTitle = titlesData['activeTitle']?.toString();
+        await _currentUserDao.updateActiveTitle(activeTitle);
+      }
+
       return true;
     } on SocketException {
       return false;

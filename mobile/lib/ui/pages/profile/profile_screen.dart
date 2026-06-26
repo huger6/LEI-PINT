@@ -308,6 +308,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
+                icon: AppIcons.starPoints,
+                label: tr.tr('storeRewardsStore'),
+                onTap: () => context.push(AppRouter.store),
+              ),
+              const SizedBox(height: 8),
+              ProfileMenuTile(
                 icon: AppIcons.language,
                 label: tr.tr('languageLabel'),
                 onTap: () {
@@ -345,11 +351,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1E2932),
                 ),
-              ),
-              const SizedBox(height: 8),
-              ProfileMenuTile(
-                icon: AppIcons.privacy,
-                label: tr.tr('privacyPolicies'),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(

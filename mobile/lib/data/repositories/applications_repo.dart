@@ -204,6 +204,24 @@ class ApplicationsRepository {
     return _extractMap(payload);
   }
 
+  Future<String> downloadEvidence({
+    required String applicationGuid,
+    required int evidenceId,
+  }) async {
+    final payload = await _apiClient.get(
+      ApiEndpoints.downloadEvidence(applicationGuid, evidenceId),
+    );
+
+    final map = _extractMap(payload);
+    final data = _extractMap(map['data']);
+    final downloadUrl = (data['downloadUrl'] ?? '').toString();
+    if (downloadUrl.isEmpty) {
+      throw Exception('Download URL not available.');
+    }
+
+    return downloadUrl;
+  }
+
   Future<Map<String, dynamic>> resendBadgeConfirmation(
     String applicationGuid,
   ) async {

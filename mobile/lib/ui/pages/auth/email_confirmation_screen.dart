@@ -7,6 +7,7 @@ import '../../../presentation/state/auth_store.dart';
 import '../../widgets/auth/email_confirmation_widgets.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/auth_content_card.dart';
+import '../../widgets/auth/auth_language_button.dart';
 
 class EmailConfirmationScreen extends StatelessWidget {
   const EmailConfirmationScreen({super.key, required this.email});
@@ -24,7 +25,7 @@ class EmailConfirmationScreen extends StatelessWidget {
           const AuthParticleBackground(),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
               child: AuthContentCard(
                 child: EmailConfirmationBody(
                   email: email,
@@ -36,6 +37,11 @@ class EmailConfirmationScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: const AuthLanguageButton(),
           ),
         ],
       ),

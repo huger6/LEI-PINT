@@ -52,6 +52,10 @@ abstract class ScreenDataScope {
     AppRouter.termsConditions: [
       SyncCodes.gdprPolicies,
     ],
+    AppRouter.store: [
+      SyncCodes.rewards,
+      SyncCodes.points,
+    ],
   };
 
   static const _syncCodeToTable = <int, String>{
@@ -67,6 +71,7 @@ abstract class ScreenDataScope {
     SyncCodes.progressionStages: 'progression_stages_cache',
     SyncCodes.notifications: 'notifications_cache',
     SyncCodes.gdprPolicies: 'gdpr_policies_cache',
+    SyncCodes.rewards: 'rewards_cache',
   };
 
   static List<int> requiredSyncCodes(String route) {

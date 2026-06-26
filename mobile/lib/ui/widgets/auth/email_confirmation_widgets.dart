@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/email_utils.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
 
@@ -30,7 +32,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
   @override
   void initState() {
     super.initState();
-    _startCooldown();
+    _startCooldown(60);
   }
 
   @override
@@ -50,23 +52,42 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        _startCooldown();
+        _startCooldown(60);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result['message']?.toString() ??
-                  'Erro ao reenviar email de confirmação.',
+        final code = result['code']?.toString() ?? '';
+        final tr = LanguageScope.of(context);
+
+        if (code == 'AUTH_RESEND_RATE_LIMITED') {
+          final retryAfter = result['retryAfter'] as int? ?? 120;
+          _startCooldown(retryAfter);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                tr
+                    .tr('rateLimitedRetry')
+                    .replaceAll('{seconds}', retryAfter.toString()),
+              ),
+              backgroundColor: AppColors.error,
             ),
-            backgroundColor: AppColors.error,
-          ),
-        );
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message']?.toString() ??
+                    tr.tr('resendConfirmationError'),
+              ),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     } catch (_) {
       if (!mounted) return;
+      final tr = LanguageScope.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erro ao reenviar email. Tente novamente.'),
+        SnackBar(
+          content: Text(tr.tr('resendConfirmationErrorRetry')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -77,8 +98,8 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
     }
   }
 
-  void _startCooldown() {
-    _cooldownSeconds = 60;
+  void _startCooldown(int seconds) {
+    _cooldownSeconds = seconds;
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -97,6 +118,8 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tr = LanguageScope.of(context);
+    final maskedEmail = maskEmail(widget.email);
 
     return Column(
       children: [
@@ -104,8 +127,8 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         Container(
           width: 80,
           height: 80,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE8F5E9),
             shape: BoxShape.circle,
           ),
           child: const AppIcon(
@@ -116,7 +139,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         ),
         const SizedBox(height: 24),
         Text(
-          'Email enviado!',
+          tr.tr('emailConfirmationTitle'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,
@@ -124,7 +147,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enviámos um email de confirmação para:',
+          tr.tr('emailConfirmationSentTo'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: colorScheme.onSurface.withValues(alpha: 0.7),
@@ -132,7 +155,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         ),
         const SizedBox(height: 8),
         Text(
-          widget.email,
+          maskedEmail.isNotEmpty ? maskedEmail : widget.email,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w700,
@@ -150,8 +173,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
             ),
           ),
           child: Text(
-            'Clique no link enviado para o seu email para ativar a sua conta. '
-            'Após a confirmação, poderá fazer login na aplicação.',
+            tr.tr('emailConfirmationInstructions'),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurface.withValues(alpha: 0.8),
@@ -173,9 +195,9 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Ir para Login',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            child: Text(
+              tr.tr('goToLogin'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -208,8 +230,13 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
                   )
                 : Text(
                     _cooldownSeconds > 0
-                        ? 'Reenviar email ($_cooldownSeconds s)'
-                        : 'Reenviar email',
+                        ? tr
+                            .tr('resendConfirmationCooldown')
+                            .replaceAll(
+                              '{seconds}',
+                              _cooldownSeconds.toString(),
+                            )
+                        : tr.tr('resendConfirmationBtn'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -230,8 +257,7 @@ class _EmailConfirmationBodyState extends State<EmailConfirmationBody> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Não recebeu o email? Verifique a sua pasta de spam '
-          'ou tente reenviar.',
+          tr.tr('checkSpamHint'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurface.withValues(alpha: 0.5),

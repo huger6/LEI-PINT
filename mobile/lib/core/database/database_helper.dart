@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 10;
+  static const _databaseVersion = 11;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -21,6 +21,8 @@ class LocalDatabase {
   static const badgeRequirementsTable = 'badge_requirements_cache';
   static const skillsTable = 'skills_cache';
   static const rewardsTable = 'rewards_cache';
+  static const myRedemptionsTable = 'my_redemptions_cache';
+  static const myUnlockedTitlesTable = 'my_unlocked_titles';
   static const announcementsTable = 'announcements_cache';
   static const gdprPoliciesTable = 'gdpr_policies_cache';
   static const translationCacheTable = 'translation_cache';
@@ -54,6 +56,8 @@ class LocalDatabase {
     awardedBadgesTable,
     pointsHistoryTable,
     validationLogsTable,
+    myRedemptionsTable,
+    myUnlockedTitlesTable,
     myApplicationsTable,
     myEvidencesTable,
     myCertificatesTable,
@@ -173,6 +177,44 @@ class LocalDatabase {
           synced_at    INTEGER NOT NULL
         )
       ''');
+    }
+    if (oldVersion < 11) {
+      await db.execute('DROP TABLE IF EXISTS $rewardsTable');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $rewardsTable (
+          id                 INTEGER PRIMARY KEY,
+          reward_guid        TEXT    NOT NULL,
+          reward_name        TEXT    NOT NULL,
+          reward_description TEXT,
+          cost_points        INTEGER NOT NULL DEFAULT 0,
+          reward_category    TEXT,
+          img_url            TEXT,
+          synced_at          INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $myRedemptionsTable (
+          id              INTEGER PRIMARY KEY AUTOINCREMENT,
+          redemption_guid TEXT    NOT NULL,
+          reward_name     TEXT,
+          access_link     TEXT,
+          access_info     TEXT,
+          points_spent    INTEGER NOT NULL,
+          redeemed_at     INTEGER NOT NULL,
+          synced_at       INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $myUnlockedTitlesTable (
+          title     TEXT PRIMARY KEY,
+          synced_at INTEGER NOT NULL
+        )
+      ''');
+      try {
+        await db.execute(
+          'ALTER TABLE $currentUserTable ADD COLUMN active_title TEXT',
+        );
+      } catch (_) {}
     }
   }
 
@@ -316,11 +358,14 @@ class LocalDatabase {
     ''',
     '''
       CREATE TABLE IF NOT EXISTS $rewardsTable (
-        id           INTEGER PRIMARY KEY,
-        badge_id     INTEGER,
-        title        TEXT,
-        portrait_svg TEXT,
-        synced_at    INTEGER NOT NULL
+        id                 INTEGER PRIMARY KEY,
+        reward_guid        TEXT    NOT NULL,
+        reward_name        TEXT    NOT NULL,
+        reward_description TEXT,
+        cost_points        INTEGER NOT NULL DEFAULT 0,
+        reward_category    TEXT,
+        img_url            TEXT,
+        synced_at          INTEGER NOT NULL
       )
     ''',
     '''
@@ -376,6 +421,7 @@ class LocalDatabase {
         biography         TEXT,
         gdpr_accepted     INTEGER NOT NULL DEFAULT 0,
         total_points      INTEGER NOT NULL DEFAULT 0,
+        active_title      TEXT,
         synced_at         INTEGER NOT NULL
       )
     ''',
@@ -434,6 +480,24 @@ class LocalDatabase {
       )
     ''',
     'CREATE INDEX IF NOT EXISTS idx_vlog_app ON $validationLogsTable (application_id)',
+    '''
+      CREATE TABLE IF NOT EXISTS $myRedemptionsTable (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        redemption_guid TEXT    NOT NULL,
+        reward_name     TEXT,
+        access_link     TEXT,
+        access_info     TEXT,
+        points_spent    INTEGER NOT NULL,
+        redeemed_at     INTEGER NOT NULL,
+        synced_at       INTEGER NOT NULL
+      )
+    ''',
+    '''
+      CREATE TABLE IF NOT EXISTS $myUnlockedTitlesTable (
+        title     TEXT PRIMARY KEY,
+        synced_at INTEGER NOT NULL
+      )
+    ''',
   ];
 
   // ── Offline-write tables ──────────────────────────────────────────────────

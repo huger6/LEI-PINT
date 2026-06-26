@@ -6,6 +6,7 @@ import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
 import '../../widgets/shared/nav_link.dart';
+import '../../widgets/auth/auth_language_button.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 
@@ -92,12 +93,10 @@ class _LoginScreenState extends State<LoginScreen> {
             if (!mounted) return;
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Apenas contas de Consultores podem aceder à aplicação móvel.',
-                ),
-                backgroundColor: Color(0xFFD94827),
-                duration: Duration(seconds: 4),
+              SnackBar(
+                content: Text(tr.tr('loginErrorConsultantOnly')),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 4),
               ),
             );
             return;
@@ -142,8 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SnackBar(
                 content: Text(
                   result['message'] ??
-                      'O seu email ainda não foi confirmado. '
-                          'Verifique a sua caixa de correio.',
+                      tr.tr('loginErrorEmailNotConfirmed'),
                 ),
                 backgroundColor: AppColors.warning,
                 duration: const Duration(seconds: 5),
@@ -216,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const AuthParticleBackground(),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
               child: AuthContentCard(
                 child: Form(
                   key: _formKey,
@@ -331,6 +329,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: const AuthLanguageButton(),
           ),
         ],
       ),

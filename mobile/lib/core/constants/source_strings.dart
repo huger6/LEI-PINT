@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 14;
+const int sourceStringsVersion = 16;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -531,11 +531,11 @@ const _sourceJson = r'''
   "addAsGoal": "Adicionar como objetivo",
   "goalAdded": "Badge adicionado como objetivo!",
   "goalAddError": "Erro ao adicionar objetivo.",
-  "copyHtmlCode": "Copiar código HTML",
-  "htmlCopied": "Código HTML copiado!",
+  "copyHtmlCode": "Copiar código",
+  "htmlCopied": "Código copiado!",
   "emailSignatureInstructions": "Instruções",
-  "gmailInstructions": "Gmail: Definições → Ver todas as definições → Geral → Assinatura → Cole o código HTML",
-  "outlookInstructions": "Outlook: Ficheiro → Opções → Correio → Assinaturas → Nova → Cole o código HTML",
+  "gmailInstructions": "Gmail: Definições → Ver todas as definições → Geral → Assinatura → Cole o código",
+  "outlookInstructions": "Outlook: Ficheiro → Opções → Correio → Assinaturas → Nova → Cole o código",
   "serviceLine": "Service Line",
   "learningPath": "Learning Path",
   "badgeType": "Tipo",
@@ -596,6 +596,57 @@ const _sourceJson = r'''
   "roleConsultant": "Consultor",
   "roleTalentManager": "Talent Manager",
   "roleServiceLineLeader": "Service Line Leader",
-  "roleAdministrator": "Administrador"
+  "roleAdministrator": "Administrador",
+
+  "emailConfirmationTitle": "Email enviado!",
+  "emailConfirmationSentTo": "Enviámos um email de confirmação para:",
+  "emailConfirmationInstructions": "Clique no link enviado para o seu email para ativar a sua conta. Após a confirmação, poderá fazer login na aplicação.",
+  "goToLogin": "Ir para Login",
+  "resendConfirmationBtn": "Reenviar email",
+  "resendConfirmationCooldown": "Reenviar email ({seconds} s)",
+  "resendConfirmationError": "Erro ao reenviar email de confirmação.",
+  "resendConfirmationErrorRetry": "Erro ao reenviar email. Tente novamente.",
+  "checkSpamHint": "Não recebeu o email? Verifique a sua pasta de spam ou tente reenviar.",
+  "rateLimitedRetry": "Aguarde {seconds} segundos antes de tentar novamente.",
+
+  "resetPasswordTitle": "Redefinir password",
+  "resetPasswordSubtitle": "Introduza a sua nova password.",
+  "validatingLink": "A validar o link...",
+  "invalidOrExpiredTitle": "Link inválido ou expirado",
+  "invalidOrExpiredDesc": "O link de redefinição de password é inválido ou expirou. Solicite um novo link.",
+  "tokenExpired": "O link expirou. Solicite um novo link de redefinição.",
+  "requestNewLink": "Pedir novo link",
+  "confirmNewPassword": "Confirmar nova password",
+  "resetPasswordBtn": "Redefinir password",
+  "resetPasswordSuccess": "Password redefinida!",
+  "resetPasswordSuccessDesc": "A sua password foi redefinida com sucesso. Pode agora fazer login com a nova password.",
+
+  "confirmingEmail": "A confirmar o seu email...",
+  "emailConfirmedTitle": "Email confirmado!",
+  "emailConfirmedDesc": "O seu email foi confirmado com sucesso. Pode agora fazer login na aplicação.",
+  "confirmationFailed": "Confirmação falhou",
+  "confirmationFailedDesc": "Não foi possível confirmar o seu email. O link pode ser inválido ou ter expirado.",
+
+  "loginErrorConsultantOnly": "Apenas contas de Consultores podem aceder à aplicação móvel.",
+  "loginErrorEmailNotConfirmed": "O seu email ainda não foi confirmado. Verifique a sua caixa de correio.",
+
+  "storeTitle": "Loja de Recompensas",
+  "storeSubtitle": "Gaste os seus pontos em cursos e benefícios.",
+  "storePoints": "pontos",
+  "storeRedeem": "Resgatar",
+  "storeNotEnough": "Pontos insuficientes",
+  "storeEmpty": "Ainda não existem recompensas disponíveis.",
+  "storeMyRedemptions": "Os meus resgates",
+  "storeAccess": "Aceder",
+  "storeConfirmTitle": "Confirmar resgate",
+  "storeConfirmText": "Resgatar \"{name}\" por {cost} pontos?",
+  "storeSuccessTitle": "Recompensa resgatada!",
+  "storeSuccessText": "Resgatou \"{name}\" com sucesso.",
+  "storeEmailNote": "Enviámos os detalhes de acesso por email.",
+  "storeMyTitle": "O meu título",
+  "storeMyTitleHint": "Escolha o título mostrado publicamente no seu perfil (dos que desbloqueou).",
+  "storeNoTitle": "Nenhum",
+  "storeRewardsStore": "Loja de Recompensas",
+  "storeSpendPoints": "Gastar pontos"
 }
 ''';

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/routes/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../injection_container.dart';
 import '../widgets/shared/app_bottom_nav_bar.dart';
@@ -307,6 +309,77 @@ class _DashboardScreenState extends State<DashboardScreen>
                               text: tr.tr('dashboardTopPercentSuffix'),
                             ),
                           ],
+                        ),
+                      ),
+
+                      // Rewards store CTA
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: () => context.push(AppRouter.store),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF5D9FD1),
+                                Color(0xFF83A9E8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x20000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color:
+                                      Colors.white.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                    Icons.card_giftcard_rounded,
+                                    size: 22,
+                                    color: Colors.white),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      tr.tr('storeRewardsStore'),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${tr.tr('storeSpendPoints')} · $totalPoints ${tr.tr('storePoints')}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right_rounded,
+                                  color: Colors.white, size: 24),
+                            ],
+                          ),
                         ),
                       ),
 

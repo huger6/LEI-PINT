@@ -282,6 +282,18 @@ class AuthStore extends ChangeNotifier {
     return _authRepository.resendConfirmation(email);
   }
 
+  Future<Map<String, dynamic>> validateResetToken(String token) {
+    return _authRepository.validateResetToken(token);
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String token, String newPassword) {
+    return _authRepository.resetPassword(token, newPassword);
+  }
+
+  Future<Map<String, dynamic>> confirmEmailToken(String token) {
+    return _authRepository.confirmEmail(token);
+  }
+
   Future<void> fetchPoints() async {
     final result = await _authRepository.fetchPoints();
     if (result['success'] == true && _currentUser != null) {

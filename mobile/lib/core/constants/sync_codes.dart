@@ -15,6 +15,7 @@ abstract class SyncCodes {
   static const int announcements = 20;
   static const int notifications = 21;
   static const int gdprPolicies = 22;
+  static const int rewards = 23;
 
-  static bool isRelevantForMobile(int code) => code >= 7 && code <= 22;
+  static bool isRelevantForMobile(int code) => code >= 7 && code <= 23;
 }

@@ -8,17 +8,20 @@ class RewardDao {
 
   Future<List<RewardModel>> getAll() async {
     final db = await _database.database;
-    final rows = await db.query(LocalDatabase.rewardsTable);
+    final rows = await db.query(
+      LocalDatabase.rewardsTable,
+      orderBy: 'cost_points ASC',
+    );
 
     return rows.map(_fromRow).toList();
   }
 
-  Future<RewardModel?> getByBadge(int badgeId) async {
+  Future<RewardModel?> getByGuid(String rewardGuid) async {
     final db = await _database.database;
     final rows = await db.query(
       LocalDatabase.rewardsTable,
-      where: 'badge_id = ?',
-      whereArgs: [badgeId],
+      where: 'reward_guid = ?',
+      whereArgs: [rewardGuid],
       limit: 1,
     );
 
@@ -36,9 +39,12 @@ class RewardDao {
     for (final reward in rewards) {
       batch.insert(LocalDatabase.rewardsTable, {
         'id': reward.id,
-        'badge_id': reward.badgeId,
-        'title': reward.title,
-        'portrait_svg': reward.portraitSvg,
+        'reward_guid': reward.rewardGuid,
+        'reward_name': reward.rewardName,
+        'reward_description': reward.rewardDescription,
+        'cost_points': reward.costPoints,
+        'reward_category': reward.rewardCategory,
+        'img_url': reward.imgUrl,
         'synced_at': now,
       });
     }
@@ -49,9 +55,12 @@ class RewardDao {
   RewardModel _fromRow(Map<String, dynamic> row) {
     return RewardModel(
       id: row['id'] as int,
-      badgeId: row['badge_id'] as int?,
-      title: row['title'] as String?,
-      portraitSvg: row['portrait_svg'] as String?,
+      rewardGuid: row['reward_guid'] as String? ?? '',
+      rewardName: row['reward_name'] as String? ?? '',
+      rewardDescription: row['reward_description'] as String?,
+      costPoints: row['cost_points'] as int? ?? 0,
+      rewardCategory: row['reward_category'] as String?,
+      imgUrl: row['img_url'] as String?,
     );
   }
 }

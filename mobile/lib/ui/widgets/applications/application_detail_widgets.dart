@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../data/repositories/applications_repo.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../badges/my_badges_widgets.dart';
@@ -986,22 +988,60 @@ class _AttributeChip extends StatelessWidget {
   }
 }
 
-class ApplicationRequirementsList extends StatelessWidget {
+class ApplicationRequirementsList extends StatefulWidget {
   const ApplicationRequirementsList({
     super.key,
     required this.requirements,
+    required this.applicationGuid,
     this.evidences = const [],
   });
 
   final List<BadgeRequirement> requirements;
+  final String applicationGuid;
   final List<EvidenceSummary> evidences;
 
-  Future<void> _openEvidenceFile(BuildContext context, String url) async {
+  @override
+  State<ApplicationRequirementsList> createState() =>
+      _ApplicationRequirementsListState();
+}
+
+class _ApplicationRequirementsListState
+    extends State<ApplicationRequirementsList> {
+  final Set<int> _loadingEvidenceIds = {};
+
+  Future<void> _openEvidenceFile(
+      BuildContext context, EvidenceSummary evidence) async {
     final tr = LanguageScope.of(context);
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
+    final evidenceId = evidence.evidenceId;
+
+    if (evidenceId == null) {
+      final uri = Uri.tryParse(evidence.fileUrl);
+      if (uri == null) return;
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(tr.tr('fileDownloadError')),
+            backgroundColor: const Color(0xFFD94A2A),
+          ));
+        }
+      }
+      return;
+    }
+
+    setState(() => _loadingEvidenceIds.add(evidenceId));
 
     try {
+      final repo = context.read<ApplicationsRepository>();
+      final signedUrl = await repo.downloadEvidence(
+        applicationGuid: widget.applicationGuid,
+        evidenceId: evidenceId,
+      );
+
+      final uri = Uri.tryParse(signedUrl);
+      if (uri == null) throw Exception('Invalid download URL');
+
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
       if (context.mounted) {
@@ -1010,12 +1050,16 @@ class ApplicationRequirementsList extends StatelessWidget {
           backgroundColor: const Color(0xFFD94A2A),
         ));
       }
+    } finally {
+      if (mounted) {
+        setState(() => _loadingEvidenceIds.remove(evidenceId));
+      }
     }
   }
 
   EvidenceSummary? _evidenceForRequirement(int? requirementId) {
     if (requirementId == null) return null;
-    for (final e in evidences) {
+    for (final e in widget.evidences) {
       if (e.requirementId == requirementId) return e;
     }
     return null;
@@ -1023,7 +1067,7 @@ class ApplicationRequirementsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (requirements.isEmpty) return const SizedBox.shrink();
+    if (widget.requirements.isEmpty) return const SizedBox.shrink();
 
     final tr = LanguageScope.of(context);
 
@@ -1053,12 +1097,13 @@ class ApplicationRequirementsList extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...requirements.asMap().entries.map((entry) {
+          ...widget.requirements.asMap().entries.map((entry) {
             final evidence = _evidenceForRequirement(entry.value.id);
 
             return Container(
               margin: EdgeInsets.only(
-                bottom: entry.key < requirements.length - 1 ? 8 : 0,
+                bottom:
+                    entry.key < widget.requirements.length - 1 ? 8 : 0,
               ),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -1107,8 +1152,10 @@ class ApplicationRequirementsList extends StatelessWidget {
                     const SizedBox(height: 8),
                     InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      onTap: evidence.fileUrl.isNotEmpty
-                          ? () => _openEvidenceFile(context, evidence.fileUrl)
+                      onTap: evidence.fileUrl.isNotEmpty &&
+                              !_loadingEvidenceIds
+                                  .contains(evidence.evidenceId)
+                          ? () => _openEvidenceFile(context, evidence)
                           : null,
                       child: Container(
                         width: double.infinity,
@@ -1159,11 +1206,23 @@ class ApplicationRequirementsList extends StatelessWidget {
                                 ),
                               ),
                             const SizedBox(width: 6),
-                            const AppIcon(
-                              AppIcons.download,
-                              size: 18,
-                              color: ApplicationDetailColors.primaryAction,
-                            ),
+                            if (_loadingEvidenceIds
+                                .contains(evidence.evidenceId))
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color:
+                                      ApplicationDetailColors.primaryAction,
+                                ),
+                              )
+                            else
+                              const AppIcon(
+                                AppIcons.download,
+                                size: 18,
+                                color: ApplicationDetailColors.primaryAction,
+                              ),
                           ],
                         ),
                       ),
