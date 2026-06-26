@@ -270,6 +270,7 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
                         ribbonColor: badge.ribbonColor,
                         description: badge.description,
                         isSpecial: badge.isSpecial,
+                        imageUrl: badge.imageUrl,
                         isSaved: badgeStore.isFavorite(badge.id),
                         onSaveToggle: () {
                           badgeStore.toggleFavorite(badge.id);

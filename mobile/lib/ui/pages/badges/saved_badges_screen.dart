@@ -78,6 +78,7 @@ class SavedBadgesScreen extends StatelessWidget {
                   medalColor: badge.medalColor,
                   ribbonColor: badge.ribbonColor,
                   isSpecial: badge.isSpecial,
+                  imageUrl: badge.imageUrl,
                   isSaved: true,
                   onSaveToggle: () {
                     badgeStore.toggleFavorite(badge.id);

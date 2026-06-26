@@ -258,29 +258,34 @@ class _ShareBadgeContent extends StatelessWidget {
   }
 
   Future<void> _shareOnLinkedIn(BuildContext context) async {
-    // Share the public verification URL (our web platform). Falls back to the
-    // platform home page when this badge has no verification link yet.
     final shareTarget =
         _verificationUrl.isNotEmpty ? _verificationUrl : AppLinks.frontendBaseUrl;
-    final text = Uri.encodeComponent(
+    final shareText =
       'Acabei de obter o badge "${badge.title}" na Plataforma de Badges da Softinsa!'
-      '${_verificationUrl.isNotEmpty ? '\n\nVerificação: $_verificationUrl' : ''}',
+      '${_verificationUrl.isNotEmpty ? '\n\nVerificação: $_verificationUrl' : ''}';
+
+    // Try the LinkedIn app deep link first so the native app opens when
+    // installed, then fall back to the web share endpoint.
+    final appUri = Uri.parse(
+      'linkedin://shareArticle?mini=true'
+      '&url=${Uri.encodeComponent(shareTarget)}'
+      '&text=${Uri.encodeComponent(shareText)}',
+    );
+    final webUri = Uri.parse(
+      'https://www.linkedin.com/sharing/share-offsite/'
+      '?url=${Uri.encodeComponent(shareTarget)}'
+      '&text=${Uri.encodeComponent(shareText)}',
     );
 
-    final linkedInUrl = Uri.parse(
-      'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(shareTarget)}&text=$text',
-    );
-
-    // canLaunchUrl is unreliable on Android (package visibility), so launch
-    // directly and only report failure if it actually throws.
     try {
-      final launched = await launchUrl(
-        linkedInUrl,
-        mode: LaunchMode.externalApplication,
-      );
-      if (launched && context.mounted) {
+      var launched = await launchUrl(appUri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        launched = await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+      if (!context.mounted) return;
+      if (launched) {
         Navigator.pop(context, true);
-      } else if (!launched && context.mounted) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Não foi possível abrir o LinkedIn.'),

@@ -362,23 +362,6 @@ class _BadgeEmailConfirmationBodyState
           ),
         ),
         const SizedBox(height: 16),
-        Divider(color: colorScheme.outline.withValues(alpha: 0.22)),
-        const SizedBox(height: 16),
-        AppIcon(
-          AppIcons.help,
-          size: 18,
-          color: colorScheme.onSurface.withValues(alpha: 0.5),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          tr.tr('emailNotReceived'),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                height: 1.4,
-              ),
-        ),
-        const SizedBox(height: 12),
       ],
     );
   }

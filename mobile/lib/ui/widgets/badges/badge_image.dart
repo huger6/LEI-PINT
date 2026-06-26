@@ -6,11 +6,8 @@ import '../shared/app_icon/app_icon_data.dart';
 
 /// Renders a badge's artwork.
 ///
-/// Badge artwork is vector-only (the web designer exports SVG and uploads are
-/// restricted to SVG), so the real image is loaded with [SvgPicture.network].
-/// When the badge has no image — or while it loads / fails to load — it falls
-/// back to the same generic `badge` icon used by the web front-office, so the
-/// app never shows placeholder/mock medals.
+/// Badge artwork is stored as a `data:image/svg+xml` URI with URL-encoded SVG
+/// markup. When the badge has no image it falls back to a generic badge icon.
 class BadgeImage extends StatelessWidget {
   const BadgeImage({
     super.key,
@@ -27,17 +24,33 @@ class BadgeImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = imageUrl?.trim() ?? '';
-    if (url.isEmpty) return _fallback();
+    final raw = imageUrl?.trim() ?? '';
+    if (raw.isEmpty) return _fallback();
 
-    return SvgPicture.network(
-      url,
+    final svg = _extractSvg(raw);
+    if (svg == null) return _fallback();
+
+    return SvgPicture.string(
+      svg,
       width: size,
       height: size,
       fit: BoxFit.contain,
-      // Shown while loading and if the request fails (e.g. offline).
-      placeholderBuilder: (_) => _fallback(),
     );
+  }
+
+  /// Decodes a `data:image/svg+xml,...` URI into raw SVG markup.
+  /// Returns `null` when the format is unrecognised.
+  static String? _extractSvg(String uri) {
+    if (!uri.startsWith('data:image/svg+xml')) return null;
+
+    final commaIndex = uri.indexOf(',');
+    if (commaIndex == -1) return null;
+
+    try {
+      return Uri.decodeFull(uri.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
   }
 
   Widget _fallback() {
