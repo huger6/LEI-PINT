@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import NotificationPreferences from '../../../components/NotificationPreferences/NotificationPreferences';
+import TitleSelector from '../../../components/TitleSelector/TitleSelector';
 import Icon from '../../../components/Icons/Icons';
 import { SHARED } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
@@ -20,8 +21,9 @@ const LANGUAGES = [
 export default function Settings() {
 	// Translation helper plus the i18n instance for language switching.
 	const { t, i18n } = useTranslation();
-	// Context handler that persists the user's language choice.
-	const { handleLanguageChange } = useUser();
+	// Context handler that persists the user's language choice, plus the user
+	// (its role gates the consultant-only public title selector).
+	const { handleLanguageChange, user } = useUser();
 	// Available languages loaded from the backend.
 	const { languages } = useLanguageContext();
 	// Current short language code (e.g. 'pt') derived from i18n.
@@ -90,6 +92,8 @@ export default function Settings() {
 			</ContentCard>
 
 			<NotificationPreferences />
+
+			{user?.role === 'Consultant' && <TitleSelector />}
 
 			<ContentCard className={styles.section}>
 				<CardHeader icon="settings" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('settings.account')} />

@@ -44,6 +44,8 @@ export default function BadgeDetail() {
 	const [applying, setApplying] = useState(false);
 	// Track whether a certificate is being downloaded
 	const [downloading, setDownloading] = useState(false);
+	// Non-fatal error shown inline by the certificate action (does not replace the page)
+	const [certError, setCertError] = useState(null);
 	// Store any error message from failed API calls
 	const [error, setError] = useState(null);
 	// Control visibility of the GDPR consent modal before sharing
@@ -106,20 +108,34 @@ export default function BadgeDetail() {
 
 	// Generate and open the PDF certificate for the earned badge
 	async function handleDownloadCertificate() {
+		const appGuid = badge?.user_award?.application_guid || badge?.user_application?.application_guid;
+		if (!appGuid) {
+			setCertError(t('badgeDetail.certificateUnavailable'));
+			return;
+		}
+
+		// Open the tab synchronously, still inside the click handler, so the browser
+		// keeps it tied to the user gesture. Opening it AFTER the await (as before)
+		// gets blocked by pop-up blockers — which is why the download silently stopped
+		// working. We then point this tab at the certificate once it is ready.
+		const certWindow = window.open('about:blank', '_blank');
+
+		setCertError(null);
 		setDownloading(true);
 		try {
-			const appGuid = badge?.user_award?.application_guid || badge?.user_application?.application_guid;
-			if (!appGuid) return;
-
 			const langMap = { 'pt-PT': 'pt', 'es-ES': 'es', 'en-GB': 'en' };
 			const lang = langMap[i18n.language] || 'en';
 
 			const result = await generateCertificate(appGuid, lang);
 			if (result?.certificateUrl) {
-				window.open(result.certificateUrl, '_blank', 'noopener,noreferrer');
+				if (certWindow) certWindow.location = result.certificateUrl;
+				else window.open(result.certificateUrl, '_blank', 'noopener,noreferrer');
+			} else if (certWindow) {
+				certWindow.close();
 			}
 		} catch (err) {
-			setError(resolveErrorMessage(err));
+			if (certWindow) certWindow.close();
+			setCertError(resolveErrorMessage(err));
 		} finally {
 			setDownloading(false);
 		}
@@ -190,6 +206,9 @@ export default function BadgeDetail() {
 	const learningPathName = learningPath?.path_title || learningPath?.pathTitle;
 	const learningPathSlug = learningPath?.path_slug || learningPath?.pathSlug;
 	const serviceLineSlug = serviceLine?.sl_slug || serviceLine?.slSlug;
+	const area = badge.area || badge.areaInfo;
+	const areaName = area?.area_name || area?.areaName;
+	const areaSlug = area?.area_slug || area?.areaSlug;
 	const stage = badge.progression_stage || badge.progressionStage;
 	const stageCode = stage?.stage_code?.stage_code || stage?.stageCode?.stageCode;
 	const stageTitle = stage?.stage_title || stage?.stageTitle;
@@ -282,6 +301,15 @@ export default function BadgeDetail() {
 								+ {points} {t('badgeDetail.pointsLabel')}
 							</span>
 						)}
+						{areaName && (
+							<Link
+								to={areaSlug ? SHARED.STRUCTURE_AREA_DETAIL.replace(':slug', areaSlug) : '#'}
+								className={`${styles.chip} ${styles.chipArea}`}
+							>
+								<Icon name="area" size={16} />
+								{areaName}
+							</Link>
+						)}
 						{(stageCode || stageTitle) && (
 							<span className={styles.chip}>
 								<Icon name="evolution" size={16} />
@@ -365,6 +393,9 @@ export default function BadgeDetail() {
 						)}
 
 					</div>
+					{certError && (
+						<div className={`alert alert-danger mt-3 mb-0 ${styles.certError}`} role="alert">{certError}</div>
+					)}
 				</div>
 			</section>
 
@@ -422,14 +453,6 @@ export default function BadgeDetail() {
 						)}
 					</div>
 
-					<div className={styles.badgePreview}>
-						{imgUrl ? (
-							<img src={imgUrl} alt={title} className={styles.badgePreviewImg} />
-						) : (
-							<Icon name="badge" size={80} color="var(--color-secondary)" />
-						)}
-						<span className={styles.badgePreviewLabel}>{title}</span>
-					</div>
 				</div>
 			</section>
 
@@ -444,7 +467,14 @@ export default function BadgeDetail() {
 							? skills.map((s) => (
 								<li key={s.skills_id} className={styles.competencyItem}>
 									<Icon name="skills" size={18} color="var(--color-primary)" />
-									{s.skill_name}
+									<div className={styles.competencyText}>
+										<span className={styles.competencyName}>{s.skill_name}</span>
+										{(s.skill_description || s.skillDescription) && (
+											<span className={styles.competencyDesc}>
+												<TranslatedText text={s.skill_description || s.skillDescription} />
+											</span>
+										)}
+									</div>
 								</li>
 							))
 							: (
