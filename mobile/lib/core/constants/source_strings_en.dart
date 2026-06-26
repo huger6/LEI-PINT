@@ -576,6 +576,23 @@ const _sourceJsonEn = r'''
   "NOTIF_GOAL_REMINDER_TITLE": "Goal reminder",
   "NOTIF_GOAL_REMINDER_BODY": "Don't forget about your goal \"{{goalTitle}}\".",
   "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Goal deadline approaching",
-  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Your goal \"{{goalTitle}}\" is due in {{daysRemaining}} days."
+  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Your goal \"{{goalTitle}}\" is due in {{daysRemaining}} days.",
+
+  "policyTypePrivacy": "Privacy Policy",
+  "policyTypeTerms": "Terms and Conditions",
+  "policyTypeCookies": "Cookie Policy",
+
+  "includeOptions": "Include",
+  "includePhoto": "Include photo",
+  "includeName": "Include name",
+  "viewSignature": "View signature",
+  "viewEmailTemplate": "View email template",
+  "copySignature": "Copy signature",
+  "copyEmailTemplate": "Copy email template",
+  "signatureNoBadgesNote": "Only consultants can include badges in the email signature.",
+  "roleConsultant": "Consultant",
+  "roleTalentManager": "Talent Manager",
+  "roleServiceLineLeader": "Service Line Leader",
+  "roleAdministrator": "Administrator"
 }
 ''';

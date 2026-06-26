@@ -90,6 +90,7 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
     final earned = badgeStore.earnedBadges;
 
@@ -118,9 +119,9 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Galeria de Badges',
-          style: TextStyle(
+        title: Text(
+          tr.tr('badgeGalleryTitle'),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2932),
@@ -144,7 +145,7 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
                         const SizedBox(height: 14),
                         BadgesSearchBar(
                           controller: _searchController,
-                          hintText: 'Procurar badges',
+                          hintText: tr.tr('myBadgesSearchHint'),
                           onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 14),

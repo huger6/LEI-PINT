@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 13;
+const int sourceStringsVersion = 14;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -579,6 +579,23 @@ const _sourceJson = r'''
   "NOTIF_GOAL_REMINDER_TITLE": "Lembrete de objetivo",
   "NOTIF_GOAL_REMINDER_BODY": "Não se esqueça do seu objetivo \"{{goalTitle}}\".",
   "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Prazo de objetivo a aproximar-se",
-  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias."
+  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias.",
+
+  "policyTypePrivacy": "Política de Privacidade",
+  "policyTypeTerms": "Termos e Condições",
+  "policyTypeCookies": "Política de Cookies",
+
+  "includeOptions": "Incluir",
+  "includePhoto": "Incluir foto",
+  "includeName": "Incluir nome",
+  "viewSignature": "Ver assinatura",
+  "viewEmailTemplate": "Ver template de email",
+  "copySignature": "Copiar assinatura",
+  "copyEmailTemplate": "Copiar template de email",
+  "signatureNoBadgesNote": "Apenas consultores podem incluir badges na assinatura de email.",
+  "roleConsultant": "Consultor",
+  "roleTalentManager": "Talent Manager",
+  "roleServiceLineLeader": "Service Line Leader",
+  "roleAdministrator": "Administrador"
 }
 ''';

@@ -148,8 +148,10 @@ class ApiEndpoints {
 
   // PATCH /gamification/earned-badges/:verificationLink/featured - toggle
   // whether an earned badge is shown on the public profile gallery.
+  // The verification link may be a full URL; URI-encode it so the embedded
+  // slashes do not fragment the path and Express can decode the param back.
   static String setBadgeFeatured(String verificationLink) =>
-      '/api/gamification/earned-badges/$verificationLink/featured';
+      '/api/gamification/earned-badges/${Uri.encodeComponent(verificationLink)}/featured';
   static const String getPointsHistory =
       '/api/statistics/consultant/points-history';
   static const String getTimeline =

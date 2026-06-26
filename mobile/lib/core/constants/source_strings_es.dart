@@ -576,6 +576,23 @@ const _sourceJsonEs = r'''
   "NOTIF_GOAL_REMINDER_TITLE": "Recordatorio de objetivo",
   "NOTIF_GOAL_REMINDER_BODY": "No olvides tu objetivo \"{{goalTitle}}\".",
   "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Plazo de objetivo próximo",
-  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Tu objetivo \"{{goalTitle}}\" vence en {{daysRemaining}} días."
+  "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Tu objetivo \"{{goalTitle}}\" vence en {{daysRemaining}} días.",
+
+  "policyTypePrivacy": "Política de Privacidad",
+  "policyTypeTerms": "Términos y Condiciones",
+  "policyTypeCookies": "Política de Cookies",
+
+  "includeOptions": "Incluir",
+  "includePhoto": "Incluir foto",
+  "includeName": "Incluir nombre",
+  "viewSignature": "Ver firma",
+  "viewEmailTemplate": "Ver plantilla de correo",
+  "copySignature": "Copiar firma",
+  "copyEmailTemplate": "Copiar plantilla de correo",
+  "signatureNoBadgesNote": "Solo los consultores pueden incluir badges en la firma de correo.",
+  "roleConsultant": "Consultor",
+  "roleTalentManager": "Talent Manager",
+  "roleServiceLineLeader": "Service Line Leader",
+  "roleAdministrator": "Administrador"
 }
 ''';
