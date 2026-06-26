@@ -1252,10 +1252,10 @@ def generate_sql() -> str:
                 "application_id": application["application_id"],
                 "requirement_id": requirement["requirement_id"],
                 # A real, publicly reachable sample file so "view document" works in tests.
-                "evidence_file_url": "https://www.africau.edu/images/default/sample.pdf",
+                "evidence_file_url": "https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png",
                 "evidence_title": f"Evidence for {requirement['requirement_title']}"[:150],
                 "evidence_description": "Submitted project artefact, certification proof or review note for validation.",
-                "evidence_file_type": "application/pdf",
+                "evidence_file_type": "image/png",
                 "tm_reviewed": application["application_state"] in {"In validation", "Accepted", "Rejected"},
                 "sll_reviewed": application["application_state"] in {"Accepted", "Rejected"},
                 "uploaded_at": uploaded_at,

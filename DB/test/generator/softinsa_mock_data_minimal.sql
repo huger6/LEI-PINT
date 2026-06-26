@@ -204,24 +204,24 @@ INSERT INTO application_validation_logs (validation_log_id, application_id, user
 -- Evidence for accepted application (app 1, badge 1 has requirements 1-3)
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(1, 1, 1, '/uploads/evidences/app1_req1_training.pdf', 'Foundation Training Certificate', 'IBM Cloud Foundations course completion certificate.', 'application/pdf', TRUE, TRUE, '2026-03-08T12:00:00+00:00'::timestamptz);
+(1, 1, 1, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Foundation Training Certificate', 'IBM Cloud Foundations course completion certificate.', 'image/png', TRUE, TRUE, '2026-03-08T12:00:00+00:00'::timestamptz);
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(2, 1, 2, '/uploads/evidences/app1_req2_delivery.pdf', 'Practical Delivery Report', 'Summary of cloud migration delivered under supervision.', 'application/pdf', TRUE, TRUE, '2026-03-09T09:00:00+00:00'::timestamptz);
+(2, 1, 2, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Practical Delivery Report', 'Summary of cloud migration delivered under supervision.', 'image/png', TRUE, TRUE, '2026-03-09T09:00:00+00:00'::timestamptz);
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(3, 1, 3, '/uploads/evidences/app1_req3_review.pdf', 'Peer Review Sign-off', 'Technical peer review approval document.', 'application/pdf', TRUE, TRUE, '2026-03-09T14:00:00+00:00'::timestamptz);
+(3, 1, 3, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Peer Review Sign-off', 'Technical peer review approval document.', 'image/png', TRUE, TRUE, '2026-03-09T14:00:00+00:00'::timestamptz);
 
 -- Evidence for submitted application (app 2, badge 2 has requirements 4-6)
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(4, 2, 4, '/uploads/evidences/app2_req4_training.pdf', 'Practitioner Training Certificate', 'Kubernetes orchestration course completion.', 'application/pdf', FALSE, FALSE, '2026-04-12T10:00:00+00:00'::timestamptz);
+(4, 2, 4, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Practitioner Training Certificate', 'Kubernetes orchestration course completion.', 'image/png', FALSE, FALSE, '2026-04-12T10:00:00+00:00'::timestamptz);
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(5, 2, 5, '/uploads/evidences/app2_req5_delivery.pdf', 'Practitioner Delivery Report', 'Autonomous cloud deployment project summary.', 'application/pdf', FALSE, FALSE, '2026-04-13T11:00:00+00:00'::timestamptz);
+(5, 2, 5, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Practitioner Delivery Report', 'Autonomous cloud deployment project summary.', 'image/png', FALSE, FALSE, '2026-04-13T11:00:00+00:00'::timestamptz);
 
 INSERT INTO requirements_evidences (evidence_id, application_id, requirement_id, evidence_file_url, evidence_title, evidence_description, evidence_file_type, tm_reviewed, sll_reviewed, uploaded_at) VALUES
-(6, 2, 6, '/uploads/evidences/app2_req6_review.pdf', 'Practitioner Peer Review', 'Peer review validation for practitioner level.', 'application/pdf', FALSE, FALSE, '2026-04-14T09:00:00+00:00'::timestamptz);
+(6, 2, 6, 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/test-files/teste.png', 'Practitioner Peer Review', 'Peer review validation for practitioner level.', 'image/png', FALSE, FALSE, '2026-04-14T09:00:00+00:00'::timestamptz);
 
 -- Awarded Badge (app 1 was Accepted)
 
