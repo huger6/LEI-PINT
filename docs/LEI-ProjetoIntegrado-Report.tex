@@ -636,12 +636,12 @@ O modelo de utilizadores segue um padrão de herança por tabela especializada (
   \item \textbf{\texttt{administrators}}: Contém a \textit{flag} \texttt{is\_super\_admin} para distinguir administradores com privilégios totais;
   \item \textbf{\texttt{consultants}}: Armazena o consentimento RGPD (\texttt{gdpr\_accepted}) e a biografia do consultor;
   \item \textbf{\texttt{talent\_managers}}: Regista a biografia do Talent Manager, sem associação a Service Lines;
-  \item \textbf{\texttt{service\_line\_leaders}}: Associa cada SLL à sua Service Line através de \texttt{service\_line\_id}, restringindo o seu âmbito de atuação.
+  \item \textbf{\texttt{service\_line\_leaders}}: Associa cada SLL à sua Service Line através de \texttt{service\_\allowbreak line\_id}, restringindo o seu âmbito de atuação.
 \end{itemize}
 
 A relação entre \texttt{users} e cada tabela de papel é de um-para-um, sendo a chave primária da tabela especializada simultaneamente chave estrangeira para \texttt{users}. O campo \texttt{user\_role} na tabela base é validado por um \textit{check constraint} que aceita exclusivamente os valores \texttt{Consultant}, \texttt{Talent Manager}, \texttt{Service Line Leader} e \texttt{Administrator}.
 
-O suporte à autenticação é assegurado por duas tabelas auxiliares. A tabela \texttt{user\_account\_tokens} gere \textit{tokens} de confirmação de conta e de recuperação de \textit{password}, com tipo discriminado pelo campo \texttt{token\_type} e validade temporal controlada por \texttt{expires\_at}. A tabela \texttt{user\_refresh\_tokens} armazena \textit{refresh tokens} JWT, incluindo uma \textit{flag} \texttt{is\_persistent} que suporta a funcionalidade de sessão persistente (\textit{``remember me''}).
+O suporte à autenticação é assegurado por duas tabelas auxiliares. A tabela \texttt{user\_account\_\allowbreak tokens} gere \textit{tokens} de confirmação de conta e de recuperação de \textit{password}, com tipo discriminado pelo campo \texttt{token\_type} e validade temporal controlada por \texttt{expires\_at}. A tabela \texttt{user\_refresh\_tokens} armazena \textit{refresh tokens} JWT, incluindo uma \textit{flag} \texttt{is\_persistent} que suporta a funcionalidade de sessão persistente (\textit{``remember me''}).
 
 \begin{figure}[H]
   \centering
@@ -660,7 +660,7 @@ A organização dos conteúdos formativos segue uma hierarquia de cinco níveis,
   \item \textbf{\texttt{service\_lines}}: Agrupamento de competências técnicas dentro de um LP, associado por \texttt{learning\_path\_id}. Cada SL possui igualmente um \textit{slug} único para exposição segura na API;
   \item \textbf{\texttt{areas}}: Subdivisões temáticas dentro de uma SL, com \texttt{service\_line\_id} como chave estrangeira;
   \item \textbf{\texttt{progression\_stages}}: Níveis de progressão dentro de uma área, ordenados pelo campo \texttt{stage\_sequence}. Cada nível é classificado por um código de tipo através da tabela de referência \texttt{stage\_codes};
-  \item \textbf{\texttt{badges}}: Representação da credencial digital associada a cada nível de progressão. A relação com \texttt{progression\_stages} é de um-para-um (restrição \texttt{UNIQUE} sobre \texttt{progression\_stage\_id}), garantindo que cada nível possui no máximo um badge. O campo \texttt{badge\_type} distingue badges \textit{Standard} de badges \textit{Special}, e o campo \texttt{expiration\_duration\_days} permite configurar a validade temporal da credencial.
+  \item \textbf{\texttt{badges}}: Representação da credencial digital associada a cada nível de progressão. A relação com \texttt{progression\_\allowbreak stages} é de um-para-um (restrição \texttt{UNIQUE} sobre \texttt{progression\_\allowbreak stage\_id}), garantindo que cada nível possui no máximo um badge. O campo \texttt{badge\_\allowbreak type} distingue badges \textit{Standard} de badges \textit{Special}, e o campo \texttt{expiration\_duration\_days} permite configurar a validade temporal da credencial.
 \end{enumerate}
 
 A tabela \texttt{stage\_codes} funciona como tabela de referência para tipificar os níveis de progressão, permitindo a reutilização de códigos de nível (por exemplo, \textit{Foundation}, \textit{Associate}, \textit{Professional}) de forma transversal a diferentes áreas. Todos os níveis da hierarquia incluem campos de auditoria (\texttt{created\_by}, \texttt{updated\_by}) que referenciam a tabela de administradores, rastreando quem criou e modificou cada entidade.
@@ -682,9 +682,9 @@ O ciclo de vida de um badge compreende três domínios funcionais interligados: 
 
 A tabela \texttt{badge\_applications} constitui o eixo central do processo de candidatura. Cada registo representa uma candidatura de um consultor a um badge específico, identificada externamente por um UUID (\texttt{application\_guid}) gerado automaticamente pela extensão \texttt{pgcrypto}. O campo \texttt{application\_state} controla o estado atual da candidatura através de um \textit{check constraint} que restringe os valores a cinco estados: \texttt{Open}, \texttt{Submitted}, \texttt{In validation}, \texttt{Accepted} e \texttt{Rejected}. Uma restrição temporal adicional (\texttt{ckc\_date\_flow}) garante a coerência cronológica das transições, impedindo que a data de submissão seja anterior à de abertura ou que a data de fecho preceda a submissão.
 
-Cada transição de estado é registada de forma imutável na tabela \texttt{application\_validation\_logs}, que funciona como trilha de auditoria do processo. Cada entrada regista o identificador da candidatura, o utilizador que efetuou a ação (\texttt{user\_id}), a função do validador (\texttt{validator\_function}), a ação executada (\texttt{validator\_action}), comentários opcionais e o \textit{timestamp} da validação. Este registo é estritamente aditivo --- as entradas nunca são alteradas ou removidas.
+Cada transição de estado é registada de forma imutável na tabela \texttt{application\_validation\_\allowbreak logs}, que funciona como trilha de auditoria do processo. Cada entrada regista o identificador da candidatura, o utilizador que efetuou a ação (\texttt{user\_id}), a função do validador (\texttt{validator\_function}), a ação executada (\texttt{validator\_\allowbreak action}), comentários opcionais e o \textit{timestamp} da validação. Este registo é estritamente aditivo --- as entradas nunca são alteradas ou removidas.
 
-Quando uma candidatura atinge o estado \texttt{Accepted}, é criado um registo na tabela \texttt{awarded\_badges}, que materializa a atribuição efetiva da credencial. Esta tabela armazena a data de atribuição, a data de expiração (calculada a partir do \texttt{expiration\_duration\_days} do badge), um \textit{snapshot} dos pontos obtidos, e a ligação pública de verificação (\texttt{public\_verification\_link}) --- um URL único que permite a validação externa da credencial. As \textit{flags} \texttt{is\_published} e \texttt{is\_featured} controlam a visibilidade do badge na galeria pública do consultor.
+Quando uma candidatura atinge o estado \texttt{Accepted}, é criado um registo na tabela \texttt{awarded\_badges}, que materializa a atribuição efetiva da credencial. Esta tabela armazena a data de atribuição, a data de expiração (calculada a partir do \texttt{expiration\_duration\_days} do badge), um \textit{snapshot} dos pontos obtidos, e a ligação pública de verificação (\texttt{public\_\allowbreak verification\_link}) --- um URL único que permite a validação externa da credencial. As \textit{flags} \texttt{is\_published} e \texttt{is\_featured} controlam a visibilidade do badge na galeria pública do consultor.
 
 A tabela \texttt{certificates} complementa a candidatura, permitindo o armazenamento de metadados sobre os documentos de suporte (título, entidade emissora, data de emissão e URL do ficheiro no armazenamento externo).
 
@@ -778,9 +778,172 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
 \chapter{Prototipagem e Design de Interface (Figma)}
 \label{ch:prototipagem}
 
+O presente capítulo documenta o processo de prototipagem e design de interface que precedeu e orientou a fase de implementação. A conceção visual da plataforma teve como ponto de partida um Protótipo de Alta Fidelidade (PAF) desenvolvido integralmente em Figma~\cite{figma}, cobrindo os fluxos de todos os perfis de utilizador --- Consultor, Service Line Leader, Talent Manager e Administrador --- bem como os ecrãs públicos e de autenticação. O protótipo serviu simultaneamente como ferramenta de validação com os orientadores e como referência durante a codificação, garantindo coerência visual entre o desenho e o produto final.
+
 \section{Conceito de Design e UI/UX}
 
+O conceito visual da plataforma foi definido em torno de três princípios fundamentais: \textbf{clareza}, \textbf{consistência} e \textbf{motivação}. Tratando-se de uma ferramenta corporativa de gestão de competências, o design privilegiou a legibilidade da informação e a redução da carga cognitiva, sem descurar uma estética contemporânea que reforçasse a componente de gamificação do sistema.
+
+\subsection{Identidade Visual e Paleta de Cores}
+
+A paleta cromática foi construída a partir de duas cores âncora: um azul ciano vibrante (\texttt{\#00B8E0}, designado \textit{primary}) e um azul escuro institucional (\texttt{\#39639C}, designado \textit{secondary}). Estas cores refletem a identidade tecnológica da Softinsa e estabelecem uma hierarquia visual clara: o \textit{primary} é utilizado para ações interativas, destaques e elementos de navegação, enquanto o \textit{secondary} domina os títulos, cabeçalhos e elementos estruturais. Complementam a paleta tons de sucesso (\texttt{\#04CE00}), alerta (\texttt{\#CFA600}), erro (\texttt{\#B3261E}) e um dourado reservado para badges \textit{premium} (\texttt{\#FFCC00}).
+
+O sistema suporta um modo escuro completo, implementado através da redefinição de todas as variáveis CSS sob o seletor \texttt{[data-theme="dark"]}. Os fundos claros (\texttt{\#F7F9FB}) são substituídos por tons escuros (\texttt{\#0f141a}), e as cores de ênfase mantêm a saturação com opacidades ajustadas para garantir contraste adequado em ambos os modos. Esta dualidade foi considerada desde o protótipo em Figma, onde ambas as variantes foram desenhadas.
+
+\subsection{Tipografia e Espaçamento}
+
+A tipografia assenta na família \textit{Inter}, complementada por \textit{Roboto} e fontes do sistema como \textit{fallback}. Esta escolha privilegia a legibilidade em ecrã, oferecendo proporções otimizadas para interfaces digitais. Os títulos utilizam pesos \textit{bold} na cor \textit{secondary}, enquanto o corpo do texto recorre a pesos regulares sobre fundos neutros, garantindo hierarquia visual sem recurso excessivo a variações cromáticas.
+
+O espaçamento segue um ritmo consistente baseado no sistema de grelha do Bootstrap~\cite{bootstrap}, complementado por \textit{padding} e \textit{margin} uniformizados nos componentes reutilizáveis. Os cartões e painéis apresentam cantos arredondados (\textit{border-radius}) e sombras subtis (\texttt{--shadow-card}), conferindo profundidade à interface sem comprometer a sobriedade exigida pelo contexto empresarial.
+
+\subsection{Arquitetura de Navegação}
+
+A estrutura de navegação da plataforma Web assenta numa \textit{sidebar} lateral responsiva, que funciona como eixo de orientação para todos os perfis de utilizador. Em ecrãs \textit{desktop}, a \textit{sidebar} pode ser colapsada para um modo de ícones (\textit{icon-rail}), libertando área útil para os conteúdos; em ecrãs móveis, transforma-se num \textit{drawer} deslizante que se sobrepõe ao conteúdo com um \textit{backdrop} semitransparente. O menu de cada perfil é dinâmico: os itens de navegação, ícones e agrupamentos são determinados pelo papel do utilizador autenticado, apresentando apenas as secções relevantes para as suas permissões.
+
+No topo de todas as páginas, uma barra superior (\textit{top bar}) integra o logótipo, a barra de pesquisa global, a contagem de pontos do consultor (quando aplicável), o ícone de notificações com indicador de não lidas e o menu de utilizador com acesso ao perfil e \textit{logout}. Na base, um \textit{footer} compacto disponibiliza o seletor de idioma e ligações institucionais.
+
+\subsection{Padrões de Interface e Componentes Reutilizáveis}
+
+O design do protótipo foi concebido com uma lógica de biblioteca de componentes, de modo a facilitar a transição para a implementação em React. Os padrões visuais recorrentes incluem:
+
+\begin{itemize}
+  \item \textbf{ContentCard:} Cartão de conteúdo genérico utilizado em toda a plataforma para agrupar secções, formulários e painéis de informação, com cabeçalho opcional e cantos arredondados;
+  \item \textbf{BadgeCard:} Cartão especializado para a apresentação de badges no catálogo, integrando a imagem do badge, título, área, nível e indicador de progresso;
+  \item \textbf{WelcomeCard:} Painel de boas-vindas presente nos dashboards, com saudação dinâmica e métricas resumidas através de \textit{StatCards};
+  \item \textbf{Modal:} Componente de diálogo centrado para ações de confirmação, criação e edição de entidades;
+  \item \textbf{Stepper:} Indicador de progresso por passos, utilizado no fluxo de candidatura a badges;
+  \item \textbf{Gráficos:} Visualizações de dados implementadas com componentes de gráficos de barras verticais/horizontais, linhas, \textit{donut} e mapa de calor de atividade.
+\end{itemize}
+
 \section{Demonstração de Ecrãs Chave}
+
+As secções seguintes apresentam uma seleção representativa dos ecrãs da plataforma, organizados por perfil de utilizador e área funcional. As capturas de ecrã foram obtidas a partir do protótipo de alta fidelidade desenvolvido em Figma, que serviu como referência direta para a implementação. Por questões de concisão, apenas são apresentados os ecrãs que melhor ilustram as funcionalidades centrais e as decisões de design mais relevantes.
+
+\subsection{Autenticação e Registo}
+
+O módulo de autenticação constitui o ponto de entrada na plataforma e foi desenhado para transmitir confiança e simplicidade. Os ecrãs de \textit{login}, registo, recuperação de \textit{password} e confirmação de conta seguem um padrão visual unificado, com o formulário centrado sobre um fundo com partículas animadas e a marca da plataforma em destaque.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/login.png}
+  \caption{Ecrã de autenticação (\textit{login}) da plataforma.}
+  \label{fig:proto-login}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/register.png}
+  \caption{Ecrã de registo de novo utilizador.}
+  \label{fig:proto-register}
+\end{figure}
+
+\subsection{Consultor}
+
+O perfil de Consultor dispõe do conjunto mais abrangente de ecrãs, dado o seu papel central na plataforma. O dashboard apresenta a saudação dinâmica, métricas resumidas e o progresso nos Learning Paths. O catálogo permite a exploração de badges por área e nível. O ecrã de detalhe de badge apresenta os requisitos, competências associadas e o estado atual da candidatura. A secção de gamificação exibe os pontos acumulados, conquistas e o ranking entre pares.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/consultant-dashboard.png}
+  \caption{Dashboard do Consultor com saudação dinâmica e métricas de progresso.}
+  \label{fig:proto-consultant-dashboard}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/badge-catalog.png}
+  \caption{Catálogo de badges disponíveis para o Consultor.}
+  \label{fig:proto-badge-catalog}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/badge-detail.png}
+  \caption{Ecrã de detalhe de um badge com requisitos e estado da candidatura.}
+  \label{fig:proto-badge-detail}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/consultant-points.png}
+  \caption{Ecrã de pontos e gamificação do Consultor.}
+  \label{fig:proto-consultant-points}
+\end{figure}
+
+\subsection{Talent Manager}
+
+O Talent Manager acede a um dashboard focado na triagem global de candidaturas e no acompanhamento do progresso dos consultores. O painel de validações apresenta as candidaturas pendentes de revisão com filtros por estado e área. O ecrã de revisão de uma candidatura individual integra a visualização dos documentos submetidos e o formulário de decisão com campo de comentários.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/tm-dashboard.png}
+  \caption{Dashboard do Talent Manager com visão global de candidaturas.}
+  \label{fig:proto-tm-dashboard}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/validations-board.png}
+  \caption{Painel de validações com filtros por estado e área.}
+  \label{fig:proto-validations-board}
+\end{figure}
+
+\subsection{Service Line Leader}
+
+O SLL dispõe de um dashboard restrito à sua Service Line, com métricas de desempenho da equipa e um painel de validações final. A interface espelha a do TM no que respeita ao fluxo de revisão de candidaturas, mas com o âmbito filtrado automaticamente para a SL do utilizador.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/sll-dashboard.png}
+  \caption{Dashboard do Service Line Leader com métricas da sua Service Line.}
+  \label{fig:proto-sll-dashboard}
+\end{figure}
+
+\subsection{Administrador}
+
+O Administrador dispõe de um painel de controlo abrangente para a gestão de utilizadores, conteúdos e parametrização da plataforma. O ecrã de gestão da hierarquia de conteúdos permite a navegação e edição dos Learning Paths, Service Lines, Áreas e Níveis. A gestão de utilizadores integra filtros, criação de contas e atribuição de papéis.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/admin-dashboard.png}
+  \caption{Dashboard do Administrador com métricas globais e atalhos de gestão.}
+  \label{fig:proto-admin-dashboard}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/admin-structure.png}
+  \caption{Ecrã de gestão da hierarquia de conteúdos (Learning Paths, SLs, Áreas e Níveis).}
+  \label{fig:proto-admin-structure}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/admin-users.png}
+  \caption{Ecrã de gestão de utilizadores com filtros e criação de contas.}
+  \label{fig:proto-admin-users}
+\end{figure}
+
+\subsection{Ecrãs Públicos e Verificação}
+
+A plataforma disponibiliza páginas públicas acessíveis sem autenticação, destinadas à verificação externa de badges e à consulta do perfil público de consultores.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/public-badge.png}
+  \caption{Página pública de verificação de um badge atribuído.}
+  \label{fig:proto-public-badge}
+\end{figure}
+
+\subsection{Responsividade}
+
+Todos os ecrãs foram prototipados com consideração para a adaptação a dispositivos móveis. A Figura~\ref{fig:proto-responsive} demonstra a transformação do \textit{layout} entre a versão \textit{desktop} e a versão móvel, evidenciando o colapso da \textit{sidebar} para \textit{drawer}, a reorganização dos cartões em coluna única e o redimensionamento dos gráficos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/chapter4/responsive-comparison.png}
+  \caption{Comparação da interface entre a versão \textit{desktop} e móvel.}
+  \label{fig:proto-responsive}
+\end{figure}
 
 % ============================================================
 % Workflow de Aprovação e Ciclo de Vida do Pedido
@@ -812,9 +975,176 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
 
 \section{Sistema de Saudações Inteligente}
 
+O sistema de saudações inteligente constitui uma funcionalidade de personalização da experiência do utilizador que adapta a mensagem de boas-vindas ao contexto específico de cada acesso à plataforma. A lógica implementada distingue três cenários mutuamente exclusivos, avaliados por ordem de prioridade conforme descrito na Tabela~\ref{tab:greetings}.
+
+\begin{table}[H]
+  \centering
+  \begin{tabularx}{\textwidth}{@{}lXccc@{}}
+    \toprule
+    \textbf{Cenário} & \textbf{Condição} & \textbf{pt-PT} & \textbf{en-GB} & \textbf{es-ES} \\
+    \midrule
+    Primeiro acesso & \texttt{last\_login\_at} é \texttt{NULL} & Bem-vindo! & Welcome! & ¡Bienvenido! \\[4pt]
+    Regresso $>$ 15\,dias & Diferença entre \texttt{last\_online} e a data atual superior a 15 dias & Seja bem-vindo novamente & Welcome back & Bienvenido de nuevo \\[4pt]
+    Manhã & Hora local $\geq$ 6h e $<$ 13h & Bom dia! & Good morning! & ¡Buenos días! \\[4pt]
+    Tarde & Hora local $\geq$ 13h e $<$ 20h & Boa tarde! & Good afternoon! & ¡Buenas tardes! \\[4pt]
+    Noite & Hora local $\geq$ 20h ou $<$ 6h & Boa noite! & Good evening! & ¡Buenas noches! \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Regras de saudação e respetivas mensagens por idioma.}
+  \label{tab:greetings}
+\end{table}
+
+A implementação distribui-se entre o \textit{backend} e o \textit{frontend}. No lado do servidor, a tabela \texttt{users} contém três campos dedicados a este mecanismo: \texttt{last\_login\_at} (regista o \textit{timestamp} do último \textit{login}), \texttt{last\_online} (atualizado em cada \textit{login} e renovação de \textit{token}) e \texttt{current\_streak\_days} (contabiliza os dias consecutivos de acesso). Durante o processo de autenticação, o controlador captura o valor prévio de \texttt{last\_login\_at} antes de o atualizar, determinando assim se se trata de um primeiro acesso (campo nulo) e devolvendo a \textit{flag} \texttt{first\_login} na resposta da API.
+
+No lado do cliente, o componente \texttt{WelcomeCard} implementa a função \texttt{getGreeting()}, que avalia os três cenários por ordem de prioridade. A verificação do primeiro acesso e do regresso após ausência prolongada utiliza os dados recebidos do \textit{backend} no momento da autenticação. A saudação por período do dia é calculada localmente com base na hora do dispositivo do utilizador. As mensagens são geridas pelo sistema de internacionalização react-i18next~\cite{i18next}, com traduções definidas nos ficheiros de localização de cada idioma (\texttt{common.json}).
+
+O componente \texttt{WelcomeCard} é integrado nos dashboards de todos os perfis de utilizador --- Consultor, Talent Manager, Service Line Leader e Administrador --- garantindo uma experiência personalizada e consistente independentemente do papel.
+
+Complementarmente, o sistema mantém um registo de \textit{streak} de acesso consecutivo. A função \texttt{getUpdatedStreak()} compara as datas UTC do último acesso e do acesso atual: se o acesso ocorre no dia seguinte ao anterior, o contador incrementa; caso exista um intervalo superior a um dia, o contador reinicia para um. Este valor é utilizado pela componente de gamificação para recompensar a assiduidade dos consultores na plataforma.
+
 \section{Mural de Avisos e Comunicação}
 
+O módulo de avisos e comunicação fornece aos perfis de gestão da plataforma um canal centralizado para a difusão de informações, alertas e novidades dirigidos a segmentos específicos da base de utilizadores. O sistema suporta a segmentação por papel, por Service Line e a difusão global, com controlo de período de vigência e estado ativo/inativo.
+
+\subsection{Modelo de Dados e Segmentação}
+
+A arquitetura do módulo assenta em três tabelas, conforme descrito na Secção~\ref{subsec:db-announcements} do Capítulo~\ref{ch:arquitetura}. A tabela principal \texttt{system\_announcements} armazena o conteúdo do aviso --- título (até 150 caracteres), mensagem (até 10\,000 caracteres), tipo (\texttt{Information}, \texttt{Warning}, \texttt{New Content} ou \texttt{Other}), período de vigência (\texttt{starts\_at}, \texttt{ends\_at}) e estado de ativação. A segmentação da audiência é implementada por duas tabelas de junção: \texttt{announc\_roles}, que direciona o aviso a papéis específicos, e \texttt{announc\_sl}, que restringe a visibilidade a Service Lines concretas. A \textit{flag} \texttt{is\_global} permite ultrapassar ambos os filtros, tornando o aviso visível a todos os utilizadores. Quando um aviso não é global, a validação Zod~\cite{zod} exige que seja especificado pelo menos um papel ou uma Service Line como destinatário.
+
+Um índice composto sobre os campos \texttt{is\_active}, \texttt{starts\_at} e \texttt{ends\_at} (\texttt{idx\_announcements\_active\_dates}) otimiza as consultas de avisos ativos dentro do período de vigência, que constitui o cenário de utilização mais frequente.
+
+\subsection{Lógica de Visibilidade e Controlo de Acesso}
+
+A API implementa regras de visibilidade diferenciadas consoante o perfil do utilizador autenticado. Os perfis de gestão (Administrador, TM e SLL) acedem a todos os avisos, incluindo os inativos, o que lhes permite gerir o ciclo de vida completo de cada publicação. Os consultores visualizam apenas os avisos ativos cujo período de vigência abranja a data atual, filtrados pela correspondência com o seu papel ou com as Service Lines associadas às suas áreas de interesse. A verificação de pertença à Service Line é resolvida através da cadeia \texttt{consultant\_areas} $\rightarrow$ \texttt{areas} $\rightarrow$ \texttt{service\_lines}, garantindo que o consultor apenas visualiza avisos dirigidos à sua área.
+
+No que respeita à gestão, os três perfis de liderança (Administrador, TM e SLL) podem criar avisos, mas apenas o Administrador pode editar ou desativar avisos criados por outros utilizadores. A desativação é implementada como \textit{soft delete}, atualizando a \textit{flag} \texttt{is\_active} para \texttt{FALSE} sem remoção física do registo, preservando o histórico de comunicações.
+
+\subsection{Interface de Gestão e Visualização}
+
+O \textit{frontend} apresenta duas experiências distintas, selecionadas automaticamente pelo componente \texttt{AnnouncementsPage} com base no papel do utilizador autenticado. Os perfis de gestão acedem a uma interface tabular com funcionalidades completas de CRUD, incluindo filtros por título, tipo e estado, paginação e um modal de criação/edição (\texttt{AnnouncementFormModal}) que permite configurar o título, a mensagem, o tipo, o período de vigência, a \textit{flag} de globalidade e a seleção de papéis e Service Lines alvo. O tipo de cada aviso é apresentado com um \textit{badge} cromático diferenciado, e cada linha da tabela exibe o criador, o âmbito de destinatários e o estado ativo/inativo com indicador visual.
+
+Os consultores acedem a uma vista em grelha de cartões com pré-visualização da mensagem (limitada a três linhas), pesquisa por título e modal de detalhe para consulta integral, sem funcionalidades de edição.
+
+\subsection{Otimização por Cache Dinâmico}
+
+A listagem de avisos beneficia de \textit{cache} Redis~\cite{redis} com cálculo dinâmico do TTL. Ao armazenar uma resposta em \textit{cache}, o sistema consulta as datas de início e fim de todos os avisos ativos para determinar a próxima alteração de visibilidade, definindo o TTL como o mínimo entre o tempo até essa alteração e 7\,200 segundos (2 horas). Esta estratégia garante que o \textit{cache} é automaticamente invalidado quando um aviso entra ou sai do período de vigência, sem necessidade de invalidação manual. Adicionalmente, qualquer operação de escrita (criação, atualização ou desativação) invalida imediatamente todas as entradas de \textit{cache} do módulo por prefixo.
+
+\subsection{Notificações Automáticas}
+
+A criação de um aviso desencadeia automaticamente a distribuição de notificações \textit{in-app} aos utilizadores abrangidos através da função \texttt{dispatchAnnouncementNotifications()}. O processo de resolução de destinatários segue a mesma lógica de segmentação: avisos globais geram notificações para todos os utilizadores ativos; avisos dirigidos a papéis específicos notificam apenas os utilizadores com o papel correspondente; avisos dirigidos a Service Lines notificam os consultores com áreas associadas a essas SLs. Esta operação é executada em modo \textit{fire-and-forget}, sem bloquear a resposta ao utilizador que criou o aviso.
+
 \section{Alertas de SLA e Notificações}
+
+O sistema de acordos de nível de serviço (SLAs) permite ao administrador definir tempos máximos de resposta para os processos de validação de candidaturas, monitorizando automaticamente o seu cumprimento e alertando os responsáveis quando estes são ultrapassados. Este módulo constitui uma das funcionalidades bónus mais complexas da plataforma, integrando definição de regras, monitorização automatizada, notificação multicanal e preferências configuráveis.
+
+\subsection{Definição e Configuração de SLAs}
+
+Cada SLA é definido na tabela \texttt{slas} com os seguintes parâmetros: nome descritivo, tempo de resposta em horas (\texttt{response\_time\_hours}, com \textit{check constraint} para valores positivos), período de vigência (\texttt{start\_date}, \texttt{end\_date}), perfil-alvo (\texttt{target\_profile}) e âmbito de aplicação. O campo \texttt{is\_global} determina se o SLA se aplica a todas as Service Lines ou apenas às especificadas na tabela de junção \texttt{sl\_slas}. O administrador gere os SLAs através de uma página dedicada no \textit{frontend}, com formulários de criação e edição que incluem a seleção de Service Lines (quando o SLA não é global), validação de campos e controlo de estado ativo/inativo.
+
+A plataforma suporta dois tipos distintos de SLAs:
+
+\begin{itemize}
+  \item \textbf{SLAs de candidatura:} Medem o tempo de resposta dos validadores (TM ou SLL) às candidaturas que aguardam a sua intervenção. O tempo é calculado desde a submissão ou a passagem ao estado \texttt{In validation} até ao momento atual;
+  \item \textbf{SLAs autónomos (\textit{standalone}):} Representam prazos genéricos definidos pelo administrador, sem associação direta a candidaturas específicas, utilizados para monitorizar \textit{deadlines} operacionais ou prazos de formação.
+\end{itemize}
+
+\subsection{Monitorização Automatizada}
+
+A deteção de incumprimentos é realizada por dois \textit{workers} independentes, ambos executados a cada 15 minutos através de node-cron~\cite{nodecron}:
+
+\begin{itemize}
+  \item \textbf{\texttt{sla.worker}:} Executa uma consulta SQL que identifica candidaturas nos estados \texttt{Submitted} ou \texttt{In validation} cujo tempo de permanência excede o \texttt{response\_time\_hours} do SLA aplicável. A consulta cruza os dados da candidatura com os SLAs ativos dentro do período de vigência, verificando a correspondência do perfil-alvo com o estado da candidatura e a abrangência por Service Line;
+  \item \textbf{\texttt{custom\_sla.worker}:} Monitoriza SLAs autónomos cuja data de fim (\texttt{end\_date}) foi ultrapassada, identificando os utilizadores-alvo com base no perfil e, quando aplicável, na associação a Service Lines específicas.
+\end{itemize}
+
+Ambos os \textit{workers} implementam um mecanismo de prevenção de duplicados: antes de gerar um alerta, verificam na tabela \texttt{sla\_breach\_alerts} se a combinação (SLA, candidatura, utilizador) já foi notificada. Um índice único composto sobre estes três campos garante a unicidade a nível da base de dados. Os alertas são registos estritamente aditivos --- nunca alterados nem removidos --- formando uma trilha de auditoria dos incumprimentos detetados.
+
+\subsection{Notificações Multicanal}
+
+Os alertas de incumprimento são entregues através de três canais complementares, configuráveis de forma independente:
+
+\begin{itemize}
+  \item \textbf{Notificações \textit{in-app}:} Cada alerta gera um registo na tabela \texttt{notifications}, entregue em tempo real ao \textit{frontend} através de WebSocket (Socket.IO~\cite{socketio}). O componente \texttt{NotificationIcon} na barra superior apresenta um indicador com a contagem de notificações não lidas, permitindo ao utilizador aceder ao centro de notificações com filtros por tipo e estado de leitura;
+  \item \textbf{Notificações \textit{push}:} Para os utilizadores da aplicação móvel, os alertas são enviados através do Firebase Cloud Messaging~\cite{firebase}. O sistema gere os \textit{tokens} FCM dos dispositivos registados na tabela \texttt{device\_tokens}, desativando automaticamente os \textit{tokens} obsoletos após falhas de envio;
+  \item \textbf{Notificações por e-mail:} O serviço de e-mail (Nodemailer~\cite{nodemailer} com transporte Gmail) disponibiliza \textit{templates} HTML localizados nos três idiomas da plataforma. Os \textit{templates} de alerta de SLA incluem o nome do candidato, o badge em causa, as horas excedidas e o perfil responsável, com botão de ação direto para aceder à candidatura.
+\end{itemize}
+
+\subsection{Hierarquia de Preferências}
+
+O sistema implementa uma hierarquia de preferências a dois níveis que permite equilibrar o controlo centralizado com a personalização individual:
+
+\begin{enumerate}
+  \item \textbf{Preferências globais (\texttt{notification\_preferences}):} Definidas pelo administrador para cada tipo de notificação (incluindo \texttt{SLA\_BREACH}, \texttt{APPLICATION\_SUBMITTED}, \texttt{BADGE\_EXPIRING\_SOON}, entre outros), estabelecem os valores predefinidos para os campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push};
+  \item \textbf{Preferências do utilizador (\texttt{user\_notification\_preferences}):} Cada utilizador pode sobrepor os valores globais para qualquer tipo de notificação. Os campos com valor \texttt{NULL} herdam automaticamente o valor da preferência global correspondente.
+\end{enumerate}
+
+A resolução de preferências é efetuada pela função \texttt{resolvePreferences()}, que consulta primeiro a preferência global e aplica as sobreposições do utilizador. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente. No \textit{frontend}, o administrador dispõe de uma página dedicada para configurar as preferências globais, enquanto cada utilizador pode personalizar as suas preferências individuais através do componente \texttt{NotificationPreferences}.
+
+% ============================================================
+% Considerações Adicionais
+% ============================================================
+\chapter{Considerações Adicionais}
+\label{ch:consideracoes}
+
+Este capítulo documenta funcionalidades transversais e decisões técnicas que complementam as descrições dos capítulos anteriores, abrangendo aspetos de personalização visual, otimização de desempenho, integração com serviços externos e funcionalidades de valor acrescentado que enriquecem a plataforma para além dos requisitos base.
+
+\section{Modo Escuro e Sistema de Temas}
+
+A plataforma implementa um sistema de temas dual (claro e escuro) baseado inteiramente em variáveis CSS (\textit{custom properties}), centralizadas no ficheiro \texttt{colors.css}. O ficheiro define mais de cem propriedades semânticas que abrangem todas as camadas visuais da interface: cores de superfície, texto, bordas, \textit{badges}, gráficos, sobreposições e gradientes.
+
+A alternância entre temas é controlada pelo atributo \texttt{data-theme} no elemento raiz do documento HTML. Quando o valor \texttt{"dark"} é aplicado, todas as variáveis CSS são redefinidas sob o seletor \texttt{[data-theme="dark"]}: os fundos claros (\texttt{\#F7F9FB}) são substituídos por tons escuros (\texttt{\#0f141a}), as cores de ênfase mantêm a saturação com opacidades ajustadas para garantir contraste adequado, e os componentes de visualização de dados (como os mapas de calor de atividade) dispõem de escalas cromáticas adaptadas. A preferência do utilizador é persistida localmente e aplicada de forma instantânea sem recarregamento da página. Esta dualidade foi considerada desde a fase de prototipagem em Figma~\cite{figma}, onde ambas as variantes foram desenhadas e validadas.
+
+\section{Estratégia de Cache e Desempenho}
+
+O desempenho da API é otimizado através de uma camada de \textit{cache} Redis~\cite{redis}, implementada com a biblioteca ioredis. O sistema adota uma estratégia de \textit{fallback} para o ambiente de desenvolvimento, recorrendo a um \textit{mock} em memória quando o Redis não está disponível; em produção, a sua presença é obrigatória para funcionalidades críticas como limitação de taxa (\textit{rate limiting}) e bloqueio de contas.
+
+A estratégia de \textit{cache} é aplicada seletivamente aos \textit{endpoints} com maior volume de leitura --- listagens de avisos, perfis de utilizador, catálogos de badges e definições de SLAs --- com TTLs diferenciados por domínio funcional. O módulo de avisos destaca-se pela implementação de TTL dinâmico, calculado com base na próxima data de alteração de visibilidade dos avisos ativos, conforme descrito na Secção~\ref{subsec:db-announcements}. Todas as operações de escrita invalidam o \textit{cache} afetado por prefixo, assegurando a consistência entre os dados em \textit{cache} e a base de dados.
+
+O sistema de tradução dinâmica (descrito na secção seguinte) constitui outro domínio onde o \textit{cache} desempenha um papel central, com entradas de tradução armazenadas com TTL de 7 dias para minimizar chamadas à API externa.
+
+\section{Tradução Dinâmica de Conteúdos da Base de Dados}
+
+Para além das \textit{strings} estáticas da interface (geridas por ficheiros de localização i18next~\cite{i18next}), todos os conteúdos dinâmicos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são traduzidos automaticamente em tempo de execução para o idioma selecionado pelo utilizador.
+
+A API integra com a Google Cloud Translation API~\cite{googletranslate} através de um serviço dedicado (\texttt{translation.service.js}) que implementa as seguintes otimizações:
+
+\begin{itemize}
+  \item \textbf{Deteção automática de idioma:} A biblioteca franc-min identifica o idioma de origem do texto, evitando traduções desnecessárias quando o conteúdo já se encontra no idioma pretendido;
+  \item \textbf{\textit{Cache} com TTL de 7 dias:} Cada tradução é armazenada em Redis~\cite{redis}, eliminando chamadas repetidas à API para o mesmo par (texto, idioma);
+  \item \textbf{Tradução em lote (\textit{batching}):} No lado do cliente, a plataforma Web agrega múltiplos textos num único pedido HTTP, reduzindo significativamente o número de chamadas à API e melhorando a latência percebida;
+  \item \textbf{\textit{Fallback} gracioso:} Quando a API de tradução não está disponível, o sistema devolve o texto original, garantindo que a ausência do serviço externo não compromete a utilização da plataforma.
+\end{itemize}
+
+Na aplicação móvel, a tradução \textit{offline} é assegurada pelo ML Kit Translation~\cite{mlkit}, que descarrega modelos de tradução para o dispositivo e processa os textos localmente, alinhado com a arquitetura \textit{offline-first} adotada.
+
+\section{Exportação de Dados}
+
+A plataforma disponibiliza funcionalidades de exportação de dados em três formatos --- CSV, XLSX (Excel) e PDF --- acessíveis aos perfis de gestão (TM, SLL e Administrador). O módulo de exportação (\texttt{exports.controller.js}) implementa a geração de ficheiros a partir dos dados do sistema, suportando os seguintes conjuntos de dados: consultores, badges atribuídos, candidaturas e histórico de pontos.
+
+A exportação respeita o âmbito de acesso de cada perfil: os Service Line Leaders exportam exclusivamente dados da sua Service Line, enquanto os Talent Managers e os Administradores acedem à exportação global. Todos os formatos suportam filtragem por intervalo de datas. Os ficheiros Excel são gerados com a biblioteca ExcelJS, com dimensionamento automático de colunas; os ficheiros PDF são gerados em modo paisagem com PDFKit~\cite{pdfkit} para acomodar tabelas com muitas colunas; os ficheiros CSV incluem escapamento adequado de campos com carateres especiais.
+
+\section{Verificação Pública de Badges e Códigos QR}
+
+Cada badge atribuído possui uma ligação pública de verificação (\texttt{public\_verification\_link}), gerada automaticamente no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade e os detalhes de uma credencial digital.
+
+A página pública de verificação é servida pelo controlador \texttt{public.controller.js} em dois formatos: uma página HTML com renderização completa dos metadados do badge (título, descrição, pontos, nome do detentor, datas de atribuição e expiração) e uma resposta JSON para integração programática com sistemas externos. Complementarmente, o sistema gera códigos QR (300$\times$300 píxeis) para cada badge atribuído, permitindo a incorporação em assinaturas de e-mail corporativo e materiais impressos. A geração de páginas públicas inclui proteção contra XSS através do escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
+
+\section{Geração Automática de Certificados}
+
+Quando uma candidatura atinge o estado \texttt{Accepted}, o sistema disponibiliza a geração automática de um certificado em formato PDF, personalizado com os dados do badge, do consultor e dos validadores envolvidos no processo. O serviço de certificados (\texttt{certificate.service.js}) utiliza a biblioteca PDFKit~\cite{pdfkit} para a composição do documento, que inclui o título do badge, a descrição, a data de atribuição, os nomes dos revisores e o URL de verificação pública.
+
+A geração é idempotente: se o certificado já tiver sido gerado previamente para uma determinada candidatura, o sistema devolve o ficheiro existente sem criar um duplicado. Os certificados são armazenados no serviço de armazenamento Supabase~\cite{supabase} e disponibilizados para \textit{download} através de URLs assinados com validade temporal limitada. O conteúdo textual do certificado é adaptado ao idioma preferido do consultor (Português, Inglês ou Espanhol).
+
+\section{Loja de Recompensas por Pontos}
+
+O sistema de gamificação é complementado por uma loja de recompensas que permite aos consultores converter os pontos acumulados em benefícios concretos. O administrador pode criar e gerir recompensas (\texttt{rewards}) com custo em pontos, descrição e informação de acesso (como ligações para cursos ou códigos de acesso a recursos). As recompensas podem ser ativadas ou desativadas sem remoção dos dados.
+
+Os consultores visualizam as recompensas disponíveis e o seu saldo de pontos atual, podendo efetuar resgates quando dispõem de pontos suficientes. Cada resgate é registado na tabela \texttt{reward\_redemptions} com rastreabilidade completa, e o consultor recebe uma notificação por e-mail com os detalhes de acesso à recompensa obtida. Este módulo acrescenta uma dimensão tangível ao sistema de pontos, reforçando a motivação para a formação contínua.
+
+\section{Integrações com Plataformas Externas}
+
+A plataforma suporta a integração com ferramentas de comunicação empresarial --- Slack e Microsoft Teams --- através de \textit{webhooks} configuráveis pelo administrador. Quando um evento relevante ocorre (como a atribuição de um badge ou a obtenção de uma conquista especial), o sistema formata e envia automaticamente uma notificação para o canal configurado.
+
+As mensagens para o Slack utilizam o formato Block Kit, incluindo imagens, botões de ação e formatação rica. As mensagens para o Microsoft Teams utilizam o formato Adaptive Cards, com estrutura equivalente adaptada ao ecossistema Microsoft. O administrador pode configurar múltiplos canais, ativar ou desativar individualmente cada integração e testar a conectividade dos \textit{webhooks} antes da sua ativação em produção. As falhas de envio são registadas sem impacto no fluxo principal da aplicação, seguindo o padrão \textit{fire-and-forget} adotado nos restantes módulos de notificação.
 
 % ============================================================
 % Conclusão
