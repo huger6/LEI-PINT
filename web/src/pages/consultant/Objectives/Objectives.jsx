@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CONSULTANT, SHARED } from '../../../routes/paths';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
-import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
+import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import { getGoals, getGoalStats, getProgressionTimeline, downloadObjectivesCalendar } from '../../../features/goals/api/goalsApi';
 import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
@@ -74,6 +74,7 @@ function mapGoalToObjective(goal) {
 		title: badge?.badge_title || goal.event_title,
 		description: goal.event_description || '',
 		daysRemaining,
+		endDate: goal.event_end_date || null,
 		completedReqs,
 		totalReqs,
 		badgeSlug: badge?.badge_slug || null,
@@ -91,8 +92,8 @@ export default function Objectives() {
 	const { user: authUser } = useAuth();
 	// Resolved display name from user context
 	const { displayName } = useUser();
-	// Latest notifications shown as reminders
-	const [reminders, setReminders] = useState([]);
+	// Earned badges (used to surface real "expiring soon" reminders)
+	const [earnedBadges, setEarnedBadges] = useState([]);
 	// Summary objective statistics
 	const [stats, setStats] = useState({ activeObjectives: 0, daysToNext: 0, badgesExpiring: 0, completedObjectives: 0 });
 	// Active objective cards
@@ -115,14 +116,11 @@ export default function Objectives() {
 	// Subset of timelines currently visible
 	const shownTimelines = sortedTimelines.slice(0, visibleTimelines);
 
-	// Fetch reminders, stats, goals, timelines and progress on mount
+	// Fetch earned badges, stats, goals, timelines and progress on mount
 	useEffect(() => {
-		fetchNotifications({ limit: 5 })
-			.then((res) => {
-				const list = res?.data?.data || res?.data || [];
-				setReminders(Array.isArray(list) ? list.slice(0, 5) : []);
-			})
-			.catch(() => setReminders([]));
+		getEarnedBadgesForEvolution()
+			.then((data) => setEarnedBadges(Array.isArray(data) ? data : []))
+			.catch(() => setEarnedBadges([]));
 
 		getGoalStats()
 			.then((data) => setStats({
@@ -154,6 +152,50 @@ export default function Objectives() {
 			})
 			.catch(() => setProgressData([]));
 	}, []);
+
+	// Build real reminders from data the consultant actually cares about:
+	// objectives approaching their deadline and earned badges expiring soon.
+	// Anything within 30 days is surfaced; within 7 days it is flagged urgent.
+	const reminders = useMemo(() => {
+		const REMINDER_WINDOW = 30; // days
+		const URGENT_WINDOW = 7; // days
+		const out = [];
+
+		// Objectives with a deadline coming up
+		for (const o of objectives) {
+			if (o.daysRemaining > 0 && o.daysRemaining <= REMINDER_WINDOW) {
+				out.push({
+					id: `obj-${o.id}`,
+					title: o.title,
+					message: t('objectives.reminderObjectiveDeadline', { count: o.daysRemaining }),
+					type: o.daysRemaining <= URGENT_WINDOW ? 'warning' : 'reminder',
+					created_at: o.endDate,
+					staticBody: true,
+					sortDays: o.daysRemaining,
+				});
+			}
+		}
+
+		// Earned badges whose validity is about to expire
+		for (const b of earnedBadges) {
+			if (!b.expirationDate) continue;
+			const days = Math.ceil((new Date(b.expirationDate) - new Date()) / (1000 * 60 * 60 * 24));
+			if (days > 0 && days <= REMINDER_WINDOW) {
+				out.push({
+					id: `badge-${b.awardedBadgeId}`,
+					title: b.badge?.title || t('objectives.reminder'),
+					message: t('objectives.reminderBadgeExpiring', { count: days }),
+					type: days <= URGENT_WINDOW ? 'warning' : 'reminder',
+					created_at: b.expirationDate,
+					staticBody: true,
+					sortDays: days,
+				});
+			}
+		}
+
+		// Most urgent first, capped so the panel stays readable
+		return out.sort((a, b) => a.sortDays - b.sortDays).slice(0, 6);
+	}, [objectives, earnedBadges, t]);
 
 	// Count of reminders flagged as urgent/warning/SLA breach
 	const urgentCount = reminders.filter(
@@ -349,7 +391,7 @@ export default function Objectives() {
 						{reminders.length > 0 ? (
 							<div className={styles.remindersList}>
 								{reminders.map((r, i) => (
-									<ReminderItem key={r.notification_id || i} reminder={r} t={t} />
+									<ReminderItem key={r.id || i} reminder={r} t={t} />
 								))}
 							</div>
 						) : (
@@ -457,7 +499,11 @@ function ReminderItem({ reminder, t }) {
 					<strong className={styles.reminderTitle}>{title}</strong>
 					<span className={`${styles.severityTag} ${severity.cls}`}>{severity.label}</span>
 				</div>
-				{body && <p className={styles.reminderText}><TranslatedText text={body} /></p>}
+				{body && (
+					reminder.staticBody
+						? <p className={styles.reminderText}>{body}</p>
+						: <p className={styles.reminderText}><TranslatedText text={body} /></p>
+				)}
 				{date && (
 					<span className={styles.reminderDate}>
 						{new Date(date).toLocaleDateString('pt-PT', {
