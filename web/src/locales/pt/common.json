@@ -549,6 +549,18 @@
 			"days": "{{count}}d atrás"
 		}
 	},
+	"createGoal": {
+		"title": "Adicionar ao objetivo",
+		"hint": "Define o teu objetivo para este badge. Os campos de data são opcionais.",
+		"goalTitle": "Título",
+		"description": "Descrição",
+		"startDate": "Data de início",
+		"deadline": "Prazo",
+		"reminder": "Lembrete",
+		"create": "Criar objetivo",
+		"titleRequired": "O título é obrigatório.",
+		"endBeforeStart": "O prazo não pode ser anterior à data de início."
+	},
 	"gdprConsent": {
 		"title": "Consentimento RGPD",
 		"shareBadgePurpose": "Para partilhar publicamente o badge \"{{badge}}\" precisamos do seu consentimento para o tratamento e divulgação dos dados pessoais associados à credencial.",
@@ -1170,6 +1182,8 @@
 		"checkObjective": "Ver objetivo",
 		"downloadCertificate": "Descarregar Certificado",
 		"certificateUnavailable": "Certificado indisponível para este badge.",
+		"certificateReady": "Certificado pronto.",
+		"openCertificate": "Abrir certificado",
 		"shareLinkedIn": "Partilhar no LinkedIn",
 		"rewards": "Recompensas",
 		"rewardsDescription": "Eleve o seu estatuto profissional: ao conquistar este badge, desbloqueie um título de especialista exclusivo, uma moldura de prestígio para o seu perfil e um certificado de obtenção validando a sua progressão na Softinsa",
@@ -1495,6 +1509,8 @@
 		"noBadgesYet": "Ainda não obtiveste badges.",
 		"showOnPublicProfile": "Mostrar no perfil",
 		"onPublicProfile": "No perfil",
+		"galleryEdit": "Editar",
+		"galleryDone": "Concluído",
 		"viewBadgeGalleryDesc": "Explorar todos os badges disponíveis e o seu progresso",
 		"profileDetails": "Detalhes do perfil",
 		"roleAndStructure": "Papel e Estrutura",

@@ -14,6 +14,7 @@ import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
+import CreateGoalModal from '../../../components/CreateGoalModal/CreateGoalModal';
 import { useUser } from '../../../hooks/userContext';
 import { useGdprConsent } from '../../../context/GdprConsentContext';
 import styles from './BadgeDetail.module.css';
@@ -48,6 +49,10 @@ export default function BadgeDetail() {
 	const [downloading, setDownloading] = useState(false);
 	// Non-fatal error shown inline by the certificate action (does not replace the page)
 	const [certError, setCertError] = useState(null);
+	// Direct certificate link, shown as a fallback when the pop-up is blocked
+	const [certUrl, setCertUrl] = useState(null);
+	// Controls the "add to objective" modal
+	const [showGoalModal, setShowGoalModal] = useState(false);
 	// Store any error message from failed API calls
 	const [error, setError] = useState(null);
 	// Hold a ref to the related badges carousel DOM element for scrolling
@@ -115,12 +120,13 @@ export default function BadgeDetail() {
 		}
 
 		// Open the tab synchronously, still inside the click handler, so the browser
-		// keeps it tied to the user gesture. Opening it AFTER the await (as before)
-		// gets blocked by pop-up blockers — which is why the download silently stopped
-		// working. We then point this tab at the certificate once it is ready.
+		// keeps it tied to the user gesture. Opening it AFTER the await gets blocked
+		// by pop-up blockers. If the blocker kills even this, we fall back to a
+		// visible link the user can click (a direct gesture is never blocked).
 		const certWindow = window.open('about:blank', '_blank');
 
 		setCertError(null);
+		setCertUrl(null);
 		setDownloading(true);
 		try {
 			const langMap = { 'pt-PT': 'pt', 'es-ES': 'es', 'en-GB': 'en' };
@@ -128,10 +134,15 @@ export default function BadgeDetail() {
 
 			const result = await generateCertificate(appGuid, lang);
 			if (result?.certificateUrl) {
-				if (certWindow) certWindow.location = result.certificateUrl;
-				else window.open(result.certificateUrl, '_blank', 'noopener,noreferrer');
-			} else if (certWindow) {
-				certWindow.close();
+				if (certWindow && !certWindow.closed) {
+					certWindow.location = result.certificateUrl;
+				} else {
+					// Pop-up was blocked — surface a direct link instead of failing silently.
+					setCertUrl(result.certificateUrl);
+				}
+			} else {
+				if (certWindow) certWindow.close();
+				setCertError(t('badgeDetail.certificateUnavailable'));
 			}
 		} catch (err) {
 			if (certWindow) certWindow.close();
@@ -370,7 +381,7 @@ export default function BadgeDetail() {
 							<Button
 								variant="filled"
 								className={styles.actionBtnObjective}
-								onClick={() => navigate(CONSULTANT.OBJECTIVES)}
+								onClick={() => (hasGoal ? navigate(CONSULTANT.OBJECTIVES) : setShowGoalModal(true))}
 							>
 								<Icon name="target" size={16} />
 								{hasGoal ? t('badgeDetail.checkObjective') : t('badgeDetail.addObjective')}
@@ -399,6 +410,12 @@ export default function BadgeDetail() {
 					</div>
 					{certError && (
 						<div className={`alert alert-danger mt-3 mb-0 ${styles.certError}`} role="alert">{certError}</div>
+					)}
+					{certUrl && (
+						<div className={`alert alert-info mt-3 mb-0 ${styles.certError}`} role="alert">
+							{t('badgeDetail.certificateReady')}{' '}
+							<a href={certUrl} target="_blank" rel="noopener noreferrer">{t('badgeDetail.openCertificate')}</a>
+						</div>
 					)}
 				</div>
 			</section>
@@ -599,6 +616,15 @@ export default function BadgeDetail() {
 						))}
 					</div>
 				</section>
+			)}
+
+			{showGoalModal && (
+				<CreateGoalModal
+					badgeId={badge.badge_id || badge.badgeId}
+					defaultTitle={title}
+					onClose={() => setShowGoalModal(false)}
+					onCreated={() => navigate(CONSULTANT.OBJECTIVES)}
+				/>
 			)}
 		</div>
 	);

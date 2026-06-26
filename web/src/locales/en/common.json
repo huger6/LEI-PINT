@@ -549,6 +549,18 @@
 			"days": "{{count}}d ago"
 		}
 	},
+	"createGoal": {
+		"title": "Add to objective",
+		"hint": "Set up your objective for this badge. Date fields are optional.",
+		"goalTitle": "Title",
+		"description": "Description",
+		"startDate": "Start date",
+		"deadline": "Deadline",
+		"reminder": "Reminder",
+		"create": "Create objective",
+		"titleRequired": "Title is required.",
+		"endBeforeStart": "The deadline cannot be before the start date."
+	},
 	"gdprConsent": {
 		"title": "GDPR Consent",
 		"shareBadgePurpose": "To publicly share the \"{{badge}}\" badge we need your consent to process and disclose the personal data associated with the credential.",
@@ -1170,6 +1182,8 @@
 		"checkObjective": "Check objective",
 		"downloadCertificate": "Download Certificate",
 		"certificateUnavailable": "Certificate unavailable for this badge.",
+		"certificateReady": "Certificate ready.",
+		"openCertificate": "Open certificate",
 		"shareLinkedIn": "Share on LinkedIn",
 		"rewards": "Rewards",
 		"rewardsDescription": "Elevate your professional status: by earning this badge, unlock an exclusive specialist title, a prestige frame for your profile, and a certificate validating your progression at Softinsa",
@@ -1495,6 +1509,8 @@
 		"noBadgesYet": "You haven't earned any badges yet.",
 		"showOnPublicProfile": "Show on profile",
 		"onPublicProfile": "On profile",
+		"galleryEdit": "Edit",
+		"galleryDone": "Done",
 		"viewBadgeGalleryDesc": "Explore all available badges and your progress",
 		"profileDetails": "Profile details",
 		"roleAndStructure": "Role & Structure",

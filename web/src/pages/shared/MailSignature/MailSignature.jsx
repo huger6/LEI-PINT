@@ -24,6 +24,35 @@ function verifyUrl(link) {
 	return `${window.location.origin}/verify/${link}`;
 }
 
+// Email clients do not render SVG (the badge artwork is SVG), so it shows as a
+// broken image. Rasterise the SVG to a PNG data URI via a canvas so it embeds
+// reliably. Non-SVG sources are returned unchanged; failures fall back to the
+// original URL so the signature still builds.
+function svgUrlToPng(url, size = 128) {
+	return new Promise((resolve) => {
+		if (!url) return resolve(null);
+		const isSvg = url.startsWith('data:image/svg') || /\.svg(\?|$)/i.test(url);
+		if (!isSvg) return resolve(url);
+
+		const img = new Image();
+		img.crossOrigin = 'anonymous';
+		img.onload = () => {
+			try {
+				const canvas = document.createElement('canvas');
+				canvas.width = size;
+				canvas.height = size;
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0, size, size);
+				resolve(canvas.toDataURL('image/png'));
+			} catch {
+				resolve(url);
+			}
+		};
+		img.onerror = () => resolve(url);
+		img.src = url;
+	});
+}
+
 // Brand logos for the e-mail client instruction cards (multicolour SVGs, so they
 // cannot use the mono-stroke Icon component).
 const gmailIcon = (
@@ -171,6 +200,9 @@ export default function MailSignature() {
 	const [error, setError] = useState(null);
 	// Toast message shown after copying
 	const [toast, setToast] = useState('');
+	// PNG (base64) versions of each badge's SVG artwork, keyed by awardedBadgeId,
+	// so the e-mail HTML embeds raster images instead of broken SVGs.
+	const [pngByBadge, setPngByBadge] = useState({});
 
 	// Fetch earned badges on mount (consultants only) and pre-select published ones
 	useEffect(() => {
@@ -193,10 +225,30 @@ export default function MailSignature() {
 		return () => { active = false; };
 	}, [isConsultant]);
 
-	// Badges currently selected for inclusion (empty for non-consultants)
+	// Pre-rasterise each badge's SVG artwork to PNG once badges are loaded.
+	useEffect(() => {
+		let active = true;
+		(async () => {
+			const entries = await Promise.all(
+				badges.map(async (b) => [b.awardedBadgeId, await svgUrlToPng(b.badge?.imageUrl)])
+			);
+			if (!active) return;
+			const map = {};
+			entries.forEach(([id, png]) => { if (png) map[id] = png; });
+			setPngByBadge(map);
+		})();
+		return () => { active = false; };
+	}, [badges]);
+
+	// Badges currently selected for inclusion (empty for non-consultants), with
+	// their artwork swapped to the PNG version so it renders inside e-mail clients.
 	const selectedBadges = useMemo(
-		() => (isConsultant ? badges.filter((b) => selected.has(b.awardedBadgeId)) : []),
-		[isConsultant, badges, selected]
+		() => (isConsultant
+			? badges
+				.filter((b) => selected.has(b.awardedBadgeId))
+				.map((b) => ({ ...b, badge: { ...b.badge, imageUrl: pngByBadge[b.awardedBadgeId] || b.badge?.imageUrl } }))
+			: []),
+		[isConsultant, badges, selected, pngByBadge]
 	);
 
 	// Rendered HTML for the compact e-mail signature

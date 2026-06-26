@@ -101,6 +101,8 @@ export default function UserProfile() {
 	const [galleryBadges, setGalleryBadges] = useState([]);
 	// Id of the badge currently being toggled as featured.
 	const [savingBadge, setSavingBadge] = useState(null);
+	// Whether the gallery is in edit mode (reveals the per-badge visibility toggles).
+	const [editingGallery, setEditingGallery] = useState(false);
 
 	// Snapshot of the initial form values for dirty-checking.
 	const initialFormRef = useRef({});
@@ -673,12 +675,25 @@ export default function UserProfile() {
 			{/* ── Editable public badge gallery (own consultant profile) ── */}
 			{isConsultant && isOwnProfile && (
 				<ContentCard className={styles.section}>
-					<CardHeader
-						icon="badge"
-						iconBg="var(--color-primary-soft)"
-						iconColor="var(--color-primary)"
-						title={t('profile.badgeGalleryTitle')}
-					/>
+					<div className={styles.galleryHeaderRow}>
+						<CardHeader
+							icon="badge"
+							iconBg="var(--color-primary-soft)"
+							iconColor="var(--color-primary)"
+							title={t('profile.badgeGalleryTitle')}
+						/>
+						{galleryBadges.length > 0 && (
+							<Button
+								variant={editingGallery ? 'filled' : 'outlined'}
+								color="primary"
+								size="sm"
+								onClick={() => setEditingGallery((v) => !v)}
+							>
+								<Icon name={editingGallery ? 'check' : 'pencil'} size={14} />
+								{t(editingGallery ? 'profile.galleryDone' : 'profile.galleryEdit')}
+							</Button>
+						)}
+					</div>
 					<p className={styles.galleryHint}>{t('profile.badgeGalleryHint')}</p>
 					{galleryBadges.length === 0 ? (
 						<p className={styles.emptyText}>{t('profile.noBadgesYet')}</p>
@@ -693,24 +708,29 @@ export default function UserProfile() {
 											{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
 										</div>
 										<span className={styles.galleryName}>{badge.title || '—'}</span>
-										<Button
-											variant={on ? 'filled' : 'outlined'}
-											color="primary"
-											size="sm"
-											loading={savingBadge === b.awardedBadgeId}
-											onClick={() => toggleBadgeFeatured(b)}
-										>
-											<Icon name={on ? 'bookmark-filled' : 'bookmark'} size={14} />
-											{t(on ? 'profile.onPublicProfile' : 'profile.showOnPublicProfile')}
-										</Button>
+										{editingGallery ? (
+											<Button
+												variant={on ? 'filled' : 'outlined'}
+												color="primary"
+												size="sm"
+												loading={savingBadge === b.awardedBadgeId}
+												onClick={() => toggleBadgeFeatured(b)}
+											>
+												<Icon name={on ? 'bookmark-filled' : 'bookmark'} size={14} />
+												{t(on ? 'profile.onPublicProfile' : 'profile.showOnPublicProfile')}
+											</Button>
+										) : (
+											on && (
+												<span className={styles.galleryOnTag}>
+													<Icon name="bookmark-filled" size={13} /> {t('profile.onPublicProfile')}
+												</span>
+											)
+										)}
 									</div>
 								);
 							})}
 						</div>
 					)}
-					<Link to="/achievements" className={styles.galleryViewAll}>
-						{t('profile.viewBadgeGallery')} <Icon name="chevron_forward" size={14} />
-					</Link>
 				</ContentCard>
 			)}
 
