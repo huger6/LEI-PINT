@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadges } from '../../../services/pointsService';
 import { useUser } from '../../../hooks/userContext';
+import { useGdprConsent } from '../../../context/GdprConsentContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import Button from '../../../components/Button/Button';
@@ -146,6 +147,8 @@ export default function MailSignature() {
 	const { t } = useTranslation();
 	// Current user and their display name from context
 	const { user, displayName } = useUser();
+	// GDPR consent gate (sharing badges/credentials exposes personal data)
+	const { requestConsent } = useGdprConsent();
 	// Per the project rules, only consultants may place badges in the signature.
 	const isConsultant = user?.role === 'Consultant';
 	const roleLabel = t(`mailSignature.role.${ROLE_KEY[user?.role] || 'consultant'}`, { defaultValue: user?.role || '' });
@@ -230,6 +233,15 @@ export default function MailSignature() {
 	// Copies the rendered signature (text/html) so it pastes formatted into
 	// Gmail/Outlook; falls back to copying the raw HTML source.
 	async function copySignature() {
+		// Embedding earned badges in an outgoing signature/e-mail shares personal
+		// credentials, so gate the copy behind RGPD consent (asked only once).
+		if (isConsultant && selectedBadges.length > 0) {
+			const ok = await requestConsent({
+				policyType: 'Privacy',
+				purpose: t('gdprConsent.shareSignaturePurpose'),
+			});
+			if (!ok) return;
+		}
 		try {
 			if (window.ClipboardItem && navigator.clipboard?.write) {
 				const item = new window.ClipboardItem({

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
+import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
@@ -26,18 +27,27 @@ export default function Achievements() {
 	const [celebrate, setCelebrate] = useState(null);
 	// Track which badge is currently being saved as featured
 	const [savingFeatured, setSavingFeatured] = useState(null);
+	// Error surfaced when toggling a badge's public visibility fails
+	const [featuredError, setFeaturedError] = useState(null);
 
 	// Curate the public gallery: toggle whether an earned badge is shown publicly.
 	async function toggleFeatured(b) {
-		if (!b.verificationLink) return;
+		if (!b.verificationLink) {
+			setFeaturedError(t('achievements.featureUnavailable'));
+			return;
+		}
 		const next = !b.isFeatured;
 		setSavingFeatured(b.awardedBadgeId);
+		setFeaturedError(null);
 		// Optimistic update; revert on failure.
 		setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: next } : x)));
 		try {
 			await setBadgeFeatured(b.verificationLink, next);
-		} catch {
+		} catch (err) {
+			// Revert and tell the user why — previously this failed silently, which
+			// looked exactly like "nothing happened" when the request errored.
 			setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: !next } : x)));
+			setFeaturedError(resolveErrorMessage(err));
 		} finally {
 			setSavingFeatured(null);
 		}
@@ -148,6 +158,11 @@ export default function Achievements() {
 					</div>
 
 					{/* Gallery */}
+					{featuredError && (
+						<div className="alert alert-danger" role="alert" onClick={() => setFeaturedError(null)}>
+							{featuredError}
+						</div>
+					)}
 					<div className={styles.grid}>
 						{badges.map((b) => {
 							const badge = b.badge || {};

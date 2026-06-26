@@ -297,7 +297,14 @@
 		"modeLight": "Claro",
 		"modeDark": "Oscuro",
 		"language": "Idioma",
-		"languageHint": "Selecciona el idioma de la interfaz."
+		"languageHint": "Selecciona el idioma de la interfaz.",
+		"consentTitle": "Consentimiento de uso compartido (RGPD)",
+		"consentHint": "Gestiona el consentimiento dado para compartir públicamente tus credenciales.",
+		"consentAcceptedOn": "Consentimiento dado (versión {{version}}). Puedes revocarlo en cualquier momento.",
+		"consentNone": "Aún no has dado tu consentimiento. Se te pedirá cuando compartas una insignia.",
+		"consentRevoke": "Revocar consentimiento",
+		"consentRevoked": "Consentimiento revocado.",
+		"consentRevokeFailed": "No se pudo revocar el consentimiento."
 	},
 	"privacy": {
 		"title": "Privacidad (RGPD)",
@@ -545,6 +552,7 @@
 	"gdprConsent": {
 		"title": "Consentimiento RGPD",
 		"shareBadgePurpose": "Para compartir públicamente el badge \"{{badge}}\" necesitamos su consentimiento para el tratamiento y la divulgación de los datos personales asociados a la credencial.",
+		"shareSignaturePurpose": "Para incluir sus credenciales en la firma/correo necesitamos su consentimiento para el tratamiento y la divulgación de los datos personales asociados.",
 		"version": "Versión {{version}}",
 		"agreeLabel": "He leído y acepto la política anterior y autorizo el uso compartido público de los datos de mi credencial.",
 		"acceptAndContinue": "Aceptar y continuar"
@@ -843,6 +851,7 @@
 		"viewBadge": "Ver badge",
 		"verify": "Verificar",
 		"showOnProfile": "Mostrar en el perfil",
+		"featureUnavailable": "No se pudo actualizar la visibilidad de esta insignia. Inténtalo de nuevo.",
 		"hideFromProfile": "Quitar del perfil público",
 		"onProfile": "En el perfil",
 		"emptyTitle": "Aún sin logros",

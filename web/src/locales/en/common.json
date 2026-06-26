@@ -297,7 +297,14 @@
 		"modeLight": "Light",
 		"modeDark": "Dark",
 		"language": "Language",
-		"languageHint": "Select the interface language."
+		"languageHint": "Select the interface language.",
+		"consentTitle": "Sharing consent (GDPR)",
+		"consentHint": "Manage the consent you've given to publicly share your credentials.",
+		"consentAcceptedOn": "Consent given (version {{version}}). You can revoke it at any time.",
+		"consentNone": "You haven't given consent yet. You'll be asked when you share a badge.",
+		"consentRevoke": "Revoke consent",
+		"consentRevoked": "Consent revoked.",
+		"consentRevokeFailed": "Couldn't revoke consent."
 	},
 	"privacy": {
 		"title": "Privacy (GDPR)",
@@ -545,6 +552,7 @@
 	"gdprConsent": {
 		"title": "GDPR Consent",
 		"shareBadgePurpose": "To publicly share the \"{{badge}}\" badge we need your consent to process and disclose the personal data associated with the credential.",
+		"shareSignaturePurpose": "To include your credentials in the signature/e-mail we need your consent to process and disclose the associated personal data.",
 		"version": "Version {{version}}",
 		"agreeLabel": "I have read and accept the policy above and authorise the public sharing of my credential data.",
 		"acceptAndContinue": "Accept and continue"
@@ -843,6 +851,7 @@
 		"viewBadge": "View badge",
 		"verify": "Verify",
 		"showOnProfile": "Show on profile",
+		"featureUnavailable": "Couldn't update this badge's visibility. Please try again.",
 		"hideFromProfile": "Hide from public profile",
 		"onProfile": "On profile",
 		"emptyTitle": "No achievements yet",

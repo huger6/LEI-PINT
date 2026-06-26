@@ -13,9 +13,9 @@ import RequirementCard from '../../../components/RequirementCard/RequirementCard
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
-import GdprConsentModal from '../../../components/GdprConsentModal/GdprConsentModal';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { useUser } from '../../../hooks/userContext';
+import { useGdprConsent } from '../../../context/GdprConsentContext';
 import styles from './BadgeDetail.module.css';
 
 const SERVICE_LINES_LIMIT = 5;
@@ -24,6 +24,8 @@ const SERVICE_LINES_LIMIT = 5;
 export default function BadgeDetail() {
 	// Access the current authenticated user and their role
 	const { user } = useUser();
+	// Imperative GDPR consent gate, shared across every sharing action
+	const { requestConsent } = useGdprConsent();
 	// Initialize translation and language utilities
 	const { t, i18n } = useTranslation();
 	// Read the badge slug from the URL params
@@ -48,8 +50,6 @@ export default function BadgeDetail() {
 	const [certError, setCertError] = useState(null);
 	// Store any error message from failed API calls
 	const [error, setError] = useState(null);
-	// Control visibility of the GDPR consent modal before sharing
-	const [showConsent, setShowConsent] = useState(false);
 	// Hold a ref to the related badges carousel DOM element for scrolling
 	const carouselRef = useRef(null);
 
@@ -142,9 +142,13 @@ export default function BadgeDetail() {
 	}
 
 	// Publishing/sharing a credential exposes personal data — gate behind RGPD consent.
-	// Open the GDPR consent modal before proceeding with LinkedIn share
-	function handleShareLinkedIn() {
-		setShowConsent(true);
+	// Ask for consent (skipped automatically if already given), then share.
+	async function handleShareLinkedIn() {
+		const ok = await requestConsent({
+			policyType: 'Privacy',
+			purpose: t('gdprConsent.shareBadgePurpose', { badge: badge.badge_title || badge.badgeTitle }),
+		});
+		if (ok) doShareLinkedIn();
 	}
 
 	// Perform the LinkedIn share after the user has given GDPR consent
@@ -595,15 +599,6 @@ export default function BadgeDetail() {
 						))}
 					</div>
 				</section>
-			)}
-
-			{showConsent && (
-				<GdprConsentModal
-					policyType="Privacy"
-					purpose={t('gdprConsent.shareBadgePurpose', { badge: title })}
-					onConfirm={doShareLinkedIn}
-					onClose={() => setShowConsent(false)}
-				/>
 			)}
 		</div>
 	);

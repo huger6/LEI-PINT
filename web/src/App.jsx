@@ -4,6 +4,7 @@ import { AuthProvider } from './features/auth';
 import { UserProvider } from './context/UserContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { TranslationProvider } from './context/TranslationContext';
+import { GdprConsentProvider } from './context/GdprConsentContext';
 import AppRoutes from './routes';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
@@ -16,9 +17,11 @@ export default function App() {
 					<UserProvider>
 						<LanguageProvider>
 							<TranslationProvider>
-								<ErrorBoundary>
-									<AppRoutes />
-								</ErrorBoundary>
+								<GdprConsentProvider>
+									<ErrorBoundary>
+										<AppRoutes />
+									</ErrorBoundary>
+								</GdprConsentProvider>
 							</TranslationProvider>
 						</LanguageProvider>
 					</UserProvider>

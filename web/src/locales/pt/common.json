@@ -297,7 +297,14 @@
 		"modeLight": "Claro",
 		"modeDark": "Escuro",
 		"language": "Idioma",
-		"languageHint": "Seleciona o idioma da interface."
+		"languageHint": "Seleciona o idioma da interface.",
+		"consentTitle": "Consentimento de partilha (RGPD)",
+		"consentHint": "Controla o consentimento dado para partilhar publicamente as tuas credenciais.",
+		"consentAcceptedOn": "Consentimento dado (versão {{version}}). Podes revogá-lo a qualquer momento.",
+		"consentNone": "Ainda não deste consentimento. Ser-te-á pedido quando partilhares um badge.",
+		"consentRevoke": "Revogar consentimento",
+		"consentRevoked": "Consentimento revogado.",
+		"consentRevokeFailed": "Não foi possível revogar o consentimento."
 	},
 	"privacy": {
 		"title": "Privacidade (RGPD)",
@@ -545,6 +552,7 @@
 	"gdprConsent": {
 		"title": "Consentimento RGPD",
 		"shareBadgePurpose": "Para partilhar publicamente o badge \"{{badge}}\" precisamos do seu consentimento para o tratamento e divulgação dos dados pessoais associados à credencial.",
+		"shareSignaturePurpose": "Para incluir as suas credenciais na assinatura/e-mail precisamos do seu consentimento para o tratamento e divulgação dos dados pessoais associados.",
 		"version": "Versão {{version}}",
 		"agreeLabel": "Li e aceito a política acima e autorizo a partilha pública dos dados da minha credencial.",
 		"acceptAndContinue": "Aceitar e continuar"
@@ -843,6 +851,7 @@
 		"viewBadge": "Ver badge",
 		"verify": "Verificar",
 		"showOnProfile": "Mostrar no perfil",
+		"featureUnavailable": "Não foi possível atualizar a visibilidade deste badge. Tente novamente.",
 		"hideFromProfile": "Remover do perfil público",
 		"onProfile": "No perfil",
 		"emptyTitle": "Ainda sem conquistas",

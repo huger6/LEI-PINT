@@ -315,7 +315,7 @@ export default function ConsultantDashboard() {
 					<div className={styles.carousel} ref={rewardsRef}>
 						{rewards.map((r) => (
 							<Link key={r.rewardGuid} to={CONSULTANT.STORE || '/store'} className={styles.recCard}>
-								<div className={styles.recThumb}>
+								<div className={`${styles.recThumb} ${styles.recThumbRect}`}>
 									{r.imgUrl ? <img src={r.imgUrl} alt="" loading="lazy" /> : <Icon name="badge-premium" size={40} color="var(--color-purple-on-soft)" aria-hidden="true" />}
 								</div>
 								<h3 className={styles.recTitle}>{r.name}</h3>

@@ -34,9 +34,11 @@ export default function GdprConsentModal({ policyType = 'Privacy', purpose, onCo
 				]);
 				if (!active) return;
 
-				const alreadyAccepted = history.some(
-					(h) => h.policy_id === latest?.policy_id && h.action === 'ACCEPTED'
-				);
+				// History is most-recent-first, so the first entry for this policy is
+				// the current state — this way a later REVOKED overrides an earlier
+				// ACCEPTED and the user is correctly asked to consent again.
+				const latestForPolicy = history.find((h) => h.policy_id === latest?.policy_id);
+				const alreadyAccepted = latestForPolicy?.action === 'ACCEPTED';
 				if (alreadyAccepted) {
 					onConfirm();
 					onClose();

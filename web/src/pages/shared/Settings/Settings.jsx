@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import NotificationPreferences from '../../../components/NotificationPreferences/NotificationPreferences';
 import TitleSelector from '../../../components/TitleSelector/TitleSelector';
+import ConsentSettings from '../../../components/ConsentSettings/ConsentSettings';
 import Icon from '../../../components/Icons/Icons';
 import { SHARED } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
@@ -94,6 +95,8 @@ export default function Settings() {
 			<NotificationPreferences />
 
 			{user?.role === 'Consultant' && <TitleSelector />}
+
+			<ConsentSettings />
 
 			<ContentCard className={styles.section}>
 				<CardHeader icon="settings" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('settings.account')} />
