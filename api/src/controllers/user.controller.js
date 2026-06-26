@@ -64,7 +64,7 @@ const me = async (req, res) => {
                 : null,
             models.consultants.findOne({
                 where: { user_id: user.user_id },
-                attributes: ['biography'],
+                attributes: ['biography', 'active_title'],
                 raw: true
             }),
             models.talent_managers.findOne({
@@ -228,6 +228,7 @@ const me = async (req, res) => {
             serviceLine: serviceLineData,
             learningPath: learningPathData,
             areas: areasPayload,
+            activeTitle: user.user_role === 'Consultant' ? (consultant?.active_title || null) : null,
             currentStreakDays: user.current_streak_days
         });
 

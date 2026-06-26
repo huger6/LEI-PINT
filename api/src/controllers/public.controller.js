@@ -343,6 +343,13 @@ const getPublicConsultantProfile = async (req, res) => {
 		});
 		if (!user) return res.status(404).json({ success: false, code: 'PUBLIC_PROFILE_NOT_FOUND' });
 
+		// Publicly displayed title (consultants only), chosen from unlocked title rewards.
+		let activeTitle = null;
+		if (user.user_role === 'Consultant') {
+			const consultant = await models.consultants.findOne({ where: { user_id: user.user_id }, attributes: ['active_title'] });
+			activeTitle = consultant?.active_title || null;
+		}
+
 		const awardedAll = await models.awarded_badges.findAll({
 			where: { user_id: user.user_id, is_published: true },
 			attributes: ['awarded_at', 'expiration_at', 'points_snapshot', 'public_verification_link', 'is_featured'],
@@ -386,6 +393,7 @@ const getPublicConsultantProfile = async (req, res) => {
 				user_guid: user.user_guid,
 				profile_img_url: user.profile_img_url || null,
 				role: user.user_role,
+				title: activeTitle,
 				total_badges: awardedAll.length,
 				total_points: totalPoints,
 				badges

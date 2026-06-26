@@ -507,6 +507,9 @@
 	"store": {
 		"title": "Rewards Store",
 		"subtitle": "Spend your points on courses and perks.",
+		"myTitle": "My title",
+		"myTitleHint": "Choose the title shown publicly on your profile (from the ones you unlocked).",
+		"noTitle": "None",
 		"points": "points",
 		"empty": "No rewards available yet.",
 		"redeem": "Redeem",

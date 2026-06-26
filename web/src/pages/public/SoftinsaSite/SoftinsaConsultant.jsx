@@ -78,6 +78,7 @@ export default function SoftinsaConsultant() {
 							</div>
 							<div className={styles.heroInfo}>
 								<h1>{profile.full_name}</h1>
+								{profile.title && <span className={styles.userTitle}>{profile.title}</span>}
 								{profile.role && <span className={styles.premium}>{t(`roles.${profile.role}`, profile.role)}</span>}
 								<div className={styles.metaRow}>
 									<div className={styles.metaItem}>

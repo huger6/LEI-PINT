@@ -857,6 +857,7 @@ CREATE TABLE IF NOT EXISTS consultants (
    user_id              INTEGER                 NOT NULL, -- FK -> users(user_id)
    gdpr_accepted        BOOLEAN                 NOT NULL DEFAULT FALSE,
    biography            TEXT                 NULL,
+   active_title         VARCHAR(255)         NULL, -- publicly displayed title (from a redeemed title reward)
 
    CONSTRAINT pk_consultants PRIMARY KEY (user_id)
 );

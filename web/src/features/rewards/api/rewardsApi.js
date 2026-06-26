@@ -18,3 +18,15 @@ export async function redeemReward(rewardGuid) {
 	const { data } = await api.post(`/rewards/${rewardGuid}/redeem`);
 	return data?.data;
 }
+
+// Titles the consultant has unlocked + the one currently displayed.
+export async function getTitles() {
+	const { data } = await api.get('/rewards/titles');
+	return data?.data || { titles: [], activeTitle: null };
+}
+
+// Set (or clear with null) the consultant's publicly displayed title.
+export async function setActiveTitle(title) {
+	const { data } = await api.patch('/rewards/active-title', { title });
+	return data?.data;
+}

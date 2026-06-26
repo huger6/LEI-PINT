@@ -507,6 +507,9 @@
 	"store": {
 		"title": "Tienda de Recompensas",
 		"subtitle": "Gasta tus puntos en cursos y ventajas.",
+		"myTitle": "Mi título",
+		"myTitleHint": "Elige el título que se muestra públicamente en tu perfil (de los que desbloqueaste).",
+		"noTitle": "Ninguno",
 		"points": "puntos",
 		"empty": "Aún no hay recompensas disponibles.",
 		"redeem": "Canjear",

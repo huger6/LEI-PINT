@@ -112,6 +112,20 @@
 	margin-bottom: 0.6rem;
 }
 
+/* Consultant's chosen public title (reward) shown under their name. */
+.userTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	background: var(--color-purple-soft, #ede9fe);
+	color: var(--color-purple-on-soft, #6d28d9);
+	font-size: 0.8rem;
+	font-weight: 700;
+	padding: 0.2rem 0.65rem;
+	border-radius: 999px;
+	margin: 0 0 0.5rem;
+}
+
 .certified {
 	display: inline-flex;
 	align-items: center;

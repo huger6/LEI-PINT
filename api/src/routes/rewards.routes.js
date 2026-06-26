@@ -27,6 +27,20 @@ router.get('/redemptions', loginRequired, consultantOnly, rewardsController.getM
 router.post('/:rewardGuid/redeem', loginRequired, consultantOnly, rewardsController.redeemReward);
 
 /**
+ * @route   GET /api/rewards/titles
+ * @desc    Titles the consultant has unlocked + the one currently displayed
+ * @access  Consultant
+ */
+router.get('/titles', loginRequired, consultantOnly, rewardsController.getOwnedTitles);
+
+/**
+ * @route   PATCH /api/rewards/active-title
+ * @desc    Set/clear the consultant's publicly displayed title
+ * @access  Consultant
+ */
+router.patch('/active-title', loginRequired, consultantOnly, rewardsController.setActiveTitle);
+
+/**
  * @route   GET /api/rewards/admin
  * @desc    List all store rewards (active + inactive)
  * @access  Administrator

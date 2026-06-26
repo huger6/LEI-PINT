@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getRewards, getRedemptions, redeemReward } from '../../../features/rewards/api/rewardsApi';
+import { getRewards, getRedemptions, redeemReward, getTitles, setActiveTitle } from '../../../features/rewards/api/rewardsApi';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
@@ -45,21 +45,43 @@ export default function Store() {
 	const [error, setError] = useState(null);
 	// Reward guids whose image failed to load (fall back to the category icon)
 	const [failedImg, setFailedImg] = useState({});
+	// Titles the consultant has unlocked and the one currently displayed publicly
+	const [titles, setTitles] = useState([]);
+	const [activeTitle, setActiveTitleState] = useState(null);
+	// In-flight title change flag
+	const [savingTitle, setSavingTitle] = useState(false);
 
-	// Load rewards, balance and redemption history together
+	// Load rewards, balance, history and unlocked titles together
 	const load = useCallback(async () => {
 		setLoading(true);
 		try {
-			const [store, hist] = await Promise.all([getRewards(), getRedemptions()]);
+			const [store, hist, titlesData] = await Promise.all([getRewards(), getRedemptions(), getTitles()]);
 			setBalance(store.balance || 0);
 			setRewards(store.rewards || []);
 			setRedemptions(hist || []);
+			setTitles(titlesData.titles || []);
+			setActiveTitleState(titlesData.activeTitle || null);
 		} catch (err) {
 			setError(resolveErrorMessage(err));
 		} finally {
 			setLoading(false);
 		}
 	}, []);
+
+	// Set (or clear) the publicly displayed title; optimistic with revert on error
+	async function chooseTitle(title) {
+		const prev = activeTitle;
+		setActiveTitleState(title);
+		setSavingTitle(true);
+		try {
+			await setActiveTitle(title);
+		} catch (err) {
+			setActiveTitleState(prev);
+			setError(resolveErrorMessage(err));
+		} finally {
+			setSavingTitle(false);
+		}
+	}
 
 	// Run the initial data load on mount
 	useEffect(() => { load(); }, [load]);
@@ -98,6 +120,34 @@ export default function Store() {
 			</div>
 
 			{error && <div className="alert alert-danger" role="alert">{error}</div>}
+
+			{!loading && titles.length > 0 && (
+				<ContentCard className={styles.titlesCard}>
+					<CardHeader icon="badge-premium" iconBg="var(--color-purple-soft)" iconColor="var(--color-purple-on-soft)" title={t('store.myTitle')} />
+					<p className={styles.titlesHint}>{t('store.myTitleHint')}</p>
+					<div className={styles.titlesRow}>
+						<button
+							type="button"
+							className={`${styles.titleChip} ${!activeTitle ? styles.titleChipActive : ''}`}
+							onClick={() => chooseTitle(null)}
+							disabled={savingTitle}
+						>
+							{t('store.noTitle')}
+						</button>
+						{titles.map((title) => (
+							<button
+								key={title}
+								type="button"
+								className={`${styles.titleChip} ${activeTitle === title ? styles.titleChipActive : ''}`}
+								onClick={() => chooseTitle(title)}
+								disabled={savingTitle}
+							>
+								<Icon name="badge-premium" size={14} aria-hidden="true" /> {title}
+							</button>
+						))}
+					</div>
+				</ContentCard>
+			)}
 
 			{loading ? (
 				<Spinner />

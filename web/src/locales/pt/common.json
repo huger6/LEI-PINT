@@ -507,6 +507,9 @@
 	"store": {
 		"title": "Loja de Recompensas",
 		"subtitle": "Gasta os teus pontos em cursos e perks.",
+		"myTitle": "O meu título",
+		"myTitleHint": "Escolhe o título a exibir publicamente no teu perfil (dos que desbloqueaste).",
+		"noTitle": "Nenhum",
 		"points": "pontos",
 		"empty": "Ainda não há recompensas disponíveis.",
 		"redeem": "Resgatar",
