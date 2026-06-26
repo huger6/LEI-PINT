@@ -1233,7 +1233,12 @@ def generate_sql() -> str:
         badge_requirements = requirements_by_badge[int(application["badge_id"])]
         if application["application_state"] == "Open":
             continue
-        evidence_count = len(badge_requirements) if application["application_state"] in {"Accepted", "Rejected"} else random.randint(1, len(badge_requirements))
+        # An application can only leave 'Open' with evidence for EVERY requirement
+        # (the API enforces this on submit), so only Open apps may have partial evidence.
+        if application["application_state"] in {"Submitted", "In validation", "Accepted", "Rejected"}:
+            evidence_count = len(badge_requirements)
+        else:
+            evidence_count = random.randint(0, len(badge_requirements))
         for requirement in badge_requirements[:evidence_count]:
             uploaded_at = application["opened_at"] + timedelta(days=random.randint(1, 10), hours=random.randint(1, 6))  # type: ignore[operator]
             if application["submitted_at"]:
@@ -1242,7 +1247,8 @@ def generate_sql() -> str:
                 "evidence_id": ids.next("requirements_evidences"),
                 "application_id": application["application_id"],
                 "requirement_id": requirement["requirement_id"],
-                "evidence_file_url": f"https://files.softinsa.pt/evidence/app-{application['application_id']}-req-{requirement['requirement_id']}.pdf",
+                # A real, publicly reachable sample file so "view document" works in tests.
+                "evidence_file_url": "https://www.africau.edu/images/default/sample.pdf",
                 "evidence_title": f"Evidence for {requirement['requirement_title']}"[:150],
                 "evidence_description": "Submitted project artefact, certification proof or review note for validation.",
                 "evidence_file_type": "application/pdf",
@@ -1304,7 +1310,7 @@ def generate_sql() -> str:
             "certificate_title": f"Softinsa Certificate - Application {application['application_id']}",
             "issuing_entity": "Softinsa",
             "issue_date": issue_dt,
-            "certificate_file_url": f"https://files.softinsa.pt/certificates/app-{application['application_id']}.pdf",
+            "certificate_file_url": "https://www.africau.edu/images/default/sample.pdf",
         }
         certificates.append(row)
         sql.insert("certificates", row)
