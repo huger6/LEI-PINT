@@ -149,7 +149,7 @@ class ApiEndpoints {
   // PATCH /gamification/earned-badges/:verificationLink/featured - toggle
   // whether an earned badge is shown on the public profile gallery.
   static String setBadgeFeatured(String verificationLink) =>
-      '/api/gamification/earned-badges/$verificationLink/featured';
+      '/api/gamification/earned-badges/${Uri.encodeComponent(verificationLink)}/featured';
   static const String getPointsHistory =
       '/api/statistics/consultant/points-history';
   static const String getTimeline =
