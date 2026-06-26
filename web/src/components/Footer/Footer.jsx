@@ -64,6 +64,7 @@ const Footer = () => {
                     <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.supportTitle')}</h5>
                         <ul className="list-unstyled mb-0">
+                            <li className="mb-2"><a href="/policies" className={styles.footerLink}>{t('footer.supportPolicies', { defaultValue: t('policies.title') })}</a></li>
                             <li className="mb-2"><a href="/privacy" className={styles.footerLink}>{t('footer.supportPrivacy')}</a></li>
                             <li className="mb-2"><a href="/security" className={styles.footerLink}>{t('security.title', { defaultValue: 'Segurança' })}</a></li>
                         </ul>

@@ -268,6 +268,7 @@
 		"platformRanking": "Ranking de Pontos",
 		"supportTitle": "Suporte",
 		"supportHelp": "Centro de Ajuda",
+		"supportPolicies": "Políticas e Termos",
 		"supportPrivacy": "Políticas RGPD",
 		"supportTerms": "Termos de Uso",
 		"connectivityTitle": "Conectividade",
@@ -316,6 +317,17 @@
 		"deleteConfirm": "Eliminar",
 		"deleteWarning": "Esta ação é irreversível. A tua conta será desativada e os dados pessoais anonimizados.",
 		"deleteFailed": "Não foi possível eliminar a conta."
+	},
+	"policies": {
+		"title": "Políticas e Termos",
+		"subtitle": "Consulta as políticas em vigor da plataforma.",
+		"version": "Versão {{version}}",
+		"empty": "De momento não existem políticas publicadas.",
+		"types": {
+			"Privacy": "Política de Privacidade",
+			"Terms": "Termos de Utilização",
+			"Cookies": "Política de Cookies"
+		}
 	},
 	"security": {
 		"title": "Segurança",

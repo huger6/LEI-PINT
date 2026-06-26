@@ -10,6 +10,7 @@ import MailSignature from '../pages/shared/MailSignature/MailSignature';
 import AnnouncementsPage from '../pages/shared/AnnouncementsPage/AnnouncementsPage';
 import Settings from '../pages/shared/Settings/Settings';
 import Privacy from '../pages/shared/Privacy/Privacy';
+import Policies from '../pages/shared/Policies/Policies';
 import Security from '../pages/shared/Security/Security';
 import RedirectPublicProfile from './RedirectPublicProfile';
 import { LearningPathDetail, ServiceLineDetail, AreaDetail, LevelDetail } from '../features/structure';
@@ -29,6 +30,7 @@ const sharedRoutes = [
 	{ path: SHARED.ANNOUNCEMENTS, element: <AnnouncementsPage /> },
 	{ path: SHARED.SETTINGS, element: <Settings /> },
 	{ path: SHARED.PRIVACY, element: <Privacy /> },
+	{ path: SHARED.POLICIES, element: <Policies /> },
 	{ path: SHARED.SECURITY, element: <Security /> },
 	// Read-only structure detail for non-admin roles (admin uses /admin/structure/*).
 	{ path: SHARED.STRUCTURE_LP_DETAIL, element: <LearningPathDetail /> },

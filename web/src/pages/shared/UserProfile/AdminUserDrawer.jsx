@@ -17,7 +17,6 @@ import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import AreaPickerList from '../../../components/AreaPickerList/AreaPickerList';
-import Chip from '../../../components/Chip/Chip';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import styles from './AdminUserDrawer.module.css';
 
@@ -81,11 +80,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 	// Role change awaiting confirmation via the warning toast.
 	const [pendingRoleChange, setPendingRoleChange] = useState(null);
 
-	// Text input for adding a new interest chip.
-	const [interestInput, setInterestInput] = useState('');
-	// Text input for adding a new goal.
-	const [goalInput, setGoalInput] = useState('');
-
 	// Local preview URL for the (possibly unsaved) profile image.
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
 	// Whether a profile image upload is in progress.
@@ -121,8 +115,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 				email: profile.email || '',
 				locationId: locId ? String(locId) : '',
 				about: profile.biography || profile.about || profile.bio || '',
-				interests: [...(profile.interests || [])],
-				goals: [...(profile.goals || [])],
 				profileImgUrl: photoUrl,
 				isActive: profile.isActive ?? profile.is_active ?? true,
 				emailConfirmed: profile.emailConfirmed ?? profile.email_confirmed ?? false,
@@ -140,8 +132,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 			setProfileUploadError('');
 			setErrors({});
 			setIsDirty(false);
-			setInterestInput('');
-			setGoalInput('');
 		}
 	}, [open, profile, displayRole]);
 
@@ -205,8 +195,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 			|| next.email !== initial.email
 			|| next.locationId !== initial.locationId
 			|| next.about !== initial.about
-			|| JSON.stringify(next.interests) !== JSON.stringify(initial.interests)
-			|| JSON.stringify(next.goals) !== JSON.stringify(initial.goals)
 			|| next.profileImgUrl !== initial.profileImgUrl
 			|| next.isActive !== initial.isActive
 			|| next.emailConfirmed !== initial.emailConfirmed
@@ -226,50 +214,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 			return next;
 		});
 		if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
-	};
-
-	// ── Interest chips ───────────────────────────────────────────
-	// Add the typed interest as a chip if non-empty and not a duplicate.
-	const addInterest = () => {
-		const val = interestInput.trim();
-		if (!val || form.interests?.includes(val)) return;
-		setForm((prev) => {
-			const next = { ...prev, interests: [...(prev.interests || []), val] };
-			checkDirty(next);
-			return next;
-		});
-		setInterestInput('');
-	};
-
-	// Remove the interest chip at the given index.
-	const removeInterest = (idx) => {
-		setForm((prev) => {
-			const next = { ...prev, interests: prev.interests.filter((_, i) => i !== idx) };
-			checkDirty(next);
-			return next;
-		});
-	};
-
-	// ── Goals list ───────────────────────────────────────────────
-	// Add the typed goal to the list if non-empty.
-	const addGoal = () => {
-		const val = goalInput.trim();
-		if (!val) return;
-		setForm((prev) => {
-			const next = { ...prev, goals: [...(prev.goals || []), val] };
-			checkDirty(next);
-			return next;
-		});
-		setGoalInput('');
-	};
-
-	// Remove the goal at the given index.
-	const removeGoal = (idx) => {
-		setForm((prev) => {
-			const next = { ...prev, goals: prev.goals.filter((_, i) => i !== idx) };
-			checkDirty(next);
-			return next;
-		});
 	};
 
 	// ── Profile image ────────────────────────────────────────────
@@ -396,8 +340,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 				payload.location_id = form.locationId ? Number(form.locationId) : null;
 			}
 			if ((form.about || '') !== (initial.about || '')) payload.biography = form.about?.trim() || null;
-			if (JSON.stringify(form.interests) !== JSON.stringify(initial.interests)) payload.interests = form.interests;
-			if (JSON.stringify(form.goals) !== JSON.stringify(initial.goals)) payload.goals = form.goals;
 
 			if (form.profileImgUrl === null) {
 				payload.profile_img_url = null;
@@ -648,58 +590,6 @@ export default function AdminUserDrawer({ open, onClose, onSaved, profile, guid 
 						/>
 					</div>
 				)}
-
-				{/* ── Interests & Goals ─────────────────────── */}
-				<SectionDivider label={t('profile.interestsAndGoals')} />
-
-				<div>
-					<label className={styles.detailLabel}>{t('profile.keyInterests')}</label>
-					<div className={styles.chipList}>
-						{(form.interests || []).map((interest, idx) => (
-							<Chip key={idx} label={interest} onRemove={() => removeInterest(idx)} />
-						))}
-					</div>
-					<div className={styles.addRow}>
-						<input
-							type="text"
-							className={`form-control ${styles.addInput}`}
-							value={interestInput}
-							onChange={(e) => setInterestInput(e.target.value)}
-							onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
-							placeholder={t('profile.addInterest')}
-						/>
-						<Button size="sm" onClick={addInterest} disabled={!interestInput.trim()}>
-							<Icon name="add" size={16} />
-						</Button>
-					</div>
-				</div>
-
-				<div>
-					<label className={styles.detailLabel}>{t('profile.currentGoals')}</label>
-					<div className={styles.goalsList}>
-						{(form.goals || []).map((goal, idx) => (
-							<div key={idx} className={styles.goalEditRow}>
-								<span className={styles.goalText}>{goal}</span>
-								<button type="button" className={styles.removeBtn} onClick={() => removeGoal(idx)} aria-label={`Remove goal`}>
-									<Icon name="close" size={14} color="var(--color-error)" />
-								</button>
-							</div>
-						))}
-					</div>
-					<div className={styles.addRow}>
-						<input
-							type="text"
-							className={`form-control ${styles.addInput}`}
-							value={goalInput}
-							onChange={(e) => setGoalInput(e.target.value)}
-							onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGoal())}
-							placeholder={t('profile.addGoal')}
-						/>
-						<Button size="sm" onClick={addGoal} disabled={!goalInput.trim()}>
-							<Icon name="add" size={16} />
-						</Button>
-					</div>
-				</div>
 
 				{/* ── Account Settings ──────────────────────── */}
 				<SectionDivider label={t('profile.accountSettings')} />

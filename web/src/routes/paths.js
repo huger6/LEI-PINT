@@ -85,6 +85,7 @@ export const SHARED = {
 	USER_PROFILE_VIEW: '/u/:guid',
 	SETTINGS: '/settings',
 	PRIVACY: '/privacy',
+	POLICIES: '/policies',
 	SECURITY: '/security',
 	UNAUTHORIZED: '/unauthorized',
 	RANKING: '/ranking',

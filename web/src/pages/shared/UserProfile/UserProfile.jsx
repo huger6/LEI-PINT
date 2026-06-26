@@ -12,8 +12,6 @@ import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import InfoRow from '../../../components/InfoRow/InfoRow';
-import Chip from '../../../components/Chip/Chip';
-import BulletItem from '../../../components/BulletItem/BulletItem';
 import CheckItem from '../../../components/CheckItem/CheckItem';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
@@ -88,10 +86,6 @@ export default function UserProfile() {
 
 	// Whether the admin edit drawer is open.
 	const [drawerOpen, setDrawerOpen] = useState(false);
-	// Text input for adding a new interest chip.
-	const [interestInput, setInterestInput] = useState('');
-	// Text input for adding a new goal.
-	const [goalInput, setGoalInput] = useState('');
 
 	// Local preview URL for the (possibly unsaved) profile image.
 	const [profilePreviewUrl, setProfilePreviewUrl] = useState('');
@@ -198,8 +192,6 @@ export default function UserProfile() {
 				email: profile.email || '',
 				locationId: locId ? String(locId) : '',
 				about: profile.biography || profile.about || profile.bio || '',
-				interests: [...(profile.interests || [])],
-				goals: [...(profile.goals || [])],
 				profileImgUrl: profile.profileImg || profile.profile_img_url || '',
 			};
 			setForm(initial);
@@ -227,50 +219,6 @@ export default function UserProfile() {
 			return next;
 		});
 		if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: null }));
-	};
-
-	// ── Interest chips ───────────────────────────────────────────
-	// Add the typed interest as a chip if non-empty and not a duplicate.
-	const addInterest = () => {
-		const val = interestInput.trim();
-		if (!val || form.interests?.includes(val)) return;
-		setForm((prev) => {
-			const next = { ...prev, interests: [...(prev.interests || []), val] };
-			checkDirty(next);
-			return next;
-		});
-		setInterestInput('');
-	};
-
-	// Remove the interest chip at the given index.
-	const removeInterest = (idx) => {
-		setForm((prev) => {
-			const next = { ...prev, interests: prev.interests.filter((_, i) => i !== idx) };
-			checkDirty(next);
-			return next;
-		});
-	};
-
-	// ── Goals list ───────────────────────────────────────────────
-	// Add the typed goal to the list if non-empty.
-	const addGoal = () => {
-		const val = goalInput.trim();
-		if (!val) return;
-		setForm((prev) => {
-			const next = { ...prev, goals: [...(prev.goals || []), val] };
-			checkDirty(next);
-			return next;
-		});
-		setGoalInput('');
-	};
-
-	// Remove the goal at the given index.
-	const removeGoal = (idx) => {
-		setForm((prev) => {
-			const next = { ...prev, goals: prev.goals.filter((_, i) => i !== idx) };
-			checkDirty(next);
-			return next;
-		});
 	};
 
 	// ── Profile image ────────────────────────────────────────────
@@ -446,8 +394,6 @@ export default function UserProfile() {
 		? (profile?.areas || []).map((a) => a.name || a.area_name).filter(Boolean)
 		: [];
 	const displayAbout = profile?.biography || profile?.about || profile?.bio || '';
-	const displayInterests = profile?.interests || [];
-	const displayGoals = profile?.goals || [];
 	const displayAchievements = profile?.achievements || [];
 	const memberSince = profile?.createdAt || profile?.created_at || '';
 	const photoUrl = profile?.profileImg || profile?.profile_img_url || profile?.photoUrl || profile?.photo_url || null;
@@ -670,7 +616,7 @@ export default function UserProfile() {
 							/>
 						) : (
 							<p className={styles.aboutText}>
-								{displayAbout || t('profile.noAboutMe')}
+								{displayAbout ? <TranslatedText text={displayAbout} /> : t('profile.noAboutMe')}
 							</p>
 						)}
 					</div>
@@ -697,54 +643,6 @@ export default function UserProfile() {
 								</div>
 							) : (
 								<p className={styles.emptyText}>{t('profile.noAchievements')}</p>
-							)}
-						</div>
-					</ContentCard>
-				</div>
-
-				<div className="col-md-6">
-					<ContentCard>
-						<CardHeader
-							icon="target"
-							iconBg="var(--color-green-soft)"
-							iconColor="var(--color-green-on-soft)"
-							title={t('profile.currentGoals')}
-						/>
-						<div className={styles.sectionBody}>
-							{isEditMode ? (
-								<>
-									<div className={styles.goalsList}>
-										{(form.goals || []).map((goal, idx) => (
-											<div key={idx} className={styles.goalEditRow}>
-												<span className={styles.goalText}>{goal}</span>
-												<button type="button" className={styles.removeBtn} onClick={() => removeGoal(idx)} aria-label={`Remove goal`}>
-													<Icon name="close" size={16} color="var(--color-error)" />
-												</button>
-											</div>
-										))}
-									</div>
-									<div className={styles.addRow}>
-										<input
-											type="text"
-											className={`form-control ${styles.addInput}`}
-											value={goalInput}
-											onChange={(e) => setGoalInput(e.target.value)}
-											onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGoal())}
-											placeholder={t('profile.addGoal')}
-										/>
-										<Button size="sm" onClick={addGoal} disabled={!goalInput.trim()}>
-											<Icon name="add" size={16} />
-										</Button>
-									</div>
-								</>
-							) : displayGoals.length > 0 ? (
-								<div className={styles.goalsList}>
-									{displayGoals.map((goal, idx) => (
-										<BulletItem key={idx}>{goal}</BulletItem>
-									))}
-								</div>
-							) : (
-								<p className={styles.emptyText}>{t('profile.noGoals')}</p>
 							)}
 						</div>
 					</ContentCard>
