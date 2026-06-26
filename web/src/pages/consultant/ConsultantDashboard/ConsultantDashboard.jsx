@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CONSULTANT, SHARED } from '../../../routes/paths';
@@ -11,6 +11,8 @@ import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
 import { getAreas } from '../../../features/badges/api/hierarchyApi';
 import { getRewards } from '../../../features/rewards/api/rewardsApi';
 import { getGoals } from '../../../features/goals/api/goalsApi';
+import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
+import { useNotificationEvent } from '../../../features/notifications/hooks/useNotificationEvent';
 import styles from './ConsultantDashboard.module.css';
 
 // Localised "x days ago" without extra translation keys.
@@ -53,24 +55,50 @@ export default function ConsultantDashboard() {
 	const rewardsRef = useRef(null);
 	// The in-progress objective to continue (if any)
 	const [continueGoal, setContinueGoal] = useState(null);
+	// Learning-path completion progress (earned vs total badges per path)
+	const [lpProgress, setLpProgress] = useState([]);
 
-	// Fetch and sort the consultant's recent applications on mount
+	// Fetch and sort the consultant's recent applications
+	const loadRecentApps = useCallback(async () => {
+		try {
+			const apps = await getApplications();
+			const appList = Array.isArray(apps) ? apps : (apps.data || []);
+			const sorted = [...appList].sort((a, b) =>
+				new Date(b.submitted_at || b.opened_at || 0) - new Date(a.submitted_at || a.opened_at || 0));
+			setRecentApps(sorted.slice(0, 4));
+		} catch (err) {
+			console.error(err);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	// Initial load of recent applications on mount
+	useEffect(() => {
+		loadRecentApps();
+	}, [loadRecentApps]);
+
+	// Real-time: refresh recent submissions when a validation step changes one of
+	// the consultant's applications, keeping the dashboard status live (no reload).
+	useNotificationEvent('APPLICATIONS', loadRecentApps);
+
+	// Fetch learning-path progress on mount (only paths with badges are shown)
 	useEffect(() => {
 		let ignore = false;
-		(async () => {
-			try {
-				const apps = await getApplications();
-				const appList = Array.isArray(apps) ? apps : (apps.data || []);
+		getLearningPathProgress()
+			.then((data) => {
 				if (ignore) return;
-				const sorted = [...appList].sort((a, b) =>
-					new Date(b.submitted_at || b.opened_at || 0) - new Date(a.submitted_at || a.opened_at || 0));
-				setRecentApps(sorted.slice(0, 4));
-			} catch (err) {
-				console.error(err);
-			} finally {
-				if (!ignore) setLoading(false);
-			}
-		})();
+				const mapped = (data || [])
+					.map((lp) => ({
+						name: lp.path_title || lp.learning_path || '—',
+						completed: parseInt(lp.earned_badges ?? lp.badges_earned ?? 0, 10),
+						total: parseInt(lp.total_badges ?? 0, 10),
+					}))
+					.filter((lp) => lp.total > 0)
+					.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
+				setLpProgress(mapped);
+			})
+			.catch(() => { if (!ignore) setLpProgress([]); });
 		return () => { ignore = true; };
 	}, []);
 
@@ -198,6 +226,40 @@ export default function ConsultantDashboard() {
 					</div>
 				)}
 			</section>
+
+			{/* Learning paths progress */}
+			{lpProgress.length > 0 && (
+				<section className={styles.section}>
+					<div className={styles.sectionHead}>
+						<h2 className={styles.sectionTitle}>{t('consultantDashboard.learningPathsProgress')}</h2>
+						<Link to={CONSULTANT.OBJECTIVES} className={styles.viewAll}>{t('shared.viewAll')}</Link>
+					</div>
+
+					<div className={styles.lpList}>
+						{lpProgress.map((lp) => {
+							const pct = Math.min(100, Math.round((lp.completed / lp.total) * 100));
+							return (
+								<div key={lp.name} className={styles.lpRow}>
+									<div className={styles.lpInfo}>
+										<span className={styles.lpName}>{lp.name}</span>
+										<span className={styles.lpCount}>{lp.completed}/{lp.total}</span>
+									</div>
+									<div
+										className={styles.lpTrack}
+										role="progressbar"
+										aria-valuenow={pct}
+										aria-valuemin={0}
+										aria-valuemax={100}
+										aria-label={lp.name}
+									>
+										<div className={styles.lpFill} style={{ width: `${pct}%` }} />
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				</section>
+			)}
 
 			{/* Discover learning in your area */}
 			{recommendations.length > 0 && (

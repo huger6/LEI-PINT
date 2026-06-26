@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
+import { useNotificationEvent } from '../../../features/notifications/hooks/useNotificationEvent';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Icon from '../../../components/Icons/Icons';
 import styles from './MyApplications.module.css';
@@ -61,6 +62,11 @@ export default function MyApplications() {
 	useEffect(() => {
 		loadApplications();
 	}, []);
+
+	// Real-time: refresh the list the moment a validation step changes one of the
+	// consultant's applications (e.g. Submitted → In validation → Accepted/Rejected),
+	// so the status is never stale without a manual reload.
+	useNotificationEvent('APPLICATIONS', () => loadApplications());
 
 	// Loads the consultant's applications from the API
 	async function loadApplications() {

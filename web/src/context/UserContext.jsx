@@ -71,6 +71,10 @@ export function UserProvider({ children }) {
 	const [unreadCount, setUnreadCount] = useState(0);
 	// Tracks unread notification counts broken down by notification type.
 	const [unreadByType, setUnreadByType] = useState(() => createEmptyUnreadByType());
+	// Last notification received over the socket. Pages subscribe to this (via the
+	// useNotificationEvent hook) to refresh their own data in real time — e.g. the
+	// applications list updating its status the moment a validation step happens.
+	const [lastNotification, setLastNotification] = useState(null);
 
 	// Holds a ref to the active WebSocket instance for cleanup.
 	const socketRef = useRef(null);
@@ -202,6 +206,8 @@ export function UserProvider({ children }) {
 		socket.on('notification:new', (notification) => {
 			setNotificationsList((prev) => [notification, ...prev]);
 			setUnreadCount((prev) => prev + 1);
+			// Expose the raw event so subscribed pages can react (re-fetch) in real time.
+			setLastNotification(notification);
 			const notificationType = getNotificationType(notification);
 			if (notificationType) {
 				setUnreadByType((prev) => ({
@@ -276,6 +282,7 @@ export function UserProvider({ children }) {
 					pagination: notificationsPagination,
 					unreadCount,
 					unreadByType,
+					last: lastNotification,
 					markAsRead,
 					markAllAsRead,
 					fetch: fetchNotifications,

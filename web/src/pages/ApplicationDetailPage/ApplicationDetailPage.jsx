@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getApplicationById } from '../../features/applications/api/applicationsApi';
+import { useNotificationEvent } from '../../features/notifications/hooks/useNotificationEvent';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import { useUser } from '../../hooks/userContext';
 import DetailPageSkeleton from '../../components/Skeleton/DetailPageSkeleton';
@@ -38,6 +39,11 @@ export default function ApplicationDetailPage() {
 	useEffect(() => {
 		loadApplication();
 	}, [loadApplication]);
+
+	// Real-time: re-fetch when an application notification arrives so the view
+	// reflects a validation step (status, feedback, next allowed actor) without
+	// a manual reload — relevant both to the owning consultant and to reviewers.
+	useNotificationEvent('APPLICATIONS', loadApplication);
 
 	if (loading) return <DetailPageSkeleton />;
 
