@@ -178,7 +178,8 @@ const adminListRewards = async (req, res) => {
                 accessInfo: r.access_info,
                 costPoints: r.cost_points,
                 isActive: r.is_active,
-                category: r.reward_category
+                category: r.reward_category,
+                imgUrl: r.img_url || null
             }))
         });
     } catch (error) {

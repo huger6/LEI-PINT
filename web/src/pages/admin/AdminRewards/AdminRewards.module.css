@@ -1,0 +1,102 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.headerRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--color-on-background);
+}
+
+.tableCard {
+	background: var(--color-surface);
+	border: 1px solid var(--color-outline-light);
+	border-radius: 16px;
+	box-shadow: var(--shadow-card);
+	padding: 0.5rem;
+}
+
+.empty {
+	margin: 0;
+	padding: 2rem 1rem;
+	text-align: center;
+	color: var(--color-outline);
+}
+
+.table thead th {
+	font-size: 0.78rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	color: var(--color-outline);
+}
+
+.numCol { text-align: right; white-space: nowrap; }
+.actionsCol { text-align: right; }
+
+.rewardCell { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+.rewardName { font-weight: 600; color: var(--color-on-surface); }
+
+.thumb {
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	flex-shrink: 0;
+	overflow: hidden;
+	background: var(--color-purple-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.statusChip {
+	font-size: 0.72rem;
+	font-weight: 700;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+}
+.active { background: var(--color-green-soft); color: var(--color-green-on-soft); }
+.inactive { background: var(--color-surface-disabled, #eef1f4); color: var(--color-outline); }
+
+.actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
+.iconBtn {
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--color-outline-light);
+	border-radius: 8px;
+	background: transparent;
+	color: var(--color-secondary);
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.iconBtn:hover { background: var(--color-primary-hover-bg); }
+.iconBtnDanger:hover { background: var(--color-red-soft); color: var(--color-red-on-soft); border-color: var(--color-red-on-soft); }
+
+/* ── Modal form ── */
+.form { display: flex; flex-direction: column; gap: 0.9rem; }
+.field { display: flex; flex-direction: column; gap: 0.3rem; }
+.fieldLabel { font-size: 0.85rem; font-weight: 600; color: var(--color-on-surface); }
+.preview {
+	width: 100%;
+	max-height: 160px;
+	object-fit: cover;
+	border-radius: 12px;
+	border: 1px solid var(--color-outline-light);
+}
+.checkRow { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--color-on-surface); }
+.modalActions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }

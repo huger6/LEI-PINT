@@ -24,6 +24,7 @@ export const ADMIN = {
 	LEVELS: '/admin/structure/levels',
 	REQUIREMENTS: '/admin/requirements',
 	APPLICATIONS: '/admin/applications',
+	REWARDS: '/admin/rewards',
 	SLAS: '/admin/slas',
 	NOTIFICATIONS: '/admin/notifications',
 	INTEGRATIONS: '/admin/integrations',
