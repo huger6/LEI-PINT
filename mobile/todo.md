@@ -22,13 +22,10 @@
 
 - In the profile screen if i click on the choose areas option and choose different areas or add more areas and then i try to select any of the other options of customization inside of the profile screen, suddently my changes to the selected areas are discarted. Make sure every change made to the profile by the user gets properly saved and doesnt just get discarted by another change.
 
-- In the your notifications screen the user is not able to delete the notifications they received, make sure they can delete any notification be it a recent one or one that is in the all category of all the notification types (Applications, Goals, Announcements, home and all).
-
-- In the earned badges screen, when the user clicks "share" and "copy link" the link takes the user to the official site of Softinsa instead of taking the user to the public badge page that was made in the web. This public page is the same page the user is redirected to when he clicks on the icon of a badge in its individual page. The URL should be "{WEB_APP_URL .env variable}/{relative route to the intended URL, check web if ncessary}. [CRITICAL]
-
 - Points icon is wrong (at least in the homepage, evolution): it should be star-points from web. Look it up and ensure to replace it.
 
-- Reward store is not integrated with the API yet. Ensure to create the necessary DB assets to provide offline first features. 
+- There are still goofy translations like "royal village" which is "Vila Real"
+
 
 ---
 
