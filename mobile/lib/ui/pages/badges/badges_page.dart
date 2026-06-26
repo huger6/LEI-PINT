@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_links.dart';
 import '../../../models/badge_model.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
@@ -116,12 +116,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
 
   void _shareBadge() {
     final badge = _badge;
-    final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
-        ? dotenv.env['FRONTEND_URL']!.trim()
-        : 'https://softinsa.pt';
     final text =
         '${badge.title}\n${badge.description.isNotEmpty ? badge.description : ''}'
-        '\n\n$baseUrl/badges/${badge.slug}';
+        '\n\n${AppLinks.publicBadgeUrl(badge.slug)}';
     Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       final tr = LanguageScope.of(context);
@@ -181,10 +178,9 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       child: GestureDetector(
                         onTap: () {
                           if (badge.slug.trim().isEmpty) return;
-                          final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
-                              ? dotenv.env['FRONTEND_URL']!.trim()
-                              : 'https://softinsa.pt';
-                          final uri = Uri.tryParse('$baseUrl/softinsa/badges/${badge.slug}');
+                          final uri = Uri.tryParse(
+                            AppLinks.publicBadgeUrl(badge.slug),
+                          );
                           if (uri != null) {
                             launchUrl(uri, mode: LaunchMode.externalApplication);
                           }
@@ -192,6 +188,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         child: LargeBadgeIcon(
                           medalColor: badge.medalColor,
                           ribbonColor: badge.ribbonColor,
+                          imageUrl: badge.imageUrl,
                         ),
                       ),
                     ),

@@ -210,6 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             timestamp: submission.timestamp,
                             medalColor: submission.badge.medalColor,
                             ribbonColor: submission.badge.ribbonColor,
+                            imageUrl: submission.badge.imageUrl,
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -249,6 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 area: badge.category,
                                 medalColor: badge.medalColor,
                                 ribbonColor: badge.ribbonColor,
+                                imageUrl: badge.imageUrl,
                                 onTap: () {
                                   Navigator.push(
                                     context,

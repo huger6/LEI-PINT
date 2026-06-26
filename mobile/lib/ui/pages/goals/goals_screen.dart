@@ -150,7 +150,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppIcon(AppIcons.type, size: 56, color: Colors.grey[400]),
+            AppIcon(AppIcons.target, size: 56, color: Colors.grey[400]),
             const SizedBox(height: 12),
             Text(
               'Ainda não tem objetivos atribuídos.',

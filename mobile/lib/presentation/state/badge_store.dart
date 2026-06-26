@@ -177,11 +177,25 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     return badge;
   }
 
-  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+  /// Persists whether an earned badge is shown on the public profile gallery.
+  /// Returns true on success; false when the server rejected the change (the
+  /// local cache is left untouched so the UI can revert).
+  Future<bool> toggleBadgeGallery(
+    int awardedBadgeId,
+    String verificationLink,
+    bool featured,
+  ) async {
     try {
-      await _badgeRepository.toggleBadgeGallery(awardedBadgeId, featured);
+      await _badgeRepository.toggleBadgeGallery(
+        awardedBadgeId,
+        verificationLink,
+        featured,
+      );
       await _reloadEarnedFromLocal();
-    } catch (_) {}
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   List<BadgeModel> similarTo(BadgeModel badge, {int limit = 3}) {

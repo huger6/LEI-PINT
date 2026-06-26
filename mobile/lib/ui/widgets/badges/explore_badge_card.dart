@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'badge_image.dart';
 import '../shared/translated_text.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
@@ -61,7 +62,7 @@ class ExploreBadgeCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _MedalBadgeIcon(medalColor: medalColor, ribbonColor: ribbonColor),
+            _MedalBadgeIcon(medalColor: medalColor, imageUrl: imageUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -187,44 +188,19 @@ class _DetailItem extends StatelessWidget {
 }
 
 class _MedalBadgeIcon extends StatelessWidget {
-  const _MedalBadgeIcon({required this.medalColor, required this.ribbonColor});
+  const _MedalBadgeIcon({required this.medalColor, this.imageUrl});
 
   final Color medalColor;
-  final Color ribbonColor;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 82,
-      height: 132,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: 53,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 27),
-                const SizedBox(width: 3),
-                Icon(Icons.bookmark, color: ribbonColor, size: 27),
-              ],
-            ),
-          ),
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: 2),
-            ),
-            child: const Icon(
-              Icons.star,
-              color: Color(0xFFFFF6C7),
-              size: 40,
-            ),
-          ),
-        ],
+      child: BadgeImage(
+        imageUrl: imageUrl,
+        size: 68,
+        fallbackColor: medalColor,
       ),
     );
   }

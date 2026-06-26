@@ -65,7 +65,7 @@ class GoalCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: AppIcon(
-                  completed ? AppIcons.checkCircle : AppIcons.type,
+                  completed ? AppIcons.checkCircle : AppIcons.target,
                   color: completed ? AppColors.success : medalColor,
                   size: 24,
                 ),

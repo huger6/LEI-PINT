@@ -65,7 +65,7 @@ class DashboardTopBar extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const AppIcon(
-                AppIcons.type,
+                AppIcons.target,
                 color: Color(0xFF20252B),
               ),
             ),

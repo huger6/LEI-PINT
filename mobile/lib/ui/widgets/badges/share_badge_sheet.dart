@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_links.dart';
 import '../../../models/badge_model.dart';
 import '../../../models/awarded_badge_model.dart';
+import 'badge_image.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
 
@@ -11,7 +14,6 @@ Future<bool> showShareBadgeSheet(
   BuildContext context, {
   required BadgeModel badge,
   required AwardedBadgeModel award,
-  required String verificationBaseUrl,
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
@@ -24,7 +26,6 @@ Future<bool> showShareBadgeSheet(
       return _ShareBadgeContent(
         badge: badge,
         award: award,
-        verificationBaseUrl: verificationBaseUrl,
       );
     },
   );
@@ -36,19 +37,14 @@ class _ShareBadgeContent extends StatelessWidget {
   const _ShareBadgeContent({
     required this.badge,
     required this.award,
-    required this.verificationBaseUrl,
   });
 
   final BadgeModel badge;
   final AwardedBadgeModel award;
-  final String verificationBaseUrl;
 
-  String get _verificationUrl {
-    final link = award.verificationLink ?? '';
-    if (link.isEmpty) return '';
-    if (link.startsWith('http')) return link;
-    return '$verificationBaseUrl/verify/$link';
-  }
+  // Public verification URL (our web badges platform: /verify/:link).
+  String get _verificationUrl =>
+      AppLinks.verificationUrl(award.verificationLink ?? '');
 
   @override
   Widget build(BuildContext context) {
@@ -104,22 +100,10 @@ class _ShareBadgeContent extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: badge.medalColor,
-                      border: Border.all(
-                        color: const Color(0xFF7A7A7A),
-                        width: 1.4,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 36,
-                    ),
+                  BadgeImage(
+                    imageUrl: badge.imageUrl,
+                    size: 72,
+                    fallbackColor: badge.medalColor,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -180,7 +164,7 @@ class _ShareBadgeContent extends StatelessWidget {
               height: 50,
               child: ElevatedButton.icon(
                 onPressed: () => _shareOnLinkedIn(context),
-                icon: const AppIcon(AppIcons.link, size: 20),
+                icon: const AppIcon(AppIcons.linkedin, size: 20),
                 label: const Text('Partilhar no LinkedIn'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0A66C2),
@@ -195,8 +179,33 @@ class _ShareBadgeContent extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            if (_verificationUrl.isNotEmpty)
+            if (_verificationUrl.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () => _copyLink(context),
+                  icon: const AppIcon(
+                    AppIcons.link,
+                    size: 20,
+                    color: Color(0xFF0A66C2),
+                  ),
+                  label: const Text('Copiar link'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF0A66C2),
+                    side: const BorderSide(color: Color(0xFF0A66C2), width: 1.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -229,29 +238,57 @@ class _ShareBadgeContent extends StatelessWidget {
                   ],
                 ),
               ),
+            ],
           ],
         ),
       ),
     );
   }
 
+  Future<void> _copyLink(BuildContext context) async {
+    if (_verificationUrl.isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: _verificationUrl));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link copiado para a área de transferência.'),
+        backgroundColor: Color(0xFF59C13E),
+      ),
+    );
+  }
+
   Future<void> _shareOnLinkedIn(BuildContext context) async {
+    // Share the public verification URL (our web platform). Falls back to the
+    // platform home page when this badge has no verification link yet.
+    final shareTarget =
+        _verificationUrl.isNotEmpty ? _verificationUrl : AppLinks.frontendBaseUrl;
     final text = Uri.encodeComponent(
       'Acabei de obter o badge "${badge.title}" na Plataforma de Badges da Softinsa!'
       '${_verificationUrl.isNotEmpty ? '\n\nVerificação: $_verificationUrl' : ''}',
     );
 
-    final fallbackUrl = verificationBaseUrl.isNotEmpty ? verificationBaseUrl : 'https://softinsa.pt';
     final linkedInUrl = Uri.parse(
-      'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(_verificationUrl.isNotEmpty ? _verificationUrl : fallbackUrl)}&text=$text',
+      'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(shareTarget)}&text=$text',
     );
 
-    if (await canLaunchUrl(linkedInUrl)) {
-      await launchUrl(linkedInUrl, mode: LaunchMode.externalApplication);
-      if (context.mounted) {
+    // canLaunchUrl is unreliable on Android (package visibility), so launch
+    // directly and only report failure if it actually throws.
+    try {
+      final launched = await launchUrl(
+        linkedInUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched && context.mounted) {
         Navigator.pop(context, true);
+      } else if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o LinkedIn.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
-    } else {
+    } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

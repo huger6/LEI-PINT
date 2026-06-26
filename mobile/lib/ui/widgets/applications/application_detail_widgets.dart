@@ -63,6 +63,7 @@ class ApplicationDetailHeader extends StatelessWidget {
           BadgeMedalIcon(
             medalColor: badge.medalColor,
             ribbonColor: badge.ribbonColor,
+            imageUrl: badge.imageUrl,
           ),
           const SizedBox(height: 8),
           TranslatedText(

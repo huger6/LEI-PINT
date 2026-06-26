@@ -298,6 +298,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                   BadgeMedalIcon(
                     medalColor: widget.badge.medalColor,
                     ribbonColor: widget.badge.ribbonColor,
+                    imageUrl: widget.badge.imageUrl,
                     compact: true,
                   ),
                   const SizedBox(width: 10),

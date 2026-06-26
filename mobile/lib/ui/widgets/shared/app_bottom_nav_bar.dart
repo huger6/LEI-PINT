@@ -43,7 +43,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomNavItem(
-              icon: AppIcons.badgePremium,
+              icon: AppIcons.badge,
               label: tr.tr('navBadges'),
               isActive: currentTab == AppTab.badges,
               onTap: () => _handleTap(context, AppTab.badges),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
+import '../badges/badge_image.dart';
 import '../shared/translated_text.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
@@ -61,6 +62,7 @@ class SelectedBadgeCard extends StatelessWidget {
         SelectedBadgeMedal(
           medalColor: badge.medalColor,
           ribbonColor: badge.ribbonColor,
+          imageUrl: badge.imageUrl,
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -110,45 +112,21 @@ class SelectedBadgeMedal extends StatelessWidget {
     super.key,
     required this.medalColor,
     required this.ribbonColor,
+    this.imageUrl,
   });
 
   final Color medalColor;
   final Color ribbonColor;
 
+  /// The badge's actual (SVG) artwork; falls back to a generic badge icon.
+  final String? imageUrl;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 46,
-      height: 48,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            bottom: 0,
-            child: Row(
-              children: [
-                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 15),
-                const SizedBox(width: 2),
-                AppIcon(AppIcons.bookmark, color: ribbonColor, size: 15),
-              ],
-            ),
-          ),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: 1.2),
-            ),
-            child: const AppIcon(
-              AppIcons.star,
-              color: Color(0xFFFFF6C7),
-              size: 20,
-            ),
-          ),
-        ],
-      ),
+    return BadgeImage(
+      imageUrl: imageUrl,
+      size: 42,
+      fallbackColor: medalColor,
     );
   }
 }

@@ -136,7 +136,20 @@ class ApiEndpoints {
   static const String getLevels = '/api/levels';
   static const String getAnnouncements = '/api/announcements';
   static const String getNotifications = '/api/notifications';
+
+  // GET /notifications/preferences - list the user's notification preferences.
+  static const String notificationPreferences =
+      '/api/notifications/preferences';
+
+  // PUT /notifications/preferences/:definitionId - update one preference.
+  static String updateNotificationPreference(int definitionId) =>
+      '/api/notifications/preferences/$definitionId';
   static const String getEarnedBadges = '/api/gamification/earned-badges';
+
+  // PATCH /gamification/earned-badges/:verificationLink/featured - toggle
+  // whether an earned badge is shown on the public profile gallery.
+  static String setBadgeFeatured(String verificationLink) =>
+      '/api/gamification/earned-badges/$verificationLink/featured';
   static const String getPointsHistory =
       '/api/statistics/consultant/points-history';
   static const String getTimeline =

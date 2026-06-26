@@ -348,47 +348,6 @@ class _BadgeEmailConfirmationBodyState
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed:
-                (_cooldownSeconds > 0 || _isSending) ? null : _handleSend,
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: (_cooldownSeconds > 0 || _isSending)
-                    ? colorScheme.outline.withValues(alpha: 0.3)
-                    : colorScheme.primary,
-                width: 1.5,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            child: _isSending
-                ? SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: colorScheme.primary,
-                    ),
-                  )
-                : Text(
-                    _cooldownSeconds > 0
-                        ? tr.tr('resendEmailCooldown').replaceAll('{seconds}', '$_cooldownSeconds')
-                        : tr.tr('resendEmail'),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: _cooldownSeconds > 0
-                          ? colorScheme.outline
-                          : colorScheme.primary,
-                    ),
-                  ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
           height: 46,
           child: TextButton(
             onPressed: widget.onGoToDashboard,

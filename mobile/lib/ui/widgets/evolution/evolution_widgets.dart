@@ -155,7 +155,7 @@ class MainBadgesCard extends StatelessWidget {
                           sideTitles: SideTitles(
                             showTitles: true,
                             interval: 1,
-                            reservedSize: 24,
+                            reservedSize: 32,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
                               if (index < 0 || index >= labels.length) {
@@ -582,7 +582,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            reservedSize: 24,
+                            reservedSize: 28,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
                               if (index < 0 || index >= labels.length) {
@@ -638,11 +638,13 @@ class ActivityItem {
     required this.title,
     required this.timeAgo,
     required this.icon,
+    this.onTap,
   });
 
   final String title;
   final String timeAgo;
   final String icon;
+  final VoidCallback? onTap;
 }
 
 class RecentActivitySection extends StatelessWidget {
@@ -676,7 +678,9 @@ class RecentActivitySection extends StatelessWidget {
             separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final activity = activities[index];
-              return Container(
+              return GestureDetector(
+                onTap: activity.onTap,
+                child: Container(
                 width: 176,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -717,6 +721,7 @@ class RecentActivitySection extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
                 ),
               );
             },

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/utils/app_links.dart';
 import '../../../models/earned_badge_model.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
@@ -55,20 +55,20 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
   }
 
   String _generateHtml(List<EarnedBadge> earned, String userName, String areaName, String userEmail) {
-    final baseUrl = dotenv.env['FRONTEND_URL']?.trim().isNotEmpty == true
-        ? dotenv.env['FRONTEND_URL']!.trim()
-        : 'https://softinsa.pt';
-
     final selectedBadges = earned.where((e) => _selectedBadgeIds.contains(e.badge.id)).toList();
 
     final badgeCells = selectedBadges.map((eb) {
       final badge = eb.badge;
-      final link = eb.award.verificationLink ?? '';
-      final verifyUrl = link.startsWith('http') ? link : '$baseUrl/verify/$link';
-      final colorHex = '#${badge.medalColor.toARGB32().toRadixString(16).substring(2)}';
+      // Public verification URL on our web platform (/verify/:link).
+      final verifyUrl = AppLinks.verificationUrl(eb.award.verificationLink ?? '');
+      final imageUrl = badge.imageUrl?.trim() ?? '';
+      // Prefer the badge's real artwork; fall back to a colored medal disc.
+      final visual = imageUrl.isNotEmpty
+          ? '<img src="$imageUrl" alt="${badge.title}" width="40" height="40" style="display:inline-block;border:0;" />'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:#${badge.medalColor.toARGB32().toRadixString(16).substring(2)};border:2px solid #876E2C;display:inline-block;line-height:36px;color:#FFF6C7;font-size:18px;">&#9733;</div>';
       final cell = '<td style="text-align:center;padding:4px 8px;">'
           '<a href="$verifyUrl" style="text-decoration:none;">'
-          '<div style="width:36px;height:36px;border-radius:50%;background:$colorHex;border:2px solid #876E2C;display:inline-block;line-height:36px;color:#FFF6C7;font-size:18px;">&#9733;</div>'
+          '$visual'
           '<br><span style="font-size:10px;color:#3A4A57;">${badge.title}</span>'
           '</a></td>';
       return cell;
@@ -304,6 +304,7 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
                                 EmailSignatureBadgeMedalIcon(
                                   medalColor: badge.medalColor,
                                   ribbonColor: badge.ribbonColor,
+                                  imageUrl: badge.imageUrl,
                                   size: 48,
                                 ),
                                 const SizedBox(height: 6),
@@ -454,6 +455,7 @@ ${selectedBadges.isNotEmpty ? '<tr><td style="padding-top:8px;"><table><tr>$badg
                               child: EmailSignatureBadgeMedalIcon(
                                 medalColor: badge.medalColor,
                                 ribbonColor: badge.ribbonColor,
+                                imageUrl: badge.imageUrl,
                                 size: 30,
                               ),
                             );

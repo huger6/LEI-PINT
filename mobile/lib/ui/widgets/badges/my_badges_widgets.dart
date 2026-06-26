@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import 'badge_image.dart';
 import '../shared/translated_text.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
@@ -93,6 +94,7 @@ class AchievedBadgeCard extends StatelessWidget {
                 BadgeMedalIcon(
                   medalColor: badge.medalColor,
                   ribbonColor: badge.ribbonColor,
+                  imageUrl: badge.imageUrl,
                   compact: true,
                 ),
                 const SizedBox(width: 12),
@@ -353,6 +355,7 @@ class ApplicationCard extends StatelessWidget {
           BadgeMedalIcon(
             medalColor: badge.medalColor,
             ribbonColor: badge.ribbonColor,
+            imageUrl: badge.imageUrl,
             compact: true,
           ),
           const SizedBox(width: 10),
@@ -471,52 +474,32 @@ class BadgeMedalIcon extends StatelessWidget {
     super.key,
     required this.medalColor,
     required this.ribbonColor,
+    this.imageUrl,
     this.compact = false,
   });
 
   final Color medalColor;
   final Color ribbonColor;
+
+  /// The badge's actual (SVG) artwork. When absent, a generic badge icon
+  /// matching the web front-office is shown instead of a mock medal.
+  final String? imageUrl;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final medalSize = compact ? 44.0 : 58.0;
-    final ribbonIconSize = compact ? 18.0 : 22.0;
-    final iconSize = compact ? 25.0 : 33.0;
-    final topOffset = compact ? 35.0 : 45.0;
-    final borderWidth = compact ? 1.5 : 2.0;
+    final medalSize = compact ? 48.0 : 64.0;
 
     return SizedBox(
       width: compact ? 54 : 72,
       height: compact ? 78 : 94,
-      child: Stack(
+      child: Align(
         alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: topOffset,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: ribbonIconSize),
-                const SizedBox(width: 2),
-                Icon(Icons.bookmark, color: ribbonColor, size: ribbonIconSize),
-              ],
-            ),
-          ),
-          Container(
-            width: medalSize,
-            height: medalSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: borderWidth),
-            ),
-            child: Icon(
-              Icons.star,
-              color: const Color(0xFFFFF6C7),
-              size: iconSize,
-            ),
-          ),
-        ],
+        child: BadgeImage(
+          imageUrl: imageUrl,
+          size: medalSize,
+          fallbackColor: medalColor,
+        ),
       ),
     );
   }

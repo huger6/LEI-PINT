@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import 'badge_image.dart';
 import '../shared/translated_text.dart';
 import '../../../models/badge_model.dart';
 import '../shared/app_icon/app_icon.dart';
@@ -147,44 +148,30 @@ class BadgeInfoChip extends StatelessWidget {
 }
 
 class LargeBadgeIcon extends StatelessWidget {
-  const LargeBadgeIcon({super.key, required this.medalColor, required this.ribbonColor});
+  const LargeBadgeIcon({
+    super.key,
+    required this.medalColor,
+    required this.ribbonColor,
+    this.imageUrl,
+  });
 
   final Color medalColor;
   final Color ribbonColor;
+
+  /// The badge's actual (SVG) artwork; falls back to a generic badge icon.
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 142,
-      height: 190,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: 94,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 50),
-                const SizedBox(width: 4),
-                Icon(Icons.bookmark, color: ribbonColor, size: 50),
-              ],
-            ),
-          ),
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: 4),
-            ),
-            child: const Icon(
-              Icons.star,
-              color: Color(0xFFFFF6C7),
-              size: 72,
-            ),
-          ),
-        ],
+      height: 150,
+      child: Center(
+        child: BadgeImage(
+          imageUrl: imageUrl,
+          size: 130,
+          fallbackColor: medalColor,
+        ),
       ),
     );
   }

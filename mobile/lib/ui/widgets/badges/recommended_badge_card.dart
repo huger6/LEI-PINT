@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'badge_image.dart';
 import '../shared/translated_text.dart';
 
 class RecommendedBadgeCard extends StatelessWidget {
@@ -9,6 +10,7 @@ class RecommendedBadgeCard extends StatelessWidget {
     required this.area,
     required this.medalColor,
     required this.ribbonColor,
+    this.imageUrl,
     this.onTap,
   });
 
@@ -16,6 +18,9 @@ class RecommendedBadgeCard extends StatelessWidget {
   final String area;
   final Color medalColor;
   final Color ribbonColor;
+
+  /// The badge's actual (SVG) artwork; falls back to a generic badge icon.
+  final String? imageUrl;
   final VoidCallback? onTap;
 
   @override
@@ -36,41 +41,10 @@ class RecommendedBadgeCard extends StatelessWidget {
           children: [
             Expanded(
               child: Center(
-                child: SizedBox(
-                  width: 72,
-                  height: 90,
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Positioned(
-                        top: 44,
-                        child: Row(
-                          children: [
-                            Icon(Icons.bookmark, color: ribbonColor, size: 26),
-                            const SizedBox(width: 2),
-                            Icon(Icons.bookmark, color: ribbonColor, size: 26),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: medalColor,
-                          border: Border.all(
-                            color: const Color(0xFF876E2C),
-                            width: 2,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.star,
-                          color: Color(0xFFFFF6C7),
-                          size: 34,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: BadgeImage(
+                  imageUrl: imageUrl,
+                  size: 68,
+                  fallbackColor: medalColor,
                 ),
               ),
             ),

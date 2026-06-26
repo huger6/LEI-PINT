@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/notification_defs.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../models/notification_model.dart';
+import '../../../models/notification_preference_model.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
+import '../shared/translated_text.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -305,6 +308,143 @@ class NotificationCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A settings card for a single notification type, with a master toggle and
+/// per-channel (push / email) switches. Controlled: the parent owns the state.
+class NotificationPreferenceCard extends StatelessWidget {
+  const NotificationPreferenceCard({
+    super.key,
+    required this.preference,
+    required this.onChanged,
+  });
+
+  final NotificationPreferenceModel preference;
+  final void Function({
+    required bool isEnabled,
+    required bool sendPush,
+    required bool sendEmail,
+  }) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TranslatedText(
+                  preference.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2932),
+                  ),
+                ),
+              ),
+              Switch(
+                value: preference.isEnabled,
+                activeColor: AppColors.primary,
+                onChanged: (value) => onChanged(
+                  isEnabled: value,
+                  sendPush: preference.sendPush,
+                  sendEmail: preference.sendEmail,
+                ),
+              ),
+            ],
+          ),
+          if (preference.description.trim().isNotEmpty)
+            TranslatedText(
+              preference.description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5B6773),
+                height: 1.3,
+              ),
+            ),
+          if (preference.isEnabled) ...[
+            const SizedBox(height: 6),
+            _ChannelToggle(
+              icon: AppIcons.bell,
+              label: tr.tr('notificationChannelPush'),
+              value: preference.sendPush,
+              onChanged: (value) => onChanged(
+                isEnabled: preference.isEnabled,
+                sendPush: value,
+                sendEmail: preference.sendEmail,
+              ),
+            ),
+            _ChannelToggle(
+              icon: AppIcons.email,
+              label: tr.tr('notificationChannelEmail'),
+              value: preference.sendEmail,
+              onChanged: (value) => onChanged(
+                isEnabled: preference.isEnabled,
+                sendPush: preference.sendPush,
+                sendEmail: value,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ChannelToggle extends StatelessWidget {
+  const _ChannelToggle({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        AppIcon(icon, size: 18, color: AppColors.iconMuted),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3A4A57),
+            ),
+          ),
+        ),
+        Switch(
+          value: value,
+          activeColor: AppColors.primary,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }

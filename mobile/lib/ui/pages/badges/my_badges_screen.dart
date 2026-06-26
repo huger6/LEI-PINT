@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_links.dart';
 import '../../../data/local/current_user_dao.dart';
 import '../../../data/repositories/applications_repo.dart';
 import '../../../data/repositories/badge_repo.dart';
@@ -140,14 +140,10 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     if (!mounted) return;
 
-    final verificationBaseUrl =
-        dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
-
     final shared = await showShareBadgeSheet(
       context,
       badge: earned.badge,
       award: earned.award,
-      verificationBaseUrl: verificationBaseUrl,
     );
 
     if (shared && mounted) {
@@ -173,12 +169,7 @@ class _MyBadgesScreenState extends State<MyBadgesScreen> {
 
     if (link == null || link.isEmpty) return;
 
-    final verificationBaseUrl =
-        dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
-
-    final fullUrl = link.startsWith('http')
-        ? link
-        : '$verificationBaseUrl/verify/$link';
+    final fullUrl = AppLinks.verificationUrl(link);
 
     final uri = Uri.tryParse(fullUrl);
     if (uri == null) return;

@@ -53,6 +53,7 @@ class GalleryBadgeCard extends StatelessWidget {
           BadgeMedalIcon(
             medalColor: badge.medalColor,
             ribbonColor: badge.ribbonColor,
+            imageUrl: badge.imageUrl,
             compact: true,
           ),
           const SizedBox(width: 10),

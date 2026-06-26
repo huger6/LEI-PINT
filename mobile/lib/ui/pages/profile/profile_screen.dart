@@ -278,6 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileMenuTile(
                 icon: AppIcons.bell,
                 label: tr.tr('notificationPreferences'),
+                onTap: () => context.push(AppRouter.notificationPreferences),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(

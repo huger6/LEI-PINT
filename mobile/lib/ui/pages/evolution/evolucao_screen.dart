@@ -9,6 +9,7 @@ import '../../../presentation/state/language_controller.dart';
 import '../../../core/routes/app_router.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
+import '../applications/application_detail_screen.dart';
 import 'points_detail_screen.dart';
 import '../../widgets/shared/app_icon/app_icon_data.dart';
 
@@ -79,6 +80,15 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
             title: s.badge.title,
             timeAgo: tr.tr('timeAgoValue').replaceAll('{time}', s.timestamp),
             icon: AppIcons.badgePremium,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ApplicationDetailScreen(application: s.application),
+                ),
+              );
+            },
           ),
         )
         .toList(growable: false);

@@ -133,10 +133,23 @@ class BadgeRepository {
     );
   }
 
-  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+  /// Toggles whether an earned badge is shown on the public profile gallery.
+  ///
+  /// The server identifies the awarded badge by its public verification link
+  /// (never the PK). The local cache is only updated after the server confirms
+  /// the change; the error is rethrown so callers can notify the user.
+  Future<void> toggleBadgeGallery(
+    int awardedBadgeId,
+    String verificationLink,
+    bool featured,
+  ) async {
+    if (verificationLink.trim().isEmpty) {
+      throw Exception('Missing verification link for badge gallery update.');
+    }
+
     await _apiClient.patch(
-      ApiEndpoints.getEarnedBadges,
-      data: {'is_featured': featured},
+      ApiEndpoints.setBadgeFeatured(verificationLink),
+      data: {'featured': featured},
     );
     await _awardedBadgeDao.updateFeatured(awardedBadgeId, featured);
   }

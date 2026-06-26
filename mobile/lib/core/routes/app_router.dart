@@ -23,6 +23,7 @@ import '../../ui/pages/profile/help_screen.dart';
 import '../../ui/pages/profile/badge_gallery_screen.dart';
 import '../../ui/pages/profile/terms_conditions_screen.dart';
 import '../../ui/pages/goals/goals_screen.dart';
+import '../../ui/pages/notifications/notification_preferences_screen.dart';
 import '../../ui/widgets/shared/no_connection/no_connection_widget.dart';
 import '../../ui/widgets/shared/screen_scope/screen_scope.dart';
 import '../constants/screen_data_scope.dart';
@@ -50,6 +51,7 @@ class AppRouter {
   static const String help = '/help';
   static const String badgeGallery = '/badge-gallery';
   static const String goals = '/goals';
+  static const String notificationPreferences = '/notification-preferences';
 }
 
 GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
@@ -178,6 +180,13 @@ GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
         builder: (context, state) => _buildWithScope(
           AppRouter.goals,
           const GoalsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.notificationPreferences,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.notificationPreferences,
+          const NotificationPreferencesScreen(),
         ),
       ),
     ],

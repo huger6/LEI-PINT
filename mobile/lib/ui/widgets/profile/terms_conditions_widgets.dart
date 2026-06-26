@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/api_endpoints.dart';
 import '../../../core/database/database_helper.dart';
 import '../../../data/local/gdpr_policy_dao.dart';
+import '../../../data/remote/api_client.dart';
 import '../../../injection_container.dart';
 import '../../../models/gdpr_policy_model.dart';
 import '../../../presentation/state/language_controller.dart';
@@ -25,12 +27,34 @@ class _TermsConditionsContentState extends State<TermsConditionsContent> {
 
   Future<void> _loadPolicies() async {
     final dao = GdprPolicyDao(getIt<LocalDatabase>());
-    final policies = await dao.getAll();
+
+    // Offline-first: show whatever is cached locally first.
+    final cached = await dao.getAll();
     if (mounted) {
       setState(() {
-        _policies = policies;
+        _policies = cached;
         _loading = false;
       });
+    }
+
+    // Then refresh from the API (privacy / terms / cookies policies) and cache.
+    try {
+      final payload = await getIt<ApiClient>().get(ApiEndpoints.getGdprPolicies);
+      final data = (payload is Map && payload['data'] is List)
+          ? payload['data'] as List
+          : (payload is List ? payload : const []);
+      final policies = data
+          .whereType<Map>()
+          .map((e) => GdprPolicyModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (policies.isNotEmpty) {
+        await dao.replaceAll(policies);
+        if (mounted) {
+          setState(() => _policies = policies);
+        }
+      }
+    } catch (_) {
+      // Keep the cached/fallback content when offline.
     }
   }
 
