@@ -303,7 +303,6 @@ export default function ConsultantDashboard() {
 					<div className={styles.sectionHead}>
 						<h2 className={styles.sectionTitle}>{t('consultantDashboard.rewardsSpotlight')}</h2>
 						<div className={styles.carouselNav}>
-							<Link to={CONSULTANT.STORE || '/store'} className={styles.viewAll}>{t('shared.viewAll')}</Link>
 							<button type="button" className={styles.navBtn} onClick={() => scrollCarousel('prev', rewardsRef)} aria-label={t('shared.previous', { defaultValue: 'Anterior' })}>
 								<Icon name="chevron_backward" size={18} aria-hidden="true" />
 							</button>
