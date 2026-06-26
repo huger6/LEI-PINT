@@ -675,6 +675,11 @@
 			"days": "{{count}}d ago"
 		}
 	},
+	"imageUpload": {
+		"upload": "Upload image",
+		"failed": "Failed to upload the image.",
+		"previewAlt": "Preview"
+	},
 	"createGoal": {
 		"title": "Add to objective",
 		"hint": "Set up your objective for this badge. Date fields are optional.",
@@ -1192,7 +1197,7 @@
 		"name": "Name",
 		"category": "Category",
 		"cost": "Cost (points)",
-		"imgUrl": "Image (URL)",
+		"imgUrl": "Image",
 		"accessLink": "Access link",
 		"accessInfo": "Access info (emailed)",
 		"description": "Description",

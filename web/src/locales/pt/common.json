@@ -549,6 +549,11 @@
 			"days": "{{count}}d atrás"
 		}
 	},
+	"imageUpload": {
+		"upload": "Carregar imagem",
+		"failed": "Falha ao carregar a imagem.",
+		"previewAlt": "Pré-visualização"
+	},
 	"createGoal": {
 		"title": "Adicionar ao objetivo",
 		"hint": "Define o teu objetivo para este badge. Os campos de data são opcionais.",
@@ -1034,7 +1039,7 @@
 		"name": "Nome",
 		"category": "Categoria",
 		"cost": "Custo (pontos)",
-		"imgUrl": "Imagem (URL)",
+		"imgUrl": "Imagem",
 		"accessLink": "Link de acesso",
 		"accessInfo": "Info de acesso (enviada por email)",
 		"description": "Descrição",

@@ -549,6 +549,11 @@
 			"days": "hace {{count}}d"
 		}
 	},
+	"imageUpload": {
+		"upload": "Subir imagen",
+		"failed": "No se pudo subir la imagen.",
+		"previewAlt": "Vista previa"
+	},
 	"createGoal": {
 		"title": "Añadir al objetivo",
 		"hint": "Configura tu objetivo para esta insignia. Los campos de fecha son opcionales.",
@@ -1034,7 +1039,7 @@
 		"name": "Nombre",
 		"category": "Categoría",
 		"cost": "Coste (puntos)",
-		"imgUrl": "Imagen (URL)",
+		"imgUrl": "Imagen",
 		"accessLink": "Enlace de acceso",
 		"accessInfo": "Info de acceso (enviada por email)",
 		"description": "Descripción",

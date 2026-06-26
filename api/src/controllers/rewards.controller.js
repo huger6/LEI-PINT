@@ -5,6 +5,7 @@ const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/rewards.validation');
 const gamificationService = require('../services/gamification.service');
 const { sendRewardRedemptionEmail } = require('../services/email.service');
+const { moveStructureImageToPermanent } = require('../services/storage.service');
 const redis = require('../config/redis');
 
 // Public store shape — never leaks access_link/access_info (those are revealed
@@ -201,6 +202,14 @@ const createReward = async (req, res) => {
             is_active: body.isActive ?? true,
             reward_category: body.category ?? null
         });
+
+        // Promote a freshly uploaded image from temp storage to a permanent path
+        // keyed by the reward's GUID (otherwise the temp file may be reaped).
+        if (body.imgUrl && body.imgUrl.includes('/temp/')) {
+            const permanentUrl = await moveStructureImageToPermanent('rewards', body.imgUrl, reward.reward_guid);
+            if (permanentUrl !== body.imgUrl) await reward.update({ img_url: permanentUrl });
+        }
+
         return res.status(201).json({ success: true, code: 'REWARDS_CREATED', data: { rewardGuid: reward.reward_guid } });
     } catch (error) {
         if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
@@ -218,7 +227,12 @@ const updateReward = async (req, res) => {
         if (body.description !== undefined) fields.reward_description = body.description;
         if (body.accessLink !== undefined) fields.access_link = body.accessLink;
         if (body.accessInfo !== undefined) fields.access_info = body.accessInfo;
-        if (body.imgUrl !== undefined) fields.img_url = body.imgUrl;
+        if (body.imgUrl !== undefined) {
+            // Move a newly uploaded temp image to a permanent reward-scoped path.
+            fields.img_url = body.imgUrl && body.imgUrl.includes('/temp/')
+                ? await moveStructureImageToPermanent('rewards', body.imgUrl, rewardGuid)
+                : body.imgUrl;
+        }
         if (body.costPoints !== undefined) fields.cost_points = body.costPoints;
         if (body.isActive !== undefined) fields.is_active = body.isActive;
         if (body.category !== undefined) fields.reward_category = body.category;

@@ -5,6 +5,7 @@ import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
+import ImageUploadField from '../../../components/ImageUploadField/ImageUploadField';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
@@ -46,6 +47,8 @@ export default function AdminRewards() {
 	const [errors, setErrors] = useState({});
 	// Save in-flight flag.
 	const [saving, setSaving] = useState(false);
+	// True while a reward image is uploading (blocks Save).
+	const [imgUploading, setImgUploading] = useState(false);
 	// Reward pending delete confirmation.
 	const [confirmDelete, setConfirmDelete] = useState(null);
 
@@ -100,7 +103,6 @@ export default function AdminRewards() {
 		const next = {};
 		if (!form.name.trim()) next.name = t('adminRewards.errName');
 		if (form.costPoints === '' || Number(form.costPoints) < 0) next.costPoints = t('adminRewards.errCost');
-		if (form.imgUrl && !/^https?:\/\//i.test(form.imgUrl.trim())) next.imgUrl = t('adminRewards.errUrl');
 		if (form.accessLink && !/^https?:\/\//i.test(form.accessLink.trim())) next.accessLink = t('adminRewards.errUrl');
 		setErrors(next);
 		return Object.keys(next).length === 0;
@@ -234,10 +236,13 @@ export default function AdminRewards() {
 
 						<FormInput label={t('adminRewards.cost')} type="number" min={0} value={form.costPoints} onChange={(e) => setField('costPoints', e.target.value)} error={errors.costPoints} required />
 
-						<FormInput label={t('adminRewards.imgUrl')} value={form.imgUrl} onChange={(e) => setField('imgUrl', e.target.value)} error={errors.imgUrl} placeholder="https://…" />
-						{form.imgUrl && /^https?:\/\//i.test(form.imgUrl) && (
-							<img className={styles.preview} src={form.imgUrl} alt={t('adminRewards.preview')} />
-						)}
+						<ImageUploadField
+							label={t('adminRewards.imgUrl')}
+							value={form.imgUrl}
+							onChange={(url) => setField('imgUrl', url)}
+							onUploadingChange={setImgUploading}
+							disabled={saving}
+						/>
 
 						<FormInput label={t('adminRewards.accessLink')} value={form.accessLink} onChange={(e) => setField('accessLink', e.target.value)} error={errors.accessLink} placeholder="https://…" />
 						<FormInput label={t('adminRewards.accessInfo')} value={form.accessInfo} onChange={(e) => setField('accessInfo', e.target.value)} />
@@ -250,7 +255,7 @@ export default function AdminRewards() {
 
 						<div className={styles.modalActions}>
 							<Button variant="outlined" color="primary" onClick={() => setModalOpen(false)} disabled={saving}>{t('shared.cancel')}</Button>
-							<Button onClick={handleSave} loading={saving}>{t('shared.save')}</Button>
+							<Button onClick={handleSave} loading={saving} disabled={imgUploading}>{t('shared.save')}</Button>
 						</div>
 					</div>
 				</Modal>
