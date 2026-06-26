@@ -9,6 +9,8 @@ import Icon from '../../../components/Icons/Icons';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
 import { getBadgesCatalog } from '../../../features/badges/api/badgesApi';
 import { getAreas } from '../../../features/badges/api/hierarchyApi';
+import { getRewards } from '../../../features/rewards/api/rewardsApi';
+import { getGoals } from '../../../features/goals/api/goalsApi';
 import styles from './ConsultantDashboard.module.css';
 
 // Localised "x days ago" without extra translation keys.
@@ -45,6 +47,12 @@ export default function ConsultantDashboard() {
 	const [loading, setLoading] = useState(true);
 	// Hold a ref to the recommendations carousel DOM element for scrolling
 	const carouselRef = useRef(null);
+	// A few store rewards to spotlight as a carousel
+	const [rewards, setRewards] = useState([]);
+	// Ref to the rewards carousel for scrolling
+	const rewardsRef = useRef(null);
+	// The in-progress objective to continue (if any)
+	const [continueGoal, setContinueGoal] = useState(null);
 
 	// Fetch and sort the consultant's recent applications on mount
 	useEffect(() => {
@@ -88,14 +96,59 @@ export default function ConsultantDashboard() {
 		return () => { ignore = true; };
 	}, [user]);
 
-	// Scroll the recommendations carousel left or right by a fixed amount
-	function scrollCarousel(dir) {
-		carouselRef.current?.scrollBy({ left: dir === 'next' ? 320 : -320, behavior: 'smooth' });
+	// Spotlight a few store rewards (carousel) on the dashboard
+	useEffect(() => {
+		let ignore = false;
+		getRewards()
+			.then((store) => { if (!ignore) setRewards((store.rewards || []).slice(0, 9)); })
+			.catch(() => { if (!ignore) setRewards([]); });
+		return () => { ignore = true; };
+	}, []);
+
+	// Pick an in-progress objective to "continue" (one with a started application)
+	useEffect(() => {
+		let ignore = false;
+		getGoals()
+			.then((data) => {
+				const list = Array.isArray(data) ? data : (data?.data || []);
+				const inProgress = list.find((g) => g.application) || list[0] || null;
+				if (!ignore) setContinueGoal(inProgress);
+			})
+			.catch(() => { if (!ignore) setContinueGoal(null); });
+		return () => { ignore = true; };
+	}, []);
+
+	// Scroll a carousel (by ref) left or right by a fixed amount
+	function scrollCarousel(dir, ref = carouselRef) {
+		ref.current?.scrollBy({ left: dir === 'next' ? 320 : -320, behavior: 'smooth' });
 	}
 
 	return (
 		<div className={styles.page}>
 			<WelcomeCard />
+
+			{/* Continue / propose an objective */}
+			{continueGoal && (
+				<section className={styles.goalBanner}>
+					<div className={styles.goalIcon}><Icon name="target" size={24} color="var(--color-primary)" aria-hidden="true" /></div>
+					<div className={styles.goalBody}>
+						<span className={styles.goalLabel}>{continueGoal.application ? t('consultantDashboard.continueObjective') : t('consultantDashboard.proposedObjective')}</span>
+						<span className={styles.goalName}>{continueGoal.badge_badge?.badge_title || continueGoal.event_title || '—'}</span>
+					</div>
+					<Button
+						size="sm"
+						onClick={() => navigate(
+							continueGoal.application?.application_guid
+								? `${SHARED.APPLICATIONS}/${continueGoal.application.application_guid}`
+								: continueGoal.badge_badge?.badge_slug
+									? `/badges/${continueGoal.badge_badge.badge_slug}`
+									: CONSULTANT.OBJECTIVES
+						)}
+					>
+						<Icon name="chevron_forward" size={14} /> {continueGoal.application ? t('consultantDashboard.resume') : t('consultantDashboard.start')}
+					</Button>
+				</section>
+			)}
 
 			{/* Recent submissions */}
 			<section className={styles.section}>
@@ -178,6 +231,38 @@ export default function ConsultantDashboard() {
 								</Link>
 							);
 						})}
+					</div>
+				</section>
+			)}
+
+			{/* Rewards spotlight */}
+			{rewards.length > 0 && (
+				<section className={styles.section}>
+					<div className={styles.sectionHead}>
+						<h2 className={styles.sectionTitle}>{t('consultantDashboard.rewardsSpotlight')}</h2>
+						<div className={styles.carouselNav}>
+							<Link to={CONSULTANT.STORE || '/store'} className={styles.viewAll}>{t('shared.viewAll')}</Link>
+							<button type="button" className={styles.navBtn} onClick={() => scrollCarousel('prev', rewardsRef)} aria-label={t('shared.previous', { defaultValue: 'Anterior' })}>
+								<Icon name="chevron_backward" size={18} aria-hidden="true" />
+							</button>
+							<button type="button" className={styles.navBtn} onClick={() => scrollCarousel('next', rewardsRef)} aria-label={t('shared.next', { defaultValue: 'Seguinte' })}>
+								<Icon name="chevron_forward" size={18} aria-hidden="true" />
+							</button>
+						</div>
+					</div>
+
+					<div className={styles.carousel} ref={rewardsRef}>
+						{rewards.map((r) => (
+							<Link key={r.rewardGuid} to={CONSULTANT.STORE || '/store'} className={styles.recCard}>
+								<div className={styles.recThumb}>
+									{r.imgUrl ? <img src={r.imgUrl} alt="" loading="lazy" /> : <Icon name="badge-premium" size={40} color="var(--color-purple-on-soft)" aria-hidden="true" />}
+								</div>
+								<h3 className={styles.recTitle}>{r.name}</h3>
+								<p className={styles.recDesc}>
+									<Icon name="star-points" size={13} color="var(--color-warning)" aria-hidden="true" /> {Number(r.costPoints).toLocaleString('pt-PT')} {t('store.points')}
+								</p>
+							</Link>
+						))}
 					</div>
 				</section>
 			)}
