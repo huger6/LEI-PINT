@@ -15,6 +15,7 @@ import '../data/local/lang_dao.dart';
 import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/local/my_application_dao.dart';
+import '../data/local/my_area_dao.dart';
 import '../data/local/my_favorite_dao.dart';
 import '../data/local/my_skill_dao.dart';
 import '../data/local/notification_dao.dart';
@@ -161,6 +162,12 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<MyFavoriteDao>()) {
     getIt.registerLazySingleton<MyFavoriteDao>(
       () => MyFavoriteDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<MyAreaDao>()) {
+    getIt.registerLazySingleton<MyAreaDao>(
+      () => MyAreaDao(getIt<LocalDatabase>()),
     );
   }
 

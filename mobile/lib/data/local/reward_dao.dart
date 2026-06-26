@@ -38,7 +38,6 @@ class RewardDao {
 
     for (final reward in rewards) {
       batch.insert(LocalDatabase.rewardsTable, {
-        'id': reward.id,
         'reward_guid': reward.rewardGuid,
         'reward_name': reward.rewardName,
         'reward_description': reward.rewardDescription,

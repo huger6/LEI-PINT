@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/database_helper.dart';
 import '../../core/services/fcm_service.dart';
 import '../../data/local/current_user_dao.dart';
+import '../../data/local/my_area_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../data/remote/supabase_storage_service.dart';
 import '../../data/repositories/auth_repo.dart';
@@ -15,13 +16,15 @@ class AuthStore extends ChangeNotifier {
   AuthStore(
     this._authRepository,
     this._apiClient,
-    this._currentUserDao, {
+    this._currentUserDao,
+    this._myAreaDao, {
     SupabaseStorageService? storageService,
   }) : _storageService = storageService;
 
   final AuthRepository _authRepository;
   final ApiClient _apiClient;
   final CurrentUserDao _currentUserDao;
+  final MyAreaDao _myAreaDao;
   final SupabaseStorageService? _storageService;
 
   static const String _rememberKey = 'remember_me';
@@ -202,6 +205,15 @@ class AuthStore extends ChangeNotifier {
         _currentUser = _withAreas(_currentUser!, selectedAreas, mainArea);
       }
       await _currentUserDao.save(_currentUser!);
+      await _myAreaDao.replaceAll(
+        selectedAreas
+            .map((a) => {
+                  'area_id': a.id,
+                  'is_primary':
+                      (mainArea != null && a.id == mainArea.id) ? 1 : 0,
+                })
+            .toList(),
+      );
       notifyListeners();
     }
 

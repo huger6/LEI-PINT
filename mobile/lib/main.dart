@@ -134,6 +134,7 @@ void main() async {
             getIt<AuthRepository>(),
             getIt<ApiClient>(),
             getIt<CurrentUserDao>(),
+            getIt<MyAreaDao>(),
             storageService: getIt.isRegistered<SupabaseStorageService>()
                 ? getIt<SupabaseStorageService>()
                 : null,

@@ -32,12 +32,21 @@ abstract final class AppLinks {
   }
 
   /// Public verification URL for an earned badge (`/verify/:link`).
-  /// If [link] is already an absolute URL it is returned as-is.
+  /// If [link] is already a full URL (legacy/seed data), the token is
+  /// extracted so the result always points to our own web app.
   static String verificationUrl(String link) {
     final trimmed = link.trim();
     if (trimmed.isEmpty) return '';
-    if (trimmed.startsWith('http')) return trimmed;
-    return '$frontendBaseUrl/verify/$trimmed';
+
+    String token = trimmed;
+    if (trimmed.startsWith('http')) {
+      final uri = Uri.tryParse(trimmed);
+      if (uri != null && uri.pathSegments.isNotEmpty) {
+        token = uri.pathSegments.last;
+      }
+    }
+
+    return '$frontendBaseUrl/verify/$token';
   }
 
   /// Public catalog page for a badge (`/softinsa/badges/:slug`).

@@ -45,7 +45,7 @@ class DashboardTopBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const AppIcon(
-                  AppIcons.badgePremium,
+                  AppIcons.starPoints,
                   color: Colors.white,
                   size: 20,
                 ),
