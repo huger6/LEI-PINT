@@ -14,7 +14,7 @@
 
 - ~~Wrong API call: /api/announcements?page=1&limit=12:1.~~ [DONE - Verified: all 3 call sites pass clean numeric params; Axios serializes correctly; backend Zod validates properly. The `:1` was a copy-paste artifact.]
 
-- Check logs for UNIQUE constraints violations regarding sla breachs.
+- ~~Check logs for UNIQUE constraints violations regarding sla breachs.~~ [DONE - SLA workers now use findOrCreate for breach alerts, so concurrent runs no longer hit the unique constraint / spam logs.]
 
 - ~~Tooltip "Guardar badge" is still in light mode colors in dark mode.~~ [DONE]
 
@@ -76,23 +76,23 @@
 
 # TODO
 
-- Use actual images on the rewards to make it more attractive. (Needs to change DB and use either svg or img - if img is available always prefer it to the svg)
+- ~~Use actual images on the rewards to make it more attractive. (Needs to change DB and use either svg or img - if img is available always prefer it to the svg)~~ [DONE - added rewards.img_url; store prefers the image over the category icon (with icon fallback); demo rewards seeded with images.]
 
-- Admin should not be able to remove his account if he is the only administrator.
+- ~~Admin should not be able to remove his account if he is the only administrator.~~ [DONE - deactivateUser refuses to deactivate the last active Administrator (self-deactivation was already blocked).]
 
-- Use the actual user title somewhere (in his profile, he should be able to configure it and display it publicly).
+- ~~Use the actual user title somewhere (in his profile, he should be able to configure it and display it publicly).~~ [DONE - consultants.active_title; the consultant picks a title they unlocked (Store) and it shows on the public profile. /me + public profile expose it.]
 
-- Consultant dashboard should exibit more stuff: some skills, some service lines, a proposed goal (to add) or one to continue if existing, rewards (as a carousel).
+- ~~Consultant dashboard should exibit more stuff: some skills, some service lines, a proposed goal (to add) or one to continue if existing, rewards (as a carousel).~~ [DONE - added a continue/suggested-objective banner and a rewards spotlight carousel; service line/area already shown on the WelcomeCard.]
 
-- Policies on the footer should actually redirect to a policies page (exclusive to display the current policies).
+- ~~Policies on the footer should actually redirect to a policies page (exclusive to display the current policies).~~ [DONE - new read-only /policies page lists current Privacy/Terms/Cookies; footer links to it.]
 
-- Remove "Interesses" and "Add goal" from user profile and from the edit user profile for admin.
+- ~~Remove "Interesses" and "Add goal" from user profile and from the edit user profile for admin.~~ [DONE - removed from UserProfile and the admin edit drawer (display + edit + dead state/handlers).]
 
-- Badge gallery.
+- ~~Badge gallery.~~ [DONE - editable public badge gallery already exists on the consultant profile.]
 
-- Auto translate user biography and whatever else is still missing/was not translated on purpose when it was implemented. Static translations should remain translatable statically (and be translated that way).
+- ~~Auto translate user biography and whatever else is still missing/was not translated on purpose when it was implemented. Static translations should remain translatable statically (and be translated that way).~~ [DONE - biography now rendered via TranslatedText (auto-translated); static UI strings stay i18n-based.]
 
-- Ensure the test data script (and ALSO the DB) does not allow applications to be submitted without a certain file and that the file URL is actually some random file from either google drive or supabase (for test purposes).
+- ~~Ensure the test data script (and ALSO the DB) does not allow applications to be submitted without a certain file and that the file URL is actually some random file from either google drive or supabase (for test purposes).~~ [DONE - submit endpoint already requires evidence for every requirement; generator now gives submitted+ apps full evidence; evidence/cert URLs point to a real sample file; live DB backfilled 44 missing evidence rows + real URLs.]
 
 # Generic things worth looking
 
