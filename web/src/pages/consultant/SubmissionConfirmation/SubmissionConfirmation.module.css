@@ -170,7 +170,7 @@
 .secondaryBtn {
 	padding: 12px 28px;
 	border-radius: 14px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--color-outline);
 	background: var(--color-surface);
 	font-size: 0.9375rem;
 	font-weight: 500;
@@ -180,8 +180,8 @@
 }
 
 .secondaryBtn:hover {
-	background: #f8fafb;
-	border-color: rgba(0, 0, 0, 0.2);
+	background: var(--color-primary-soft);
+	border-color: var(--color-primary-border-medium);
 }
 
 /* ─── Responsive ───────────────────────── */

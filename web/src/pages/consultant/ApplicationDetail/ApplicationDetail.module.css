@@ -355,6 +355,25 @@
 	background: rgba(255, 255, 255, 0.6);
 }
 
+.evidenceRemoveBtn {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	padding: 0;
+	transition: background 150ms ease;
+}
+
+.evidenceRemoveBtn:hover {
+	background: var(--color-red-soft, rgba(179, 38, 30, 0.1));
+}
+
 .evidenceFileClickable:hover .evidenceDownloadIcon {
 	background: rgba(255, 255, 255, 0.6);
 }

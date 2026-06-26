@@ -1031,6 +1031,10 @@ def generate_sql() -> str:
 
                     badge_title_str, badge_desc = badge_defs[stage_idx]
                     badge_type = "Special" if sequence == 5 else "Standard"
+                    # Premium (Special) badges are worth ~3x a normal badge: 3x the
+                    # top Standard stage (4 * 125 = 500) -> 1500, vs the linear
+                    # sequence*125 progression used for Standard badges.
+                    badge_points = 1500 if badge_type == "Special" else sequence * 125
                     badge_row = {
                         "badge_id": ids.next("badges"),
                         "progression_stage_id": stage_row["progression_stage_id"],
@@ -1040,7 +1044,7 @@ def generate_sql() -> str:
                         "badge_title": badge_title_str[:100],
                         "badge_slug": slugify(badge_title_str)[:100],
                         "badge_type": badge_type,
-                        "badge_points": sequence * 125,
+                        "badge_points": badge_points,
                         "expiration_duration_days": 730 if badge_type == "Special" else None,
                         "badge_description": badge_desc,
                         "badge_img_url": badge_svg_data_uri(code, sl_color),

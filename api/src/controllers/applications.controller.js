@@ -3,7 +3,7 @@ const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
-const { generateSignedUploadUrl, generateSignedDownloadUrl } = require('../services/storage.service');
+const { generateSignedUploadUrl, generateSignedDownloadUrl, deleteFile } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
 const { broadcastToWebhooks } = require('../services/integrations.service');
@@ -15,7 +15,30 @@ const {
     sendApplicationRejectedEmail
 } = require('../services/email.service');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || '';
+// Resolve a valid front-end origin for links embedded in e-mails/notifications.
+// FRONTEND_URL is often unset or protocol-only (e.g. "http://"), which produced
+// broken links like "http:///applications/<guid>". We pick the first candidate
+// that parses to a real host, falling back to the e-mail front-end URLs' origin.
+const resolveFrontendUrl = () => {
+    const candidates = [
+        process.env.FRONTEND_URL,
+        process.env.FRONTEND_EMAIL_CONFIRMATION_URL,
+        process.env.FRONTEND_RESET_PASSWORD_URL,
+        process.env.APP_URL,
+    ];
+    for (const candidate of candidates) {
+        if (!candidate) continue;
+        try {
+            const url = new URL(candidate);
+            if (url.host) return `${url.protocol}//${url.host}`;
+        } catch {
+            // Not an absolute URL with a host — skip it.
+        }
+    }
+    return 'http://localhost:5173';
+};
+
+const FRONTEND_URL = resolveFrontendUrl();
 
 // Resolves a consultant's email address, display name, and language ISO code.
 const getConsultantEmailData = async (userId) => {
@@ -1159,6 +1182,64 @@ const downloadEvidence = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  DELETE /api/applications/:applicationGuid/evidences/:evidenceId
+  Lets the owning consultant remove an uploaded file while the
+  application is still Open. Once submitted the evidence is locked.
+──────────────────────────────────────────────────────────────*/
+const deleteEvidence = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid, user_id: userId }
+        });
+
+        if (!application) {
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
+        }
+
+        // Consultants may freely remove a file while the application is Open;
+        // after submission it is locked for validation.
+        if (application.application_state !== 'Open') {
+            return res.status(403).json({ success: false, code: 'APP_EVIDENCE_EDIT_DENIED' });
+        }
+
+        const evidence = await models.requirements_evidences.findOne({
+            where: { evidence_id: evidenceId, application_id: application.application_id }
+        });
+
+        if (!evidence) {
+            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
+        }
+
+        // Best-effort removal of the stored file; never block the DB cleanup on it.
+        const fileUrl = evidence.evidence_file_url;
+        if (fileUrl) {
+            const pathMatch = fileUrl.match(/\/authenticated\/[^/]+\/(.+)$/);
+            if (pathMatch) {
+                try {
+                    await deleteFile('private-assets', decodeURIComponent(pathMatch[1]));
+                } catch (e) {
+                    logger.warn('Could not delete evidence file from storage', { error: e?.message });
+                }
+            }
+        }
+
+        await evidence.destroy();
+
+        await sendTopicUpdate("new_data", 16);
+
+        return res.status(200).json({ success: true, code: 'APP_EVIDENCE_DELETED' });
+
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        logger.error('Error deleting evidence', { error });
+        return res.status(500).json({ success: false, code: 'APP_DELETE_EVIDENCE_FAILED' });
+    }
+};
+
 module.exports = {
     getApplications,
     getApplicationById,
@@ -1169,5 +1250,6 @@ module.exports = {
     validateApplication,
     reviewEvidence,
     updateApplication,
-    downloadEvidence
+    downloadEvidence,
+    deleteEvidence
 };

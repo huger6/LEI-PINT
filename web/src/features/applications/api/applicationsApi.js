@@ -60,6 +60,12 @@ export async function downloadEvidence(applicationGuid, evidenceId) {
 	return data?.data;
 }
 
+// Removes an uploaded evidence file (owner only, while the application is Open).
+export async function deleteEvidence(applicationGuid, evidenceId) {
+	const { data } = await api.delete(`/applications/${applicationGuid}/evidences/${evidenceId}`);
+	return data;
+}
+
 // Reviewer actions (Talent Manager / Service Line Leader / Administrator)
 // Advances or reverts the application workflow state (validate/reject/return).
 export async function validateApplication(applicationGuid, action, reviewerNotes = null) {

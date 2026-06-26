@@ -1332,6 +1332,7 @@
 		"allowedFormats": "PDF, JPG, PNG, ZIP — Máx: 10MB",
 		"changesSaved": "Alterações guardadas",
 		"downloadEvidence": "Descarregar evidência",
+		"removeEvidence": "Remover evidência",
 		"uploading": "A carregar...",
 		"additionalNotes": "Notas Adicionais",
 		"notesPlaceholder": "Adicione notas ou observações para os validadores...",

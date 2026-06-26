@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence } from '../../../features/applications/api/applicationsApi';
+import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence, deleteEvidence } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import { validateEvidenceFile, EVIDENCE_ACCEPT_STRING } from '../../../services/storage';
 import Stepper from '../../../components/Stepper/Stepper';
@@ -180,6 +180,22 @@ export default function ApplicationDetail({ application, onReload }) {
 			window.open(downloadUrl, '_blank');
 		} catch {
 			setError(t('applicationDetail.errors.downloadFailed'));
+		}
+	}
+
+	// Remove an uploaded evidence file (allowed while the application is Open).
+	async function handleRemoveEvidence(requirementId, evidenceId) {
+		setUploadErrors((prev) => ({ ...prev, [requirementId]: null }));
+		try {
+			await deleteEvidence(appGuid, evidenceId);
+			setEvidenceMap((prev) => {
+				const next = { ...prev };
+				delete next[requirementId];
+				return next;
+			});
+			setShowSaveToast(true);
+		} catch (err) {
+			setUploadErrors((prev) => ({ ...prev, [requirementId]: resolveErrorMessage(err) }));
 		}
 	}
 
@@ -363,6 +379,16 @@ export default function ApplicationDetail({ application, onReload }) {
 																<Icon name="download" size={16} color="var(--color-secondary)" />
 															</button>
 														</Tooltip>
+														<Tooltip text={t('applicationDetail.removeEvidence')}>
+															<button
+																type="button"
+																className={styles.evidenceRemoveBtn}
+																onClick={() => handleRemoveEvidence(reqId, evidence.evidence_id || evidence.evidenceId)}
+																aria-label={t('applicationDetail.removeEvidence')}
+															>
+																<Icon name="trash" size={16} color="var(--color-error)" />
+															</button>
+														</Tooltip>
 													</div>
 												)}
 
@@ -439,9 +465,9 @@ export default function ApplicationDetail({ application, onReload }) {
 							/>
 							<label htmlFor="terms" className={styles.checkboxLabel}>
 								{t('applicationDetail.acceptTermsPrefix')}
-								<a href="#terms">{t('applicationDetail.termsLink')}</a>
+								<a href={SHARED.POLICIES} target="_blank" rel="noopener noreferrer">{t('applicationDetail.termsLink')}</a>
 								{t('applicationDetail.acceptTermsMiddle')}
-								<a href="#privacy">{t('applicationDetail.privacyLink')}</a>
+								<a href={SHARED.POLICIES} target="_blank" rel="noopener noreferrer">{t('applicationDetail.privacyLink')}</a>
 								{t('applicationDetail.acceptTermsSuffix')}
 							</label>
 						</div>
