@@ -508,6 +508,7 @@ const _sourceJson = r'''
   "validity": "Validade",
   "validityDays": "{days} dias",
   "markAsRead": "Marcar como lida",
+  "deleteNotification": "Eliminar notificação",
   "timeNow": "Agora",
   "notifTypeHome": "Início",
   "notifTypeBadges": "Badges",

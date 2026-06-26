@@ -505,6 +505,7 @@ const _sourceJsonEn = r'''
   "duration": "Duration",
   "validity": "Validity",
   "markAsRead": "Mark as read",
+  "deleteNotification": "Delete notification",
   "timeNow": "Now",
   "notifTypeHome": "Home",
   "notifTypeBadges": "Badges",

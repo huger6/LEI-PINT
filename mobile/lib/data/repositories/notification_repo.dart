@@ -36,6 +36,13 @@ class NotificationRepository {
     return items;
   }
 
+  Future<void> deleteNotification(int notificationId) async {
+    await _notificationDao.delete(notificationId);
+    try {
+      await _apiClient.delete('/api/notifications/$notificationId');
+    } catch (_) {}
+  }
+
   Future<void> markRead(int notificationId) async {
     await _notificationDao.markRead(notificationId);
     try {

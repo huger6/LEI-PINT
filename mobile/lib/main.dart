@@ -26,6 +26,7 @@ import 'data/repositories/reward_repo.dart';
 import 'data/repositories/statistics_repo.dart';
 import 'data/local/current_user_dao.dart';
 import 'data/local/lang_dao.dart';
+import 'data/local/my_area_dao.dart';
 import 'data/repositories/notification_repo.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';

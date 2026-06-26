@@ -61,6 +61,12 @@ class NotificationStore extends ChangeNotifier {
     } catch (_) {}
   }
 
+  Future<void> deleteNotification(int id) async {
+    await _repository.deleteNotification(id);
+    _all.removeWhere((n) => n.id == id);
+    notifyListeners();
+  }
+
   Future<void> markRead(int id) async {
     await _repository.markRead(id);
     final idx = _all.indexWhere((n) => n.id == id);

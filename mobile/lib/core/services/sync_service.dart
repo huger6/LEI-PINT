@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../../data/local/announcement_dao.dart';
 import '../../data/local/area_dao.dart';
+import '../../data/local/my_area_dao.dart';
 import '../../data/local/gdpr_policy_dao.dart';
 import '../../data/local/redemption_dao.dart';
 import '../../data/local/reward_dao.dart';
@@ -63,6 +64,7 @@ class SyncService {
   late final _rewardDao = RewardDao(_database);
   late final _redemptionDao = RedemptionDao(_database);
   late final _titleDao = TitleDao(_database);
+  late final _myAreaDao = MyAreaDao(_database);
 
   String? _activeRoute;
 
@@ -283,6 +285,7 @@ class SyncService {
       final user = UserModel.fromJson(map);
       await _currentUserDao.save(user);
       await _syncSelectedSkills(map);
+      await _syncSelectedAreas(map);
       return true;
     } on SocketException {
       return false;
@@ -311,6 +314,32 @@ class SyncService {
 
     await _skillDao.replaceAll(skills);
     await _mySkillDao.replaceAll(skills.map((s) => s.id).toList());
+  }
+
+  Future<void> _syncSelectedAreas(Map<String, dynamic> profile) async {
+    final raw = profile['areas'] ?? profile['selected_areas'];
+    if (raw is! List) return;
+
+    final db = await _database.database;
+    final cachedAreas = await db.query(LocalDatabase.areasTable);
+    final slugToId = <String, int>{};
+    for (final row in cachedAreas) {
+      final slug = row['slug'] as String?;
+      if (slug != null) slugToId[slug] = row['id'] as int;
+    }
+
+    final areaRows = <Map<String, dynamic>>[];
+    for (final entry in raw.whereType<Map>()) {
+      final slug = entry['slug'] as String?;
+      final areaId = slug != null ? slugToId[slug] : null;
+      if (areaId == null) continue;
+      areaRows.add({
+        'area_id': areaId,
+        'is_primary': (entry['isPrimary'] == true || entry['is_primary'] == true) ? 1 : 0,
+      });
+    }
+
+    await _myAreaDao.replaceAll(areaRows);
   }
 
   Future<bool> _syncLearningPaths() async {

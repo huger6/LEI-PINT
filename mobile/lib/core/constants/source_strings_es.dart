@@ -505,6 +505,7 @@ const _sourceJsonEs = r'''
   "duration": "Duración",
   "validity": "Validez",
   "markAsRead": "Marcar como leída",
+  "deleteNotification": "Eliminar notificación",
   "timeNow": "Ahora",
   "notifTypeHome": "Inicio",
   "notifTypeBadges": "Badges",

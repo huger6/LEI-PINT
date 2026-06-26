@@ -53,8 +53,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   void _markSeenAsRead() {
     if (_unreadOnEntry.isEmpty) return;
     final store = context.read<NotificationStore>();
+    final existingIds = store.all.map((n) => n.id).toSet();
     for (final id in _unreadOnEntry) {
-      store.markRead(id);
+      if (existingIds.contains(id)) store.markRead(id);
     }
   }
 
@@ -221,12 +222,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     children: [
                       NotificationsList(
                         notifications: _filterByType(unreadNotifications),
-                        onDismiss: (id) => store.markRead(id),
+                        onDismiss: (id) => store.deleteNotification(id),
                         onTap: _handleNotificationTap,
                       ),
                       NotificationsList(
                         notifications: _filterByType(allNotifications),
-                        onDismiss: (id) => store.markRead(id),
+                        onDismiss: (id) => store.deleteNotification(id),
                         onTap: _handleNotificationTap,
                       ),
                     ],

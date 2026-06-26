@@ -242,7 +242,7 @@ class NotificationCard extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         constraints:
                             const BoxConstraints(minWidth: 28, minHeight: 28),
-                        tooltip: tr.tr('markAsRead'),
+                        tooltip: tr.tr('deleteNotification'),
                       ),
                     ],
                   ),

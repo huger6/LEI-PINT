@@ -35,6 +35,15 @@ class NotificationDao {
     return rows.isNotEmpty ? (rows.first['c'] as int? ?? 0) : 0;
   }
 
+  Future<void> delete(int id) async {
+    final db = await _database.database;
+    await db.delete(
+      LocalDatabase.notificationsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<void> markRead(int id) async {
     final db = await _database.database;
     await db.update(
