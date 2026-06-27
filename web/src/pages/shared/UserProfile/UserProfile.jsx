@@ -422,6 +422,7 @@ export default function UserProfile() {
 	const displayAreas = isConsultant
 		? (profile?.areas || []).map((a) => a.name || a.area_name).filter(Boolean)
 		: [];
+	const displayTitle = isConsultant ? (profile?.activeTitle || profile?.active_title || '') : '';
 	const displayAbout = profile?.biography || profile?.about || profile?.bio || '';
 	const memberSince = profile?.createdAt || profile?.created_at || '';
 	const photoUrl = profile?.profileImg || profile?.profile_img_url || profile?.photoUrl || profile?.photo_url || null;
@@ -588,6 +589,7 @@ export default function UserProfile() {
 							) : (
 								<>
 									<h2 className={styles.userName}>{displayName}</h2>
+									{displayTitle && <span className={styles.userTitle}>{displayTitle}</span>}
 									<div className={styles.infoRows}>
 										{displayEmail && <InfoRow icon="email">{displayEmail}</InfoRow>}
 										{(displayLocation || displayLanguage) && (
