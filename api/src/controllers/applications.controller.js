@@ -173,9 +173,9 @@ const getApplicationById = async (req, res) => {
                     model: models.badges,
                     as: 'badge',
                     include: [
-                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title'] },
-                        { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                        { model: models.areas, as: 'area', attributes: ['area_name'] },
+                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title', 'path_slug'] },
+                        { model: models.service_lines, as: 'service_line', attributes: ['service_line_name', 'sl_slug'] },
+                        { model: models.areas, as: 'area', attributes: ['area_name', 'area_slug'] },
                         {
                             model: models.progression_stages,
                             as: 'progression_stage',

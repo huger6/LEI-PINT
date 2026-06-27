@@ -179,6 +179,19 @@
 	text-align: right;
 }
 
+/* Clickable structure value (links to the structure detail page). */
+.infoValueLink {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	text-align: right;
+	text-decoration: none;
+}
+
+.infoValueLink:hover {
+	text-decoration: underline;
+}
+
 /* ─── Section Titles ───────────────────── */
 
 .sectionTitle {

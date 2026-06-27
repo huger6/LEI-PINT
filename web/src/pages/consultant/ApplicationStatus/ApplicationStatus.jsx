@@ -53,10 +53,13 @@ export default function ApplicationStatus({ application, badge }) {
 	const imgUrl = badge?.badge_img_url || badge?.badgeImgUrl;
 	const badgeType = badge?.badge_type || badge?.badgeType;
 	const areaName = badge?.area?.area_name;
+	const areaSlug = badge?.area?.area_slug;
 	const stageTitle = badge?.progression_stage?.stage_title || badge?.progressionStage?.stageTitle;
 	const stageCode = badge?.progression_stage?.stage_code?.stage_code || badge?.progressionStage?.stageCode?.stageCode;
 	const serviceLineName = badge?.service_line?.service_line_name || badge?.serviceLine?.serviceLineName;
+	const serviceLineSlug = badge?.service_line?.sl_slug;
 	const learningPathName = badge?.learning_path?.path_title || badge?.learningPath?.pathTitle;
+	const learningPathSlug = badge?.learning_path?.path_slug;
 	const expirationDays = badge?.expiration_duration_days ?? badge?.expirationDurationDays;
 
 	const activeStep = getActiveStep(state);
@@ -187,30 +190,40 @@ export default function ApplicationStatus({ application, badge }) {
 										<div className={styles.infoRow}>
 											<Icon name="evolution" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>Learning Path</span>
-											<span className={styles.infoValue}>{learningPathName}</span>
+											{learningPathSlug
+												? <Link className={styles.infoValueLink} to={SHARED.STRUCTURE_LP_DETAIL.replace(':slug', learningPathSlug)}>{learningPathName}</Link>
+												: <span className={styles.infoValue}>{learningPathName}</span>}
 										</div>
 									)}
 									{serviceLineName && (
 										<div className={styles.infoRow}>
 											<Icon name="service-line" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>Service Line</span>
-											<span className={styles.infoValue}>{serviceLineName}</span>
+											{serviceLineSlug
+												? <Link className={styles.infoValueLink} to={SHARED.STRUCTURE_SL_DETAIL.replace(':slug', serviceLineSlug)}>{serviceLineName}</Link>
+												: <span className={styles.infoValue}>{serviceLineName}</span>}
 										</div>
 									)}
 									{areaName && (
 										<div className={styles.infoRow}>
 											<Icon name="area" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>{t('shared.area')}</span>
-											<span className={styles.infoValue}>{areaName}</span>
+											{areaSlug
+												? <Link className={styles.infoValueLink} to={SHARED.STRUCTURE_AREA_DETAIL.replace(':slug', areaSlug)}>{areaName}</Link>
+												: <span className={styles.infoValue}>{areaName}</span>}
 										</div>
 									)}
 									{(stageTitle || stageCode) && (
 										<div className={styles.infoRow}>
 											<Icon name="badge" size={18} color="var(--color-outline)" />
 											<span className={styles.infoLabel}>{t('badgeDetail.level', { defaultValue: 'Level' })}</span>
-											<span className={styles.infoValue}>
-												{stageCode ? `${stageCode} — ${stageTitle}` : stageTitle}
-											</span>
+											{areaSlug && stageCode
+												? <Link className={styles.infoValueLink} to={SHARED.STRUCTURE_LEVEL_DETAIL.replace(':areaSlug', areaSlug).replace(':stageCode', stageCode)}>
+													{stageCode ? `${stageCode} — ${stageTitle}` : stageTitle}
+												</Link>
+												: <span className={styles.infoValue}>
+													{stageCode ? `${stageCode} — ${stageTitle}` : stageTitle}
+												</span>}
 										</div>
 									)}
 									{badgeType && (

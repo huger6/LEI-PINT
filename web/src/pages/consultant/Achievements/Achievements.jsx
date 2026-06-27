@@ -155,7 +155,7 @@ export default function Achievements() {
 										{expired && <span className={styles.expired}>{t('achievements.expired')}</span>}
 										{b.isPublished && b.verificationLink && (
 											<div className={styles.cardActions}>
-												<Button as="a" href={`${import.meta.env.API_URL}/public/badge/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm"
+												<Button as="a" href={`/verify/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm"
 													onClick={(e) => e.stopPropagation()}>
 													<Icon name="eye" size={14} aria-hidden="true" /> {t('achievements.verify')}
 												</Button>
