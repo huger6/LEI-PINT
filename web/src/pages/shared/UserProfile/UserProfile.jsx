@@ -20,6 +20,8 @@ import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { uploadProfileImageToTemp } from '../../../services/storage';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
 import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
+import { getConsultantStats } from '../../../services/pointsService';
+import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { SHARED, ADMIN } from '../../../routes/paths';
 import styles from './UserProfile.module.css';
 
@@ -134,6 +136,24 @@ export default function UserProfile() {
 			if (contextUser) {
 				setProfile(contextUser);
 				setLoading(false);
+				// contextUser carries the editable fields (bio, areas, streak) but not
+				// the gamification counters, so the stat cards would read 0. Fetch the
+				// real numbers from the consultant-accessible endpoints (same source as
+				// the Points/Evolution pages) and merge them in.
+				if (contextUser.role === 'Consultant') {
+					Promise.all([
+						getConsultantStats().catch(() => null),
+						getApplicationsPaged({ state: ['Submitted', 'In validation', 'Accepted', 'Rejected'], page: 1, limit: 1 }).catch(() => null),
+					]).then(([stats, apps]) => {
+						if (ignore) return;
+						setProfile((prev) => ({
+							...prev,
+							badgesCount: stats?.earnedBadges ?? prev?.badgesCount ?? 0,
+							totalPoints: stats?.totalPoints ?? prev?.totalPoints ?? 0,
+							applicationsCount: apps?.pagination?.total ?? prev?.applicationsCount ?? 0,
+						}));
+					});
+				}
 			}
 		} else {
 			getUserPublicProfile(guid)
