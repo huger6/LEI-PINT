@@ -13,6 +13,13 @@
     cursor: pointer;
 }
 
+/* Keep the points value from being underlined by the global link hover style. */
+.pointsCard:hover,
+.pointsCard:focus,
+.pointsCard:hover .pointsValue {
+    text-decoration: none;
+}
+
 .iconWrapper {
     position: relative;
     display: inline-flex;
