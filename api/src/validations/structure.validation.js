@@ -93,6 +93,7 @@ const getBadgesQuerySchema = z.object({
 	maxPoints: z.coerce.number().int().min(0).optional(),
 	expiringOnly: booleanQueryRule.optional(),
 	obtained: z.enum(['all', 'true', 'false']).optional(),
+	sort: z.enum(['default', 'recent', 'oldest']).optional(),
 	search: optionalSearchRule,
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(32)
