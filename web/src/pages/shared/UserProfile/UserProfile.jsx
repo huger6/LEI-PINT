@@ -609,6 +609,18 @@ export default function UserProfile() {
 					</div>
 
 					<div className={styles.infoActions}>
+						{!isOwnProfile && displayEmail && (
+							<a
+								href={`https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(displayEmail)}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								className={styles.teamsBtn}
+								aria-label={t('profile.messageOnTeams')}
+							>
+								<Icon name="send" size={16} color="#fff" />
+								<span>{t('profile.messageOnTeams')}</span>
+							</a>
+						)}
 						{!isEditMode && (isOwnProfile || isAdmin) && (
 							<button
 								type="button"

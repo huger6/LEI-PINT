@@ -1,6 +1,7 @@
 .layout {
     display: flex;
-    min-height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 .contentArea {
@@ -8,10 +9,23 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    /* Single page scroll lives on the document/body. The TopBar is
-       position:sticky so it stays pinned while the page scrolls; the Footer
-       sits at the end of the content (no inner scroll, so no double scrollbar
-       and the footer can never overlap the page). */
+    height: 100dvh;
+    overflow: hidden;
+    /* The TopBar is a fixed-height header that never scrolls. The page scroll
+       lives in .scrollArea below it, so the TopBar is never overlapped. */
+}
+
+.scrollArea {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    /* The ONLY vertical scroll of the app shell. It starts below the TopBar and
+       ends with the Footer, so neither the TopBar nor the Footer is ever cut or
+       overlapped. Page-level sticky elements stick to the top of this area
+       (just under the TopBar), never over it. */
 }
 
 .mainContent {
@@ -21,9 +35,4 @@
     /* Page content must never push the layout sideways: wide tables scroll
        inside their own `table-responsive` wrapper, not the whole page. */
     min-width: 0;
-    overflow-x: hidden;
-    /* Fill at least the viewport (minus the 57px TopBar) so the Footer sits
-       below the fold — it is reached by scrolling to the end of the content,
-       never pinned at the bottom of a short page. */
-    min-height: calc(100vh - 57px);
 }

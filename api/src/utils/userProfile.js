@@ -113,12 +113,15 @@ const buildUserProfileByGuid = async (userGuid, { includeSensitive = false } = {
         learningPath: learningPathData,
         areas: areasPayload,
         currentStreakDays: user.current_streak_days,
-        createdAt: user.created_at
+        createdAt: user.created_at,
+        // Corporate e-mail is exposed to any authenticated colleague so the web
+        // profile can offer a "message on Teams" deep link. The no-auth public
+        // profile (public.controller) never includes it.
+        email: user.email_address
     };
 
     // Account/administrative fields are restricted to the admin view only.
     if (includeSensitive) {
-        profile.email = user.email_address;
         profile.isActive = user.is_active;
         profile.emailConfirmed = user.email_confirmed;
         profile.gdprAccepted = consultant?.gdpr_accepted ?? null;

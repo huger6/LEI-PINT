@@ -23,10 +23,12 @@ export default function AppLayout({ menuItems }) {
             />
             <div className={styles.contentArea}>
                 <TopBar onMenuToggle={() => setMobileOpen(prev => !prev)} />
-                <main className={styles.mainContent}>
-                    <Outlet />
-                </main>
-                <Footer />
+                <div className={styles.scrollArea}>
+                    <main className={styles.mainContent}>
+                        <Outlet />
+                    </main>
+                    <Footer />
+                </div>
             </div>
         </div>
     );
