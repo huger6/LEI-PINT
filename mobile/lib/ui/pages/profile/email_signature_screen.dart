@@ -4,8 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:super_clipboard/super_clipboard.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_links.dart';
 import '../../../models/earned_badge_model.dart';
@@ -132,15 +130,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
               imageOverrides: imageOverrides,
             );
 
-      final clipboard = SystemClipboard.instance;
-      if (clipboard != null) {
-        final item = DataWriterItem();
-        item.add(Formats.htmlText(html));
-        item.add(Formats.plainText('$userName · Softinsa'));
-        await clipboard.write([item]);
-      } else {
-        await Clipboard.setData(ClipboardData(text: html));
-      }
+      await Clipboard.setData(ClipboardData(text: html));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
