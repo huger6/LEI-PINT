@@ -1267,6 +1267,15 @@
 		"noApplications": "No applications",
 		"noApplicationsDesc": "No applications found."
 	},
+	"mobileAppPromo": {
+		"title": "Take the platform with you",
+		"subtitle": "Download the Softinsa Badges Platform mobile app and follow your progress wherever you are.",
+		"adv1": "Track your progress anywhere",
+		"adv2": "Get notified when your badges are validated",
+		"adv3": "Submit evidence straight from your phone",
+		"adv4": "Browse your badges even without an internet connection",
+		"downloadButton": "Download the app"
+	},
 	"consultantDashboard": {
 		"totalApplications": "Total Applications",
 		"open": "Open",

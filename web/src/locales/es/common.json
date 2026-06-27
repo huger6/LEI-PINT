@@ -1267,6 +1267,15 @@
 		"noApplications": "Sin candidaturas",
 		"noApplicationsDesc": "No se encontraron candidaturas."
 	},
+	"mobileAppPromo": {
+		"title": "Lleva la plataforma contigo",
+		"subtitle": "Descarga la aplicación móvil de la Plataforma de Badges de Softinsa y sigue tu evolución estés donde estés.",
+		"adv1": "Sigue tu progreso en cualquier lugar",
+		"adv2": "Recibe notificaciones cuando se validan tus badges",
+		"adv3": "Envía evidencias directamente desde el móvil",
+		"adv4": "Consulta tus badges incluso sin conexión a internet",
+		"downloadButton": "Descargar la app"
+	},
 	"consultantDashboard": {
 		"totalApplications": "Total Candidaturas",
 		"open": "Abiertas",

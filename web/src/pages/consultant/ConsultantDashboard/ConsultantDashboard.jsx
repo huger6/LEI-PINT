@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CONSULTANT, SHARED } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
 import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
+import MobileAppPromo from '../../../components/MobileAppPromo/MobileAppPromo';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import { getApplications } from '../../../features/applications/api/applicationsApi';
@@ -353,6 +354,9 @@ export default function ConsultantDashboard() {
 					</div>
 				</section>
 			)}
+
+			{/* Mobile app advertising — last section of the consultant dashboard */}
+			<MobileAppPromo />
 
 			{streakMilestone != null && (
 				<CelebrationModal
