@@ -193,7 +193,7 @@ const getApplicationById = async (req, res) => {
                 {
                     model: models.consultants,
                     as: 'user',
-                    include: [{ model: models.users, as: 'user', attributes: ['full_name', 'email_address', 'profile_img_url'] }]
+                    include: [{ model: models.users, as: 'user', attributes: ['full_name', 'email_address', 'profile_img_url', 'user_guid'] }]
                 },
                 {
                     model: models.requirements_evidences,
@@ -586,7 +586,7 @@ const submitApplication = async (req, res) => {
                             title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                             body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                             meta: badgeMeta,
-                            url: `/admin/applications/${applicationGuid}`
+                            url: `/applications/${applicationGuid}`
                         }));
                     }
                 }
@@ -601,7 +601,7 @@ const submitApplication = async (req, res) => {
                     title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                     body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                     meta: badgeMeta,
-                    url: `/admin/applications/${applicationGuid}`
+                    url: `/applications/${applicationGuid}`
                 }));
 
                 await Promise.all([...sllNotifs, ...tmNotifs]);
@@ -909,7 +909,7 @@ const validateApplication = async (req, res) => {
                             title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
                             body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
                             meta: badgeMeta,
-                            url: `/admin/applications/${applicationGuid}`
+                            url: `/applications/${applicationGuid}`
                         });
 
                         const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);

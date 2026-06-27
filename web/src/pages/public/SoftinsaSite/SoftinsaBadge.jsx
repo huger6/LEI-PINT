@@ -77,7 +77,7 @@ export default function SoftinsaBadge() {
 							</div>
 							<div className={styles.heroInfo}>
 								{badge.badge_type === 'Special' && <span className={styles.premium}>{t('softinsaSite.badgePage.premium')}</span>}
-								<h1>{badge.badge_title}</h1>
+								<h1><TranslatedText text={badge.badge_title} /></h1>
 								<span className={styles.certified}>
 									<i className="bi bi-patch-check-fill" aria-hidden="true" /> {t('softinsaSite.badgePage.certified')}
 								</span>
@@ -123,7 +123,7 @@ export default function SoftinsaBadge() {
 									{badge.requirements.map((r, i) => (
 										<article key={i} className={styles.reqCard}>
 											<span className={styles.reqNum}>{String(i + 1).padStart(2, '0')}</span>
-											<h3>{r.title}</h3>
+											<h3><TranslatedText text={r.title} /></h3>
 											{r.description && <p><TranslatedText text={r.description} /></p>}
 										</article>
 									))}

@@ -8,7 +8,7 @@ import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import Icon from '../../../components/Icons/Icons';
 import { getConsultantStats, getPointsHistoryAll, getLearningPathProgress, getRanking } from '../../../services/pointsService';
-import { CONSULTANT } from '../../../routes/paths';
+import { CONSULTANT, SHARED } from '../../../routes/paths';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import { getProgressionTimeline } from '../../../features/goals/api/goalsApi';
 import { fetchNotifications } from '../../../features/notifications/api/notificationsApi';
@@ -574,8 +574,10 @@ export default function Evolution() {
                             .map((lp, idx) => {
                                 const pct = Math.round(parseFloat(lp.progress_pct) || 0);
                                 const color = LP_COLORS[idx % LP_COLORS.length];
+                                const Wrapper = lp.path_slug ? Link : 'div';
+                                const wrapperProps = lp.path_slug ? { to: SHARED.STRUCTURE_LP_DETAIL.replace(':slug', lp.path_slug) } : {};
                                 return (
-                                    <div key={lp.learning_path_id || idx} className={styles.lpItem}>
+                                    <Wrapper key={lp.learning_path_id || idx} {...wrapperProps} className={styles.lpItem}>
                                         <div className={styles.lpHeader}>
                                             <div className={styles.lpInfo}>
                                                 <div
@@ -599,7 +601,7 @@ export default function Evolution() {
                                                 style={{ width: `${pct}%`, backgroundColor: color }}
                                             />
                                         </div>
-                                    </div>
+                                    </Wrapper>
                                 );
                             }) : (
                             <p className={styles.emptyText}>{t('evolution.noData')}</p>

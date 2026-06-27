@@ -91,6 +91,7 @@ export default function ConsultantDashboard() {
 				const mapped = (data || [])
 					.map((lp) => ({
 						name: lp.path_title || lp.learning_path || '—',
+						slug: lp.path_slug,
 						completed: parseInt(lp.earned_badges ?? lp.badges_earned ?? 0, 10),
 						total: parseInt(lp.total_badges ?? 0, 10),
 					}))
@@ -238,8 +239,10 @@ export default function ConsultantDashboard() {
 					<div className={styles.lpList}>
 						{lpProgress.map((lp) => {
 							const pct = Math.min(100, Math.round((lp.completed / lp.total) * 100));
+							const Wrapper = lp.slug ? Link : 'div';
+							const wrapperProps = lp.slug ? { to: SHARED.STRUCTURE_LP_DETAIL.replace(':slug', lp.slug) } : {};
 							return (
-								<div key={lp.name} className={styles.lpRow}>
+								<Wrapper key={lp.name} {...wrapperProps} className={styles.lpRow}>
 									<div className={styles.lpInfo}>
 										<span className={styles.lpName}>{lp.name}</span>
 										<span className={styles.lpCount}>{lp.completed}/{lp.total}</span>
@@ -254,7 +257,7 @@ export default function ConsultantDashboard() {
 									>
 										<div className={styles.lpFill} style={{ width: `${pct}%` }} />
 									</div>
-								</div>
+								</Wrapper>
 							);
 						})}
 					</div>
