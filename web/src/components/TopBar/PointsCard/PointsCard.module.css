@@ -13,11 +13,13 @@
     cursor: pointer;
 }
 
-/* Keep the points value from being underlined by the global link hover style. */
+/* Keep the points value from being underlined by the global `a:hover` style.
+   !important guarantees it beats the global rule regardless of load order. */
+.pointsCard,
 .pointsCard:hover,
 .pointsCard:focus,
 .pointsCard:hover .pointsValue {
-    text-decoration: none;
+    text-decoration: none !important;
 }
 
 .iconWrapper {
