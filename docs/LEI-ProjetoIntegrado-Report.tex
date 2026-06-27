@@ -38,6 +38,15 @@
 
 % --- Graphics & Floats ---
 \usepackage{graphicx}
+\usepackage{letltxmacro}
+\LetLtxMacro{\OrigIncludeGraphics}{\includegraphics}
+\renewcommand{\includegraphics}[2][]{%
+  \IfFileExists{#2}{%
+    \OrigIncludeGraphics[#1]{#2}%
+  }{%
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}\textbf{[Imagem em falta]}\\\texttt{#2}\vspace{2cm}}}%
+  }%
+}
 \usepackage{float}
 \usepackage{caption}
 \captionsetup{
