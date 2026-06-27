@@ -1,14 +1,4 @@
-Pág. 3: e base de dados PostgreSQL [postgresql], para garantir; [postgresql] passa da margem — CORRIGIDO (adicionado \linebreak[0] antes de \cite)
-Pág. 28:  (restrição UNIQUE sobre progression_stage_id); progression_  passa da margem — CORRIGIDO (adicionado \allowbreak em stage\_id)
-Pág. 28:  e o campo expiration_duration_days; expiration_duration_days  passa da margem — CORRIGIDO (adicionado \allowbreak em expiration\_duration\_days)
-Pág. 29:   imutável na tabela application_validation_logs; application_validation_  passa da margem — CORRIGIDO (adicionado \allowbreak mais cedo: application\_\allowbreak validation\_\allowbreak logs)
-Pag. 60: Tudo desformatado — CORRIGIDO (tabela de saudações reformatada com colunas p{} e \small; identificadores longos no parágrafo seguinte receberam \allowbreak)
-Pag. 62: is_active, starts_at e ends_at (idx_announcements_active_dates) otimiza; announcements_active_dates passa da margem — CORRIGIDO (adicionado \allowbreak em idx\_announcements\_active\_dates)
-Pag. 64: In validation cujo tempo de permanência excede o response_time_hours; response_time_hours  passa da margem — CORRIGIDO (adicionado \allowbreak em response\_time\_hours)
-Pag. 74: falhas de envio (código messaging/registration-token-not-registered).; registration-token-not-registered  passa da margem — CORRIGIDO (adicionado \allowbreak com \hbox{-} nos hífens)
-Pag. 74: na tabela notification_preferences; notification_preferences  passa da margem — CORRIGIDO (adicionado \allowbreak em notification\_preferences e user\_notification\_preferences)
-Pag. 77:  pública de verificação (public_verification_link), (public_verification_link)   passa da margem — CORRIGIDO (adicionado \allowbreak em public\_verification\_link)
-Pag. 77: em três camadas: Bootstrap 5.3 [bootstrap];  [bootstrap] passa da margem — CORRIGIDO (adicionado \linebreak[0] antes de \cite)
-Pag. 80:  (geridas por ficheiros de localização i18next [i18next]); [i18next]   passa da margem — CORRIGIDO (adicionado \linebreak[0] antes de \cite)
-Pag. 81:  pública de verificação (public_verification_link); (public_verification_link)  passa da margem — CORRIGIDO (adicionado \allowbreak em public\_verification\_link)
-Pag. 81: O serviço de certificados (certificate.service.js); (certificate.service.js)  passa da margem — CORRIGIDO (adicionado \allowbreak em certificate.\allowbreak service.js)
+Pag. 29: (restrição UNIQUE sobre progression_stage_id);  progression_  passa da margem
+Pag. 30:  imutável na tabela application_validation_logs;  validation_  passa da margem
+Pag. 61: starts_at e ends_at (idx_announcements_active_dates);  announcements_  passa da margem
+Pag. 74:  tabela notification_preferences,;  preferences  passa da margem
