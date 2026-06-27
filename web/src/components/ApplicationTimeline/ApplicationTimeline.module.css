@@ -1,0 +1,122 @@
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+	margin: 0 0 16px;
+}
+
+.timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.timelineItem {
+	display: flex;
+	gap: 16px;
+	padding: 20px;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	/* Flat by default so stacked middle items read as one list; only the first
+	   and last items round their outer corners. */
+	border-radius: 0;
+	margin-bottom: -1px;
+	background: var(--color-surface);
+}
+
+.timelineItem:first-child {
+	border-radius: 14px 14px 0 0;
+}
+
+.timelineItem:last-child {
+	border-radius: 0 0 14px 14px;
+	margin-bottom: 0;
+}
+
+.timelineItem:only-child {
+	border-radius: 14px;
+}
+
+.timelineLatest {
+	background: #fffbeb;
+	border-color: rgba(202, 138, 4, 0.2);
+}
+
+.timelineIcon {
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	background: #f0f2f4;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.timelineIconLatest {
+	background: var(--color-secondary);
+}
+
+.timelineBody {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.timelineTitle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-on-background);
+}
+
+.latestBadge {
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--color-on-background);
+	color: #fff;
+	font-size: 0.625rem;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+}
+
+.timelineMeta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.8125rem;
+}
+
+.timelineUser {
+	color: var(--color-secondary);
+	font-weight: 500;
+}
+
+.timelineRole {
+	color: var(--color-outline);
+}
+
+.timelineComment {
+	font-size: 0.8125rem;
+	color: var(--color-outline);
+	margin: 4px 0 0;
+	line-height: 1.5;
+}
+
+.timelineDate {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.75rem;
+	color: var(--color-outline);
+	margin-top: 2px;
+}
+
+.emptyText {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	margin: 0;
+}

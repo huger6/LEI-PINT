@@ -6,6 +6,7 @@ import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, dow
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import { validateEvidenceFile, EVIDENCE_ACCEPT_STRING } from '../../../services/storage';
 import Stepper from '../../../components/Stepper/Stepper';
+import ApplicationTimeline from '../../../components/ApplicationTimeline/ApplicationTimeline';
 import SaveToast from '../../../components/SaveToast/SaveToast';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
@@ -23,6 +24,14 @@ export default function ApplicationDetail({ application, onReload }) {
 	const requirements = badge?.badge_requirements || [];
 	const evidencesRaw = application?.requirements_evidences || [];
 	const appGuid = application?.application_guid;
+
+	// Existing process-history records (e.g. when the application was returned by
+	// a Talent Manager or Service Line Leader). System trigger logs are excluded.
+	const validationLogs = application?.application_validation_logs || [];
+	const HISTORY_SYSTEM_FUNCTIONS = ['trg_log_application_state_change', 'System'];
+	const hasHistory = validationLogs.some(
+		(l) => !HISTORY_SYSTEM_FUNCTIONS.includes(l.validator_function || l.validatorFunction)
+	);
 
 	// Map requirement IDs to their uploaded evidence objects
 	const [evidenceMap, setEvidenceMap] = useState({});
@@ -299,6 +308,14 @@ export default function ApplicationDetail({ application, onReload }) {
 						{description && <p className={styles.badgeDescription}>{description}</p>}
 					</div>
 				</div>
+
+				{/* Process history — shown when the application already has records
+				    (e.g. it was returned by a Talent Manager or Service Line Leader). */}
+				{hasHistory && (
+					<div className={styles.card}>
+						<ApplicationTimeline logs={validationLogs} openedAt={application?.opened_at} />
+					</div>
+				)}
 
 				{/* Requirements & Evidence - Full Width */}
 				<div className={styles.requirementsCard}>

@@ -70,6 +70,8 @@
 	"NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Parabéns! O badge especial \"{{badgeTitle}}\" foi-lhe atribuído.",
 	"NOTIF_APP_REJECTED_TITLE": "Candidatura rejeitada",
 	"NOTIF_APP_REJECTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi rejeitada.",
+	"NOTIF_APP_RETURNED_TITLE": "Candidatura devolvida",
+	"NOTIF_APP_RETURNED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi devolvida para revisão. Verifique as notas do avaliador e volte a submeter.",
 	"NOTIF_REWARD_REDEEMED_TITLE": "Recompensa resgatada",
 	"NOTIF_REWARD_REDEEMED_BODY": "Resgataste \"{{rewardName}}\" por {{points}} pontos.",
 	"NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura em validação",

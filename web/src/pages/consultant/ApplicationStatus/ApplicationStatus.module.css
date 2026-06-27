@@ -80,6 +80,14 @@
 	border-top: 1px solid var(--color-outline-variant);
 }
 
+.certificateFallbackLink {
+	display: inline-block;
+	margin-top: 8px;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-primary);
+}
+
 /* ─── Two Column ───────────────────────── */
 
 .twoColumn {
@@ -152,6 +160,23 @@
 	color: var(--color-outline);
 	line-height: 1.55;
 	margin: 0;
+}
+
+/* Badge title/description links to the badge detail page. Keep the original
+   text styling and only reveal the link affordance on hover. */
+.badgePreviewNameLink,
+.badgePreviewDescLink {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
+.badgePreviewNameLink:hover .badgePreviewName {
+	color: var(--color-primary);
+}
+
+.badgePreviewDescLink:hover .badgePreviewDesc {
+	text-decoration: underline;
 }
 
 .infoGrid {

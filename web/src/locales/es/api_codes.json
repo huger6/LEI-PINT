@@ -70,6 +70,8 @@
 	"NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "¡Felicidades! El badge especial \"{{badgeTitle}}\" te ha sido otorgado.",
 	"NOTIF_APP_REJECTED_TITLE": "Candidatura rechazada",
 	"NOTIF_APP_REJECTED_BODY": "Tu candidatura para el badge \"{{badgeTitle}}\" ha sido rechazada.",
+	"NOTIF_APP_RETURNED_TITLE": "Candidatura devuelta",
+	"NOTIF_APP_RETURNED_BODY": "Tu candidatura para el badge \"{{badgeTitle}}\" ha sido devuelta para revisión. Revisa las notas del evaluador y vuelve a enviarla.",
 	"NOTIF_REWARD_REDEEMED_TITLE": "Recompensa canjeada",
 	"NOTIF_REWARD_REDEEMED_BODY": "Has canjeado \"{{rewardName}}\" por {{points}} puntos.",
 	"NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura en validación",

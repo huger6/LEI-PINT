@@ -5,6 +5,7 @@ import { SHARED } from '../../../routes/paths';
 import { downloadEvidence, previewEvidence, generateCertificate } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Stepper from '../../../components/Stepper/Stepper';
+import ApplicationTimeline from '../../../components/ApplicationTimeline/ApplicationTimeline';
 import Icon from '../../../components/Icons/Icons';
 import Tooltip from '../../../components/Tooltip/Tooltip';
 import Button from '../../../components/Button/Button';
@@ -39,6 +40,8 @@ export default function ApplicationStatus({ application, badge }) {
 	const [certLoading, setCertLoading] = useState(false);
 	// Store any certificate download error message
 	const [certError, setCertError] = useState(null);
+	// Direct certificate link, shown as a fallback when the pop-up is blocked
+	const [certUrl, setCertUrl] = useState(null);
 
 	const state = application?.application_state || application?.state;
 	const appGuid = application?.application_guid || application?.applicationGuid;
@@ -49,6 +52,7 @@ export default function ApplicationStatus({ application, badge }) {
 
 	const title = badge?.badge_title || badge?.badgeTitle || `Badge #${application?.badge_id}`;
 	const description = badge?.badge_description || badge?.badgeDescription;
+	const badgeSlug = badge?.badge_slug || badge?.badgeSlug;
 	const points = badge?.badge_points || badge?.badgePoints;
 	const imgUrl = badge?.badge_img_url || badge?.badgeImgUrl;
 	const badgeType = badge?.badge_type || badge?.badgeType;
@@ -104,13 +108,31 @@ export default function ApplicationStatus({ application, badge }) {
 
 	// Generate and download a completion certificate for this application
 	async function handleDownloadCertificate() {
+		// Open the tab synchronously, still inside the click handler, so the browser
+		// keeps it tied to the user gesture. Opening it AFTER the await gets blocked
+		// by pop-up blockers. If the blocker kills even this, we fall back to a
+		// visible link the user can click (a direct gesture is never blocked).
+		const certWindow = window.open('about:blank', '_blank');
+
 		setCertError(null);
+		setCertUrl(null);
 		setCertLoading(true);
 		try {
 			const lang = CERT_LANG_MAP[(i18n.language || 'pt').slice(0, 2)] || 'pt';
 			const { certificateUrl } = await generateCertificate(appGuid, lang);
-			if (certificateUrl) window.open(certificateUrl, '_blank');
+			if (certificateUrl) {
+				if (certWindow && !certWindow.closed) {
+					certWindow.location = certificateUrl;
+				} else {
+					// Pop-up was blocked — surface a direct link instead of failing silently.
+					setCertUrl(certificateUrl);
+				}
+			} else {
+				if (certWindow) certWindow.close();
+				setCertError(t('applicationStatus.certificateUnavailable', { defaultValue: 'Certificate unavailable.' }));
+			}
 		} catch (err) {
+			if (certWindow) certWindow.close();
 			setCertError(resolveErrorMessage(err));
 		} finally {
 			setCertLoading(false);
@@ -154,6 +176,16 @@ export default function ApplicationStatus({ application, badge }) {
 								<Icon name="download" size={16} /> {t('applicationStatus.downloadCertificate', { defaultValue: 'Download certificate' })}
 							</Button>
 							<FormAlert message={certError} variant="danger" className="mt-2" />
+							{certUrl && (
+								<a
+									href={certUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={styles.certificateFallbackLink}
+								>
+									{t('applicationStatus.openCertificate', { defaultValue: 'Open certificate' })}
+								</a>
+							)}
 						</div>
 					)}
 				</div>
@@ -180,9 +212,19 @@ export default function ApplicationStatus({ application, badge }) {
 						{badgeInfoOpen && (
 							<div className={styles.badgeInfoBody}>
 								<div className={styles.badgePreview}>
-									{imgUrl && <img src={imgUrl} alt={title} className={styles.badgePreviewImg} />}
-									<h3 className={styles.badgePreviewName}>{title}</h3>
-									{description && <p className={styles.badgePreviewDesc}><TranslatedText text={description} /></p>}
+									{imgUrl && (
+										badgeSlug
+											? <Link to={SHARED.BADGE_DETAIL.replace(':slug', badgeSlug)}><img src={imgUrl} alt={title} className={styles.badgePreviewImg} /></Link>
+											: <img src={imgUrl} alt={title} className={styles.badgePreviewImg} />
+									)}
+									{badgeSlug
+										? <Link className={styles.badgePreviewNameLink} to={SHARED.BADGE_DETAIL.replace(':slug', badgeSlug)}><h3 className={styles.badgePreviewName}>{title}</h3></Link>
+										: <h3 className={styles.badgePreviewName}>{title}</h3>}
+									{description && (
+										badgeSlug
+											? <Link className={styles.badgePreviewDescLink} to={SHARED.BADGE_DETAIL.replace(':slug', badgeSlug)}><p className={styles.badgePreviewDesc}><TranslatedText text={description} /></p></Link>
+											: <p className={styles.badgePreviewDesc}><TranslatedText text={description} /></p>
+									)}
 								</div>
 
 								<div className={styles.infoGrid}>
@@ -255,75 +297,7 @@ export default function ApplicationStatus({ application, badge }) {
 					{/* Right: Timeline + Feedback + Evidences + Requirements */}
 					<div className={styles.rightColumn}>
 						{/* Validation Timeline */}
-						<div>
-							<h2 className={styles.sectionTitle}>
-								{t('applicationStatus.latestUpdates', { defaultValue: 'Latest Updates' })}
-							</h2>
-							<div className={styles.timeline}>
-								{sortedLogs.length === 0 ? (
-									<p className={styles.emptyText}>
-										{t('applicationStatus.noUpdates', { defaultValue: 'No updates yet.' })}
-									</p>
-								) : (
-									sortedLogs.map((log, idx) => {
-										const isLatest = idx === 0;
-										const action = log.validator_action || log.validatorAction || '';
-										const role = log.validator_function || log.validatorFunction || '';
-										const userName = log.user?.full_name || log.user?.fullName || '';
-										const date = log.created_at || log.createdAt;
-										const comment = log.validations_comments || log.validationsComments;
-
-										return (
-											<div key={log.log_id || idx} className={`${styles.timelineItem} ${isLatest ? styles.timelineLatest : ''}`}>
-												<div className={`${styles.timelineIcon} ${isLatest ? styles.timelineIconLatest : ''}`}>
-													{isLatest
-														? <Icon name="send" size={16} color="#fff" />
-														: <Icon name="clock" size={16} color="var(--color-outline)" />
-													}
-												</div>
-												<div className={styles.timelineBody}>
-													<div className={styles.timelineTitle}>
-														<span>{action}</span>
-														{isLatest && <span className={styles.latestBadge}>LATEST</span>}
-													</div>
-													{userName && (
-														<div className={styles.timelineMeta}>
-															<span className={styles.timelineUser}>{userName}</span>
-															<span className={styles.timelineRole}>{role}</span>
-														</div>
-													)}
-													{comment && <p className={styles.timelineComment}><TranslatedText text={comment} /></p>}
-													{date && (
-														<div className={styles.timelineDate}>
-															<Icon name="clock" size={14} color="var(--color-outline)" />
-															{formatDateTime(date)}
-														</div>
-													)}
-												</div>
-											</div>
-										);
-									})
-								)}
-
-								{/* Always show application opened entry */}
-								<div className={styles.timelineItem}>
-									<div className={styles.timelineIcon}>
-										<Icon name="clock" size={16} color="var(--color-outline)" />
-									</div>
-									<div className={styles.timelineBody}>
-										<div className={styles.timelineTitle}>
-											{t('applicationStatus.applicationStarted', { defaultValue: 'Application started' })}
-										</div>
-										{application?.opened_at && (
-											<div className={styles.timelineDate}>
-												<Icon name="clock" size={14} color="var(--color-outline)" />
-												{formatDateTime(application.opened_at)}
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
-						</div>
+						<ApplicationTimeline logs={logs} openedAt={application?.opened_at} />
 
 						{/* Consultant Notes */}
 						{consultantNotes && (
