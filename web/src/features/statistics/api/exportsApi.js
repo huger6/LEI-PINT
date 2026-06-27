@@ -7,6 +7,7 @@ const EXPORT_PATHS = {
 	badges: '/exports/badges',
 	pointsHistory: '/exports/points-history',
 	applicationLogs: '/exports/application-logs',
+	awardedBadges: '/exports/awarded-badges',
 };
 
 /**

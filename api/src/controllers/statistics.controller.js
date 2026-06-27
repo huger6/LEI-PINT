@@ -595,12 +595,81 @@ const getBadgesSummary = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  GET /api/statistics/team/recent-activity
+  A single chronological feed mixing recent team events (awarded
+  badges + submitted applications) across all consultants. SLL is
+  scoped to their own Service Line; TM/Admin see everything (or an
+  optional ?serviceLineId). ?limit caps the number of events.
+──────────────────────────────────────────────────────────────*/
+const getTeamRecentActivity = async (req, res) => {
+    try {
+        const querySl = req.query.serviceLineId ? Number(req.query.serviceLineId) : null;
+        const { serviceLineId, unconfigured } = await resolveRequestedServiceLineId(req, querySl);
+        if (unconfigured) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 15, 1), 50);
+        const replacements = { limit };
+        const slFilter = serviceLineId != null ? 'AND b.service_line_id = :serviceLineId' : '';
+        if (serviceLineId != null) replacements.serviceLineId = serviceLineId;
+
+        const sql = `
+            (
+                SELECT
+                    'badge_awarded' AS event_type,
+                    ab.awarded_at AS event_at,
+                    u.full_name AS consultant_name,
+                    u.user_guid AS consultant_guid,
+                    b.badge_title,
+                    b.badge_slug,
+                    a.area_name
+                FROM awarded_badges ab
+                JOIN badge_applications ba ON ba.application_id = ab.application_id
+                JOIN badges b ON b.badge_id = ba.badge_id
+                JOIN consultants c ON c.user_id = ab.user_id
+                JOIN users u ON u.user_id = c.user_id
+                LEFT JOIN areas a ON a.area_id = b.area_id
+                WHERE 1=1 ${slFilter}
+            )
+            UNION ALL
+            (
+                SELECT
+                    'application_submitted' AS event_type,
+                    ba.submitted_at AS event_at,
+                    u.full_name AS consultant_name,
+                    u.user_guid AS consultant_guid,
+                    b.badge_title,
+                    b.badge_slug,
+                    a.area_name
+                FROM badge_applications ba
+                JOIN badges b ON b.badge_id = ba.badge_id
+                JOIN consultants c ON c.user_id = ba.user_id
+                JOIN users u ON u.user_id = c.user_id
+                LEFT JOIN areas a ON a.area_id = b.area_id
+                WHERE ba.submitted_at IS NOT NULL ${slFilter}
+            )
+            ORDER BY event_at DESC
+            LIMIT :limit
+        `;
+
+        const rows = await sequelize.query(sql, { replacements, type: QueryTypes.SELECT });
+        return res.status(200).json({ success: true, data: rows });
+
+    } catch (error) {
+        logger.error('Error fetching team recent activity', { error });
+        return res.status(500).json({ success: false, code: 'STATS_RECENT_ACTIVITY_FAILED' });
+    }
+};
+
 module.exports = {
     getLearningPathProgress,
     getPointsHistory,
     getAcquisitionTimeline,
     getPeerComparison,
     getTeamBadgesCount,
+    getTeamRecentActivity,
     getPendingReviewApplicationsCount,
     getOpenApplicationsCount,
     getBadgeDistribution,

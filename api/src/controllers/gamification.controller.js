@@ -5,7 +5,12 @@ const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/gamification.validation');
 const { uuidRule } = require('../validations/shared-rules');
 const gamificationService = require('../services/gamification.service');
+const statsService = require('../services/statistics.service');
 const { sendTopicUpdate } = require('../services/firebase.service');
+
+// On-screen celebration animations fire when a consultant reaches these badge
+// counts (kept in sync with the consultant Achievements page milestones).
+const BADGE_MILESTONES = [1, 3, 5, 10, 25];
 
 /*──────────────────────────────────────────────────────────────
   POST /api/gamification/interactions
@@ -560,6 +565,74 @@ const setBadgeFeatured = async (req, res) => {
     }
 };
 
+/*──────────────────────────────────────────────────────────────
+  GET /api/gamification/overview
+  Read-only snapshot of the gamification system for leadership
+  roles (points-per-badge, available rewards, badge milestones).
+  For a Service Line Leader the points table is scoped to their
+  own Service Line; rewards and milestones are global.
+──────────────────────────────────────────────────────────────*/
+const getSystemOverview = async (req, res) => {
+    try {
+        const role = req.user.role;
+        const userId = req.user.sub;
+
+        // SLL → scope the points-per-badge table to their own service line.
+        const serviceLineId = await statsService.resolveServiceLineForUser(userId, role);
+
+        const badgeWhere = { is_active: true };
+        if (serviceLineId) badgeWhere.service_line_id = serviceLineId;
+
+        const badges = await models.badges.findAll({
+            where: badgeWhere,
+            attributes: ['badge_title', 'badge_slug', 'badge_points', 'badge_type'],
+            include: [
+                { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
+                { model: models.areas, as: 'area', attributes: ['area_name'] }
+            ],
+            order: [['badge_points', 'DESC'], ['badge_title', 'ASC']]
+        });
+
+        const pointsByBadge = badges.map((b) => ({
+            badgeTitle: b.badge_title,
+            badgeSlug: b.badge_slug,
+            badgePoints: b.badge_points,
+            badgeType: b.badge_type,
+            serviceLineName: b.service_line?.service_line_name || null,
+            areaName: b.area?.area_name || null
+        }));
+
+        // Active store rewards currently available to consultants.
+        const rewards = await models.rewards.findAll({
+            where: { is_active: true, reward_name: { [Op.ne]: null } },
+            attributes: ['reward_guid', 'reward_name', 'reward_description', 'cost_points', 'reward_category', 'img_url', 'special_title'],
+            order: [['cost_points', 'ASC']]
+        });
+
+        const rewardsList = rewards.map((r) => ({
+            rewardGuid: r.reward_guid,
+            name: r.reward_name,
+            description: r.reward_description,
+            costPoints: r.cost_points,
+            category: r.reward_category,
+            imgUrl: r.img_url || null,
+            specialTitle: r.special_title || null
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                pointsByBadge,
+                rewards: rewardsList,
+                badgeMilestones: BADGE_MILESTONES
+            }
+        });
+    } catch (error) {
+        logger.error('Error building gamification overview', { error });
+        return res.status(500).json({ success: false, code: 'GAMIFICATION_OVERVIEW_FAILED' });
+    }
+};
+
 module.exports = {
     trackInteraction,
     getInteractions,
@@ -570,5 +643,6 @@ module.exports = {
     getEarnedBadges,
     toggleFavorite,
     getFavorites,
-    setBadgeFeatured
+    setBadgeFeatured,
+    getSystemOverview
 };

@@ -59,6 +59,7 @@ export const SLL = {
 	STATS: '/stats',
 	RANKING: '/ranking',
 	ANNOUNCEMENTS: '/announcements',
+	GAMIFICATION: '/gamification-system',
 };
 
 export const TM = {

@@ -63,6 +63,13 @@ export async function getTeamBadgesCount(params = {}) {
 	};
 }
 
+// Chronological team activity feed (awarded badges + submitted applications).
+// SLL scoped server-side to their Service Line. params: limit, serviceLineId.
+export async function getTeamRecentActivity(params = {}) {
+	const { data } = await api.get('/statistics/team/recent-activity', { params });
+	return data?.data || [];
+}
+
 // Awarded badges expiring within `withinDays` (Talent Manager / Administrator)
 export async function getExpiringBadges(withinDays = 90) {
 	const { data } = await api.get('/statistics/reports/expiring-badges', { params: { withinDays } });

@@ -536,7 +536,9 @@
 			"badgeHistory": "Badge History",
 			"stats": "Statistics/Reports",
 			"ranking": "Ranking/Talents",
-			"announcements": "Announcements"
+			"announcements": "Announcements",
+			"myServiceLine": "My Service Line",
+			"gamification": "Gamification System"
 		},
 		"admin": {
 			"dashboard": "Dashboard",
@@ -1855,6 +1857,34 @@
 		"total": "{{count}} total",
 		"noData": "No badges awarded in your Service Line."
 	},
+	"sllGamification": {
+		"title": "Gamification System",
+		"subtitle": "Read-only view of the gamification system configured by the Administrator.",
+		"loadError": "Could not load the gamification system.",
+		"pointsTitle": "Points per badge",
+		"pointsDesc": "Points assigned to each badge in your Service Line, defined by the Administrator.",
+		"pointsEmpty": "There are no badges in your Service Line yet.",
+		"colBadge": "Badge",
+		"colArea": "Area",
+		"colType": "Type",
+		"colPoints": "Points",
+		"pts": "pts",
+		"typeStandard": "Standard",
+		"typeSpecial": "Special",
+		"rewardsTitle": "Available rewards",
+		"rewardsDesc": "Rewards currently available in the store, including those tied to special badges.",
+		"rewardsEmpty": "There are no active rewards at the moment.",
+		"milestonesTitle": "Animations and milestones",
+		"milestonesDesc": "On-screen animations are triggered on the consultant's screen when they reach the following earned-badge milestones.",
+		"badgesUnit": "badges",
+		"streakDesc": "An animation is also shown for each consecutive day the consultant keeps their attendance streak."
+	},
+	"recentActivity": {
+		"title": "Recent team activity",
+		"empty": "No recent activity.",
+		"awarded": "earned the badge",
+		"submitted": "submitted an application for"
+	},
 	"tmDashboard": {
 		"summaryTitle": "Validations Summary",
 		"goToValidations": "Go to Validations",
@@ -2188,6 +2218,7 @@
 			"accepted": "Approvals",
 			"rejected": "Rejections",
 			"badges": "Badges",
+			"awardedBadges": "Awarded badges",
 			"pointsHistory": "Points history",
 			"applicationLogs": "Validation logs"
 		},

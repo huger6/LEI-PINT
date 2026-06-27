@@ -314,6 +314,37 @@ const fetchBadgeRows = async ({ from, to, q, active, serviceLineId = null }) => 
     });
 };
 
+const fetchAwardedBadgeRows = async ({ from, to, serviceLineId = null }) => {
+    const { whereSql, replacements } = getDateFilter({ from, to, columnName: 'ab.awarded_at' });
+    if (serviceLineId) replacements.serviceLineId = serviceLineId;
+    const scopeSql = serviceLineId ? ' AND b.service_line_id = :serviceLineId' : '';
+    const sql = `
+        SELECT
+            u.full_name,
+            u.user_guid,
+            b.badge_title,
+            sl.service_line_name AS service_line_title,
+            a.area_name AS area_title,
+            ab.awarded_at,
+            ab.expiration_at,
+            ab.points_snapshot
+        FROM awarded_badges ab
+        INNER JOIN badge_applications ba ON ba.application_id = ab.application_id
+        INNER JOIN badges b ON b.badge_id = ba.badge_id
+        INNER JOIN consultants c ON c.user_id = ab.user_id
+        INNER JOIN users u ON u.user_id = c.user_id
+        INNER JOIN service_lines sl ON sl.service_line_id = b.service_line_id
+        INNER JOIN areas a ON a.area_id = b.area_id
+        WHERE 1=1${whereSql}${scopeSql}
+        ORDER BY ab.awarded_at DESC, ab.awarded_badges_id DESC
+    `;
+
+    return sequelize.query(sql, {
+        replacements,
+        type: QueryTypes.SELECT
+    });
+};
+
 const consultantColumns = [
     { key: 'user_guid', header: 'user_guid', accessor: (row) => row.user_guid, width: 38 },
     { key: 'full_name', header: 'full_name', accessor: (row) => row.full_name, width: 38 },
@@ -365,6 +396,18 @@ const badgeColumns = [
     { key: 'area_title', header: 'area_title', accessor: (row) => row.area_title, width: 28 },
     { key: 'created_at', header: 'created_at', accessor: (row) => row.created_at, width: 24 },
     { key: 'updated_at', header: 'updated_at', accessor: (row) => row.updated_at, width: 24 }
+];
+
+// Awarded-badges export. The Service Line is dropped for a Service Line Leader
+// (their export is already scoped to their own SL); Admin/TM keep it.
+const awardedBadgeColumns = [
+    { key: 'full_name', header: 'consultant', accessor: (row) => row.full_name, width: 34 },
+    { key: 'badge_title', header: 'badge_title', accessor: (row) => row.badge_title, width: 34 },
+    { key: 'service_line_title', header: 'service_line', accessor: (row) => row.service_line_title, width: 28 },
+    { key: 'area_title', header: 'area', accessor: (row) => row.area_title, width: 28 },
+    { key: 'awarded_at', header: 'awarded_at', accessor: (row) => row.awarded_at, width: 24 },
+    { key: 'points_snapshot', header: 'points', accessor: (row) => row.points_snapshot, width: 14 },
+    { key: 'expiration_at', header: 'expiration_at', accessor: (row) => row.expiration_at, width: 24 }
 ];
 
 const exportDataset = async ({ req, res, title, fileStem, columns, fetchRows, schema }) => {
@@ -493,6 +536,30 @@ const exportBadges = async (req, res) => {
     }
 };
 
+const exportAwardedBadges = async (req, res) => {
+    try {
+        const { serviceLineId, role } = await resolveExportScope(req);
+        // SLL: own SL only, Service Line column dropped (Area still shown).
+        // Admin/TM: all awarded badges, with both Service Line and Area columns.
+        const columns = role === 'Service Line Leader'
+            ? awardedBadgeColumns.filter((c) => c.key !== 'service_line_title')
+            : awardedBadgeColumns;
+        await exportDataset({
+            req,
+            res,
+            title: 'Awarded badges export',
+            fileStem: 'awarded_badges',
+            columns,
+            fetchRows: ({ from, to }) => fetchAwardedBadgeRows({ from, to, serviceLineId })
+        });
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_DATA_ERROR');
+
+        logger.error('Error exporting awarded badges', { error });
+        return res.status(500).json({ success: false, error: 'EXPORT_FAILED' });
+    }
+};
+
 // ─── Per-structure summary export (Learning Path / Service Line / Area) ──────
 const STRUCTURE_TYPES = new Set(['learning-path', 'service-line', 'area']);
 
@@ -585,5 +652,6 @@ module.exports = {
     exportApplications,
     exportBadges,
     exportPointsHistory,
+    exportAwardedBadges,
     exportStructureSummary
 };

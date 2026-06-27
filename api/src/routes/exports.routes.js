@@ -23,6 +23,10 @@ router.get('/badges', loginRequired, exportAccess, exportsCtrl.exportBadges);
 // GET /api/exports/points-history?from=...&to=...
 router.get('/points-history', loginRequired, exportAccess, exportsCtrl.exportPointsHistory);
 
+// GET /api/exports/awarded-badges?from=...&to=...
+// SLL: own Service Line (Area column). Admin/TM: all (Service Line + Area columns).
+router.get('/awarded-badges', loginRequired, exportAccess, exportsCtrl.exportAwardedBadges);
+
 // GET /api/exports/structure/:type/:identifier?format=&from=&to=
 // type: learning-path | service-line | area. Returns a summary of the structure.
 router.get('/structure/:type/:identifier', loginRequired, exportAccess, exportsCtrl.exportStructureSummary);

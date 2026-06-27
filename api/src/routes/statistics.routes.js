@@ -75,6 +75,14 @@ router.get('/badges-summary', loginRequired, leadership, ctrl.getBadgesSummary);
 router.get('/team/badges-count', loginRequired, leadership, ctrl.getTeamBadgesCount);
 
 /**
+ * @route   GET /api/statistics/team/recent-activity
+ * @desc    Chronological feed mixing recent awarded badges + submitted
+ *          applications across the team. SLL scoped to own SL. ?limit caps count.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/team/recent-activity', loginRequired, leadership, ctrl.getTeamRecentActivity);
+
+/**
  * @route   GET /api/statistics/team/applications-pending
  * @desc    Count of applications awaiting review (state = 'Submitted')
  * @access  Service Line Leader, Talent Manager, Administrator
