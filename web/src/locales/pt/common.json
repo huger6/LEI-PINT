@@ -1328,6 +1328,12 @@
 			"apply": "Aplicar Filtros",
 			"clear": "Limpar filtros",
 			"search": "Pesquisar badges",
+			"sort": {
+				"label": "Ordenar por",
+				"default": "Predefinido",
+				"recent": "Data de criação (mais recentes)",
+				"oldest": "Data de criação (mais antigos)"
+			},
 			"structure": "Hierarquia Estrutural",
 			"learningPath": "Learning Path",
 			"allLearningPaths": "Todos os learning paths",

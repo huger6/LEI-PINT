@@ -35,6 +35,7 @@ const EMPTY_FILTERS = {
 	maxPoints: MAX_POINTS,
 	expiringOnly: false,
 	obtained: 'all',
+	sort: 'default',
 };
 
 // Clamp a numeric filter value to the valid 0–MAX_POINTS range
@@ -271,6 +272,7 @@ export default function BadgeCatalog() {
 				if (Number(filters.maxPoints) < MAX_POINTS) params.maxPoints = Number(filters.maxPoints);
 				if (filters.expiringOnly) params.expiringOnly = true;
 				if (filters.obtained && filters.obtained !== 'all') params.obtained = filters.obtained;
+				if (filters.sort && filters.sort !== 'default') params.sort = filters.sort;
 
 				const response = await getBadgesCatalog(params);
 
@@ -388,6 +390,11 @@ export default function BadgeCatalog() {
 		updateFilters((prev) => ({ ...prev, obtained: value }));
 	}
 
+	// Update the desktop creation-date sort
+	function handleDesktopSortChange(value) {
+		updateFilters((prev) => ({ ...prev, sort: value }));
+	}
+
 	// Reset all desktop filters to their default empty state
 	function resetDesktopFilters() {
 		updateFilters(EMPTY_FILTERS);
@@ -451,7 +458,8 @@ export default function BadgeCatalog() {
 		Number(filters.minPoints) > 0 ||
 		Number(filters.maxPoints) < MAX_POINTS ||
 		filters.expiringOnly ||
-		(filters.obtained && filters.obtained !== 'all');
+		(filters.obtained && filters.obtained !== 'all') ||
+		(filters.sort && filters.sort !== 'default');
 
 	const displayedBadges = showingSaved
 		? badges.filter((b) => favoriteSlugs.has(b.badge_slug || b.badgeSlug))
@@ -482,8 +490,26 @@ export default function BadgeCatalog() {
 			})),
 		];
 
+		const sortOptions = [
+			{ value: 'default', label: t('badgeCatalog.filters.sort.default') },
+			{ value: 'recent', label: t('badgeCatalog.filters.sort.recent') },
+			{ value: 'oldest', label: t('badgeCatalog.filters.sort.oldest') },
+		];
+
 		return (
 			<div className={`d-flex flex-column gap-4 ${styles.filtersContent}`}>
+				<section>
+					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.sort.label')}</h3>
+					<CustomSelect
+						id={`${keyPrefix}-sort`}
+						name={`${keyPrefix}-sort`}
+						value={state.sort || 'default'}
+						onChange={(event) => handlers.onSortChange(event.target.value)}
+						options={sortOptions}
+						ariaLabel={t('badgeCatalog.filters.sort.label')}
+					/>
+				</section>
+
 				<section>
 					<h3 className={styles.filterHeading}>{t('badgeCatalog.filters.structure')}</h3>
 					<div className={`d-flex flex-column gap-2 ${styles.fieldStack}`}>
@@ -699,6 +725,7 @@ export default function BadgeCatalog() {
 								onPointsChange: handleDesktopPointsChange,
 								onExpiringToggle: handleDesktopExpiringToggle,
 								onObtainedChange: handleDesktopObtainedChange,
+								onSortChange: handleDesktopSortChange,
 							})}
 						</div>
 					</div>
@@ -815,6 +842,7 @@ export default function BadgeCatalog() {
 								}),
 								onExpiringToggle: (checked) => updateMobileFilters((prev) => ({ ...prev, expiringOnly: checked })),
 								onObtainedChange: (value) => updateMobileFilters((prev) => ({ ...prev, obtained: value })),
+								onSortChange: (value) => updateMobileFilters((prev) => ({ ...prev, sort: value })),
 							}, 'mobile')}
 						</div>
 
