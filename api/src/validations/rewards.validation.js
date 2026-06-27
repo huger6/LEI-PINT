@@ -15,7 +15,12 @@ const rewardBodySchema = z.object({
     category: z.enum(['course', 'voucher', 'title', 'physical', 'subscription']).optional().nullable()
 });
 
+const activeTitleBodySchema = z.object({
+    rewardGuid: z.string().uuid().nullable()
+});
+
 module.exports = {
     rewardGuidParamSchema,
-    rewardBodySchema
+    rewardBodySchema,
+    activeTitleBodySchema
 };

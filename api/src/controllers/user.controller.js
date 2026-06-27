@@ -64,7 +64,7 @@ const me = async (req, res) => {
                 : null,
             models.consultants.findOne({
                 where: { user_id: user.user_id },
-                attributes: ['biography', 'active_title'],
+                attributes: ['biography', 'active_title', 'active_title_reward_id'],
                 raw: true
             }),
             models.talent_managers.findOne({
@@ -212,6 +212,15 @@ const me = async (req, res) => {
             }
             : null;
 
+        let activeTitleRewardGuid = null;
+        if (consultant?.active_title_reward_id) {
+            const titleReward = await models.rewards.findByPk(consultant.active_title_reward_id, {
+                attributes: ['reward_guid'],
+                raw: true
+            });
+            activeTitleRewardGuid = titleReward?.reward_guid || null;
+        }
+
         const profile = stripNullishFields({
             guid: user.user_guid,
             fullName: user.full_name,
@@ -229,6 +238,7 @@ const me = async (req, res) => {
             learningPath: learningPathData,
             areas: areasPayload,
             activeTitle: user.user_role === 'Consultant' ? (consultant?.active_title || null) : null,
+            activeTitleRewardGuid: user.user_role === 'Consultant' ? activeTitleRewardGuid : null,
             currentStreakDays: user.current_streak_days
         });
 

@@ -298,13 +298,36 @@ const getOwnedTitles = async (req, res) => {
             where: { user_id: userId },
             include: [{
                 model: models.rewards, as: 'reward',
-                attributes: ['reward_name', 'special_title', 'reward_category'],
+                attributes: ['reward_id', 'reward_guid', 'reward_name', 'special_title', 'reward_category'],
                 where: { reward_category: 'title' }
             }]
         });
-        const titles = [...new Set(redemptions.map((r) => cleanTitle(r.reward?.special_title || r.reward?.reward_name)).filter(Boolean))];
-        const consultant = await models.consultants.findOne({ where: { user_id: userId }, attributes: ['active_title'] });
-        return res.status(200).json({ success: true, data: { titles, activeTitle: consultant?.active_title || null } });
+        const seen = new Set();
+        const titles = redemptions
+            .filter((r) => {
+                const rid = r.reward?.reward_id;
+                if (!rid || seen.has(rid)) return false;
+                seen.add(rid);
+                return true;
+            })
+            .map((r) => ({
+                rewardGuid: r.reward.reward_guid,
+                title: cleanTitle(r.reward.special_title || r.reward.reward_name)
+            }))
+            .filter((t) => t.title);
+        const consultant = await models.consultants.findOne({
+            where: { user_id: userId },
+            attributes: ['active_title', 'active_title_reward_id'],
+            include: [{ model: models.rewards, as: 'active_title_reward', attributes: ['reward_guid'] }]
+        });
+        return res.status(200).json({
+            success: true,
+            data: {
+                titles,
+                activeTitle: consultant?.active_title || null,
+                activeTitleRewardGuid: consultant?.active_title_reward?.reward_guid || null
+            }
+        });
     } catch (error) {
         logger.error('Error fetching owned titles', { error });
         return res.status(500).json({ success: false, code: 'REWARDS_TITLES_FAILED' });
@@ -312,42 +335,49 @@ const getOwnedTitles = async (req, res) => {
 };
 
 /*──────────────────────────────────────────────────────────────
-  PATCH /api/rewards/active-title   Body: { title: string|null }
+  PATCH /api/rewards/active-title   Body: { rewardGuid: string|null }
   Sets (or clears) the consultant's publicly displayed title; the
-  title must be one they have unlocked.
+  reward must be a title-category reward the consultant has redeemed.
 ──────────────────────────────────────────────────────────────*/
 const setActiveTitle = async (req, res) => {
     try {
+        const parsed = validations.activeTitleBodySchema.safeParse(req.body);
+        if (!parsed.success) return handleZodError(res, parsed.error);
+
         const userId = req.user.sub;
-        const { title } = req.body || {};
+        const { rewardGuid } = parsed.data;
 
-        if (title !== null && typeof title !== 'string') {
-            return res.status(400).json({ success: false, code: 'VALIDATION_INVALID_DATA' });
-        }
+        let titleText = null;
+        let rewardId = null;
 
-        if (title) {
-            const owned = await models.reward_redemptions.findOne({
-                where: { user_id: userId },
-                include: [{ model: models.rewards, as: 'reward', attributes: ['reward_name', 'special_title'], where: { reward_category: 'title' } }]
+        if (rewardGuid) {
+            const reward = await models.rewards.findOne({
+                where: { reward_guid: rewardGuid, reward_category: 'title' },
+                attributes: ['reward_id', 'reward_name', 'special_title']
             });
-            const ownedTitles = owned
-                ? (await models.reward_redemptions.findAll({
-                    where: { user_id: userId },
-                    include: [{ model: models.rewards, as: 'reward', attributes: ['reward_name', 'special_title'], where: { reward_category: 'title' } }]
-                })).map((r) => cleanTitle(r.reward?.special_title || r.reward?.reward_name))
-                : [];
-            if (!ownedTitles.includes(cleanTitle(title))) {
+            if (!reward) {
+                return res.status(404).json({ success: false, code: 'REWARDS_NOT_FOUND' });
+            }
+            const redeemed = await models.reward_redemptions.findOne({
+                where: { user_id: userId, reward_id: reward.reward_id }
+            });
+            if (!redeemed) {
                 return res.status(403).json({ success: false, code: 'REWARDS_TITLE_NOT_OWNED' });
             }
+            titleText = cleanTitle(reward.special_title || reward.reward_name);
+            rewardId = reward.reward_id;
         }
 
         await models.consultants.update(
-            { active_title: title ? cleanTitle(title) : null },
+            { active_title: titleText, active_title_reward_id: rewardId },
             { where: { user_id: userId } }
         );
-        // Invalidate the cached /me profile so the new title shows immediately.
         await redis.del(`user:profile:${userId}`).catch(() => {});
-        return res.status(200).json({ success: true, code: 'REWARDS_ACTIVE_TITLE_UPDATED', data: { activeTitle: title ? cleanTitle(title) : null } });
+        return res.status(200).json({
+            success: true,
+            code: 'REWARDS_ACTIVE_TITLE_UPDATED',
+            data: { activeTitle: titleText, activeTitleRewardGuid: rewardGuid || null }
+        });
     } catch (error) {
         logger.error('Error setting active title', { error });
         return res.status(500).json({ success: false, code: 'REWARDS_ACTIVE_TITLE_FAILED' });

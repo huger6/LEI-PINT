@@ -858,6 +858,7 @@ CREATE TABLE IF NOT EXISTS consultants (
    gdpr_accepted        BOOLEAN                 NOT NULL DEFAULT FALSE,
    biography            TEXT                 NULL,
    active_title         VARCHAR(255)         NULL, -- publicly displayed title (from a redeemed title reward)
+   active_title_reward_id INTEGER              NULL, -- FK -> rewards(reward_id); traces which reward the title came from
 
    CONSTRAINT pk_consultants PRIMARY KEY (user_id)
 );
@@ -866,6 +867,7 @@ CREATE TABLE IF NOT EXISTS consultants (
 /* INDEX: CONSULTANTS_PK                                        */
 /*==============================================================*/
 CREATE UNIQUE INDEX IF NOT EXISTS CONSULTANTS_PK ON consultants (user_id);
+CREATE INDEX IF NOT EXISTS idx_consultants_active_title_reward ON consultants (active_title_reward_id);
 
 /*==============================================================*/
 /* TABLE: consultants_selected_skills                           */
@@ -1158,6 +1160,11 @@ ALTER TABLE consultants
    ADD CONSTRAINT fk_consulta_users_inh_users FOREIGN KEY (user_id)
       REFERENCES users (user_id)
       ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE consultants
+   ADD CONSTRAINT fk_consultants_active_title_rewards FOREIGN KEY (active_title_reward_id)
+      REFERENCES rewards (reward_id)
+      ON DELETE SET NULL ON UPDATE RESTRICT;
 
 ALTER TABLE consultants_selected_skills
    ADD CONSTRAINT fk_consulta_consultan_consulta FOREIGN KEY (user_id)

@@ -22,6 +22,14 @@ module.exports = function(sequelize, DataTypes) {
     active_title: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    active_title_reward_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'rewards',
+        key: 'reward_id'
+      }
     }
   }, {
     sequelize,
@@ -42,6 +50,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "user_id" },
+        ]
+      },
+      {
+        name: "idx_consultants_active_title_reward",
+        fields: [
+          { name: "active_title_reward_id" },
         ]
       },
     ]

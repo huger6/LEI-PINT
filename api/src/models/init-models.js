@@ -264,6 +264,8 @@ function initModels(sequelize) {
   users.hasMany(application_validation_logs, { as: "application_validation_logs", foreignKey: "user_id"});
   consultants.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasOne(consultants, { as: "consultant", foreignKey: "user_id"});
+  consultants.belongsTo(rewards, { as: "active_title_reward", foreignKey: "active_title_reward_id"});
+  rewards.hasMany(consultants, { as: "title_consultants", foreignKey: "active_title_reward_id"});
   notifications.belongsTo(users, { as: "user", foreignKey: "user_id"});
   users.hasMany(notifications, { as: "notifications", foreignKey: "user_id"});
   service_line_leaders.belongsTo(users, { as: "user", foreignKey: "user_id"});
