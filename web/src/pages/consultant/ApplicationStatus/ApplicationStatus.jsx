@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
 import { downloadEvidence, previewEvidence, generateCertificate } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
+import { downloadFromUrl } from '../../../utils/download';
 import Stepper from '../../../components/Stepper/Stepper';
 import ApplicationTimeline from '../../../components/ApplicationTimeline/ApplicationTimeline';
 import Icon from '../../../components/Icons/Icons';
@@ -40,8 +41,6 @@ export default function ApplicationStatus({ application, badge }) {
 	const [certLoading, setCertLoading] = useState(false);
 	// Store any certificate download error message
 	const [certError, setCertError] = useState(null);
-	// Direct certificate link, shown as a fallback when the pop-up is blocked
-	const [certUrl, setCertUrl] = useState(null);
 
 	const state = application?.application_state || application?.state;
 	const appGuid = application?.application_guid || application?.applicationGuid;
@@ -106,33 +105,19 @@ export default function ApplicationStatus({ application, badge }) {
 		}
 	}
 
-	// Generate and download a completion certificate for this application
+	// Generate and download (never preview) a completion certificate for this application
 	async function handleDownloadCertificate() {
-		// Open the tab synchronously, still inside the click handler, so the browser
-		// keeps it tied to the user gesture. Opening it AFTER the await gets blocked
-		// by pop-up blockers. If the blocker kills even this, we fall back to a
-		// visible link the user can click (a direct gesture is never blocked).
-		const certWindow = window.open('about:blank', '_blank');
-
 		setCertError(null);
-		setCertUrl(null);
 		setCertLoading(true);
 		try {
 			const lang = CERT_LANG_MAP[(i18n.language || 'pt').slice(0, 2)] || 'pt';
 			const { certificateUrl } = await generateCertificate(appGuid, lang);
 			if (certificateUrl) {
-				if (certWindow && !certWindow.closed) {
-					certWindow.location = certificateUrl;
-				} else {
-					// Pop-up was blocked — surface a direct link instead of failing silently.
-					setCertUrl(certificateUrl);
-				}
+				await downloadFromUrl(certificateUrl, `certificado-${title || 'badge'}.pdf`);
 			} else {
-				if (certWindow) certWindow.close();
 				setCertError(t('applicationStatus.certificateUnavailable', { defaultValue: 'Certificate unavailable.' }));
 			}
 		} catch (err) {
-			if (certWindow) certWindow.close();
 			setCertError(resolveErrorMessage(err));
 		} finally {
 			setCertLoading(false);
@@ -176,16 +161,6 @@ export default function ApplicationStatus({ application, badge }) {
 								<Icon name="download" size={16} /> {t('applicationStatus.downloadCertificate', { defaultValue: 'Download certificate' })}
 							</Button>
 							<FormAlert message={certError} variant="danger" className="mt-2" />
-							{certUrl && (
-								<a
-									href={certUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className={styles.certificateFallbackLink}
-								>
-									{t('applicationStatus.openCertificate', { defaultValue: 'Open certificate' })}
-								</a>
-							)}
 						</div>
 					)}
 				</div>

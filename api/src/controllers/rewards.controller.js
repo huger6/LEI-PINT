@@ -294,6 +294,8 @@ const cleanTitle = (name) => String(name || '').replace(/^\s*(Exclusive Title|T[
 const getOwnedTitles = async (req, res) => {
     try {
         const userId = req.user.sub;
+
+        // (a) Titles unlocked by redeeming title-category rewards in the store.
         const redemptions = await models.reward_redemptions.findAll({
             where: { user_id: userId },
             include: [{
@@ -302,17 +304,40 @@ const getOwnedTitles = async (req, res) => {
                 where: { reward_category: 'title' }
             }]
         });
+
+        // (b) Titles granted by earning a special badge: a title-reward linked to
+        // a badge the consultant has been awarded.
+        const earned = await models.awarded_badges.findAll({
+            where: { user_id: userId },
+            attributes: ['awarded_badges_id'],
+            include: [{ model: models.badge_applications, as: 'application', attributes: ['badge_id'] }]
+        });
+        const earnedBadgeIds = [...new Set(earned.map((a) => a.application?.badge_id).filter(Boolean))];
+
+        let badgeTitleRewards = [];
+        if (earnedBadgeIds.length) {
+            badgeTitleRewards = await models.rewards.findAll({
+                where: { reward_category: 'title', badge_id: { [Op.in]: earnedBadgeIds } },
+                attributes: ['reward_id', 'reward_guid', 'reward_name', 'special_title']
+            });
+        }
+
+        const rewardRows = [
+            ...redemptions.map((r) => r.reward).filter(Boolean),
+            ...badgeTitleRewards
+        ];
+
         const seen = new Set();
-        const titles = redemptions
+        const titles = rewardRows
             .filter((r) => {
-                const rid = r.reward?.reward_id;
+                const rid = r?.reward_id;
                 if (!rid || seen.has(rid)) return false;
                 seen.add(rid);
                 return true;
             })
             .map((r) => ({
-                rewardGuid: r.reward.reward_guid,
-                title: cleanTitle(r.reward.special_title || r.reward.reward_name)
+                rewardGuid: r.reward_guid,
+                title: cleanTitle(r.special_title || r.reward_name)
             }))
             .filter((t) => t.title);
         const consultant = await models.consultants.findOne({
@@ -353,15 +378,28 @@ const setActiveTitle = async (req, res) => {
         if (rewardGuid) {
             const reward = await models.rewards.findOne({
                 where: { reward_guid: rewardGuid, reward_category: 'title' },
-                attributes: ['reward_id', 'reward_name', 'special_title']
+                attributes: ['reward_id', 'reward_name', 'special_title', 'badge_id']
             });
             if (!reward) {
                 return res.status(404).json({ success: false, code: 'REWARDS_NOT_FOUND' });
             }
-            const redeemed = await models.reward_redemptions.findOne({
+            // The consultant owns the title if they redeemed it OR if it is granted
+            // by a special badge they have earned.
+            let owns = !!(await models.reward_redemptions.findOne({
                 where: { user_id: userId, reward_id: reward.reward_id }
-            });
-            if (!redeemed) {
+            }));
+            if (!owns && reward.badge_id) {
+                const earnedBadge = await models.awarded_badges.findOne({
+                    where: { user_id: userId },
+                    attributes: ['awarded_badges_id'],
+                    include: [{
+                        model: models.badge_applications, as: 'application',
+                        attributes: [], required: true, where: { badge_id: reward.badge_id }
+                    }]
+                });
+                owns = !!earnedBadge;
+            }
+            if (!owns) {
                 return res.status(403).json({ success: false, code: 'REWARDS_TITLE_NOT_OWNED' });
             }
             titleText = cleanTitle(reward.special_title || reward.reward_name);
