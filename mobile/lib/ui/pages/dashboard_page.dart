@@ -10,7 +10,6 @@ import '../widgets/dashboard/certification_donut_card.dart';
 import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
-import '../widgets/dashboard/announcement_banner.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
 import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
@@ -156,9 +155,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                         },
                       ),
                       const SizedBox(height: 20),
-
-                      // Announcements
-                      const AnnouncementBanner(),
 
                       // Greeting
                       Text(
