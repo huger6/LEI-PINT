@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '../../hooks/userContext';
 import { getTitles, setActiveTitle } from '../../features/rewards/api/rewardsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../ContentCard/ContentCard';
@@ -11,6 +12,7 @@ import styles from './TitleSelector.module.css';
 // the user has none, so it is safe to drop into any page (e.g. Settings).
 export default function TitleSelector() {
 	const { t } = useTranslation();
+	const { refreshUser } = useUser();
 	const [titles, setTitles] = useState([]);
 	const [activeRewardGuid, setActiveRewardGuid] = useState(null);
 	const [saving, setSaving] = useState(false);
@@ -35,6 +37,7 @@ export default function TitleSelector() {
 		setError(null);
 		try {
 			await setActiveTitle(rewardGuid);
+			await refreshUser();
 		} catch (err) {
 			setActiveRewardGuid(prev);
 			setError(resolveErrorMessage(err));
