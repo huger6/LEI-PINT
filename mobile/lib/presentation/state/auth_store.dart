@@ -362,6 +362,9 @@ class AuthStore extends ChangeNotifier {
         learningPathTitle: _currentUser!.learningPathTitle,
         areas: _currentUser!.areas,
       );
+      // Persist the new balance so it survives navigation/relaunch (a reload
+      // from the local DB would otherwise restore the old, pre-spend points).
+      await _currentUserDao.updatePoints(totalPoints);
       notifyListeners();
     }
   }

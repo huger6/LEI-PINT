@@ -33,6 +33,24 @@ class RewardRepository {
 
   Future<void> addLocalTitle(String title) => _titleDao.addTitle(title);
 
+  /// Pulls the authoritative owned-titles + active title from the API and
+  /// persists them locally. Called right after a redeem so a purchased title is
+  /// recorded as owned (and survives the next full sync, which is idempotent).
+  Future<void> refreshOwnedTitlesFromApi() async {
+    final response = await _apiClient.get(ApiEndpoints.getTitles);
+    final data = response is Map<String, dynamic>
+        ? (response['data'] ?? response)
+        : response;
+    if (data is Map) {
+      final titles = (data['titles'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          <String>[];
+      await _titleDao.replaceAll(titles);
+      await _currentUserDao.updateActiveTitle(data['activeTitle']?.toString());
+    }
+  }
+
   Future<Map<String, dynamic>> redeemReward(String rewardGuid) async {
     final response = await _apiClient.post(
       ApiEndpoints.redeemReward(rewardGuid),

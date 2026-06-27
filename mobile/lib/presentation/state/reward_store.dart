@@ -90,15 +90,11 @@ class RewardStore extends ChangeNotifier {
     try {
       final result = await _repository.redeemReward(rewardGuid);
 
-      final reward = _rewards.cast<RewardModel?>().firstWhere(
-            (r) => r!.rewardGuid == rewardGuid,
-            orElse: () => null,
-          );
-      if (reward != null &&
-          reward.rewardCategory?.toLowerCase() == 'title') {
-        final cleaned = _cleanTitle(reward.rewardName);
-        await _repository.addLocalTitle(cleaned);
-      }
+      // The redeem call already persisted the redemption server-side, so the
+      // owned-titles endpoint now includes any newly unlocked title. Pull the
+      // authoritative list (instead of an optimistic local insert) so the title
+      // is stored as owned, stays selectable, and isn't wiped by a later sync.
+      await _repository.refreshOwnedTitlesFromApi();
 
       await _reloadFromLocal();
       return result;

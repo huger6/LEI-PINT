@@ -571,6 +571,8 @@ const _sourceJsonEs = r'''
   "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "¡Increíble! Conseguiste el badge especial \"{{badgeTitle}}\". Es un logro notable — ¡sigue superándote!",
   "NOTIF_APP_REJECTED_TITLE": "Candidatura rechazada",
   "NOTIF_APP_REJECTED_BODY": "Tu candidatura para el badge \"{{badgeTitle}}\" ha sido rechazada.",
+  "NOTIF_APP_RETURNED_TITLE": "Candidatura devuelta",
+  "NOTIF_APP_RETURNED_BODY": "Tu candidatura para el badge \"{{badgeTitle}}\" ha sido devuelta para revisión. Revisa las notas del evaluador y vuelve a enviarla.",
   "NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura en validación",
   "NOTIF_APP_IN_VALIDATION_BODY": "Tu candidatura para el badge \"{{badgeTitle}}\" está ahora en validación.",
   "NOTIF_APP_PENDING_SLL_REVIEW_TITLE": "Candidatura pendiente de revisión",

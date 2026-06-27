@@ -574,6 +574,8 @@ const _sourceJson = r'''
   "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Incrível! Conquistou o badge especial \"{{badgeTitle}}\". Este é um feito notável — continue a superar-se!",
   "NOTIF_APP_REJECTED_TITLE": "Candidatura rejeitada",
   "NOTIF_APP_REJECTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi rejeitada.",
+  "NOTIF_APP_RETURNED_TITLE": "Candidatura devolvida",
+  "NOTIF_APP_RETURNED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi devolvida para revisão. Verifique as notas do avaliador e volte a submeter.",
   "NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura em validação",
   "NOTIF_APP_IN_VALIDATION_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" está agora em validação.",
   "NOTIF_APP_PENDING_SLL_REVIEW_TITLE": "Candidatura aguarda revisão",

@@ -571,6 +571,8 @@ const _sourceJsonEn = r'''
   "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Amazing! You earned the special badge \"{{badgeTitle}}\". This is a remarkable achievement — keep pushing forward!",
   "NOTIF_APP_REJECTED_TITLE": "Application rejected",
   "NOTIF_APP_REJECTED_BODY": "Your application for the badge \"{{badgeTitle}}\" has been rejected.",
+  "NOTIF_APP_RETURNED_TITLE": "Application returned",
+  "NOTIF_APP_RETURNED_BODY": "Your application for the badge \"{{badgeTitle}}\" was returned for review. Check the reviewer's notes and resubmit it.",
   "NOTIF_APP_IN_VALIDATION_TITLE": "Application in validation",
   "NOTIF_APP_IN_VALIDATION_BODY": "Your application for the badge \"{{badgeTitle}}\" is now being validated.",
   "NOTIF_APP_PENDING_SLL_REVIEW_TITLE": "Application awaiting review",
