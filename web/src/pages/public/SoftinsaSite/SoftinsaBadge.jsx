@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicBadge } from '../../../features/badges/api/publicBadgesApi';
-import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
+import SoftinsaNav from './SoftinsaNav';
 import styles from './SoftinsaBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -49,17 +49,7 @@ export default function SoftinsaBadge() {
 
 	return (
 		<div className={styles.site}>
-			<header className={styles.nav}>
-				<div className={styles.navInner}>
-					<Link to="/softinsa" className={styles.brand}>
-						<img src={LOGO_SRC} alt="Softinsa" className={styles.logoImg} />
-					</Link>
-					<div className={styles.navRight}>
-						<PreferencesBar className={styles.prefsInline} />
-						<Link to="/softinsa#badges" className={styles.back}>← {t('softinsaSite.badgePage.back')}</Link>
-					</div>
-				</div>
-			</header>
+			<SoftinsaNav />
 
 			<main className={styles.main}>
 				{loading ? (

@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
 import Icon from '../../../components/Icons/Icons';
-import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
 import TranslatedText from '../../../components/TranslatedText/TranslatedText';
+import SoftinsaNav from './SoftinsaNav';
 import styles from './SoftinsaSite.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -114,24 +114,7 @@ export default function SoftinsaSite() {
 
 	return (
 		<div className={styles.site} ref={rootRef}>
-			<header className={styles.nav}>
-				<div className={styles.navInner}>
-					<a href="#top" className={styles.brand}>
-						<img src={LOGO_SRC} alt="Softinsa" className={styles.logoImg} />
-					</a>
-					<nav className={styles.navLinks}>
-						<a href="#sobre">{t('softinsaSite.nav.sobre')}</a>
-						<a href="#funcionalidades">{t('softinsaSite.nav.funcionalidades')}</a>
-						<a href="#badges">{t('softinsaSite.nav.badges')}</a>
-						<a href="#perfis">{t('softinsaSite.nav.perfis')}</a>
-						<a href="#fluxo">{t('softinsaSite.nav.comoFunciona')}</a>
-					</nav>
-					<div className={styles.navRight}>
-						<PreferencesBar className={styles.prefsInline} />
-						<Link to="/" className={styles.navCta}>{t('softinsaSite.nav.aceder')}</Link>
-					</div>
-				</div>
-			</header>
+			<SoftinsaNav />
 
 			<main id="top">
 				{/* Hero */}
