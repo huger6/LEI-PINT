@@ -11,7 +11,6 @@ const MENU_ITEMS = [
     { to: ADMIN.REWARDS, icon: 'badge-premium', label: 'sidebar.admin.rewards' },
     { to: ADMIN.SLAS, icon: 'time', label: 'sidebar.admin.slas' },
     { to: ADMIN.NOTIFICATIONS, icon: 'bell', label: 'sidebar.admin.notifications' },
-    { to: ADMIN.INTEGRATIONS, icon: 'link', label: 'sidebar.admin.integrations' },
     { to: ADMIN.ANNOUNCEMENTS, icon: 'megaphone', label: 'sidebar.admin.announcements' },
     { to: ADMIN.STATS, icon: 'progress', label: 'sidebar.admin.stats' },
     { to: ADMIN.RGPD, icon: 'privacy', label: 'sidebar.admin.rgpd' },

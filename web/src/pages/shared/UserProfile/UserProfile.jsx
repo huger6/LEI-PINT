@@ -13,6 +13,7 @@ import FormInput from '../../../components/FormInput/FormInput';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import InfoRow from '../../../components/InfoRow/InfoRow';
 import TitleSelector from '../../../components/TitleSelector/TitleSelector';
+import TeamsIcon from '../../../components/TeamsIcon/TeamsIcon';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
@@ -618,7 +619,7 @@ export default function UserProfile() {
 								className={styles.teamsBtn}
 								aria-label={t('profile.messageOnTeams')}
 							>
-								<Icon name="send" size={16} color="#fff" />
+								<TeamsIcon size={18} />
 								<span>{t('profile.messageOnTeams')}</span>
 							</a>
 						)}

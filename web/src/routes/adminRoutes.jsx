@@ -22,7 +22,6 @@ import AdminNotifications from '../pages/admin/AdminNotifications/AdminNotificat
 import AdminRgpd from '../pages/admin/AdminRgpd/AdminRgpd';
 import AdminSlas from '../pages/admin/AdminSlas/AdminSlas';
 import AdminRewards from '../pages/admin/AdminRewards/AdminRewards';
-import AdminIntegrations from '../pages/admin/AdminIntegrations/AdminIntegrations';
 
 // Administrator-only routes: dashboard, structure, users, badges, and management pages.
 const adminRoutes = [
@@ -42,7 +41,6 @@ const adminRoutes = [
 	{ path: ADMIN.RGPD, element: <AdminRgpd /> },
 	{ path: ADMIN.SLAS, element: <AdminSlas /> },
 	{ path: ADMIN.REWARDS, element: <AdminRewards /> },
-	{ path: ADMIN.INTEGRATIONS, element: <AdminIntegrations /> },
 	{ path: ADMIN.STATS, element: <StatsPage /> },
 	{ path: ADMIN.LEARNING_PATH_DETAIL, element: <LearningPathDetail /> },
 	{ path: ADMIN.SERVICE_LINE_DETAIL, element: <ServiceLineDetail /> },

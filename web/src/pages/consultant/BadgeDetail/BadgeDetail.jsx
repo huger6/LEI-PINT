@@ -574,24 +574,27 @@ export default function BadgeDetail() {
 				<section className={styles.relatedSection}>
 					<div className={styles.relatedHeader}>
 						<h2 className={styles.sectionTitle}>{t('badgeDetail.related')}</h2>
-						<div className={styles.carouselControls}>
-							<button
-								type="button"
-								className={styles.carouselBtn}
-								onClick={() => scrollCarousel('prev')}
-								aria-label="Previous"
-							>
-								<Icon name="chevron_backward" size={18} />
-							</button>
-							<button
-								type="button"
-								className={styles.carouselBtn}
-								onClick={() => scrollCarousel('next')}
-								aria-label="Next"
-							>
-								<Icon name="chevron_forward" size={18} />
-							</button>
-						</div>
+						{/* Arrows only when there are more cards than fit on one row. */}
+						{relatedBadges.length > 4 && (
+							<div className={styles.carouselControls}>
+								<button
+									type="button"
+									className={styles.carouselBtn}
+									onClick={() => scrollCarousel('prev')}
+									aria-label="Previous"
+								>
+									<Icon name="chevron_backward" size={18} />
+								</button>
+								<button
+									type="button"
+									className={styles.carouselBtn}
+									onClick={() => scrollCarousel('next')}
+									aria-label="Next"
+								>
+									<Icon name="chevron_forward" size={18} />
+								</button>
+							</div>
+						)}
 					</div>
 					<div className={styles.carousel} ref={carouselRef}>
 						{relatedBadges.map((b) => (
