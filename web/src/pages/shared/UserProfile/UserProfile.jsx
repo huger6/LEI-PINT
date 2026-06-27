@@ -474,9 +474,6 @@ export default function UserProfile() {
 	// Resolved stat cards for the current role.
 	const stats = getStats();
 
-	// Path to the badges gallery.
-	const badgesPath = isOwnProfile ? SHARED.BADGES : SHARED.BADGES;
-
 	return (
 		<div className={styles.pageLayout}>
 		<div className={styles.page}>
@@ -698,7 +695,7 @@ export default function UserProfile() {
 				))}
 			</div>
 
-			{/* ── Editable public badge gallery (own consultant profile) ── */}
+			{/* ── Badge gallery — own consultant profile (curate via edit) ── */}
 			{isConsultant && isOwnProfile && (
 				<ContentCard className={styles.section}>
 					<div className={styles.galleryHeaderRow}>
@@ -720,58 +717,87 @@ export default function UserProfile() {
 							</Button>
 						)}
 					</div>
-					<p className={styles.galleryHint}>{t('profile.badgeGalleryHint')}</p>
+					{editingGallery && <p className={styles.galleryHint}>{t('profile.badgeGalleryHint')}</p>}
 					{galleryBadges.length === 0 ? (
 						<p className={styles.emptyText}>{t('profile.noBadgesYet')}</p>
+					) : (() => {
+						// View mode shows only the selected badges; edit mode reveals
+						// every earned badge so the consultant can pick which to display.
+						const visible = editingGallery ? galleryBadges : galleryBadges.filter((b) => b.isFeatured);
+						if (visible.length === 0) {
+							return <p className={styles.emptyText}>{t('profile.galleryNoneSelected')}</p>;
+						}
+						return (
+							<div className={styles.galleryGrid}>
+								{visible.map((b) => {
+									const badge = b.badge || {};
+									const on = !!b.isFeatured;
+									return (
+										<div
+											key={b.awardedBadgeId}
+											className={`${styles.galleryItem} ${editingGallery && on ? styles.galleryItemOn : ''} ${editingGallery ? styles.galleryItemEditable : ''}`}
+											role={editingGallery ? 'button' : undefined}
+											tabIndex={editingGallery ? 0 : undefined}
+											aria-pressed={editingGallery ? on : undefined}
+											aria-busy={savingBadge === b.awardedBadgeId || undefined}
+											onClick={editingGallery ? () => toggleBadgeFeatured(b) : undefined}
+											onKeyDown={editingGallery ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBadgeFeatured(b); } } : undefined}
+										>
+											{editingGallery && on && (
+												<span className={styles.galleryCheck} aria-label={t('profile.onPublicProfile')}>
+													<Icon name="check" size={14} color="#fff" aria-hidden="true" />
+												</span>
+											)}
+											<div className={styles.galleryThumb}>
+												{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
+											</div>
+											<span className={styles.galleryName}>{badge.title || '—'}</span>
+										</div>
+									);
+								})}
+							</div>
+						);
+					})()}
+				</ContentCard>
+			)}
+
+			{/* ── Badge gallery — viewing another consultant (read-only, selected only) ── */}
+			{isConsultant && !isOwnProfile && (
+				<ContentCard className={styles.section}>
+					<CardHeader
+						icon="badge"
+						iconBg="var(--color-primary-soft)"
+						iconColor="var(--color-primary)"
+						title={t('profile.badgeGalleryTitle')}
+					/>
+					{(!profile?.galleryBadges || profile.galleryBadges.length === 0) ? (
+						<p className={styles.emptyText}>{t('profile.galleryEmptyPublic')}</p>
 					) : (
 						<div className={styles.galleryGrid}>
-							{galleryBadges.map((b) => {
-								const badge = b.badge || {};
-								const on = !!b.isFeatured;
-								return (
-									<div
-										key={b.awardedBadgeId}
-										className={`${styles.galleryItem} ${on ? styles.galleryItemOn : ''} ${editingGallery ? styles.galleryItemEditable : ''}`}
-										role={editingGallery ? 'button' : undefined}
-										tabIndex={editingGallery ? 0 : undefined}
-										aria-pressed={editingGallery ? on : undefined}
-										aria-busy={savingBadge === b.awardedBadgeId || undefined}
-										onClick={editingGallery ? () => toggleBadgeFeatured(b) : undefined}
-										onKeyDown={editingGallery ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBadgeFeatured(b); } } : undefined}
-									>
-										{on && (
-											<span className={styles.galleryCheck} aria-label={t('profile.onPublicProfile')}>
-												<Icon name="check" size={14} color="#fff" aria-hidden="true" />
-											</span>
-										)}
+							{profile.galleryBadges.map((b) => {
+								const inner = (
+									<>
 										<div className={styles.galleryThumb}>
-											{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
+											{b.imageUrl ? <img src={b.imageUrl} alt={b.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
 										</div>
-										<span className={styles.galleryName}>{badge.title || '—'}</span>
-									</div>
+										<span className={styles.galleryName}>{b.title || '—'}</span>
+									</>
+								);
+								return b.slug ? (
+									<Link
+										key={b.awardedBadgeId}
+										to={SHARED.BADGE_DETAIL.replace(':slug', b.slug)}
+										className={`${styles.galleryItem} ${styles.galleryItemLink}`}
+									>
+										{inner}
+									</Link>
+								) : (
+									<div key={b.awardedBadgeId} className={styles.galleryItem}>{inner}</div>
 								);
 							})}
 						</div>
 					)}
 				</ContentCard>
-			)}
-
-			{/* Other roles / admin viewing: keep the simple gallery link. */}
-			{isConsultant && !isOwnProfile && (
-			<ContentCard className={styles.badgeGalleryCard}>
-				<Link to={badgesPath} className={styles.badgeGalleryLink}>
-					<div className={styles.badgeGalleryIcon}>
-						<Icon name="badge" size={32} color="var(--color-primary)" />
-					</div>
-					<div className={styles.badgeGalleryText}>
-						<span className={styles.badgeGalleryTitle}>{t('profile.viewBadgeGallery')}</span>
-						<span className={styles.badgeGalleryDesc}>{t('profile.viewBadgeGalleryDesc')}</span>
-					</div>
-					<div className={styles.badgeGalleryArrow}>
-						<Icon name="chevron_forward" size={20} color="var(--color-outline)" />
-					</div>
-				</Link>
-			</ContentCard>
 			)}
 
 

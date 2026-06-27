@@ -364,10 +364,10 @@ const getPublicConsultantProfile = async (req, res) => {
 			order: [['awarded_at', 'DESC']]
 		});
 
-		// The consultant curates their public gallery: if they featured any
-		// badges, show only those; otherwise show all earned badges by default.
-		const hasFeatured = awardedAll.some((a) => a.is_featured);
-		const awarded = hasFeatured ? awardedAll.filter((a) => a.is_featured) : awardedAll;
+		// The consultant curates their public gallery: ONLY the badges they
+		// explicitly selected (featured) are shown. Badges that were not selected
+		// are never exposed publicly, even when none are selected at all.
+		const awarded = awardedAll.filter((a) => a.is_featured);
 
 		const badges = awarded.map((a) => {
 			const b = a.application?.badge || {};

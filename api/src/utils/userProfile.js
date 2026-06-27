@@ -130,7 +130,7 @@ const buildUserProfileByGuid = async (userGuid, { includeSensitive = false } = {
     // Same definitions used elsewhere: earned badges, submitted+ applications,
     // and the points_history total.
     if (user.user_role === 'Consultant') {
-        const [badgesCount, applicationsCount, pointsSum] = await Promise.all([
+        const [badgesCount, applicationsCount, pointsSum, featuredBadges] = await Promise.all([
             models.awarded_badges.count({ where: { user_id: user.user_id } }),
             models.badge_applications.count({
                 where: {
@@ -138,11 +138,42 @@ const buildUserProfileByGuid = async (userGuid, { includeSensitive = false } = {
                     application_state: ['Submitted', 'In validation', 'Accepted', 'Rejected']
                 }
             }),
-            models.points_history.sum('points_delta', { where: { user_id: user.user_id } })
+            models.points_history.sum('points_delta', { where: { user_id: user.user_id } }),
+            // Curated public gallery: ONLY the badges the consultant explicitly
+            // selected to display. Unselected badges are never returned here, so
+            // other users can browse the gallery without seeing hidden badges.
+            models.awarded_badges.findAll({
+                where: { user_id: user.user_id, is_featured: true, is_published: true },
+                attributes: ['awarded_badges_id', 'public_verification_link', 'awarded_at'],
+                include: [{
+                    model: models.badge_applications,
+                    as: 'application',
+                    attributes: ['application_id'],
+                    include: [{
+                        model: models.badges,
+                        as: 'badge',
+                        attributes: ['badge_slug', 'badge_title', 'badge_img_url', 'badge_points', 'badge_type']
+                    }]
+                }],
+                order: [['awarded_at', 'DESC']]
+            })
         ]);
         profile.badgesCount = badgesCount;
         profile.applicationsCount = applicationsCount;
         profile.totalPoints = pointsSum || 0;
+        profile.galleryBadges = featuredBadges.map((a) => {
+            const b = a.application?.badge || {};
+            return {
+                awardedBadgeId: a.awarded_badges_id,
+                title: b.badge_title || null,
+                imageUrl: b.badge_img_url || null,
+                slug: b.badge_slug || null,
+                points: b.badge_points ?? null,
+                type: b.badge_type || null,
+                verificationLink: a.public_verification_link || null,
+                awardedAt: a.awarded_at
+            };
+        });
     }
 
     return profile;

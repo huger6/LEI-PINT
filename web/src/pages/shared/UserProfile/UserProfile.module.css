@@ -516,7 +516,15 @@
 	border-radius: 14px;
 	background: var(--color-surface);
 	text-align: center;
+	text-decoration: none;
+	color: inherit;
 	transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+/* Read-only gallery badge that links to the badge detail page. */
+.galleryItemLink:hover {
+	border-color: var(--color-primary);
+	transform: translateY(-2px);
 }
 
 /* Selected → coloured border + a check badge in the top-right corner. */
