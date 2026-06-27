@@ -136,13 +136,13 @@ class ApplicationsRepository {
   );
 
   Future<Map<String, dynamic>> startApplication({
-    required int badgeId,
+    required String badgeSlug,
     int? goalId,
   }) async {
     final payload = await _apiClient.post(
       ApiEndpoints.startApplication,
       data: {
-        'badgeId': badgeId,
+        'badgeSlug': badgeSlug,
         ...?(goalId == null ? null : {'goalId': goalId}),
       },
       options: _longTimeout,
@@ -155,12 +155,16 @@ class ApplicationsRepository {
     required String applicationGuid,
     required int requirementId,
     required String fileName,
+    required String contentType,
+    required int fileSize,
   }) async {
     final payload = await _apiClient.post(
       ApiEndpoints.getUploadUrl(applicationGuid),
       data: {
         'requirementId': requirementId,
         'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': fileSize,
       },
     );
 
@@ -193,10 +197,29 @@ class ApplicationsRepository {
   Future<Map<String, dynamic>> submitApplication(String applicationGuid) async {
     final payload = await _apiClient.post(
       ApiEndpoints.submitApplication(applicationGuid),
+      data: {},
       options: _longTimeout,
     );
 
     return _extractMap(payload);
+  }
+
+  Future<String> downloadEvidence({
+    required String applicationGuid,
+    required int evidenceId,
+  }) async {
+    final payload = await _apiClient.get(
+      ApiEndpoints.downloadEvidence(applicationGuid, evidenceId),
+    );
+
+    final map = _extractMap(payload);
+    final data = _extractMap(map['data']);
+    final downloadUrl = (data['downloadUrl'] ?? '').toString();
+    if (downloadUrl.isEmpty) {
+      throw Exception('Download URL not available.');
+    }
+
+    return downloadUrl;
   }
 
   Future<Map<String, dynamic>> resendBadgeConfirmation(

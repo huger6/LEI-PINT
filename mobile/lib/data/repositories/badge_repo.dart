@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/api_endpoints.dart';
@@ -50,7 +49,6 @@ class BadgeRepository {
       if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
       page++;
     }
-    debugPrint('BadgeRepo.getBadges: parsed ${rows.length} badge rows');
     if (rows.isNotEmpty) {
       await _badgeDao.replaceAllFromJson(rows);
     }
@@ -72,6 +70,26 @@ class BadgeRepository {
     return BadgeModel.fromApiDetail(data);
   }
 
+  /// Badge ids the consultant currently owns (awarded), read from the local
+  /// cache that mirrors the server. Used to decide whether a goal whose badge
+  /// has been earned can be marked as concluded.
+  Future<Set<int>> ownedBadgeIdsLocal() async {
+    final awarded = await _awardedBadgeDao.getAll();
+    return awarded.map((a) => a.badgeId).toSet();
+  }
+
+  /// Refreshes the local awarded-badge cache from the API and reports whether
+  /// the given badge is now owned. Falls back to the cached state when offline.
+  Future<bool> isBadgeOwned(int badgeId) async {
+    try {
+      await getEarnedBadges();
+    } catch (_) {
+      // Offline or transient failure: fall back to the local cache below.
+    }
+    final owned = await _awardedBadgeDao.getByBadge(badgeId);
+    return owned != null;
+  }
+
   Future<List<EarnedBadge>> getEarnedBadgesLocal() async {
     final awarded = await _awardedBadgeDao.getAll();
     final result = <EarnedBadge>[];
@@ -80,8 +98,6 @@ class BadgeRepository {
       final badge = await _badgeDao.getById(award.badgeId);
       if (badge != null) {
         result.add(EarnedBadge(badge: badge, award: award));
-      } else {
-        debugPrint('BadgeRepo: awarded badge id=${award.id} has badge_id=${award.badgeId} NOT found in catalog — dropped');
       }
     }
 
@@ -90,9 +106,7 @@ class BadgeRepository {
 
   Future<List<EarnedBadge>> getEarnedBadges() async {
     final payload = await _apiClient.get(ApiEndpoints.getEarnedBadges);
-    debugPrint('BadgeRepo.getEarnedBadges: payload type=${payload.runtimeType}');
     final list = _extractList(payload);
-    debugPrint('BadgeRepo.getEarnedBadges: extracted ${list.length} items');
 
     final rawMaps = list
         .whereType<Map>()
@@ -101,17 +115,14 @@ class BadgeRepository {
 
     for (final json in rawMaps) {
       final badgeData = json['badge'];
-      debugPrint('BadgeRepo.getEarnedBadges: badge=${badgeData != null}, badgeId=${badgeData is Map ? badgeData['id'] : 'N/A'}');
       if (badgeData is Map) {
         await _badgeDao.insertIfMissing(Map<String, dynamic>.from(badgeData));
       }
     }
 
     final awarded = rawMaps.map(_parseAwardedFromApi).toList();
-    debugPrint('BadgeRepo.getEarnedBadges: parsed ${awarded.length} awarded badges');
     await _awardedBadgeDao.replaceAll(awarded);
     final result = await getEarnedBadgesLocal();
-    debugPrint('BadgeRepo.getEarnedBadges: joined ${result.length} earned badges from local DB');
     return result;
   }
 
@@ -122,10 +133,23 @@ class BadgeRepository {
     );
   }
 
-  Future<void> toggleBadgeGallery(int awardedBadgeId, bool featured) async {
+  /// Toggles whether an earned badge is shown on the public profile gallery.
+  ///
+  /// The server identifies the awarded badge by its public verification link
+  /// (never the PK). The local cache is only updated after the server confirms
+  /// the change; the error is rethrown so callers can notify the user.
+  Future<void> toggleBadgeGallery(
+    int awardedBadgeId,
+    String verificationLink,
+    bool featured,
+  ) async {
+    if (verificationLink.trim().isEmpty) {
+      throw Exception('Missing verification link for badge gallery update.');
+    }
+
     await _apiClient.patch(
-      ApiEndpoints.getEarnedBadges,
-      data: {'is_featured': featured},
+      ApiEndpoints.setBadgeFeatured(verificationLink),
+      data: {'featured': featured},
     );
     await _awardedBadgeDao.updateFeatured(awardedBadgeId, featured);
   }

@@ -13,11 +13,14 @@ import '../../../presentation/state/dashboard_store.dart';
 import '../../../presentation/state/goals_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../../presentation/state/notification_store.dart';
+import '../../../presentation/state/reward_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/shared/translated_text.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
 import '../../widgets/profile/profile_widgets.dart';
 import '../evolution/points_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BadgeStore>().loadEarnedBadges();
       context.read<AuthStore>().fetchPoints();
+      context.read<RewardStore>().loadAll();
     });
   }
 
@@ -64,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final badgeStore = context.watch<BadgeStore>();
+    final rewardStore = context.watch<RewardStore>();
 
     final earnedBadges = badgeStore.earnedBadges;
     final badgeCount = earnedBadges.length;
@@ -102,8 +107,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: CircleAvatar(
                   radius: 44,
                   backgroundColor: Color(0xFF5D9FD1),
-                  child: Icon(
-                    Icons.person_outline_rounded,
+                  child: AppIcon(
+                    AppIcons.user,
                     color: Colors.white,
                     size: 52,
                   ),
@@ -123,6 +128,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (rewardStore.activeTitle != null &&
+                  rewardStore.activeTitle!.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E5F5),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      rewardStore.activeTitle!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF7B1FA2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 3),
               Center(
                 child: TranslatedText(
@@ -155,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: QuickMetricCard(
                       value: '$badgeCount',
                       label: tr.tr('badgesMetric'),
-                      icon: Icons.workspace_premium_outlined,
+                      icon: AppIcons.badge,
                       onTap: () => context.go(AppRouter.myBadges),
                     ),
                   ),
@@ -164,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: QuickMetricCard(
                       value: '$skillsCount',
                       label: tr.tr('skillsMetric'),
-                      icon: Icons.extension_outlined,
+                      icon: AppIcons.structure,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -172,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: QuickMetricCard(
                       value: '$totalPoints',
                       label: tr.tr('pointsTitle'),
-                      icon: Icons.stars_outlined,
+                      icon: AppIcons.starPoints,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -212,8 +239,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Color(0xFFD5EAF6),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.military_tech_outlined,
+                    child: const AppIcon(
+                      AppIcons.badge,
                       color: Color(0xFF4D9ECC),
                     ),
                   ),
@@ -247,8 +274,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(
-                        Icons.chevron_right_rounded,
+                      const AppIcon(
+                        AppIcons.chevronForward,
                         color: Color(0xFF5D9FD1),
                         size: 24,
                       ),
@@ -268,44 +295,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.edit_note_rounded,
+                icon: AppIcons.pencil,
                 label: tr.tr('myCharacteristics'),
                 onTap: () => context.push(AppRouter.characteristics),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.notifications_none_rounded,
+                icon: AppIcons.bell,
                 label: tr.tr('notificationPreferences'),
+                onTap: () => context.push(AppRouter.notificationPreferences),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.person_outline_rounded,
+                icon: AppIcons.user,
                 label: tr.tr('editProfile'),
                 onTap: () => context.push(AppRouter.editProfile),
               ),
               if (isConsultant) ...[
                 const SizedBox(height: 8),
                 ProfileMenuTile(
-                  icon: Icons.category_outlined,
+                  icon: AppIcons.area,
                   label: tr.tr('chooseAreasMenuLabel'),
                   onTap: () => context.push(AppRouter.chooseAreas),
                 ),
               ],
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.lock_outline_rounded,
+                icon: AppIcons.lock,
                 label: tr.tr('changePasswordAction'),
                 onTap: () => context.push(AppRouter.changePassword, extra: false),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.email_outlined,
+                icon: AppIcons.email,
                 label: tr.tr('emailSignature'),
                 onTap: () => context.push(AppRouter.emailSignature),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.language_rounded,
+                icon: AppIcons.starPoints,
+                label: tr.tr('storeRewardsStore'),
+                onTap: () => context.push(AppRouter.store),
+              ),
+              const SizedBox(height: 8),
+              ProfileMenuTile(
+                icon: AppIcons.language,
                 label: tr.tr('languageLabel'),
                 onTap: () {
                   final langCtrl = LanguageScope.of(context);
@@ -345,18 +379,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.privacy_tip_outlined,
-                label: tr.tr('privacyPolicies'),
-              ),
-              const SizedBox(height: 8),
-              ProfileMenuTile(
-                icon: Icons.description_outlined,
+                icon: AppIcons.paper,
                 label: tr.tr('termsAndConditionsTitle'),
                 onTap: () => context.push(AppRouter.termsConditions),
               ),
               const SizedBox(height: 8),
               ProfileMenuTile(
-                icon: Icons.help_outline_rounded,
+                icon: AppIcons.help,
                 label: tr.tr('help'),
                 onTap: () => context.push(AppRouter.help),
               ),
@@ -385,8 +414,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Color(0xFFD5EAF6),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.logout_rounded,
+                    child: const AppIcon(
+                      AppIcons.exitDoor,
                       color: Color(0xFF4D9ECC),
                       size: 20,
                     ),
@@ -398,8 +427,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
+                  trailing: const AppIcon(
+                    AppIcons.chevronForward,
                     color: Color(0xFF8B96A1),
                   ),
                   onTap: _handleLogout,

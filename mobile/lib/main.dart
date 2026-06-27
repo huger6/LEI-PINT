@@ -22,15 +22,19 @@ import 'data/repositories/lang_repo.dart';
 import 'data/repositories/location_repo.dart';
 import 'data/repositories/ranking_repo.dart';
 import 'data/repositories/goals_repo.dart';
+import 'data/repositories/reward_repo.dart';
 import 'data/repositories/statistics_repo.dart';
 import 'data/local/current_user_dao.dart';
 import 'data/local/lang_dao.dart';
+import 'data/local/my_area_dao.dart';
 import 'data/repositories/notification_repo.dart';
 import 'data/repositories/validation_repo.dart';
 import 'injection_container.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/services/translation_service.dart';
+import 'ui/widgets/shared/app_icon/app_icon.dart';
+import 'ui/widgets/shared/app_icon/app_icon_data.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -45,15 +49,9 @@ void main() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('Flutter framework error during startup: ${details.exception}');
-    if (details.stack != null) {
-      debugPrintStack(stackTrace: details.stack);
-    }
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Uncaught async error during startup: $error');
-    debugPrintStack(stackTrace: stack);
     return true;
   };
 
@@ -63,9 +61,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FCMService.initialize();
-  } catch (e) {
-    debugPrint('Erro fatal ao inicializar o Firebase/FCM: $e');
-  }
+  } catch (_) {}
 
   try {
     await setupDependencies().timeout(
@@ -76,9 +72,7 @@ void main() async {
         );
       },
     );
-  } catch (e, stackTrace) {
-    debugPrint('setupDependencies failed: $e');
-    debugPrintStack(stackTrace: stackTrace);
+  } catch (e) {
     runApp(ErrorApp(errorMessage: 'Initialization failed: $e'));
     return;
   }
@@ -141,6 +135,7 @@ void main() async {
             getIt<AuthRepository>(),
             getIt<ApiClient>(),
             getIt<CurrentUserDao>(),
+            getIt<MyAreaDao>(),
             storageService: getIt.isRegistered<SupabaseStorageService>()
                 ? getIt<SupabaseStorageService>()
                 : null,
@@ -168,7 +163,12 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider<GoalsStore>(
-          create: (_) => GoalsStore(getIt<GoalsRepository>()),
+          create: (_) =>
+              GoalsStore(getIt<GoalsRepository>(), getIt<BadgeRepository>()),
+        ),
+        ChangeNotifierProvider<RewardStore>(
+          create: (_) =>
+              RewardStore(getIt<RewardRepository>(), getIt<SyncService>()),
         ),
         ChangeNotifierProvider<LanguageController>.value(
           value: languageController,
@@ -194,7 +194,7 @@ class ErrorApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                const AppIcon(AppIcons.danger, color: Colors.red, size: 60),
                 const SizedBox(height: 16),
                 Text(
                   errorMessage,

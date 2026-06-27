@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'app_icon/app_icon.dart';
+import 'app_icon/app_icon_data.dart';
 
 class AuthHeader extends StatelessWidget {
   final String title;
@@ -47,8 +49,8 @@ class AuthHeader extends StatelessWidget {
                 imagePath!,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    Icons.image_not_supported_outlined,
+                  return AppIcon(
+                    AppIcons.photo,
                     size: 40,
                     color: Theme.of(context).colorScheme.outline,
                   );

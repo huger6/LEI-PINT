@@ -1,17 +1,22 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/local/announcement_dao.dart';
 import '../data/local/area_dao.dart';
 import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
 import '../data/local/current_user_dao.dart';
+import '../data/local/gdpr_policy_dao.dart';
+import '../data/local/redemption_dao.dart';
+import '../data/local/reward_dao.dart';
+import '../data/local/title_dao.dart';
 import '../data/local/lang_dao.dart';
 import '../data/local/translation_cache_dao.dart';
 import '../data/local/location_dao.dart';
 import '../data/local/my_application_dao.dart';
+import '../data/local/my_area_dao.dart';
 import '../data/local/my_favorite_dao.dart';
 import '../data/local/my_skill_dao.dart';
 import '../data/local/notification_dao.dart';
@@ -27,6 +32,7 @@ import '../data/repositories/ranking_repo.dart';
 import '../data/repositories/statistics_repo.dart';
 import '../data/repositories/goals_repo.dart';
 import '../data/repositories/notification_repo.dart';
+import '../data/repositories/reward_repo.dart';
 import '../data/repositories/validation_repo.dart';
 import 'database/database_helper.dart';
 import 'services/connectivity_service.dart';
@@ -50,12 +56,7 @@ Future<void> setupDependencies() async {
         // Try the next candidate.
       }
     }
-    if (!envLoaded) {
-      debugPrint(
-        'No environment file loaded (expected .env). '
-        'Continuing with fallback config.',
-      );
-    }
+    if (!envLoaded) {}
   }
 
   final supabaseUrl =
@@ -81,14 +82,7 @@ Future<void> setupDependencies() async {
       try {
         await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
         hasSupabaseClient = true;
-      } catch (e, stackTrace) {
-        debugPrint('Supabase initialization failed: $e');
-        debugPrintStack(stackTrace: stackTrace);
-      }
-    } else {
-      debugPrint(
-        'Supabase credentials missing in environment. Skipping Supabase initialization.',
-      );
+      } catch (_) {}
     }
   }
 
@@ -119,6 +113,12 @@ Future<void> setupDependencies() async {
   }
 
   // ── DAOs ──────────────────────────────────────────────────────────────────
+
+  if (!getIt.isRegistered<AnnouncementDao>()) {
+    getIt.registerLazySingleton<AnnouncementDao>(
+      () => AnnouncementDao(getIt<LocalDatabase>()),
+    );
+  }
 
   if (!getIt.isRegistered<AreaDao>()) {
     getIt.registerLazySingleton<AreaDao>(() => AreaDao(getIt<LocalDatabase>()));
@@ -172,6 +172,12 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<MyAreaDao>()) {
+    getIt.registerLazySingleton<MyAreaDao>(
+      () => MyAreaDao(getIt<LocalDatabase>()),
+    );
+  }
+
   if (!getIt.isRegistered<MySkillDao>()) {
     getIt.registerLazySingleton<MySkillDao>(
       () => MySkillDao(getIt<LocalDatabase>()),
@@ -181,6 +187,30 @@ Future<void> setupDependencies() async {
   if (!getIt.isRegistered<TranslationCacheDao>()) {
     getIt.registerLazySingleton<TranslationCacheDao>(
       () => TranslationCacheDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<GdprPolicyDao>()) {
+    getIt.registerLazySingleton<GdprPolicyDao>(
+      () => GdprPolicyDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<RewardDao>()) {
+    getIt.registerLazySingleton<RewardDao>(
+      () => RewardDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<RedemptionDao>()) {
+    getIt.registerLazySingleton<RedemptionDao>(
+      () => RedemptionDao(getIt<LocalDatabase>()),
+    );
+  }
+
+  if (!getIt.isRegistered<TitleDao>()) {
+    getIt.registerLazySingleton<TitleDao>(
+      () => TitleDao(getIt<LocalDatabase>()),
     );
   }
 
@@ -269,6 +299,18 @@ Future<void> setupDependencies() async {
     );
   }
 
+  if (!getIt.isRegistered<RewardRepository>()) {
+    getIt.registerLazySingleton<RewardRepository>(
+      () => RewardRepository(
+        getIt<ApiClient>(),
+        getIt<RewardDao>(),
+        getIt<RedemptionDao>(),
+        getIt<TitleDao>(),
+        getIt<CurrentUserDao>(),
+      ),
+    );
+  }
+
   // ── SyncService ───────────────────────────────────────────────────────────
 
   if (!getIt.isRegistered<SyncService>()) {
@@ -279,10 +321,5 @@ Future<void> setupDependencies() async {
 
   try {
     await getIt<ApiClient>().init();
-  } catch (e, stackTrace) {
-    debugPrint(
-      'ApiClient init failed. App will continue without persisted cookies: $e',
-    );
-    debugPrintStack(stackTrace: stackTrace);
-  }
+  } catch (_) {}
 }

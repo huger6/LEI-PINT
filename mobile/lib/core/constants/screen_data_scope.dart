@@ -49,6 +49,13 @@ abstract class ScreenDataScope {
       SyncCodes.awardedBadges,
       SyncCodes.badges,
     ],
+    AppRouter.termsConditions: [
+      SyncCodes.gdprPolicies,
+    ],
+    AppRouter.store: [
+      SyncCodes.rewards,
+      SyncCodes.points,
+    ],
   };
 
   static const _syncCodeToTable = <int, String>{
@@ -63,6 +70,8 @@ abstract class ScreenDataScope {
     SyncCodes.areas: 'areas_cache',
     SyncCodes.progressionStages: 'progression_stages_cache',
     SyncCodes.notifications: 'notifications_cache',
+    SyncCodes.gdprPolicies: 'gdpr_policies_cache',
+    SyncCodes.rewards: 'rewards_cache',
   };
 
   static List<int> requiredSyncCodes(String route) {
@@ -78,7 +87,7 @@ abstract class ScreenDataScope {
   }
 
   static bool isStaticRoute(String route) {
-    return route == AppRouter.help || route == AppRouter.termsConditions;
+    return route == AppRouter.help;
   }
 
   static bool isAuthRoute(String route) {

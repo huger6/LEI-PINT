@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,9 @@ import '../../../models/location_model.dart';
 import '../../../models/dtos/registration_data.dart';
 import '../../../data/repositories/lang_repo.dart';
 import '../../../injection_container.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
+import '../../widgets/auth/auth_language_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -163,7 +167,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Error loading locations/languages: $e");
       if (mounted) {
         setState(() {
           if (_availableLanguages.isEmpty) {
@@ -341,8 +344,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           });
         }
       }
-    } catch (e) {
-      debugPrint('Validation error for $field: $e');
+    } catch (_) {
       setState(() {
         _validationState[field] = null;
         _validationMessages.remove(field);
@@ -441,8 +443,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.only(top: 4),
         child: Row(
           children: [
-            Icon(
-              Icons.error_outline,
+            AppIcon(
+              AppIcons.danger,
               size: 12,
               color: Theme.of(context).colorScheme.error,
             ),
@@ -467,8 +469,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.only(top: 4),
         child: Row(
           children: [
-            Icon(
-              Icons.check_circle_outline,
+            AppIcon(
+              AppIcons.checkCircle,
               size: 12,
               color: Theme.of(context).colorScheme.tertiary,
             ),
@@ -501,10 +503,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const AppIcon(AppIcons.chevronBackward),
           onPressed: _goBackToLogin,
         ),
         title: Text(tr.tr('createAccount')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: AuthLanguageButton(),
+          ),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -536,7 +544,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('name'),
                             isRequired: true,
                             hintText: tr.tr('nameHint'),
-                            prefixIcon: Icons.person_outlined,
+                            prefixIcon: AppIcons.user,
                             keyboardType: TextInputType.name,
                             controller: _nameController,
                             validator: FormValidators.validateName,
@@ -549,7 +557,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('username'),
                             isRequired: true,
                             hintText: tr.tr('usernameHint'),
-                            prefixIcon: Icons.verified_user_outlined,
+                            prefixIcon: AppIcons.skills,
                             keyboardType: TextInputType.text,
                             controller: _usernameController,
                             validator: FormValidators.validateUsername,
@@ -562,7 +570,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('email'),
                             isRequired: true,
                             hintText: tr.tr('emailHint'),
-                            prefixIcon: Icons.email_outlined,
+                            prefixIcon: AppIcons.email,
                             keyboardType: TextInputType.emailAddress,
                             controller: _emailController,
                             validator: FormValidators.validateEmail,
@@ -575,7 +583,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('password'),
                             isRequired: true,
                             hintText: tr.tr('createPasswordHint'),
-                            prefixIcon: Icons.lock_outlined,
+                            prefixIcon: AppIcons.lock,
                             obscureText: true,
                             controller: _passwordController,
                             validator: FormValidators.validatePassword,
@@ -590,7 +598,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('confirmPassword'),
                             isRequired: true,
                             hintText: tr.tr('confirmPasswordHint'),
-                            prefixIcon: Icons.lock_outlined,
+                            prefixIcon: AppIcons.lock,
                             obscureText: true,
                             controller: _confirmPasswordController,
                             validator: (value) =>
@@ -699,7 +707,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: tr.tr('birthdate'),
                             isRequired: false,
                             hintText: tr.tr('birthdateHint'),
-                            prefixIcon: Icons.calendar_today_outlined,
+                            prefixIcon: AppIcons.today,
                             keyboardType: TextInputType.datetime,
                             controller: _birthdateController,
                             validator: FormValidators.validateBirthdate,
@@ -762,8 +770,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                const Icon(
-                                                  Icons.image_outlined,
+                                                const AppIcon(
+                                                  AppIcons.photo,
                                                   size: 36,
                                                 ),
                                                 const SizedBox(height: 8),
@@ -777,8 +785,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
                                     onPressed: _pickProfileImage,
-                                    icon: const Icon(
-                                      Icons.upload_file_outlined,
+                                    icon: const AppIcon(
+                                      AppIcons.upload,
                                     ),
                                     label: Text(tr.tr('pickFromPhone')),
                                   ),
@@ -954,7 +962,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               ?.copyWith(
                                                 color: colorScheme.primary,
                                                 fontWeight: FontWeight.w600,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                decorationColor:
+                                                    colorScheme.primary,
                                               ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () => context.push(
+                                                  AppRouter.termsConditions,
+                                                ),
                                         ),
                                       ],
                                     ),

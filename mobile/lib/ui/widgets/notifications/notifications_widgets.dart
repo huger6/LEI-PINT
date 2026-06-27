@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/notification_defs.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../models/notification_model.dart';
+import '../../../models/notification_preference_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
+import '../shared/translated_text.dart';
 
 class NotificationsList extends StatelessWidget {
   const NotificationsList({
@@ -57,7 +62,7 @@ class NotificationTypeChip extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final String icon;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -80,7 +85,7 @@ class NotificationTypeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              AppIcon(
                 icon,
                 size: 16,
                 color: isSelected ? Colors.white : color,
@@ -120,24 +125,35 @@ class NotificationCard extends StatelessWidget {
   NotificationTypeDisplay get _typeDisplay =>
       NotificationDefs.getTypeDisplay(item.notificationType);
 
+  /// Friendly title. The payload carries an i18n key (e.g.
+  /// `NOTIF_APP_SUBMITTED_TITLE`); resolve it to the localized template and
+  /// fill any `{{placeholder}}` from `meta`. Falls back to the definition label.
   String _title(LanguageController tr) {
-    final payload = item.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final firstLine = payload.split('\n').first;
-      if (firstLine.length <= 60) return firstLine;
-      return '${firstLine.substring(0, 57)}...';
-    }
+    final key = item.title;
+    if (key != null) return _interpolate(tr.tr(key), item.meta, tr);
     return tr.tr(_display.label);
   }
 
-  String get _message {
-    final payload = item.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final lines = payload.split('\n');
-      if (lines.length > 1) return lines.sublist(1).join('\n').trim();
-      return payload;
+  /// Friendly body, resolved and interpolated the same way as the title.
+  String _message(LanguageController tr) {
+    final key = item.body;
+    if (key == null) return '';
+    return _interpolate(tr.tr(key), item.meta, tr);
+  }
+
+  /// Replaces `{{name}}` tokens in a localized template with values from the
+  /// notification's `meta` payload. Unknown tokens are left untouched.
+  /// Meta values that are source_strings keys are translated automatically.
+  String _interpolate(
+      String template, Map<String, dynamic>? meta, LanguageController tr) {
+    if (meta == null || meta.isEmpty || !template.contains('{{')) {
+      return template;
     }
-    return '';
+    return template.replaceAllMapped(RegExp(r'\{\{(\w+)\}\}'), (match) {
+      final value = meta[match.group(1)];
+      if (value == null) return match.group(0)!;
+      return tr.tr(value.toString());
+    });
   }
 
   String _timestamp(LanguageController tr) {
@@ -191,7 +207,7 @@ class NotificationCard extends StatelessWidget {
                 color: display.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(display.icon, color: display.color, size: 22),
+              child: AppIcon(display.icon, color: display.color, size: 22),
             ),
             Expanded(
               child: Column(
@@ -218,23 +234,25 @@ class NotificationCard extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       IconButton(
                         onPressed: onClose,
-                        icon: const Icon(Icons.close, size: 22),
+                        icon: const AppIcon(AppIcons.close, size: 22),
                         color: const Color(0xFF8B96A1),
                         padding: EdgeInsets.zero,
                         constraints:
                             const BoxConstraints(minWidth: 28, minHeight: 28),
-                        tooltip: tr.tr('markAsRead'),
+                        tooltip: tr.tr('deleteNotification'),
                       ),
                     ],
                   ),
-                  if (_message.isNotEmpty) ...[
+                  if (_message(tr).isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
-                      _message,
+                      _message(tr),
                       style: const TextStyle(
                         color: Color(0xFF202A33),
                         fontSize: 14,
@@ -259,7 +277,7 @@ class NotificationCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            AppIcon(
                               typeDisplay.icon,
                               size: 12,
                               color: typeDisplay.color,
@@ -293,6 +311,143 @@ class NotificationCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A settings card for a single notification type, with a master toggle and
+/// per-channel (push / email) switches. Controlled: the parent owns the state.
+class NotificationPreferenceCard extends StatelessWidget {
+  const NotificationPreferenceCard({
+    super.key,
+    required this.preference,
+    required this.onChanged,
+  });
+
+  final NotificationPreferenceModel preference;
+  final void Function({
+    required bool isEnabled,
+    required bool sendPush,
+    required bool sendEmail,
+  }) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TranslatedText(
+                  preference.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2932),
+                  ),
+                ),
+              ),
+              Switch(
+                value: preference.isEnabled,
+                activeColor: AppColors.primary,
+                onChanged: (value) => onChanged(
+                  isEnabled: value,
+                  sendPush: preference.sendPush,
+                  sendEmail: preference.sendEmail,
+                ),
+              ),
+            ],
+          ),
+          if (preference.description.trim().isNotEmpty)
+            TranslatedText(
+              preference.description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5B6773),
+                height: 1.3,
+              ),
+            ),
+          if (preference.isEnabled) ...[
+            const SizedBox(height: 6),
+            _ChannelToggle(
+              icon: AppIcons.bell,
+              label: tr.tr('notificationChannelPush'),
+              value: preference.sendPush,
+              onChanged: (value) => onChanged(
+                isEnabled: preference.isEnabled,
+                sendPush: value,
+                sendEmail: preference.sendEmail,
+              ),
+            ),
+            _ChannelToggle(
+              icon: AppIcons.email,
+              label: tr.tr('notificationChannelEmail'),
+              value: preference.sendEmail,
+              onChanged: (value) => onChanged(
+                isEnabled: preference.isEnabled,
+                sendPush: preference.sendPush,
+                sendEmail: value,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ChannelToggle extends StatelessWidget {
+  const _ChannelToggle({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        AppIcon(icon, size: 18, color: AppColors.iconMuted),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3A4A57),
+            ),
+          ),
+        ),
+        Switch(
+          value: value,
+          activeColor: AppColors.primary,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }

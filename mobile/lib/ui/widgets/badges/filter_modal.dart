@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgeFilterResult {
   const BadgeFilterResult({
@@ -117,7 +119,7 @@ Future<BadgeFilterResult?> showFilterModal(
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
+                        icon: const AppIcon(AppIcons.close),
                         color: textSecondary,
                       ),
                     ],
@@ -169,22 +171,26 @@ Future<BadgeFilterResult?> showFilterModal(
                           color: textPrimary,
                         ),
                       ),
-                      childrenPadding:
-                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
                       children: [
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: areas
-                              .map(
-                                (area) => buildChip(
-                                  optionValue: area,
-                                  optionLabel: area,
-                                  selectedValue: areaSelected,
-                                  onSelect: (v) => areaSelected = v,
-                                ),
-                              )
-                              .toList(),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 210),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: areas
+                                  .map(
+                                    (area) => buildChip(
+                                      optionValue: area,
+                                      optionLabel: area,
+                                      selectedValue: areaSelected,
+                                      onSelect: (v) => areaSelected = v,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -199,22 +205,26 @@ Future<BadgeFilterResult?> showFilterModal(
                           color: textPrimary,
                         ),
                       ),
-                      childrenPadding:
-                          const EdgeInsets.fromLTRB(6, 0, 6, 10),
+                      childrenPadding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
                       children: [
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: levels
-                              .map(
-                                (level) => buildChip(
-                                  optionValue: level,
-                                  optionLabel: level,
-                                  selectedValue: levelSelected,
-                                  onSelect: (v) => levelSelected = v,
-                                ),
-                              )
-                              .toList(),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 210),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: levels
+                                  .map(
+                                    (level) => buildChip(
+                                      optionValue: level,
+                                      optionLabel: level,
+                                      selectedValue: levelSelected,
+                                      onSelect: (v) => levelSelected = v,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),

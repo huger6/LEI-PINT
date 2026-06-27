@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_links.dart';
 import '../../../models/badge_model.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/badge_detail_widgets.dart';
 import '../../widgets/badges/competences_section.dart';
+import '../../widgets/goals/goal_duration_sheet.dart';
+import '../../widgets/shared/translated_text.dart';
 import '../applications/application_page.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeDetailScreen extends StatefulWidget {
   const BadgeDetailScreen({super.key, required this.badge});
@@ -21,6 +26,7 @@ class BadgeDetailScreen extends StatefulWidget {
 
 class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
   bool _isFavorite = false;
+  bool _isAddingGoal = false;
   late BadgeModel _badge;
 
   @override
@@ -65,12 +71,54 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
     }
   }
 
+  Future<void> _addAsGoal() async {
+    if (_isAddingGoal) return;
+
+    final months = await showGoalDurationSheet(context);
+    if (months == null || !mounted) return;
+
+    setState(() => _isAddingGoal = true);
+
+    try {
+      final startDate = DateTime.now();
+      final goalsStore = context.read<GoalsStore>();
+      final result = await goalsStore.addBadgeAsGoal(
+        badgeId: _badge.id,
+        badgeTitle: _badge.title,
+        description: _badge.description,
+        startDate: startDate,
+        endDate: goalEndDateFromMonths(startDate, months),
+      );
+
+      if (!mounted) return;
+      final tr = LanguageScope.of(context);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.tr('goalAdded')),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']?.toString() ?? tr.tr('goalAddError')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAddingGoal = false);
+    }
+  }
+
   void _shareBadge() {
     final badge = _badge;
-    final baseUrl = dotenv.env['FRONTEND_URL']?.trim() ?? 'https://softinsa.pt';
     final text =
         '${badge.title}\n${badge.description.isNotEmpty ? badge.description : ''}'
-        '\n\n$baseUrl/badges/${badge.slug}';
+        '\n\n${AppLinks.publicBadgeUrl(badge.slug)}';
     Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       final tr = LanguageScope.of(context);
@@ -100,21 +148,21 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_rounded, size: 26),
+                    icon: const AppIcon(AppIcons.chevronBackward, size: 26),
                     color: AppColors.navIcon,
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: _toggleFavorite,
-                    icon: Icon(
-                      _isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                    icon: AppIcon(
+                      _isFavorite ? AppIcons.bookmarkFilled : AppIcons.bookmark,
                       size: 28,
                     ),
                     color: _isFavorite ? AppColors.primary : AppColors.iconMuted,
                   ),
                   IconButton(
                     onPressed: _shareBadge,
-                    icon: const Icon(Icons.share_rounded, size: 26),
+                    icon: const AppIcon(AppIcons.share, size: 26),
                     color: AppColors.iconMuted,
                   ),
                 ],
@@ -127,14 +175,26 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: LargeBadgeIcon(
-                        medalColor: badge.medalColor,
-                        ribbonColor: badge.ribbonColor,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (badge.slug.trim().isEmpty) return;
+                          final uri = Uri.tryParse(
+                            AppLinks.publicBadgeUrl(badge.slug),
+                          );
+                          if (uri != null) {
+                            launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        child: LargeBadgeIcon(
+                          medalColor: badge.medalColor,
+                          ribbonColor: badge.ribbonColor,
+                          imageUrl: badge.imageUrl,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Center(
-                      child: Text(
+                      child: TranslatedText(
                         badge.title,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
@@ -153,22 +213,22 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         children: [
                           if (badge.category.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.category_outlined,
+                              icon: AppIcons.area,
                               label: badge.category,
                             ),
                           if (badge.level.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.stairs_outlined,
+                              icon: AppIcons.ranking,
                               label: badge.level,
                             ),
                           if (badge.points > 0)
                             BadgeInfoTag(
-                              icon: Icons.stars_rounded,
+                              icon: AppIcons.starPoints,
                               label: '${badge.points} pts',
                             ),
                           if (badge.duration.trim().isNotEmpty)
                             BadgeInfoTag(
-                              icon: Icons.schedule_rounded,
+                              icon: AppIcons.time,
                               label: badge.duration,
                             ),
                         ],
@@ -206,11 +266,52 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         ),
                       ),
                     ),
+                    if (!context.watch<GoalsStore>().goals.any((g) => g.badgeId == badge.id)) ...[
+                      const SizedBox(height: 10),
+                      Center(
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: OutlinedButton.icon(
+                            onPressed: _isAddingGoal ? null : _addAsGoal,
+                            icon: _isAddingGoal
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const AppIcon(AppIcons.type, size: 20),
+                            label: Text(
+                              tr.tr('addAsGoal'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.secondary,
+                              side: BorderSide(color: AppColors.secondary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (badge.isSpecial) ...[
+                      const SizedBox(height: 24),
+                      BadgeRewardsSection(
+                        badge: badge,
+                        hasObtained: context.watch<BadgeStore>().earnedBadges
+                            .any((e) => e.badge.id == badge.id),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     if (badge.description.trim().isNotEmpty) ...[
                       BadgeSectionCard(
                         title: tr.tr('description'),
-                        child: Text(
+                        child: TranslatedText(
                           badge.description,
                           textAlign: TextAlign.start,
                           style: const TextStyle(
@@ -283,6 +384,10 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                       title: tr.tr('details'),
                       child: Column(
                         children: [
+                          if (badge.learningPath != null && badge.learningPath!.trim().isNotEmpty)
+                            BadgeDetailRow(label: tr.tr('learningPath'), value: badge.learningPath!),
+                          if (badge.serviceLine != null && badge.serviceLine!.trim().isNotEmpty)
+                            BadgeDetailRow(label: tr.tr('serviceLine'), value: badge.serviceLine!),
                           if (badge.category.trim().isNotEmpty)
                             BadgeDetailRow(label: tr.tr('area'), value: badge.category),
                           if (badge.level.trim().isNotEmpty)
@@ -296,6 +401,7 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                               label: tr.tr('validity'),
                               value: tr.tr('validityDays').replaceAll('{days}', '${badge.expirationDays}'),
                             ),
+                          BadgeDetailRow(label: tr.tr('badgeType'), value: badge.badgeType),
                           if (badge.createdAt != null)
                             BadgeDetailRow(
                               label: tr.tr('createdAt'),

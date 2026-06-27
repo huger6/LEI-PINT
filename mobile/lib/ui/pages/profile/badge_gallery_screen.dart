@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/badge_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../../models/earned_badge_model.dart';
 import '../../widgets/badges/my_badges_widgets.dart';
 import '../../widgets/profile/badge_gallery_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeGalleryScreen extends StatefulWidget {
   const BadgeGalleryScreen({super.key});
@@ -43,25 +47,50 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
     }
   }
 
-  void _toggleFeatured(EarnedBadge item) {
+  Future<void> _toggleFeatured(EarnedBadge item) async {
+    final id = item.award.id;
+    final willFeature = !_featuredIds.contains(id);
+
+    // Optimistic UI update.
     setState(() {
-      final id = item.award.id;
-      if (_featuredIds.contains(id)) {
-        _featuredIds.remove(id);
-      } else {
+      if (willFeature) {
         _featuredIds.add(id);
+      } else {
+        _featuredIds.remove(id);
       }
     });
 
     final badgeStore = context.read<BadgeStore>();
-    badgeStore.toggleBadgeGallery(
-      item.award.id,
-      _featuredIds.contains(item.award.id),
+    final ok = await badgeStore.toggleBadgeGallery(
+      id,
+      item.award.verificationLink ?? '',
+      willFeature,
     );
+
+    if (!mounted) return;
+
+    if (!ok) {
+      // Revert on failure and let the user know.
+      setState(() {
+        if (willFeature) {
+          _featuredIds.remove(id);
+        } else {
+          _featuredIds.add(id);
+        }
+      });
+      final tr = LanguageScope.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr.tr('galleryUpdateError')),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badgeStore = context.watch<BadgeStore>();
     final earned = badgeStore.earnedBadges;
 
@@ -83,16 +112,16 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF1E2932),
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Galeria de Badges',
-          style: TextStyle(
+        title: Text(
+          tr.tr('badgeGalleryTitle'),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2932),
@@ -116,7 +145,7 @@ class _BadgeGalleryScreenState extends State<BadgeGalleryScreen> {
                         const SizedBox(height: 14),
                         BadgesSearchBar(
                           controller: _searchController,
-                          hintText: 'Procurar badges',
+                          hintText: tr.tr('myBadgesSearchHint'),
                           onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 14),

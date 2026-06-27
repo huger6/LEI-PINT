@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/auth/change_password_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
   const ChangePasswordScreen({super.key, required this.isFirstLogin});
@@ -19,8 +21,8 @@ class ChangePasswordScreen extends StatelessWidget {
               surfaceTintColor: Colors.transparent,
               leading: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back,
+                icon: const AppIcon(
+                  AppIcons.chevronBackward,
                   color: Color(0xFF20252B),
                   size: 26,
                 ),

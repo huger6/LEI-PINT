@@ -83,6 +83,10 @@ class ApiEndpoints {
   static String upsertEvidence(String applicationGuid) =>
       '/api/applications/$applicationGuid/evidences';
 
+  // GET /applications/:applicationGuid/evidences/:evidenceId/download
+  static String downloadEvidence(String applicationGuid, int evidenceId) =>
+      '/api/applications/$applicationGuid/evidences/$evidenceId/download';
+
   // POST /applications/:applicationId/submit
   static String submitApplication(String applicationId) =>
       '/api/applications/$applicationId/submit';
@@ -96,6 +100,9 @@ class ApiEndpoints {
       '/api/applications/$applicationGuid/resend-confirmation';
 
   // === GDPR ===
+  // GET /gdpr/policies - all active policies
+  static const String getGdprPolicies = '/api/gdpr/policies';
+
   // GET /gdpr/policies/latest/:type - latest active policy of a given type
   static String latestGdprPolicy(String type) =>
       '/api/gdpr/policies/latest/$type';
@@ -133,11 +140,33 @@ class ApiEndpoints {
   static const String getLevels = '/api/levels';
   static const String getAnnouncements = '/api/announcements';
   static const String getNotifications = '/api/notifications';
+
+  // GET /notifications/preferences - list the user's notification preferences.
+  static const String notificationPreferences =
+      '/api/notifications/preferences';
+
+  // PUT /notifications/preferences/:definitionId - update one preference.
+  static String updateNotificationPreference(int definitionId) =>
+      '/api/notifications/preferences/$definitionId';
   static const String getEarnedBadges = '/api/gamification/earned-badges';
+
+  // PATCH /gamification/earned-badges/:verificationLink/featured - toggle
+  // whether an earned badge is shown on the public profile gallery.
+  // The verification link may be a full URL; URI-encode it so the embedded
+  // slashes do not fragment the path and Express can decode the param back.
+  static String setBadgeFeatured(String verificationLink) =>
+      '/api/gamification/earned-badges/${Uri.encodeComponent(verificationLink)}/featured';
   static const String getPointsHistory =
       '/api/statistics/consultant/points-history';
   static const String getTimeline =
       '/api/statistics/consultant/timeline';
   static const String getLearningPathProgress =
       '/api/statistics/consultant/learning-paths';
+
+  // === Rewards Store ===
+  static const String getRewards = '/api/rewards';
+  static const String getRedemptions = '/api/rewards/redemptions';
+  static String redeemReward(String guid) => '/api/rewards/$guid/redeem';
+  static const String getTitles = '/api/rewards/titles';
+  static const String setActiveTitle = '/api/rewards/active-title';
 }

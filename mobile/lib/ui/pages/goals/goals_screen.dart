@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../models/goal_model.dart';
 import '../../../presentation/state/goals_store.dart';
+import '../../../presentation/state/language_controller.dart';
 import '../../widgets/goals/goal_card.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -21,26 +25,55 @@ class _GoalsScreenState extends State<GoalsScreen> {
     });
   }
 
-  Future<void> _handleComplete(int goalId) async {
+  Future<void> _handleDelete(int goalId) async {
     final goalsStore = context.read<GoalsStore>();
-    final result = await goalsStore.completeGoal(goalId);
+    final result = await goalsStore.deleteGoal(goalId);
 
     if (!mounted) return;
+    final tr = LanguageScope.of(context);
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('\u{1F389} Parabéns! Objetivo concluído!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: Text(tr.tr('goalRemoved')),
+          backgroundColor: AppColors.snackBarInfo,
+          duration: const Duration(seconds: 2),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result['message']?.toString() ?? 'Erro ao completar objetivo.',
+            result['message']?.toString() ?? 'Erro ao remover objetivo.',
           ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleComplete(GoalModel goal) async {
+    final goalsStore = context.read<GoalsStore>();
+    final result = await goalsStore.completeGoal(goal);
+
+    if (!mounted) return;
+    final tr = LanguageScope.of(context);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr.tr('goalConcluded')),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      final code = result['code']?.toString();
+      final message =
+          code == 'NOT_OWNED' ? tr.tr('goalNotOwned') : tr.tr('goalCompleteError');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
           backgroundColor: AppColors.error,
         ),
       );
@@ -59,8 +92,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF20252B),
             size: 26,
           ),
@@ -90,7 +123,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded, size: 48, color: Colors.grey[400]),
+              AppIcon(AppIcons.danger, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 12),
               Text(
                 store.errorMessage!,
@@ -117,7 +150,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.flag_outlined, size: 56, color: Colors.grey[400]),
+            AppIcon(AppIcons.target, size: 56, color: Colors.grey[400]),
             const SizedBox(height: 12),
             Text(
               'Ainda não tem objetivos atribuídos.',
@@ -152,8 +185,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 10),
             ...pending.map((goal) => GoalCard(
                   goal: goal,
+                  isDeleting: store.deletingGoalId == goal.goalId,
                   isCompleting: store.completingGoalId == goal.goalId,
-                  onComplete: () => _handleComplete(goal.goalId),
+                  onComplete: () => _handleComplete(goal),
+                  onDelete: () => _handleDelete(goal.goalId),
                 )),
           ],
           if (completed.isNotEmpty) ...[
@@ -169,7 +204,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
             const SizedBox(height: 10),
             ...completed.map((goal) => GoalCard(
                   goal: goal,
-                  onComplete: () {},
                 )),
           ],
         ],

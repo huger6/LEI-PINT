@@ -3,21 +3,30 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/badge_visuals.dart';
 import '../../../models/goal_model.dart';
+import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({
     super.key,
     required this.goal,
-    required this.onComplete,
+    this.onDelete,
+    this.onComplete,
+    this.isDeleting = false,
     this.isCompleting = false,
   });
 
   final GoalModel goal;
-  final VoidCallback onComplete;
+  final VoidCallback? onDelete;
+  final VoidCallback? onComplete;
+  final bool isDeleting;
   final bool isCompleting;
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     final badge = goal.badge;
     final completed = goal.isCompleted;
     final badgeSeed = badge?.slug ?? badge?.title ?? goal.title;
@@ -55,8 +64,8 @@ class GoalCard extends StatelessWidget {
                       : medalColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  completed ? Icons.check_circle_rounded : Icons.flag_rounded,
+                child: AppIcon(
+                  completed ? AppIcons.checkCircle : AppIcons.target,
                   color: completed ? AppColors.success : medalColor,
                   size: 24,
                 ),
@@ -69,7 +78,7 @@ class GoalCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
+                          child: TranslatedText(
                             goal.title,
                             style: TextStyle(
                               fontSize: 16,
@@ -92,9 +101,9 @@ class GoalCard extends StatelessWidget {
                               color: AppColors.success.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'Concluído',
-                              style: TextStyle(
+                            child: Text(
+                              tr.tr('completed'),
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.success,
@@ -105,7 +114,7 @@ class GoalCard extends StatelessWidget {
                     ),
                     if (goal.description.trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(
+                      TranslatedText(
                         goal.description,
                         style: const TextStyle(
                           fontSize: 13,
@@ -132,14 +141,14 @@ class GoalCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.workspace_premium_outlined,
+                  AppIcon(
+                    AppIcons.badge,
                     size: 16,
                     color: medalColor,
                   ),
                   const SizedBox(width: 6),
                   Flexible(
-                    child: Text(
+                    child: TranslatedText(
                       badge.title,
                       style: const TextStyle(
                         fontSize: 12,
@@ -168,7 +177,7 @@ class GoalCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.schedule_rounded, size: 14, color: Color(0xFF7B8A96)),
+                const AppIcon(AppIcons.time, size: 14, color: Color(0xFF7B8A96)),
                 const SizedBox(width: 4),
                 Text(
                   'Prazo: ${_formatDate(goal.endDate!)}',
@@ -181,34 +190,78 @@ class GoalCard extends StatelessWidget {
               ],
             ),
           ],
-          if (!completed) ...[
+          if (!completed && (onComplete != null || onDelete != null)) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: ElevatedButton.icon(
-                onPressed: isCompleting ? null : onComplete,
-                icon: isCompleting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(isCompleting ? 'A concluir...' : 'Marcar como concluído'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Row(
+              children: [
+                if (onComplete != null)
+                  Expanded(
+                    child: SizedBox(
+                      height: 42,
+                      child: ElevatedButton.icon(
+                        onPressed: (isCompleting || isDeleting) ? null : onComplete,
+                        icon: isCompleting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const AppIcon(AppIcons.checkCircle, size: 18),
+                        label: Text(
+                          isCompleting ? tr.tr('concluding') : tr.tr('confirmConclusion'),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                if (onComplete != null && onDelete != null)
+                  const SizedBox(width: 10),
+                if (onDelete != null)
+                  SizedBox(
+                    width: 48,
+                    height: 42,
+                    child: OutlinedButton(
+                      onPressed: (isDeleting || isCompleting) ? null : onDelete,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        foregroundColor: AppColors.error,
+                        backgroundColor: AppColors.errorContainer.withValues(alpha: 0.45),
+                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.45)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: isDeleting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.error,
+                              ),
+                            )
+                          : const AppIcon(
+                              AppIcons.trash,
+                              size: 20,
+                              color: AppColors.error,
+                            ),
+                    ),
                   ),
-                  elevation: 0,
-                ),
-              ),
+              ],
             ),
           ],
         ],

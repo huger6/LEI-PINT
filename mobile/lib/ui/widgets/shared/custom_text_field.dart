@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'app_icon/app_icon.dart';
+import 'app_icon/app_icon_data.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
   final bool isRequired;
   final String hintText;
-  final IconData prefixIcon;
+  final String prefixIcon;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
@@ -87,7 +89,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onTap: widget.onTap,
           decoration: InputDecoration(
             hintText: widget.hintText,
-            prefixIcon: Icon(widget.prefixIcon),
+            prefixIcon: AppIcon(widget.prefixIcon),
             suffixIcon: widget.obscureText
                 ? IconButton(
                     onPressed: () {
@@ -95,8 +97,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                         _obscureText = !_obscureText;
                       });
                     },
-                    icon: Icon(
-                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                    icon: AppIcon(
+                      _obscureText ? AppIcons.eyeSlash : AppIcons.eye,
                     ),
                   )
                 : null,

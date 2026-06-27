@@ -8,6 +8,8 @@ import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/form_validators.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../shared/password_strength_indicator.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class ChangePasswordForm extends StatefulWidget {
   const ChangePasswordForm({super.key, this.isFirstLogin = false});
@@ -272,10 +274,10 @@ class _PasswordField extends StatelessWidget {
               borderSide: const BorderSide(color: AppColors.error),
             ),
             suffixIcon: IconButton(
-              icon: Icon(
+              icon: AppIcon(
                 obscure
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
+                    ? AppIcons.eyeSlash
+                    : AppIcons.eye,
                 color: const Color(0xFF8B96A1),
                 size: 20,
               ),

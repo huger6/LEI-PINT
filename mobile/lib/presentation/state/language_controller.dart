@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/source_strings.dart';
+import '../../core/constants/source_strings_en.dart';
+import '../../core/constants/source_strings_es.dart';
 import '../../core/services/translation_service.dart';
 import '../../data/local/lang_dao.dart';
 import '../../models/lang_model.dart';
@@ -82,9 +84,7 @@ class LanguageController extends ChangeNotifier {
             sourceTexts: sourceStrings,
             targetLang: code,
           );
-        } catch (e) {
-          debugPrint('LanguageController: prepare "$code" failed: $e');
-        }
+        } catch (_) {}
       }
 
       _languagesPrepared = true;
@@ -97,9 +97,7 @@ class LanguageController extends ChangeNotifier {
   Future<void> _refreshLanguageList() async {
     try {
       _availableLanguages = await _languageDao.getAll();
-    } catch (e) {
-      debugPrint('LanguageController: Failed to load languages from DB: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> setLanguageFromId(int? langId) async {
@@ -119,6 +117,17 @@ class LanguageController extends ChangeNotifier {
     await setLanguageCode(code);
   }
 
+  static Map<String, String>? _staticStringsFor(String code) {
+    switch (code) {
+      case 'en':
+        return sourceStringsEn;
+      case 'es':
+        return sourceStringsEs;
+      default:
+        return null;
+    }
+  }
+
   Future<void> setLanguageCode(String code) async {
     final normalizedCode = _normalizeCode(code);
 
@@ -133,6 +142,14 @@ class LanguageController extends ChangeNotifier {
       return;
     }
 
+    final staticMap = _staticStringsFor(normalizedCode);
+    if (staticMap != null) {
+      _translatedStrings = Map.of(staticMap);
+      _isTranslating = false;
+      notifyListeners();
+      return;
+    }
+
     _isTranslating = true;
     notifyListeners();
 
@@ -141,8 +158,7 @@ class LanguageController extends ChangeNotifier {
         sourceTexts: sourceStrings,
         targetLang: normalizedCode,
       );
-    } catch (e) {
-      debugPrint('Translation failed, falling back to source: $e');
+    } catch (_) {
       _translatedStrings = Map.of(sourceStrings);
     }
 

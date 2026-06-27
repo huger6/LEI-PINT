@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/area_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 /// Rounded, tappable area pill shared by both the selected-areas section and
 /// the available-areas list. The visual state is driven by [selected] and
@@ -61,14 +64,14 @@ class AreaSelectChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isMain) ...[
-                Icon(Icons.star_rounded, size: 16, color: foreground),
+                AppIcon(AppIcons.star, size: 16, color: foreground),
                 const SizedBox(width: 5),
               ] else if (selected) ...[
-                Icon(Icons.check_rounded, size: 16, color: foreground),
+                AppIcon(AppIcons.check, size: 16, color: foreground),
                 const SizedBox(width: 5),
               ],
               Flexible(
-                child: Text(
+                child: TranslatedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

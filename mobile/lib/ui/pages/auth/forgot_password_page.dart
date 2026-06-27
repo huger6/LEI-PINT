@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/shared/auth_header.dart';
 import '../../widgets/shared/auth_particle_background.dart';
 import '../../widgets/shared/auth_content_card.dart';
 import '../../widgets/shared/custom_text_field.dart';
 import '../../widgets/shared/custom_button.dart';
+import '../../../core/routes/app_router.dart';
 import '../../../core/sync_manager.dart';
+import '../../../core/utils/email_utils.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../presentation/state/auth_store.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
+import '../../widgets/auth/auth_language_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -31,32 +40,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _handleSendInstructions() {
-    final tr = LanguageScope.of(context);
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+  Future<void> _handleSendInstructions() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      Future.delayed(const Duration(seconds: 2), () {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-          _emailSent = true;
-        });
+    setState(() => _isLoading = true);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              tr.tr('emailSentTo').replaceAll('{email}', _emailController.text),
-            ),
-            backgroundColor: Colors.green,
+    final authStore = context.read<AuthStore>();
+    final result = await authStore.forgotPassword(_emailController.text.trim());
+
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      if (result['success'] == true) {
+        _emailSent = true;
+      }
+    });
+
+    if (result['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message']?.toString() ?? 'Erro ao enviar email.',
           ),
-        );
-
-        Future.delayed(const Duration(seconds: 3), () {
-          if (!mounted) return;
-          Navigator.pop(context);
-        });
-      });
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -69,10 +77,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          icon: const AppIcon(AppIcons.chevronBackward),
+          onPressed: () => context.go(AppRouter.login),
         ),
         title: Text(tr.tr('recoverPassword')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: AuthLanguageButton(),
+          ),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -103,7 +117,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             CustomTextField(
                               label: tr.tr('email'),
                               hintText: tr.tr('emailHint'),
-                              prefixIcon: Icons.email_outlined,
+                              prefixIcon: AppIcons.email,
                               keyboardType: TextInputType.emailAddress,
                               controller: _emailController,
                               validator: FormValidators.validateEmail,
@@ -132,8 +146,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.check_circle,
+                            AppIcon(
+                              AppIcons.checkCircle,
                               color: colorScheme.primary,
                               size: 50,
                             ),
@@ -149,12 +163,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
+                            const SizedBox(height: 8),
+                            Text(
+                              maskEmail(_emailController.text.trim()),
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.primary,
+                                  ),
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 28),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => context.go(AppRouter.login),
                         child: Text(
                           tr.tr('backToLogin'),
                           style: Theme.of(context).textTheme.bodyLarge

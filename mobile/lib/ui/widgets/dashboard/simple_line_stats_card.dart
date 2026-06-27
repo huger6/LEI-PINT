@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../presentation/state/dashboard_store.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class SimpleLineStatsCard extends StatefulWidget {
   const SimpleLineStatsCard({
@@ -135,10 +137,10 @@ class _SimpleLineStatsCardState extends State<SimpleLineStatsCard> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
+                AppIcon(
                   isPositive
-                      ? Icons.arrow_drop_up_rounded
-                      : Icons.arrow_drop_down_rounded,
+                      ? AppIcons.keyboardArrowUp
+                      : AppIcons.keyboardArrowDown,
                   color: isPositive
                       ? const Color(0xFF5BBF76)
                       : const Color(0xFFD63D2B),
@@ -195,14 +197,37 @@ class _SimpleLineStatsCardState extends State<SimpleLineStatsCard> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: shortLabels
-                .map((label) => Text(
-                      label,
-                      style: const TextStyle(color: Color(0xFFA9B1BD)),
-                    ))
-                .toList(),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final chartWidth = constraints.maxWidth;
+              final n = shortLabels.length;
+              return SizedBox(
+                width: chartWidth,
+                height: 18,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: List.generate(n, (i) {
+                    final x = n <= 1
+                        ? chartWidth / 2
+                        : (i / (n - 1)) * chartWidth;
+                    return Positioned(
+                      left: x,
+                      top: 0,
+                      child: FractionalTranslation(
+                        translation: const Offset(-0.5, 0),
+                        child: Text(
+                          shortLabels[i],
+                          style: const TextStyle(
+                            color: Color(0xFFA9B1BD),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              );
+            },
           ),
         ],
       ),

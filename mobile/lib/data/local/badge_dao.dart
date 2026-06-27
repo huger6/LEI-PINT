@@ -225,6 +225,7 @@ class BadgeDao {
     final points = row['points'] as int? ?? 0;
     final duration = (row['estimated_time'] as String?) ?? '';
     final badgeType = (row['badge_type'] as String?) ?? 'Standard';
+    final imgUrl = (row['img_url'] as String?)?.trim() ?? '';
 
     return BadgeModel(
       id: row['id'] as int,
@@ -247,6 +248,7 @@ class BadgeDao {
         duration: duration,
       ),
       requirements: const [],
+      imageUrl: imgUrl.isEmpty ? null : imgUrl,
     );
   }
 }

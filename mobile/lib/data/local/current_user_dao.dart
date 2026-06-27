@@ -36,6 +36,10 @@ class CurrentUserDao {
     final db = await _database.database;
     final now = DateTime.now().millisecondsSinceEpoch;
 
+    final existing = await get();
+    final preservedGdpr =
+        user.gdprAccepted || (existing?.gdprAccepted ?? false);
+
     await db.insert(
       LocalDatabase.currentUserTable,
       {
@@ -47,8 +51,9 @@ class CurrentUserDao {
         'preferred_lang_id': user.preferredLangId ?? 1,
         'location_id': user.locationId,
         'biography': user.biography,
-        'gdpr_accepted': user.gdprAccepted ? 1 : 0,
+        'gdpr_accepted': preservedGdpr ? 1 : 0,
         'total_points': user.totalPoints,
+        'registered_at': user.registeredAt?.millisecondsSinceEpoch,
         'synced_at': now,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -65,6 +70,25 @@ class CurrentUserDao {
 
   /// Mirrors the server-side RGPD consent state locally so the offline-first UI
   /// stops re-prompting once the consent has been recorded on the API.
+  Future<void> updateActiveTitle(String? title) async {
+    final db = await _database.database;
+    await db.update(
+      LocalDatabase.currentUserTable,
+      {'active_title': title},
+    );
+  }
+
+  Future<String?> getActiveTitle() async {
+    final db = await _database.database;
+    final rows = await db.query(
+      LocalDatabase.currentUserTable,
+      columns: ['active_title'],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['active_title'] as String?;
+  }
+
   Future<void> setGdprAccepted(bool accepted) async {
     final db = await _database.database;
     await db.update(
@@ -79,6 +103,7 @@ class CurrentUserDao {
   }
 
   UserModel _fromRow(Map<String, dynamic> row, {List<UserArea> areas = const []}) {
+    final registeredAtMs = row['registered_at'] as int?;
     return UserModel(
       id: row['user_id'] as int,
       email: row['email_address'] as String,
@@ -92,6 +117,9 @@ class CurrentUserDao {
       preferredLangId: row['preferred_lang_id'] as int?,
       locationId: row['location_id'] as int?,
       areas: areas,
+      registeredAt: registeredAtMs != null
+          ? DateTime.fromMillisecondsSinceEpoch(registeredAtMs)
+          : null,
     );
   }
 }

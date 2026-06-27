@@ -33,10 +33,53 @@ class GoalsRepository {
     }
   }
 
-  Future<Map<String, dynamic>> completeGoal(int goalId) async {
+  Future<Map<String, dynamic>> createGoal({
+    required int badgeId,
+    required String title,
+    String description = '',
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     try {
-      final payload = await _apiClient.patch(
-        '$_goalsEndpoint/$goalId/complete',
+      final payload = await _apiClient.post(
+        _goalsEndpoint,
+        data: {
+          'badgeId': badgeId,
+          'eventTitle': title,
+          'eventDescription': description,
+          if (startDate != null) 'eventStartDate': startDate.toIso8601String(),
+          if (endDate != null) 'eventEndDate': endDate.toIso8601String(),
+        },
+      );
+
+      final map = _asMap(payload);
+      if (map['success'] == true || map['data'] != null) {
+        return {'success': true};
+      }
+
+      return {
+        'success': false,
+        'message': map['message']?.toString() ?? 'Erro ao criar objetivo.',
+      };
+    } on DioException catch (e) {
+      final data = _asMap(e.response?.data);
+      final code = data['code']?.toString() ?? '';
+      if (code == 'GOAL_ALREADY_EXISTS') {
+        return {'success': false, 'message': 'Este badge já foi adicionado como objetivo.'};
+      }
+      return {
+        'success': false,
+        'message': data['message']?.toString() ?? 'Erro ao criar objetivo.',
+      };
+    } catch (_) {
+      return {'success': false, 'message': 'Erro inesperado.'};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteGoal(int goalId) async {
+    try {
+      final payload = await _apiClient.delete(
+        '$_goalsEndpoint/$goalId',
       );
 
       final map = _asMap(payload);
@@ -46,20 +89,13 @@ class GoalsRepository {
 
       return {
         'success': false,
-        'message': map['message']?.toString() ?? 'Erro ao completar objetivo.',
+        'message': map['message']?.toString() ?? 'Erro ao remover objetivo.',
       };
     } on DioException catch (e) {
       final data = _asMap(e.response?.data);
-      final code = data['code']?.toString() ?? '';
-      if (code == 'GOAL_ALREADY_COMPLETED') {
-        return {'success': false, 'message': 'Este objetivo já foi concluído.'};
-      }
-      if (code == 'GOAL_NO_APPLICATION') {
-        return {'success': false, 'message': 'Nenhuma candidatura associada a este objetivo.'};
-      }
       return {
         'success': false,
-        'message': data['message']?.toString() ?? 'Erro ao completar objetivo.',
+        'message': data['message']?.toString() ?? 'Erro ao remover objetivo.',
       };
     } catch (_) {
       return {'success': false, 'message': 'Erro inesperado.'};

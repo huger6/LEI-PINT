@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/translated_text.dart';
+
 class CharacteristicChip extends StatelessWidget {
   const CharacteristicChip({
     super.key,
@@ -9,11 +13,12 @@ class CharacteristicChip extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final String icon;
   final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -42,7 +47,7 @@ class CharacteristicChip extends StatelessWidget {
                   : const Color(0xFFD5EAF6),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: AppIcon(
               icon,
               color: isPrimary ? Colors.white : const Color(0xFF4D9ECC),
               size: 20,
@@ -50,7 +55,7 @@ class CharacteristicChip extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
+            child: TranslatedText(
               label,
               style: TextStyle(
                 fontSize: 15,
@@ -68,9 +73,9 @@ class CharacteristicChip extends StatelessWidget {
                 color: const Color(0xFF5D9FD1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'Principal',
-                style: TextStyle(
+              child: Text(
+                tr.tr('primary'),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -91,7 +96,7 @@ class CharacteristicSectionHeader extends StatelessWidget {
   });
 
   final String title;
-  final IconData icon;
+  final String icon;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +104,7 @@ class CharacteristicSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 18, bottom: 8),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF5D9FD1), size: 20),
+          AppIcon(icon, color: const Color(0xFF5D9FD1), size: 20),
           const SizedBox(width: 8),
           Text(
             title,

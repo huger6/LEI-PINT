@@ -6,6 +6,8 @@ import '../../../injection_container.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../widgets/applications/application_detail_widgets.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ApplicationDetailScreen extends StatefulWidget {
   const ApplicationDetailScreen({
@@ -84,7 +86,7 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, size: 24),
+                    icon: const AppIcon(AppIcons.chevronBackward, size: 24),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
@@ -143,6 +145,7 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
                         ApplicationRequirementsList(
                           requirements: badge.requirements,
                           evidences: _application.evidences,
+                          applicationGuid: _application.applicationGuid,
                         ),
                       ],
                     ],

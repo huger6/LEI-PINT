@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
 import '../../../core/theme/app_colors.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class PointsHighlight extends StatelessWidget {
   const PointsHighlight({super.key, required this.totalPoints});
@@ -29,8 +31,8 @@ class PointsHighlight extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.workspace_premium_rounded,
+          child: const AppIcon(
+            AppIcons.starPoints,
             color: Colors.white,
             size: 40,
           ),
@@ -82,8 +84,8 @@ class _HistoryCardState extends State<HistoryCard>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(
-              Icons.workspace_premium_rounded,
+            AppIcon(
+              AppIcons.badge,
               color: item.badgeMedalColor,
               size: 26,
             ),
@@ -100,8 +102,8 @@ class _HistoryCardState extends State<HistoryCard>
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 1.5),
                 ),
-                child: Icon(
-                  isPositive ? Icons.add : Icons.remove,
+                child: AppIcon(
+                  isPositive ? AppIcons.add : AppIcons.remove,
                   size: 8,
                   color: Colors.white,
                 ),
@@ -121,10 +123,10 @@ class _HistoryCardState extends State<HistoryCard>
             : AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(
+      child: AppIcon(
         isPositive
-            ? Icons.trending_up_rounded
-            : Icons.trending_down_rounded,
+            ? AppIcons.progress
+            : AppIcons.progress,
         color: isPositive ? AppColors.primary : AppColors.error,
         size: 24,
       ),
@@ -223,8 +225,8 @@ class _HistoryCardState extends State<HistoryCard>
                       AnimatedRotation(
                         turns: _expanded ? 0.5 : 0.0,
                         duration: const Duration(milliseconds: 200),
-                        child: const Icon(
-                          Icons.keyboard_arrow_down_rounded,
+                        child: const AppIcon(
+                          AppIcons.keyboardArrowDown,
                           color: AppColors.secondary,
                           size: 20,
                         ),
@@ -273,8 +275,8 @@ class _HistoryCardState extends State<HistoryCard>
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.schedule_rounded,
+                          const AppIcon(
+                            AppIcons.time,
                             size: 14,
                             color: Color(0xFF8A929B),
                           ),

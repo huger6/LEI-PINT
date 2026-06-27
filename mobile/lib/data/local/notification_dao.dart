@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../models/notification_model.dart';
 import '../../core/database/database_helper.dart';
 
@@ -35,6 +37,20 @@ class NotificationDao {
     return rows.isNotEmpty ? (rows.first['c'] as int? ?? 0) : 0;
   }
 
+  Future<void> delete(int id) async {
+    final db = await _database.database;
+    await db.delete(
+      LocalDatabase.notificationsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    await db.insert(
+      LocalDatabase.deletedNotificationsTable,
+      {'id': id, 'deleted_at': DateTime.now().millisecondsSinceEpoch},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
   Future<void> markRead(int id) async {
     final db = await _database.database;
     await db.update(
@@ -52,12 +68,20 @@ class NotificationDao {
 
   Future<void> replaceAll(List<NotificationModel> notifications) async {
     final db = await _database.database;
+
+    final deletedRows = await db.query(
+      LocalDatabase.deletedNotificationsTable,
+      columns: ['id'],
+    );
+    final deletedIds = deletedRows.map((r) => r['id'] as int).toSet();
+
     final batch = db.batch();
     final now = DateTime.now().millisecondsSinceEpoch;
 
     batch.delete(LocalDatabase.notificationsTable);
 
     for (final n in notifications) {
+      if (deletedIds.contains(n.id)) continue;
       batch.insert(LocalDatabase.notificationsTable, {
         'id': n.id,
         'definition_id': n.definitionId,

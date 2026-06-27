@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/routes/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../injection_container.dart';
 import '../widgets/shared/app_bottom_nav_bar.dart';
@@ -9,12 +11,12 @@ import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
-import '../widgets/celebrations/celebration_overlay.dart';
 import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
 import 'goals/goals_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'evolution/points_detail_screen.dart';
+import 'store/store_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,8 +27,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with WidgetsBindingObserver {
-  bool _celebrationChecked = false;
-
   @override
   void initState() {
     super.initState();
@@ -35,6 +35,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       final authStore = context.read<AuthStore>();
       context.read<DashboardStore>().loadDashboard(authStore.currentUser);
       context.read<BadgeStore>().loadEarnedBadges();
+      context.read<GoalsStore>().loadGoals();
+      context.read<RewardStore>().loadAll();
     });
   }
 
@@ -59,25 +61,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     return tr('goodEvening');
   }
 
-  void _maybeCelebrate(BuildContext context, BadgeStore badgeStore) {
-    if (_celebrationChecked) return;
-    final milestone = badgeStore.pendingCelebration;
-    if (milestone == null) return;
-    _celebrationChecked = true;
-
-    final tr = LanguageScope.of(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showCelebrationOverlay(
-        context,
-        milestone: milestone,
-        title: tr.tr(milestone.titleKey),
-        description: tr.tr(milestone.descriptionKey),
-        badgeCount: milestone.badgeCount,
-      );
-      if (context.mounted) {
-        badgeStore.consumeCelebration();
-      }
-    });
+  String _motivationMessage(String Function(String) tr, int topPercent) {
+    if (topPercent <= 0) return tr('motivationNotRanked');
+    if (topPercent <= 10) return tr('motivationTop10');
+    if (topPercent <= 25) return tr('motivationTop25');
+    if (topPercent <= 50) return tr('motivationTop50');
+    if (topPercent <= 75) return tr('motivationTop75');
+    return tr('motivationBottom');
   }
 
   @override
@@ -86,11 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final authStore = context.watch<AuthStore>();
     final dashStore = context.watch<DashboardStore>();
     final notifStore = context.watch<NotificationStore>();
-    final badgeStore = context.watch<BadgeStore>();
-
-    if (!badgeStore.isLoadingEarned) {
-      _maybeCelebrate(context, badgeStore);
-    }
+    final goalsStore = context.watch<GoalsStore>();
+    final rewardStore = context.watch<RewardStore>();
 
     const pageBackground = Color(0xFFE2E6EB);
 
@@ -181,6 +168,57 @@ class _DashboardScreenState extends State<DashboardScreen>
                         overflow: TextOverflow.ellipsis,
                       ),
 
+                      // Service Line & Primary Area
+                      DashboardMetaRow(
+                        serviceLineName:
+                            authStore.currentUser?.serviceLineName,
+                        primaryAreaName: authStore.currentUser?.areas
+                            .where((a) => a.isPrimary)
+                            .map((a) => a.name)
+                            .firstOrNull,
+                      ),
+
+                      // KPI stat cards
+                      const SizedBox(height: 14),
+                      DashboardKpiRow(
+                        badgesEarned: dashStore.completedBadges,
+                        objectivesCount: goalsStore.goals.length,
+                        badgesLabel: tr.tr('dashboardBadgesEarned'),
+                        objectivesLabel: tr.tr('dashboardObjectives'),
+                        onBadgesTap: () =>
+                            context.push(AppRouter.myBadges),
+                        onObjectivesTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GoalsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Continue objective banner
+                      if (goalsStore.pendingGoals.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ContinueObjectiveBanner(
+                          goal: goalsStore.pendingGoals.first,
+                          continueLabel:
+                              tr.tr('dashboardContinueObjective'),
+                          proposedLabel:
+                              tr.tr('dashboardProposedObjective'),
+                          resumeLabel: tr.tr('dashboardResume'),
+                          startLabel: tr.tr('dashboardStart'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const GoalsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+
                       // Recent submissions
                       if (dashStore.recentSubmissions.isNotEmpty) ...[
                         const SizedBox(height: 16),
@@ -201,6 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             timestamp: submission.timestamp,
                             medalColor: submission.badge.medalColor,
                             ribbonColor: submission.badge.ribbonColor,
+                            imageUrl: submission.badge.imageUrl,
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -240,6 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 area: badge.category,
                                 medalColor: badge.medalColor,
                                 ribbonColor: badge.ribbonColor,
+                                imageUrl: badge.imageUrl,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -258,7 +298,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       // Keep going / top percent
                       const SizedBox(height: 16),
                       Text(
-                        tr.tr('keepGoing'),
+                        _motivationMessage(tr.tr, dashStore.topPercent),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -298,6 +338,113 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ],
                         ),
                       ),
+
+                      // Rewards store CTA
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: () => context.push(AppRouter.store),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF5D9FD1),
+                                Color(0xFF83A9E8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x20000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color:
+                                      Colors.white.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                    Icons.card_giftcard_rounded,
+                                    size: 22,
+                                    color: Colors.white),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      tr.tr('storeRewardsStore'),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${tr.tr('storeSpendPoints')} · $totalPoints ${tr.tr('storePoints')}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right_rounded,
+                                  color: Colors.white, size: 24),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Rewards spotlight carousel
+                      if (rewardStore.availableRewards.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          tr.tr('dashboardRewardsSpotlight'),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF20252B),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 175,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: rewardStore.availableRewards.length > 9
+                                ? 9
+                                : rewardStore.availableRewards.length,
+                            itemBuilder: (context, index) {
+                              final reward = rewardStore.availableRewards[index];
+                              return DashboardRewardCard(
+                                reward: reward,
+                                pointsLabel: tr.tr('storePoints'),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const StoreScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
 
                       // Stats line chart
                       SimpleLineStatsCard(

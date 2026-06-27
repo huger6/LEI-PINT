@@ -62,10 +62,10 @@ class ApplicationsStore extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> startApplication({required int badgeId}) async {
+  Future<Map<String, dynamic>> startApplication({required String badgeSlug}) async {
     try {
       final payload = await _applicationsRepository.startApplication(
-        badgeId: badgeId,
+        badgeSlug: badgeSlug,
       );
 
       final success = payload['success'] ?? true;
@@ -94,12 +94,16 @@ class ApplicationsStore extends ChangeNotifier {
     required String applicationGuid,
     required int requirementId,
     required String fileName,
+    required String contentType,
+    required int fileSize,
   }) async {
     try {
       final payload = await _applicationsRepository.getUploadUrl(
         applicationGuid: applicationGuid,
         requirementId: requirementId,
         fileName: fileName,
+        contentType: contentType,
+        fileSize: fileSize,
       );
 
       final success = payload['success'] ?? true;

@@ -9,11 +9,14 @@ import '../../ui/pages/auth/forgot_password_page.dart';
 import '../../ui/pages/auth/newuser_confirm.dart';
 import '../../ui/pages/auth/change_password_screen.dart';
 import '../../ui/pages/auth/email_confirmation_screen.dart';
+import '../../ui/pages/auth/reset_password_screen.dart';
+import '../../ui/pages/auth/confirm_email_token_screen.dart';
 import '../../ui/pages/misc/select_areas_page.dart';
 import '../../ui/pages/dashboard_page.dart';
 import '../../ui/pages/badges/explore_badges.dart';
 import '../../ui/pages/badges/my_badges_screen.dart';
 import '../../ui/pages/evolution/evolucao_screen.dart';
+import '../../ui/pages/evolution/evolution_timeline_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 import '../../ui/pages/profile/email_signature_screen.dart';
 import '../../ui/pages/profile/edit_profile_screen.dart';
@@ -23,6 +26,8 @@ import '../../ui/pages/profile/help_screen.dart';
 import '../../ui/pages/profile/badge_gallery_screen.dart';
 import '../../ui/pages/profile/terms_conditions_screen.dart';
 import '../../ui/pages/goals/goals_screen.dart';
+import '../../ui/pages/store/store_screen.dart';
+import '../../ui/pages/notifications/notification_preferences_screen.dart';
 import '../../ui/widgets/shared/no_connection/no_connection_widget.dart';
 import '../../ui/widgets/shared/screen_scope/screen_scope.dart';
 import '../constants/screen_data_scope.dart';
@@ -40,6 +45,7 @@ class AppRouter {
   static const String exploreCompetencies = '/explore-competencies';
   static const String myBadges = '/my-badges';
   static const String evolucao = '/evolucao';
+  static const String evolutionTimeline = '/evolution-timeline';
   static const String profile = '/profile';
   static const String emailSignature = '/email-signature';
   static const String editProfile = '/edit-profile';
@@ -50,6 +56,10 @@ class AppRouter {
   static const String help = '/help';
   static const String badgeGallery = '/badge-gallery';
   static const String goals = '/goals';
+  static const String notificationPreferences = '/notification-preferences';
+  static const String store = '/store';
+  static const String resetPassword = '/reset-password';
+  static const String confirmEmailToken = '/confirm-email-token';
 }
 
 GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
@@ -124,6 +134,13 @@ GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
         ),
       ),
       GoRoute(
+        path: AppRouter.evolutionTimeline,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.evolutionTimeline,
+          const EvolutionTimelineScreen(),
+        ),
+      ),
+      GoRoute(
         path: AppRouter.profile,
         builder: (context, state) => _buildWithScope(
           AppRouter.profile,
@@ -179,6 +196,34 @@ GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
           AppRouter.goals,
           const GoalsScreen(),
         ),
+      ),
+      GoRoute(
+        path: AppRouter.store,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.store,
+          const StoreScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.notificationPreferences,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.notificationPreferences,
+          const NotificationPreferencesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.resetPassword,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ResetPasswordScreen(token: token);
+        },
+      ),
+      GoRoute(
+        path: AppRouter.confirmEmailToken,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ConfirmEmailTokenScreen(token: token);
+        },
       ),
     ],
   );

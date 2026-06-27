@@ -25,6 +25,13 @@ const List<Milestone> milestones = [
     icon: 'star',
   ),
   Milestone(
+    key: '3_badges',
+    badgeCount: 3,
+    titleKey: 'celebration3BadgesTitle',
+    descriptionKey: 'celebration3BadgesDesc',
+    icon: 'fire',
+  ),
+  Milestone(
     key: '5_badges',
     badgeCount: 5,
     titleKey: 'celebration5BadgesTitle',
@@ -39,11 +46,18 @@ const List<Milestone> milestones = [
     icon: 'trophy',
   ),
   Milestone(
-    key: '25_badges',
-    badgeCount: 25,
-    titleKey: 'celebration25BadgesTitle',
-    descriptionKey: 'celebration25BadgesDesc',
+    key: '20_badges',
+    badgeCount: 20,
+    titleKey: 'celebration20BadgesTitle',
+    descriptionKey: 'celebration20BadgesDesc',
     icon: 'medal',
+  ),
+  Milestone(
+    key: '35_badges',
+    badgeCount: 35,
+    titleKey: 'celebration35BadgesTitle',
+    descriptionKey: 'celebration35BadgesDesc',
+    icon: 'trophy',
   ),
   Milestone(
     key: '50_badges',
@@ -62,13 +76,12 @@ class CelebrationService {
 
     final prefs = await SharedPreferences.getInstance();
 
-    for (final milestone in milestones.reversed) {
+    for (final milestone in milestones) {
       if (earnedBadgeCount >= milestone.badgeCount) {
         final alreadyShown = prefs.getBool('$_prefix${milestone.key}') ?? false;
         if (!alreadyShown) {
           return milestone;
         }
-        break;
       }
     }
 

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/database_helper.dart';
 import '../../core/services/fcm_service.dart';
 import '../../data/local/current_user_dao.dart';
+import '../../data/local/my_area_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../data/remote/supabase_storage_service.dart';
 import '../../data/repositories/auth_repo.dart';
@@ -15,13 +16,15 @@ class AuthStore extends ChangeNotifier {
   AuthStore(
     this._authRepository,
     this._apiClient,
-    this._currentUserDao, {
+    this._currentUserDao,
+    this._myAreaDao, {
     SupabaseStorageService? storageService,
   }) : _storageService = storageService;
 
   final AuthRepository _authRepository;
   final ApiClient _apiClient;
   final CurrentUserDao _currentUserDao;
+  final MyAreaDao _myAreaDao;
   final SupabaseStorageService? _storageService;
 
   static const String _rememberKey = 'remember_me';
@@ -61,9 +64,6 @@ class AuthStore extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_rememberKey, true);
         await prefs.setInt(_sessionExpiryKey, expiryMs);
-        debugPrint('login: remember=true, saved expiry=$expiryMs');
-      } else {
-        debugPrint('login: remember=false, session not persisted');
       }
 
       notifyListeners();
@@ -77,30 +77,21 @@ class AuthStore extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final remember = prefs.getBool(_rememberKey) ?? false;
-      debugPrint('tryRestoreSession: remember=$remember');
       if (!remember) return false;
 
       final expiryMs = prefs.getInt(_sessionExpiryKey) ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
-      debugPrint('tryRestoreSession: expiryMs=$expiryMs, now=$now, expired=${now > expiryMs}');
       if (now > expiryMs) {
         await prefs.remove(_rememberKey);
         await prefs.remove(_sessionExpiryKey);
         return false;
       }
 
-      final cookies = await _apiClient.cookieJar.loadForRequest(
-        Uri.parse('${_apiClient.dio.options.baseUrl}/api/auth/refresh'),
-      );
-      debugPrint('tryRestoreSession: cookies for refresh endpoint = ${cookies.map((c) => '${c.name}=${c.value.substring(0, 8)}...').toList()}');
-
       final refreshResult = await _authRepository.refreshToken();
-      debugPrint('tryRestoreSession: refreshResult success=${refreshResult['success']}');
       if (refreshResult['success'] != true) return false;
 
       final data = refreshResult['data'];
       final token = data is Map ? data['token']?.toString() : null;
-      debugPrint('tryRestoreSession: got token=${token != null && token.isNotEmpty}');
       if (token == null || token.isEmpty) return false;
 
       _accessToken = token;
@@ -116,10 +107,8 @@ class AuthStore extends ChangeNotifier {
 
       notifyListeners();
       await FCMService.subscribe(_apiClient);
-      debugPrint('tryRestoreSession: SUCCESS');
       return true;
-    } catch (e) {
-      debugPrint('Session restore failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -148,8 +137,7 @@ class AuthStore extends ChangeNotifier {
       notifyListeners();
 
       return true;
-    } catch (e) {
-      debugPrint('Registration submission error: $e');
+    } catch (_) {
       _lastRegistrationError = 'Erro ao criar conta. Tente novamente.';
       notifyListeners();
       return false;
@@ -217,6 +205,15 @@ class AuthStore extends ChangeNotifier {
         _currentUser = _withAreas(_currentUser!, selectedAreas, mainArea);
       }
       await _currentUserDao.save(_currentUser!);
+      await _myAreaDao.replaceAll(
+        selectedAreas
+            .map((a) => {
+                  'area_id': a.id,
+                  'is_primary':
+                      (mainArea != null && a.id == mainArea.id) ? 1 : 0,
+                })
+            .toList(),
+      );
       notifyListeners();
     }
 
@@ -259,14 +256,48 @@ class AuthStore extends ChangeNotifier {
     );
   }
 
+  /// When the API's getMe response omits fields that are managed locally
+  /// (areas, registeredAt), preserve them from the previous cached user so
+  /// they are not silently wiped.
+  UserModel _preserveLocalFields(UserModel refreshed, UserModel? previous) {
+    if (previous == null) return refreshed;
+
+    final areas = refreshed.areas.isNotEmpty
+        ? refreshed.areas
+        : previous.areas;
+    final registeredAt = refreshed.registeredAt ?? previous.registeredAt;
+    final totalPoints = refreshed.totalPoints > 0
+        ? refreshed.totalPoints
+        : previous.totalPoints;
+
+    return UserModel(
+      id: refreshed.id,
+      email: refreshed.email,
+      fullName: refreshed.fullName,
+      username: refreshed.username,
+      profilePicture: refreshed.profilePicture,
+      role: refreshed.role,
+      biography: refreshed.biography,
+      gdprAccepted: refreshed.gdprAccepted,
+      totalPoints: totalPoints,
+      preferredLangId: refreshed.preferredLangId,
+      locationId: refreshed.locationId,
+      serviceLineName: refreshed.serviceLineName,
+      learningPathTitle: refreshed.learningPathTitle,
+      areas: areas,
+      registeredAt: registeredAt,
+    );
+  }
+
   Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> data,
   ) async {
     final result = await _authRepository.updateProfile(data);
     if (result['success'] == true) {
+      final previous = _currentUser;
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
-        _currentUser = refreshed;
+        _currentUser = _preserveLocalFields(refreshed, previous);
       } else if (_currentUser != null) {
         _currentUser = _applyProfilePatch(_currentUser!, data);
       }
@@ -281,9 +312,10 @@ class AuthStore extends ChangeNotifier {
   Future<Map<String, dynamic>> changeLanguage(int languageId) async {
     final result = await _authRepository.changeLanguage(languageId);
     if (result['success'] == true) {
+      final previous = _currentUser;
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
-        _currentUser = refreshed;
+        _currentUser = _preserveLocalFields(refreshed, previous);
       }
       if (_currentUser != null) {
         await _currentUserDao.save(_currentUser!);
@@ -295,6 +327,18 @@ class AuthStore extends ChangeNotifier {
 
   Future<Map<String, dynamic>> resendConfirmation(String email) {
     return _authRepository.resendConfirmation(email);
+  }
+
+  Future<Map<String, dynamic>> validateResetToken(String token) {
+    return _authRepository.validateResetToken(token);
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String token, String newPassword) {
+    return _authRepository.resetPassword(token, newPassword);
+  }
+
+  Future<Map<String, dynamic>> confirmEmailToken(String token) {
+    return _authRepository.confirmEmail(token);
   }
 
   Future<void> fetchPoints() async {
@@ -318,6 +362,9 @@ class AuthStore extends ChangeNotifier {
         learningPathTitle: _currentUser!.learningPathTitle,
         areas: _currentUser!.areas,
       );
+      // Persist the new balance so it survives navigation/relaunch (a reload
+      // from the local DB would otherwise restore the old, pre-spend points).
+      await _currentUserDao.updatePoints(totalPoints);
       notifyListeners();
     }
   }

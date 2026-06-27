@@ -10,6 +10,8 @@ import '../../../presentation/state/notification_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/notifications/notifications_widgets.dart';
 import '../applications/application_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key, this.sourceTab = AppTab.home});
@@ -51,8 +53,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   void _markSeenAsRead() {
     if (_unreadOnEntry.isEmpty) return;
     final store = context.read<NotificationStore>();
+    final existingIds = store.all.map((n) => n.id).toSet();
     for (final id in _unreadOnEntry) {
-      store.markRead(id);
+      if (existingIds.contains(id)) store.markRead(id);
     }
   }
 
@@ -125,8 +128,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: const AppIcon(
+            AppIcons.chevronBackward,
             color: Color(0xFF212D36),
             size: 28,
           ),
@@ -165,7 +168,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 children: [
                   NotificationTypeChip(
                     label: tr.tr('notificationsFilterAll'),
-                    icon: Icons.notifications_outlined,
+                    icon: AppIcons.bell,
                     color: AppColors.notifHome,
                     isSelected: _selectedType == null,
                     onTap: () => setState(() => _selectedType = null),
@@ -219,12 +222,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     children: [
                       NotificationsList(
                         notifications: _filterByType(unreadNotifications),
-                        onDismiss: (id) => store.markRead(id),
+                        onDismiss: (id) => store.deleteNotification(id),
                         onTap: _handleNotificationTap,
                       ),
                       NotificationsList(
                         notifications: _filterByType(allNotifications),
-                        onDismiss: (id) => store.markRead(id),
+                        onDismiss: (id) => store.deleteNotification(id),
                         onTap: _handleNotificationTap,
                       ),
                     ],

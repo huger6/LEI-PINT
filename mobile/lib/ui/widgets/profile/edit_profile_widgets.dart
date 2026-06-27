@@ -10,6 +10,10 @@ import '../../../data/repositories/location_repo.dart';
 import '../../../data/repositories/validation_repo.dart';
 import '../../../models/location_model.dart';
 import '../../../presentation/state/auth_store.dart';
+import '../../../presentation/state/reward_store.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
+import '../store/title_selector.dart';
 
 class EditProfileForm extends StatefulWidget {
   const EditProfileForm({
@@ -107,6 +111,18 @@ class _EditProfileFormState extends State<EditProfileForm> {
     });
   }
 
+  Widget _buildTitleSelector(LanguageController tr) {
+    final store = context.watch<RewardStore>();
+    if (store.titles.isEmpty) return const SizedBox.shrink();
+
+    return TitleSelector(
+      titles: store.titles,
+      activeTitle: store.activeTitle,
+      onSelect: (title) => store.setActiveTitle(title),
+      isSaving: store.isBusy,
+    );
+  }
+
   Future<void> _submit() async {
     if (_usernameError != null) return;
 
@@ -184,7 +200,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
             _ProfileField(
               label: tr.tr('fullName'),
               controller: _fullNameCtrl,
-              icon: Icons.person_outline_rounded,
+              icon: AppIcons.user,
               errorText: _fullNameError,
               onChanged: (v) {
                 if (_fullNameError != null && v.trim().isNotEmpty) {
@@ -196,7 +212,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
             _ProfileField(
               label: 'Username',
               controller: _usernameCtrl,
-              icon: Icons.alternate_email_rounded,
+              icon: AppIcons.email,
               errorText: _usernameError,
               onChanged: _onUsernameChanged,
             ),
@@ -243,10 +259,10 @@ class _EditProfileFormState extends State<EditProfileForm> {
                           ),
                           isExpanded: true,
                           underline: const SizedBox.shrink(),
-                          icon: Icon(
+                          icon: AppIcon(
                             _isDropdownOpen
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
+                                ? AppIcons.keyboardArrowUp
+                                : AppIcons.keyboardArrowDown,
                             color: const Color(0xFF8B96A1),
                             size: 24,
                           ),
@@ -273,10 +289,12 @@ class _EditProfileFormState extends State<EditProfileForm> {
             _ProfileField(
               label: tr.tr('biography'),
               controller: _bioCtrl,
-              icon: Icons.short_text_rounded,
+              icon: AppIcons.shortText,
               maxLines: 4,
               hintText: tr.tr('biographyHint'),
             ),
+            const SizedBox(height: 14),
+            _buildTitleSelector(tr),
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
@@ -329,7 +347,7 @@ class _ProfileField extends StatelessWidget {
 
   final String label;
   final TextEditingController controller;
-  final IconData icon;
+  final String icon;
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final int maxLines;
@@ -362,7 +380,7 @@ class _ProfileField extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             prefixIcon: maxLines == 1
-                ? Icon(icon, color: const Color(0xFF8B96A1), size: 20)
+                ? AppIcon(icon, color: const Color(0xFF8B96A1), size: 20)
                 : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

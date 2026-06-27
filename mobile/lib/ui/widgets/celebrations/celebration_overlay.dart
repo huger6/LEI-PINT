@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/celebration_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../presentation/state/language_controller.dart';
 import 'confetti_painter.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 Future<void> showCelebrationOverlay(
   BuildContext context, {
@@ -117,20 +120,24 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
     super.dispose();
   }
 
-  IconData _milestoneIcon() {
+  String _milestoneIcon() {
     switch (widget.milestone.icon) {
       case 'star':
-        return Icons.star_rounded;
+        return AppIcons.star;
+      case 'fire':
+        return AppIcons.fire;
       case 'rocket':
-        return Icons.rocket_launch_rounded;
+        return AppIcons.spark;
       case 'trophy':
-        return Icons.emoji_events_rounded;
+        return AppIcons.trophy;
       case 'medal':
-        return Icons.military_tech_rounded;
+        return AppIcons.badge;
+      case 'badgePremium':
+        return AppIcons.trophy;
       case 'crown':
-        return Icons.workspace_premium_rounded;
+        return AppIcons.trophy;
       default:
-        return Icons.celebration_rounded;
+        return AppIcons.fire;
     }
   }
 
@@ -138,12 +145,16 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
     switch (widget.milestone.icon) {
       case 'star':
         return AppColors.primary;
+      case 'fire':
+        return const Color(0xFFE85D3A);
       case 'rocket':
         return const Color(0xFF5C4FE0);
       case 'trophy':
         return AppColors.badgePremium;
       case 'medal':
         return const Color(0xFFE57D97);
+      case 'badgePremium':
+        return const Color(0xFF8B5CF6);
       case 'crown':
         return const Color(0xFFCFA600);
       default:
@@ -155,6 +166,10 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
   Widget build(BuildContext context) {
     final accentColor = _milestoneAccentColor();
     final screenSize = MediaQuery.of(context).size;
+    final tr = LanguageScope.of(context);
+    final badgeLabel = widget.badgeCount == 1
+        ? 'badge'
+        : tr.tr('badgesEarned').split(' ').first;
 
     return Material(
       color: Colors.transparent,
@@ -190,7 +205,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                 children: [
                   _buildAnimatedIcon(accentColor),
                   const SizedBox(height: 20),
-                  _buildBadgeCountChip(accentColor),
+                  _buildBadgeCountChip(accentColor, badgeLabel),
                   const SizedBox(height: 16),
                   Text(
                     widget.title,
@@ -233,7 +248,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.celebration_rounded, size: 20),
+                          AppIcon(AppIcons.fire, size: 20),
                           SizedBox(width: 8),
                           Text('OK'),
                         ],
@@ -284,7 +299,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                 ),
               ],
             ),
-            child: Icon(
+            child: AppIcon(
               _milestoneIcon(),
               size: 52,
               color: accentColor,
@@ -295,7 +310,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
     );
   }
 
-  Widget _buildBadgeCountChip(Color accentColor) {
+  Widget _buildBadgeCountChip(Color accentColor, String badgeLabel) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
@@ -303,7 +318,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        '${widget.badgeCount} ${widget.badgeCount == 1 ? 'badge' : 'badges'}',
+        '${widget.badgeCount} $badgeLabel',
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,

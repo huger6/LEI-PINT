@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 Future<bool> showRgpdConsentSheet(BuildContext context) async {
   final result = await showModalBottomSheet<bool>(
@@ -65,7 +67,7 @@ class _RgpdConsentContentState extends State<_RgpdConsentContent> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context, false),
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const AppIcon(AppIcons.close),
                   color: const Color(0xFF46535E),
                 ),
               ],
@@ -214,8 +216,8 @@ class _BulletItem extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 6, right: 8),
-            child: Icon(
-              Icons.circle,
+            child: AppIcon(
+              AppIcons.circle,
               size: 6,
               color: Color(0xFF46535E),
             ),

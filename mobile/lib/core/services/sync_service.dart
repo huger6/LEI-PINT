@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 import '../../data/local/announcement_dao.dart';
 import '../../data/local/area_dao.dart';
+import '../../data/local/my_area_dao.dart';
+import '../../data/local/gdpr_policy_dao.dart';
+import '../../data/local/redemption_dao.dart';
+import '../../data/local/reward_dao.dart';
+import '../../data/local/title_dao.dart';
 import '../../data/local/awarded_badge_dao.dart';
 import '../../data/local/badge_dao.dart';
 import '../../data/local/current_user_dao.dart';
@@ -19,6 +22,9 @@ import '../../data/local/skill_dao.dart';
 import '../../data/local/sync_metadata_dao.dart';
 import '../../data/remote/api_client.dart';
 import '../../models/announcement_model.dart';
+import '../../models/gdpr_policy_model.dart';
+import '../../models/redemption_model.dart';
+import '../../models/reward_model.dart';
 import '../../models/area_model.dart';
 import '../../models/awarded_badge_model.dart';
 import '../../models/learning_path_model.dart';
@@ -54,6 +60,11 @@ class SyncService {
   late final _currentUserDao = CurrentUserDao(_database);
   late final _skillDao = SkillDao(_database);
   late final _mySkillDao = MySkillDao(_database);
+  late final _gdprPolicyDao = GdprPolicyDao(_database);
+  late final _rewardDao = RewardDao(_database);
+  late final _redemptionDao = RedemptionDao(_database);
+  late final _titleDao = TitleDao(_database);
+  late final _myAreaDao = MyAreaDao(_database);
 
   String? _activeRoute;
 
@@ -65,14 +76,12 @@ class SyncService {
 
   void setActiveRoute(String route) {
     _activeRoute = route;
-    debugPrint('SyncService: Active route set to $route');
   }
 
   Future<bool> syncForScreen(String route) async {
     final codes = ScreenDataScope.requiredSyncCodes(route);
     if (codes.isEmpty) return true;
 
-    debugPrint('SyncService: Syncing ${codes.length} codes for $route');
     final results = await Future.wait(codes.map(_syncCode));
     final allOk = results.every((ok) => ok);
 
@@ -124,6 +133,10 @@ class SyncService {
         return _syncAnnouncements();
       case SyncCodes.notifications:
         return _syncNotifications();
+      case SyncCodes.gdprPolicies:
+        return _syncGdprPolicies();
+      case SyncCodes.rewards:
+        return _syncRewards();
       default:
         return Future.value(true);
     }
@@ -137,9 +150,6 @@ class SyncService {
     if (_activeRoute != null && updateCode != SyncCodes.notifications) {
       final relevantCodes = ScreenDataScope.requiredSyncCodes(_activeRoute!);
       if (relevantCodes.isNotEmpty && !relevantCodes.contains(updateCode)) {
-        debugPrint(
-          'SyncService: Code $updateCode skipped (not relevant for $_activeRoute)',
-        );
         return;
       }
     }
@@ -148,12 +158,7 @@ class SyncService {
     if (incoming == null) return;
 
     final lastSync = await _syncDao.getLastSync(updateCode);
-    if (lastSync != null && !incoming.isAfter(lastSync)) {
-      debugPrint('SyncService: Code $updateCode already up-to-date');
-      return;
-    }
-
-    debugPrint('SyncService: Syncing code $updateCode');
+    if (lastSync != null && !incoming.isAfter(lastSync)) return;
 
     bool success = false;
     switch (updateCode) {
@@ -185,6 +190,10 @@ class SyncService {
         success = await _syncAnnouncements();
       case SyncCodes.notifications:
         success = await _syncNotifications();
+      case SyncCodes.gdprPolicies:
+        success = await _syncGdprPolicies();
+      case SyncCodes.rewards:
+        success = await _syncRewards();
       default:
         return;
     }
@@ -192,7 +201,6 @@ class SyncService {
     if (success) {
       await _syncDao.setLastSync(updateCode, incoming);
       if (!_syncController.isClosed) _syncController.add(updateCode);
-      debugPrint('SyncService: Code $updateCode synced');
     }
   }
 
@@ -241,16 +249,11 @@ class SyncService {
         endpoint,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint('SyncService: API response from $endpoint:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final list = _extractList(response);
       final items = list
           .whereType<Map>()
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      debugPrint('SyncService: Parsed ${items.length} items from $endpoint');
 
       if (isIncremental) {
         if (items.isNotEmpty) {
@@ -264,8 +267,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: $endpoint failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -275,10 +277,6 @@ class SyncService {
   Future<bool> _syncUserProfile() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getProfile);
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint('SyncService: API response from ${ApiEndpoints.getProfile}:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final data = response is Map<String, dynamic>
           ? (response['data'] ?? response)
           : response;
@@ -287,13 +285,13 @@ class SyncService {
       final user = UserModel.fromJson(map);
       await _currentUserDao.save(user);
       await _syncSelectedSkills(map);
+      await _syncSelectedAreas(map);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: user profile failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -316,6 +314,32 @@ class SyncService {
 
     await _skillDao.replaceAll(skills);
     await _mySkillDao.replaceAll(skills.map((s) => s.id).toList());
+  }
+
+  Future<void> _syncSelectedAreas(Map<String, dynamic> profile) async {
+    final raw = profile['areas'] ?? profile['selected_areas'];
+    if (raw is! List) return;
+
+    final db = await _database.database;
+    final cachedAreas = await db.query(LocalDatabase.areasTable);
+    final slugToId = <String, int>{};
+    for (final row in cachedAreas) {
+      final slug = row['slug'] as String?;
+      if (slug != null) slugToId[slug] = row['id'] as int;
+    }
+
+    final areaRows = <Map<String, dynamic>>[];
+    for (final entry in raw.whereType<Map>()) {
+      final slug = entry['slug'] as String?;
+      final areaId = slug != null ? slugToId[slug] : null;
+      if (areaId == null) continue;
+      areaRows.add({
+        'area_id': areaId,
+        'is_primary': (entry['isPrimary'] == true || entry['is_primary'] == true) ? 1 : 0,
+      });
+    }
+
+    await _myAreaDao.replaceAll(areaRows);
   }
 
   Future<bool> _syncLearningPaths() async {
@@ -377,8 +401,6 @@ class SyncService {
             .whereType<Map>()
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
-        debugPrint(
-            'SyncService: incremental badge sync got ${rows.length} changed badges');
         if (rows.isNotEmpty) {
           await _badgeDao.upsertAllFromJson(rows);
         }
@@ -402,8 +424,6 @@ class SyncService {
         if (pageRows.isEmpty || page >= totalPages || page >= 100) break;
         page++;
       }
-      debugPrint(
-          'SyncService: fetched ${rows.length} badges across $page page(s)');
       if (rows.isNotEmpty) {
         await _badgeDao.replaceAllFromJson(rows);
       }
@@ -412,8 +432,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: badges failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -475,8 +494,7 @@ class SyncService {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: awarded badges failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -484,11 +502,6 @@ class SyncService {
   Future<bool> _syncPointsHistory() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.getPointsHistory);
-      debugPrint('───────────────────────────────────────────────────');
-      debugPrint(
-          'SyncService: API response from ${ApiEndpoints.getPointsHistory}:');
-      debugPrint('SyncService: Raw data: $response');
-      debugPrint('───────────────────────────────────────────────────');
       final data = response is Map<String, dynamic>
           ? (response['data'] ?? response)
           : response;
@@ -504,15 +517,13 @@ class SyncService {
           .whereType<Map>()
           .map((e) => PointsHistoryModel.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      debugPrint('SyncService: Parsed ${items.length} points history items');
       await _pointsHistoryDao.replaceAll(items);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: points history failed: $e');
+    } catch (_) {
       return false;
     }
   }
@@ -547,17 +558,92 @@ class SyncService {
         if (pageRows.isEmpty || page >= totalPages || page >= 50) break;
         page++;
       }
-      debugPrint(
-        'SyncService: fetched ${items.length} notifications across $page page(s)',
-      );
       await _notificationDao.replaceAll(items);
       return true;
     } on SocketException {
       return false;
     } on TimeoutException {
       return false;
-    } catch (e) {
-      debugPrint('SyncService: notifications failed: $e');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _syncRewards() async {
+    try {
+      // 1. Sync rewards catalog
+      final storeResponse = await _apiClient.get(ApiEndpoints.getRewards);
+      final storeData = storeResponse is Map<String, dynamic>
+          ? (storeResponse['data'] ?? storeResponse)
+          : storeResponse;
+      if (storeData is Map) {
+        final rewardsList = (storeData['rewards'] as List?) ?? [];
+        final rewards = rewardsList
+            .whereType<Map>()
+            .map((e) => RewardModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        await _rewardDao.replaceAll(rewards);
+      }
+
+      // 2. Sync redemption history
+      final redemptionsResponse =
+          await _apiClient.get(ApiEndpoints.getRedemptions);
+      final redemptionsData = redemptionsResponse is Map<String, dynamic>
+          ? (redemptionsResponse['data'] ?? redemptionsResponse)
+          : redemptionsResponse;
+      final redemptionsList =
+          redemptionsData is List ? redemptionsData : <dynamic>[];
+      final redemptions = redemptionsList
+          .whereType<Map>()
+          .map((e) => RedemptionModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      await _redemptionDao.replaceAll(redemptions);
+
+      // 3. Sync unlocked titles + active title
+      final titlesResponse = await _apiClient.get(ApiEndpoints.getTitles);
+      final titlesData = titlesResponse is Map<String, dynamic>
+          ? (titlesResponse['data'] ?? titlesResponse)
+          : titlesResponse;
+      if (titlesData is Map) {
+        final titlesList = (titlesData['titles'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+        await _titleDao.replaceAll(titlesList);
+
+        final activeTitle = titlesData['activeTitle']?.toString();
+        await _currentUserDao.updateActiveTitle(activeTitle);
+      }
+
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _syncGdprPolicies() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.getGdprPolicies);
+      final list = _extractList(
+        response is Map<String, dynamic>
+            ? (response['data'] ?? response)
+            : response,
+      );
+      final items = list
+          .whereType<Map>()
+          .map((e) => GdprPolicyModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      await _gdprPolicyDao.replaceAll(items);
+      return true;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    } catch (_) {
       return false;
     }
   }

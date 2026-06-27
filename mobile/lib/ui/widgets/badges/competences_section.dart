@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/skill_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class CompetencesSection extends StatelessWidget {
   const CompetencesSection({
@@ -35,8 +38,8 @@ class CompetencesSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.verified_rounded,
+              AppIcon(
+                AppIcons.skills,
                 size: 20,
                 color: AppColors.secondary,
               ),
@@ -121,15 +124,15 @@ class _CompetenceCardState extends State<_CompetenceCard> {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        Icons.psychology_rounded,
+                      child: AppIcon(
+                        AppIcons.skills,
                         size: 18,
                         color: AppColors.secondary,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
+                      child: TranslatedText(
                         widget.skill.name,
                         style: const TextStyle(
                           fontSize: 15,
@@ -142,8 +145,8 @@ class _CompetenceCardState extends State<_CompetenceCard> {
                       AnimatedRotation(
                         turns: _expanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          Icons.expand_more_rounded,
+                        child: AppIcon(
+                          AppIcons.keyboardArrowDown,
                           size: 22,
                           color: const Color(0xFF7A8894),
                         ),
@@ -154,7 +157,7 @@ class _CompetenceCardState extends State<_CompetenceCard> {
                   firstChild: const SizedBox.shrink(),
                   secondChild: Padding(
                     padding: const EdgeInsets.only(top: 10, left: 46),
-                    child: Text(
+                    child: TranslatedText(
                       widget.skill.description ?? '',
                       style: const TextStyle(
                         fontSize: 13.5,

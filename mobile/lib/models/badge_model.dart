@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/utils/badge_visuals.dart';
 import 'skill_model.dart';
+import '../ui/widgets/shared/app_icon/app_icon_data.dart';
 
 class BadgeModel {
   const BadgeModel({
@@ -18,7 +19,11 @@ class BadgeModel {
     required this.medalColor,
     required this.ribbonColor,
     required this.description,
+    this.imageUrl,
+    this.serviceLine,
+    this.learningPath,
     this.skills = const [],
+    this.rewards = const [],
     required this.attributes,
     required this.requirements,
   });
@@ -79,6 +84,12 @@ class BadgeModel {
     final expDays = json['expiration_duration_days'] ?? json['expirationDays'];
     final createdRaw = json['created_at'] ?? json['createdAt'];
 
+    final imgUrl = _readString(json, const ['badge_img_url', 'imageUrl', 'image_url']);
+    final slName = _readNestedString(json, const ['service_line', 'service_line_name'],
+        fallback: _readString(json, const ['service_line_name']));
+    final lpName = _readNestedString(json, const ['learning_path', 'learning_path_title'],
+        fallback: _readString(json, const ['learning_path_title']));
+
     return BadgeModel(
       id: _readInt(json, const ['badge_id', 'id']),
       slug: _readString(json, const ['badge_slug', 'slug']),
@@ -96,7 +107,11 @@ class BadgeModel {
         'badge_description',
         'description',
       ]),
+      imageUrl: imgUrl.isEmpty ? null : imgUrl,
+      serviceLine: slName.isEmpty ? null : slName,
+      learningPath: lpName.isEmpty ? null : lpName,
       skills: _extractSkills(json['skills']),
+      rewards: _extractRewards(json['rewards']),
       attributes: buildAttributes(
         area: area,
         points: points,
@@ -111,6 +126,7 @@ class BadgeModel {
     final summary = BadgeModel.fromApiSummary(json);
 
     final skills = _extractSkills(json['skills']);
+    final rewards = _extractRewards(json['rewards']);
     final requirements = _extractRequirements(json);
 
     return BadgeModel(
@@ -127,7 +143,11 @@ class BadgeModel {
       medalColor: summary.medalColor,
       ribbonColor: summary.ribbonColor,
       description: summary.description,
+      imageUrl: summary.imageUrl,
+      serviceLine: summary.serviceLine,
+      learningPath: summary.learningPath,
       skills: skills,
+      rewards: rewards,
       attributes: summary.attributes,
       requirements: requirements,
     );
@@ -146,7 +166,11 @@ class BadgeModel {
   final Color medalColor;
   final Color ribbonColor;
   final String description;
+  final String? imageUrl;
+  final String? serviceLine;
+  final String? learningPath;
   final List<SkillModel> skills;
+  final List<BadgeReward> rewards;
   final List<BadgeAttribute> attributes;
   final List<BadgeRequirement> requirements;
 
@@ -161,7 +185,7 @@ class BadgeModel {
     if (area.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.category_outlined,
+          icon: AppIcons.area,
           label: 'area',
           value: area,
         ),
@@ -171,7 +195,7 @@ class BadgeModel {
     if (points > 0) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.emoji_events_outlined,
+          icon: AppIcons.trophy,
           label: 'points',
           value: points.toString(),
         ),
@@ -181,7 +205,7 @@ class BadgeModel {
     if (stageCode.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.stairs_outlined,
+          icon: AppIcons.ranking,
           label: 'level',
           value: stageCode,
         ),
@@ -191,7 +215,7 @@ class BadgeModel {
     if (duration.trim().isNotEmpty) {
       attributes.add(
         BadgeAttribute(
-          icon: Icons.schedule_rounded,
+          icon: AppIcons.time,
           label: 'duration',
           value: duration,
         ),
@@ -224,11 +248,19 @@ class BadgeModel {
           ]);
           return BadgeRequirement(
             id: id > 0 ? id : null,
-            icon: Icons.task_alt_outlined,
+            icon: AppIcons.checkCircle,
             text: text,
           );
         })
         .where((item) => item.text.trim().isNotEmpty)
+        .toList();
+  }
+
+  static List<BadgeReward> _extractRewards(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((item) => BadgeReward.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -304,7 +336,7 @@ class BadgeAttribute {
     required this.value,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final String value;
 }
@@ -313,6 +345,23 @@ class BadgeRequirement {
   const BadgeRequirement({this.id, required this.icon, required this.text});
 
   final int? id;
-  final IconData icon;
+  final String icon;
   final String text;
+}
+
+class BadgeReward {
+  const BadgeReward({
+    required this.rewardId,
+    this.specialTitle,
+  });
+
+  final int rewardId;
+  final String? specialTitle;
+
+  factory BadgeReward.fromJson(Map<String, dynamic> json) {
+    return BadgeReward(
+      rewardId: json['reward_id'] as int? ?? 0,
+      specialTitle: json['special_title']?.toString(),
+    );
+  }
 }

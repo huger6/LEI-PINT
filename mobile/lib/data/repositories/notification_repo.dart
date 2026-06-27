@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
-
 import '../../core/constants/api_endpoints.dart';
 import '../../models/notification_model.dart';
+import '../../models/notification_preference_model.dart';
 import '../local/notification_dao.dart';
 import '../remote/api_client.dart';
 
@@ -33,11 +32,15 @@ class NotificationRepository {
       if (pageRows.isEmpty || page >= totalPages || page >= 50) break;
       page++;
     }
-    debugPrint(
-      'NotificationRepo: fetched ${items.length} notifications across $page page(s)',
-    );
     await _notificationDao.replaceAll(items);
     return items;
+  }
+
+  Future<void> deleteNotification(int notificationId) async {
+    await _notificationDao.delete(notificationId);
+    try {
+      await _apiClient.delete('/api/notifications/$notificationId');
+    } catch (_) {}
   }
 
   Future<void> markRead(int notificationId) async {
@@ -52,6 +55,36 @@ class NotificationRepository {
     try {
       await _apiClient.put('/api/notifications/read-all');
     } catch (_) {}
+  }
+
+  /// Fetches the user's notification preferences (one entry per notification
+  /// type) from the API. These are settings, so they are read live rather than
+  /// cached locally.
+  Future<List<NotificationPreferenceModel>> getPreferences() async {
+    final payload = await _apiClient.get(ApiEndpoints.notificationPreferences);
+    return _extractList(payload)
+        .whereType<Map>()
+        .map((e) =>
+            NotificationPreferenceModel.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  /// Updates the user's override for a single notification type. The full
+  /// effective triple is sent so the override captures the user's intent.
+  Future<void> updatePreference(
+    int definitionId, {
+    required bool isEnabled,
+    required bool sendPush,
+    required bool sendEmail,
+  }) async {
+    await _apiClient.put(
+      ApiEndpoints.updateNotificationPreference(definitionId),
+      data: {
+        'is_enabled': isEnabled,
+        'send_push': sendPush,
+        'send_email': sendEmail,
+      },
+    );
   }
 
   List<dynamic> _extractList(dynamic payload) {

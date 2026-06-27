@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class MainBadgesCard extends StatelessWidget {
   const MainBadgesCard({
@@ -23,28 +25,33 @@ class MainBadgesCard extends StatelessWidget {
     final tr = LanguageScope.of(context);
     final isPositive = growthPercent >= 0;
 
-    final years = yearlyBadges.keys.toList()..sort();
-    final hasData = years.isNotEmpty;
     final currentYear = DateTime.now().year;
-    // With no badges yet, show a flat zero baseline across the last two years
-    // instead of a "no data" placeholder.
-    final spots = hasData
-        ? List.generate(years.length, (i) {
-            return FlSpot(i.toDouble(), (yearlyBadges[years[i]] ?? 0).toDouble());
-          })
-        : const [FlSpot(0, 0), FlSpot(1, 0)];
-    final labels = hasData
-        ? years.map((y) => '$y').toList()
-        : ['${currentYear - 1}', '$currentYear'];
+    final paddedBadges = Map<int, int>.from(yearlyBadges);
+    if (paddedBadges.isEmpty) {
+      paddedBadges[currentYear - 1] = 0;
+      paddedBadges[currentYear] = 0;
+    } else if (paddedBadges.length == 1) {
+      final onlyYear = paddedBadges.keys.first;
+      if (onlyYear >= currentYear) {
+        paddedBadges.putIfAbsent(onlyYear - 1, () => 0);
+      } else {
+        paddedBadges.putIfAbsent(onlyYear + 1, () => 0);
+      }
+    }
+    final years = paddedBadges.keys.toList()..sort();
+    final spots = List.generate(years.length, (i) {
+      return FlSpot(i.toDouble(), (paddedBadges[years[i]] ?? 0).toDouble());
+    });
+    final labels = years.map((y) => '$y').toList();
 
-    final maxY = hasData
-        ? (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.3)
-            .ceilToDouble().clamp(1.0, 100000.0)
+    final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final maxY = maxVal > 0
+        ? (maxVal * 1.3).ceilToDouble().clamp(1.0, 100000.0)
         : 5.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
       decoration: BoxDecoration(
         color: const Color(0xFFF7FBFF),
         borderRadius: BorderRadius.circular(20),
@@ -87,10 +94,10 @@ class MainBadgesCard extends StatelessWidget {
               ),
               if (growthPercent != 0) ...[
                 const SizedBox(width: 12),
-                Icon(
+                AppIcon(
                   isPositive
-                      ? Icons.trending_up_rounded
-                      : Icons.trending_down_rounded,
+                      ? AppIcons.progress
+                      : AppIcons.progress,
                   color: isPositive
                       ? const Color(0xFF2FB45A)
                       : const Color(0xFFD63D2B),
@@ -118,7 +125,9 @@ class MainBadgesCard extends StatelessWidget {
           const SizedBox(height: 6),
           SizedBox(
             height: 190,
-            child: LineChart(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: LineChart(
                     LineChartData(
                       minX: 0,
                       maxX: (spots.length - 1).toDouble(),
@@ -148,7 +157,7 @@ class MainBadgesCard extends StatelessWidget {
                           sideTitles: SideTitles(
                             showTitles: true,
                             interval: 1,
-                            reservedSize: 24,
+                            reservedSize: 32,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
                               if (index < 0 || index >= labels.length) {
@@ -192,6 +201,7 @@ class MainBadgesCard extends StatelessWidget {
                       ],
                     ),
                   ),
+            ),
           ),
         ],
       ),
@@ -211,7 +221,7 @@ class MiniStatCard extends StatelessWidget {
 
   final String title;
   final String value;
-  final IconData icon;
+  final String icon;
   final Color accentColor;
   final VoidCallback? onTap;
 
@@ -265,7 +275,7 @@ class MiniStatCard extends StatelessWidget {
                     ),
                   ),
                   Positioned.fill(
-                    child: Icon(icon, color: accentColor, size: 22),
+                    child: AppIcon(icon, color: accentColor, size: 22),
                   ),
                 ],
               ),
@@ -360,9 +370,8 @@ class _PointsBarCardState extends State<PointsBarCard> {
   Map<String, double> _aggregateByMonth() {
     final now = DateTime.now();
     final buckets = <String, double>{};
-    for (var i = 11; i >= 0; i--) {
-      final month = DateTime(now.year, now.month - i);
-      final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+    for (var m = 1; m <= 12; m++) {
+      final key = '${now.year}-${m.toString().padLeft(2, '0')}';
       buckets[key] = 0;
     }
     for (final entry in widget.pointsHistory) {
@@ -477,7 +486,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: widget.selectedPeriod,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                    icon: const AppIcon(AppIcons.keyboardArrowDown),
                     items: widget.periodOptions
                         .map(
                           (period) => DropdownMenuItem<String>(
@@ -505,7 +514,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stars_rounded, size: 18, color: Color(0xFF00B8E0)),
+                  const AppIcon(AppIcons.starPoints, size: 18, color: Color(0xFF00B8E0)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: RichText(
@@ -526,7 +535,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                   ),
                   GestureDetector(
                     onTap: () => setState(() => _selectedBarIndex = -1),
-                    child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF8CA0B2)),
+                    child: const AppIcon(AppIcons.close, size: 16, color: Color(0xFF8CA0B2)),
                   ),
                 ],
               ),
@@ -576,7 +585,7 @@ class _PointsBarCardState extends State<PointsBarCard> {
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            reservedSize: 24,
+                            reservedSize: 28,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
                               if (index < 0 || index >= labels.length) {
@@ -632,11 +641,13 @@ class ActivityItem {
     required this.title,
     required this.timeAgo,
     required this.icon,
+    this.onTap,
   });
 
   final String title;
   final String timeAgo;
-  final IconData icon;
+  final String icon;
+  final VoidCallback? onTap;
 }
 
 class RecentActivitySection extends StatelessWidget {
@@ -670,7 +681,9 @@ class RecentActivitySection extends StatelessWidget {
             separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final activity = activities[index];
-              return Container(
+              return GestureDetector(
+                onTap: activity.onTap,
+                child: Container(
                 width: 176,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -687,7 +700,7 @@ class RecentActivitySection extends StatelessWidget {
                         color: Color(0xFFBCC8D4),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: AppIcon(
                         activity.icon,
                         color: const Color(0xFF2B3945),
                       ),
@@ -711,6 +724,7 @@ class RecentActivitySection extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
                 ),
               );
             },
@@ -750,14 +764,14 @@ class ApplicationsMetricsSection extends StatelessWidget {
         ApplicationMetricCard(
           title: tr.tr('approvalPercentage'),
           value: '$approvalPercent%',
-          icon: Icons.check_circle_outline_rounded,
+          icon: AppIcons.checkCircle,
           accentColor: const Color(0xFF6FC391),
         ),
         const SizedBox(height: 8),
         ApplicationMetricCard(
           title: tr.tr('submittedApplications'),
           value: '$totalApplications',
-          icon: Icons.description_outlined,
+          icon: AppIcons.paper,
           accentColor: const Color(0xFF93A8C8),
         ),
       ],
@@ -776,7 +790,7 @@ class ApplicationMetricCard extends StatelessWidget {
 
   final String title;
   final String value;
-  final IconData icon;
+  final String icon;
   final Color accentColor;
 
   @override
@@ -797,7 +811,7 @@ class ApplicationMetricCard extends StatelessWidget {
               color: accentColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: accentColor, size: 22),
+            child: AppIcon(icon, color: accentColor, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(

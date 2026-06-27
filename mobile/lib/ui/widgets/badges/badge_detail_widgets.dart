@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../core/theme/app_colors.dart';
+import 'badge_image.dart';
+import '../shared/translated_text.dart';
 import '../../../models/badge_model.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class BadgeDetailTabButton extends StatelessWidget {
   const BadgeDetailTabButton({
@@ -79,10 +84,10 @@ class BadgeRequirementsSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(requirement.icon, color: const Color(0xFF3A444C)),
+                  AppIcon(requirement.icon, color: const Color(0xFF3A444C)),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
+                    child: TranslatedText(
                       requirement.text,
                       style: const TextStyle(
                         fontSize: 16,
@@ -91,8 +96,8 @@ class BadgeRequirementsSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
-                    Icons.open_in_new_rounded,
+                  const AppIcon(
+                    AppIcons.link,
                     color: Color(0xFF4B535A),
                     size: 22,
                   ),
@@ -109,7 +114,7 @@ class BadgeRequirementsSection extends StatelessWidget {
 class BadgeInfoChip extends StatelessWidget {
   const BadgeInfoChip({super.key, required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -124,10 +129,10 @@ class BadgeInfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF3F5662)),
+          AppIcon(icon, size: 16, color: const Color(0xFF3F5662)),
           const SizedBox(width: 5),
           Flexible(
-            child: Text(
+            child: TranslatedText(
               label,
               style: const TextStyle(
                 fontSize: 13,
@@ -144,44 +149,30 @@ class BadgeInfoChip extends StatelessWidget {
 }
 
 class LargeBadgeIcon extends StatelessWidget {
-  const LargeBadgeIcon({super.key, required this.medalColor, required this.ribbonColor});
+  const LargeBadgeIcon({
+    super.key,
+    required this.medalColor,
+    required this.ribbonColor,
+    this.imageUrl,
+  });
 
   final Color medalColor;
   final Color ribbonColor;
+
+  /// The badge's actual (SVG) artwork; falls back to a generic badge icon.
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 142,
-      height: 190,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: 94,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 50),
-                const SizedBox(width: 4),
-                Icon(Icons.bookmark, color: ribbonColor, size: 50),
-              ],
-            ),
-          ),
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF876E2C), width: 4),
-            ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Color(0xFFFFF6C7),
-              size: 72,
-            ),
-          ),
-        ],
+      height: 150,
+      child: Center(
+        child: BadgeImage(
+          imageUrl: imageUrl,
+          size: 130,
+          fallbackColor: medalColor,
+        ),
       ),
     );
   }
@@ -190,7 +181,7 @@ class LargeBadgeIcon extends StatelessWidget {
 class BadgeInfoTag extends StatelessWidget {
   const BadgeInfoTag({super.key, required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -211,10 +202,10 @@ class BadgeInfoTag extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: const Color(0xFF4A5C6A)),
+            AppIcon(icon, size: 15, color: const Color(0xFF4A5C6A)),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
+              child: TranslatedText(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -284,9 +275,10 @@ class BadgeDetailRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 110,
             child: Text(
               label,
               style: const TextStyle(
@@ -304,6 +296,137 @@ class BadgeDetailRow extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1E2932),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BadgeRewardsSection extends StatelessWidget {
+  const BadgeRewardsSection({
+    super.key,
+    required this.badge,
+    required this.hasObtained,
+  });
+
+  final BadgeModel badge;
+  final bool hasObtained;
+
+  @override
+  Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+    final specialTitleReward = badge.rewards
+        .where((r) => r.specialTitle != null && r.specialTitle!.isNotEmpty)
+        .toList();
+    final specialTitle = specialTitleReward.isNotEmpty
+        ? specialTitleReward.first.specialTitle!
+        : (badge.serviceLine != null
+            ? 'Pioneiro ${badge.serviceLine} Softinsa'
+            : 'Especialista Softinsa');
+
+    return BadgeSectionCard(
+      title: tr.tr('rewardsTitle'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TranslatedText(
+            tr.tr('rewardsDescription'),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6B7986),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _RewardRow(
+            icon: AppIcons.certificate,
+            title: tr.tr('rewardCertificatePdf'),
+            subtitle: tr.tr('rewardCertificateDesc'),
+            obtained: hasObtained,
+          ),
+          const SizedBox(height: 10),
+          _RewardRow(
+            icon: AppIcons.certificate,
+            title: tr.tr('rewardSpecialTitle'),
+            subtitle: '"$specialTitle"',
+            obtained: hasObtained,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RewardRow extends StatelessWidget {
+  const _RewardRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.obtained,
+  });
+
+  final String icon;
+  final String title;
+  final String subtitle;
+  final bool obtained;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: obtained
+            ? AppColors.success.withValues(alpha: 0.04)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: obtained
+              ? AppColors.success.withValues(alpha: 0.25)
+              : const Color(0xFFE2E8EE),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: obtained
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : const Color(0xFFEDF2F7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: AppIcon(
+              obtained ? AppIcons.checkCircle : AppIcons.lock,
+              size: 20,
+              color: obtained ? AppColors.success : const Color(0xFF9CAAB6),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1F25),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF7A8894),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

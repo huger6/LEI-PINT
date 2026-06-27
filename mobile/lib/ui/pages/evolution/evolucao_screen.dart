@@ -9,7 +9,10 @@ import '../../../presentation/state/language_controller.dart';
 import '../../../core/routes/app_router.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
+import '../applications/application_detail_screen.dart';
 import 'points_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class EvolucaoScreen extends StatefulWidget {
   const EvolucaoScreen({super.key});
@@ -77,7 +80,16 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
           (s) => ActivityItem(
             title: s.badge.title,
             timeAgo: tr.tr('timeAgoValue').replaceAll('{time}', s.timestamp),
-            icon: Icons.workspace_premium_rounded,
+            icon: AppIcons.badge,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ApplicationDetailScreen(application: s.application),
+                ),
+              );
+            },
           ),
         )
         .toList(growable: false);
@@ -101,7 +113,59 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   color: Color(0xFF1E2A35),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () => context.push(AppRouter.evolutionTimeline),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x12000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF66B6E6).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: AppIcon(
+                          AppIcons.evolution,
+                          size: 20,
+                          color: const Color(0xFF3B8DBD),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          tr.tr('timelineTitle'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E2A35),
+                          ),
+                        ),
+                      ),
+                      AppIcon(
+                        AppIcons.chevronForward,
+                        size: 22,
+                        color: const Color(0xFF8A95A0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
               MainBadgesCard(
                 badgeCount: badgeCount,
                 growthPercent: dashStore.growthPercent,
@@ -120,26 +184,26 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   MiniStatCard(
                     title: tr.tr('badgesObtained'),
                     value: '$badgeCount',
-                    icon: Icons.workspace_premium_rounded,
+                    icon: AppIcons.badge,
                     accentColor: const Color(0xFF66B6E6),
                     onTap: () => context.go(AppRouter.myBadges),
                   ),
                   MiniStatCard(
                     title: tr.tr('activeAchievements'),
                     value: '$activeBadges',
-                    icon: Icons.emoji_events_outlined,
+                    icon: AppIcons.trophy,
                     accentColor: const Color(0xFF83A9E8),
                   ),
                   MiniStatCard(
                     title: tr.tr('levelsCompleted'),
                     value: '$uniqueLevels',
-                    icon: Icons.auto_graph_rounded,
+                    icon: AppIcons.evolution,
                     accentColor: const Color(0xFF8BC4D9),
                   ),
                   MiniStatCard(
                     title: tr.tr('totalPoints'),
                     value: '${dashStore.totalPoints > 0 ? dashStore.totalPoints : (user?.totalPoints ?? 0)}',
-                    icon: Icons.stars_rounded,
+                    icon: AppIcons.starPoints,
                     accentColor: const Color(0xFF96B8CF),
                     onTap: () {
                       Navigator.push(
@@ -155,6 +219,66 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                     },
                   ),
                 ],
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () => context.push(AppRouter.store),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF5D9FD1), Color(0xFF83A9E8)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x20000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.card_giftcard_rounded,
+                            size: 22, color: Colors.white),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tr.tr('storeRewardsStore'),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              tr.tr('storeSpendPoints'),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: Colors.white, size: 24),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 14),
               PointsBarCard(

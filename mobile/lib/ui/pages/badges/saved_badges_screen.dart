@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../injection_container.dart';
 import '../../widgets/badges/explore_badge_card.dart';
 import 'badges_page.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class SavedBadgesScreen extends StatelessWidget {
   const SavedBadgesScreen({super.key});
@@ -36,8 +38,8 @@ class SavedBadgesScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.bookmark_border_rounded,
+                    AppIcon(
+                      AppIcons.bookmark,
                       size: 64,
                       color: Colors.grey[400],
                     ),
@@ -76,6 +78,7 @@ class SavedBadgesScreen extends StatelessWidget {
                   medalColor: badge.medalColor,
                   ribbonColor: badge.ribbonColor,
                   isSpecial: badge.isSpecial,
+                  imageUrl: badge.imageUrl,
                   isSaved: true,
                   onSaveToggle: () {
                     badgeStore.toggleFavorite(badge.id);

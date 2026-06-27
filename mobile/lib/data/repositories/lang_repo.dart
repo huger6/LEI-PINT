@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../core/constants/api_endpoints.dart';
 import '../local/lang_dao.dart';
@@ -29,11 +28,9 @@ class LanguageRepository {
       }
 
       return languages;
-    } on DioException catch (e) {
-      debugPrint('API error (languages): ${e.message}');
+    } on DioException catch (_) {
       return _languageDao.getAll();
-    } catch (e) {
-      debugPrint('Unexpected error (languages): $e');
+    } catch (_) {
       return _languageDao.getAll();
     }
   }

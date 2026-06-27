@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../badges/badge_image.dart';
+import '../shared/translated_text.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
+
 class SubmissionCard extends StatelessWidget {
   const SubmissionCard({
     super.key,
@@ -9,6 +14,7 @@ class SubmissionCard extends StatelessWidget {
     required this.timestamp,
     required this.medalColor,
     required this.ribbonColor,
+    this.imageUrl,
     this.onTap,
   });
 
@@ -18,6 +24,9 @@ class SubmissionCard extends StatelessWidget {
   final String timestamp;
   final Color medalColor;
   final Color ribbonColor;
+
+  /// The badge's actual (SVG) artwork; falls back to a generic badge icon.
+  final String? imageUrl;
   final VoidCallback? onTap;
 
   @override
@@ -41,13 +50,13 @@ class SubmissionCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _MedalIcon(medalColor: medalColor, ribbonColor: ribbonColor),
+            _MedalIcon(medalColor: medalColor, imageUrl: imageUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  TranslatedText(
                     title,
                     style: const TextStyle(
                       fontSize: 16,
@@ -73,8 +82,8 @@ class SubmissionCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Icon(
-                  Icons.chevron_right_rounded,
+                AppIcon(
+                  AppIcons.chevronForward,
                   color: Colors.grey.shade400,
                   size: 22,
                 ),
@@ -82,8 +91,8 @@ class SubmissionCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.access_time_rounded,
+                    AppIcon(
+                      AppIcons.time,
                       size: 14,
                       color: Colors.grey.shade500,
                     ),
@@ -108,44 +117,19 @@ class SubmissionCard extends StatelessWidget {
 }
 
 class _MedalIcon extends StatelessWidget {
-  const _MedalIcon({required this.medalColor, required this.ribbonColor});
+  const _MedalIcon({required this.medalColor, this.imageUrl});
 
   final Color medalColor;
-  final Color ribbonColor;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 50,
-      height: 62,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            top: 30,
-            child: Row(
-              children: [
-                Icon(Icons.bookmark, color: ribbonColor, size: 20),
-                const SizedBox(width: 1),
-                Icon(Icons.bookmark, color: ribbonColor, size: 20),
-              ],
-            ),
-          ),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medalColor,
-              border: Border.all(color: const Color(0xFF7A7A7A), width: 1.5),
-            ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-        ],
+      child: BadgeImage(
+        imageUrl: imageUrl,
+        size: 46,
+        fallbackColor: medalColor,
       ),
     );
   }

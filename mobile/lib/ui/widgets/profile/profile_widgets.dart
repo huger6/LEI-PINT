@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../models/earned_badge_model.dart';
 import '../../../presentation/state/language_controller.dart';
+import '../shared/app_icon/app_icon.dart';
+import '../shared/app_icon/app_icon_data.dart';
 
 class QuickMetricCard extends StatelessWidget {
   const QuickMetricCard({
@@ -15,7 +17,7 @@ class QuickMetricCard extends StatelessWidget {
 
   final String value;
   final String label;
-  final IconData icon;
+  final String icon;
   final VoidCallback? onTap;
 
   @override
@@ -56,7 +58,7 @@ class QuickMetricCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: const Color(0xFF5C6977)),
+              AppIcon(icon, size: 16, color: const Color(0xFF5C6977)),
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
@@ -378,7 +380,7 @@ class ProfileMenuTile extends StatelessWidget {
     this.onTap,
   });
 
-  final IconData icon;
+  final String icon;
   final String label;
   final VoidCallback? onTap;
 
@@ -406,7 +408,7 @@ class ProfileMenuTile extends StatelessWidget {
             color: Color(0xFFD5EAF6),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: const Color(0xFF4D9ECC), size: 20),
+          child: AppIcon(icon, color: const Color(0xFF4D9ECC), size: 20),
         ),
         title: Text(
           label,
@@ -417,8 +419,8 @@ class ProfileMenuTile extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
+        trailing: const AppIcon(
+          AppIcons.chevronForward,
           color: Color(0xFF8B96A1),
         ),
         onTap: onTap,

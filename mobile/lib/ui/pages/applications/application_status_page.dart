@@ -7,6 +7,8 @@ import '../../widgets/badges/attached_files_list.dart';
 import '../../widgets/badges/recommended_badge_card.dart';
 import '../../widgets/applications/application_detail_widgets.dart';
 import '../badges/badges_page.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class CandidaturaStatusScreen extends StatelessWidget {
   const CandidaturaStatusScreen({
@@ -43,7 +45,7 @@ class CandidaturaStatusScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, size: 24),
+                    icon: const AppIcon(AppIcons.chevronBackward, size: 24),
                   ),
                   const SizedBox(width: 4),
                   Expanded(

@@ -2,19 +2,25 @@ import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart' as dio_pkg;
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/routes/app_router.dart';
 import '../../../core/sync_manager.dart';
-import '../../../data/remote/supabase_storage_service.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
 import '../../../presentation/state/applications_store.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../widgets/badges/attached_files_list.dart';
+import '../../widgets/badges/my_badges_widgets.dart';
 import '../../widgets/applications/application_page_widgets.dart';
+import '../../widgets/shared/translated_text.dart';
 import 'badge_email_confirmation_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
+import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class ApplicationScreen extends StatefulWidget {
   const ApplicationScreen({super.key, required this.badge});
@@ -116,7 +122,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
     final tr = LanguageScope.of(context);
 
     try {
-      final startResult = await appStore.startApplication(badgeId: badge.id);
+      final startResult = await appStore.startApplication(badgeSlug: badge.slug);
       final isExisting = startResult['code'] == 'APP_ALREADY_EXISTS';
       if (startResult['success'] != true && !isExisting) {
         final msg = startResult['message']?.toString() ?? tr.tr('applicationStartError');
@@ -162,24 +168,45 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
         return;
       }
 
-      final storage = GetIt.instance<SupabaseStorageService>();
-
       final uploadFutures = <Future<void>>[];
       for (final entry in _filesByRequirement.entries) {
         final requirementId = entry.key;
         for (final file in entry.value) {
           if (file.filePath == null) continue;
           uploadFutures.add(() async {
-            final fileUrl = await storage.uploadFileToTemp(
-              File(file.filePath!),
-              prefix: 'evidence',
+            final localFile = File(file.filePath!);
+            final fileLength = await localFile.length();
+            final contentType = _mimeTypeForFile(file.name);
+
+            final urlResult = await appStore.getUploadUrl(
+              applicationGuid: applicationGuid,
+              requirementId: requirementId,
+              fileName: file.name,
+              contentType: contentType,
+              fileSize: fileLength.toInt(),
             );
+            if (urlResult['success'] != true) {
+              throw Exception(urlResult['message'] ?? 'Failed to get upload URL');
+            }
+            final uploadUrl = urlResult['uploadUrl'] as String;
+            final finalFileUrl = urlResult['finalFileUrl'] as String;
+            await dio_pkg.Dio().put(
+              uploadUrl,
+              data: localFile.openRead(),
+              options: dio_pkg.Options(
+                contentType: contentType,
+                headers: {
+                  'Content-Length': fileLength,
+                },
+              ),
+            );
+
             await appStore.upsertEvidence(
               applicationGuid: applicationGuid,
               requirementId: requirementId,
-              evidenceFileUrl: fileUrl,
+              evidenceFileUrl: finalFileUrl,
               evidenceTitle: file.name,
-              evidenceFileType: _mimeTypeForFile(file.name),
+              evidenceFileType: contentType,
             );
           }());
         }
@@ -268,7 +295,52 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
             ),
             const SizedBox(height: 10),
             ApplicationCardContainer(
-              child: SelectedBadgeCard(badge: widget.badge),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  BadgeMedalIcon(
+                    medalColor: widget.badge.medalColor,
+                    ribbonColor: widget.badge.ribbonColor,
+                    imageUrl: widget.badge.imageUrl,
+                    compact: true,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TranslatedText(
+                          widget.badge.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF172733),
+                            fontSize: 17,
+                            height: 1.15,
+                          ),
+                        ),
+                        if (widget.badge.category.trim().isNotEmpty ||
+                            widget.badge.level.trim().isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          TranslatedText(
+                            [
+                              if (widget.badge.category.trim().isNotEmpty) widget.badge.category,
+                              if (widget.badge.level.trim().isNotEmpty) widget.badge.level,
+                            ].join(' - '),
+                            style: const TextStyle(
+                              color: Color(0xFF445967),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 18),
@@ -313,10 +385,10 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          AppIcon(
                             hasFiles
-                                ? Icons.check_circle_rounded
-                                : Icons.check_circle_outline_rounded,
+                                ? AppIcons.checkCircle
+                                : AppIcons.checkCircle,
                             color: hasFiles
                                 ? const Color(0xFF4CAF50)
                                 : ApplicationColors.primaryAction,
@@ -366,8 +438,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.attach_file_rounded,
+                                const AppIcon(
+                                  AppIcons.attachFile,
                                   color: ApplicationColors.iconMuted,
                                   size: 20,
                                 ),
@@ -382,8 +454,8 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                                     ),
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.upload_file_rounded,
+                                const AppIcon(
+                                  AppIcons.upload,
                                   color: ApplicationColors.iconMuted,
                                   size: 20,
                                 ),
@@ -432,7 +504,12 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             style: const TextStyle(
                               color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(
+                                    AppRouter.termsConditions,
+                                  ),
                           ),
                           TextSpan(text: tr.tr('andThe')),
                           TextSpan(
@@ -440,7 +517,12 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             style: const TextStyle(
                               color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(
+                                    AppRouter.termsConditions,
+                                  ),
                           ),
                           const TextSpan(text: '.'),
                         ],
@@ -483,7 +565,7 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.check_circle_outline_rounded),
+                    : const AppIcon(AppIcons.checkCircle),
                 label: Text(_isSubmitting ? tr.tr('submitting') : tr.tr('submit')),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
