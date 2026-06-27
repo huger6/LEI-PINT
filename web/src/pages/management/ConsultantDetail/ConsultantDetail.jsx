@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getAcquisitionTimeline, getPeerComparison, getConsultantsOverview } from '../../../features/statistics/api/statisticsApi';
 import { getApplicationsPaged } from '../../../features/applications/api/applicationsApi';
 import { useUser } from '../../../hooks/userContext';
-import { TM, SLL } from '../../../routes/paths';
+import { TM, SLL, SHARED } from '../../../routes/paths';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
@@ -160,7 +160,7 @@ export default function ConsultantDetail() {
 								<span className={styles.hStatLabel}>{t('consultantDetail.badges')}</span>
 							</div>
 						</div>
-						<Button as={Link} to={`/softinsa/u/${userGuid}`} variant="outlined" color="primary" size="sm" className={styles.profileBtn}>
+						<Button as={Link} to={SHARED.USER_PROFILE_VIEW.replace(':guid', userGuid)} variant="outlined" color="primary" size="sm" className={styles.profileBtn}>
 							<Icon name="user" size={16} /> {t('consultantDetail.viewPublicProfile')}
 						</Button>
 					</ContentCard>

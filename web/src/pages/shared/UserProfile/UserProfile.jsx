@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../hooks/userContext';
-import { updateProfile, getUserPublicProfile, getLocations } from '../../../features/users/api/profileApi';
+import { updateProfile, getUserPublicProfile, getInPlatformProfile, getLocations } from '../../../features/users/api/profileApi';
 import { updateUser } from '../../../features/users/api/usersApi';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import CustomSelect from '../../../components/CustomSelect/CustomSelect';
@@ -62,6 +62,9 @@ export default function UserProfile() {
 	const isEditMode = location.pathname.endsWith('/edit');
 	// Whether this is the logged-in user's own profile.
 	const isOwnProfile = !guid;
+	// Whether this view is the admin user-management route (full profile) vs the
+	// shared in-platform profile route (safe read-only subset).
+	const isAdminRoute = location.pathname.startsWith('/admin/');
 	// Whether the viewer is an Administrator.
 	const isAdmin = contextUser?.role === 'Administrator' || authUser?.role === 'Administrator';
 	// Loaded profile data being displayed/edited.
@@ -156,7 +159,10 @@ export default function UserProfile() {
 				}
 			}
 		} else {
-			getUserPublicProfile(guid)
+			// Admin management route gets the full profile; everywhere else gets
+			// the read-only in-platform profile available to any authenticated user.
+			const fetchProfile = isAdminRoute ? getUserPublicProfile : getInPlatformProfile;
+			fetchProfile(guid)
 				.then((data) => {
 					if (!ignore) setProfile(data);
 				})
@@ -167,7 +173,7 @@ export default function UserProfile() {
 		}
 
 		return () => { ignore = true; };
-	}, [guid, contextUser, isOwnProfile]);
+	}, [guid, contextUser, isOwnProfile, isAdminRoute]);
 
 	// Load the consultant's earned badges to power the editable public gallery.
 	useEffect(() => {

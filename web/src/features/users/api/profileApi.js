@@ -2,9 +2,16 @@
 import api from '../../../services/api';
 import { extractCollection } from '../../../utils/collections';
 
-// Fetches a user's public profile data by their GUID.
+// Fetches a user's full profile data by their GUID (admin-only endpoint).
 export const getUserPublicProfile = async (guid) => {
 	const { data } = await api.get(`/admin/users/${guid}`);
+	return data?.data;
+};
+
+// Fetches another user's read-only in-platform profile by GUID.
+// Available to any authenticated user; excludes account/administrative fields.
+export const getInPlatformProfile = async (guid) => {
+	const { data } = await api.get(`/users/${guid}`);
 	return data?.data;
 };
 

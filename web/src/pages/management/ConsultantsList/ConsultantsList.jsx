@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getConsultantsOverview } from '../../../features/statistics/api/statisticsApi';
 import { getServiceLines, getAreas } from '../../../features/badges/api/hierarchyApi';
-import { TM, SLL } from '../../../routes/paths';
+import { TM, SLL, SHARED } from '../../../routes/paths';
 import { useUser } from '../../../hooks/userContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Avatar from '../../../components/Avatar/Avatar';
@@ -230,7 +230,7 @@ export default function ConsultantsList() {
 												type="button"
 												className={styles.consultantCell}
 												title={t('consultantsList.viewPublicProfile', { defaultValue: 'Ver perfil público' })}
-												onClick={(e) => { e.stopPropagation(); navigate(`/softinsa/u/${r.user_guid}`); }}
+												onClick={(e) => { e.stopPropagation(); navigate(SHARED.USER_PROFILE_VIEW.replace(':guid', r.user_guid)); }}
 											>
 												<Avatar src={r.profile_img_url} name={r.full_name} size={28} />
 												<span className={styles.consultantName}>{r.full_name || '—'}</span>
