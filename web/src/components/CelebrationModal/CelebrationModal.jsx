@@ -12,9 +12,15 @@ const CONFETTI_COLORS = [
 	'var(--color-badge-premium)',
 ];
 
-/** Animated celebration modal shown when a consultant earns a new badge (confetti + badge preview). */
-export default function CelebrationModal({ count, onClose }) {
+/**
+ * Animated celebration modal with confetti. Defaults to the badge-milestone copy
+ * (used by Achievements) but accepts an optional emoji/title/message so it can be
+ * reused for other celebrations (e.g. login-streak milestones).
+ */
+export default function CelebrationModal({ count, onClose, emoji = '🏆', title, message }) {
 	const { t } = useTranslation();
+	const resolvedTitle = title || t('achievements.celebrate.title');
+	const resolvedMessage = message || t('achievements.celebrate.message', { count });
 
 	// Closes the modal when the Escape key is pressed.
 	useEffect(() => {
@@ -36,7 +42,7 @@ export default function CelebrationModal({ count, onClose }) {
 	);
 
 	return (
-		<div className={styles.overlay} role="dialog" aria-modal="true" aria-label={t('achievements.celebrate.title')} onClick={onClose}>
+		<div className={styles.overlay} role="dialog" aria-modal="true" aria-label={resolvedTitle} onClick={onClose}>
 			<div className={styles.confetti} aria-hidden="true">
 				{pieces.map((p, i) => (
 					<span
@@ -54,9 +60,9 @@ export default function CelebrationModal({ count, onClose }) {
 			</div>
 
 			<div className={styles.card} onClick={(e) => e.stopPropagation()}>
-				<div className={styles.emoji} aria-hidden="true">🏆</div>
-				<h2 className={styles.title}>{t('achievements.celebrate.title')}</h2>
-				<p className={styles.message}>{t('achievements.celebrate.message', { count })}</p>
+				<div className={styles.emoji} aria-hidden="true">{emoji}</div>
+				<h2 className={styles.title}>{resolvedTitle}</h2>
+				<p className={styles.message}>{resolvedMessage}</p>
 				<Button onClick={onClose}>{t('achievements.celebrate.close')}</Button>
 			</div>
 		</div>
@@ -64,6 +70,9 @@ export default function CelebrationModal({ count, onClose }) {
 }
 
 CelebrationModal.propTypes = {
-	count: PropTypes.number.isRequired,
+	count: PropTypes.number,
 	onClose: PropTypes.func.isRequired,
+	emoji: PropTypes.string,
+	title: PropTypes.string,
+	message: PropTypes.string,
 };

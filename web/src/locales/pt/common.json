@@ -1275,6 +1275,18 @@
 		"discoverInArea": "Descubra aprendizagens na sua área",
 		"rewardsSpotlight": "Recompensas em destaque",
 		"learningPathsProgress": "Progresso nos percursos de aprendizagem",
+		"streakCelebrate": {
+			"title": "Continua assim!",
+			"message": "Já vais em {{label}} de entradas consecutivas na plataforma. Mantém o ritmo!",
+			"milestones": {
+				"2": "2 dias",
+				"7": "1 semana",
+				"30": "1 mês",
+				"90": "3 meses",
+				"180": "6 meses",
+				"365": "1 ano"
+			}
+		},
 		"continueObjective": "Continuar objetivo",
 		"proposedObjective": "Objetivo proposto",
 		"resume": "Retomar",

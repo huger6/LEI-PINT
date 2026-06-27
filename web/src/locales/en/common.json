@@ -1275,6 +1275,18 @@
 		"discoverInArea": "Discover learning in your area",
 		"rewardsSpotlight": "Rewards spotlight",
 		"learningPathsProgress": "Learning paths progress",
+		"streakCelebrate": {
+			"title": "Keep it up!",
+			"message": "You're on a {{label}} streak of daily logins. Keep the momentum going!",
+			"milestones": {
+				"2": "2 days",
+				"7": "1 week",
+				"30": "1 month",
+				"90": "3 months",
+				"180": "6 months",
+				"365": "1 year"
+			}
+		},
 		"continueObjective": "Continue objective",
 		"proposedObjective": "Suggested objective",
 		"resume": "Resume",

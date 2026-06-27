@@ -13,7 +13,12 @@ import { getRewards } from '../../../features/rewards/api/rewardsApi';
 import { getGoals } from '../../../features/goals/api/goalsApi';
 import { getLearningPathProgress } from '../../../features/goals/api/statsApi';
 import { useNotificationEvent } from '../../../features/notifications/hooks/useNotificationEvent';
+import CelebrationModal from '../../../components/CelebrationModal/CelebrationModal';
 import styles from './ConsultantDashboard.module.css';
+
+// Login-streak milestones (in consecutive days) that trigger a visual celebration.
+const STREAK_MILESTONES = [365, 180, 90, 30, 7, 2];
+const STREAK_CELEBRATED_KEY = 'softinsa.streak.celebratedMilestone';
 
 // Localised "x days ago" without extra translation keys.
 // Return a relative time string (e.g. "2 days ago") for a given date
@@ -57,6 +62,24 @@ export default function ConsultantDashboard() {
 	const [continueGoal, setContinueGoal] = useState(null);
 	// Learning-path completion progress (earned vs total badges per path)
 	const [lpProgress, setLpProgress] = useState([]);
+	// Streak milestone to celebrate this visit (null = none)
+	const [streakMilestone, setStreakMilestone] = useState(null);
+
+	// Celebrate (visually only) when the consecutive-login streak crosses a milestone.
+	// Fires once per milestone via localStorage; resetting the streak lowers the
+	// baseline so re-reaching a milestone celebrates again.
+	useEffect(() => {
+		if (user?.role !== 'Consultant') return;
+		const streak = user?.currentStreakDays ?? user?.current_streak_days ?? 0;
+		const reached = STREAK_MILESTONES.find((m) => streak >= m) || 0;
+		const last = Number(localStorage.getItem(STREAK_CELEBRATED_KEY) || 0);
+		if (reached > last) {
+			setStreakMilestone(reached);
+			localStorage.setItem(STREAK_CELEBRATED_KEY, String(reached));
+		} else if (reached < last) {
+			localStorage.setItem(STREAK_CELEBRATED_KEY, String(reached));
+		}
+	}, [user]);
 
 	// Fetch and sort the consultant's recent applications
 	const loadRecentApps = useCallback(async () => {
@@ -329,6 +352,17 @@ export default function ConsultantDashboard() {
 						))}
 					</div>
 				</section>
+			)}
+
+			{streakMilestone != null && (
+				<CelebrationModal
+					emoji="🔥"
+					title={t('consultantDashboard.streakCelebrate.title')}
+					message={t('consultantDashboard.streakCelebrate.message', {
+						label: t(`consultantDashboard.streakCelebrate.milestones.${streakMilestone}`),
+					})}
+					onClose={() => setStreakMilestone(null)}
+				/>
 			)}
 		</div>
 	);
