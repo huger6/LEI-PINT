@@ -22,6 +22,7 @@ const EXPORT_BUTTONS = [
 	{ key: 'accepted', type: 'applications', params: { state: 'Accepted' }, icon: 'check_circle', labelKey: 'tmStats.exports.accepted' },
 	{ key: 'rejected', type: 'applications', params: { state: 'Rejected' }, icon: 'close_circle', labelKey: 'tmStats.exports.rejected' },
 	{ key: 'badges', type: 'badges', icon: 'badge', labelKey: 'tmStats.exports.badges' },
+	{ key: 'awardedBadges', type: 'awardedBadges', icon: 'trophy', labelKey: 'tmStats.exports.awardedBadges' },
 	{ key: 'pointsHistory', type: 'pointsHistory', icon: 'star-points', labelKey: 'tmStats.exports.pointsHistory' },
 	{ key: 'applicationLogs', type: 'applicationLogs', icon: 'time', labelKey: 'tmStats.exports.applicationLogs' },
 ];

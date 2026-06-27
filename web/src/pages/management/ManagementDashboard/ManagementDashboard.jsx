@@ -9,12 +9,14 @@ import {
 	getExpiringBadges,
 	getBadgesByServiceLine,
 	getLevelDistribution,
+	getTeamRecentActivity,
 } from '../../../features/statistics/api/statisticsApi';
 import { useUser } from '../../../hooks/userContext';
 import WelcomeCard from '../../../components/WelcomeCard/WelcomeCard';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import PieDonutChart from '../../../components/Graphs/PieDonut/PieDonutChart';
+import RecentActivityTimeline from '../../../components/RecentActivityTimeline/RecentActivityTimeline';
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import styles from './ManagementDashboard.module.css';
@@ -43,6 +45,8 @@ export default function ManagementDashboard() {
 	const [levels, setLevels] = useState([]);
 	// Store the top-ranked consultants for the leaderboard section.
 	const [topConsultants, setTopConsultants] = useState([]);
+	// Store the mixed recent-activity feed (awarded badges + submissions).
+	const [recentActivity, setRecentActivity] = useState([]);
 	// Track whether the dashboard data is still loading.
 	const [loading, setLoading] = useState(true);
 
@@ -52,7 +56,7 @@ export default function ManagementDashboard() {
 		(async () => {
 			try {
 				const states = ['Submitted', 'In validation', 'Accepted', 'Rejected'];
-				const [countResults, consultants, expiring, slData, levelData, ranking] = await Promise.all([
+				const [countResults, consultants, expiring, slData, levelData, ranking, activity] = await Promise.all([
 					Promise.all(states.map((s) =>
 						getApplicationsPaged({ state: s, page: 1, limit: 1 }).then((r) => r.pagination?.total ?? 0).catch(() => 0)
 					)),
@@ -61,6 +65,7 @@ export default function ManagementDashboard() {
 					getBadgesByServiceLine().catch(() => []),
 					getLevelDistribution().catch(() => []),
 					getRanking({ page: 1, limit: TOP_CONSULTANTS }).then((r) => r.rankings).catch(() => []),
+					getTeamRecentActivity({ limit: 12 }).catch(() => []),
 				]);
 				if (!active) return;
 				setCounts(states.reduce((acc, s, i) => ({ ...acc, [s]: countResults[i] }), {}));
@@ -69,6 +74,7 @@ export default function ManagementDashboard() {
 				setBySl(slData);
 				setLevels(levelData);
 				setTopConsultants(ranking);
+				setRecentActivity(activity);
 			} finally {
 				if (active) setLoading(false);
 			}
@@ -142,6 +148,16 @@ export default function ManagementDashboard() {
 					</div>
 				</ContentCard>
 			</div>
+
+			{/* Recent team activity — mixed feed of awarded badges + submissions */}
+			<ContentCard className={styles.topCard}>
+				<CardHeader icon="time" iconBg="var(--color-blue-soft)" iconColor="var(--color-blue-on-soft)" title={t('recentActivity.title')} />
+				{loading ? (
+					<p className={styles.topEmpty}>—</p>
+				) : (
+					<RecentActivityTimeline events={recentActivity} />
+				)}
+			</ContentCard>
 
 			{/* Top consultants overview */}
 			<ContentCard className={styles.topCard}>

@@ -120,6 +120,7 @@ export default function WelcomeCard() {
 
     const greeting = getGreeting(t, authUser);
     const serviceLine = user?.serviceLine?.name;
+    const serviceLineSlug = user?.serviceLine?.slug;
     const streakDays = user?.currentStreakDays ?? authUser?.current_streak_days ?? 0;
 
     // Returns the value if leader stats are loaded, otherwise returns an em-dash placeholder.
@@ -156,12 +157,21 @@ export default function WelcomeCard() {
                                 </span>
                             </span>
                             {isSll && serviceLine && (
-                                <span className={styles.metaItem}>
-                                    <Icon name="service-line" className={styles.metaIcon} aria-hidden="true" color="#fff" />
-                                    <span className={`${styles.metaText} mb-0`}>
-                                        <span className={styles.metaHighlight}>{serviceLine}</span>
+                                serviceLineSlug ? (
+                                    <Link to={SHARED.STRUCTURE_SL_DETAIL.replace(':slug', serviceLineSlug)} className={`${styles.metaItem} ${styles.metaLink}`}>
+                                        <Icon name="service-line" className={styles.metaIcon} aria-hidden="true" color="#fff" />
+                                        <span className={`${styles.metaText} mb-0`}>
+                                            <span className={styles.metaHighlight}>{serviceLine}</span>
+                                        </span>
+                                    </Link>
+                                ) : (
+                                    <span className={styles.metaItem}>
+                                        <Icon name="service-line" className={styles.metaIcon} aria-hidden="true" color="#fff" />
+                                        <span className={`${styles.metaText} mb-0`}>
+                                            <span className={styles.metaHighlight}>{serviceLine}</span>
+                                        </span>
                                     </span>
-                                </span>
+                                )
                             )}
                         </div>
                     ) : isAdmin ? (

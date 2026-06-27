@@ -27,3 +27,10 @@ export async function trackInteraction(badgeId, interactionType) {
 	});
 	return data?.data;
 }
+
+// Read-only gamification snapshot for leadership roles: points-per-badge,
+// available rewards, and badge milestones. Points are SL-scoped for an SLL.
+export async function getGamificationOverview() {
+	const { data } = await api.get('/gamification/overview');
+	return data?.data;
+}

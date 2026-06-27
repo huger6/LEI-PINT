@@ -536,7 +536,9 @@
 			"badgeHistory": "Historial de Badges",
 			"stats": "Estadísticas/Informes",
 			"ranking": "Ranking/Talentos",
-			"announcements": "Comunicados"
+			"announcements": "Comunicados",
+			"myServiceLine": "Mi Service Line",
+			"gamification": "Sistema de Gamificación"
 		},
 		"admin": {
 			"dashboard": "Dashboard",
@@ -1855,6 +1857,34 @@
 		"total": "{{count}} en total",
 		"noData": "Sin badges otorgados en su Service Line."
 	},
+	"sllGamification": {
+		"title": "Sistema de Gamificación",
+		"subtitle": "Vista de solo lectura del sistema de gamificación configurado por el Administrador.",
+		"loadError": "No se pudo cargar el sistema de gamificación.",
+		"pointsTitle": "Puntos por badge",
+		"pointsDesc": "Puntos asignados a cada badge de su Service Line, definidos por el Administrador.",
+		"pointsEmpty": "Aún no hay badges en su Service Line.",
+		"colBadge": "Badge",
+		"colArea": "Área",
+		"colType": "Tipo",
+		"colPoints": "Puntos",
+		"pts": "pts",
+		"typeStandard": "Standard",
+		"typeSpecial": "Especial",
+		"rewardsTitle": "Recompensas disponibles",
+		"rewardsDesc": "Recompensas actualmente disponibles en la tienda, incluidas las asociadas a badges especiales.",
+		"rewardsEmpty": "No hay recompensas activas en este momento.",
+		"milestonesTitle": "Animaciones e hitos",
+		"milestonesDesc": "Las animaciones en la pantalla del consultor se activan al alcanzar los siguientes hitos de badges conseguidos.",
+		"badgesUnit": "badges",
+		"streakDesc": "También se muestra una animación por cada día consecutivo en que el consultor mantiene su racha de presencia."
+	},
+	"recentActivity": {
+		"title": "Actividad reciente del equipo",
+		"empty": "Sin actividad reciente.",
+		"awarded": "consiguió el badge",
+		"submitted": "envió una candidatura para"
+	},
 	"tmDashboard": {
 		"summaryTitle": "Resumen de Validaciones",
 		"goToValidations": "Ir a Validaciones",
@@ -2188,6 +2218,7 @@
 			"accepted": "Aprobaciones",
 			"rejected": "Rechazos",
 			"badges": "Badges",
+			"awardedBadges": "Badges otorgados",
 			"pointsHistory": "Historial de puntos",
 			"applicationLogs": "Registros de validación"
 		},
