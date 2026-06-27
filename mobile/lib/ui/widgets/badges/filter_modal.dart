@@ -47,7 +47,7 @@ Future<BadgeFilterResult?> showFilterModal(
   String? dateSelected;
   String? badgeTypeSelected;
   double minPointsValue = 0;
-  double maxPointsValue = 1000;
+  double maxPointsValue = 1500;
 
   return showModalBottomSheet<BadgeFilterResult>(
     context: context,
@@ -393,8 +393,8 @@ Future<BadgeFilterResult?> showFilterModal(
                       RangeSlider(
                         values: RangeValues(minPointsValue, maxPointsValue),
                         min: 0,
-                        max: 1000,
-                        divisions: 20,
+                        max: 1500,
+                        divisions: 30,
                         activeColor: accent,
                         inactiveColor: const Color(0xFFD7DDE4),
                         labels: RangeLabels(
@@ -417,7 +417,7 @@ Future<BadgeFilterResult?> showFilterModal(
                         final minPts = minPointsValue > 0
                             ? minPointsValue.round()
                             : null;
-                        final maxPts = maxPointsValue < 1000
+                        final maxPts = maxPointsValue < 1500
                             ? maxPointsValue.round()
                             : null;
 
