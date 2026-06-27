@@ -370,6 +370,35 @@ const APPLICATION_EMAIL_TEMPLATES = {
             team: 'El Equipo de Softinsa'
         }
     },
+    returned: {
+        'pt-PT': {
+            subject: 'Candidatura devolvida para revisão',
+            greeting: 'Olá, {name}',
+            intro: 'A tua candidatura ao badge <strong>{badgeTitle}</strong> foi devolvida para revisão.',
+            reasonLabel: 'Indicação do avaliador:',
+            body: 'Revê as evidências submetidas, corrige o que for necessário e volta a submeter a candidatura através da plataforma.',
+            cta: 'Rever Candidatura',
+            team: 'A Equipa Softinsa'
+        },
+        'en-GB': {
+            subject: 'Application returned for review',
+            greeting: 'Hello, {name}',
+            intro: 'Your application for the badge <strong>{badgeTitle}</strong> has been returned for review.',
+            reasonLabel: 'Note from the reviewer:',
+            body: 'Please review the submitted evidence, make the necessary corrections and submit the application again on the platform.',
+            cta: 'Review Application',
+            team: 'The Softinsa Team'
+        },
+        'es-ES': {
+            subject: 'Candidatura devuelta para revisión',
+            greeting: 'Hola, {name}',
+            intro: 'Tu candidatura al badge <strong>{badgeTitle}</strong> ha sido devuelta para revisión.',
+            reasonLabel: 'Indicación del evaluador:',
+            body: 'Revisa las evidencias enviadas, corrige lo necesario y vuelve a enviar la candidatura desde la plataforma.',
+            cta: 'Revisar Candidatura',
+            team: 'El Equipo de Softinsa'
+        }
+    },
     pendingSllReview: {
         'pt-PT': {
             subject: 'Candidatura para validação final',
@@ -573,6 +602,60 @@ const sendApplicationRejectedEmail = async (email, name, badgeTitle, reviewerNot
         return { success: true };
     } catch (error) {
         logger.error('Error sending application rejected email', { error });
+        return { success: false, error };
+    }
+};
+
+/**
+ * Notifies a consultant that their application was sent back ("Open") by a
+ * Talent Manager or Service Line Leader so it can be reviewed/corrected.
+ * @param {string} email
+ * @param {string} name
+ * @param {string} badgeTitle
+ * @param {string|null} reviewerNotes
+ * @param {string} applicationUrl
+ * @param {string} lang
+ */
+const sendApplicationReturnedEmail = async (email, name, badgeTitle, reviewerNotes, applicationUrl, lang) => {
+    const t = resolveApplicationTemplate('returned', lang);
+    const safeName = escapeHtml(name);
+    const safeBadge = escapeHtml(badgeTitle);
+    const uniqueId = Date.now().toString(36);
+
+    const reasonBlock = reviewerNotes
+        ? `<div style="background-color:#fff8ec;border-left:4px solid #f39c12;padding:16px 20px;
+                       border-radius:0 4px 4px 0;margin:16px 0;">
+               <p style="font-size:13px;font-weight:600;color:#b9770e;margin:0 0 8px 0;">
+                   ${t.reasonLabel}
+               </p>
+               <p style="font-size:14px;color:#555555;margin:0;">${escapeHtml(reviewerNotes)}</p>
+           </div>`
+        : '';
+
+    const bodyRows = `
+        <tr>
+            <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">
+                    ${t.greeting.replace('{name}', safeName)}
+                </p>
+                <p style="margin-bottom:16px;">${t.intro.replace('{badgeTitle}', safeBadge)}</p>
+                ${reasonBlock}
+                <p style="margin-bottom:0;color:#555555;">${t.body}</p>
+                ${ctaButton(t.cta, applicationUrl)}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
+            </td>
+        </tr>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Softinsa" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: t.subject,
+            html: buildEmailWrapper(bodyRows, uniqueId)
+        });
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending application returned email', { error });
         return { success: false, error };
     }
 };
@@ -883,6 +966,7 @@ module.exports = {
     sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
     sendApplicationRejectedEmail,
+    sendApplicationReturnedEmail,
     sendSlaBreachAlert,
     sendCustomSlaBreachAlert,
     sendBadgeExpiringEmail,

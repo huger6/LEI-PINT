@@ -482,6 +482,17 @@
 	margin: 0;
 }
 
+.noObjectives {
+	font-size: 0.875rem;
+	color: var(--color-outline);
+	margin: 0;
+	padding: 24px;
+	border-radius: 18px;
+	border: 1px dashed var(--color-outline-variant);
+	background: var(--color-surface-variant);
+	text-align: center;
+}
+
 /* ─── Quick Actions ───────────────────── */
 
 .quickActionsCard {

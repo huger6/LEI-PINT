@@ -12,7 +12,8 @@ const {
     sendApplicationSubmittedEmail,
     sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
-    sendApplicationRejectedEmail
+    sendApplicationRejectedEmail,
+    sendApplicationReturnedEmail
 } = require('../services/email.service');
 
 // Front-end origin for links embedded in e-mails/notifications (shared helper,
@@ -879,8 +880,16 @@ const validateApplication = async (req, res) => {
                     });
                 }
 
-                if (postCommitContext.newState === 'Accepted' || postCommitContext.newState === 'Rejected') {
-                    const emailDefId = postCommitContext.newState === 'Accepted' ? 10 : 11;
+                if (
+                    postCommitContext.newState === 'Accepted' ||
+                    postCommitContext.newState === 'Rejected' ||
+                    postCommitContext.newState === 'Open'
+                ) {
+                    // Returned-to-consultant ("Open") reuses the same APPLICATIONS
+                    // notification definition (3) as the in-app notice above.
+                    const emailDefId = postCommitContext.newState === 'Accepted'
+                        ? 10
+                        : postCommitContext.newState === 'Rejected' ? 11 : 3;
                     const emailPrefs = await notificationsService.resolvePreferences(emailDefId, userId);
                     if (emailPrefs.is_enabled && emailPrefs.send_email) {
                         const consultantData = await getConsultantEmailData(userId);
@@ -893,8 +902,17 @@ const validateApplication = async (req, res) => {
                                     appUrl,
                                     consultantData.lang
                                 );
-                            } else {
+                            } else if (postCommitContext.newState === 'Rejected') {
                                 await sendApplicationRejectedEmail(
+                                    consultantData.email,
+                                    consultantData.name,
+                                    badgeTitle,
+                                    postCommitContext.reviewerNotes || null,
+                                    appUrl,
+                                    consultantData.lang
+                                );
+                            } else {
+                                await sendApplicationReturnedEmail(
                                     consultantData.email,
                                     consultantData.name,
                                     badgeTitle,

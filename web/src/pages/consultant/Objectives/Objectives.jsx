@@ -327,6 +327,7 @@ export default function Objectives() {
 				{/* Left: My Objectives */}
 				<div className={styles.objectivesColumn}>
 					<h2 className={styles.sectionTitle}>{t('objectives.myObjectives')}</h2>
+					{objectives.length > 0 ? (
 					<div className={styles.objectivesList}>
 						{objectives.map((obj) => {
 							const pct = obj.totalReqs > 0 ? Math.round((obj.completedReqs / obj.totalReqs) * 100) : 0;
@@ -373,6 +374,9 @@ export default function Objectives() {
 							);
 						})}
 					</div>
+					) : (
+						<p className={styles.noObjectives}>{t('objectives.noObjectives')}</p>
+					)}
 				</div>
 
 				{/* Right: Reminders + Quick Actions */}
