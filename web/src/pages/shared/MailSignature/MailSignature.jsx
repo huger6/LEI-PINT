@@ -24,6 +24,16 @@ function verifyUrl(link) {
 	return `${window.location.origin}/verify/${link}`;
 }
 
+// Escapes a string for safe use inside an HTML attribute (e.g. title/alt), so a
+// badge name with quotes or angle brackets can't break the generated markup.
+function escapeAttr(value) {
+	return String(value || '')
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
+
 // Email clients do not render SVG (the badge artwork is SVG), so it shows as a
 // broken image. Rasterise the SVG to a PNG data URI via a canvas so it embeds
 // reliably. Non-SVG sources are returned unchanged; failures fall back to the
@@ -85,15 +95,18 @@ function buildSignatureHtml(name, role, email, badges, photoUrl, opts = {}) {
 			const link = b.verificationLink ? verifyUrl(b.verificationLink) : null;
 			const img = b.badge?.imageUrl;
 			const title = b.badge?.title || 'Badge';
+			// title=... shows the badge name as a tooltip on hover — the only place
+			// the name is visible in the compact signature (no text label there).
+			const safeTitle = escapeAttr(title);
 			if (img) {
-				const imgTag = `<img src="${img}" alt="${title}" height="56" width="56" style="border:0;border-radius:8px;vertical-align:middle;" />`;
+				const imgTag = `<img src="${img}" alt="${safeTitle}" title="${safeTitle}" height="56" width="56" style="border:0;border-radius:8px;vertical-align:middle;" />`;
 				return link
-					? `<a href="${link}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:8px;display:inline-block;">${imgTag}</a>`
-					: `<span style="margin-right:8px;display:inline-block;">${imgTag}</span>`;
+					? `<a href="${link}" title="${safeTitle}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:8px;display:inline-block;">${imgTag}</a>`
+					: `<span title="${safeTitle}" style="margin-right:8px;display:inline-block;">${imgTag}</span>`;
 			}
 			// No image: fall back to a small text chip (linked when published).
-			const chip = `<span style="display:inline-block;padding:4px 10px;margin-right:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#1f2937;">${title}</span>`;
-			return link ? `<a href="${link}" target="_blank" rel="noopener" style="text-decoration:none;">${chip}</a>` : chip;
+			const chip = `<span title="${safeTitle}" style="display:inline-block;padding:4px 10px;margin-right:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#1f2937;">${title}</span>`;
+			return link ? `<a href="${link}" title="${safeTitle}" target="_blank" rel="noopener" style="text-decoration:none;">${chip}</a>` : chip;
 		})
 		.join('');
 
@@ -133,8 +146,9 @@ function buildEmailTemplateHtml(name, role, email, badges, photoUrl, opts = {}) 
 		const link = b.verificationLink ? verifyUrl(b.verificationLink) : null;
 		const img = b.badge?.imageUrl;
 		const title = b.badge?.title || 'Badge';
+		const safeTitle = escapeAttr(title);
 		const imgTag = img
-			? `<img src="${img}" alt="${title}" width="84" height="84" style="border:0;border-radius:12px;display:block;margin:0 auto;" />`
+			? `<img src="${img}" alt="${safeTitle}" title="${safeTitle}" width="84" height="84" style="border:0;border-radius:12px;display:block;margin:0 auto;" />`
 			: `<div style="width:84px;height:84px;border-radius:12px;background:#eef2f7;margin:0 auto;"></div>`;
 		const verify = link
 			? `<a href="${link}" target="_blank" rel="noopener" style="font-size:11px;color:#2575bd;text-decoration:none;">${verifyLabel}</a>`
