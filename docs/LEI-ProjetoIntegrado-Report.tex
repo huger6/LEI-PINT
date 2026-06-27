@@ -787,7 +787,7 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
 \chapter{Prototipagem e Design de Interface (Figma)}
 \label{ch:prototipagem}
 
-A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PAF) desenvolvido em Figma~\cite{figma}, cobrindo os fluxos dos quatro perfis de utilizador --- Consultor, Talent Manager, Service Line Leader e Administrador --- bem como os ecrãs públicos e de autenticação. Este capítulo apresenta, de forma breve, uma seleção representativa desses ecrãs de alta fidelidade, organizada por perfil de utilizador.
+A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PAF) desenvolvido em Figma~\cite{figma}, cobrindo os fluxos dos quatro perfis de utilizador --- Consultor, Talent Manager, Service Line Leader e Administrador --- bem como a aplicação móvel do Consultor. Este capítulo apresenta, de forma breve, uma seleção representativa desses ecrãs de alta fidelidade, organizada por perfil de utilizador.
 
 \section{Demonstração de Ecrãs}
 
@@ -795,31 +795,24 @@ A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PA
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_p2.png}
-  \caption{Ecrã de Pontos do Consultor: gráficos de pontos por mês e de atividade semanal.}
-  \label{fig:proto-consultor-p2}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/consultant-points.png}
+  \caption{Ecrã de Pontos e gamificação do Consultor (gráficos de pontos, atividade e histórico).}
+  \label{fig:proto-consultant-points}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_p3.png}
-  \caption{Ecrã de Pontos (continuação): objetivos recomendados, conquistas especiais e histórico de pontos.}
-  \label{fig:proto-consultor-p3}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_candidaturas.png}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/consultant-applications.png}
   \caption{Lista de candidaturas do Consultor (``As Minhas Candidaturas'').}
-  \label{fig:proto-consultor-candidaturas}
+  \label{fig:proto-consultant-applications}
 \end{figure}
 
 \subsection{Talent Manager}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/ecra_tm.png}
-  \caption{Ecrã do Talent Manager para a triagem e revisão global de candidaturas.}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/tm-validations.png}
+  \caption{Ecrã do Talent Manager para a triagem e revisão de candidaturas.}
   \label{fig:proto-tm}
 \end{figure}
 
@@ -827,8 +820,8 @@ A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PA
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/validacao_sll.png}
-  \caption{Ecrã de validação final de uma candidatura pelo Service Line Leader.}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/evidences-validation-screen.png}
+  \caption{Ecrã de validação das evidências de uma candidatura (Service Line Leader).}
   \label{fig:proto-sll}
 \end{figure}
 
@@ -836,29 +829,31 @@ A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PA
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/admin1_lp.png}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/admin-lp.png}
   \caption{Gestão de Learning Paths e da hierarquia de conteúdos (Administrador).}
   \label{fig:proto-admin-lp}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{images/chapter4/admin2_slas.png}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/admin-slas.png}
   \caption{Configuração de SLAs da plataforma (Administrador).}
   \label{fig:proto-admin-slas}
 \end{figure}
 
-\subsection{Versão Móvel}
+\subsection{Aplicação Móvel}
 
-Os fluxos principais foram igualmente prototipados para dispositivos móveis. As figuras seguintes ilustram o fluxo de candidatura a um badge na versão móvel do perfil de Consultor.
+Os fluxos do Consultor foram igualmente prototipados para a aplicação móvel, seguindo a mesma identidade visual da versão Web.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.32\textwidth]{images/chapter4/consultor_mob_candidatura1.png}
-  \hspace{0.04\textwidth}
-  \includegraphics[width=0.32\textwidth]{images/chapter4/consultor_mob_candidatura2.png}
-  \caption{Fluxo de candidatura a um badge na versão móvel do perfil de Consultor.}
-  \label{fig:proto-consultor-mob}
+  \includegraphics[width=0.3\textwidth]{images/chapter4/mobile-dashboard.png}
+  \hspace{0.02\textwidth}
+  \includegraphics[width=0.3\textwidth]{images/chapter4/mobile-badge-detail.png}
+  \hspace{0.02\textwidth}
+  \includegraphics[width=0.3\textwidth]{images/chapter4/mobile-evolution.png}
+  \caption{Aplicação móvel do Consultor: dashboard, detalhe de badge e ecrã de evolução.}
+  \label{fig:proto-mobile}
 \end{figure}
 
 \section{Validação com a Softinsa}
