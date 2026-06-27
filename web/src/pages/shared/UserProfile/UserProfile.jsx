@@ -609,9 +609,11 @@ export default function UserProfile() {
 					</div>
 
 					<div className={styles.infoActions}>
+						{/* Teams expects the e-mail (UPN) literally in `users`; the "@" is
+						    kept unencoded because %40 prevents Teams from resolving the person. */}
 						{!isOwnProfile && displayEmail && (
 							<a
-								href={`https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(displayEmail)}`}
+								href={`https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(displayEmail).replace(/%40/g, '@')}`}
 								target="_blank"
 								rel="noopener noreferrer"
 								className={styles.teamsBtn}
