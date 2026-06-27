@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 16;
+const int sourceStringsVersion = 17;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -11,6 +11,11 @@ const _sourceJson = r'''
 {
   "appTitle": "Plataforma de Badges Softinsa",
   "evolutionHello": "Olá",
+  "timelineTitle": "Linha do tempo",
+  "timelineEmpty": "Ainda não há atividade para mostrar.",
+  "timelineRegistration": "Conta criada",
+  "timelineBadgeEarned": "Badge conquistado",
+  "timelinePointsGained": "Ganhou {points} pontos",
   "savedBadgesTitle": "Badges Guardados",
   "savedBadgesEmptyTitle": "Nenhum badge guardado",
   "savedBadgesEmptySubtitle": "Guarde badges para os encontrar facilmente mais tarde.",

@@ -9,6 +9,11 @@ const _sourceJsonEs = r'''
 {
   "appTitle": "Plataforma de Badges Softinsa",
   "evolutionHello": "Hola",
+  "timelineTitle": "Línea de tiempo",
+  "timelineEmpty": "Aún no hay actividad para mostrar.",
+  "timelineRegistration": "Cuenta creada",
+  "timelineBadgeEarned": "Badge conseguido",
+  "timelinePointsGained": "Ganó {points} puntos",
   "savedBadgesTitle": "Badges Guardados",
   "savedBadgesEmptyTitle": "Ningún badge guardado",
   "savedBadgesEmptySubtitle": "Guarda badges para encontrarlos fácilmente más tarde.",

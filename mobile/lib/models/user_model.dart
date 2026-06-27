@@ -14,6 +14,10 @@ class UserModel {
   final String? learningPathTitle;
   final List<UserArea> areas;
 
+  /// Account registration date. Only available if the profile endpoint exposes
+  /// it (e.g. `created_at`); otherwise null.
+  final DateTime? registeredAt;
+
   UserModel({
     required this.id,
     required this.email,
@@ -29,6 +33,7 @@ class UserModel {
     this.serviceLineName,
     this.learningPathTitle,
     this.areas = const [],
+    this.registeredAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -87,7 +92,18 @@ class UserModel {
       serviceLineName: slName,
       learningPathTitle: lpTitle,
       areas: parsedAreas,
+      registeredAt: _toDate(json['registeredAt'] ??
+          json['registered_at'] ??
+          json['created_at'] ??
+          json['createdAt'] ??
+          json['registration_date']),
     );
+  }
+
+  static DateTime? _toDate(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    return DateTime.tryParse(value.toString());
   }
 
   factory UserModel.fromLoginPayload(

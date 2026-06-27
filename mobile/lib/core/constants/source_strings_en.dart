@@ -9,6 +9,11 @@ const _sourceJsonEn = r'''
 {
   "appTitle": "Softinsa Badge Platform",
   "evolutionHello": "Hello",
+  "timelineTitle": "Timeline",
+  "timelineEmpty": "No activity to show yet.",
+  "timelineRegistration": "Account created",
+  "timelineBadgeEarned": "Badge earned",
+  "timelinePointsGained": "Earned {points} points",
   "savedBadgesTitle": "Saved Badges",
   "savedBadgesEmptyTitle": "No saved badges",
   "savedBadgesEmptySubtitle": "Save badges to easily find them later.",

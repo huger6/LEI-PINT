@@ -11,6 +11,7 @@ import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/evolution/evolution_widgets.dart';
 import '../applications/application_detail_screen.dart';
 import 'points_detail_screen.dart';
+import '../../widgets/shared/app_icon/app_icon.dart';
 import '../../widgets/shared/app_icon/app_icon_data.dart';
 
 class EvolucaoScreen extends StatefulWidget {
@@ -112,7 +113,59 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   color: Color(0xFF1E2A35),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () => context.push(AppRouter.evolutionTimeline),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x12000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF66B6E6).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: AppIcon(
+                          AppIcons.evolution,
+                          size: 20,
+                          color: const Color(0xFF3B8DBD),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          tr.tr('timelineTitle'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E2A35),
+                          ),
+                        ),
+                      ),
+                      AppIcon(
+                        AppIcons.chevronForward,
+                        size: 22,
+                        color: const Color(0xFF8A95A0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
               MainBadgesCard(
                 badgeCount: badgeCount,
                 growthPercent: dashStore.growthPercent,

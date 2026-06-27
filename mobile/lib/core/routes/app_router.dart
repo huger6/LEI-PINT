@@ -16,6 +16,7 @@ import '../../ui/pages/dashboard_page.dart';
 import '../../ui/pages/badges/explore_badges.dart';
 import '../../ui/pages/badges/my_badges_screen.dart';
 import '../../ui/pages/evolution/evolucao_screen.dart';
+import '../../ui/pages/evolution/evolution_timeline_screen.dart';
 import '../../ui/pages/profile/profile_screen.dart';
 import '../../ui/pages/profile/email_signature_screen.dart';
 import '../../ui/pages/profile/edit_profile_screen.dart';
@@ -44,6 +45,7 @@ class AppRouter {
   static const String exploreCompetencies = '/explore-competencies';
   static const String myBadges = '/my-badges';
   static const String evolucao = '/evolucao';
+  static const String evolutionTimeline = '/evolution-timeline';
   static const String profile = '/profile';
   static const String emailSignature = '/email-signature';
   static const String editProfile = '/edit-profile';
@@ -129,6 +131,13 @@ GoRouter criarRouter(GlobalKey<NavigatorState> navigatorKey) {
         builder: (context, state) => _buildWithScope(
           AppRouter.evolucao,
           const EvolucaoScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRouter.evolutionTimeline,
+        builder: (context, state) => _buildWithScope(
+          AppRouter.evolutionTimeline,
+          const EvolutionTimelineScreen(),
         ),
       ),
       GoRoute(
