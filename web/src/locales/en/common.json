@@ -14,7 +14,8 @@
 			"subtitle": "Innovation, talent and technology to accelerate digital transformation, now also in how we recognise our teams' skills, with verifiable digital credentials.",
 			"entrar": "Sign in",
 			"saberMais": "Learn more",
-			"credential": "Verified credential"
+			"credential": "Verified credential",
+			"badgeExample": "OutSystems · Level D"
 		},
 		"stats": {
 			"learningPaths": "Initial Learning Path",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getPublicBadges, getFeaturedProfiles } from '../../../features/badges/api/publicBadgesApi';
 import Icon from '../../../components/Icons/Icons';
 import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './SoftinsaSite.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -150,7 +151,7 @@ export default function SoftinsaSite() {
 							<div className={styles.heroBadge}>
 								<span className={styles.heroBadgeIcon}>🏅</span>
 								<div>
-									<strong>OutSystems · Nível D</strong>
+									<strong>{t('softinsaSite.hero.badgeExample')}</strong>
 									<span>{t('softinsaSite.hero.credential')}</span>
 								</div>
 							</div>
@@ -211,7 +212,7 @@ export default function SoftinsaSite() {
 							{groupBadges(badges, t('softinsaSite.badges.other')).slice(0, 3).map((group) => ({ ...group, items: group.items.slice(0, 4) })).map((group) => (
 								<div key={group.label} className={`${styles.badgeGroup} ${styles.reveal}`}>
 									<div className={styles.badgeGroupHead}>
-										<h3 className={styles.badgeGroupTitle}>{group.label}</h3>
+										<h3 className={styles.badgeGroupTitle}><TranslatedText text={group.label} /></h3>
 										<span className={styles.badgeGroupCount}>{group.items.length}</span>
 									</div>
 									<div className={styles.badgeGrid}>
@@ -221,8 +222,8 @@ export default function SoftinsaSite() {
 													{b.badge_img_url ? <img src={b.badge_img_url} alt="" loading="lazy" /> : <Icon name="badge" size={40} color="var(--si-cyan, #00b8e0)" aria-hidden="true" />}
 													{b.stage?.code && <span className={styles.badgeLevel}>{b.stage.code}</span>}
 												</div>
-												<h3>{b.badge_title}</h3>
-												<span className={styles.badgeArea}>{b.area?.name || b.service_line?.name || ''}</span>
+												<h3><TranslatedText text={b.badge_title} /></h3>
+												<span className={styles.badgeArea}><TranslatedText text={b.area?.name || b.service_line?.name || ''} /></span>
 											</Link>
 										))}
 									</div>

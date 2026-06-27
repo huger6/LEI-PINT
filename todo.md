@@ -4,7 +4,7 @@
 
 - "Guardar no Perfil" button needs to be moved somewhere else or change styling.
 
-- progress in learning path should be clickable (click on lp to go to its structure page).
+- ~~progress in learning path should be clickable (click on lp to go to its structure page).~~ [DONE]
 
 - Calendar on set objective in badge detail page.
 
@@ -12,10 +12,11 @@
 
 - It should be possible to click on the structures in badge detail and badge application status page. [HIGH]
 
-- Opening a notification gives a 404 NOT FOUND. This is because the link being used to send notifications is from the admin's application page. Therefore TM and SLL cannout see it. This needs to be changed according to the user profile in the backend. [CRITICAL]
+- ~~Opening a notification gives a 404 NOT FOUND. This is because the link being used to send notifications is from the admin's application page. Therefore TM and SLL cannout see it. This needs to be changed according to the user profile in the backend.~~ [DONE]
 
-- Application status page user card should redirect to its profile.
+- ~~Application status page user card should redirect to its profile.~~ [DONE]
 
+- ~~Softinsa mock page is not being dynamically translated. It should be. Also, it has dark mode problems (navbar and some background such as on user profile picture background card).~~ [DONE]
 
 # General checks
 

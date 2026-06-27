@@ -74,6 +74,10 @@ export default function ApplicationReview({ application }) {
 
 	const consultantName = application?.user?.user?.full_name || '—';
 	const consultantImg = application?.user?.user?.profile_img_url;
+	const consultantGuid = application?.user?.user?.user_guid;
+	const consultantProfilePath = consultantGuid
+		? (isAdmin ? ADMIN.USER_PROFILE.replace(':guid', consultantGuid) : SHARED.USER_PROFILE_VIEW.replace(':guid', consultantGuid))
+		: null;
 	const serviceLineName = badge.service_line?.service_line_name;
 	const areaName = badge.area?.area_name;
 	const learningPathName = badge.learning_path?.path_title;
@@ -307,13 +311,27 @@ export default function ApplicationReview({ application }) {
 					{/* Consultant header */}
 					<div className={styles.card}>
 						<div className={styles.consultantRow}>
-							<Avatar src={consultantImg} name={consultantName} size={48} />
-							<div className={styles.consultantInfo}>
-								<h2 className={styles.consultantName}>{consultantName}</h2>
-								<span className={styles.consultantMeta}>
-									{[serviceLineName, areaName].filter(Boolean).join(' · ') || '—'}
-								</span>
-							</div>
+							{consultantProfilePath ? (
+								<Link to={consultantProfilePath} className={styles.consultantLink}>
+									<Avatar src={consultantImg} name={consultantName} size={48} />
+									<div className={styles.consultantInfo}>
+										<h2 className={styles.consultantName}>{consultantName}</h2>
+										<span className={styles.consultantMeta}>
+											{[serviceLineName, areaName].filter(Boolean).join(' · ') || '—'}
+										</span>
+									</div>
+								</Link>
+							) : (
+								<>
+									<Avatar src={consultantImg} name={consultantName} size={48} />
+									<div className={styles.consultantInfo}>
+										<h2 className={styles.consultantName}>{consultantName}</h2>
+										<span className={styles.consultantMeta}>
+											{[serviceLineName, areaName].filter(Boolean).join(' · ') || '—'}
+										</span>
+									</div>
+								</>
+							)}
 							{isSll && (consultantPoints != null || consultantRank != null) && (
 								<div className={styles.consultantStats}>
 									{consultantPoints != null && (

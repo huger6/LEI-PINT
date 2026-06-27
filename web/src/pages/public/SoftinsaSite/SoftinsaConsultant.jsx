@@ -5,6 +5,7 @@ import { getPublicConsultant } from '../../../features/badges/api/publicBadgesAp
 import Avatar from '../../../components/Avatar/Avatar';
 import Icon from '../../../components/Icons/Icons';
 import PreferencesBar from '../../../components/PreferencesBar/PreferencesBar';
+import TranslatedText from '../../../components/TranslatedText/TranslatedText';
 import styles from './SoftinsaBadge.module.css';
 
 const LOGO_SRC = 'https://cstkpxvilglcavmerctj.supabase.co/storage/v1/object/public/public-assets/structure/logo-softinsa-no-bg.svg';
@@ -107,7 +108,7 @@ export default function SoftinsaConsultant() {
 														? <img src={b.image} alt={b.title || ''} style={{ width: 48, height: 48, objectFit: 'contain' }} />
 														: <Icon name="badge" size={40} color="var(--color-secondary)" aria-hidden="true" />}
 													<div>
-														<h3 style={{ margin: 0 }}>{b.title}{b.type === 'Special' ? ' ⭐' : ''}</h3>
+														<h3 style={{ margin: 0 }}><TranslatedText text={b.title} />{b.type === 'Special' ? ' ⭐' : ''}</h3>
 														<p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.7 }}>
 															{fmtDate(b.awarded_at)} · {b.points ?? 0} pts{b.is_expired ? ` · ${t('softinsaConsultant.expired')}` : ''}
 														</p>

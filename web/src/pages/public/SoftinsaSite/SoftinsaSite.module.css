@@ -877,6 +877,8 @@
 
 :global([data-theme="dark"]) .sectionAlt { background: var(--si-bg-alt); }
 
+:global([data-theme="dark"]) .navLinks a:hover { color: var(--si-teal); }
+
 :global([data-theme="dark"]) .prefsInline {
 	--color-outline-light: var(--si-border);
 	--color-outline: var(--si-muted);

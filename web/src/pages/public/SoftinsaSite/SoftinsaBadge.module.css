@@ -208,3 +208,51 @@
 }
 
 .footerLogo { height: 22px; width: auto; opacity: 0.7; }
+
+/* ─── Dark mode ─── */
+
+:global([data-theme="dark"]) .site {
+	--si-navy: #c8d5e2;
+	--si-ink: #e6edf3;
+	--si-muted: #99a2ab;
+	--si-bg-alt: #161c23;
+	--si-border: #2a323b;
+}
+
+:global([data-theme="dark"]) .nav {
+	background: rgba(15, 20, 26, 0.92);
+	border-bottom-color: var(--si-border);
+}
+
+:global([data-theme="dark"]) .prefsInline {
+	--color-outline-light: var(--si-border);
+	--color-outline: var(--si-muted);
+	--color-on-surface: var(--color-on-surface);
+	--color-surface-overlay-62: rgba(22, 28, 35, 0.62);
+}
+
+:global([data-theme="dark"]) .state h1 { color: var(--color-on-surface); }
+
+:global([data-theme="dark"]) .heroImg { background: #1e2530; }
+
+:global([data-theme="dark"]) .heroInfo h1 { color: var(--color-on-surface); }
+
+:global([data-theme="dark"]) .metaValue { color: var(--color-on-surface); }
+
+:global([data-theme="dark"]) .skillTag {
+	background: var(--si-bg-alt);
+	border-color: var(--si-border);
+	color: var(--color-on-surface);
+}
+
+:global([data-theme="dark"]) .reqCard {
+	border-color: var(--si-border);
+}
+
+:global([data-theme="dark"]) .reqCard h3 { color: var(--color-on-surface); }
+
+:global([data-theme="dark"]) .section h2 { color: var(--si-teal); }
+
+:global([data-theme="dark"]) .footer {
+	border-top-color: var(--si-border);
+}
