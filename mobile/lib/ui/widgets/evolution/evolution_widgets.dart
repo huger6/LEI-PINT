@@ -125,7 +125,9 @@ class MainBadgesCard extends StatelessWidget {
           const SizedBox(height: 6),
           SizedBox(
             height: 190,
-            child: LineChart(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: LineChart(
                     LineChartData(
                       minX: 0,
                       maxX: (spots.length - 1).toDouble(),
@@ -199,6 +201,7 @@ class MainBadgesCard extends StatelessWidget {
                       ],
                     ),
                   ),
+            ),
           ),
         ],
       ),

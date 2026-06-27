@@ -53,7 +53,7 @@ abstract class NotificationDefs {
       case 'BADGES':
         return NotificationTypeDisplay(
           label: 'notifTypeBadges',
-          icon: AppIcons.badgePremium,
+          icon: AppIcons.badge,
           color: AppColors.notifBadges,
         );
       case 'APPLICATIONS':

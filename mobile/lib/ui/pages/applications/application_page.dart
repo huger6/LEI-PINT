@@ -2,10 +2,13 @@ import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart' as dio_pkg;
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/routes/app_router.dart';
 import '../../../core/sync_manager.dart';
 import '../../../models/application_summary_model.dart';
 import '../../../models/badge_model.dart';
@@ -501,7 +504,12 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             style: const TextStyle(
                               color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(
+                                    AppRouter.termsConditions,
+                                  ),
                           ),
                           TextSpan(text: tr.tr('andThe')),
                           TextSpan(
@@ -509,7 +517,12 @@ class _ApplicationScreenState extends State<ApplicationScreen> {
                             style: const TextStyle(
                               color: ApplicationColors.primaryAction,
                               fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(
+                                    AppRouter.termsConditions,
+                                  ),
                           ),
                           const TextSpan(text: '.'),
                         ],

@@ -9,7 +9,6 @@ import '../../widgets/shared/app_icon/app_icon.dart';
 import '../../widgets/shared/app_icon/app_icon_data.dart';
 import '../../widgets/store/redemption_list_item.dart';
 import '../../widgets/store/reward_card.dart';
-import '../../widgets/store/title_selector.dart';
 
 class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key});
@@ -24,11 +23,13 @@ class _StoreScreenState extends State<StoreScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RewardStore>().loadAll();
+      context.read<AuthStore>().fetchPoints();
     });
   }
 
   Future<void> _confirmRedeem(RewardStore store, String rewardGuid,
-      String name, int cost, LanguageController tr) async {
+      String name, int cost, String? category, LanguageController tr) async {
+    final isTitle = category?.toLowerCase() == 'title';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -37,7 +38,7 @@ class _StoreScreenState extends State<StoreScreen> {
         content: Text(
           tr
               .tr('storeConfirmText')
-              .replaceAll('{name}', name)
+              .replaceAll('{name}', tr.tr(name))
               .replaceAll('{cost}', cost.toString()),
         ),
         actions: [
@@ -64,10 +65,13 @@ class _StoreScreenState extends State<StoreScreen> {
     try {
       final result = await store.redeemReward(rewardGuid);
       if (!mounted) return;
+      context.read<AuthStore>().fetchPoints();
+      final displayName = tr.tr(result['name']?.toString() ?? name);
       _showSuccessDialog(
-        result['name']?.toString() ?? name,
+        displayName,
         result['accessLink']?.toString(),
         result['accessInfo']?.toString(),
+        isTitle: isTitle,
       );
     } catch (_) {
       if (!mounted) return;
@@ -81,7 +85,8 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   void _showSuccessDialog(
-      String name, String? accessLink, String? accessInfo) {
+      String name, String? accessLink, String? accessInfo,
+      {bool isTitle = false}) {
     final tr = LanguageScope.of(context);
 
     showDialog(
@@ -90,10 +95,19 @@ class _StoreScreenState extends State<StoreScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const AppIcon(AppIcons.checkCircle,
-                size: 28, color: AppColors.success),
+            AppIcon(
+              isTitle ? AppIcons.certificate : AppIcons.checkCircle,
+              size: 28,
+              color: isTitle ? const Color(0xFF7B1FA2) : AppColors.success,
+            ),
             const SizedBox(width: 8),
-            Expanded(child: Text(tr.tr('storeSuccessTitle'))),
+            Expanded(
+              child: Text(
+                isTitle
+                    ? tr.tr('storeTitleUnlockedTitle')
+                    : tr.tr('storeSuccessTitle'),
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -101,28 +115,39 @@ class _StoreScreenState extends State<StoreScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              tr.tr('storeSuccessText').replaceAll('{name}', name),
+              isTitle
+                  ? tr.tr('storeTitleUnlockedText').replaceAll('{name}', name)
+                  : tr.tr('storeSuccessText').replaceAll('{name}', name),
             ),
-            if (accessInfo != null && accessInfo.isNotEmpty) ...[
+            if (isTitle) ...[
+              const SizedBox(height: 10),
+              Text(
+                tr.tr('storeTitleUnlockedHint'),
+                style: const TextStyle(fontSize: 13, color: AppColors.bodyText),
+              ),
+            ],
+            if (!isTitle && accessInfo != null && accessInfo.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(accessInfo,
                   style: const TextStyle(fontSize: 13, color: AppColors.bodyText)),
             ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const AppIcon(AppIcons.email,
-                    size: 14, color: AppColors.outline),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    tr.tr('storeEmailNote'),
-                    style:
-                        const TextStyle(fontSize: 12, color: AppColors.outline),
+            if (!isTitle) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const AppIcon(AppIcons.email,
+                      size: 14, color: AppColors.outline),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      tr.tr('storeEmailNote'),
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.outline),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ),
         actions: [
@@ -154,19 +179,10 @@ class _StoreScreenState extends State<StoreScreen> {
                   children: [
                     _buildHeader(tr, balance),
                     const SizedBox(height: 16),
-                    if (store.titles.isNotEmpty) ...[
-                      TitleSelector(
-                        titles: store.titles,
-                        activeTitle: store.activeTitle,
-                        onSelect: (title) => store.setActiveTitle(title),
-                        isSaving: store.isBusy,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    if (store.rewards.isEmpty)
+                    if (store.availableRewards.isEmpty)
                       _buildEmpty(tr)
                     else
-                      ...store.rewards.map(
+                      ...store.availableRewards.map(
                         (r) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: RewardCard(
@@ -174,7 +190,7 @@ class _StoreScreenState extends State<StoreScreen> {
                             affordable: balance >= r.costPoints,
                             onRedeem: () => _confirmRedeem(
                                 store, r.rewardGuid, r.rewardName,
-                                r.costPoints, tr),
+                                r.costPoints, r.rewardCategory, tr),
                           ),
                         ),
                       ),

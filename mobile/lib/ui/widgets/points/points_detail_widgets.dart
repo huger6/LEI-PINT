@@ -32,7 +32,7 @@ class PointsHighlight extends StatelessWidget {
             ],
           ),
           child: const AppIcon(
-            AppIcons.badgePremium,
+            AppIcons.starPoints,
             color: Colors.white,
             size: 40,
           ),
@@ -85,7 +85,7 @@ class _HistoryCardState extends State<HistoryCard>
           alignment: Alignment.center,
           children: [
             AppIcon(
-              AppIcons.badgePremium,
+              AppIcons.badge,
               color: item.badgeMedalColor,
               size: 26,
             ),

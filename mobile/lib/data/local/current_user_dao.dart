@@ -53,6 +53,7 @@ class CurrentUserDao {
         'biography': user.biography,
         'gdpr_accepted': preservedGdpr ? 1 : 0,
         'total_points': user.totalPoints,
+        'registered_at': user.registeredAt?.millisecondsSinceEpoch,
         'synced_at': now,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -102,6 +103,7 @@ class CurrentUserDao {
   }
 
   UserModel _fromRow(Map<String, dynamic> row, {List<UserArea> areas = const []}) {
+    final registeredAtMs = row['registered_at'] as int?;
     return UserModel(
       id: row['user_id'] as int,
       email: row['email_address'] as String,
@@ -115,6 +117,9 @@ class CurrentUserDao {
       preferredLangId: row['preferred_lang_id'] as int?,
       locationId: row['location_id'] as int?,
       areas: areas,
+      registeredAt: registeredAtMs != null
+          ? DateTime.fromMillisecondsSinceEpoch(registeredAtMs)
+          : null,
     );
   }
 }

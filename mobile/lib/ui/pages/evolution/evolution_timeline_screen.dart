@@ -132,15 +132,6 @@ class _EvolutionTimelineScreenState extends State<EvolutionTimelineScreen> {
   ) {
     final events = <TimelineEvent>[];
 
-    // Account registration (only when the profile exposes the date).
-    if (user?.registeredAt != null) {
-      events.add(TimelineEvent(
-        type: TimelineEventType.registration,
-        date: user!.registeredAt!,
-        title: tr.tr('timelineRegistration'),
-      ));
-    }
-
     // Badges earned.
     for (final eb in badgeStore.earnedBadges) {
       final pts = eb.award.pointsSnapshot ?? eb.badge.points;
@@ -170,6 +161,22 @@ class _EvolutionTimelineScreenState extends State<EvolutionTimelineScreen> {
         subtitle: _pointsReason(entry),
       ));
     }
+
+    // Account registration — always shown. Uses the profile date when
+    // available, otherwise falls back to the oldest known activity.
+    DateTime? regDate = user?.registeredAt;
+    if (regDate == null && events.isNotEmpty) {
+      regDate = events
+          .map((e) => e.date)
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+    }
+    regDate ??= DateTime.now();
+
+    events.add(TimelineEvent(
+      type: TimelineEventType.registration,
+      date: regDate,
+      title: tr.tr('timelineRegistration'),
+    ));
 
     events.sort((a, b) => b.date.compareTo(a.date));
     return events;

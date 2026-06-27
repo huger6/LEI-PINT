@@ -30,6 +30,21 @@ class RewardStore extends ChangeNotifier {
   String? _errorMessage;
 
   List<RewardModel> get rewards => _rewards;
+  List<RewardModel> get availableRewards => _rewards.where((r) {
+        if (r.rewardCategory?.toLowerCase() != 'title') return true;
+        final cleaned = _cleanTitle(r.rewardName);
+        return !_titles.any((t) => t == cleaned || t == r.rewardName);
+      }).toList();
+
+  static String _cleanTitle(String name) {
+    return name
+        .replaceFirst(
+          RegExp(r'^\s*(Exclusive Title|T[íi]tulo Exclusivo)\s*:\s*',
+              caseSensitive: false),
+          '',
+        )
+        .trim();
+  }
   List<RedemptionModel> get redemptions => _redemptions;
   List<String> get titles => _titles;
   String? get activeTitle => _activeTitle;
@@ -74,6 +89,17 @@ class RewardStore extends ChangeNotifier {
 
     try {
       final result = await _repository.redeemReward(rewardGuid);
+
+      final reward = _rewards.cast<RewardModel?>().firstWhere(
+            (r) => r!.rewardGuid == rewardGuid,
+            orElse: () => null,
+          );
+      if (reward != null &&
+          reward.rewardCategory?.toLowerCase() == 'title') {
+        final cleaned = _cleanTitle(reward.rewardName);
+        await _repository.addLocalTitle(cleaned);
+      }
+
       await _reloadFromLocal();
       return result;
     } catch (e) {

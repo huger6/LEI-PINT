@@ -133,9 +133,9 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
       case 'medal':
         return AppIcons.badge;
       case 'badgePremium':
-        return AppIcons.badgePremium;
+        return AppIcons.trophy;
       case 'crown':
-        return AppIcons.badgePremium;
+        return AppIcons.trophy;
       default:
         return AppIcons.fire;
     }

@@ -31,6 +31,8 @@ class RewardRepository {
 
   Future<String?> getActiveTitleLocal() => _currentUserDao.getActiveTitle();
 
+  Future<void> addLocalTitle(String title) => _titleDao.addTitle(title);
+
   Future<Map<String, dynamic>> redeemReward(String rewardGuid) async {
     final response = await _apiClient.post(
       ApiEndpoints.redeemReward(rewardGuid),

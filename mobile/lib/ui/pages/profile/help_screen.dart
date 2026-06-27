@@ -21,7 +21,7 @@ class HelpScreen extends StatelessWidget {
       descKey: 'helpExploreDesc',
     ),
     _HelpEntry(
-      icon: AppIcons.badgePremium,
+      icon: AppIcons.badge,
       titleKey: 'helpMyBadgesTitle',
       descKey: 'helpMyBadgesDesc',
     ),

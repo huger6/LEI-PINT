@@ -348,7 +348,7 @@ class BadgeRewardsSection extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _RewardRow(
-            icon: AppIcons.badgePremium,
+            icon: AppIcons.certificate,
             title: tr.tr('rewardSpecialTitle'),
             subtitle: '"$specialTitle"',
             obtained: hasObtained,

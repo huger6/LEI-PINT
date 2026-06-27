@@ -1,9 +1,20 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../core/database/database_helper.dart';
 
 class TitleDao {
   final LocalDatabase _database;
 
   TitleDao(this._database);
+
+  Future<void> addTitle(String title) async {
+    final db = await _database.database;
+    await db.insert(
+      LocalDatabase.myUnlockedTitlesTable,
+      {'title': title, 'synced_at': DateTime.now().millisecondsSinceEpoch},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
 
   Future<List<String>> getAll() async {
     final db = await _database.database;

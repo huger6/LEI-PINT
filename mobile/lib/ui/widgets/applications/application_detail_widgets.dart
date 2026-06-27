@@ -816,7 +816,7 @@ class ApplicationBadgeAttributes extends StatelessWidget {
     }
     if (badge.points > 0) {
       chips.add(_AttributeChipData(
-        icon: AppIcons.badgePremium,
+        icon: AppIcons.starPoints,
         label: '${badge.points} pts',
       ));
     }

@@ -10,12 +10,14 @@ import '../widgets/dashboard/certification_donut_card.dart';
 import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
+import '../widgets/dashboard/announcement_banner.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
 import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
 import 'goals/goals_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'evolution/points_detail_screen.dart';
+import 'store/store_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -34,6 +36,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       final authStore = context.read<AuthStore>();
       context.read<DashboardStore>().loadDashboard(authStore.currentUser);
       context.read<BadgeStore>().loadEarnedBadges();
+      context.read<GoalsStore>().loadGoals();
+      context.read<RewardStore>().loadAll();
     });
   }
 
@@ -73,6 +77,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final authStore = context.watch<AuthStore>();
     final dashStore = context.watch<DashboardStore>();
     final notifStore = context.watch<NotificationStore>();
+    final goalsStore = context.watch<GoalsStore>();
+    final rewardStore = context.watch<RewardStore>();
 
     const pageBackground = Color(0xFFE2E6EB);
 
@@ -151,6 +157,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       const SizedBox(height: 20),
 
+                      // Announcements
+                      const AnnouncementBanner(),
+
                       // Greeting
                       Text(
                         greeting,
@@ -162,6 +171,57 @@ class _DashboardScreenState extends State<DashboardScreen>
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+
+                      // Service Line & Primary Area
+                      DashboardMetaRow(
+                        serviceLineName:
+                            authStore.currentUser?.serviceLineName,
+                        primaryAreaName: authStore.currentUser?.areas
+                            .where((a) => a.isPrimary)
+                            .map((a) => a.name)
+                            .firstOrNull,
+                      ),
+
+                      // KPI stat cards
+                      const SizedBox(height: 14),
+                      DashboardKpiRow(
+                        badgesEarned: dashStore.completedBadges,
+                        objectivesCount: goalsStore.goals.length,
+                        badgesLabel: tr.tr('dashboardBadgesEarned'),
+                        objectivesLabel: tr.tr('dashboardObjectives'),
+                        onBadgesTap: () =>
+                            context.push(AppRouter.myBadges),
+                        onObjectivesTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GoalsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Continue objective banner
+                      if (goalsStore.pendingGoals.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ContinueObjectiveBanner(
+                          goal: goalsStore.pendingGoals.first,
+                          continueLabel:
+                              tr.tr('dashboardContinueObjective'),
+                          proposedLabel:
+                              tr.tr('dashboardProposedObjective'),
+                          resumeLabel: tr.tr('dashboardResume'),
+                          startLabel: tr.tr('dashboardStart'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const GoalsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
 
                       // Recent submissions
                       if (dashStore.recentSubmissions.isNotEmpty) ...[
@@ -353,6 +413,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                         ),
                       ),
+
+                      // Rewards spotlight carousel
+                      if (rewardStore.availableRewards.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          tr.tr('dashboardRewardsSpotlight'),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF20252B),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 175,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: rewardStore.availableRewards.length > 9
+                                ? 9
+                                : rewardStore.availableRewards.length,
+                            itemBuilder: (context, index) {
+                              final reward = rewardStore.availableRewards[index];
+                              return DashboardRewardCard(
+                                reward: reward,
+                                pointsLabel: tr.tr('storePoints'),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const StoreScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
 
                       // Stats line chart
                       SimpleLineStatsCard(

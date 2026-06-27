@@ -49,7 +49,7 @@ class TitleSelector extends StatelessWidget {
                   color: const Color(0xFFF3E5F5),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const AppIcon(AppIcons.badgePremium,
+                child: const AppIcon(AppIcons.certificate,
                     size: 20, color: Color(0xFF7B1FA2)),
               ),
               const SizedBox(width: 10),
@@ -83,7 +83,7 @@ class TitleSelector extends StatelessWidget {
               ),
               ...titles.map(
                 (title) => _TitleChip(
-                  label: title,
+                  label: tr.tr(title),
                   isActive: activeTitle == title,
                   onTap: isSaving ? null : () => onSelect(title),
                   showIcon: true,
@@ -112,32 +112,41 @@ class _TitleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxWidth = MediaQuery.of(context).size.width - 80;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? const Color(0xFF7B1FA2) : const Color(0xFFF3E5F5),
           borderRadius: BorderRadius.circular(20),
+          border: isActive
+              ? Border.all(color: const Color(0xFF7B1FA2))
+              : Border.all(color: const Color(0xFFCE93D8).withValues(alpha: 0.4)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (showIcon) ...[
               AppIcon(
-                AppIcons.badgePremium,
+                AppIcons.certificate,
                 size: 14,
                 color: isActive ? Colors.white : const Color(0xFF7B1FA2),
               ),
               const SizedBox(width: 6),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : const Color(0xFF7B1FA2),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isActive ? Colors.white : const Color(0xFF7B1FA2),
+                ),
               ),
             ),
           ],

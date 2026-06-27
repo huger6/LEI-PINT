@@ -84,7 +84,7 @@ class GalleryBadgeCard extends StatelessWidget {
                       ),
                     if (points > 0)
                       _InfoChip(
-                        icon: AppIcons.badgePremium,
+                        icon: AppIcons.starPoints,
                         text: '$points pts',
                       ),
                     _InfoChip(

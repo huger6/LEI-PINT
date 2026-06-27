@@ -256,14 +256,48 @@ class AuthStore extends ChangeNotifier {
     );
   }
 
+  /// When the API's getMe response omits fields that are managed locally
+  /// (areas, registeredAt), preserve them from the previous cached user so
+  /// they are not silently wiped.
+  UserModel _preserveLocalFields(UserModel refreshed, UserModel? previous) {
+    if (previous == null) return refreshed;
+
+    final areas = refreshed.areas.isNotEmpty
+        ? refreshed.areas
+        : previous.areas;
+    final registeredAt = refreshed.registeredAt ?? previous.registeredAt;
+    final totalPoints = refreshed.totalPoints > 0
+        ? refreshed.totalPoints
+        : previous.totalPoints;
+
+    return UserModel(
+      id: refreshed.id,
+      email: refreshed.email,
+      fullName: refreshed.fullName,
+      username: refreshed.username,
+      profilePicture: refreshed.profilePicture,
+      role: refreshed.role,
+      biography: refreshed.biography,
+      gdprAccepted: refreshed.gdprAccepted,
+      totalPoints: totalPoints,
+      preferredLangId: refreshed.preferredLangId,
+      locationId: refreshed.locationId,
+      serviceLineName: refreshed.serviceLineName,
+      learningPathTitle: refreshed.learningPathTitle,
+      areas: areas,
+      registeredAt: registeredAt,
+    );
+  }
+
   Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> data,
   ) async {
     final result = await _authRepository.updateProfile(data);
     if (result['success'] == true) {
+      final previous = _currentUser;
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
-        _currentUser = refreshed;
+        _currentUser = _preserveLocalFields(refreshed, previous);
       } else if (_currentUser != null) {
         _currentUser = _applyProfilePatch(_currentUser!, data);
       }
@@ -278,9 +312,10 @@ class AuthStore extends ChangeNotifier {
   Future<Map<String, dynamic>> changeLanguage(int languageId) async {
     final result = await _authRepository.changeLanguage(languageId);
     if (result['success'] == true) {
+      final previous = _currentUser;
       final refreshed = await _authRepository.getMe(accessToken: _accessToken);
       if (refreshed != null) {
-        _currentUser = refreshed;
+        _currentUser = _preserveLocalFields(refreshed, previous);
       }
       if (_currentUser != null) {
         await _currentUserDao.save(_currentUser!);

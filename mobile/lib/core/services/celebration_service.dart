@@ -57,7 +57,7 @@ const List<Milestone> milestones = [
     badgeCount: 35,
     titleKey: 'celebration35BadgesTitle',
     descriptionKey: 'celebration35BadgesDesc',
-    icon: 'badgePremium',
+    icon: 'trophy',
   ),
   Milestone(
     key: '50_badges',

@@ -80,7 +80,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
           (s) => ActivityItem(
             title: s.badge.title,
             timeAgo: tr.tr('timeAgoValue').replaceAll('{time}', s.timestamp),
-            icon: AppIcons.badgePremium,
+            icon: AppIcons.badge,
             onTap: () {
               Navigator.push(
                 context,
@@ -184,7 +184,7 @@ class _EvolucaoScreenState extends State<EvolucaoScreen> {
                   MiniStatCard(
                     title: tr.tr('badgesObtained'),
                     value: '$badgeCount',
-                    icon: AppIcons.badgePremium,
+                    icon: AppIcons.badge,
                     accentColor: const Color(0xFF66B6E6),
                     onTap: () => context.go(AppRouter.myBadges),
                   ),

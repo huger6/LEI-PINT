@@ -13,6 +13,7 @@ import '../../../presentation/state/dashboard_store.dart';
 import '../../../presentation/state/goals_store.dart';
 import '../../../presentation/state/language_controller.dart';
 import '../../../presentation/state/notification_store.dart';
+import '../../../presentation/state/reward_store.dart';
 import '../../widgets/shared/app_bottom_nav_bar.dart';
 import '../../widgets/shared/translated_text.dart';
 import '../../widgets/profile/language_selector_sheet.dart';
@@ -38,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BadgeStore>().loadEarnedBadges();
       context.read<AuthStore>().fetchPoints();
+      context.read<RewardStore>().loadAll();
     });
   }
 
@@ -66,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final badgeStore = context.watch<BadgeStore>();
+    final rewardStore = context.watch<RewardStore>();
 
     final earnedBadges = badgeStore.earnedBadges;
     final badgeCount = earnedBadges.length;
@@ -125,6 +128,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (rewardStore.activeTitle != null &&
+                  rewardStore.activeTitle!.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E5F5),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      rewardStore.activeTitle!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF7B1FA2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 3),
               Center(
                 child: TranslatedText(
@@ -157,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: QuickMetricCard(
                       value: '$badgeCount',
                       label: tr.tr('badgesMetric'),
-                      icon: AppIcons.badgePremium,
+                      icon: AppIcons.badge,
                       onTap: () => context.go(AppRouter.myBadges),
                     ),
                   ),

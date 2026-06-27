@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/local/announcement_dao.dart';
 import '../data/local/area_dao.dart';
 import '../data/local/awarded_badge_dao.dart';
 import '../data/local/badge_dao.dart';
@@ -112,6 +113,12 @@ Future<void> setupDependencies() async {
   }
 
   // ── DAOs ──────────────────────────────────────────────────────────────────
+
+  if (!getIt.isRegistered<AnnouncementDao>()) {
+    getIt.registerLazySingleton<AnnouncementDao>(
+      () => AnnouncementDao(getIt<LocalDatabase>()),
+    );
+  }
 
   if (!getIt.isRegistered<AreaDao>()) {
     getIt.registerLazySingleton<AreaDao>(() => AreaDao(getIt<LocalDatabase>()));

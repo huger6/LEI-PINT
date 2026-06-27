@@ -162,7 +162,7 @@ class AchievedBadgeCard extends StatelessWidget {
                                 _BadgeMetaChip(
                                   icon: isSpecial
                                       ? AppIcons.star
-                                      : AppIcons.badgePremium,
+                                      : AppIcons.badge,
                                   label: level,
                                   iconColor: isSpecial
                                       ? const Color(0xFFD4A843)

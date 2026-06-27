@@ -649,6 +649,9 @@ const _sourceJsonEn = r'''
   "storeConfirmText": "Redeem \"{name}\" for {cost} points?",
   "storeSuccessTitle": "Reward redeemed!",
   "storeSuccessText": "You successfully redeemed \"{name}\".",
+  "storeTitleUnlockedTitle": "Title unlocked!",
+  "storeTitleUnlockedText": "You successfully unlocked the title \"{name}\".",
+  "storeTitleUnlockedHint": "You can select this title in your profile settings.",
   "storeEmailNote": "We've emailed you the access details.",
   "storeMyTitle": "My title",
   "storeMyTitleHint": "Choose the title shown publicly on your profile (from the ones you unlocked).",
@@ -660,6 +663,14 @@ const _sourceJsonEn = r'''
   "rewardsDescription": "By earning this badge, unlock an exclusive specialist title and an official certificate validating your progression at Softinsa.",
   "rewardCertificatePdf": "PDF Certificate",
   "rewardCertificateDesc": "Official downloadable certificate",
-  "rewardSpecialTitle": "Special title"
+  "rewardSpecialTitle": "Special title",
+
+  "dashboardBadgesEarned": "Badges earned",
+  "dashboardObjectives": "Objectives",
+  "dashboardContinueObjective": "Continue objective",
+  "dashboardProposedObjective": "Proposed objective",
+  "dashboardResume": "Resume",
+  "dashboardStart": "Start",
+  "dashboardRewardsSpotlight": "Rewards"
 }
 ''';

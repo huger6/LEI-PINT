@@ -649,6 +649,9 @@ const _sourceJsonEs = r'''
   "storeConfirmText": "¿Canjear \"{name}\" por {cost} puntos?",
   "storeSuccessTitle": "¡Recompensa canjeada!",
   "storeSuccessText": "Ha canjeado \"{name}\" con éxito.",
+  "storeTitleUnlockedTitle": "¡Título desbloqueado!",
+  "storeTitleUnlockedText": "Ha desbloqueado el título \"{name}\" con éxito.",
+  "storeTitleUnlockedHint": "Puede seleccionar este título en la edición de perfil.",
   "storeEmailNote": "Le hemos enviado los detalles de acceso por email.",
   "storeMyTitle": "Mi título",
   "storeMyTitleHint": "Elija el título mostrado públicamente en su perfil (de los que ha desbloqueado).",
@@ -660,6 +663,14 @@ const _sourceJsonEs = r'''
   "rewardsDescription": "Al conseguir este badge, desbloquea un título de especialista exclusivo y un certificado oficial que valida tu progresión en Softinsa.",
   "rewardCertificatePdf": "Certificado PDF",
   "rewardCertificateDesc": "Certificado oficial descargable",
-  "rewardSpecialTitle": "Título especial"
+  "rewardSpecialTitle": "Título especial",
+
+  "dashboardBadgesEarned": "Badges conseguidos",
+  "dashboardObjectives": "Objetivos",
+  "dashboardContinueObjective": "Continuar objetivo",
+  "dashboardProposedObjective": "Objetivo propuesto",
+  "dashboardResume": "Retomar",
+  "dashboardStart": "Iniciar",
+  "dashboardRewardsSpotlight": "Recompensas"
 }
 ''';

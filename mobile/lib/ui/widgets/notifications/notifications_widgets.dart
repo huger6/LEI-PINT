@@ -130,7 +130,7 @@ class NotificationCard extends StatelessWidget {
   /// fill any `{{placeholder}}` from `meta`. Falls back to the definition label.
   String _title(LanguageController tr) {
     final key = item.title;
-    if (key != null) return _interpolate(tr.tr(key), item.meta);
+    if (key != null) return _interpolate(tr.tr(key), item.meta, tr);
     return tr.tr(_display.label);
   }
 
@@ -138,18 +138,21 @@ class NotificationCard extends StatelessWidget {
   String _message(LanguageController tr) {
     final key = item.body;
     if (key == null) return '';
-    return _interpolate(tr.tr(key), item.meta);
+    return _interpolate(tr.tr(key), item.meta, tr);
   }
 
   /// Replaces `{{name}}` tokens in a localized template with values from the
   /// notification's `meta` payload. Unknown tokens are left untouched.
-  String _interpolate(String template, Map<String, dynamic>? meta) {
+  /// Meta values that are source_strings keys are translated automatically.
+  String _interpolate(
+      String template, Map<String, dynamic>? meta, LanguageController tr) {
     if (meta == null || meta.isEmpty || !template.contains('{{')) {
       return template;
     }
     return template.replaceAllMapped(RegExp(r'\{\{(\w+)\}\}'), (match) {
       final value = meta[match.group(1)];
-      return value != null ? value.toString() : match.group(0)!;
+      if (value == null) return match.group(0)!;
+      return tr.tr(value.toString());
     });
   }
 

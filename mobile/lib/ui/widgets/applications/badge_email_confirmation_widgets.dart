@@ -173,7 +173,7 @@ class _BadgeEmailConfirmationBodyState
           child: Row(
             children: [
               const AppIcon(
-                AppIcons.badgePremium,
+                AppIcons.badge,
                 size: 22,
                 color: AppColors.secondary,
               ),
@@ -289,7 +289,7 @@ class _BadgeEmailConfirmationBodyState
           child: Row(
             children: [
               const AppIcon(
-                AppIcons.badgePremium,
+                AppIcons.badge,
                 size: 22,
                 color: AppColors.secondary,
               ),

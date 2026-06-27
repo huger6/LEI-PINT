@@ -142,7 +142,7 @@ class GoalCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppIcon(
-                    AppIcons.badgePremium,
+                    AppIcons.badge,
                     size: 16,
                     color: medalColor,
                   ),

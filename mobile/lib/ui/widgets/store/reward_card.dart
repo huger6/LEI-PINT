@@ -22,7 +22,7 @@ class RewardCard extends StatelessWidget {
   static const _categoryStyle = <String, _CategoryLook>{
     'course': _CategoryLook(AppIcons.certificate, Color(0xFFE3F2FD), AppColors.primary),
     'voucher': _CategoryLook(AppIcons.starPoints, Color(0xFFFFF3E0), AppColors.warning),
-    'title': _CategoryLook(AppIcons.badgePremium, Color(0xFFF3E5F5), Color(0xFF7B1FA2)),
+    'title': _CategoryLook(AppIcons.certificate, Color(0xFFF3E5F5), Color(0xFF7B1FA2)),
     'physical': _CategoryLook(AppIcons.trophy, Color(0xFFE8F5E9), AppColors.success),
     'subscription': _CategoryLook(AppIcons.skills, Color(0xFFE3F2FD), AppColors.secondary),
   };

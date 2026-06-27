@@ -10,9 +10,10 @@ import '../../../data/repositories/location_repo.dart';
 import '../../../data/repositories/validation_repo.dart';
 import '../../../models/location_model.dart';
 import '../../../presentation/state/auth_store.dart';
-import '../shared/translated_text.dart';
+import '../../../presentation/state/reward_store.dart';
 import '../shared/app_icon/app_icon.dart';
 import '../shared/app_icon/app_icon_data.dart';
+import '../store/title_selector.dart';
 
 class EditProfileForm extends StatefulWidget {
   const EditProfileForm({
@@ -108,6 +109,18 @@ class _EditProfileFormState extends State<EditProfileForm> {
         );
       }
     });
+  }
+
+  Widget _buildTitleSelector(LanguageController tr) {
+    final store = context.watch<RewardStore>();
+    if (store.titles.isEmpty) return const SizedBox.shrink();
+
+    return TitleSelector(
+      titles: store.titles,
+      activeTitle: store.activeTitle,
+      onSelect: (title) => store.setActiveTitle(title),
+      isSaving: store.isBusy,
+    );
   }
 
   Future<void> _submit() async {
@@ -259,7 +272,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                           items: _locations.map((loc) {
                             return DropdownMenuItem(
                               value: loc,
-                              child: TranslatedText(loc.name),
+                              child: Text(loc.name),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -280,6 +293,8 @@ class _EditProfileFormState extends State<EditProfileForm> {
               maxLines: 4,
               hintText: tr.tr('biographyHint'),
             ),
+            const SizedBox(height: 14),
+            _buildTitleSelector(tr),
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,

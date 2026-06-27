@@ -7,7 +7,7 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   static const _databaseName = 'badges_softinsa.db';
-  static const _databaseVersion = 11;
+  static const _databaseVersion = 13;
 
   // ── Reference / cache tables (pulled from server, read-only locally) ─────
   static const locationsTable = 'locations_cache';
@@ -23,6 +23,7 @@ class LocalDatabase {
   static const rewardsTable = 'rewards_cache';
   static const myRedemptionsTable = 'my_redemptions_cache';
   static const myUnlockedTitlesTable = 'my_unlocked_titles';
+  static const deletedNotificationsTable = 'deleted_notification_ids';
   static const announcementsTable = 'announcements_cache';
   static const gdprPoliciesTable = 'gdpr_policies_cache';
   static const translationCacheTable = 'translation_cache';
@@ -53,6 +54,7 @@ class LocalDatabase {
     syncMetadataTable,
     currentUserTable,
     notificationsTable,
+    deletedNotificationsTable,
     awardedBadgesTable,
     pointsHistoryTable,
     validationLogsTable,
@@ -215,6 +217,21 @@ class LocalDatabase {
           'ALTER TABLE $currentUserTable ADD COLUMN active_title TEXT',
         );
       } catch (_) {}
+    }
+    if (oldVersion < 12) {
+      try {
+        await db.execute(
+          'ALTER TABLE $currentUserTable ADD COLUMN registered_at INTEGER',
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 13) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $deletedNotificationsTable (
+          id         INTEGER PRIMARY KEY,
+          deleted_at INTEGER NOT NULL
+        )
+      ''');
     }
   }
 
@@ -422,6 +439,7 @@ class LocalDatabase {
         gdpr_accepted     INTEGER NOT NULL DEFAULT 0,
         total_points      INTEGER NOT NULL DEFAULT 0,
         active_title      TEXT,
+        registered_at     INTEGER,
         synced_at         INTEGER NOT NULL
       )
     ''',
@@ -439,6 +457,12 @@ class LocalDatabase {
     ''',
     'CREATE INDEX IF NOT EXISTS idx_notif_unread ON $notificationsTable (is_read)',
     'CREATE INDEX IF NOT EXISTS idx_notif_sent ON $notificationsTable (sent_at)',
+    '''
+      CREATE TABLE IF NOT EXISTS $deletedNotificationsTable (
+        id         INTEGER PRIMARY KEY,
+        deleted_at INTEGER NOT NULL
+      )
+    ''',
     // Own awarded badges only — no other user's ID is stored.
     '''
       CREATE TABLE IF NOT EXISTS $awardedBadgesTable (
