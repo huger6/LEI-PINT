@@ -200,10 +200,16 @@ Gostaríamos também de expressar a nossa gratidão à Softinsa, bem como a todo
 \chapter*{Resumo}
 \addcontentsline{toc}{chapter}{Resumo}
 
-% Escrever resumo aqui.
+A crescente necessidade de valorização e certificação contínua de competências no setor das tecnologias da informação motivou o desenvolvimento da Plataforma de Badges da Softinsa, um ecossistema digital de gestão de credenciais inspirado em soluções de referência como o Credly e o standard Open Badges. O presente relatório documenta o processo completo de conceção, planeamento e implementação desta plataforma, desenvolvida integralmente a partir do zero no âmbito da Unidade Curricular de Projeto Integrado.
+
+A solução proposta compreende três frentes tecnológicas: uma API REST construída em Node.js com Express e base de dados PostgreSQL, um portal Web responsivo em React com Bootstrap, e uma aplicação móvel em Flutter destinada ao perfil de Consultor. A plataforma digitaliza o ciclo de vida completo de uma candidatura a badge --- desde a submissão de evidências pelo Consultor até à homologação final pelo Service Line Leader, passando pela triagem do Talent Manager --- com rastreabilidade integral de cada transição através de uma trilha de auditoria imutável.
+
+Para além do fluxo de aprovação, o sistema incorpora mecânicas de gamificação assentes num modelo de acumulação permanente de pontos, conquistas especiais, rankings e uma loja de recompensas que confere uma dimensão tangível ao reconhecimento. A plataforma suporta internacionalização em três idiomas (Português, Inglês e Espanhol), tradução automática de conteúdos dinâmicos, notificações multicanal (in-app, push e email), gestão de SLAs com monitorização automatizada, conformidade com o RGPD, verificação pública de credenciais por URL único e geração automática de certificados PDF.
+
+O modelo de dados, com 44 tabelas organizadas por domínios funcionais, foi desenhado para garantir escalabilidade e extensibilidade, permitindo a incorporação futura de novos itinerários de aprendizagem sem alterações ao esquema relacional.
 
 \vspace{1cm}
-\noindent\textbf{Palavras-chave:} % gamificação, badges digitais, credenciais, ...
+\noindent\textbf{Palavras-chave:} gamificação, badges digitais, credenciais verificáveis, gestão de competências, workflow de aprovação, React, Node.js, Flutter, PostgreSQL
 
 \newpage
 
@@ -213,10 +219,16 @@ Gostaríamos também de expressar a nossa gratidão à Softinsa, bem como a todo
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-% Write abstract here.
+The growing need for continuous upskilling and certification in the information technology sector motivated the development of the Softinsa Badge Platform, a digital credential management ecosystem inspired by industry-leading solutions such as Credly and the Open Badges standard. This report documents the complete process of designing, planning, and implementing this platform, built entirely from scratch as part of the Integrated Project course unit.
+
+The proposed solution comprises three technological fronts: a REST API built with Node.js, Express, and a PostgreSQL database; a responsive Web portal developed in React with Bootstrap; and a mobile application built with Flutter, dedicated to the Consultant profile. The platform digitizes the full lifecycle of a badge application --- from evidence submission by the Consultant to final approval by the Service Line Leader, through the Talent Manager's review --- with complete traceability of each transition through an immutable audit trail.
+
+Beyond the approval workflow, the system incorporates gamification mechanics based on a permanent point accumulation model, special achievements, rankings, and a rewards shop that adds a tangible dimension to recognition. The platform supports internationalization in three languages (Portuguese, English, and Spanish), automatic translation of dynamic content, multi-channel notifications (in-app, push, and email), SLA management with automated monitoring, GDPR compliance, public credential verification via unique URLs, and automatic PDF certificate generation.
+
+The data model, comprising 44 tables organized by functional domains, was designed to ensure scalability and extensibility, enabling the future incorporation of new learning paths without changes to the relational schema.
 
 \vspace{1cm}
-\noindent\textbf{Keywords:} % gamification, digital badges, credentials, ...
+\noindent\textbf{Keywords:} gamification, digital badges, verifiable credentials, competency management, approval workflow, React, Node.js, Flutter, PostgreSQL
 
 \newpage
 
@@ -326,7 +338,21 @@ Para concretizar este propósito, foram definidos os seguintes objetivos especí
 
 \section{Estrutura do Relatório}
 
-% Descrever a organização dos capítulos.
+O presente documento está organizado em dez capítulos, cuja sequência acompanha o ciclo de desenvolvimento do projeto:
+
+\begin{itemize}
+  \item O \textbf{Capítulo~\ref{ch:introducao}} contextualiza o problema, apresenta a motivação e define os objetivos do projeto;
+  \item O \textbf{Capítulo~\ref{ch:requisitos}} detalha os requisitos funcionais e não funcionais, organizados por perfil de utilizador e por preocupação transversal;
+  \item O \textbf{Capítulo~\ref{ch:arquitetura}} descreve a arquitetura de informação e o modelo de dados em PostgreSQL, com 44 tabelas organizadas por domínios funcionais;
+  \item O \textbf{Capítulo~\ref{ch:prototipagem}} apresenta os protótipos de alta fidelidade concebidos em Figma para os quatro perfis de utilizador e para a aplicação móvel;
+  \item O \textbf{Capítulo~\ref{ch:workflow}} documenta o workflow de aprovação de candidaturas e o ciclo de vida do pedido, com as responsabilidades de cada interveniente;
+  \item O \textbf{Capítulo~\ref{ch:funcionalidades}} descreve as funcionalidades transversais implementadas, com destaque para as mecânicas de gamificação e o módulo de estatísticas;
+  \item O \textbf{Capítulo~\ref{ch:ecrans}} apresenta os ecrãs do produto final, organizados por plataforma e perfil de utilizador;
+  \item O \textbf{Capítulo~\ref{ch:extras}} documenta as funcionalidades bónus, incluindo o sistema de saudações, o mural de avisos e os alertas de SLA;
+  \item O \textbf{Capítulo~\ref{ch:implementacao-tecnica}} detalha as decisões técnicas transversais, abrangendo segurança, autenticação, cache, comunicação em tempo real e internacionalização;
+  \item O \textbf{Capítulo~\ref{ch:consideracoes}} complementa com considerações adicionais sobre temas visuais, exportação de dados, verificação pública e geração de certificados;
+  \item O \textbf{Capítulo~\ref{ch:conclusao}} sintetiza o trabalho realizado e identifica linhas de evolução futura.
+\end{itemize}
 
 % ============================================================
 % Requisitos do Sistema e Abordagem
@@ -906,7 +932,7 @@ Enquanto a candidatura se mantém Aberta, o Consultor pode guardar o progresso e
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.32\textwidth]{images/chapter5/mobile-submissao.png}
+  \includegraphics[width=0.32\textwidth]{images/chapter5/mobile-submissao.jpg}
   \caption{Submissão de uma candidatura na aplicação móvel do Consultor.}
   \label{fig:wf-mobile-submissao}
 \end{figure}
@@ -1132,11 +1158,11 @@ A aplicação móvel é dedicada ao perfil de Consultor e permite-lhe acompanhar
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-login.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-login.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-dashboard.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-dashboard.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-badges.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-badges.jpg}
   \caption{Aplicação móvel: início de sessão, painel inicial e exploração de badges.}
   \label{fig:scr-mob-1}
 \end{figure}
@@ -1145,11 +1171,11 @@ Da esquerda para a direita: o ecrã de início de sessão; o painel inicial, com
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-detalhe-badge.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-detalhe-badge.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-candidatura.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-candidatura.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-objetivos.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-objetivos.jpg}
   \caption{Aplicação móvel: detalhe de badge, detalhe de candidatura e objetivos.}
   \label{fig:scr-mob-2}
 \end{figure}
@@ -1158,11 +1184,11 @@ Da esquerda para a direita: o detalhe de um badge, com a sua informação e requ
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-evolucao.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-evolucao.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-notificacoes.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-notificacoes.jpg}
   \hspace{0.02\textwidth}
-  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-perfil.png}
+  \includegraphics[width=0.3\textwidth]{images/chapter7/mob-perfil.jpg}
   \caption{Aplicação móvel: evolução, notificações e perfil.}
   \label{fig:scr-mob-3}
 \end{figure}
@@ -1577,11 +1603,30 @@ Os consultores visualizam as recompensas disponíveis e o seu saldo de pontos at
 
 \section{Síntese do Trabalho}
 
-% Sintetizar o trabalho realizado.
+O presente projeto resultou no desenvolvimento integral de um ecossistema tecnológico para a gestão de badges digitais da Softinsa, concebido para centralizar, automatizar e gamificar o processo de certificação de competências dos seus consultores. O trabalho abrangeu todas as fases do ciclo de vida do software, desde a análise de requisitos e prototipagem em Figma até à implementação e integração das três frentes da solução.
+
+A base de dados, modelada em PostgreSQL com 44 tabelas organizadas por domínios funcionais, sustenta toda a lógica de negócio da plataforma --- desde a hierarquia de conteúdos formativos (Learning Paths, Service Lines, Áreas, Níveis e Badges) até ao sistema de gamificação por pontos, passando pelo workflow de candidaturas com os seus cinco estados e respetiva trilha de auditoria imutável. A estrutura foi desenhada com vista à escalabilidade, permitindo a incorporação de novos itinerários de aprendizagem sem alterações ao esquema relacional.
+
+A API REST, construída em Node.js com Express, implementa uma camada de segurança robusta que inclui autenticação por JWT com \textit{access} e \textit{refresh tokens}, controlo de acesso baseado em papéis (RBAC) a três níveis, validação de dados com Zod, proteção contra ataques comuns (XSS, CSRF, força bruta) e conformidade com o RGPD. A performance é otimizada por uma camada de cache Redis com invalidação por prefixo e TTL dinâmico, complementada por quatro \textit{workers} agendados que monitorizam expiração de badges, cumprimento de SLAs e lembretes de objetivos.
+
+O portal Web, desenvolvido em React com Bootstrap, oferece dashboards diferenciados para os quatro perfis de utilizador, catálogo de badges com pesquisa e filtros, gestão completa do workflow de candidaturas, módulo de estatísticas e relatórios com exportação em múltiplos formatos, loja de recompensas e sistema de avisos segmentados. A interface é totalmente responsiva até 300\,px de largura e suporta modo escuro, com internacionalização em três idiomas e tradução automática de conteúdos dinâmicos.
+
+A aplicação móvel, desenvolvida em Flutter com arquitetura \textit{offline-first}, replica as funcionalidades essenciais do portal Web para o perfil de Consultor, com sincronização em segundo plano via Firebase Cloud Messaging e tradução \textit{offline} através do ML Kit Translation.
+
+No seu conjunto, a plataforma cumpre os requisitos definidos no enunciado do projeto e vai além deles, incorporando funcionalidades bónus como a gestão de SLAs com alertas automatizados, a loja de recompensas, o sistema de saudações inteligente, a verificação pública de credenciais com código QR e a geração automática de certificados PDF personalizados.
 
 \section{Trabalho Futuro}
 
-% Descrever possíveis melhorias e desenvolvimentos futuros.
+Apesar do grau de maturidade alcançado, existem várias linhas de evolução que poderiam enriquecer a plataforma em iterações futuras:
+
+\begin{itemize}
+  \item \textbf{Learning Path de Power Skills:} A estrutura hierárquica do modelo de dados foi desenhada para acomodar novos itinerários de aprendizagem. A criação de um LP dedicado a competências transversais (comunicação, liderança, gestão de tempo) constituiria uma extensão natural do sistema, sem necessidade de alterações ao esquema relacional;
+  \item \textbf{Integração com plataformas de formação externas:} A automatização da verificação de evidências através de integrações diretas com plataformas como a Udemy, a AWS Training ou a Microsoft Learn permitiria reduzir o esforço manual de validação por parte dos Talent Managers e Service Line Leaders;
+  \item \textbf{Análise preditiva e recomendações inteligentes:} A implementação de algoritmos de recomendação baseados no histórico de badges obtidos, nas competências selecionadas e nos padrões de progressão de consultores semelhantes poderia orientar de forma mais precisa os próximos passos de cada consultor;
+  \item \textbf{Aplicação móvel para perfis de gestão:} Atualmente, a aplicação Flutter é exclusiva do perfil de Consultor. A extensão para os perfis de Talent Manager e Service Line Leader permitiria a validação de candidaturas em mobilidade, agilizando os tempos de resposta;
+  \item \textbf{Dashboards analíticos avançados:} A incorporação de visualizações mais sofisticadas --- como análise de tendências temporais, mapas de calor de competências por equipa e métricas de tempo médio de aprovação --- forneceria aos perfis de gestão ferramentas de decisão mais granulares;
+  \item \textbf{Conformidade com o standard Open Badges 3.0:} A adoção integral da especificação Open Badges da 1EdTech permitiria a interoperabilidade com outras plataformas de credenciais digitais, facilitando a portabilidade e o reconhecimento externo das competências certificadas.
+\end{itemize}
 
 % ============================================================
 % Bibliografia
