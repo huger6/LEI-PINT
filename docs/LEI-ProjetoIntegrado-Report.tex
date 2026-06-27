@@ -894,17 +894,17 @@ O sistema de saudações inteligente constitui uma funcionalidade de personaliza
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{@{}lccc@{}}
+  \begin{tabularx}{\textwidth}{@{}lXccc@{}}
     \toprule
-    \textbf{Cenário} & \textbf{pt-PT} & \textbf{en-GB} & \textbf{es-ES} \\
+    \textbf{Cenário} & \textbf{Condição} & \textbf{pt-PT} & \textbf{en-GB} & \textbf{es-ES} \\
     \midrule
-    Primeiro acesso & Bem-vindo! & Welcome! & ¡Bienvenido! \\[4pt]
-    Regresso $>$ 15\,dias & Seja bem-vindo novamente & Welcome back & Bienvenido de nuevo \\[4pt]
-    Manhã & Bom dia! & Good morning! & ¡Buenos días! \\[4pt]
-    Tarde & Boa tarde! & Good afternoon! & ¡Buenas tardes! \\[4pt]
-    Noite & Boa noite! & Good evening! & ¡Buenas noches! \\
+    Primeiro acesso & \texttt{last\_login\_at} é \texttt{NULL} & Bem-vindo! & Welcome! & ¡Bienvenido! \\[4pt]
+    Regresso $>$ 15\,dias & Diferença entre \texttt{last\_online} e a data atual superior a 15 dias & Seja bem-vindo novamente & Welcome back & Bienvenido de nuevo \\[4pt]
+    Manhã & Hora local $\geq$ 6h e $<$ 13h & Bom dia! & Good morning! & ¡Buenos días! \\[4pt]
+    Tarde & Hora local $\geq$ 13h e $<$ 20h & Boa tarde! & Good afternoon! & ¡Buenas tardes! \\[4pt]
+    Noite & Hora local $\geq$ 20h ou $<$ 6h & Boa noite! & Good evening! & ¡Buenas noches! \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
   \caption{Regras de saudação e respetivas mensagens por idioma.}
   \label{tab:greetings}
 \end{table}
