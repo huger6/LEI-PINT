@@ -4,10 +4,12 @@ const { models } = require('../models');
 const { createNotification, resolvePreferences } = require('../services/notifications.service');
 const emailService = require('../services/email.service');
 const { logger } = require('../utils/logger');
+const { resolveFrontendUrl } = require('../utils/frontendUrl');
 
 const BADGE_EXPIRATION_SCHEDULE = '0 * * * *';
 const sequelize = models.awarded_badges.sequelize;
-const APP_URL = (process.env.APP_URL || '').replace(/\/$/, '');
+// Links in the e-mail must point at the web app, not the API host.
+const FRONTEND_URL = resolveFrontendUrl();
 const BADGE_EXPIRING_DEFINITION_ID = 12;
 const BADGE_EXPIRED_DEFINITION_ID = 13;
 
@@ -107,7 +109,7 @@ const processBadgeExpirations = async () => {
                         name: badge.full_name,
                         badgeTitle: badge.badge_title,
                         days: badge.days_remaining,
-                        badgeUrl: `${APP_URL}/badges/${badge.badge_slug}`,
+                        badgeUrl: `${FRONTEND_URL}/badges/${badge.badge_slug}`,
                         lang: badge.language_iso
                     });
                 }
@@ -146,7 +148,7 @@ const processBadgeExpirations = async () => {
                     await emailService.sendBadgeExpiredEmail(badge.email_address, {
                         name: badge.full_name,
                         badgeTitle: badge.badge_title,
-                        badgeUrl: `${APP_URL}/badges/${badge.badge_slug}`,
+                        badgeUrl: `${FRONTEND_URL}/badges/${badge.badge_slug}`,
                         lang: badge.language_iso
                     });
                 }

@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
-import { setBadgeFeatured } from '../../../features/gamification/api/gamificationApi';
-import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
@@ -25,33 +23,6 @@ export default function Achievements() {
 	const [error, setError] = useState(false);
 	// Store the milestone count to celebrate, or null when not celebrating
 	const [celebrate, setCelebrate] = useState(null);
-	// Track which badge is currently being saved as featured
-	const [savingFeatured, setSavingFeatured] = useState(null);
-	// Error surfaced when toggling a badge's public visibility fails
-	const [featuredError, setFeaturedError] = useState(null);
-
-	// Curate the public gallery: toggle whether an earned badge is shown publicly.
-	async function toggleFeatured(b) {
-		if (!b.verificationLink) {
-			setFeaturedError(t('achievements.featureUnavailable'));
-			return;
-		}
-		const next = !b.isFeatured;
-		setSavingFeatured(b.awardedBadgeId);
-		setFeaturedError(null);
-		// Optimistic update; revert on failure.
-		setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: next } : x)));
-		try {
-			await setBadgeFeatured(b.verificationLink, next);
-		} catch (err) {
-			// Revert and tell the user why — previously this failed silently, which
-			// looked exactly like "nothing happened" when the request errored.
-			setBadges((prev) => prev.map((x) => (x.awardedBadgeId === b.awardedBadgeId ? { ...x, isFeatured: !next } : x)));
-			setFeaturedError(resolveErrorMessage(err));
-		} finally {
-			setSavingFeatured(null);
-		}
-	}
 
 	// Fetch earned badges on mount and clean up on unmount
 	useEffect(() => {
@@ -158,11 +129,6 @@ export default function Achievements() {
 					</div>
 
 					{/* Gallery */}
-					{featuredError && (
-						<div className="alert alert-danger" role="alert" onClick={() => setFeaturedError(null)}>
-							{featuredError}
-						</div>
-					)}
 					<div className={styles.grid}>
 						{badges.map((b) => {
 							const badge = b.badge || {};
@@ -192,16 +158,6 @@ export default function Achievements() {
 												<Button as="a" href={`${import.meta.env.API_URL}/public/badge/${b.verificationLink}`} target="_blank" rel="noopener" variant="text" size="sm"
 													onClick={(e) => e.stopPropagation()}>
 													<Icon name="eye" size={14} aria-hidden="true" /> {t('achievements.verify')}
-												</Button>
-												<Button
-													variant="text"
-													size="sm"
-													loading={savingFeatured === b.awardedBadgeId}
-													onClick={(e) => { e.stopPropagation(); toggleFeatured(b); }}
-													title={t(b.isFeatured ? 'achievements.hideFromProfile' : 'achievements.showOnProfile')}
-												>
-													<Icon name={b.isFeatured ? 'bookmark-filled' : 'bookmark'} size={14} aria-hidden="true" />
-													{t(b.isFeatured ? 'achievements.onProfile' : 'achievements.showOnProfile')}
 												</Button>
 											</div>
 										)}
