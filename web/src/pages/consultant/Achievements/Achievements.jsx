@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getEarnedBadgesForEvolution } from '../../../features/evolution/api/evolutionApi';
-import { verifyPath } from '../../../utils/verifyLink';
 import Button from '../../../components/Button/Button';
 import Icon from '../../../components/Icons/Icons';
 import CardGridSkeleton from '../../../components/Skeleton/CardGridSkeleton';
@@ -154,9 +153,9 @@ export default function Achievements() {
 											<span className={styles.metaItem}><Icon name="star-points" size={14} color="var(--color-warning)" aria-hidden="true" /> {b.pointsSnapshot ?? badge.pointsValue ?? 0} pts</span>
 										</div>
 										{expired && <span className={styles.expired}>{t('achievements.expired')}</span>}
-										{b.isPublished && b.verificationLink && (
+										{b.isPublished && badge.slug && (
 											<div className={styles.cardActions}>
-												<Button as="a" href={verifyPath(b.verificationLink)} target="_blank" rel="noopener" variant="text" size="sm"
+												<Button as="a" href={`/softinsa/badges/${badge.slug}`} target="_blank" rel="noopener" variant="text" size="sm"
 													onClick={(e) => e.stopPropagation()}>
 													<Icon name="eye" size={14} aria-hidden="true" /> {t('achievements.verify')}
 												</Button>

@@ -12,7 +12,7 @@ import Button from '../../../components/Button/Button';
 import FormInput from '../../../components/FormInput/FormInput';
 import ConfirmToast from '../../../components/ConfirmToast/ConfirmToast';
 import InfoRow from '../../../components/InfoRow/InfoRow';
-import CheckItem from '../../../components/CheckItem/CheckItem';
+import TitleSelector from '../../../components/TitleSelector/TitleSelector';
 import ProfileStatItem from '../../../components/ProfileStatItem/ProfileStatItem';
 import AdminUserDrawer from './AdminUserDrawer';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
@@ -422,7 +422,6 @@ export default function UserProfile() {
 		? (profile?.areas || []).map((a) => a.name || a.area_name).filter(Boolean)
 		: [];
 	const displayAbout = profile?.biography || profile?.about || profile?.bio || '';
-	const displayAchievements = profile?.achievements || [];
 	const memberSince = profile?.createdAt || profile?.created_at || '';
 	const photoUrl = profile?.profileImg || profile?.profile_img_url || profile?.photoUrl || profile?.photo_url || null;
 	const showServiceLine = !isTm && !isAdminRole && !!displayServiceLine;
@@ -662,32 +661,9 @@ export default function UserProfile() {
 				</div>
 			</ContentCard>
 
-			{/* ── Content sections (2-column grid) — consultant-only ──── */}
-			{isConsultant && (
-			<div className="row g-4">
-				<div className="col-md-6">
-					<ContentCard>
-						<CardHeader
-							icon="trophy"
-							iconBg="var(--color-red-soft)"
-							iconColor="var(--color-red-on-soft)"
-							title={t('profile.recentAchievements')}
-						/>
-						<div className={styles.sectionBody}>
-							{displayAchievements.length > 0 ? (
-								<div className={styles.achievementsList}>
-									{displayAchievements.map((item, idx) => (
-										<CheckItem key={idx}><TranslatedText text={item.description || item.title || (typeof item === 'string' ? item : '')} /></CheckItem>
-									))}
-								</div>
-							) : (
-								<p className={styles.emptyText}>{t('profile.noAchievements')}</p>
-							)}
-						</div>
-					</ContentCard>
-				</div>
-			</div>
-			)}
+			{/* ── Title selector — the consultant picks a title they own (from a
+			    special badge or a redeemed reward) to display on their profile ──── */}
+			{isConsultant && isOwnProfile && <TitleSelector />}
 
 			{/* ── Save / Cancel buttons (edit mode) — above the stats ── */}
 			{isEditMode && (

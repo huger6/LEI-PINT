@@ -8,6 +8,7 @@ import { startApplication, generateCertificate } from '../../../features/applica
 import { trackInteraction } from '../../../features/gamification/api/gamificationApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import { verifyUrl } from '../../../utils/verifyLink';
+import { downloadFromUrl } from '../../../utils/download';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import RequirementCard from '../../../components/RequirementCard/RequirementCard';
@@ -50,8 +51,6 @@ export default function BadgeDetail() {
 	const [downloading, setDownloading] = useState(false);
 	// Non-fatal error shown inline by the certificate action (does not replace the page)
 	const [certError, setCertError] = useState(null);
-	// Direct certificate link, shown as a fallback when the pop-up is blocked
-	const [certUrl, setCertUrl] = useState(null);
 	// Controls the "add to objective" modal
 	const [showGoalModal, setShowGoalModal] = useState(false);
 	// Store any error message from failed API calls
@@ -112,7 +111,7 @@ export default function BadgeDetail() {
 		}
 	}
 
-	// Generate and open the PDF certificate for the earned badge
+	// Generate and download (never preview) the PDF certificate for the earned badge
 	async function handleDownloadCertificate() {
 		const appGuid = badge?.user_award?.application_guid || badge?.user_application?.application_guid;
 		if (!appGuid) {
@@ -120,14 +119,7 @@ export default function BadgeDetail() {
 			return;
 		}
 
-		// Open the tab synchronously, still inside the click handler, so the browser
-		// keeps it tied to the user gesture. Opening it AFTER the await gets blocked
-		// by pop-up blockers. If the blocker kills even this, we fall back to a
-		// visible link the user can click (a direct gesture is never blocked).
-		const certWindow = window.open('about:blank', '_blank');
-
 		setCertError(null);
-		setCertUrl(null);
 		setDownloading(true);
 		try {
 			const langMap = { 'pt-PT': 'pt', 'es-ES': 'es', 'en-GB': 'en' };
@@ -135,18 +127,11 @@ export default function BadgeDetail() {
 
 			const result = await generateCertificate(appGuid, lang);
 			if (result?.certificateUrl) {
-				if (certWindow && !certWindow.closed) {
-					certWindow.location = result.certificateUrl;
-				} else {
-					// Pop-up was blocked — surface a direct link instead of failing silently.
-					setCertUrl(result.certificateUrl);
-				}
+				await downloadFromUrl(result.certificateUrl, `certificado-${title || 'badge'}.pdf`);
 			} else {
-				if (certWindow) certWindow.close();
 				setCertError(t('badgeDetail.certificateUnavailable'));
 			}
 		} catch (err) {
-			if (certWindow) certWindow.close();
 			setCertError(resolveErrorMessage(err));
 		} finally {
 			setDownloading(false);
@@ -423,12 +408,6 @@ export default function BadgeDetail() {
 					</div>
 					{certError && (
 						<div className={`alert alert-danger mt-3 mb-0 ${styles.certError}`} role="alert">{certError}</div>
-					)}
-					{certUrl && (
-						<div className={`alert alert-info mt-3 mb-0 ${styles.certError}`} role="alert">
-							{t('badgeDetail.certificateReady')}{' '}
-							<a href={certUrl} target="_blank" rel="noopener noreferrer">{t('badgeDetail.openCertificate')}</a>
-						</div>
 					)}
 				</div>
 			</section>
