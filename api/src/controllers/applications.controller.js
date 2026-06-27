@@ -15,28 +15,9 @@ const {
     sendApplicationRejectedEmail
 } = require('../services/email.service');
 
-// Resolve a valid front-end origin for links embedded in e-mails/notifications.
-// FRONTEND_URL is often unset or protocol-only (e.g. "http://"), which produced
-// broken links like "http:///applications/<guid>". We pick the first candidate
-// that parses to a real host, falling back to the e-mail front-end URLs' origin.
-const resolveFrontendUrl = () => {
-    const candidates = [
-        process.env.FRONTEND_URL,
-        process.env.FRONTEND_EMAIL_CONFIRMATION_URL,
-        process.env.FRONTEND_RESET_PASSWORD_URL,
-        process.env.APP_URL,
-    ];
-    for (const candidate of candidates) {
-        if (!candidate) continue;
-        try {
-            const url = new URL(candidate);
-            if (url.host) return `${url.protocol}//${url.host}`;
-        } catch {
-            // Not an absolute URL with a host — skip it.
-        }
-    }
-    return 'http://localhost:5173';
-};
+// Front-end origin for links embedded in e-mails/notifications (shared helper,
+// also used by the reminder/expiration workers).
+const { resolveFrontendUrl } = require('../utils/frontendUrl');
 
 const FRONTEND_URL = resolveFrontendUrl();
 

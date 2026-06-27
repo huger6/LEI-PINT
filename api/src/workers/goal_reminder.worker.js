@@ -5,10 +5,13 @@ const { createNotification, resolvePreferences } = require('../services/notifica
 const emailService = require('../services/email.service');
 const { logger } = require('../utils/logger');
 
+const { resolveFrontendUrl } = require('../utils/frontendUrl');
+
 const GOAL_REMINDER_SCHEDULE = '0 * * * *';
 const AUTO_REMINDER_DAYS_BEFORE = 7;
 const sequelize = models.goals.sequelize;
-const APP_URL = (process.env.APP_URL || '').replace(/\/$/, '');
+// Links in the e-mail must point at the web app, not the API host.
+const FRONTEND_URL = resolveFrontendUrl();
 const OBJECTIVE_DUE_DEFINITION_ID = 6;
 
 // Send the objective reminder email when the recipient has it enabled.
@@ -19,7 +22,7 @@ const maybeEmailObjectiveReminder = async (goal) => {
     await emailService.sendObjectiveReminderEmail(goal.email_address, {
         name: goal.full_name,
         title: goal.event_title,
-        objectivesUrl: `${APP_URL}/objectives`,
+        objectivesUrl: `${FRONTEND_URL}/objectives`,
         lang: goal.language_iso
     });
 };
