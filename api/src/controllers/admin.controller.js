@@ -343,6 +343,25 @@ const getUser = async (req, res) => {
             createdAt: user.created_at
         };
 
+        // Gamification counters for the profile stat cards (consultant targets only).
+        // Same definitions used elsewhere: earned badges, submitted+ applications,
+        // and the points_history total.
+        if (user.user_role === 'Consultant') {
+            const [badgesCount, applicationsCount, pointsSum] = await Promise.all([
+                models.awarded_badges.count({ where: { user_id: user.user_id } }),
+                models.badge_applications.count({
+                    where: {
+                        user_id: user.user_id,
+                        application_state: ['Submitted', 'In validation', 'Accepted', 'Rejected']
+                    }
+                }),
+                models.points_history.sum('points_delta', { where: { user_id: user.user_id } })
+            ]);
+            profile.badgesCount = badgesCount;
+            profile.applicationsCount = applicationsCount;
+            profile.totalPoints = pointsSum || 0;
+        }
+
         return res.status(200).json({ success: true, code: 'ADMIN_USER_PROFILE_RETRIEVED', data: profile });
     } catch (error) {
         logger.error('Error fetching user profile (admin)', { requestId, userGuid, error });
