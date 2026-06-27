@@ -276,7 +276,7 @@ The data model, comprising 44 tables organized by functional domains, was design
   \textbf{\color{secondary}Requisito}             & Meta ou curso específico associado a um determinado nível, cuja conclusão e validação são obrigatórias para obter o respetivo badge. \\[6pt]
   \textbf{\color{secondary}Service Line}          & Divisão interna da empresa que agrupa áreas de competências técnica afins. \\[6pt]
   \textbf{\color{secondary}Softinsa}              & Empresa do grupo IBM em Portugal, focada em serviços de consultoria tecnológica e gestão de aplicações, que forneceu o tema para este projeto integrado. \\[6pt]
-  \textbf{\color{secondary}Workflow de Estados}   & Ciclo de vida sequencial pelo qual uma candidatura a um badge transita no sistema (compreendendo os estados `Open', `Submitted', `Em Validação' e `Fechado') consoante as ações dos avaliadores. \\
+  \textbf{\color{secondary}Workflow de Estados}   & Ciclo de vida sequencial pelo qual uma candidatura a um badge transita no sistema, compreendendo cinco estados --- \texttt{Open}, \texttt{Submitted}, \texttt{In validation}, \texttt{Accepted} e \texttt{Rejected} --- consoante as ações dos avaliadores. \\
 \end{tabularx}
 
 \newpage
@@ -349,8 +349,7 @@ O presente documento está organizado em dez capítulos, cuja sequência acompan
   \item O \textbf{Capítulo~\ref{ch:funcionalidades}} descreve as funcionalidades transversais implementadas, com destaque para as mecânicas de gamificação e o módulo de estatísticas;
   \item O \textbf{Capítulo~\ref{ch:ecrans}} apresenta os ecrãs do produto final, organizados por plataforma e perfil de utilizador;
   \item O \textbf{Capítulo~\ref{ch:extras}} documenta as funcionalidades bónus, incluindo o sistema de saudações, o mural de avisos e os alertas de SLA;
-  \item O \textbf{Capítulo~\ref{ch:implementacao-tecnica}} detalha as decisões técnicas transversais, abrangendo segurança, autenticação, cache, comunicação em tempo real e internacionalização;
-  \item O \textbf{Capítulo~\ref{ch:consideracoes}} complementa com considerações adicionais sobre temas visuais, exportação de dados, verificação pública e geração de certificados;
+  \item O \textbf{Capítulo~\ref{ch:implementacao-tecnica}} detalha as decisões técnicas transversais, abrangendo segurança, autenticação, cache, comunicação em tempo real, internacionalização, exportação de dados e loja de recompensas;
   \item O \textbf{Capítulo~\ref{ch:conclusao}} sintetiza o trabalho realizado e identifica linhas de evolução futura.
 \end{itemize}
 
@@ -774,7 +773,7 @@ A associação entre SLAs e Service Lines é implementada pela tabela de junçã
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter3/db8.png}
+  \includegraphics[width=\textwidth]{images/chapter3/db6.png}
   \caption{Modelo de dados --- Gestão de SLAs e Service Lines.}
   \label{fig:db-slas}
 \end{figure}
@@ -788,7 +787,7 @@ A segmentação da audiência é implementada por duas tabelas de junção compl
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth,height=0.35\textheight,keepaspectratio]{images/chapter3/db9.png}
+  \includegraphics[width=\textwidth,height=0.35\textheight,keepaspectratio]{images/chapter3/db7.png}
   \caption{Modelo de dados --- Sistema de avisos e comunicação.}
   \label{fig:db-announcements}
 \end{figure}
@@ -802,7 +801,7 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter3/db10.png}
+  \includegraphics[width=\textwidth]{images/chapter3/db8.png}
   \caption{Modelo de dados --- RGPD e gestão de consentimentos.}
   \label{fig:db-gdpr}
 \end{figure}
@@ -1476,7 +1475,7 @@ A plataforma implementa um sistema de internacionalização em duas camadas, cob
 
 \subsection{Strings Estáticas com i18next}
 
-A internacionalização da interface utiliza o i18next~\cite{i18next} com deteção automática do idioma do \textit{browser} e \textit{fallback} para Português. A configuração define dois \textit{namespaces}: \texttt{common} para \textit{strings} de UI com aproximadamente 2100 linhas por idioma, e \texttt{api} para mensagens de erro traduzidas com cerca de 101 linhas por idioma. Os três idiomas suportados --- Português, Inglês e Espanhol --- são carregados como importações estáticas de ficheiros JSON. As traduções utilizam interpolação de variáveis e formas plurais para pluralização contextual. A mudança de idioma atualiza imediatamente a interface via \texttt{i18next.changeLanguage()}, persiste a preferência no servidor e atualiza o estado local no contexto React.
+A internacionalização da interface utiliza o i18next~\cite{i18next} com deteção automática do idioma do \textit{browser} e \textit{fallback} para Português. A configuração define dois \textit{namespaces}: \texttt{common} para \textit{strings} de UI e \texttt{api\_codes} para mensagens de erro traduzidas. Os três idiomas suportados --- Português, Inglês e Espanhol --- são carregados como importações estáticas de ficheiros JSON. As traduções utilizam interpolação de variáveis e formas plurais para pluralização contextual. A mudança de idioma atualiza imediatamente a interface via \texttt{i18next.changeLanguage()}, persiste a preferência no servidor e atualiza o estado local no contexto React.
 
 No \textit{backend}, o idioma preferido de cada utilizador é armazenado como chave estrangeira para a tabela \texttt{languages}. Os \textit{templates} de email são codificados por idioma no serviço de email, sendo automaticamente selecionado o \textit{template} correspondente ao idioma do destinatário. Os certificados PDF também são gerados no idioma preferido do consultor.
 
@@ -1518,76 +1517,27 @@ O módulo disponibiliza ainda a exportação de todos os dados pessoais em forma
 
 \section{Verificação Pública de Credenciais e Certificados}
 
-Cada badge atribuído recebe automaticamente uma ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}), gerada no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade de uma credencial, visualizando o título do badge, a descrição, os pontos, o nome do detentor e as datas de atribuição e expiração. A proteção contra XSS é assegurada pelo escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
+Cada badge atribuído recebe automaticamente uma ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}), gerada no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade de uma credencial. A página pública de verificação é servida pelo controlador \texttt{public.controller.js} em dois formatos: uma página HTML com renderização completa dos metadados do badge (título, descrição, pontos, nome do detentor, datas de atribuição e expiração) e uma resposta JSON para integração programática com sistemas externos. Complementarmente, o sistema gera códigos QR (300$\times$300 píxeis) para cada badge atribuído, permitindo a incorporação em assinaturas de e-mail corporativo e materiais impressos. A proteção contra XSS é assegurada pelo escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
 
 A geração de certificados em formato PDF utiliza a biblioteca PDFKit~\cite{pdfkit}, compondo documentos personalizados em orientação paisagem A4 com dupla moldura, título do badge, nome do consultor, descrição, datas de conclusão, nomes dos revisores (Talent Manager e Service Line Leader), código QR de verificação (300$\times$300 píxeis) e rodapé institucional. O conteúdo textual é adaptado ao idioma preferido do consultor. A geração é idempotente --- se o certificado já existir para uma candidatura, o sistema devolve o ficheiro existente sem criar duplicado. Os certificados são armazenados no Supabase e disponibilizados através de URLs assinados com validade temporal limitada.
 
 \section{Arquitetura CSS e Design Responsivo}
 
-A estilização da aplicação web segue uma abordagem em três camadas: Bootstrap~5.3\linebreak[0]~\cite{bootstrap} como \textit{framework} de base com \textit{overrides} customizados; um sistema completo de \textit{design tokens} em variáveis CSS globais definidas no ficheiro \texttt{colors.css}; e 149 ficheiros CSS Modules com escopo isolado por componente, garantindo zero conflitos de nomes.
+A estilização da aplicação web segue uma abordagem em três camadas: Bootstrap~5.3\linebreak[0]~\cite{bootstrap} como \textit{framework} de base com \textit{overrides} customizados; um sistema completo de \textit{design tokens} em variáveis CSS globais definidas no ficheiro \texttt{colors.css}; e ficheiros CSS Modules com escopo isolado por componente, garantindo zero conflitos de nomes.
 
 O sistema de variáveis CSS define mais de cem propriedades semânticas que abrangem todas as camadas visuais: cores primária (ciano), secundária (azul), erro (vermelho), sucesso (verde) e aviso (âmbar), com variantes de opacidade para estados interativos; gradientes para campos e painéis; cores suaves para cartões; intensidades de \textit{heatmap}; e sombras de cartão. A nomenclatura segue princípios do Material Design 3, com pares de cor semânticos que garantem conformidade WCAG AA de contraste.
 
-A plataforma suporta um sistema de temas dual (claro e escuro), controlado pelo atributo \texttt{data-theme} no elemento raiz do documento HTML. Quando o valor \texttt{dark} é aplicado, todas as variáveis CSS são redefinidas: os fundos claros são substituídos por tons escuros, as cores de ênfase mantêm a saturação com opacidades ajustadas, e os componentes de visualização de dados dispõem de escalas cromáticas adaptadas. A preferência é persistida em \texttt{localStorage} e aplicada instantaneamente sem recarregamento.
+A plataforma suporta um sistema de temas dual (claro e escuro), controlado pelo atributo \texttt{data-theme} no elemento raiz do documento HTML. Quando o valor \texttt{dark} é aplicado, todas as variáveis CSS são redefinidas sob o seletor \texttt{[data-theme="dark"]}: os fundos claros são substituídos por tons escuros, as cores de ênfase mantêm a saturação com opacidades ajustadas para garantir contraste adequado, e os componentes de visualização de dados (como os mapas de calor de atividade) dispõem de escalas cromáticas adaptadas. A preferência é persistida em \texttt{localStorage} e aplicada instantaneamente sem recarregamento. Esta dualidade foi considerada desde a fase de prototipagem em Figma~\cite{figma}, onde ambas as variantes foram desenhadas e validadas.
 
 A responsividade é garantida desde 300\,px de largura, utilizando uma abordagem \textit{mobile-first} com \textit{breakpoints} progressivos: 360\,px e 400\,px para telefones muito pequenos, 480\,px e 576\,px para \textit{smartphones} com grelhas de coluna única e botões empilhados, 768\,px e 991\,px para \textit{tablets} com transição do menu lateral, e 1200\,px para \textit{desktop} com grelhas expandidas. O menu lateral comporta-se de forma adaptativa: em \textit{desktop}, apresenta-se como uma barra de ícones colapsável (74\,px) expansível para barra completa (280\,px); em dispositivos móveis, transforma-se num \textit{drawer} deslizante com \textit{backdrop}, fechando automaticamente após clique numa ligação. A deteção de \textit{breakpoint} é efetuada em tempo real via \texttt{window.matchMedia}.
 
 Todas as animações CSS --- \textit{spinners}, entrada de \textit{toasts}, \textit{modais}, \textit{skeletons} com efeito \textit{shimmer}, brilho de badges especiais e \textit{confetti} de celebração --- respeitam a \textit{media query} \texttt{prefers-reduced-motion: reduce}, desativando efeitos para utilizadores com sensibilidade a movimento.
-
-% ============================================================
-% Considerações Adicionais
-% ============================================================
-\chapter{Considerações Adicionais}
-\label{ch:consideracoes}
-
-Este capítulo documenta funcionalidades transversais e decisões técnicas que complementam as descrições dos capítulos anteriores, abrangendo aspetos de personalização visual, otimização de desempenho, integração com serviços externos e funcionalidades de valor acrescentado que enriquecem a plataforma para além dos requisitos base.
-
-\section{Modo Escuro e Sistema de Temas}
-
-A plataforma implementa um sistema de temas dual (claro e escuro) baseado inteiramente em variáveis CSS (\textit{custom properties}), centralizadas no ficheiro \texttt{colors.css}. O ficheiro define mais de cem propriedades semânticas que abrangem todas as camadas visuais da interface: cores de superfície, texto, bordas, \textit{badges}, gráficos, sobreposições e gradientes.
-
-A alternância entre temas é controlada pelo atributo \texttt{data-theme} no elemento raiz do documento HTML. Quando o valor \texttt{"dark"} é aplicado, todas as variáveis CSS são redefinidas sob o seletor \texttt{[data-theme="dark"]}: os fundos claros (\texttt{\#F7F9FB}) são substituídos por tons escuros (\texttt{\#0f141a}), as cores de ênfase mantêm a saturação com opacidades ajustadas para garantir contraste adequado, e os componentes de visualização de dados (como os mapas de calor de atividade) dispõem de escalas cromáticas adaptadas. A preferência do utilizador é persistida localmente e aplicada de forma instantânea sem recarregamento da página. Esta dualidade foi considerada desde a fase de prototipagem em Figma~\cite{figma}, onde ambas as variantes foram desenhadas e validadas.
-
-\section{Estratégia de Cache e Desempenho}
-
-O desempenho da API é otimizado através de uma camada de \textit{cache} Redis~\cite{redis}, implementada com a biblioteca ioredis. O sistema adota uma estratégia de \textit{fallback} para o ambiente de desenvolvimento, recorrendo a um \textit{mock} em memória quando o Redis não está disponível; em produção, a sua presença é obrigatória para funcionalidades críticas como limitação de taxa (\textit{rate limiting}) e bloqueio de contas.
-
-A estratégia de \textit{cache} é aplicada seletivamente aos \textit{endpoints} com maior volume de leitura --- listagens de avisos, perfis de utilizador, catálogos de badges e definições de SLAs --- com TTLs diferenciados por domínio funcional. O módulo de avisos destaca-se pela implementação de TTL dinâmico, calculado com base na próxima data de alteração de visibilidade dos avisos ativos, conforme descrito na Secção~\ref{subsec:db-announcements}. Todas as operações de escrita invalidam o \textit{cache} afetado por prefixo, assegurando a consistência entre os dados em \textit{cache} e a base de dados.
-
-O sistema de tradução dinâmica (descrito na secção seguinte) constitui outro domínio onde o \textit{cache} desempenha um papel central, com entradas de tradução armazenadas com TTL de 7 dias para minimizar chamadas à API externa.
-
-\section{Tradução Dinâmica de Conteúdos da Base de Dados}
-
-Para além das \textit{strings} estáticas da interface (geridas por ficheiros de localização i18next\linebreak[0]~\cite{i18next}), todos os conteúdos dinâmicos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são traduzidos automaticamente em tempo de execução para o idioma selecionado pelo utilizador.
-
-A API integra com a Google Cloud Translation API~\cite{googletranslate} através de um serviço dedicado (\texttt{translation.service.js}) que implementa as seguintes otimizações:
-
-\begin{itemize}
-  \item \textbf{Deteção automática de idioma:} A biblioteca franc-min identifica o idioma de origem do texto, evitando traduções desnecessárias quando o conteúdo já se encontra no idioma pretendido;
-  \item \textbf{\textit{Cache} com TTL de 7 dias:} Cada tradução é armazenada em Redis~\cite{redis}, eliminando chamadas repetidas à API para o mesmo par (texto, idioma);
-  \item \textbf{Tradução em lote (\textit{batching}):} No lado do cliente, a plataforma Web agrega múltiplos textos num único pedido HTTP, reduzindo significativamente o número de chamadas à API e melhorando a latência percebida;
-  \item \textbf{\textit{Fallback} gracioso:} Quando a API de tradução não está disponível, o sistema devolve o texto original, garantindo que a ausência do serviço externo não compromete a utilização da plataforma.
-\end{itemize}
-
-Na aplicação móvel, a tradução \textit{offline} é assegurada pelo ML Kit Translation~\cite{mlkit}, que descarrega modelos de tradução para o dispositivo e processa os textos localmente, alinhado com a arquitetura \textit{offline-first} adotada.
 
 \section{Exportação de Dados}
 
 A plataforma disponibiliza funcionalidades de exportação de dados em três formatos --- CSV, XLSX (Excel) e PDF --- acessíveis aos perfis de gestão (TM, SLL e Administrador). O módulo de exportação (\texttt{exports.controller.js}) implementa a geração de ficheiros a partir dos dados do sistema, suportando os seguintes conjuntos de dados: consultores, badges atribuídos, candidaturas e histórico de pontos.
 
 A exportação respeita o âmbito de acesso de cada perfil: os Service Line Leaders exportam exclusivamente dados da sua Service Line, enquanto os Talent Managers e os Administradores acedem à exportação global. Todos os formatos suportam filtragem por intervalo de datas. Os ficheiros Excel são gerados com a biblioteca ExcelJS, com dimensionamento automático de colunas; os ficheiros PDF são gerados em modo paisagem com PDFKit~\cite{pdfkit} para acomodar tabelas com muitas colunas; os ficheiros CSV incluem escapamento adequado de campos com carateres especiais.
-
-\section{Verificação Pública de Badges e Códigos QR}
-
-Cada badge atribuído possui uma ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}), gerada automaticamente no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade e os detalhes de uma credencial digital.
-
-A página pública de verificação é servida pelo controlador \texttt{public.controller.js} em dois formatos: uma página HTML com renderização completa dos metadados do badge (título, descrição, pontos, nome do detentor, datas de atribuição e expiração) e uma resposta JSON para integração programática com sistemas externos. Complementarmente, o sistema gera códigos QR (300$\times$300 píxeis) para cada badge atribuído, permitindo a incorporação em assinaturas de e-mail corporativo e materiais impressos. A geração de páginas públicas inclui proteção contra XSS através do escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
-
-\section{Geração Automática de Certificados}
-
-Quando uma candidatura atinge o estado \texttt{Accepted}, o sistema disponibiliza a geração automática de um certificado em formato PDF, personalizado com os dados do badge, do consultor e dos validadores envolvidos no processo. O serviço de certificados (\texttt{certificate.\allowbreak service.js}) utiliza a biblioteca PDFKit~\cite{pdfkit} para a composição do documento, que inclui o título do badge, a descrição, a data de atribuição, os nomes dos revisores e o URL de verificação pública.
-
-A geração é idempotente: se o certificado já tiver sido gerado previamente para uma determinada candidatura, o sistema devolve o ficheiro existente sem criar um duplicado. Os certificados são armazenados no serviço de armazenamento Supabase~\cite{supabase} e disponibilizados para \textit{download} através de URLs assinados com validade temporal limitada. O conteúdo textual do certificado é adaptado ao idioma preferido do consultor (Português, Inglês ou Espanhol).
 
 \section{Loja de Recompensas por Pontos}
 
