@@ -787,172 +787,83 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
 \chapter{Prototipagem e Design de Interface (Figma)}
 \label{ch:prototipagem}
 
-O presente capítulo documenta o processo de prototipagem e design de interface que precedeu e orientou a fase de implementação. A conceção visual da plataforma teve como ponto de partida um Protótipo de Alta Fidelidade (PAF) desenvolvido integralmente em Figma~\cite{figma}, cobrindo os fluxos de todos os perfis de utilizador --- Consultor, Service Line Leader, Talent Manager e Administrador --- bem como os ecrãs públicos e de autenticação. O protótipo serviu simultaneamente como ferramenta de validação com os orientadores e como referência durante a codificação, garantindo coerência visual entre o desenho e o produto final.
+A conceção visual da plataforma partiu de um Protótipo de Alta Fidelidade (PAF) desenvolvido em Figma~\cite{figma}, cobrindo os fluxos dos quatro perfis de utilizador --- Consultor, Talent Manager, Service Line Leader e Administrador --- bem como os ecrãs públicos e de autenticação. Este capítulo apresenta, de forma breve, uma seleção representativa desses ecrãs de alta fidelidade, organizada por perfil de utilizador.
 
-\section{Conceito de Design e UI/UX}
-
-O conceito visual da plataforma foi definido em torno de três princípios fundamentais: \textbf{clareza}, \textbf{consistência} e \textbf{motivação}. Tratando-se de uma ferramenta corporativa de gestão de competências, o design privilegiou a legibilidade da informação e a redução da carga cognitiva, sem descurar uma estética contemporânea que reforçasse a componente de gamificação do sistema.
-
-\subsection{Identidade Visual e Paleta de Cores}
-
-A paleta cromática foi construída a partir de duas cores âncora: um azul ciano vibrante (\texttt{\#00B8E0}, designado \textit{primary}) e um azul escuro institucional (\texttt{\#39639C}, designado \textit{secondary}). Estas cores refletem a identidade tecnológica da Softinsa e estabelecem uma hierarquia visual clara: o \textit{primary} é utilizado para ações interativas, destaques e elementos de navegação, enquanto o \textit{secondary} domina os títulos, cabeçalhos e elementos estruturais. Complementam a paleta tons de sucesso (\texttt{\#04CE00}), alerta (\texttt{\#CFA600}), erro (\texttt{\#B3261E}) e um dourado reservado para badges \textit{premium} (\texttt{\#FFCC00}).
-
-O sistema suporta um modo escuro completo, implementado através da redefinição de todas as variáveis CSS sob o seletor \texttt{[data-theme="dark"]}. Os fundos claros (\texttt{\#F7F9FB}) são substituídos por tons escuros (\texttt{\#0f141a}), e as cores de ênfase mantêm a saturação com opacidades ajustadas para garantir contraste adequado em ambos os modos. Esta dualidade foi considerada desde o protótipo em Figma, onde ambas as variantes foram desenhadas.
-
-\subsection{Tipografia e Espaçamento}
-
-A tipografia assenta na família \textit{Inter}, complementada por \textit{Roboto} e fontes do sistema como \textit{fallback}. Esta escolha privilegia a legibilidade em ecrã, oferecendo proporções otimizadas para interfaces digitais. Os títulos utilizam pesos \textit{bold} na cor \textit{secondary}, enquanto o corpo do texto recorre a pesos regulares sobre fundos neutros, garantindo hierarquia visual sem recurso excessivo a variações cromáticas.
-
-O espaçamento segue um ritmo consistente baseado no sistema de grelha do Bootstrap~\cite{bootstrap}, complementado por \textit{padding} e \textit{margin} uniformizados nos componentes reutilizáveis. Os cartões e painéis apresentam cantos arredondados (\textit{border-radius}) e sombras subtis (\texttt{--shadow-card}), conferindo profundidade à interface sem comprometer a sobriedade exigida pelo contexto empresarial.
-
-\subsection{Arquitetura de Navegação}
-
-A estrutura de navegação da plataforma Web assenta numa \textit{sidebar} lateral responsiva, que funciona como eixo de orientação para todos os perfis de utilizador. Em ecrãs \textit{desktop}, a \textit{sidebar} pode ser colapsada para um modo de ícones (\textit{icon-rail}), libertando área útil para os conteúdos; em ecrãs móveis, transforma-se num \textit{drawer} deslizante que se sobrepõe ao conteúdo com um \textit{backdrop} semitransparente. O menu de cada perfil é dinâmico: os itens de navegação, ícones e agrupamentos são determinados pelo papel do utilizador autenticado, apresentando apenas as secções relevantes para as suas permissões.
-
-No topo de todas as páginas, uma barra superior (\textit{top bar}) integra o logótipo, a barra de pesquisa global, a contagem de pontos do consultor (quando aplicável), o ícone de notificações com indicador de não lidas e o menu de utilizador com acesso ao perfil e \textit{logout}. Na base, um \textit{footer} compacto disponibiliza o seletor de idioma e ligações institucionais.
-
-\subsection{Padrões de Interface e Componentes Reutilizáveis}
-
-O design do protótipo foi concebido com uma lógica de biblioteca de componentes, de modo a facilitar a transição para a implementação em React. Os padrões visuais recorrentes incluem:
-
-\begin{itemize}
-  \item \textbf{ContentCard:} Cartão de conteúdo genérico utilizado em toda a plataforma para agrupar secções, formulários e painéis de informação, com cabeçalho opcional e cantos arredondados;
-  \item \textbf{BadgeCard:} Cartão especializado para a apresentação de badges no catálogo, integrando a imagem do badge, título, área, nível e indicador de progresso;
-  \item \textbf{WelcomeCard:} Painel de boas-vindas presente nos dashboards, com saudação dinâmica e métricas resumidas através de \textit{StatCards};
-  \item \textbf{Modal:} Componente de diálogo centrado para ações de confirmação, criação e edição de entidades;
-  \item \textbf{Stepper:} Indicador de progresso por passos, utilizado no fluxo de candidatura a badges;
-  \item \textbf{Gráficos:} Visualizações de dados implementadas com componentes de gráficos de barras verticais/horizontais, linhas, \textit{donut} e mapa de calor de atividade.
-\end{itemize}
-
-\section{Demonstração de Ecrãs Chave}
-
-As secções seguintes apresentam uma seleção representativa dos ecrãs da plataforma, organizados por perfil de utilizador e área funcional. As capturas de ecrã foram obtidas a partir do protótipo de alta fidelidade desenvolvido em Figma, que serviu como referência direta para a implementação. Por questões de concisão, apenas são apresentados os ecrãs que melhor ilustram as funcionalidades centrais e as decisões de design mais relevantes.
-
-\subsection{Autenticação e Registo}
-
-O módulo de autenticação constitui o ponto de entrada na plataforma e foi desenhado para transmitir confiança e simplicidade. Os ecrãs de \textit{login}, registo, recuperação de \textit{password} e confirmação de conta seguem um padrão visual unificado, com o formulário centrado sobre um fundo com partículas animadas e a marca da plataforma em destaque.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/login.png}
-  \caption{Ecrã de autenticação (\textit{login}) da plataforma.}
-  \label{fig:proto-login}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/register.png}
-  \caption{Ecrã de registo de novo utilizador.}
-  \label{fig:proto-register}
-\end{figure}
+\section{Demonstração de Ecrãs}
 
 \subsection{Consultor}
 
-O perfil de Consultor dispõe do conjunto mais abrangente de ecrãs, dado o seu papel central na plataforma. O dashboard apresenta a saudação dinâmica, métricas resumidas e o progresso nos Learning Paths. O catálogo permite a exploração de badges por área e nível. O ecrã de detalhe de badge apresenta os requisitos, competências associadas e o estado atual da candidatura. A secção de gamificação exibe os pontos acumulados, conquistas e o ranking entre pares.
-
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/consultant-dashboard.png}
-  \caption{Dashboard do Consultor com saudação dinâmica e métricas de progresso.}
-  \label{fig:proto-consultant-dashboard}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_p2.png}
+  \caption{Ecrã de Pontos do Consultor: gráficos de pontos por mês e de atividade semanal.}
+  \label{fig:proto-consultor-p2}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/badge-catalog.png}
-  \caption{Catálogo de badges disponíveis para o Consultor.}
-  \label{fig:proto-badge-catalog}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_p3.png}
+  \caption{Ecrã de Pontos (continuação): objetivos recomendados, conquistas especiais e histórico de pontos.}
+  \label{fig:proto-consultor-p3}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/badge-detail.png}
-  \caption{Ecrã de detalhe de um badge com requisitos e estado da candidatura.}
-  \label{fig:proto-badge-detail}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/consultant-points.png}
-  \caption{Ecrã de pontos e gamificação do Consultor.}
-  \label{fig:proto-consultant-points}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/consultor_candidaturas.png}
+  \caption{Lista de candidaturas do Consultor (``As Minhas Candidaturas'').}
+  \label{fig:proto-consultor-candidaturas}
 \end{figure}
 
 \subsection{Talent Manager}
 
-O Talent Manager acede a um dashboard focado na triagem global de candidaturas e no acompanhamento do progresso dos consultores. O painel de validações apresenta as candidaturas pendentes de revisão com filtros por estado e área. O ecrã de revisão de uma candidatura individual integra a visualização dos documentos submetidos e o formulário de decisão com campo de comentários.
-
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/tm-dashboard.png}
-  \caption{Dashboard do Talent Manager com visão global de candidaturas.}
-  \label{fig:proto-tm-dashboard}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/validations-board.png}
-  \caption{Painel de validações com filtros por estado e área.}
-  \label{fig:proto-validations-board}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/ecra_tm.png}
+  \caption{Ecrã do Talent Manager para a triagem e revisão global de candidaturas.}
+  \label{fig:proto-tm}
 \end{figure}
 
 \subsection{Service Line Leader}
 
-O SLL dispõe de um dashboard restrito à sua Service Line, com métricas de desempenho da equipa e um painel de validações final. A interface espelha a do TM no que respeita ao fluxo de revisão de candidaturas, mas com o âmbito filtrado automaticamente para a SL do utilizador.
-
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/sll-dashboard.png}
-  \caption{Dashboard do Service Line Leader com métricas da sua Service Line.}
-  \label{fig:proto-sll-dashboard}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/validacao_sll.png}
+  \caption{Ecrã de validação final de uma candidatura pelo Service Line Leader.}
+  \label{fig:proto-sll}
 \end{figure}
 
 \subsection{Administrador}
 
-O Administrador dispõe de um painel de controlo abrangente para a gestão de utilizadores, conteúdos e parametrização da plataforma. O ecrã de gestão da hierarquia de conteúdos permite a navegação e edição dos Learning Paths, Service Lines, Áreas e Níveis. A gestão de utilizadores integra filtros, criação de contas e atribuição de papéis.
-
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/admin-dashboard.png}
-  \caption{Dashboard do Administrador com métricas globais e atalhos de gestão.}
-  \label{fig:proto-admin-dashboard}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/admin1_lp.png}
+  \caption{Gestão de Learning Paths e da hierarquia de conteúdos (Administrador).}
+  \label{fig:proto-admin-lp}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/admin-structure.png}
-  \caption{Ecrã de gestão da hierarquia de conteúdos (Learning Paths, SLs, Áreas e Níveis).}
-  \label{fig:proto-admin-structure}
+  \includegraphics[width=0.95\textwidth]{images/chapter4/admin2_slas.png}
+  \caption{Configuração de SLAs da plataforma (Administrador).}
+  \label{fig:proto-admin-slas}
 \end{figure}
+
+\subsection{Versão Móvel}
+
+Os fluxos principais foram igualmente prototipados para dispositivos móveis. As figuras seguintes ilustram o fluxo de candidatura a um badge na versão móvel do perfil de Consultor.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{images/chapter4/admin-users.png}
-  \caption{Ecrã de gestão de utilizadores com filtros e criação de contas.}
-  \label{fig:proto-admin-users}
+  \includegraphics[width=0.32\textwidth]{images/chapter4/consultor_mob_candidatura1.png}
+  \hspace{0.04\textwidth}
+  \includegraphics[width=0.32\textwidth]{images/chapter4/consultor_mob_candidatura2.png}
+  \caption{Fluxo de candidatura a um badge na versão móvel do perfil de Consultor.}
+  \label{fig:proto-consultor-mob}
 \end{figure}
 
-\subsection{Ecrãs Públicos e Verificação}
+\section{Validação com a Softinsa}
 
-A plataforma disponibiliza páginas públicas acessíveis sem autenticação, destinadas à verificação externa de badges e à consulta do perfil público de consultores.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/public-badge.png}
-  \caption{Página pública de verificação de um badge atribuído.}
-  \label{fig:proto-public-badge}
-\end{figure}
-
-\subsection{Responsividade}
-
-Todos os ecrãs foram prototipados com consideração para a adaptação a dispositivos móveis. A Figura~\ref{fig:proto-responsive} demonstra a transformação do \textit{layout} entre a versão \textit{desktop} e a versão móvel, evidenciando o colapso da \textit{sidebar} para \textit{drawer}, a reorganização dos cartões em coluna única e o redimensionamento dos gráficos.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{images/chapter4/responsive-comparison.png}
-  \caption{Comparação da interface entre a versão \textit{desktop} e móvel.}
-  \label{fig:proto-responsive}
-\end{figure}
+Estes protótipos --- e os restantes ecrãs que compõem o Protótipo de Alta Fidelidade --- foram apresentados à Softinsa, que reagiu de forma positiva e validou os conceitos propostos. Ao longo da implementação procurámos segui-los o mais fielmente possível, introduzindo apenas os ajustes necessários para assegurar a responsividade nos vários tamanhos de ecrã e para acomodar a totalidade dos requisitos do sistema.
 
 % ============================================================
 % Workflow de Aprovação e Ciclo de Vida do Pedido
