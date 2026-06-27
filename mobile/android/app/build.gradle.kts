@@ -14,7 +14,7 @@ dependencies {
 }
 
 android {
-    namespace = "com.example.mobile"
+    namespace = "com.softinsa.badges_platform"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -29,6 +29,7 @@ android {
 
     defaultConfig {
         applicationId = "com.softinsa.badges_platform"
+        buildToolsVersion = "34.0.0"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
