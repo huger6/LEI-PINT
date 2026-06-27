@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../core/utils/html_clipboard.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_links.dart';
@@ -130,7 +130,7 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
               imageOverrides: imageOverrides,
             );
 
-      await Clipboard.setData(ClipboardData(text: html));
+      await HtmlClipboard.copyHtml(html);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
