@@ -506,21 +506,53 @@
 }
 
 .galleryItem {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.9rem 0.6rem;
-	border: 1px solid var(--color-outline-light);
+	border: 2px solid var(--color-outline-light);
 	border-radius: 14px;
 	background: var(--color-surface);
 	text-align: center;
-	transition: border-color 0.15s, box-shadow 0.15s;
+	transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
+/* Selected → coloured border + a check badge in the top-right corner. */
 .galleryItemOn {
 	border-color: var(--color-primary);
 	box-shadow: 0 0 0 2px var(--color-primary-focus-ring);
+}
+
+/* In edit mode the whole card is the toggle. */
+.galleryItemEditable {
+	cursor: pointer;
+}
+
+.galleryItemEditable:hover {
+	border-color: var(--color-primary);
+	transform: translateY(-2px);
+}
+
+.galleryItemEditable:focus-visible {
+	outline: none;
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+}
+
+.galleryCheck {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--color-primary);
+	border: 2px solid var(--color-surface);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .galleryThumb {

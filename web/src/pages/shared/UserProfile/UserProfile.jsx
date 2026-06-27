@@ -703,29 +703,25 @@ export default function UserProfile() {
 								const badge = b.badge || {};
 								const on = !!b.isFeatured;
 								return (
-									<div key={b.awardedBadgeId} className={`${styles.galleryItem} ${on ? styles.galleryItemOn : ''}`}>
+									<div
+										key={b.awardedBadgeId}
+										className={`${styles.galleryItem} ${on ? styles.galleryItemOn : ''} ${editingGallery ? styles.galleryItemEditable : ''}`}
+										role={editingGallery ? 'button' : undefined}
+										tabIndex={editingGallery ? 0 : undefined}
+										aria-pressed={editingGallery ? on : undefined}
+										aria-busy={savingBadge === b.awardedBadgeId || undefined}
+										onClick={editingGallery ? () => toggleBadgeFeatured(b) : undefined}
+										onKeyDown={editingGallery ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBadgeFeatured(b); } } : undefined}
+									>
+										{on && (
+											<span className={styles.galleryCheck} aria-label={t('profile.onPublicProfile')}>
+												<Icon name="check" size={14} color="#fff" aria-hidden="true" />
+											</span>
+										)}
 										<div className={styles.galleryThumb}>
 											{badge.imageUrl ? <img src={badge.imageUrl} alt={badge.title || ''} /> : <Icon name="badge" size={28} color="var(--color-secondary)" />}
 										</div>
 										<span className={styles.galleryName}>{badge.title || '—'}</span>
-										{editingGallery ? (
-											<Button
-												variant={on ? 'filled' : 'outlined'}
-												color="primary"
-												size="sm"
-												loading={savingBadge === b.awardedBadgeId}
-												onClick={() => toggleBadgeFeatured(b)}
-											>
-												<Icon name={on ? 'bookmark-filled' : 'bookmark'} size={14} />
-												{t(on ? 'profile.onPublicProfile' : 'profile.showOnPublicProfile')}
-											</Button>
-										) : (
-											on && (
-												<span className={styles.galleryOnTag}>
-													<Icon name="bookmark-filled" size={13} /> {t('profile.onPublicProfile')}
-												</span>
-											)
-										)}
 									</div>
 								);
 							})}
