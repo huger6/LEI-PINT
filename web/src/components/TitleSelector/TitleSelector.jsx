@@ -10,48 +10,39 @@ import styles from './TitleSelector.module.css';
 // profile. Self-contained: fetches the unlocked titles and renders nothing when
 // the user has none, so it is safe to drop into any page (e.g. Settings).
 export default function TitleSelector() {
-	// Translation helper
 	const { t } = useTranslation();
-	// Titles the consultant has unlocked
 	const [titles, setTitles] = useState([]);
-	// The title currently displayed publicly (null = none)
-	const [activeTitle, setActiveTitleState] = useState(null);
-	// In-flight title-change flag
+	const [activeRewardGuid, setActiveRewardGuid] = useState(null);
 	const [saving, setSaving] = useState(false);
-	// Error message to display
 	const [error, setError] = useState(null);
 
-	// Load the unlocked titles and the currently active one
 	const load = useCallback(async () => {
 		try {
 			const data = await getTitles();
 			setTitles(data.titles || []);
-			setActiveTitleState(data.activeTitle || null);
+			setActiveRewardGuid(data.activeTitleRewardGuid || null);
 		} catch {
 			// Silent: a missing titles endpoint shouldn't break the settings page.
 		}
 	}, []);
 
-	// Fetch on mount
 	useEffect(() => { load(); }, [load]);
 
-	// Set (or clear) the publicly displayed title; optimistic with revert on error
-	async function chooseTitle(title) {
-		const prev = activeTitle;
-		setActiveTitleState(title);
+	async function chooseTitle(rewardGuid) {
+		const prev = activeRewardGuid;
+		setActiveRewardGuid(rewardGuid);
 		setSaving(true);
 		setError(null);
 		try {
-			await setActiveTitle(title);
+			await setActiveTitle(rewardGuid);
 		} catch (err) {
-			setActiveTitleState(prev);
+			setActiveRewardGuid(prev);
 			setError(resolveErrorMessage(err));
 		} finally {
 			setSaving(false);
 		}
 	}
 
-	// Nothing unlocked yet → render nothing
 	if (titles.length === 0) return null;
 
 	return (
@@ -62,21 +53,21 @@ export default function TitleSelector() {
 			<div className={styles.titlesRow}>
 				<button
 					type="button"
-					className={`${styles.titleChip} ${!activeTitle ? styles.titleChipActive : ''}`}
+					className={`${styles.titleChip} ${!activeRewardGuid ? styles.titleChipActive : ''}`}
 					onClick={() => chooseTitle(null)}
 					disabled={saving}
 				>
 					{t('store.noTitle')}
 				</button>
-				{titles.map((title) => (
+				{titles.map((item) => (
 					<button
-						key={title}
+						key={item.rewardGuid}
 						type="button"
-						className={`${styles.titleChip} ${activeTitle === title ? styles.titleChipActive : ''}`}
-						onClick={() => chooseTitle(title)}
+						className={`${styles.titleChip} ${activeRewardGuid === item.rewardGuid ? styles.titleChipActive : ''}`}
+						onClick={() => chooseTitle(item.rewardGuid)}
 						disabled={saving}
 					>
-						<Icon name="badge-premium" size={14} aria-hidden="true" /> {title}
+						<Icon name="badge-premium" size={14} aria-hidden="true" /> {item.title}
 					</button>
 				))}
 			</div>
