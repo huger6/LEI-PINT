@@ -1089,6 +1089,232 @@ O sistema implementa uma hierarquia de preferências a dois níveis que permite 
 A resolução de preferências é efetuada pela função \texttt{resolvePreferences()}, que consulta primeiro a preferência global e aplica as sobreposições do utilizador. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente. No \textit{frontend}, o administrador dispõe de uma página dedicada para configurar as preferências globais, enquanto cada utilizador pode personalizar as suas preferências individuais através do componente \texttt{NotificationPreferences}.
 
 % ============================================================
+% Implementação Técnica de Funcionalidades
+% ============================================================
+\chapter{Implementação Técnica de Funcionalidades}
+\label{ch:implementacao-tecnica}
+
+Este capítulo apresenta as decisões técnicas e os mecanismos transversais que sustentam o funcionamento do ecossistema, abrangendo tanto a API REST como a aplicação web. O foco incide sobre a infraestrutura de segurança, desempenho, comunicação e resiliência que permeia todas as funcionalidades descritas nos capítulos anteriores.
+
+\section{Segurança da Camada HTTP}
+
+A segurança da API é implementada como uma cadeia de \textit{middleware} configurada no ficheiro \texttt{app.js}, que cada pedido HTTP atravessa sequencialmente antes de atingir qualquer lógica aplicacional. Esta cadeia foi desenhada para mitigar as ameaças mais comuns identificadas pelo OWASP Top Ten~\cite{owasp}.
+
+O Helmet~\cite{helmet} abre a cadeia, injetando automaticamente um conjunto de cabeçalhos HTTP de segurança em todas as respostas: a \texttt{Content-Security-Policy} restringe as fontes de conteúdo executável, o \texttt{X-Frame-Options} impede o carregamento da API em \textit{iframes} para prevenir \textit{clickjacking}, e o \texttt{X-Content-Type-Options} com o valor \texttt{nosniff} impede o \textit{browser} de reinterpretar o tipo MIME das respostas.
+
+A configuração de CORS restringe as origens aceites exclusivamente aos domínios da aplicação cliente, definidos nas variáveis de ambiente \texttt{APP\_URL} e \texttt{WEB\_APP\_URL}, com suporte a credenciais por \textit{cookies} e sem utilização de \textit{wildcard}. Pedidos de domínios não autorizados são rejeitados antes de atingirem qualquer rota.
+
+O \textit{parsing} do corpo dos pedidos aceita JSON e dados URL-encoded com um limite rigoroso de 100\,KB, protegendo contra ataques de negação de serviço por \textit{payloads} excessivos. Os ficheiros de evidência, que podem atingir 10\,MB, são carregados diretamente para o Supabase~\cite{supabase} pelo \textit{browser}, sem transitar pelo corpo dos pedidos da API.
+
+A proteção contra ataques de força bruta é implementada através do \texttt{express-rate-limit}, com configurações calibradas por \textit{endpoint} para equilibrar usabilidade e segurança:
+
+\begin{itemize}
+  \item \textbf{Login:} 10 tentativas por janela de 15 minutos;
+  \item \textbf{Registo e recuperação de password:} 5 tentativas por hora;
+  \item \textbf{Reset e alteração de password:} 10 tentativas por janela de 15 minutos;
+  \item \textbf{Refresh de token:} 100 pedidos por janela de 15 minutos, valor mais permissivo para acomodar o \textit{polling} automático da SPA;
+  \item \textbf{Reenvio de confirmação:} 5 tentativas por hora.
+\end{itemize}
+
+\noindent Estas configurações tornam inviáveis os ataques automatizados de enumeração de credenciais, mantendo a utilização normal da plataforma sem fricção.
+
+A prevenção de Cross-Site Scripting (XSS) é assegurada pela biblioteca \texttt{sanitize-html}, que filtra todos os campos de texto livre antes do armazenamento, removendo \textit{tags} HTML, atributos perigosos e \textit{scripts} embutidos. Complementarmente, o \texttt{leo-profanity} com dicionários carregados para Português e Espanhol filtra palavras inadequadas em campos como nomes, biografias e comentários.
+
+\section{Autenticação e Gestão de Sessão}
+
+O sistema de autenticação implementa um fluxo completo baseado em JSON Web Tokens~\cite{jwt}, concebido para equilibrar segurança, usabilidade e resiliência a ataques comuns.
+
+\subsection{Registo e Hashing de Credenciais}
+
+O processo de registo inicia-se com a submissão dos dados do utilizador, onde a password é imediatamente sujeita a \textit{hashing} com bcryptjs~\cite{bcrypt} utilizando 12 \textit{salt rounds} ($2^{12} = 4096$ iterações). Este valor foi selecionado para equilibrar resistência a ataques de dicionário com tempo de resposta aceitável. A criação do utilizador e do registo específico do papel (Consultor, Talent Manager ou Service Line Leader) ocorre numa transação atómica --- se qualquer passo falhar, toda a operação é revertida. Após a criação, é enviado um email de confirmação contendo um token único com validade de 8 horas; o token é armazenado na base de dados sob forma de \textit{hash} SHA-256, nunca em texto simples.
+
+\subsection{Fluxo de Login e Tokens}
+
+O \textit{login} valida as credenciais via comparação bcrypt e, em caso de sucesso, gera dois tokens complementares. O \textit{access token} JWT, com duração configurável (15 minutos por omissão), contém o identificador do utilizador, o seu papel e a \textit{flag} de mudança forçada de password (\texttt{fpc}), sendo armazenado exclusivamente em memória no lado do cliente --- nunca em \texttt{localStorage} ou \texttt{sessionStorage}, mitigando o risco de roubo por XSS. O \textit{refresh token}, de longa duração, é armazenado na base de dados sob forma de \textit{hash} e enviado ao cliente como \textit{cookie} HTTP-only com atributo \texttt{SameSite} configurado como \texttt{None} em produção (para suportar comunicação \textit{cross-domain}) e \texttt{Lax} em desenvolvimento, com o atributo \texttt{Secure} ativado em produção.
+
+Quando o \textit{access token} expira, o cliente envia automaticamente o \textit{refresh token} para obter um novo \textit{access token} sem necessidade de re-autenticação. O \textit{logout} revoga o \textit{refresh token} na base de dados, impedindo futuras renovações.
+
+\subsection{Modos de Sessão e Monitorização de Atividade}
+
+A aplicação web implementa dois modos de sessão distintos, selecionáveis pelo utilizador na interface de \textit{login}. A sessão persistente (``Lembrar-me'') mantém uma janela de atividade de 5 minutos para renovação do token, sem desconexão forçada por inatividade, enquanto a sessão efémera utiliza uma janela de 10 minutos, após a qual o utilizador é desconectado automaticamente. A monitorização de atividade é realizada no \textit{frontend} através de \textit{event listeners} nos eventos \texttt{mousemove}, \texttt{click} e \texttt{keydown}, com \textit{debounce} de 10 segundos para evitar processamento excessivo. Um verificador periódico executa a cada 30 segundos: se o tempo restante do \textit{access token} for inferior a 60 segundos e existir atividade recente dentro da janela configurada, o \textit{refresh} é acionado proativamente; caso contrário, a sessão é encerrada por inatividade.
+
+A deduplicação de chamadas de \textit{refresh} é garantida pela memoização da Promise: quando múltiplos pedidos simultâneos recebem HTTP 401, todos aguardam a mesma Promise de \textit{refresh} em vez de dispararem chamadas redundantes.
+
+\subsection{Mudança Forçada de Password}
+
+Quando o campo \texttt{force\_password\_change} está ativo no registo do utilizador, o \textit{middleware} de autenticação bloqueia todos os \textit{endpoints} exceto o de alteração de password, devolvendo HTTP 403. No lado do cliente, a guarda de rota \texttt{ProtectedRoute} deteta a \textit{flag} \texttt{fpc} no token JWT e redireciona o utilizador para a página de alteração de password, impedindo qualquer outra interação até que a mudança seja efetuada.
+
+\section{Controlo de Acesso Baseado em Papéis}
+
+O controlo de acesso opera em três níveis complementares: \textit{middleware} de rota no \textit{backend}, guardas de rota no \textit{frontend} e filtragem de dados ao nível da \textit{query} SQL.
+
+\subsection{Middleware de Autorização}
+
+O \textit{middleware} \texttt{loginRequired} verifica a presença e validade do JWT no cabeçalho de autorização, extraindo os dados do utilizador para \texttt{req.user}. O \textit{middleware} \texttt{checkRole} é uma função fábrica que recebe uma lista de papéis permitidos e gera um verificador, originando dois atalhos frequentes: \texttt{isAdmin} (apenas Administrador) e \texttt{leadership} (Service Line Leader, Talent Manager ou Administrador). O \texttt{optionalAuth} tenta decodificar o JWT sem bloquear o pedido caso falhe, sendo utilizado em rotas públicas que apresentam conteúdo diferente para utilizadores autenticados. O \texttt{anonymousUsersOnly} impede utilizadores já autenticados de aceder a \textit{endpoints} de registo e \textit{login}.
+
+\subsection{Filtragem de Dados por Papel}
+
+A autorização não se limita a bloquear ou permitir \textit{endpoints} --- a filtragem de dados é aplicada ao nível da \textit{query} SQL. Quando um Consultor lista as suas candidaturas, a \textit{query} inclui automaticamente a restrição ao seu identificador; quando um Service Line Leader consulta candidaturas, é adicionado um filtro pela sua Service Line. Esta abordagem garante que dados não autorizados nunca transitam pela rede, mesmo em caso de erro na lógica do controlador.
+
+\subsection{Guardas de Rota no Frontend}
+
+No lado do cliente, o sistema implementa três níveis de proteção. O \texttt{ProtectedRoute} verifica se o utilizador está autenticado, redirecionando para a página de \textit{login} caso contrário, e suporta renderização otimista durante o carregamento quando existe uma sessão registada em \texttt{localStorage}, evitando um \textit{flash} do ecrã de carregamento. O \texttt{RoleRoute} verifica se o papel do utilizador está incluído nos papéis permitidos, renderizando uma página de erro 403 caso contrário. O \texttt{PublicRoute} envolve as rotas de autenticação, impedindo o acesso por utilizadores já autenticados.
+
+\section{Validação e Sanitização de Dados de Entrada}
+
+A validação constitui uma barreira dupla --- implementada tanto no \textit{backend} como no \textit{frontend} --- que rejeita dados não conformes antes de atingirem a lógica de negócio ou a base de dados.
+
+\subsection{Esquemas Zod no Backend}
+
+A validação no servidor está centralizada na diretória \texttt{validations/} e utiliza a biblioteca Zod~\cite{zod} para definição de esquemas com tipagem estrita. Um \textit{middleware} dedicado interceta os erros de validação e devolve respostas HTTP 400 com erros detalhados por campo, padronizados através de um mapa de códigos de erro que traduz os códigos internos do Zod para códigos legíveis por máquina.
+
+O ficheiro de regras partilhadas (\texttt{shared-rules.js}) define funções de validação reutilizáveis para campos comuns: nomes completos com 2 a 255 caracteres, sanitização HTML e formatação de nome próprio; \textit{usernames} alfanuméricos de 3 a 50 caracteres; \textit{emails} com formato válido; \textit{passwords} de 8 a 100 caracteres com obrigatoriedade de maiúscula, minúscula, número e carácter especial; números de telefone em formato internacional (7 a 15 dígitos); datas de nascimento com validação de idade mínima de 16 anos; e biografias com limites de 5000 caracteres ou 500 palavras.
+
+Os esquemas por domínio agrupam estas regras em validações contextuais. Destaca-se o esquema de registo, que utiliza uma \textit{discriminated union} por papel, onde os campos obrigatórios variam consoante se trate de Consultor, Talent Manager ou Service Line Leader.
+
+\subsection{Validação de Upload de Ficheiros}
+
+A segurança no \textit{upload} de ficheiros aplica quatro controlos sequenciais: verificação dos tipos MIME permitidos (PDF, JPEG, PNG, ZIP), limite de tamanho de 10\,MB, obrigatoriedade de extensão válida no nome do ficheiro, e validação prévia ao URL assinado que impede \textit{uploads} de ficheiros excessivos antes mesmo da geração do URL. Os URLs de imagem de perfil são validados contra o caminho de armazenamento temporário do Supabase, impedindo a injeção de URLs externos.
+
+\subsection{Validação no Frontend}
+
+No lado do cliente, a validação está centralizada na pasta \texttt{validations/} e assenta em dois \textit{hooks} React complementares. O \texttt{useFormValidation} gere o estado do formulário sem bibliotecas externas, mantendo valores, campos tocados, erros e a \textit{flag} de tentativa de submissão, com lógica de visibilidade que apenas apresenta erros quando o campo foi tocado ou a submissão foi tentada. A extensão \texttt{useFormWithServerErrors} mescla erros de validação do cliente com erros campo-a-campo retornados pelo servidor, dando prioridade aos erros do cliente e limpando automaticamente os erros do servidor quando o utilizador interage com o campo afetado. Os campos com erros recebem bordo e fundo na cor de erro, com mensagem descritiva em texto vermelho.
+
+\section{Estratégia de Cache com Redis}
+
+A performance da API é sustentada por uma camada de \textit{cache} centralizada que abstrai a complexidade do armazenamento temporário por detrás de uma interface uniforme de três operações fundamentais: \texttt{get}, \texttt{set} e \texttt{invalidate}.
+
+\subsection{Arquitetura e Fallback}
+
+Em ambiente de produção, a camada utiliza a biblioteca \texttt{ioredis} para comunicar com uma instância Redis~\cite{redis} externa, tirando partido da sua velocidade de leitura sub-milissegundo. A estratégia de conexão inclui \textit{backoff} exponencial com atraso máximo de 2000\,ms e 3 tentativas por pedido. Em ambientes de desenvolvimento ou cenários onde o Redis não esteja disponível, o módulo degrada graciosamente para um \textit{fallback} em memória baseado em \texttt{Map}, assegurando que a API continua funcional sem dependências externas obrigatórias. Em produção, a presença do Redis é obrigatória para funcionalidades críticas como limitação de taxa e bloqueio de contas.
+
+\subsection{Padrão Cache-Aside}
+
+A utilização nos controladores segue consistentemente a estratégia \textit{cache-aside}: o controlador verifica primeiro se existe uma entrada válida em \textit{cache} para a chave correspondente ao pedido; se existir, devolve imediatamente os dados cacheados sem consultar a base de dados; caso contrário, executa a \textit{query} ao PostgreSQL~\cite{postgresql}, armazena o resultado com um TTL apropriado, e só então devolve a resposta. Este padrão reduz drasticamente a carga sobre a base de dados em cenários de leitura repetida, que constituem a maioria dos pedidos da plataforma.
+
+\subsection{Construção de Chaves e Invalidação}
+
+As chaves de \textit{cache} seguem uma convenção hierárquica baseada em prefixos. A listagem de badges, por exemplo, gera chaves no formato \texttt{badge:list:\{hash\}}, onde o \textit{hash} incorpora todos os filtros e parâmetros de paginação aplicados. O perfil do utilizador autenticado é cacheado sob a chave \texttt{user:profile:\{user\_id\}}.
+
+A invalidação segue um modelo por prefixo: quando ocorre uma operação de escrita que altera o estado de um domínio, o controlador invalida todas as chaves cujo prefixo corresponda ao domínio afetado. Esta abordagem elimina de uma só vez todas as variantes de listagem cacheadas, independentemente da combinação específica de filtros que as gerou. O módulo de avisos destaca-se pela implementação de TTL dinâmico, calculado com base na próxima data de alteração de visibilidade dos avisos ativos --- quando um aviso entra ou sai do período de vigência, o \textit{cache} é automaticamente invalidado sem intervenção manual.
+
+\section{Comunicação em Tempo Real}
+
+A comunicação em tempo real assenta no Socket.IO~\cite{socketio}, partilhando o porto HTTP com o Express~\cite{expressjs} através de um servidor HTTP único. Esta decisão arquitetural elimina a necessidade de infraestrutura adicional para suportar WebSockets.
+
+\subsection{Autenticação e Salas}
+
+A autenticação do WebSocket verifica o JWT durante o \textit{handshake} inicial, extraindo o token do objeto \texttt{socket.handshake.auth.token}. Conexões sem token válido são rejeitadas com códigos de erro específicos (\texttt{AUTH\_TOKEN\_NOT\_PROVIDED} ou \texttt{AUTH\_TOKEN\_INVALID}). Cada utilizador autenticado é automaticamente associado a uma sala privada \texttt{user:\{userId\}}, permitindo o envio direcionado de eventos através da função \texttt{emitToUser(userId, event, data)}, que transmite para todos os dispositivos conectados do utilizador.
+
+\subsection{Reconexão e Resiliência}
+
+No lado do cliente, o Socket.IO está configurado com reconexão automática: tentativas infinitas, atraso inicial de 1 segundo com crescimento exponencial até um máximo de 30 segundos. A cada tentativa de reconexão, o \textit{socket} obtém o token JWT mais recente do interceptor Axios~\cite{axios}, garantindo que reconexões após um \textit{refresh} de token utilizam credenciais atualizadas. Se o Socket.IO não estiver disponível no servidor, o WebSocket é desativado graciosamente sem afetar o funcionamento da API REST.
+
+Os eventos tratados no \textit{frontend} incluem \texttt{notification:new} (nova notificação adicionada ao topo da lista com incremento de contadores), \texttt{notification:read} (atualização de estado e decremento de contador) e \texttt{notification:all-read} (reinício de contadores). A receção de uma notificação pode desencadear a atualização automática de dados noutras páginas --- por exemplo, a lista de candidaturas é refrescada quando chega uma notificação de validação.
+
+\section{Tarefas Agendadas em Segundo Plano}
+
+A API inclui quatro \textit{workers} agendados via node-cron~\cite{nodecron} que executam em paralelo com o servidor HTTP, inicializados automaticamente durante o arranque da aplicação.
+
+O \textit{worker} de expiração de badges executa a cada hora, identificando badges cuja data de expiração se aproxima e enviando alertas progressivos nos limiares de 30, 7 e 1 dia, com notificação final no momento da expiração. A idempotência é garantida pelo registo do último limiar notificado, impedindo duplicação de alertas.
+
+Os \textit{workers} de SLA executam a cada 15 minutos em duas variantes: o \textit{worker} global identifica candidaturas nos estados \texttt{Submitted} ou \texttt{In validation} cujo tempo de permanência excede o tempo de resposta configurado no SLA aplicável; o \textit{worker} personalizado aplica a mesma lógica para regras específicas por Service Line. Ambos verificam na tabela \texttt{sla\_breach\_alerts} se a combinação (SLA, candidatura, utilizador) já foi notificada, e um índice único composto garante a unicidade a nível da base de dados.
+
+O \textit{worker} de lembretes de objetivos executa a cada hora, identificando metas cuja data-alvo se aproxima (7 dias de antecedência) e enviando notificações e emails aos consultores.
+
+Todos os alertas são entregues simultaneamente através dos três canais disponíveis --- notificação \textit{in-app} via WebSocket, notificação \textit{push} via Firebase~\cite{firebase} e email via Nodemailer~\cite{nodemailer} --- conforme as preferências configuradas.
+
+\section{Armazenamento de Ficheiros}
+
+O armazenamento de ficheiros integra com o Supabase Storage~\cite{supabase}, utilizando dois \textit{buckets} com finalidades distintas: \texttt{public-assets} para imagens de perfil e badges com URLs públicos, e \texttt{private-assets} para ficheiros de evidência com URLs assinados de curta duração.
+
+O fluxo de \textit{upload} segue um padrão de URL pré-assinado que elimina a necessidade de os ficheiros transitarem pelo servidor da API. O cliente valida localmente o ficheiro (tipo MIME, extensão e tamanho), obtém um URL de \textit{upload} assinado com validade de 5 minutos através da API, envia o ficheiro diretamente para o Supabase via pedido HTTP, e comunica à API o caminho do ficheiro para associação ao registo correspondente. Os nomes de ficheiro são tornados únicos pela adição de um \textit{timestamp}, e cada segmento do caminho é codificado para URL.
+
+Os ficheiros são inicialmente carregados para uma pasta temporária (\texttt{temp/}). Quando a operação é confirmada (por exemplo, a submissão de uma candidatura), o servidor move os ficheiros para a localização permanente. O \textit{download} de ficheiros privados utiliza igualmente URLs assinados com validade de 5 minutos, garantindo que o acesso é temporário e auditável.
+
+O \textit{upload} de buffers gerados pelo servidor (como certificados PDF) é suportado diretamente, com especificação do \textit{content type}. Em ambiente de desenvolvimento sem Supabase configurado, os ficheiros são escritos localmente na pasta \texttt{logs/dev\_storage} e servidos por uma rota dedicada.
+
+\section{Sistema de Notificações Multicanal}
+
+O sistema de notificações opera em três canais complementares, unificados por uma hierarquia de preferências configurável a dois níveis.
+
+\subsection{Canais de Entrega}
+
+As notificações \textit{in-app} são geridas pela tabela \texttt{notifications}, que armazena instâncias concretas com \textit{payload} JSON, URL de ação, tipo categorizado (HOME, BADGES, APPLICATIONS, ACHIEVEMENTS, POINTS, OBJECTIVES, EVOLUTION, ANNOUNCEMENTS, SYSTEM) e \textit{flag} de leitura. A entrega em tempo real ao \textit{frontend} é efetuada através do WebSocket, e o componente \texttt{NotificationIcon} na barra superior apresenta um indicador com a contagem de notificações não lidas por tipo, permitindo ao utilizador aceder ao painel com filtros por tipo e estado de leitura. No menu lateral, cada secção exibe indicadores visuais quando existem notificações não lidas do tipo correspondente.
+
+As notificações \textit{push} para a aplicação móvel são enviadas através do Firebase Cloud Messaging. O sistema gere os tokens FCM na tabela \texttt{device\_tokens}, detetando e desativando automaticamente tokens obsoletos após falhas de envio (código \texttt{messaging/registration-token-not-registered}). O envio para tópicos segmentados por papel é suportado através da função \texttt{sendTopicUpdate}.
+
+As notificações por email utilizam Nodemailer~\cite{nodemailer} com transporte SMTP Gmail. Cada tipo de email dispõe de \textit{templates} HTML nos três idiomas suportados (pt-PT, en-GB, es-ES), selecionados automaticamente com base no idioma preferido do destinatário. Os \textit{templates} incluem a identidade visual da Softinsa, botões de ação e ligações de \textit{fallback} em texto simples.
+
+\subsection{Hierarquia de Preferências}
+
+As preferências globais, definidas pelo administrador na tabela \texttt{notification\_preferences}, estabelecem os valores predefinidos para cada tipo de notificação nos campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push}. Cada utilizador pode sobrepor estes valores através da tabela \texttt{user\_notification\_preferences}, onde campos com valor \texttt{NULL} herdam automaticamente o valor global. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente.
+
+\section{Internacionalização e Tradução Dinâmica}
+
+A plataforma implementa um sistema de internacionalização em duas camadas, cobrindo tanto as \textit{strings} estáticas da interface como os conteúdos dinâmicos da base de dados.
+
+\subsection{Strings Estáticas com i18next}
+
+A internacionalização da interface utiliza o i18next~\cite{i18next} com deteção automática do idioma do \textit{browser} e \textit{fallback} para Português. A configuração define dois \textit{namespaces}: \texttt{common} para \textit{strings} de UI com aproximadamente 2100 linhas por idioma, e \texttt{api} para mensagens de erro traduzidas com cerca de 101 linhas por idioma. Os três idiomas suportados --- Português, Inglês e Espanhol --- são carregados como importações estáticas de ficheiros JSON. As traduções utilizam interpolação de variáveis e formas plurais para pluralização contextual. A mudança de idioma atualiza imediatamente a interface via \texttt{i18next.changeLanguage()}, persiste a preferência no servidor e atualiza o estado local no contexto React.
+
+No \textit{backend}, o idioma preferido de cada utilizador é armazenado como chave estrangeira para a tabela \texttt{languages}. Os \textit{templates} de email são codificados por idioma no serviço de email, sendo automaticamente selecionado o \textit{template} correspondente ao idioma do destinatário. Os certificados PDF também são gerados no idioma preferido do consultor.
+
+\subsection{Conteúdos Dinâmicos com Tradução Automática}
+
+Os conteúdos dinâmicos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são armazenados originalmente em Português e traduzidos automaticamente em tempo de execução. A API integra com a Google Cloud Translation API~\cite{googletranslate} através de um serviço dedicado que implementa várias otimizações: deteção automática do idioma de origem pela biblioteca \texttt{franc-min} (com mínimo de 15 caracteres para deteção fiável), \textit{cache} Redis com TTL de 7 dias indexada por \textit{hash} MD5 do conteúdo e idioma, e tradução em lote com envio de apenas os textos não cacheados numa única chamada. Em caso de falha na API externa, o serviço degrada graciosamente devolvendo os textos originais.
+
+No \textit{frontend}, o \texttt{TranslationContext} gere uma fila de textos pendentes com \textit{batching} temporal de 60 milissegundos, agregando múltiplos textos individuais num único pedido HTTP. O componente \texttt{TranslatedText} encapsula qualquer texto dinâmico, exibindo o texto original enquanto a tradução é carregada e substituindo-o de forma transparente assim que a Promise é resolvida. Um \textit{cache} local em memória, indexado por idioma e texto original, evita chamadas repetidas para textos já traduzidos na sessão corrente. Quando o idioma ativo é Português, nenhuma tradução é efetuada.
+
+\section{Logging e Rastreabilidade de Pedidos}
+
+O sistema de \textit{logging} utiliza a biblioteca Winston, configurada com transportes diferenciados por ambiente: em produção, apenas consola com nível configurável via variável de ambiente; em desenvolvimento, ficheiro adicional (\texttt{logs/api-debug.log}) em nível \textit{debug}.
+
+O \textit{middleware} de \textit{logging} de pedidos regista cada pedido e resposta com detalhes operacionais: método HTTP, URL, endereço IP, \textit{user-agent}, parâmetros de \textit{query}, corpo do pedido, código de estado, tempo de resposta em milissegundos e tamanho da resposta. Cada pedido recebe um identificador único (\texttt{X-Request-ID}) para rastreabilidade.
+
+A proteção de dados sensíveis é implementada por uma função de redação que substitui automaticamente os valores dos campos sensíveis --- \texttt{password}, \texttt{token}, \texttt{authorization}, \texttt{secret}, \texttt{apikey}, \texttt{api\_key}, \texttt{access\_token}, \texttt{refresh\_token}, \texttt{cookie} e \texttt{set-cookie} --- pelo texto \texttt{[REDACTED]}. A função trata também referências circulares, apresenta o tamanho de \textit{buffers} sem expor o conteúdo, e trunca \textit{strings} superiores a 2000 caracteres. Pedidos abortados pelo cliente são igualmente detetados e registados.
+
+\section{Gestão de Estado no Frontend}
+
+A aplicação web utiliza cinco contextos React~\cite{react} como mecanismo principal de gestão de estado global, aninhados numa ordem deliberada no ficheiro \texttt{App.jsx} para garantir que cada \textit{provider} tem acesso aos dados dos \textit{providers} exteriores.
+
+O \texttt{AuthContext} é responsável pelo ciclo de vida da sessão de autenticação, gerindo o token JWT em memória, o estado de autenticação, o mecanismo de \textit{refresh} automático e a monitorização de atividade com os dois modos de sessão descritos na secção de autenticação.
+
+O \texttt{UserContext} gere o perfil do utilizador autenticado, os pontos de gamificação (para Consultores) e todo o subsistema de notificações. Integra-se com o WebSocket para receber notificações em tempo real, mantendo contadores por tipo e expondo métodos para marcar notificações como lidas, buscar notificações paginadas e atualizar o perfil. A última notificação recebida é exposta a páginas subscritoras para desencadear \textit{re-fetches} reativos.
+
+O \texttt{LanguageContext} carrega e armazena em \textit{cache} a lista de idiomas disponíveis da API, com memoização de Promise para garantir uma única chamada por ciclo de vida. O \texttt{TranslationContext} gere o sistema de tradução dinâmica de conteúdos da base de dados, conforme descrito na secção de internacionalização. O \texttt{GdprConsentContext} centraliza o fluxo de consentimento de privacidade, expondo um método \texttt{requestConsent()} que apresenta o modal de aceitação da política quando necessário e confirma automaticamente quando o consentimento já foi previamente concedido.
+
+A comunicação HTTP com a API está centralizada numa instância Axios~\cite{axios} com interceptor de pedido que injeta automaticamente o cabeçalho de autorização. O interceptor de resposta implementa \textit{retry} automático para respostas 401: marca o pedido com \textit{flag} de \textit{retry} para evitar ciclos infinitos, tenta um \textit{refresh} do token, reenvia o pedido original com o novo token em caso de sucesso, ou dispara um evento global de \textit{logout} (\texttt{auth:logout}) em caso de falha.
+
+\section{Conformidade com o RGPD}
+
+A conformidade com o Regulamento Geral sobre a Proteção de Dados~\cite{rgpd} é assegurada por um módulo dedicado que abrange políticas, consentimentos, exportação de dados e eliminação de conta.
+
+As políticas são geridas na tabela \texttt{gdpr\_policies} com suporte a três tipos (Privacidade, Termos e \textit{Cookies}), cada um com versionamento semântico e \textit{flag} de obrigatoriedade. A comparação de versões permite que apenas a versão mais recente de cada tipo permaneça ativa, com reconciliação automática. As políticas obrigatórias são automaticamente aceites durante o registo do utilizador, com registo na tabela \texttt{gdpr\_consent\_history}.
+
+O histórico de consentimentos é um registo imutável que documenta cada ação (ACCEPTED ou REVOKED) com \textit{timestamp}, endereço IP, \textit{user-agent} e versão da política. O campo \texttt{gdpr\_accepted} na tabela de consultores permite rastreio rápido do estado de consentimento. A aplicação web implementa um \textit{gate} de consentimento que verifica a versão da política aceite antes de permitir ações como publicação de badges ou partilha de perfil público.
+
+O módulo disponibiliza ainda a exportação de todos os dados pessoais em formato JSON e um \textit{endpoint} de eliminação de conta (\texttt{/api/gdpr/delete-account}), permitindo ao utilizador exercer o seu direito ao esquecimento com \textit{logout} automático subsequente.
+
+\section{Verificação Pública de Credenciais e Certificados}
+
+Cada badge atribuído recebe automaticamente uma ligação pública de verificação (\texttt{public\_verification\_link}), gerada no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade de uma credencial, visualizando o título do badge, a descrição, os pontos, o nome do detentor e as datas de atribuição e expiração. A proteção contra XSS é assegurada pelo escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
+
+A geração de certificados em formato PDF utiliza a biblioteca PDFKit~\cite{pdfkit}, compondo documentos personalizados em orientação paisagem A4 com dupla moldura, título do badge, nome do consultor, descrição, datas de conclusão, nomes dos revisores (Talent Manager e Service Line Leader), código QR de verificação (300$\times$300 píxeis) e rodapé institucional. O conteúdo textual é adaptado ao idioma preferido do consultor. A geração é idempotente --- se o certificado já existir para uma candidatura, o sistema devolve o ficheiro existente sem criar duplicado. Os certificados são armazenados no Supabase e disponibilizados através de URLs assinados com validade temporal limitada.
+
+\section{Arquitetura CSS e Design Responsivo}
+
+A estilização da aplicação web segue uma abordagem em três camadas: Bootstrap~5.3~\cite{bootstrap} como \textit{framework} de base com \textit{overrides} customizados; um sistema completo de \textit{design tokens} em variáveis CSS globais definidas no ficheiro \texttt{colors.css}; e 149 ficheiros CSS Modules com escopo isolado por componente, garantindo zero conflitos de nomes.
+
+O sistema de variáveis CSS define mais de cem propriedades semânticas que abrangem todas as camadas visuais: cores primária (ciano), secundária (azul), erro (vermelho), sucesso (verde) e aviso (âmbar), com variantes de opacidade para estados interativos; gradientes para campos e painéis; cores suaves para cartões; intensidades de \textit{heatmap}; e sombras de cartão. A nomenclatura segue princípios do Material Design 3, com pares de cor semânticos que garantem conformidade WCAG AA de contraste.
+
+A plataforma suporta um sistema de temas dual (claro e escuro), controlado pelo atributo \texttt{data-theme} no elemento raiz do documento HTML. Quando o valor \texttt{dark} é aplicado, todas as variáveis CSS são redefinidas: os fundos claros são substituídos por tons escuros, as cores de ênfase mantêm a saturação com opacidades ajustadas, e os componentes de visualização de dados dispõem de escalas cromáticas adaptadas. A preferência é persistida em \texttt{localStorage} e aplicada instantaneamente sem recarregamento.
+
+A responsividade é garantida desde 300\,px de largura, utilizando uma abordagem \textit{mobile-first} com \textit{breakpoints} progressivos: 360\,px e 400\,px para telefones muito pequenos, 480\,px e 576\,px para \textit{smartphones} com grelhas de coluna única e botões empilhados, 768\,px e 991\,px para \textit{tablets} com transição do menu lateral, e 1200\,px para \textit{desktop} com grelhas expandidas. O menu lateral comporta-se de forma adaptativa: em \textit{desktop}, apresenta-se como uma barra de ícones colapsável (74\,px) expansível para barra completa (280\,px); em dispositivos móveis, transforma-se num \textit{drawer} deslizante com \textit{backdrop}, fechando automaticamente após clique numa ligação. A deteção de \textit{breakpoint} é efetuada em tempo real via \texttt{window.matchMedia}.
+
+Todas as animações CSS --- \textit{spinners}, entrada de \textit{toasts}, \textit{modais}, \textit{skeletons} com efeito \textit{shimmer}, brilho de badges especiais e \textit{confetti} de celebração --- respeitam a \textit{media query} \texttt{prefers-reduced-motion: reduce}, desativando efeitos para utilizadores com sensibilidade a movimento.
+
+% ============================================================
 % Considerações Adicionais
 % ============================================================
 \chapter{Considerações Adicionais}
@@ -1148,12 +1374,6 @@ A geração é idempotente: se o certificado já tiver sido gerado previamente p
 O sistema de gamificação é complementado por uma loja de recompensas que permite aos consultores converter os pontos acumulados em benefícios concretos. O administrador pode criar e gerir recompensas (\texttt{rewards}) com custo em pontos, descrição e informação de acesso (como ligações para cursos ou códigos de acesso a recursos). As recompensas podem ser ativadas ou desativadas sem remoção dos dados.
 
 Os consultores visualizam as recompensas disponíveis e o seu saldo de pontos atual, podendo efetuar resgates quando dispõem de pontos suficientes. Cada resgate é registado na tabela \texttt{reward\_redemptions} com rastreabilidade completa, e o consultor recebe uma notificação por e-mail com os detalhes de acesso à recompensa obtida. Este módulo acrescenta uma dimensão tangível ao sistema de pontos, reforçando a motivação para a formação contínua.
-
-\section{Integrações com Plataformas Externas}
-
-A plataforma suporta a integração com ferramentas de comunicação empresarial --- Slack e Microsoft Teams --- através de \textit{webhooks} configuráveis pelo administrador. Quando um evento relevante ocorre (como a atribuição de um badge ou a obtenção de uma conquista especial), o sistema formata e envia automaticamente uma notificação para o canal configurado.
-
-As mensagens para o Slack utilizam o formato Block Kit, incluindo imagens, botões de ação e formatação rica. As mensagens para o Microsoft Teams utilizam o formato Adaptive Cards, com estrutura equivalente adaptada ao ecossistema Microsoft. O administrador pode configurar múltiplos canais, ativar ou desativar individualmente cada integração e testar a conectividade dos \textit{webhooks} antes da sua ativação em produção. As falhas de envio são registadas sem impacto no fluxo principal da aplicação, seguindo o padrão \textit{fire-and-forget} adotado nos restantes módulos de notificação.
 
 % ============================================================
 % Conclusão
