@@ -3,7 +3,7 @@ const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
-const { generateSignedUploadUrl, generateSignedDownloadUrl } = require('../services/storage.service');
+const { generateSignedUploadUrl, generateSignedDownloadUrl, generateSignedPreviewUrl, deleteFile } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
 const { broadcastToWebhooks } = require('../services/integrations.service');
@@ -12,10 +12,15 @@ const {
     sendApplicationSubmittedEmail,
     sendApplicationPendingSllReviewEmail,
     sendApplicationApprovedEmail,
-    sendApplicationRejectedEmail
+    sendApplicationRejectedEmail,
+    sendApplicationReturnedEmail
 } = require('../services/email.service');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || '';
+// Front-end origin for links embedded in e-mails/notifications (shared helper,
+// also used by the reminder/expiration workers).
+const { resolveFrontendUrl } = require('../utils/frontendUrl');
+
+const FRONTEND_URL = resolveFrontendUrl();
 
 // Resolves a consultant's email address, display name, and language ISO code.
 const getConsultantEmailData = async (userId) => {
@@ -37,10 +42,23 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit, areaId, badgeId, consultantGuid, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit, areaId, badgeId, consultantGuid, mine, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
+
+        // "Only my validations": restrict to applications this reviewer acted on
+        // (has a row in application_validation_logs). Combines with the state filter.
+        if (mine && role !== 'Consultant') {
+            const myLogs = await models.application_validation_logs.findAll({
+                where: { user_id: userId },
+                attributes: ['application_id'],
+                group: ['application_id'],
+                raw: true
+            });
+            // Empty array → IN (NULL) → no rows, which is the correct result.
+            appWhereClause.application_id = { [Op.in]: myLogs.map((r) => r.application_id) };
+        }
 
         if (state && state.length > 0) {
             appWhereClause.application_state = { [Op.in]: state };
@@ -169,9 +187,9 @@ const getApplicationById = async (req, res) => {
                     model: models.badges,
                     as: 'badge',
                     include: [
-                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title'] },
-                        { model: models.service_lines, as: 'service_line', attributes: ['service_line_name'] },
-                        { model: models.areas, as: 'area', attributes: ['area_name'] },
+                        { model: models.learning_paths, as: 'learning_path', attributes: ['path_title', 'path_slug'] },
+                        { model: models.service_lines, as: 'service_line', attributes: ['service_line_name', 'sl_slug'] },
+                        { model: models.areas, as: 'area', attributes: ['area_name', 'area_slug'] },
                         {
                             model: models.progression_stages,
                             as: 'progression_stage',
@@ -189,7 +207,7 @@ const getApplicationById = async (req, res) => {
                 {
                     model: models.consultants,
                     as: 'user',
-                    include: [{ model: models.users, as: 'user', attributes: ['full_name', 'email_address', 'profile_img_url'] }]
+                    include: [{ model: models.users, as: 'user', attributes: ['full_name', 'email_address', 'profile_img_url', 'user_guid'] }]
                 },
                 {
                     model: models.requirements_evidences,
@@ -582,7 +600,7 @@ const submitApplication = async (req, res) => {
                             title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                             body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                             meta: badgeMeta,
-                            url: `/admin/applications/${applicationGuid}`
+                            url: `/applications/${applicationGuid}`
                         }));
                     }
                 }
@@ -597,7 +615,7 @@ const submitApplication = async (req, res) => {
                     title: 'NOTIF_APP_NEW_APPLICATION_TITLE',
                     body: 'NOTIF_APP_NEW_APPLICATION_BODY',
                     meta: badgeMeta,
-                    url: `/admin/applications/${applicationGuid}`
+                    url: `/applications/${applicationGuid}`
                 }));
 
                 await Promise.all([...sllNotifs, ...tmNotifs]);
@@ -862,8 +880,16 @@ const validateApplication = async (req, res) => {
                     });
                 }
 
-                if (postCommitContext.newState === 'Accepted' || postCommitContext.newState === 'Rejected') {
-                    const emailDefId = postCommitContext.newState === 'Accepted' ? 10 : 11;
+                if (
+                    postCommitContext.newState === 'Accepted' ||
+                    postCommitContext.newState === 'Rejected' ||
+                    postCommitContext.newState === 'Open'
+                ) {
+                    // Returned-to-consultant ("Open") reuses the same APPLICATIONS
+                    // notification definition (3) as the in-app notice above.
+                    const emailDefId = postCommitContext.newState === 'Accepted'
+                        ? 10
+                        : postCommitContext.newState === 'Rejected' ? 11 : 3;
                     const emailPrefs = await notificationsService.resolvePreferences(emailDefId, userId);
                     if (emailPrefs.is_enabled && emailPrefs.send_email) {
                         const consultantData = await getConsultantEmailData(userId);
@@ -876,8 +902,17 @@ const validateApplication = async (req, res) => {
                                     appUrl,
                                     consultantData.lang
                                 );
-                            } else {
+                            } else if (postCommitContext.newState === 'Rejected') {
                                 await sendApplicationRejectedEmail(
+                                    consultantData.email,
+                                    consultantData.name,
+                                    badgeTitle,
+                                    postCommitContext.reviewerNotes || null,
+                                    appUrl,
+                                    consultantData.lang
+                                );
+                            } else {
+                                await sendApplicationReturnedEmail(
                                     consultantData.email,
                                     consultantData.name,
                                     badgeTitle,
@@ -905,7 +940,7 @@ const validateApplication = async (req, res) => {
                             title: 'NOTIF_APP_PENDING_SLL_REVIEW_TITLE',
                             body: 'NOTIF_APP_PENDING_SLL_REVIEW_BODY',
                             meta: badgeMeta,
-                            url: `/admin/applications/${applicationGuid}`
+                            url: `/applications/${applicationGuid}`
                         });
 
                         const sllPrefs = await notificationsService.resolvePreferences(3, sll.user_id);
@@ -1159,6 +1194,122 @@ const downloadEvidence = async (req, res) => {
     }
 };
 
+const previewEvidence = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const role = req.user.role;
+
+        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid },
+            include: [{ model: models.badges, as: 'badge', attributes: ['service_line_id'] }]
+        });
+
+        if (!application) {
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
+        }
+
+        if (role === 'Consultant' && application.user_id !== userId) {
+            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_OWN' });
+        }
+
+        if (role === 'Service Line Leader') {
+            const sllInfo = await models.service_line_leaders.findByPk(userId);
+            if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
+                return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_SL' });
+            }
+        }
+
+        const evidence = await models.requirements_evidences.findOne({
+            where: { evidence_id: evidenceId, application_id: application.application_id }
+        });
+
+        if (!evidence || !evidence.evidence_file_url) {
+            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
+        }
+
+        const fileUrl = evidence.evidence_file_url;
+        const bucketName = 'private-assets';
+        const pathMatch = fileUrl.match(/\/authenticated\/[^/]+\/(.+)$/);
+
+        if (!pathMatch) {
+            return res.status(400).json({ success: false, code: 'APP_EVIDENCE_URL_INVALID' });
+        }
+
+        const filePath = decodeURIComponent(pathMatch[1]);
+        const signedUrl = await generateSignedPreviewUrl(bucketName, filePath, 600);
+
+        return res.status(200).json({
+            success: true,
+            data: { previewUrl: signedUrl }
+        });
+
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        logger.error('Error previewing evidence', { error });
+        return res.status(500).json({ success: false, code: 'APP_PREVIEW_FAILED' });
+    }
+};
+
+/*──────────────────────────────────────────────────────────────
+  DELETE /api/applications/:applicationGuid/evidences/:evidenceId
+  Lets the owning consultant remove an uploaded file while the
+  application is still Open. Once submitted the evidence is locked.
+──────────────────────────────────────────────────────────────*/
+const deleteEvidence = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid, user_id: userId }
+        });
+
+        if (!application) {
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
+        }
+
+        // Consultants may freely remove a file while the application is Open;
+        // after submission it is locked for validation.
+        if (application.application_state !== 'Open') {
+            return res.status(403).json({ success: false, code: 'APP_EVIDENCE_EDIT_DENIED' });
+        }
+
+        const evidence = await models.requirements_evidences.findOne({
+            where: { evidence_id: evidenceId, application_id: application.application_id }
+        });
+
+        if (!evidence) {
+            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
+        }
+
+        // Best-effort removal of the stored file; never block the DB cleanup on it.
+        const fileUrl = evidence.evidence_file_url;
+        if (fileUrl) {
+            const pathMatch = fileUrl.match(/\/authenticated\/[^/]+\/(.+)$/);
+            if (pathMatch) {
+                try {
+                    await deleteFile('private-assets', decodeURIComponent(pathMatch[1]));
+                } catch (e) {
+                    logger.warn('Could not delete evidence file from storage', { error: e?.message });
+                }
+            }
+        }
+
+        await evidence.destroy();
+
+        await sendTopicUpdate("new_data", 16);
+
+        return res.status(200).json({ success: true, code: 'APP_EVIDENCE_DELETED' });
+
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        logger.error('Error deleting evidence', { error });
+        return res.status(500).json({ success: false, code: 'APP_DELETE_EVIDENCE_FAILED' });
+    }
+};
+
 module.exports = {
     getApplications,
     getApplicationById,
@@ -1169,5 +1320,7 @@ module.exports = {
     validateApplication,
     reviewEvidence,
     updateApplication,
-    downloadEvidence
+    downloadEvidence,
+    previewEvidence,
+    deleteEvidence
 };

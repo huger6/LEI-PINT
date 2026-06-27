@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginRequired } = require('../middlewares/auth.middleware');
+const { loginRequired, leadership } = require('../middlewares/auth.middleware');
 const gamificationController = require('../controllers/gamification.controller');
 
 /**
@@ -72,5 +72,13 @@ router.post('/favorites/:badgeSlug', loginRequired, gamificationController.toggl
  * @access  Any authenticated user
  */
 router.get('/favorites', loginRequired, gamificationController.getFavorites);
+
+/**
+ * @route   GET /api/gamification/overview
+ * @desc    Read-only gamification snapshot (points-per-badge, available rewards,
+ *          badge milestones). Points are SL-scoped for a Service Line Leader.
+ * @access  Service Line Leader, Talent Manager, Administrator
+ */
+router.get('/overview', loginRequired, leadership, gamificationController.getSystemOverview);
 
 module.exports = router;

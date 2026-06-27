@@ -30,6 +30,7 @@ const getBadges = async (req, res) => {
             stageCodes,
             expiringOnly,
             obtained,
+            sort,
             areaId,
             serviceLineId,
             learningPathId,
@@ -37,6 +38,14 @@ const getBadges = async (req, res) => {
         } = validations.getBadgesQuerySchema.parse(req.query);
 
         const offset = (page - 1) * limit;
+
+        // Catalog ordering: by creation date when requested, otherwise the
+        // default (points desc, then title).
+        const orderBy = sort === 'recent'
+            ? [['created_at', 'DESC'], ['badge_title', 'ASC']]
+            : sort === 'oldest'
+                ? [['created_at', 'ASC'], ['badge_title', 'ASC']]
+                : [['badge_points', 'DESC'], ['badge_title', 'ASC']];
 
         // If called through level
         if (stageCode) {
@@ -230,7 +239,7 @@ const getBadges = async (req, res) => {
             const rows = await models.badges.findAll({
                 where,
                 include,
-                order: [['badge_points', 'DESC'], ['badge_title', 'ASC']],
+                order: orderBy,
                 attributes: queryAttributes
             });
 
@@ -246,7 +255,7 @@ const getBadges = async (req, res) => {
             include,
             limit,
             offset,
-            order: [['badge_points', 'DESC'], ['badge_title', 'ASC']],
+            order: orderBy,
             distinct: true,
             attributes: queryAttributes
         });

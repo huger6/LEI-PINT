@@ -3,6 +3,7 @@ const router = express.Router();
 
 const auth = require('./auth.routes');
 const me = require('./user.routes');
+const users = require('./users.routes');
 const locations = require('./locations.routes');
 const languages = require('./languages.routes');
 const learningPaths = require('./learningPaths.routes');
@@ -29,6 +30,7 @@ const translation = require('./translation.routes');
 // --- Auth & user session ---
 router.use('/auth', auth);
 router.use('/me', me);
+router.use('/users', users);
 
 // --- Reference data ---
 router.use('/locations', locations);

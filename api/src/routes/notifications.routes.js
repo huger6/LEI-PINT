@@ -10,7 +10,6 @@ router.get('/', loginRequired, notificationsController.listNotifications);
 router.get('/unread-count', loginRequired, notificationsController.getUnreadCount);
 router.put('/read-all', loginRequired, notificationsController.markAllAsRead);
 router.put('/:notificationId/read', loginRequired, notificationsController.markAsRead);
-router.delete('/:notificationId', loginRequired, notificationsController.deleteNotification);
 
 router.post('/device-tokens', loginRequired, deviceTokensController.registerToken);
 router.post('/device-tokens/unregister', loginRequired, deviceTokensController.unregisterToken);

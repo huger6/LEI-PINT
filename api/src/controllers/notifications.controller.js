@@ -130,44 +130,9 @@ const markAllAsRead = async (req, res) => {
     }
 };
 
-const deleteNotification = async (req, res) => {
-    try {
-        const userId = req.user.sub;
-
-        let validated;
-        try {
-            validated = notificationIdParam.parse(req.params);
-        } catch (error) {
-            if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_ID');
-            throw error;
-        }
-
-        const { notificationId } = validated;
-
-        const notification = await models.notifications.findOne({
-            where: { notification_id: notificationId, user_id: userId }
-        });
-
-        if (!notification) {
-            return res.status(404).json({ success: false, code: 'NOTIFICATION_NOT_FOUND' });
-        }
-
-        await notification.destroy();
-
-        emitToUser(userId, 'notification:deleted', { notification_id: notificationId });
-
-        return res.status(200).json({ success: true, code: 'NOTIFICATION_DELETED' });
-
-    } catch (error) {
-        logger.error('Error deleting notification', { error });
-        return res.status(500).json({ success: false, code: 'NOTIFICATION_DELETE_FAILED' });
-    }
-};
-
 module.exports = {
     listNotifications,
     getUnreadCount,
     markAsRead,
-    markAllAsRead,
-    deleteNotification
+    markAllAsRead
 };

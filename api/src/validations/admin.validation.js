@@ -96,7 +96,9 @@ const baseUserDataSchema = z.object({
     birthdate: birthdateRule.optional(),
     profile_img_url: imgUrlRule.optional(),
     language_id: positiveIntIdRule.default(1),
-    location_id: positiveIntIdRule.optional()
+    location_id: positiveIntIdRule.optional(),
+    is_active: z.boolean().optional(),
+    email_confirmed: z.boolean().optional()
 });
 
 const createUserBodySchema = z.discriminatedUnion('user_role', [

@@ -19,7 +19,10 @@ const createGoalSchema = z.object({
     eventStartDate: dateRule.optional().nullable(),
     eventEndDate: dateRule.optional().nullable(),
     reminderAt: dateRule.optional().nullable()
-});
+}).refine(
+    (d) => !(d.eventStartDate && d.eventEndDate) || d.eventEndDate >= d.eventStartDate,
+    { path: ['eventEndDate'], message: 'VALIDATION_GOAL_END_BEFORE_START' }
+);
 
 const updateGoalSchema = z.object({
     eventTitle: z.string().trim()
@@ -35,7 +38,10 @@ const updateGoalSchema = z.object({
     eventStartDate: dateRule.optional().nullable(),
     eventEndDate: dateRule.optional().nullable(),
     reminderAt: dateRule.optional().nullable()
-});
+}).refine(
+    (d) => !(d.eventStartDate && d.eventEndDate) || d.eventEndDate >= d.eventStartDate,
+    { path: ['eventEndDate'], message: 'VALIDATION_GOAL_END_BEFORE_START' }
+);
 
 const goalIdParamSchema = z.object({
     goalId: positiveIntIdRule

@@ -1,7 +1,10 @@
 const { logger } = require('../utils/logger');
 
 /**
- * Send a notification to Microsoft Teams via Incoming Webhook (Adaptive Card).
+ * Send a notification to Microsoft Teams as an Adaptive Card.
+ * Use a Teams "Workflows" (Power Automate) webhook — "Post to a channel when a
+ * webhook request is received" — NOT the deprecated Office 365 connector webhook,
+ * which does not accept this { type:'message', attachments:[adaptive card] } payload.
  */
 const sendTeamsNotification = async (webhookUrl, { title, body, badgeImageUrl, verificationUrl }) => {
     const card = {
@@ -47,7 +50,10 @@ const sendTeamsNotification = async (webhookUrl, { title, body, badgeImageUrl, v
         });
 
         if (!response.ok) {
-            logger.warn('Teams webhook non-OK', { status: response.status });
+            // Capture the body so failures are diagnosable (e.g. a deprecated O365
+            // connector URL rejecting the Adaptive Card — use a Teams Workflow instead).
+            const detail = await response.text().catch(() => '');
+            logger.warn('Teams webhook non-OK', { status: response.status, detail: detail.slice(0, 300) });
         }
         return response.ok;
     } catch (error) {
@@ -90,7 +96,8 @@ const sendSlackNotification = async (webhookUrl, { title, body, badgeImageUrl, v
         });
 
         if (!response.ok) {
-            logger.warn('Slack webhook non-OK', { status: response.status });
+            const detail = await response.text().catch(() => '');
+            logger.warn('Slack webhook non-OK', { status: response.status, detail: detail.slice(0, 300) });
         }
         return response.ok;
     } catch (error) {

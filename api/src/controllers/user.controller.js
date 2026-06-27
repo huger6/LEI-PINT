@@ -6,6 +6,13 @@ const { logger } = require('../utils/logger');
 const stripNullishFields = require('../utils/stripNullishFields');
 const { sendTopicUpdate } = require('../services/firebase.service');
 const { handleZodError } = require('../utils/responseHelper');
+const { buildUserProfileByGuid } = require('../utils/userProfile');
+const { z } = require('zod');
+
+const userGuidParamSchema = z.object({
+    // Public-safe identifier only — never accept the table PK (CLAUDE.md rule).
+    userGuid: z.string().uuid('VALIDATION_USER_GUID_INVALID')
+});
 
 const me = async (req, res) => {
     const requestId = req.headers['x-request-id'] || null;
@@ -64,7 +71,7 @@ const me = async (req, res) => {
                 : null,
             models.consultants.findOne({
                 where: { user_id: user.user_id },
-                attributes: ['biography', 'active_title'],
+                attributes: ['biography', 'active_title', 'active_title_reward_id'],
                 raw: true
             }),
             models.talent_managers.findOne({
@@ -212,6 +219,15 @@ const me = async (req, res) => {
             }
             : null;
 
+        let activeTitleRewardGuid = null;
+        if (consultant?.active_title_reward_id) {
+            const titleReward = await models.rewards.findByPk(consultant.active_title_reward_id, {
+                attributes: ['reward_guid'],
+                raw: true
+            });
+            activeTitleRewardGuid = titleReward?.reward_guid || null;
+        }
+
         const profile = stripNullishFields({
             guid: user.user_guid,
             fullName: user.full_name,
@@ -229,6 +245,7 @@ const me = async (req, res) => {
             learningPath: learningPathData,
             areas: areasPayload,
             activeTitle: user.user_role === 'Consultant' ? (consultant?.active_title || null) : null,
+            activeTitleRewardGuid: user.user_role === 'Consultant' ? activeTitleRewardGuid : null,
             currentStreakDays: user.current_streak_days
         });
 
@@ -489,8 +506,43 @@ const changeLanguage = async (req, res) => {
     }
 };
 
+/**
+ * Return another user's in-platform public profile by GUID.
+ *
+ * Any authenticated user may view this read-only profile. It deliberately
+ * excludes account/administrative fields (email, account flags, login
+ * timestamps) — those remain restricted to the admin "view user" endpoint.
+ */
+const getUserProfileByGuid = async (req, res) => {
+    const requestId = req.headers['x-request-id'] || null;
+
+    let userGuid;
+    try {
+        const parsed = userGuidParamSchema.parse(req.params);
+        userGuid = parsed.userGuid;
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_URL_PARAM');
+        logger.error('Error validating user guid param', { requestId, error });
+        return res.status(500).json({ success: false, code: 'AUTH_REQUEST_FAILED' });
+    }
+
+    try {
+        const profile = await buildUserProfileByGuid(userGuid, { includeSensitive: false });
+
+        if (!profile) {
+            return res.status(404).json({ success: false, code: 'USER_NOT_FOUND' });
+        }
+
+        return res.status(200).json({ success: true, code: 'USER_PROFILE_RETRIEVED', data: profile });
+    } catch (error) {
+        logger.error('Error fetching in-platform user profile', { requestId, userGuid, error });
+        return res.status(500).json({ success: false, code: 'AUTH_REQUEST_FAILED' });
+    }
+};
+
 module.exports = {
     me,
     updateProfile,
-    changeLanguage
+    changeLanguage,
+    getUserProfileByGuid
 };

@@ -164,7 +164,7 @@ const processSlaBreaches = async () => {
                             applicantName: breach.applicant_name,
                             hoursExceeded: Number(Number(breach.hours_exceeded || 0).toFixed(2))
                         },
-                        url: `/admin/applications/${breach.application_guid}`
+                        url: `/applications/${breach.application_guid}`
                     });
 
                     const prefs = await resolvePreferences(SLA_BREACH_DEFINITION_ID, recipient.user_id);

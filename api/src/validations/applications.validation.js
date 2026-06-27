@@ -59,6 +59,9 @@ const getApplicationsQuerySchema = z.object({
     badgeId: z.coerce.number().int().positive().optional(),
     consultantGuid: z.string().uuid().optional()
         .describe("Restrict the list to a single consultant (by user_guid)"),
+    // When true, restrict the list to applications the requesting reviewer has
+    // acted on (i.e. has an entry in application_validation_logs).
+    mine: z.preprocess((v) => v === true || v === 'true' || v === '1', z.boolean()).optional(),
     dateFrom: z.coerce.date().optional(),
     dateTo: z.coerce.date().optional(),
 

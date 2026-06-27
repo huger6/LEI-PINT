@@ -182,6 +182,29 @@ const generateSignedDownloadUrl = async (bucketName = 'private-assets', filePath
     }
 };
 
+const generateSignedPreviewUrl = async (bucketName = 'private-assets', filePath, expiresInSeconds = 300) => {
+    try {
+        if (!supabase) {
+            const base = process.env.SUPABASE_STORAGE_URL || 'http://localhost';
+            return `${base}/storage/v1/object/authenticated/${bucketName}/${filePath}`;
+        }
+
+        const { data, error } = await supabase
+            .storage
+            .from(bucketName)
+            .createSignedUrl(filePath, expiresInSeconds);
+
+        if (error) {
+            throw new Error(`Supabase Error: ${error.message}`);
+        }
+
+        return data.signedUrl;
+    } catch (error) {
+        logger.error('Failed to generate signed preview URL', { error, bucketName, filePath });
+        throw error;
+    }
+};
+
 const deleteFile = async (bucketName, storagePath) => {
     if (!supabase) {
         logger.warn('Supabase not configured; skipping file deletion', { bucketName, storagePath });
@@ -202,6 +225,7 @@ module.exports = {
     moveStructureImageToPermanent,
     generateSignedUploadUrl,
     generateSignedDownloadUrl,
+    generateSignedPreviewUrl,
     uploadBuffer,
     deleteFile
 };
