@@ -7,3 +7,5 @@
 - progress in learning path should be clickable (click on lp to go to its structure page).
 
 - Calendar on set objective in badge detail page.
+
+- Teams [CRITICAL]
