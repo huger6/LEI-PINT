@@ -20,11 +20,6 @@ const Footer = () => {
         : isAdmin ? '/admin/badges'
             : '/badges';
 
-    // Learning Paths structure page path per role.
-    const structureHref = isAdmin
-        ? '/admin/structure/learning-paths'
-        : '/structure/learning-paths';
-
     // activeLang seeds from lang.iso (same DB value as language_iso) so the
     // comparison is exact; updated optimistically on click for instant feedback.
     const [activeLang, setActiveLang] = useState(lang?.iso ?? null);
@@ -67,7 +62,6 @@ const Footer = () => {
                         <h5 className={styles.footerTitle}>{t('footer.platformTitle')}</h5>
                         <ul className="list-unstyled mb-0">
                             <li className="mb-2"><a href={catalogHref} className={styles.footerLink}>{t('footer.platformCatalog')}</a></li>
-                            <li className="mb-2"><a href={structureHref} className={styles.footerLink}>{t('footer.platformPaths')}</a></li>
                             <li className="mb-2"><a href="/ranking" className={styles.footerLink}>{t('footer.platformRanking')}</a></li>
                             <li className="mb-2"><a href="/announcements" className={styles.footerLink}>{t('footer.platformAnnouncements')}</a></li>
                         </ul>

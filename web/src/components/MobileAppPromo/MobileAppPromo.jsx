@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../Icons/Icons';
 import styles from './MobileAppPromo.module.css';
 
-// TODO: replace '#' with the real mobile app download link once provided.
-const APP_DOWNLOAD_URL = '#';
+const APP_DOWNLOAD_URL =
+	'https://drive.google.com/file/d/1ltwdz9XW633C-vd_6uQiDISIxUN9QR2l/view?usp=sharing';
 
 const ADVANTAGES = ['adv1', 'adv2', 'adv3', 'adv4'];
 
