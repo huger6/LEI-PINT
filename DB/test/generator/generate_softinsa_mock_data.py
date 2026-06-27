@@ -1371,20 +1371,97 @@ def generate_sql() -> str:
         row.update(reward)
         sql.insert("rewards", row)
 
-    for index in range(NUM_NOTIFICATIONS):
-        definition = notification_definitions[index % len(notification_definitions)]
-        notification_type = NOTIFICATION_TYPES[index % len(NOTIFICATION_TYPES)]
-        sent_at = random_past_datetime(0, 90)
+    # Notifications are derived from real events so each one points to a specific
+    # badge / application / objective and reads clearly — never a vague placeholder.
+    badge_by_id = {int(b["badge_id"]): b for b in badges}
+    user_by_id = {int(u["user_id"]): u for u in users}
+    definition_by_code = {d["code"]: d for d in notification_definitions}
+    type_by_code = {code: ntype for code, _n, _d, _r, ntype in definition_templates}
+
+    def add_notification(user_id, code, message, url, sent_at, is_read):
+        definition = definition_by_code[code]
+        clamped = min(sent_at, BASE_NOW) if sent_at else BASE_NOW
         sql.insert("notifications", {
             "notification_id": ids.next("notifications"),
-            "user_id": all_user_ids[index % len(all_user_ids)],
+            "user_id": user_id,
             "definition_id": definition["definition_id"],
-            "notification_payload": f"Softinsa {notification_type.lower()} update #{index + 1}.",
-            "notification_url": definition["target_route"],
-            "notification_type": notification_type,
-            "is_read": index % 3 != 0,
-            "sent_at": sent_at,
+            "notification_payload": message,
+            "notification_url": url,
+            "notification_type": type_by_code[code],
+            "is_read": is_read,
+            "sent_at": clamped,
         })
+
+    # 1) Application lifecycle — to the owning consultant, linking to the application.
+    for application in applications:
+        badge = badge_by_id[int(application["badge_id"])]
+        title = badge["badge_title"]
+        app_url = f"/applications/{application['application_guid']}"
+        state = application["application_state"]
+        consultant_id = int(application["user_id"])
+        if state == "Submitted":
+            add_notification(consultant_id, "APPLICATION_SUBMITTED",
+                f'Your application for the "{title}" badge was submitted and is awaiting Talent Manager review.',
+                app_url, application["submitted_at"], False)
+        elif state == "In validation":
+            add_notification(consultant_id, "APPLICATION_SUBMITTED",
+                f'Your application for the "{title}" badge is now under Service Line Leader validation.',
+                app_url, application["submitted_at"], False)
+        elif state == "Accepted":
+            add_notification(consultant_id, "APPLICATION_APPROVED",
+                f'Your application for the "{title}" badge was approved — the badge has been issued to you.',
+                app_url, application["closed_at"], True)
+        elif state == "Rejected":
+            add_notification(consultant_id, "APPLICATION_REJECTED",
+                f'Your application for the "{title}" badge was rejected. Open it to read the reviewer\'s feedback.',
+                app_url, application["closed_at"], True)
+
+    # 2) Points awarded — one per earned badge, naming the badge and the points.
+    for application in accepted_applications:
+        badge = badge_by_id[int(application["badge_id"])]
+        add_notification(int(application["user_id"]), "POINTS_AWARDED",
+            f'You earned {badge["badge_points"]} points for completing the "{badge["badge_title"]}" badge.',
+            "/points", application["closed_at"], True)
+
+    # 3) Objective deadline reminders — naming the specific objective.
+    for goal in goals:
+        badge = badge_by_id.get(int(goal["badge_id"])) if goal.get("badge_id") else None
+        title = badge["badge_title"] if badge else goal["event_title"]
+        add_notification(int(goal["user_id"]), "OBJECTIVE_DUE",
+            f'Your objective "Earn {title}" is approaching its deadline — keep your evidence up to date.',
+            "/objectives", goal.get("reminder_at"), False)
+
+    # 4) Reviewer queue — pending applications awaiting review. Round-robin so that
+    #    every Talent Manager and Service Line Leader gets specific queue items
+    #    (no reviewer is left with an empty, meaningless inbox).
+    submitted_apps = [a for a in applications if a["application_state"] == "Submitted"]
+    invalidation_apps = [a for a in applications if a["application_state"] == "In validation"]
+
+    def notify_reviewers(reviewer_ids, apps, verb):
+        if not reviewer_ids or not apps:
+            return
+        for i in range(max(len(reviewer_ids), len(apps))):
+            reviewer_id = reviewer_ids[i % len(reviewer_ids)]
+            application = apps[i % len(apps)]
+            badge = badge_by_id[int(application["badge_id"])]
+            consultant = user_by_id[int(application["user_id"])]
+            add_notification(reviewer_id, "APPLICATION_SUBMITTED",
+                f'A "{badge["badge_title"]}" badge application from {consultant["full_name"]} is {verb}.',
+                f"/applications/{application['application_guid']}",
+                application["submitted_at"], False)
+
+    notify_reviewers(tm_ids, submitted_apps, "awaiting your Talent Manager review")
+    notify_reviewers(sll_user_ids, invalidation_apps, "awaiting your Service Line validation")
+
+    # 5) Administrator oversight — each issued badge, naming consultant and badge.
+    for application in accepted_applications[:12]:
+        badge = badge_by_id[int(application["badge_id"])]
+        consultant = user_by_id[int(application["user_id"])]
+        app_url = f"/applications/{application['application_guid']}"
+        for admin_id in admin_ids:
+            add_notification(admin_id, "APPLICATION_APPROVED",
+                f'The "{badge["badge_title"]}" badge was issued to {consultant["full_name"]} after approval.',
+                app_url, application["closed_at"], True)
 
     for definition in notification_definitions:
         sql.insert("notification_preferences", {
