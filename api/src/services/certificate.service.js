@@ -1,10 +1,10 @@
 const { models } = require('../config/db');
 const { generateCertificatePDF } = require('../utils/certificate.generator');
-const { uploadBuffer, deleteFile } = require('./storage.service');
+const { uploadBuffer, deleteFile, generateSignedDownloadUrl } = require('./storage.service');
 const { logger } = require('../utils/logger');
 
 const ISSUING_ENTITY = process.env.CERTIFICATE_ISSUING_ENTITY || 'Organization';
-const CERTIFICATE_BUCKET = 'public-assets';
+const CERTIFICATE_BUCKET = 'private-assets';
 
 /**
  * Fetches all data required to generate a certificate for the given application.
@@ -71,15 +71,15 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null, al
     return {
         application,
         badge: {
-            title: application.badge.badge_title,
-            description: application.badge.badge_description || null
+            title: application.badge?.badge_title || 'Certificate',
+            description: application.badge?.badge_description || null
         },
         consultant: {
-            fullName: application.user.user.full_name,
-            userGuid: application.user.user.user_guid
+            fullName: application.user?.user?.full_name || 'Unknown',
+            userGuid: application.user?.user?.user_guid
         },
-        tmReviewer: tmLog ? { fullName: tmLog.user.full_name } : null,
-        sllReviewer: sllLog ? { fullName: sllLog.user.full_name } : null,
+        tmReviewer: tmLog?.user ? { fullName: tmLog.user.full_name } : null,
+        sllReviewer: sllLog?.user ? { fullName: sllLog.user.full_name } : null,
         dates: {
             startDate: application.opened_at,
             conclusionDate: application.closed_at
@@ -91,10 +91,13 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null, al
 
 const extractStoragePath = (url) => {
     if (!url) return null;
+    const authMarker = `/authenticated/${CERTIFICATE_BUCKET}/`;
+    const authIdx = url.indexOf(authMarker);
+    if (authIdx !== -1) return decodeURIComponent(url.substring(authIdx + authMarker.length));
     const marker = `/${CERTIFICATE_BUCKET}/`;
     const idx = url.indexOf(marker);
     if (idx === -1) return null;
-    return url.substring(idx + marker.length);
+    return decodeURIComponent(url.substring(idx + marker.length));
 };
 
 /**
@@ -118,9 +121,13 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         throw err;
     }
 
-    if (data.existingCertificate?.certificate_file_url) {
-        if (data.existingCertificate.language_code === lang) {
-            return { certificateUrl: data.existingCertificate.certificate_file_url, isNew: false };
+    if (data.existingCertificate) {
+        if (data.existingCertificate.language_code === lang && data.existingCertificate.certificate_file_url) {
+            const oldPath = extractStoragePath(data.existingCertificate.certificate_file_url);
+            if (oldPath) {
+                const signedUrl = await generateSignedDownloadUrl(CERTIFICATE_BUCKET, oldPath, 600);
+                return { certificateUrl: signedUrl, isNew: false };
+            }
         }
         await models.certificates.destroy({
             where: { certificate_id: data.existingCertificate.certificate_id }
@@ -146,19 +153,20 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         verificationUrl
     });
 
-    const storagePath = `certificates/${data.consultant.userGuid}/application_${applicationGuid}/certificate_${lang}.pdf`;
+    const storagePath = `${data.consultant.userGuid}/application_${applicationGuid}/certificate_${lang}.pdf`;
 
-    // Some Supabase instances may restrict mime types; use binary/octet as fallback
-    const certificateUrl = await uploadBuffer(CERTIFICATE_BUCKET, storagePath, pdfBuffer, 'application/octet-stream');
+    const permanentFileUrl = await uploadBuffer(CERTIFICATE_BUCKET, storagePath, pdfBuffer, 'application/pdf');
 
     const certificate = await models.certificates.create({
         application_id: data.application.application_id,
         certificate_title: data.badge.title,
         issuing_entity: data.issuingEntity,
         issue_date: data.dates.conclusionDate,
-        certificate_file_url: certificateUrl,
+        certificate_file_url: permanentFileUrl,
         language_code: lang
     });
+
+    const signedUrl = await generateSignedDownloadUrl(CERTIFICATE_BUCKET, storagePath, 600);
 
     logger.info('Certificate generated and stored', {
         applicationGuid,
@@ -166,7 +174,7 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         lang
     });
 
-    return { certificateUrl, isNew: true };
+    return { certificateUrl: signedUrl, isNew: true };
 };
 
 module.exports = { getOrCreateCertificate, fetchCertificateData };
