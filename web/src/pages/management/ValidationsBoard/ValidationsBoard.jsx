@@ -53,6 +53,8 @@ export default function ValidationsBoard() {
 	// SLL: In validation); the Administrator oversees everything so defaults to
 	// all states. The filter lets them switch freely.
 	const [stateFilter, setStateFilter] = useState(isAdmin ? '' : (isSll ? 'In validation' : 'Submitted'));
+	// When on, show only applications this reviewer has acted on (his validations).
+	const [mineOnly, setMineOnly] = useState(false);
 	// Active sort column key.
 	const [sortKey, setSortKey] = useState('submitted');
 	// Active sort direction (asc/desc).
@@ -65,6 +67,7 @@ export default function ValidationsBoard() {
 		try {
 			const { data, pagination: pag } = await getApplicationsPaged({
 				...(stateFilter ? { state: stateFilter } : {}),
+				...(mineOnly ? { mine: true } : {}),
 				page,
 				limit: PAGE_SIZE,
 			});
@@ -75,7 +78,7 @@ export default function ValidationsBoard() {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, stateFilter]);
+	}, [page, stateFilter, mineOnly]);
 
 	// Reloads applications whenever the loader (page/filter) changes.
 	useEffect(() => { load(); }, [load]);
@@ -206,6 +209,14 @@ export default function ValidationsBoard() {
 						options={stateOptions}
 						ariaLabel={t('tmValidations.cols.state')}
 					/>
+					<label className={styles.mineToggle}>
+						<input
+							type="checkbox"
+							checked={mineOnly}
+							onChange={(e) => { setMineOnly(e.target.checked); setPage(1); }}
+						/>
+						<span>{t('tmValidations.filters.mineOnly')}</span>
+					</label>
 				</div>
 			)}
 

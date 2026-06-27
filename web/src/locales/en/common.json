@@ -1996,7 +1996,8 @@
 		"registered": "{{count}} applications registered",
 		"filtersBtn": "Filters",
 		"filters": {
-			"allStates": "All states"
+			"allStates": "All states",
+			"mineOnly": "Only my validations"
 		},
 		"cols": {
 			"consultant": "Consultant",

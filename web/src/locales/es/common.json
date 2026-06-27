@@ -1996,7 +1996,8 @@
 		"registered": "{{count}} candidaturas registradas",
 		"filtersBtn": "Filtros",
 		"filters": {
-			"allStates": "Todos los estados"
+			"allStates": "Todos los estados",
+			"mineOnly": "Solo mis validaciones"
 		},
 		"cols": {
 			"consultant": "Consultor",

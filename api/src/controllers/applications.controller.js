@@ -41,10 +41,23 @@ const getApplications = async (req, res) => {
         const role = req.user.role;
 
         // Validate query params
-        const { state, page, limit, areaId, badgeId, consultantGuid, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
+        const { state, page, limit, areaId, badgeId, consultantGuid, mine, dateFrom, dateTo } = validations.getApplicationsQuerySchema.parse(req.query);
         const offset = (page - 1) * limit;
 
         const appWhereClause = {};
+
+        // "Only my validations": restrict to applications this reviewer acted on
+        // (has a row in application_validation_logs). Combines with the state filter.
+        if (mine && role !== 'Consultant') {
+            const myLogs = await models.application_validation_logs.findAll({
+                where: { user_id: userId },
+                attributes: ['application_id'],
+                group: ['application_id'],
+                raw: true
+            });
+            // Empty array → IN (NULL) → no rows, which is the correct result.
+            appWhereClause.application_id = { [Op.in]: myLogs.map((r) => r.application_id) };
+        }
 
         if (state && state.length > 0) {
             appWhereClause.application_state = { [Op.in]: state };
