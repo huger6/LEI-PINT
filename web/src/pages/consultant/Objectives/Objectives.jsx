@@ -516,7 +516,6 @@ function ReminderItem({ reminder, t }) {
 					</span>
 				)}
 			</div>
-			<Icon name="chevron_forward" size={16} color="var(--color-outline)" />
 		</div>
 	);
 }

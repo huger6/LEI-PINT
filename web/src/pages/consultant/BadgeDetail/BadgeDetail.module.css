@@ -69,6 +69,12 @@
 	box-shadow: 0 4px 16px rgba(19, 36, 66, 0.06);
 }
 
+/* Special badges stand out with a gold border. */
+.heroCardSpecial {
+	border: 2px solid var(--color-badge-premium);
+	box-shadow: 0 4px 16px rgba(255, 204, 0, 0.18);
+}
+
 .heroImageWrap {
 	position: relative;
 	flex-shrink: 0;

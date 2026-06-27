@@ -415,12 +415,6 @@
 	border-radius: 12px;
 	border: 1px solid rgba(57, 99, 156, 0.08);
 	background: var(--color-surface);
-	cursor: pointer;
-	transition: border-color 150ms ease;
-}
-
-.reminderItem:hover {
-	border-color: rgba(0, 184, 224, 0.25);
 }
 
 .reminderBody {

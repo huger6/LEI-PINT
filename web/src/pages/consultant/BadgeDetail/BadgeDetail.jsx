@@ -214,6 +214,7 @@ export default function BadgeDetail() {
 	const description = badge.badge_description || badge.badgeDescription;
 	const points = badge.badge_points || badge.badgePoints;
 	const imgUrl = badge.badge_img_url || badge.badgeImgUrl;
+	const isSpecial = (badge.badge_type || badge.badgeType) === 'Special';
 	const expirationDays = badge.expiration_duration_days ?? badge.expirationDurationDays;
 
 	const serviceLine = badge.service_line || badge.serviceLine;
@@ -288,7 +289,7 @@ export default function BadgeDetail() {
 			</nav>
 
 			{/* ── Section 1: Badge Header ── */}
-			<section className={styles.heroCard}>
+			<section className={`${styles.heroCard} ${isSpecial ? styles.heroCardSpecial : ''}`}>
 				<div className={styles.heroImageWrap}>
 					{imgUrl ? (
 						<img src={imgUrl} alt={title} className={styles.heroImage} />
