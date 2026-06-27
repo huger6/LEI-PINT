@@ -27,7 +27,7 @@ Drop the PNGs into these folders with exactly these names:
 
 ### `docs/images/chapter7/` (Apresentação de Ecrãs)
 
-**Web:** `web-login.png`, `web-consultor-inicio.png`, `web-consultor-catalogo.png`, `web-consultor-detalhe-badge.png`, `web-consultor-candidaturas.png`, `web-consultor-conquistas.png`, `web-consultor-pontos.png`, `web-consultor-loja.png`, `web-consultor-perfil.png`, `web-tm-dashboard.png`, `web-tm-validacoes.png`, `web-tm-consultores.png`, `web-sll-dashboard.png`, `web-sll-minha-service-line.png`, `web-sll-gamificacao.png`, `web-sll-equipa.png`, `web-admin-dashboard.png`, `web-admin-utilizadores.png`, `web-admin-estrutura.png`, `web-admin-badges.png`, `web-admin-recompensas.png`, `web-admin-slas.png`, `web-verificacao-badge.png`
+**Web:** `web-login.png`, `web-consultor-inicio.png`, `web-consultor-catalogo.png`, `web-consultor-detalhe-badge.png`, `web-consultor-candidaturas.png`, `web-consultor-conquistas.png`, `web-consultor-pontos.png`, `web-consultor-loja.png`, `web-sll-dashboard.png`, `web-sll-minha-service-line.png`, `web-sll-gamificacao.png`, `web-sll-equipa.png`, `web-admin-dashboard.png`
 
 **Mobile:** `mob-login.png`, `mob-dashboard.png`, `mob-badges.png`, `mob-detalhe-badge.png`, `mob-candidatura.png`, `mob-objetivos.png`, `mob-evolucao.png`, `mob-notificacoes.png`, `mob-perfil.png`
 
