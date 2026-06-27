@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/utils/html_clipboard.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -73,16 +75,46 @@ class _EmailSignatureScreenState extends State<EmailSignatureScreen> {
         .toList();
   }
 
+  static String? _extractSvgFromDataUri(String uri) {
+    if (!uri.startsWith('data:image/svg+xml')) return null;
+    final commaIndex = uri.indexOf(',');
+    if (commaIndex == -1) return null;
+    try {
+      return Uri.decodeFull(uri.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String> _svgToPngBase64(String svgMarkup, {int size = 128}) async {
+    final pictureInfo = await vg.loadPicture(SvgStringLoader(svgMarkup), null);
+    final image = await pictureInfo.picture.toImage(size, size);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    pictureInfo.picture.dispose();
+    image.dispose();
+    final pngBytes = byteData!.buffer.asUint8List();
+    return 'data:image/png;base64,${base64Encode(pngBytes)}';
+  }
+
   Future<String> _imageUrlToBase64(String url) async {
     try {
+      final svgMarkup = _extractSvgFromDataUri(url);
+      if (svgMarkup != null) {
+        return await _svgToPngBase64(svgMarkup);
+      }
+
       final response = await Dio().get<List<int>>(
         url,
         options: Options(responseType: ResponseType.bytes),
       );
       if (response.data != null) {
         final contentType =
-            response.headers.value('content-type') ?? 'image/svg+xml';
+            response.headers.value('content-type') ?? 'image/png';
         final mimeType = contentType.split(';').first.trim();
+        if (mimeType.contains('svg')) {
+          final svgString = utf8.decode(response.data!);
+          return await _svgToPngBase64(svgString);
+        }
         final encoded = base64Encode(response.data!);
         return 'data:$mimeType;base64,$encoded';
       }
