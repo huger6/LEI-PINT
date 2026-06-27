@@ -276,8 +276,15 @@ const createUser = async (req, res) => {
             biography,
             areas,
             service_line_id,
-            is_super_admin
+            is_super_admin,
+            is_active,
+            email_confirmed
         } = validatedBody;
+
+        // Admin may create the user already active and/or with the e-mail
+        // pre-confirmed (skips the confirmation e-mail in that case).
+        const isActiveFlag = is_active ?? true;
+        const emailConfirmedFlag = email_confirmed ?? false;
 
         await ensureReferenceDataExists({
             languageId: language_id,
@@ -320,8 +327,8 @@ const createUser = async (req, res) => {
             language_id,
             location_id: location_id || null,
             approved_by: adminUserId,
-            is_active: true,
-            email_confirmed: false,
+            is_active: isActiveFlag,
+            email_confirmed: emailConfirmedFlag,
             force_password_change: true
         }, { transaction: t });
 
@@ -348,15 +355,20 @@ const createUser = async (req, res) => {
             }, { transaction: t });
         }
 
-        const confirmationToken = crypto.randomBytes(32).toString('hex');
-        const confirmationTokenHash = crypto.createHash('sha256').update(confirmationToken).digest('hex');
-        await models.user_account_tokens.create({
-            user_id: newUser.user_id,
-            token_value: confirmationTokenHash,
-            token_type: 'CONFIRMATION',
-            expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000),
-            is_used: false
-        }, { transaction: t });
+        // A confirmation token/e-mail is only needed when the admin did NOT
+        // pre-confirm the e-mail.
+        let confirmationToken = null;
+        if (!emailConfirmedFlag) {
+            confirmationToken = crypto.randomBytes(32).toString('hex');
+            const confirmationTokenHash = crypto.createHash('sha256').update(confirmationToken).digest('hex');
+            await models.user_account_tokens.create({
+                user_id: newUser.user_id,
+                token_value: confirmationTokenHash,
+                token_type: 'CONFIRMATION',
+                expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000),
+                is_used: false
+            }, { transaction: t });
+        }
 
         await t.commit();
 
@@ -382,36 +394,38 @@ const createUser = async (req, res) => {
             await sendTopicUpdate("new_data", 6);
         }
 
-        const emailResult = await sendConfirmationEmail(
-            newUser.email_address,
-            newUser.full_name,
-            confirmationToken,
-            newUser.language_id
-        );
+        if (confirmationToken) {
+            const emailResult = await sendConfirmationEmail(
+                newUser.email_address,
+                newUser.full_name,
+                confirmationToken,
+                newUser.language_id
+            );
 
-        if (!emailResult?.success) {
-            logger.error('Admin user creation succeeded but confirmation email failed.', {
-                requestId,
-                user_id: newUser.user_id,
-                email_address: newUser.email_address,
-                emailError: emailResult?.error
-            });
-
-            return res.status(201).json({
-                success: true,
-                code: 'ADMIN_USER_CREATE_EMAIL_FAILED',
-                data: {
-                    user_guid: newUser.user_guid,
-                    full_name: newUser.full_name,
-                    username: newUser.username,
+            if (!emailResult?.success) {
+                logger.error('Admin user creation succeeded but confirmation email failed.', {
+                    requestId,
+                    user_id: newUser.user_id,
                     email_address: newUser.email_address,
-                    user_role: newUser.user_role,
-                    location_id: newUser.location_id,
-                    language_id: newUser.language_id,
-                    is_active: newUser.is_active,
-                    email_confirmed: newUser.email_confirmed
-                }
-            });
+                    emailError: emailResult?.error
+                });
+
+                return res.status(201).json({
+                    success: true,
+                    code: 'ADMIN_USER_CREATE_EMAIL_FAILED',
+                    data: {
+                        user_guid: newUser.user_guid,
+                        full_name: newUser.full_name,
+                        username: newUser.username,
+                        email_address: newUser.email_address,
+                        user_role: newUser.user_role,
+                        location_id: newUser.location_id,
+                        language_id: newUser.language_id,
+                        is_active: newUser.is_active,
+                        email_confirmed: newUser.email_confirmed
+                    }
+                });
+            }
         }
 
         return res.status(201).json({

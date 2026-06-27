@@ -299,26 +299,28 @@ export default function CreateUserModal({ onClose, onCreated, serviceLines = [],
 		setSaving(true);
 
 		try {
+			// The admin user endpoints use snake_case bodies (same as the edit flow
+			// and the createUserBodySchema, which discriminates on `user_role`).
 			const payload = {
-				fullName: values.fullName,
+				full_name: values.fullName,
 				username: values.username.trim(),
-				emailAddress: values.emailAddress.trim(),
+				email_address: values.emailAddress.trim(),
 				password: values.password,
-				userRole: values.userRole,
-				isActive: values.isActive,
-				emailConfirmed: values.emailConfirmed,
+				user_role: values.userRole,
+				is_active: values.isActive,
+				email_confirmed: values.emailConfirmed,
 			};
 
-			if (values.languageId) payload.languageId = Number(values.languageId);
+			if (values.languageId) payload.language_id = Number(values.languageId);
 			if (values.userRole === 'Service Line Leader' && values.serviceLine)
-				payload.serviceLineId = Number(values.serviceLine);
+				payload.service_line_id = Number(values.serviceLine);
 			if (values.userRole === 'Consultant' && values.areas.length > 0)
 				payload.areas = values.areas;
-			if (values.phoneNumber) payload.phoneNumber = values.phoneNumber.replace(/\s+/g, '');
+			if (values.phoneNumber) payload.phone_number = values.phoneNumber.replace(/\s+/g, '');
 			if (values.birthdate) payload.birthdate = values.birthdate;
 			if (values.biography) payload.biography = values.biography.trim();
-			if (values.locationId) payload.locationId = Number(values.locationId);
-			if (values.profileImgUrl) payload.profileImgUrl = values.profileImgUrl;
+			if (values.locationId) payload.location_id = Number(values.locationId);
+			if (values.profileImgUrl) payload.profile_img_url = values.profileImgUrl;
 
 			const created = await createUser(payload);
 			onCreated(created);
