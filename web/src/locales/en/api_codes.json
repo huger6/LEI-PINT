@@ -70,6 +70,8 @@
 	"NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Congratulations! The special badge \"{{badgeTitle}}\" has been awarded to you.",
 	"NOTIF_APP_REJECTED_TITLE": "Application rejected",
 	"NOTIF_APP_REJECTED_BODY": "Your application for the badge \"{{badgeTitle}}\" has been rejected.",
+	"NOTIF_REWARD_REDEEMED_TITLE": "Reward redeemed",
+	"NOTIF_REWARD_REDEEMED_BODY": "You redeemed \"{{rewardName}}\" for {{points}} points.",
 	"NOTIF_APP_IN_VALIDATION_TITLE": "Application in validation",
 	"NOTIF_APP_IN_VALIDATION_BODY": "Your application for the badge \"{{badgeTitle}}\" is now being validated.",
 	"NOTIF_APP_PENDING_SLL_REVIEW_TITLE": "Application awaiting review",

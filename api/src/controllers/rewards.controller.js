@@ -4,6 +4,7 @@ const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/rewards.validation');
 const gamificationService = require('../services/gamification.service');
+const notificationsService = require('../services/notifications.service');
 const { sendRewardRedemptionEmail } = require('../services/email.service');
 const { moveStructureImageToPermanent } = require('../services/storage.service');
 const redis = require('../config/redis');
@@ -126,16 +127,36 @@ const redeemReward = async (req, res) => {
 
         await t.commit();
 
-        // Email is best-effort and must not fail the redemption.
+        // In-app notification: goes through the standard pipeline, which honours the
+        // user's notification preferences (real-time + push when enabled). Best-effort.
         try {
-            const user = await models.users.findByPk(userId, { attributes: ['email_address', 'full_name'] });
+            await notificationsService.createNotification({
+                userId,
+                definitionId: 5, // POINTS_AWARDED
+                notificationType: 'POINTS',
+                title: 'NOTIF_REWARD_REDEEMED_TITLE',
+                body: 'NOTIF_REWARD_REDEEMED_BODY',
+                meta: { rewardName: reward.reward_name, points: reward.cost_points },
+                url: '/store'
+            });
+        } catch (notifErr) {
+            logger.error('Reward redeemed but in-app notification failed', { notifErr });
+        }
+
+        // Email always goes out (it carries the access info/link) and is best-effort:
+        // it must never fail the redemption. Localized via the user's language.
+        try {
+            const user = await models.users.findByPk(userId, {
+                attributes: ['email_address', 'full_name'],
+                include: [{ model: models.languages, as: 'language', attributes: ['language_iso'] }]
+            });
             if (user?.email_address) {
                 await sendRewardRedemptionEmail(user.email_address, user.full_name, {
                     rewardName: reward.reward_name,
                     accessLink: reward.access_link,
                     accessInfo: reward.access_info,
                     costPoints: reward.cost_points
-                });
+                }, user.language?.language_iso || 'en-GB');
             }
         } catch (mailErr) {
             logger.error('Reward redeemed but email failed', { mailErr });

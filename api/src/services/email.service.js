@@ -809,22 +809,56 @@ const sendBadgeExpiredEmail = (email, { name, badgeTitle, badgeUrl, lang }) =>
 const sendObjectiveReminderEmail = (email, { name, title, objectivesUrl, lang }) =>
     sendReminderEmail('objective', email, { name, title }, objectivesUrl, lang);
 
+const REWARD_REDEMPTION_TEMPLATES = {
+    'pt-PT': {
+        subject: 'A tua recompensa Softinsa',
+        greeting: 'Olá, {name}',
+        intro: 'Resgataste com sucesso a recompensa <strong>{rewardName}</strong>{points}.',
+        pointsWord: 'pontos',
+        cta: 'Aceder',
+        team: 'A Equipa Softinsa'
+    },
+    'en-GB': {
+        subject: 'Your Softinsa reward',
+        greeting: 'Hello, {name}',
+        intro: 'You have successfully redeemed the reward <strong>{rewardName}</strong>{points}.',
+        pointsWord: 'points',
+        cta: 'Access',
+        team: 'The Softinsa Team'
+    },
+    'es-ES': {
+        subject: 'Tu recompensa Softinsa',
+        greeting: 'Hola, {name}',
+        intro: 'Has canjeado con éxito la recompensa <strong>{rewardName}</strong>{points}.',
+        pointsWord: 'puntos',
+        cta: 'Acceder',
+        team: 'El Equipo de Softinsa'
+    }
+};
+
+const resolveRewardTemplate = (lang) =>
+    REWARD_REDEMPTION_TEMPLATES[lang] || REWARD_REDEMPTION_TEMPLATES['en-GB'];
+
 // Sent when a consultant redeems a points-store reward. Carries the (static)
-// access info / link for the course or perk.
-const sendRewardRedemptionEmail = async (email, name, { rewardName, accessLink, accessInfo, costPoints }) => {
+// access info / link for the course or perk. Localized via the user's language.
+const sendRewardRedemptionEmail = async (email, name, { rewardName, accessLink, accessInfo, costPoints }, lang) => {
+    const t = resolveRewardTemplate(lang);
     const safeName = escapeHtml(name);
     const safeReward = escapeHtml(rewardName);
     const safeInfo = escapeHtml(accessInfo || '');
     const uniqueId = Date.now().toString(36);
 
+    const pointsSegment = costPoints != null ? ` (${costPoints} ${t.pointsWord})` : '';
+    const intro = t.intro.replace('{rewardName}', safeReward).replace('{points}', pointsSegment);
+
     const bodyRows = `
         <tr>
             <td style="padding:0 40px 30px 40px;font-size:15px;line-height:24px;color:#333333;">
-                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">Olá ${safeName},</p>
-                <p style="margin-bottom:16px;">Resgataste com sucesso a recompensa <strong>${safeReward}</strong>${costPoints != null ? ` (${costPoints} pontos)` : ''}.</p>
+                <p style="font-size:18px;font-weight:700;margin-bottom:12px;">${t.greeting.replace('{name}', safeName)}</p>
+                <p style="margin-bottom:16px;">${intro}</p>
                 ${safeInfo ? `<p style="margin-bottom:16px;color:#555555;">${safeInfo}</p>` : ''}
-                ${accessLink ? ctaButton('Aceder', accessLink) : ''}
-                <p style="margin-top:24px;margin-bottom:0;">— Equipa Softinsa</p>
+                ${accessLink ? ctaButton(t.cta, accessLink) : ''}
+                <p style="margin-top:24px;margin-bottom:0;">— ${t.team}</p>
             </td>
         </tr>`;
 
@@ -832,7 +866,7 @@ const sendRewardRedemptionEmail = async (email, name, { rewardName, accessLink, 
         await transporter.sendMail({
             from: `"Softinsa" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: 'A tua recompensa Softinsa',
+            subject: t.subject,
             html: buildEmailWrapper(bodyRows, uniqueId)
         });
         return { success: true };
