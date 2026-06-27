@@ -36,7 +36,7 @@ const buildUserProfileByGuid = async (userGuid, { includeSensitive = false } = {
         user.language_id
             ? models.languages.findByPk(user.language_id, { attributes: ['language_id', 'language_iso', 'language_name'], raw: true })
             : null,
-        models.consultants.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'gdpr_accepted'], raw: true }),
+        models.consultants.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'gdpr_accepted', 'active_title'], raw: true }),
         models.talent_managers.findOne({ where: { user_id: user.user_id }, attributes: ['biography'], raw: true }),
         models.service_line_leaders.findOne({ where: { user_id: user.user_id }, attributes: ['biography', 'service_line_id'], raw: true }),
         models.consultant_areas.findAll({ where: { user_id: user.user_id }, attributes: ['area_id', 'is_primary'], raw: true })
@@ -112,6 +112,7 @@ const buildUserProfileByGuid = async (userGuid, { includeSensitive = false } = {
         serviceLine: serviceLineData,
         learningPath: learningPathData,
         areas: areasPayload,
+        activeTitle: user.user_role === 'Consultant' ? (consultant?.active_title || null) : null,
         currentStreakDays: user.current_streak_days,
         createdAt: user.created_at,
         // Corporate e-mail is exposed to any authenticated colleague so the web
