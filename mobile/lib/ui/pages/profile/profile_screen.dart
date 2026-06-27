@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_router.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../data/local/my_skill_dao.dart';
 import '../../../presentation/state/applications_store.dart';
 import '../../../presentation/state/auth_store.dart';
 import '../../../presentation/state/badge_store.dart';
@@ -30,22 +28,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _skillsCount = 0;
-
   @override
   void initState() {
     super.initState();
-    _loadSkillsCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BadgeStore>().loadEarnedBadges();
       context.read<AuthStore>().fetchPoints();
       context.read<RewardStore>().loadAll();
     });
-  }
-
-  Future<void> _loadSkillsCount() async {
-    final ids = await GetIt.instance<MySkillDao>().getSelectedSkillIds();
-    if (mounted) setState(() => _skillsCount = ids.length);
   }
 
   Future<void> _handleLogout() async {
@@ -72,7 +62,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final earnedBadges = badgeStore.earnedBadges;
     final badgeCount = earnedBadges.length;
-    final skillsCount = _skillsCount;
     final totalPoints = authStore.currentUser?.totalPoints ?? 0;
 
     // Only consultants belong to areas (Talent Managers, Service Line Leaders
@@ -177,6 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 14),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: QuickMetricCard(
@@ -184,14 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: tr.tr('badgesMetric'),
                       icon: AppIcons.badge,
                       onTap: () => context.go(AppRouter.myBadges),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: QuickMetricCard(
-                      value: '$skillsCount',
-                      label: tr.tr('skillsMetric'),
-                      icon: AppIcons.structure,
                     ),
                   ),
                   const SizedBox(width: 8),
