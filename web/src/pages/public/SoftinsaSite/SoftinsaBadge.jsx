@@ -97,9 +97,12 @@ export default function SoftinsaBadge() {
 							<section className={styles.section}>
 								<h2>{t('softinsaSite.badgePage.competencies')}</h2>
 								<p className={styles.sectionSub}>{t('softinsaSite.badgePage.competenciesSub')}</p>
-								<div className={styles.skillTags}>
+								<div className={styles.reqGrid}>
 									{badge.skills.map((s, i) => (
-										<span key={i} className={styles.skillTag} title={s.description || undefined}>{s.name}</span>
+										<article key={i} className={styles.reqCard}>
+											<h3><TranslatedText text={s.name} /></h3>
+											{s.description && <p><TranslatedText text={s.description} /></p>}
+										</article>
 									))}
 								</div>
 							</section>
