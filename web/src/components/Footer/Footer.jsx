@@ -5,17 +5,25 @@ import { useLanguageContext } from '../../context/LanguageContext';
 import styles from './Footer.module.css';
 import Icon from '../Icons/Icons';
 
-/** Application footer with copyright and platform version. */
+/** Application footer with navigation columns, language switcher, and social links. */
 const Footer = () => {
     const { t, i18n } = useTranslation();
     const { lang, handleLanguageChange, user } = useUser();
     const { languages } = useLanguageContext();
     const currentYear = new Date().getFullYear();
 
+    const isAdmin = user?.role === 'Administrator';
+    const isConsultant = user?.role === 'Consultant';
+
     // Badge catalogue lives at a different path per role.
-    const catalogHref = user?.role === 'Consultant' ? '/catalog'
-        : user?.role === 'Administrator' ? '/admin/badges'
+    const catalogHref = isConsultant ? '/catalog'
+        : isAdmin ? '/admin/badges'
             : '/badges';
+
+    // Learning Paths structure page path per role.
+    const structureHref = isAdmin
+        ? '/admin/structure/learning-paths'
+        : '/structure/learning-paths';
 
     // activeLang seeds from lang.iso (same DB value as language_iso) so the
     // comparison is exact; updated optimistically on click for instant feedback.
@@ -34,7 +42,9 @@ const Footer = () => {
         <footer className={`${styles.footerContainer} container-fluid`}>
             <div className="container px-5">
                 <div className="row py-5">
-                    <div className="col-lg-4 col-md-6 mb-4 mb-lg-0">
+
+                    {/* Brand */}
+                    <div className="col-lg-3 col-md-12 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.brandTitle')}</h5>
                         <p className={styles.footerText}>
                             {t('footer.brandDescription')}
@@ -52,25 +62,43 @@ const Footer = () => {
                         </div>
                     </div>
 
+                    {/* Explore */}
                     <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.platformTitle')}</h5>
                         <ul className="list-unstyled mb-0">
                             <li className="mb-2"><a href={catalogHref} className={styles.footerLink}>{t('footer.platformCatalog')}</a></li>
+                            <li className="mb-2"><a href={structureHref} className={styles.footerLink}>{t('footer.platformPaths')}</a></li>
                             <li className="mb-2"><a href="/ranking" className={styles.footerLink}>{t('footer.platformRanking')}</a></li>
-                            <li className="mb-2"><a href="/announcements" className={styles.footerLink}>{t('sidebar.consultant.announcements', { defaultValue: 'Comunicados' })}</a></li>
+                            <li className="mb-2"><a href="/announcements" className={styles.footerLink}>{t('footer.platformAnnouncements')}</a></li>
                         </ul>
                     </div>
 
+                    {/* My Account */}
+                    <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                        <h5 className={styles.footerTitle}>{t('footer.accountTitle')}</h5>
+                        <ul className="list-unstyled mb-0">
+                            <li className="mb-2"><a href="/profile" className={styles.footerLink}>{t('footer.accountProfile')}</a></li>
+                            <li className="mb-2"><a href="/settings" className={styles.footerLink}>{t('footer.accountSettings')}</a></li>
+                            <li className="mb-2"><a href="/applications" className={styles.footerLink}>{t('footer.accountApplications')}</a></li>
+                            <li className="mb-2"><a href="/mail-signature" className={styles.footerLink}>{t('footer.accountMailSignature')}</a></li>
+                            {isConsultant && (
+                                <li className="mb-2"><a href="/store" className={styles.footerLink}>{t('footer.accountStore')}</a></li>
+                            )}
+                        </ul>
+                    </div>
+
+                    {/* Support */}
                     <div className="col-lg-2 col-md-6 mb-4 mb-lg-0">
                         <h5 className={styles.footerTitle}>{t('footer.supportTitle')}</h5>
                         <ul className="list-unstyled mb-0">
-                            <li className="mb-2"><a href="/policies" className={styles.footerLink}>{t('footer.supportPolicies', { defaultValue: t('policies.title') })}</a></li>
+                            <li className="mb-2"><a href="/policies" className={styles.footerLink}>{t('footer.supportPolicies')}</a></li>
                             <li className="mb-2"><a href="/privacy" className={styles.footerLink}>{t('footer.supportPrivacy')}</a></li>
-                            <li className="mb-2"><a href="/security" className={styles.footerLink}>{t('security.title', { defaultValue: 'Segurança' })}</a></li>
+                            <li className="mb-2"><a href="/security" className={styles.footerLink}>{t('footer.supportSecurity')}</a></li>
                         </ul>
                     </div>
 
-                    <div className="col-lg-4 col-md-6">
+                    {/* Connect */}
+                    <div className="col-lg-3 col-md-6">
                         <h5 className={styles.footerTitle}>{t('footer.connectivityTitle')}</h5>
                         <p className={styles.footerText}>
                             {t('footer.connectivityDescription')}
