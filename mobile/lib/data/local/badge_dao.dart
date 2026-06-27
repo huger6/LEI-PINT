@@ -109,7 +109,6 @@ class BadgeDao {
       'service_line_id': badgeJson['service_line_id'] ?? 0,
       'learning_path_id': badgeJson['learning_path_id'] ?? 0,
       'progression_stage_id': badgeJson['progression_stage_id'] ?? 0,
-      'created_at': _parseCreatedAt(badgeJson),
       'synced_at': DateTime.now().millisecondsSinceEpoch,
     });
   }
@@ -146,7 +145,6 @@ class BadgeDao {
         'service_line_id': row['service_line_id'] ?? 0,
         'learning_path_id': row['learning_path_id'] ?? 0,
         'progression_stage_id': row['progression_stage_id'] ?? 0,
-        'created_at': _parseCreatedAt(row),
         'synced_at': now,
       });
     }
@@ -186,7 +184,6 @@ class BadgeDao {
           'service_line_id': row['service_line_id'] ?? 0,
           'learning_path_id': row['learning_path_id'] ?? 0,
           'progression_stage_id': row['progression_stage_id'] ?? 0,
-          'created_at': _parseCreatedAt(row),
           'synced_at': now,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
@@ -219,16 +216,6 @@ class BadgeDao {
     return (json['stage_code'] ?? '').toString();
   }
 
-  /// Parses a badge's creation date from an API payload into a millisecond
-  /// epoch for storage. Accepts an ISO string or an already-numeric value.
-  static int? _parseCreatedAt(Map<String, dynamic> json) {
-    final raw = json['created_at'] ?? json['createdAt'];
-    if (raw == null) return null;
-    if (raw is int) return raw;
-    final parsed = DateTime.tryParse(raw.toString());
-    return parsed?.millisecondsSinceEpoch;
-  }
-
   BadgeModel _fromRow(Map<String, dynamic> row) {
     final slug = (row['slug'] as String?) ?? '';
     final title = (row['title'] as String?) ?? '';
@@ -239,17 +226,12 @@ class BadgeDao {
     final duration = (row['estimated_time'] as String?) ?? '';
     final badgeType = (row['badge_type'] as String?) ?? 'Standard';
     final imgUrl = (row['img_url'] as String?)?.trim() ?? '';
-    final createdAtRaw = row['created_at'];
-    final createdAt = createdAtRaw is int
-        ? DateTime.fromMillisecondsSinceEpoch(createdAtRaw)
-        : null;
 
     return BadgeModel(
       id: row['id'] as int,
       slug: slug,
       badgeType: badgeType,
       expirationDays: row['expiration_days'] as int?,
-      createdAt: createdAt,
       title: title,
       category: area,
       points: points,

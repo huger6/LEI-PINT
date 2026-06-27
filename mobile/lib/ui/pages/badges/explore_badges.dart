@@ -120,32 +120,10 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
             .toList();
       }
 
-      // Filter by badge creation date. Badges without a known creation date are
-      // excluded while a date filter is active.
-      if (filter.date != null) {
-        final now = DateTime.now();
-        result = result.where((b) {
-          final created = b.createdAt;
-          if (created == null) return false;
-          switch (filter.date) {
-            case 'last_7_days':
-              return created.isAfter(now.subtract(const Duration(days: 7)));
-            case 'last_30_days':
-              return created.isAfter(now.subtract(const Duration(days: 30)));
-            case 'this_year':
-              return created.year == now.year;
-            default:
-              return true;
-          }
-        }).toList();
-      }
-
       if (filter.sort == 'points') {
         result.sort((a, b) => b.points.compareTo(a.points));
       } else if (filter.sort == 'oldest') {
-        result.sort((a, b) => _compareByCreatedAt(a, b, newestFirst: false));
-      } else if (filter.sort == 'recent') {
-        result.sort((a, b) => _compareByCreatedAt(a, b, newestFirst: true));
+        result = result.reversed.toList();
       }
     } else {
       // Default (unfiltered) ordering: badges in the consultant's own area(s)
@@ -160,16 +138,6 @@ class _ExploreCompetenciesScreenState extends State<ExploreCompetenciesScreen> {
     }
 
     return result;
-  }
-
-  // Orders two badges by creation date; badges without a known date go last.
-  int _compareByCreatedAt(BadgeModel a, BadgeModel b, {required bool newestFirst}) {
-    final ad = a.createdAt;
-    final bd = b.createdAt;
-    if (ad == null && bd == null) return 0;
-    if (ad == null) return 1;
-    if (bd == null) return -1;
-    return newestFirst ? bd.compareTo(ad) : ad.compareTo(bd);
   }
 
   @override
