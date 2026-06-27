@@ -23,6 +23,7 @@ class BadgeModel {
     this.serviceLine,
     this.learningPath,
     this.skills = const [],
+    this.rewards = const [],
     required this.attributes,
     required this.requirements,
   });
@@ -110,6 +111,7 @@ class BadgeModel {
       serviceLine: slName.isEmpty ? null : slName,
       learningPath: lpName.isEmpty ? null : lpName,
       skills: _extractSkills(json['skills']),
+      rewards: _extractRewards(json['rewards']),
       attributes: buildAttributes(
         area: area,
         points: points,
@@ -124,6 +126,7 @@ class BadgeModel {
     final summary = BadgeModel.fromApiSummary(json);
 
     final skills = _extractSkills(json['skills']);
+    final rewards = _extractRewards(json['rewards']);
     final requirements = _extractRequirements(json);
 
     return BadgeModel(
@@ -144,6 +147,7 @@ class BadgeModel {
       serviceLine: summary.serviceLine,
       learningPath: summary.learningPath,
       skills: skills,
+      rewards: rewards,
       attributes: summary.attributes,
       requirements: requirements,
     );
@@ -166,6 +170,7 @@ class BadgeModel {
   final String? serviceLine;
   final String? learningPath;
   final List<SkillModel> skills;
+  final List<BadgeReward> rewards;
   final List<BadgeAttribute> attributes;
   final List<BadgeRequirement> requirements;
 
@@ -248,6 +253,14 @@ class BadgeModel {
           );
         })
         .where((item) => item.text.trim().isNotEmpty)
+        .toList();
+  }
+
+  static List<BadgeReward> _extractRewards(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((item) => BadgeReward.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -334,4 +347,21 @@ class BadgeRequirement {
   final int? id;
   final String icon;
   final String text;
+}
+
+class BadgeReward {
+  const BadgeReward({
+    required this.rewardId,
+    this.specialTitle,
+  });
+
+  final int rewardId;
+  final String? specialTitle;
+
+  factory BadgeReward.fromJson(Map<String, dynamic> json) {
+    return BadgeReward(
+      rewardId: json['reward_id'] as int? ?? 0,
+      specialTitle: json['special_title']?.toString(),
+    );
+  }
 }

@@ -150,6 +150,7 @@ class BadgeStore extends ChangeNotifier with WidgetsBindingObserver {
     if (milestone == null) return;
     await _celebrationService.markMilestoneShown(milestone);
     _pendingCelebration = null;
+    await _checkCelebration();
     notifyListeners();
   }
 

@@ -11,7 +11,6 @@ import '../widgets/badges/recommended_badge_card.dart';
 import '../widgets/dashboard/simple_line_stats_card.dart';
 import '../widgets/applications/submission_card.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
-import '../widgets/celebrations/celebration_overlay.dart';
 import 'applications/application_detail_screen.dart';
 import 'badges/badges_page.dart';
 import 'goals/goals_screen.dart';
@@ -27,8 +26,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with WidgetsBindingObserver {
-  bool _celebrationChecked = false;
-
   @override
   void initState() {
     super.initState();
@@ -70,38 +67,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     return tr('motivationBottom');
   }
 
-  void _maybeCelebrate(BuildContext context, BadgeStore badgeStore) {
-    if (_celebrationChecked) return;
-    final milestone = badgeStore.pendingCelebration;
-    if (milestone == null) return;
-    _celebrationChecked = true;
-
-    final tr = LanguageScope.of(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showCelebrationOverlay(
-        context,
-        milestone: milestone,
-        title: tr.tr(milestone.titleKey),
-        description: tr.tr(milestone.descriptionKey),
-        badgeCount: milestone.badgeCount,
-      );
-      if (context.mounted) {
-        badgeStore.consumeCelebration();
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final tr = LanguageScope.of(context);
     final authStore = context.watch<AuthStore>();
     final dashStore = context.watch<DashboardStore>();
     final notifStore = context.watch<NotificationStore>();
-    final badgeStore = context.watch<BadgeStore>();
-
-    if (!badgeStore.isLoadingEarned) {
-      _maybeCelebrate(context, badgeStore);
-    }
 
     const pageBackground = Color(0xFFE2E6EB);
 

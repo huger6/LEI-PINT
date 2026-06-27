@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/sync_manager.dart';
+import '../../../core/theme/app_colors.dart';
 import 'badge_image.dart';
 import '../shared/translated_text.dart';
 import '../../../models/badge_model.dart';
@@ -295,6 +296,137 @@ class BadgeDetailRow extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1E2932),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BadgeRewardsSection extends StatelessWidget {
+  const BadgeRewardsSection({
+    super.key,
+    required this.badge,
+    required this.hasObtained,
+  });
+
+  final BadgeModel badge;
+  final bool hasObtained;
+
+  @override
+  Widget build(BuildContext context) {
+    final tr = LanguageScope.of(context);
+    final specialTitleReward = badge.rewards
+        .where((r) => r.specialTitle != null && r.specialTitle!.isNotEmpty)
+        .toList();
+    final specialTitle = specialTitleReward.isNotEmpty
+        ? specialTitleReward.first.specialTitle!
+        : (badge.serviceLine != null
+            ? 'Pioneiro ${badge.serviceLine} Softinsa'
+            : 'Especialista Softinsa');
+
+    return BadgeSectionCard(
+      title: tr.tr('rewardsTitle'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TranslatedText(
+            tr.tr('rewardsDescription'),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6B7986),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _RewardRow(
+            icon: AppIcons.certificate,
+            title: tr.tr('rewardCertificatePdf'),
+            subtitle: tr.tr('rewardCertificateDesc'),
+            obtained: hasObtained,
+          ),
+          const SizedBox(height: 10),
+          _RewardRow(
+            icon: AppIcons.badgePremium,
+            title: tr.tr('rewardSpecialTitle'),
+            subtitle: '"$specialTitle"',
+            obtained: hasObtained,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RewardRow extends StatelessWidget {
+  const _RewardRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.obtained,
+  });
+
+  final String icon;
+  final String title;
+  final String subtitle;
+  final bool obtained;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: obtained
+            ? AppColors.success.withValues(alpha: 0.04)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: obtained
+              ? AppColors.success.withValues(alpha: 0.25)
+              : const Color(0xFFE2E8EE),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: obtained
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : const Color(0xFFEDF2F7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: AppIcon(
+              obtained ? AppIcons.checkCircle : AppIcons.lock,
+              size: 20,
+              color: obtained ? AppColors.success : const Color(0xFF9CAAB6),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1F25),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF7A8894),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-const int sourceStringsVersion = 17;
+const int sourceStringsVersion = 19;
 
 final Map<String, String> sourceStrings = Map.unmodifiable(
   (json.decode(_sourceJson) as Map<String, dynamic>)
@@ -317,14 +317,18 @@ const _sourceJson = r'''
   "competenceCount_other": "competências",
   "celebrationFirstBadgeTitle": "Primeiro Badge!",
   "celebrationFirstBadgeDesc": "Parabéns! Conquistaste o teu primeiro badge. A tua jornada de certificações começou!",
+  "celebration3BadgesTitle": "A Ganhar Ritmo!",
+  "celebration3BadgesDesc": "3 badges no bolso! Estás a aquecer e o teu empenho já se nota. Não pares agora!",
   "celebration5BadgesTitle": "Estrela em Ascensão!",
-  "celebration5BadgesDesc": "Incrível! Já conquistaste 5 badges. Estás a construir um portfólio impressionante!",
+  "celebration5BadgesDesc": "Incrível! 5 badges conquistados. Estás a construir um portfólio impressionante de competências!",
   "celebration10BadgesTitle": "Colecionador de Badges!",
-  "celebration10BadgesDesc": "10 badges conquistados! A tua dedicação está a dar frutos. Continua assim!",
-  "celebration25BadgesTitle": "Especialista!",
-  "celebration25BadgesDesc": "25 badges! És uma referência na equipa. O teu empenho é inspirador!",
+  "celebration10BadgesDesc": "10 badges conquistados! A tua dedicação está a dar frutos e a equipa reconhece o teu valor.",
+  "celebration20BadgesTitle": "Expert Certificado!",
+  "celebration20BadgesDesc": "20 badges! Já és uma referência na equipa. O teu conhecimento faz a diferença todos os dias.",
+  "celebration35BadgesTitle": "Nível Elite!",
+  "celebration35BadgesDesc": "35 badges extraordinários! Poucos alcançam este patamar. O teu percurso é verdadeiramente inspirador.",
   "celebration50BadgesTitle": "Mestre dos Badges!",
-  "celebration50BadgesDesc": "50 badges! Uma conquista extraordinária. És um verdadeiro especialista da Softinsa!",
+  "celebration50BadgesDesc": "50 badges! Uma conquista lendária. És um verdadeiro pilar de excelência da Softinsa!",
   "modelDownloadFailed": "Não foi possível transferir o modelo de tradução. Verifica a ligação à internet.",
   "tabEarnedBadges": "Badges Obtidos",
   "tabApplications": "Candidaturas",
@@ -564,10 +568,10 @@ const _sourceJson = r'''
   "NOTIF_APP_SUBMITTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi submetida com sucesso.",
   "NOTIF_APP_NEW_APPLICATION_TITLE": "Nova candidatura recebida",
   "NOTIF_APP_NEW_APPLICATION_BODY": "Uma nova candidatura para o badge \"{{badgeTitle}}\" aguarda revisão.",
-  "NOTIF_APP_BADGE_AWARDED_TITLE": "Badge atribuído",
-  "NOTIF_APP_BADGE_AWARDED_BODY": "Parabéns! O badge \"{{badgeTitle}}\" foi-lhe atribuído.",
-  "NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE": "Badge especial atribuído",
-  "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Parabéns! O badge especial \"{{badgeTitle}}\" foi-lhe atribuído.",
+  "NOTIF_APP_BADGE_AWARDED_TITLE": "Parabéns, conquistou um badge!",
+  "NOTIF_APP_BADGE_AWARDED_BODY": "O badge \"{{badgeTitle}}\" foi-lhe atribuído com sucesso. Continue assim, cada badge é um passo rumo à excelência!",
+  "NOTIF_APP_SPECIAL_BADGE_AWARDED_TITLE": "Badge especial conquistado!",
+  "NOTIF_APP_SPECIAL_BADGE_AWARDED_BODY": "Incrível! Conquistou o badge especial \"{{badgeTitle}}\". Este é um feito notável — continue a superar-se!",
   "NOTIF_APP_REJECTED_TITLE": "Candidatura rejeitada",
   "NOTIF_APP_REJECTED_BODY": "A sua candidatura para o badge \"{{badgeTitle}}\" foi rejeitada.",
   "NOTIF_APP_IN_VALIDATION_TITLE": "Candidatura em validação",
@@ -653,6 +657,12 @@ const _sourceJson = r'''
   "storeMyTitleHint": "Escolha o título mostrado publicamente no seu perfil (dos que desbloqueou).",
   "storeNoTitle": "Nenhum",
   "storeRewardsStore": "Loja de Recompensas",
-  "storeSpendPoints": "Gastar pontos"
+  "storeSpendPoints": "Gastar pontos",
+
+  "rewardsTitle": "Recompensas",
+  "rewardsDescription": "Ao conquistar este badge, desbloqueie um título de especialista exclusivo e um certificado oficial validando a sua progressão na Softinsa.",
+  "rewardCertificatePdf": "Certificado PDF",
+  "rewardCertificateDesc": "Certificado oficial descarregável",
+  "rewardSpecialTitle": "Título especial"
 }
 ''';

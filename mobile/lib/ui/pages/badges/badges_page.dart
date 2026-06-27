@@ -299,6 +299,14 @@ class _BadgeDetailScreenState extends State<BadgeDetailScreen> {
                         ),
                       ),
                     ],
+                    if (badge.isSpecial) ...[
+                      const SizedBox(height: 24),
+                      BadgeRewardsSection(
+                        badge: badge,
+                        hasObtained: context.watch<BadgeStore>().earnedBadges
+                            .any((e) => e.badge.id == badge.id),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     if (badge.description.trim().isNotEmpty) ...[
                       BadgeSectionCard(
