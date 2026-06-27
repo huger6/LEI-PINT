@@ -311,7 +311,7 @@ Para concretizar este propósito, foram definidos os seguintes objetivos especí
 \begin{itemize}
   \item \textbf{Conceção do Modelo de Dados:} Desenhar e implementar uma base de dados estruturada e escalável, capaz de suportar o fluxo de estados das candidaturas e que permita, futuramente, a expansão para novos LPs (como o de Power Skills);
   \item \textbf{Prototipagem:} Desenvolvimento de um Protótipo de Alta Fidelidade (PAF) em Figma~\cite{figma}, de forma a explorar a melhor solução visual (UI) e também no que toca à experiência do utilizador (UX);
-  \item \textbf{Implementação da API REST (Backend):} Desenvolver o motor lógico central do sistema em Node.js~\cite{nodejs} com Express~\cite{expressjs} e base de dados PostgreSQL~\cite{postgresql}, para garantir a segurança dos dados, a autenticação robusta de utilizadores e a comunicação fluida com as interfaces;
+  \item \textbf{Implementação da API REST (Backend):} Desenvolver o motor lógico central do sistema em Node.js~\cite{nodejs} com Express~\cite{expressjs} e base de dados PostgreSQL\linebreak[0]~\cite{postgresql}, para garantir a segurança dos dados, a autenticação robusta de utilizadores e a comunicação fluida com as interfaces;
   \item \textbf{Construção do Portal Web:} Desenhar e codificar um portal responsivo em React~\cite{react} com Bootstrap~\cite{bootstrap}, dedicado aos perfis de gestão (Administrador, TM, SLL) e também de consulta para o consultor, com foco na apresentação de métricas, relatórios de auditoria e ferramentas de parametrização;
   \item \textbf{Desenvolvimento da Aplicação Mobile:} Desenvolver uma aplicação móvel em Flutter~\cite{flutter}, focada na experiência do consultor, permitindo-lhe gerir o seu perfil, acompanhar o seu progresso visual e submeter evidências de formação de forma intuitiva.
 \end{itemize}
@@ -669,7 +669,7 @@ A organização dos conteúdos formativos segue uma hierarquia de cinco níveis,
   \item \textbf{\texttt{service\_lines}}: Agrupamento de competências técnicas dentro de um LP, associado por \texttt{learning\_path\_id}. Cada SL possui igualmente um \textit{slug} único para exposição segura na API;
   \item \textbf{\texttt{areas}}: Subdivisões temáticas dentro de uma SL, com \texttt{service\_line\_id} como chave estrangeira;
   \item \textbf{\texttt{progression\_stages}}: Níveis de progressão dentro de uma área, ordenados pelo campo \texttt{stage\_sequence}. Cada nível é classificado por um código de tipo através da tabela de referência \texttt{stage\_codes};
-  \item \textbf{\texttt{badges}}: Representação da credencial digital associada a cada nível de progressão. A relação com \texttt{progression\_\allowbreak stages} é de um-para-um (restrição \texttt{UNIQUE} sobre \texttt{progression\_\allowbreak stage\_id}), garantindo que cada nível possui no máximo um badge. O campo \texttt{badge\_\allowbreak type} distingue badges \textit{Standard} de badges \textit{Special}, e o campo \texttt{expiration\_duration\_days} permite configurar a validade temporal da credencial.
+  \item \textbf{\texttt{badges}}: Representação da credencial digital associada a cada nível de progressão. A relação com \texttt{progression\_\allowbreak stages} é de um-para-um (restrição \texttt{UNIQUE} sobre \texttt{progression\_\allowbreak stage\_\allowbreak id}), garantindo que cada nível possui no máximo um badge. O campo \texttt{badge\_\allowbreak type} distingue badges \textit{Standard} de badges \textit{Special}, e o campo \texttt{expiration\_\allowbreak duration\_\allowbreak days} permite configurar a validade temporal da credencial.
 \end{enumerate}
 
 A tabela \texttt{stage\_codes} funciona como tabela de referência para tipificar os níveis de progressão, permitindo a reutilização de códigos de nível (por exemplo, \textit{Foundation}, \textit{Associate}, \textit{Professional}) de forma transversal a diferentes áreas. Todos os níveis da hierarquia incluem campos de auditoria (\texttt{created\_by}, \texttt{updated\_by}) que referenciam a tabela de administradores, rastreando quem criou e modificou cada entidade.
@@ -691,9 +691,9 @@ O ciclo de vida de um badge compreende três domínios funcionais interligados: 
 
 A tabela \texttt{badge\_applications} constitui o eixo central do processo de candidatura. Cada registo representa uma candidatura de um consultor a um badge específico, identificada externamente por um UUID (\texttt{application\_guid}) gerado automaticamente pela extensão \texttt{pgcrypto}. O campo \texttt{application\_state} controla o estado atual da candidatura através de um \textit{check constraint} que restringe os valores a cinco estados: \texttt{Open}, \texttt{Submitted}, \texttt{In validation}, \texttt{Accepted} e \texttt{Rejected}. Uma restrição temporal adicional (\texttt{ckc\_date\_flow}) garante a coerência cronológica das transições, impedindo que a data de submissão seja anterior à de abertura ou que a data de fecho preceda a submissão.
 
-Cada transição de estado é registada de forma imutável na tabela \texttt{application\_validation\_\allowbreak logs}, que funciona como trilha de auditoria do processo. Cada entrada regista o identificador da candidatura, o utilizador que efetuou a ação (\texttt{user\_id}), a função do validador (\texttt{validator\_function}), a ação executada (\texttt{validator\_\allowbreak action}), comentários opcionais e o \textit{timestamp} da validação. Este registo é estritamente aditivo --- as entradas nunca são alteradas ou removidas.
+Cada transição de estado é registada de forma imutável na tabela \texttt{application\_\allowbreak validation\_\allowbreak logs}, que funciona como trilha de auditoria do processo. Cada entrada regista o identificador da candidatura, o utilizador que efetuou a ação (\texttt{user\_id}), a função do validador (\texttt{validator\_\allowbreak function}), a ação executada (\texttt{validator\_\allowbreak action}), comentários opcionais e o \textit{timestamp} da validação. Este registo é estritamente aditivo --- as entradas nunca são alteradas ou removidas.
 
-Quando uma candidatura atinge o estado \texttt{Accepted}, é criado um registo na tabela \texttt{awarded\_badges}, que materializa a atribuição efetiva da credencial. Esta tabela armazena a data de atribuição, a data de expiração (calculada a partir do \texttt{expiration\_duration\_days} do badge), um \textit{snapshot} dos pontos obtidos, e a ligação pública de verificação (\texttt{public\_\allowbreak verification\_link}) --- um URL único que permite a validação externa da credencial. As \textit{flags} \texttt{is\_published} e \texttt{is\_featured} controlam a visibilidade do badge na galeria pública do consultor.
+Quando uma candidatura atinge o estado \texttt{Accepted}, é criado um registo na tabela \texttt{awarded\_\allowbreak badges}, que materializa a atribuição efetiva da credencial. Esta tabela armazena a data de atribuição, a data de expiração (calculada a partir do \texttt{expiration\_\allowbreak duration\_\allowbreak days} do badge), um \textit{snapshot} dos pontos obtidos, e a ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}) --- um URL único que permite a validação externa da credencial. As \textit{flags} \texttt{is\_published} e \texttt{is\_featured} controlam a visibilidade do badge na galeria pública do consultor.
 
 A tabela \texttt{certificates} complementa a candidatura, permitindo o armazenamento de metadados sobre os documentos de suporte (título, entidade emissora, data de emissão e URL do ficheiro no armazenamento externo).
 
@@ -1181,7 +1181,8 @@ O sistema de saudações inteligente constitui uma funcionalidade de personaliza
 
 \begin{table}[H]
   \centering
-  \begin{tabularx}{\textwidth}{@{}lXccc@{}}
+  \small
+  \begin{tabularx}{\textwidth}{@{}lXp{2.4cm}p{2cm}p{2.2cm}@{}}
     \toprule
     \textbf{Cenário} & \textbf{Condição} & \textbf{pt-PT} & \textbf{en-GB} & \textbf{es-ES} \\
     \midrule
@@ -1196,7 +1197,7 @@ O sistema de saudações inteligente constitui uma funcionalidade de personaliza
   \label{tab:greetings}
 \end{table}
 
-A implementação distribui-se entre o \textit{backend} e o \textit{frontend}. No lado do servidor, a tabela \texttt{users} contém três campos dedicados a este mecanismo: \texttt{last\_login\_at} (regista o \textit{timestamp} do último \textit{login}), \texttt{last\_online} (atualizado em cada \textit{login} e renovação de \textit{token}) e \texttt{current\_streak\_days} (contabiliza os dias consecutivos de acesso). Durante o processo de autenticação, o controlador captura o valor prévio de \texttt{last\_login\_at} antes de o atualizar, determinando assim se se trata de um primeiro acesso (campo nulo) e devolvendo a \textit{flag} \texttt{first\_login} na resposta da API.
+A implementação distribui-se entre o \textit{backend} e o \textit{frontend}. No lado do servidor, a tabela \texttt{users} contém três campos dedicados a este mecanismo: \texttt{last\_\allowbreak login\_\allowbreak at} (regista o \textit{timestamp} do último \textit{login}), \texttt{last\_\allowbreak online} (atualizado em cada \textit{login} e renovação de \textit{token}) e \texttt{current\_\allowbreak streak\_\allowbreak days} (contabiliza os dias consecutivos de acesso). Durante o processo de autenticação, o controlador captura o valor prévio de \texttt{last\_\allowbreak login\_\allowbreak at} antes de o atualizar, determinando assim se se trata de um primeiro acesso (campo nulo) e devolvendo a \textit{flag} \texttt{first\_\allowbreak login} na resposta da API.
 
 No lado do cliente, o componente \texttt{WelcomeCard} implementa a função \texttt{getGreeting()}, que avalia os três cenários por ordem de prioridade. A verificação do primeiro acesso e do regresso após ausência prolongada utiliza os dados recebidos do \textit{backend} no momento da autenticação. A saudação por período do dia é calculada localmente com base na hora do dispositivo do utilizador. As mensagens são geridas pelo sistema de internacionalização react-i18next~\cite{i18next}, com traduções definidas nos ficheiros de localização de cada idioma (\texttt{common.json}).
 
@@ -1212,7 +1213,7 @@ O módulo de avisos e comunicação fornece aos perfis de gestão da plataforma 
 
 A arquitetura do módulo assenta em três tabelas, conforme descrito na Secção~\ref{subsec:db-announcements} do Capítulo~\ref{ch:arquitetura}. A tabela principal \texttt{system\_announcements} armazena o conteúdo do aviso --- título (até 150 caracteres), mensagem (até 10\,000 caracteres), tipo (\texttt{Information}, \texttt{Warning}, \texttt{New Content} ou \texttt{Other}), período de vigência (\texttt{starts\_at}, \texttt{ends\_at}) e estado de ativação. A segmentação da audiência é implementada por duas tabelas de junção: \texttt{announc\_roles}, que direciona o aviso a papéis específicos, e \texttt{announc\_sl}, que restringe a visibilidade a Service Lines concretas. A \textit{flag} \texttt{is\_global} permite ultrapassar ambos os filtros, tornando o aviso visível a todos os utilizadores. Quando um aviso não é global, a validação Zod~\cite{zod} exige que seja especificado pelo menos um papel ou uma Service Line como destinatário.
 
-Um índice composto sobre os campos \texttt{is\_active}, \texttt{starts\_at} e \texttt{ends\_at} (\texttt{idx\_announcements\_active\_dates}) otimiza as consultas de avisos ativos dentro do período de vigência, que constitui o cenário de utilização mais frequente.
+Um índice composto sobre os campos \texttt{is\_active}, \texttt{starts\_at} e \texttt{ends\_at} (\texttt{idx\_\allowbreak announcements\_\allowbreak active\_\allowbreak dates}) otimiza as consultas de avisos ativos dentro do período de vigência, que constitui o cenário de utilização mais frequente.
 
 \subsection{Lógica de Visibilidade e Controlo de Acesso}
 
@@ -1254,7 +1255,7 @@ A plataforma suporta dois tipos distintos de SLAs:
 A deteção de incumprimentos é realizada por dois \textit{workers} independentes, ambos executados a cada 15 minutos através de node-cron~\cite{nodecron}:
 
 \begin{itemize}
-  \item \textbf{\texttt{sla.worker}:} Executa uma consulta SQL que identifica candidaturas nos estados \texttt{Submitted} ou \texttt{In validation} cujo tempo de permanência excede o \texttt{response\_time\_hours} do SLA aplicável. A consulta cruza os dados da candidatura com os SLAs ativos dentro do período de vigência, verificando a correspondência do perfil-alvo com o estado da candidatura e a abrangência por Service Line;
+  \item \textbf{\texttt{sla.worker}:} Executa uma consulta SQL que identifica candidaturas nos estados \texttt{Submitted} ou \texttt{In validation} cujo tempo de permanência excede o \texttt{response\_\allowbreak time\_\allowbreak hours} do SLA aplicável. A consulta cruza os dados da candidatura com os SLAs ativos dentro do período de vigência, verificando a correspondência do perfil-alvo com o estado da candidatura e a abrangência por Service Line;
   \item \textbf{\texttt{custom\_sla.worker}:} Monitoriza SLAs autónomos cuja data de fim (\texttt{end\_date}) foi ultrapassada, identificando os utilizadores-alvo com base no perfil e, quando aplicável, na associação a Service Lines específicas.
 \end{itemize}
 
@@ -1275,8 +1276,8 @@ Os alertas de incumprimento são entregues através de três canais complementar
 O sistema implementa uma hierarquia de preferências a dois níveis que permite equilibrar o controlo centralizado com a personalização individual:
 
 \begin{enumerate}
-  \item \textbf{Preferências globais (\texttt{notification\_preferences}):} Definidas pelo administrador para cada tipo de notificação (incluindo \texttt{SLA\_BREACH}, \texttt{APPLICATION\_SUBMITTED}, \texttt{BADGE\_EXPIRING\_SOON}, entre outros), estabelecem os valores predefinidos para os campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push};
-  \item \textbf{Preferências do utilizador (\texttt{user\_notification\_preferences}):} Cada utilizador pode sobrepor os valores globais para qualquer tipo de notificação. Os campos com valor \texttt{NULL} herdam automaticamente o valor da preferência global correspondente.
+  \item \textbf{Preferências globais (\texttt{notification\_\allowbreak preferences}):} Definidas pelo administrador para cada tipo de notificação (incluindo \texttt{SLA\_\allowbreak BREACH}, \texttt{APPLICATION\_\allowbreak SUBMITTED}, \texttt{BADGE\_\allowbreak EXPIRING\_\allowbreak SOON}, entre outros), estabelecem os valores predefinidos para os campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push};
+  \item \textbf{Preferências do utilizador (\texttt{user\_\allowbreak notification\_\allowbreak preferences}):} Cada utilizador pode sobrepor os valores globais para qualquer tipo de notificação. Os campos com valor \texttt{NULL} herdam automaticamente o valor da preferência global correspondente.
 \end{enumerate}
 
 A resolução de preferências é efetuada pela função \texttt{resolvePreferences()}, que consulta primeiro a preferência global e aplica as sobreposições do utilizador. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente. No \textit{frontend}, o administrador dispõe de uma página dedicada para configurar as preferências globais, enquanto cada utilizador pode personalizar as suas preferências individuais através do componente \texttt{NotificationPreferences}.
@@ -1435,13 +1436,13 @@ O sistema de notificações opera em três canais complementares, unificados por
 
 As notificações \textit{in-app} são geridas pela tabela \texttt{notifications}, que armazena instâncias concretas com \textit{payload} JSON, URL de ação, tipo categorizado (HOME, BADGES, APPLICATIONS, ACHIEVEMENTS, POINTS, OBJECTIVES, EVOLUTION, ANNOUNCEMENTS, SYSTEM) e \textit{flag} de leitura. A entrega em tempo real ao \textit{frontend} é efetuada através do WebSocket, e o componente \texttt{NotificationIcon} na barra superior apresenta um indicador com a contagem de notificações não lidas por tipo, permitindo ao utilizador aceder ao painel com filtros por tipo e estado de leitura. No menu lateral, cada secção exibe indicadores visuais quando existem notificações não lidas do tipo correspondente.
 
-As notificações \textit{push} para a aplicação móvel são enviadas através do Firebase Cloud Messaging. O sistema gere os tokens FCM na tabela \texttt{device\_tokens}, detetando e desativando automaticamente tokens obsoletos após falhas de envio (código \texttt{messaging/registration-token-not-registered}). O envio para tópicos segmentados por papel é suportado através da função \texttt{sendTopicUpdate}.
+As notificações \textit{push} para a aplicação móvel são enviadas através do Firebase Cloud Messaging. O sistema gere os tokens FCM na tabela \texttt{device\_tokens}, detetando e desativando automaticamente tokens obsoletos após falhas de envio (código \texttt{messaging/\allowbreak registration\hbox{-}\allowbreak token\hbox{-}\allowbreak not\hbox{-}\allowbreak registered}). O envio para tópicos segmentados por papel é suportado através da função \texttt{sendTopicUpdate}.
 
 As notificações por email utilizam Nodemailer~\cite{nodemailer} com transporte SMTP Gmail. Cada tipo de email dispõe de \textit{templates} HTML nos três idiomas suportados (pt-PT, en-GB, es-ES), selecionados automaticamente com base no idioma preferido do destinatário. Os \textit{templates} incluem a identidade visual da Softinsa, botões de ação e ligações de \textit{fallback} em texto simples.
 
 \subsection{Hierarquia de Preferências}
 
-As preferências globais, definidas pelo administrador na tabela \texttt{notification\_preferences}, estabelecem os valores predefinidos para cada tipo de notificação nos campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push}. Cada utilizador pode sobrepor estes valores através da tabela \texttt{user\_notification\_preferences}, onde campos com valor \texttt{NULL} herdam automaticamente o valor global. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente.
+As preferências globais, definidas pelo administrador na tabela \texttt{notification\_\allowbreak preferences}, estabelecem os valores predefinidos para cada tipo de notificação nos campos \texttt{is\_enabled}, \texttt{send\_email} e \texttt{send\_push}. Cada utilizador pode sobrepor estes valores através da tabela \texttt{user\_\allowbreak notification\_\allowbreak preferences}, onde campos com valor \texttt{NULL} herdam automaticamente o valor global. Na ausência de qualquer configuração, todos os canais são considerados ativos por omissão, garantindo que nenhum alerta crítico é silenciado inadvertidamente.
 
 \section{Internacionalização e Tradução Dinâmica}
 
@@ -1491,13 +1492,13 @@ O módulo disponibiliza ainda a exportação de todos os dados pessoais em forma
 
 \section{Verificação Pública de Credenciais e Certificados}
 
-Cada badge atribuído recebe automaticamente uma ligação pública de verificação (\texttt{public\_verification\_link}), gerada no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade de uma credencial, visualizando o título do badge, a descrição, os pontos, o nome do detentor e as datas de atribuição e expiração. A proteção contra XSS é assegurada pelo escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
+Cada badge atribuído recebe automaticamente uma ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}), gerada no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade de uma credencial, visualizando o título do badge, a descrição, os pontos, o nome do detentor e as datas de atribuição e expiração. A proteção contra XSS é assegurada pelo escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
 
 A geração de certificados em formato PDF utiliza a biblioteca PDFKit~\cite{pdfkit}, compondo documentos personalizados em orientação paisagem A4 com dupla moldura, título do badge, nome do consultor, descrição, datas de conclusão, nomes dos revisores (Talent Manager e Service Line Leader), código QR de verificação (300$\times$300 píxeis) e rodapé institucional. O conteúdo textual é adaptado ao idioma preferido do consultor. A geração é idempotente --- se o certificado já existir para uma candidatura, o sistema devolve o ficheiro existente sem criar duplicado. Os certificados são armazenados no Supabase e disponibilizados através de URLs assinados com validade temporal limitada.
 
 \section{Arquitetura CSS e Design Responsivo}
 
-A estilização da aplicação web segue uma abordagem em três camadas: Bootstrap~5.3~\cite{bootstrap} como \textit{framework} de base com \textit{overrides} customizados; um sistema completo de \textit{design tokens} em variáveis CSS globais definidas no ficheiro \texttt{colors.css}; e 149 ficheiros CSS Modules com escopo isolado por componente, garantindo zero conflitos de nomes.
+A estilização da aplicação web segue uma abordagem em três camadas: Bootstrap~5.3\linebreak[0]~\cite{bootstrap} como \textit{framework} de base com \textit{overrides} customizados; um sistema completo de \textit{design tokens} em variáveis CSS globais definidas no ficheiro \texttt{colors.css}; e 149 ficheiros CSS Modules com escopo isolado por componente, garantindo zero conflitos de nomes.
 
 O sistema de variáveis CSS define mais de cem propriedades semânticas que abrangem todas as camadas visuais: cores primária (ciano), secundária (azul), erro (vermelho), sucesso (verde) e aviso (âmbar), com variantes de opacidade para estados interativos; gradientes para campos e painéis; cores suaves para cartões; intensidades de \textit{heatmap}; e sombras de cartão. A nomenclatura segue princípios do Material Design 3, com pares de cor semânticos que garantem conformidade WCAG AA de contraste.
 
@@ -1531,7 +1532,7 @@ O sistema de tradução dinâmica (descrito na secção seguinte) constitui outr
 
 \section{Tradução Dinâmica de Conteúdos da Base de Dados}
 
-Para além das \textit{strings} estáticas da interface (geridas por ficheiros de localização i18next~\cite{i18next}), todos os conteúdos dinâmicos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são traduzidos automaticamente em tempo de execução para o idioma selecionado pelo utilizador.
+Para além das \textit{strings} estáticas da interface (geridas por ficheiros de localização i18next\linebreak[0]~\cite{i18next}), todos os conteúdos dinâmicos provenientes da base de dados --- nomes de badges, descrições, requisitos, títulos de Learning Paths, Service Lines, Áreas e Níveis --- são traduzidos automaticamente em tempo de execução para o idioma selecionado pelo utilizador.
 
 A API integra com a Google Cloud Translation API~\cite{googletranslate} através de um serviço dedicado (\texttt{translation.service.js}) que implementa as seguintes otimizações:
 
@@ -1552,13 +1553,13 @@ A exportação respeita o âmbito de acesso de cada perfil: os Service Line Lead
 
 \section{Verificação Pública de Badges e Códigos QR}
 
-Cada badge atribuído possui uma ligação pública de verificação (\texttt{public\_verification\_link}), gerada automaticamente no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade e os detalhes de uma credencial digital.
+Cada badge atribuído possui uma ligação pública de verificação (\texttt{public\_\allowbreak verification\_\allowbreak link}), gerada automaticamente no momento da aceitação da candidatura. Esta ligação constitui um URL único que permite a qualquer pessoa --- sem necessidade de autenticação --- confirmar a autenticidade e os detalhes de uma credencial digital.
 
 A página pública de verificação é servida pelo controlador \texttt{public.controller.js} em dois formatos: uma página HTML com renderização completa dos metadados do badge (título, descrição, pontos, nome do detentor, datas de atribuição e expiração) e uma resposta JSON para integração programática com sistemas externos. Complementarmente, o sistema gera códigos QR (300$\times$300 píxeis) para cada badge atribuído, permitindo a incorporação em assinaturas de e-mail corporativo e materiais impressos. A geração de páginas públicas inclui proteção contra XSS através do escapamento de todos os valores controlados pelo utilizador antes da renderização HTML.
 
 \section{Geração Automática de Certificados}
 
-Quando uma candidatura atinge o estado \texttt{Accepted}, o sistema disponibiliza a geração automática de um certificado em formato PDF, personalizado com os dados do badge, do consultor e dos validadores envolvidos no processo. O serviço de certificados (\texttt{certificate.service.js}) utiliza a biblioteca PDFKit~\cite{pdfkit} para a composição do documento, que inclui o título do badge, a descrição, a data de atribuição, os nomes dos revisores e o URL de verificação pública.
+Quando uma candidatura atinge o estado \texttt{Accepted}, o sistema disponibiliza a geração automática de um certificado em formato PDF, personalizado com os dados do badge, do consultor e dos validadores envolvidos no processo. O serviço de certificados (\texttt{certificate.\allowbreak service.js}) utiliza a biblioteca PDFKit~\cite{pdfkit} para a composição do documento, que inclui o título do badge, a descrição, a data de atribuição, os nomes dos revisores e o URL de verificação pública.
 
 A geração é idempotente: se o certificado já tiver sido gerado previamente para uma determinada candidatura, o sistema devolve o ficheiro existente sem criar um duplicado. Os certificados são armazenados no serviço de armazenamento Supabase~\cite{supabase} e disponibilizados para \textit{download} através de URLs assinados com validade temporal limitada. O conteúdo textual do certificado é adaptado ao idioma preferido do consultor (Português, Inglês ou Espanhol).
 
