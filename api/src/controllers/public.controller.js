@@ -1,4 +1,4 @@
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const { models, sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
@@ -279,8 +279,18 @@ const verifyAwardedBadge = async (req, res) => {
 			throw error;
 		}
 
+		// The link is normally a bare token (GUID), but some seed/legacy rows store
+		// a full URL (e.g. https://.../verify/<token>). Match the exact value OR a
+		// stored URL that ends with "/<token>", so a clean token always resolves.
+		const likeSafe = validated.link.replace(/[\\%_]/g, (c) => `\\${c}`);
 		const awarded = await models.awarded_badges.findOne({
-			where: { public_verification_link: validated.link, is_published: true },
+			where: {
+				is_published: true,
+				[Op.or]: [
+					{ public_verification_link: validated.link },
+					{ public_verification_link: { [Op.like]: `%/${likeSafe}` } }
+				]
+			},
 			include: [
 				{
 					model: models.badge_applications, as: 'application',

@@ -4,6 +4,7 @@ import { getEarnedBadges } from '../../../services/pointsService';
 import { useUser } from '../../../hooks/userContext';
 import { useGdprConsent } from '../../../context/GdprConsentContext';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
+import { verifyUrl } from '../../../utils/verifyLink';
 import ContentCard, { CardHeader } from '../../../components/ContentCard/ContentCard';
 import Button from '../../../components/Button/Button';
 import FormAlert from '../../../components/FormAlert/FormAlert';
@@ -19,10 +20,6 @@ const ROLE_KEY = {
 	Administrator: 'admin',
 };
 
-// Builds the public verification URL for a badge from its verification link
-function verifyUrl(link) {
-	return `${window.location.origin}/verify/${link}`;
-}
 
 // Escapes a string for safe use inside an HTML attribute (e.g. title/alt), so a
 // badge name with quotes or angle brackets can't break the generated markup.

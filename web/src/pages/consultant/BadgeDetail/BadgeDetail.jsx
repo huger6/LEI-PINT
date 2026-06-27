@@ -7,6 +7,7 @@ import { getServiceLines } from '../../../features/badges/api/hierarchyApi';
 import { startApplication, generateCertificate } from '../../../features/applications/api/applicationsApi';
 import { trackInteraction } from '../../../features/gamification/api/gamificationApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
+import { verifyUrl } from '../../../utils/verifyLink';
 import DetailPageSkeleton from '../../../components/Skeleton/DetailPageSkeleton';
 import BadgeCard from '../../../components/BadgeCard/BadgeCard';
 import RequirementCard from '../../../components/RequirementCard/RequirementCard';
@@ -168,7 +169,7 @@ export default function BadgeDetail() {
 		const verificationLink = badge.user_award?.public_verification_link;
 
 		const shareUrl = verificationLink
-			? `${window.location.origin}/verify/${verificationLink}`
+			? verifyUrl(verificationLink)
 			: window.location.href;
 
 		const shareText = t('badgeDetail.linkedInShareText', { badgeTitle, url: shareUrl });
