@@ -781,6 +781,17 @@ A tabela \texttt{gdpr\_consent\_history} implementa uma trilha de auditoria imut
   \label{fig:db-gdpr}
 \end{figure}
 
+\section{Visão Integral do Modelo de Dados}
+
+A Figura~\ref{fig:db-all} apresenta o diagrama completo da base de dados, reunindo todos os domínios funcionais descritos nas secções anteriores numa única vista integrada. Este diagrama permite observar as relações entre os vários subsistemas e compreender a forma como a estrutura de utilizadores, a hierarquia de conteúdos, o ciclo de vida dos badges, a gamificação e os módulos de gestão operacional se articulam entre si.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{images/chapter3/db_all.png}
+  \caption{Diagrama completo do modelo de dados da plataforma.}
+  \label{fig:db-all}
+\end{figure}
+
 % ============================================================
 % Prototipagem e Design de Interface (Figma)
 % ============================================================
@@ -1098,11 +1109,11 @@ Visão da atividade circunscrita à Service Line do líder, incluindo indicadore
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\textwidth]{images/chapter7/web-sll-gamificacao.png}
-  \caption{Sistema de gamificação (Service Line Leader).}
+  \caption{Loja de recompensas e marcos de gamificação (Service Line Leader).}
   \label{fig:scr-web-sll-gamificacao}
 \end{figure}
 
-Apresenta, apenas para consulta, o sistema de gamificação definido pelo Administrador: os pontos por badge, as recompensas disponíveis e os marcos que despoletam animações.
+Apresenta, apenas para consulta, a loja de recompensas com os prémios disponíveis e o respetivo custo em pontos, bem como os marcos de badges conquistados que despoletam animações de celebração.
 
 \subsection{Administrador}
 
