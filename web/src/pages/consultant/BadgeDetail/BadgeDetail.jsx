@@ -326,11 +326,22 @@ export default function BadgeDetail() {
 							</Link>
 						)}
 						{(stageCode || stageTitle) && (
-							<span className={styles.chip}>
-								<Icon name="evolution" size={16} />
-								{stageTitle || stageCode}
-								{stageCode && stageTitle ? ` (${stageCode})` : ''}
-							</span>
+							areaSlug && stageCode ? (
+								<Link
+									to={SHARED.STRUCTURE_LEVEL_DETAIL.replace(':areaSlug', areaSlug).replace(':stageCode', stageCode)}
+									className={`${styles.chip} ${styles.chipArea}`}
+								>
+									<Icon name="evolution" size={16} />
+									{stageTitle || stageCode}
+									{stageCode && stageTitle ? ` (${stageCode})` : ''}
+								</Link>
+							) : (
+								<span className={styles.chip}>
+									<Icon name="evolution" size={16} />
+									{stageTitle || stageCode}
+									{stageCode && stageTitle ? ` (${stageCode})` : ''}
+								</span>
+							)
 						)}
 						{expirationDays && (() => {
 							if (hasObtained && userAward.expiration_at) {

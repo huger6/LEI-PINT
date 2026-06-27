@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import ContentCard from '../../../components/ContentCard/ContentCard';
 import { CardHeader } from '../../../components/ContentCard/ContentCard';
+import CustomSelect from '../../../components/CustomSelect/CustomSelect';
+import DatePicker from '../../../components/DatePicker/DatePicker';
 import Icon from '../../../components/Icons/Icons';
 import VerticalBarChart from '../../../components/Graphs/VerticalBar/VerticalBarChart';
 import LineAreaChart from '../../../components/Graphs/LineArea/LineAreaChart';
@@ -138,8 +140,8 @@ const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep
 
 // Consultant points dashboard: balance, trends, charts, recommendations and history
 export default function Points() {
-	// Translation helper for i18n labels
-	const { t } = useTranslation();
+	// Translation helper for i18n labels + active locale (calendar month/weekday names)
+	const { t, i18n } = useTranslation();
 	// Programmatic navigation between pages
 	const navigate = useNavigate();
 	// Tracks initial dashboard load state
@@ -696,50 +698,48 @@ export default function Points() {
 								<div className={styles.filterDropdown}>
 									<div className={styles.filterGroup}>
 										<label className={styles.filterLabel}>{t('points.serviceLine')}</label>
-										<select
-											className={styles.filterSelect}
+																				<CustomSelect
 											value={filterServiceLine}
 											onChange={e => { setFilterServiceLine(e.target.value); setHistoryPage(1); }}
-										>
-											<option value="">{t('shared.all')}</option>
-											{serviceLines.map(sl => (
-												<option key={sl.service_line_id} value={sl.service_line_id}>
-													{sl.service_line_name}
-												</option>
-											))}
-										</select>
+											ariaLabel={t('points.serviceLine')}
+											options={[
+												{ value: '', label: t('shared.all') },
+												...serviceLines.map(sl => ({ value: sl.service_line_id, label: sl.service_line_name })),
+											]}
+										/>
 									</div>
 									<div className={styles.filterGroup}>
 										<label className={styles.filterLabel}>{t('points.area')}</label>
-										<select
-											className={styles.filterSelect}
+																				<CustomSelect
 											value={filterArea}
 											onChange={e => { setFilterArea(e.target.value); setHistoryPage(1); }}
-										>
-											<option value="">{t('shared.all')}</option>
-											{areas.map(a => (
-												<option key={a.area_id} value={a.area_id}>
-													{a.area_name}
-												</option>
-											))}
-										</select>
+											ariaLabel={t('points.area')}
+											options={[
+												{ value: '', label: t('shared.all') },
+												...areas.map(a => ({ value: a.area_id, label: a.area_name })),
+											]}
+										/>
 									</div>
 									<div className={styles.filterGroup}>
 										<label className={styles.filterLabel}>{t('points.dateFrom')}</label>
-										<input
-											type="date"
-											className={styles.filterInput}
+																				<DatePicker
+											id="points-date-from"
 											value={filterDateFrom}
+											max={filterDateTo || undefined}
 											onChange={e => { setFilterDateFrom(e.target.value); setHistoryPage(1); }}
+											ariaLabel={t('points.dateFrom')}
+											locale={i18n.language}
 										/>
 									</div>
 									<div className={styles.filterGroup}>
 										<label className={styles.filterLabel}>{t('points.dateTo')}</label>
-										<input
-											type="date"
-											className={styles.filterInput}
+																				<DatePicker
+											id="points-date-to"
 											value={filterDateTo}
+											min={filterDateFrom || undefined}
 											onChange={e => { setFilterDateTo(e.target.value); setHistoryPage(1); }}
+											ariaLabel={t('points.dateTo')}
+											locale={i18n.language}
 										/>
 									</div>
 									{activeFilterCount > 0 && (

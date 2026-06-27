@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
+import DatePicker from '../DatePicker/DatePicker';
 import { createGoal } from '../../features/goals/api/goalsApi';
 import { resolveErrorMessage } from '../../validations/apiErrors';
 import styles from './CreateGoalModal.module.css';
@@ -10,8 +11,8 @@ import styles from './CreateGoalModal.module.css';
 // fields the goals table supports: title, description, optional start/end dates
 // (the deadline) and an optional reminder date.
 export default function CreateGoalModal({ badgeId, defaultTitle = '', onClose, onCreated }) {
-	// Translation helper
-	const { t } = useTranslation();
+	// Translation helper + active locale (for the calendar month/weekday names)
+	const { t, i18n } = useTranslation();
 	// Goal title (prefilled with the badge title)
 	const [title, setTitle] = useState(defaultTitle);
 	// Optional free-text description
@@ -106,27 +107,41 @@ export default function CreateGoalModal({ badgeId, defaultTitle = '', onClose, o
 				</label>
 
 				<div className={styles.row}>
-					<label className={styles.field}>
+					<div className={styles.field}>
 						<span className={styles.label}>{t('createGoal.startDate')}</span>
-						<input type="date" className={styles.input} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-					</label>
-					<label className={styles.field}>
+						<DatePicker
+							id="goal-start"
+							value={startDate}
+							onChange={(e) => setStartDate(e.target.value)}
+							ariaLabel={t('createGoal.startDate')}
+							locale={i18n.language}
+						/>
+					</div>
+					<div className={styles.field}>
 						<span className={styles.label}>{t('createGoal.deadline')}</span>
-						<input
-							type="date"
-							className={`${styles.input} ${fieldErrors.endDate ? styles.inputError : ''}`}
+						<DatePicker
+							id="goal-deadline"
 							value={endDate}
-							min={startDate || undefined}
 							onChange={(e) => setEndDate(e.target.value)}
+							min={startDate || undefined}
+							error={!!fieldErrors.endDate}
+							ariaLabel={t('createGoal.deadline')}
+							locale={i18n.language}
 						/>
 						{fieldErrors.endDate && <span className={styles.error}>{fieldErrors.endDate}</span>}
-					</label>
+					</div>
 				</div>
 
-				<label className={styles.field}>
+				<div className={styles.field}>
 					<span className={styles.label}>{t('createGoal.reminder')}</span>
-					<input type="date" className={styles.input} value={reminder} onChange={(e) => setReminder(e.target.value)} />
-				</label>
+					<DatePicker
+						id="goal-reminder"
+						value={reminder}
+						onChange={(e) => setReminder(e.target.value)}
+						ariaLabel={t('createGoal.reminder')}
+						locale={i18n.language}
+					/>
+				</div>
 			</form>
 		</Modal>
 	);
