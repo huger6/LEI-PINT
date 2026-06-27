@@ -56,13 +56,16 @@ const createNotification = async ({ userId, definitionId, notificationType, titl
                 });
                 if (!deviceTokens.length) return;
 
+                // Send only the event/translation keys (+ interpolation meta) in a
+                // silent data payload; the mobile app translates and renders it.
                 const { staleTokenIds } = await sendPushToUser(deviceTokens, {
-                    title: title || 'New notification',
-                    body: body || '',
+                    title,
+                    body,
                     data: {
                         notification_id: String(notification.notification_id),
                         notification_type: notificationType,
-                        notification_url: url || ''
+                        notification_url: url || '',
+                        meta: meta ? JSON.stringify(meta) : ''
                     }
                 });
 
