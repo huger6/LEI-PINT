@@ -63,6 +63,12 @@ router.patch('/:applicationGuid', loginRequired, applicationController.updateApp
 router.get('/:applicationGuid/evidences/:evidenceId/download', loginRequired, applicationController.downloadEvidence);
 
 /**
+ * @route   GET /api/applications/:applicationGuid/evidences/:evidenceId/preview
+ * @desc    Generate a signed inline preview URL for an evidence file
+ */
+router.get('/:applicationGuid/evidences/:evidenceId/preview', loginRequired, applicationController.previewEvidence);
+
+/**
  * @route   DELETE /api/applications/:applicationGuid/evidences/:evidenceId
  * @desc    Remove an uploaded evidence file (owner only, while application is Open)
  */

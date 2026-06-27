@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence, deleteEvidence } from '../../../features/applications/api/applicationsApi';
+import { submitApplication, upsertEvidence, getUploadUrl, updateApplication, downloadEvidence, previewEvidence, deleteEvidence } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import { validateEvidenceFile, EVIDENCE_ACCEPT_STRING } from '../../../services/storage';
 import Stepper from '../../../components/Stepper/Stepper';
@@ -173,7 +173,15 @@ export default function ApplicationDetail({ application, onReload }) {
 		}
 	}
 
-	// Request a signed download URL and open the evidence file in a new tab
+	async function handlePreviewEvidence(evidenceId) {
+		try {
+			const { previewUrl } = await previewEvidence(appGuid, evidenceId);
+			window.open(previewUrl, '_blank');
+		} catch {
+			setError(t('applicationDetail.errors.downloadFailed'));
+		}
+	}
+
 	async function handleDownloadEvidence(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
@@ -369,6 +377,16 @@ export default function ApplicationDetail({ application, onReload }) {
 																{t('applicationDetail.submitted')}
 															</span>
 														</div>
+														<Tooltip text={t('applicationDetail.viewEvidence')}>
+															<button
+																type="button"
+																className={styles.evidenceDownloadBtn}
+																onClick={() => handlePreviewEvidence(evidence.evidence_id || evidence.evidenceId)}
+																aria-label={t('applicationDetail.viewEvidence')}
+															>
+																<Icon name="eye" size={16} color="var(--color-secondary)" />
+															</button>
+														</Tooltip>
 														<Tooltip text={t('applicationDetail.downloadEvidence')}>
 															<button
 																type="button"

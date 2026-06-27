@@ -60,6 +60,12 @@ export async function downloadEvidence(applicationGuid, evidenceId) {
 	return data?.data;
 }
 
+// Returns a temporary inline preview URL for an evidence file.
+export async function previewEvidence(applicationGuid, evidenceId) {
+	const { data } = await api.get(`/applications/${applicationGuid}/evidences/${evidenceId}/preview`);
+	return data?.data;
+}
+
 // Removes an uploaded evidence file (owner only, while the application is Open).
 export async function deleteEvidence(applicationGuid, evidenceId) {
 	const { data } = await api.delete(`/applications/${applicationGuid}/evidences/${evidenceId}`);

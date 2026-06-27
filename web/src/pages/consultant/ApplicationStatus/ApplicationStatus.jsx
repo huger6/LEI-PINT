@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SHARED } from '../../../routes/paths';
-import { downloadEvidence, generateCertificate } from '../../../features/applications/api/applicationsApi';
+import { downloadEvidence, previewEvidence, generateCertificate } from '../../../features/applications/api/applicationsApi';
 import { resolveErrorMessage } from '../../../validations/apiErrors';
 import Stepper from '../../../components/Stepper/Stepper';
 import Icon from '../../../components/Icons/Icons';
@@ -81,7 +81,15 @@ export default function ApplicationStatus({ application, badge }) {
 		);
 	}
 
-	// Request a signed download URL for an evidence file and open it
+	async function handlePreviewEvidence(evidenceId) {
+		try {
+			const { previewUrl } = await previewEvidence(appGuid, evidenceId);
+			window.open(previewUrl, '_blank');
+		} catch {
+			// silent
+		}
+	}
+
 	async function handleDownloadEvidence(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
@@ -370,6 +378,16 @@ export default function ApplicationStatus({ application, badge }) {
 														<div className={styles.reqEvidenceFile}>
 															<Icon name="paper" size={14} color="var(--color-secondary)" />
 															<span className={styles.reqEvidenceFileName}>{evFileName}</span>
+															<Tooltip text={t('applicationDetail.viewEvidence')}>
+																<button
+																	type="button"
+																	className={styles.evidenceDownloadBtn}
+																	onClick={() => handlePreviewEvidence(evId)}
+																	aria-label={t('applicationDetail.viewEvidence')}
+																>
+																	<Icon name="eye" size={14} color="var(--color-secondary)" />
+																</button>
+															</Tooltip>
 															<Tooltip text={t('applicationDetail.downloadEvidence')}>
 																<button
 																	type="button"

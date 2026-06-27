@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SHARED, TM, SLL, ADMIN } from '../../../routes/paths';
 import {
 	downloadEvidence,
+	previewEvidence,
 	reviewEvidence,
 	validateApplication,
 	generateCertificate,
@@ -163,7 +164,15 @@ export default function ApplicationReview({ application }) {
 
 	const NEEDS_NOTE = ['send_back', 'reject'];
 
-	// Download the evidence file for the given evidence ID.
+	async function handlePreview(evidenceId) {
+		try {
+			const { previewUrl } = await previewEvidence(appGuid, evidenceId);
+			if (previewUrl) window.open(previewUrl, '_blank');
+		} catch (err) {
+			setError(resolveErrorMessage(err));
+		}
+	}
+
 	async function handleDownload(evidenceId) {
 		try {
 			const { downloadUrl } = await downloadEvidence(appGuid, evidenceId);
@@ -474,8 +483,11 @@ export default function ApplicationReview({ application }) {
 													<span className={styles.evName}>{evName}</span>
 													<span className={styles.evType}>{t('applicationReview.evidenceFile', { defaultValue: 'Documento' })}</span>
 												</div>
-												<button type="button" className={styles.viewBtn} onClick={() => handleDownload(evId)}>
+												<button type="button" className={styles.viewBtn} onClick={() => handlePreview(evId)}>
 													<Icon name="eye" size={14} color="var(--color-secondary)" /> {t('applicationReview.viewDocument')}
+												</button>
+												<button type="button" className={styles.viewBtn} onClick={() => handleDownload(evId)}>
+													<Icon name="download" size={14} color="var(--color-secondary)" /> {t('applicationDetail.downloadEvidence')}
 												</button>
 											</div>
 											<div className={styles.reqActions}>

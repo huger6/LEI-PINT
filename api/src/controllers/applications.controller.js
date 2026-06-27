@@ -3,7 +3,7 @@ const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../utils/logger');
 const { handleZodError } = require('../utils/responseHelper');
 const validations = require('../validations/applications.validation');
-const { generateSignedUploadUrl, generateSignedDownloadUrl, deleteFile } = require('../services/storage.service');
+const { generateSignedUploadUrl, generateSignedDownloadUrl, generateSignedPreviewUrl, deleteFile } = require('../services/storage.service');
 const gamificationService = require('../services/gamification.service');
 const notificationsService = require('../services/notifications.service');
 const { broadcastToWebhooks } = require('../services/integrations.service');
@@ -1182,6 +1182,64 @@ const downloadEvidence = async (req, res) => {
     }
 };
 
+const previewEvidence = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const role = req.user.role;
+
+        const { applicationGuid, evidenceId } = validations.evidenceIdParamSchema.parse(req.params);
+
+        const application = await models.badge_applications.findOne({
+            where: { application_guid: applicationGuid },
+            include: [{ model: models.badges, as: 'badge', attributes: ['service_line_id'] }]
+        });
+
+        if (!application) {
+            return res.status(404).json({ success: false, code: 'APP_NOT_FOUND' });
+        }
+
+        if (role === 'Consultant' && application.user_id !== userId) {
+            return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_OWN' });
+        }
+
+        if (role === 'Service Line Leader') {
+            const sllInfo = await models.service_line_leaders.findByPk(userId);
+            if (!sllInfo || application.badge.service_line_id !== sllInfo.service_line_id) {
+                return res.status(403).json({ success: false, code: 'APP_ACCESS_DENIED_SL' });
+            }
+        }
+
+        const evidence = await models.requirements_evidences.findOne({
+            where: { evidence_id: evidenceId, application_id: application.application_id }
+        });
+
+        if (!evidence || !evidence.evidence_file_url) {
+            return res.status(404).json({ success: false, code: 'APP_EVIDENCE_NOT_FOUND' });
+        }
+
+        const fileUrl = evidence.evidence_file_url;
+        const bucketName = 'private-assets';
+        const pathMatch = fileUrl.match(/\/authenticated\/[^/]+\/(.+)$/);
+
+        if (!pathMatch) {
+            return res.status(400).json({ success: false, code: 'APP_EVIDENCE_URL_INVALID' });
+        }
+
+        const filePath = decodeURIComponent(pathMatch[1]);
+        const signedUrl = await generateSignedPreviewUrl(bucketName, filePath, 600);
+
+        return res.status(200).json({
+            success: true,
+            data: { previewUrl: signedUrl }
+        });
+
+    } catch (error) {
+        if (error.name === 'ZodError') return handleZodError(res, error, 'VALIDATION_INVALID_DATA');
+        logger.error('Error previewing evidence', { error });
+        return res.status(500).json({ success: false, code: 'APP_PREVIEW_FAILED' });
+    }
+};
+
 /*──────────────────────────────────────────────────────────────
   DELETE /api/applications/:applicationGuid/evidences/:evidenceId
   Lets the owning consultant remove an uploaded file while the
@@ -1251,5 +1309,6 @@ module.exports = {
     reviewEvidence,
     updateApplication,
     downloadEvidence,
+    previewEvidence,
     deleteEvidence
 };
