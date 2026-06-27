@@ -6,6 +6,8 @@ import '../../data/remote/api_client.dart';
 import '../../injection_container.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/sync_codes.dart';
+import '../utils/notification_translator.dart';
+import 'local_notifications_service.dart';
 import 'sync_service.dart';
 
 @pragma('vm:entry-point')
@@ -23,6 +25,8 @@ class FCMService {
   static const String _topicName = 'new_data';
 
   static Future<void> initialize() async {
+    await LocalNotificationsService.init();
+
     final messaging = FirebaseMessaging.instance;
 
     final settings = await messaging.requestPermission(
@@ -114,6 +118,11 @@ class FCMService {
     final data = message.data;
 
     if (data.containsKey('notification_id')) {
+      // Build and fire the visible notification ourselves: the server sends a
+      // silent data-only message carrying translation keys; translate them into
+      // the device's language, then show it (vibrate + readable text).
+      await _showTranslatedNotification(data);
+
       try {
         final syncService = getIt<SyncService>();
         await syncService.handleUpdate(
@@ -135,6 +144,28 @@ class FCMService {
     try {
       final syncService = getIt<SyncService>();
       await syncService.handleUpdate(updateCode, timestamp.toString());
+    } catch (_) {}
+  }
+
+  /// Translates the push payload's title/body keys into the device's language
+  /// (interpolating `meta`) and fires a visible local notification.
+  static Future<void> _showTranslatedNotification(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final translated = await translatePush(
+        titleKey: data['title_key']?.toString(),
+        bodyKey: data['body_key']?.toString(),
+        metaJson: data['meta']?.toString(),
+      );
+
+      if (translated.title.isEmpty && translated.body.isEmpty) return;
+
+      await LocalNotificationsService.show(
+        title: translated.title,
+        body: translated.body,
+        payload: data['notification_url']?.toString(),
+      );
     } catch (_) {}
   }
 }

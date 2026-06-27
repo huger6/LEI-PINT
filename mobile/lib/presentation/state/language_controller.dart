@@ -5,6 +5,7 @@ import '../../core/constants/source_strings.dart';
 import '../../core/constants/source_strings_en.dart';
 import '../../core/constants/source_strings_es.dart';
 import '../../core/services/translation_service.dart';
+import '../../core/utils/notification_translator.dart';
 import '../../data/local/lang_dao.dart';
 import '../../models/lang_model.dart';
 
@@ -42,6 +43,7 @@ class LanguageController extends ChangeNotifier {
   Future<void> initialize() async {
     await _ensureTranslationCacheVersion();
     _translatedStrings = Map.of(sourceStrings);
+    await _persistLanguageCode(_languageCode);
     await _refreshLanguageList();
   }
 
@@ -128,8 +130,20 @@ class LanguageController extends ChangeNotifier {
     }
   }
 
+  /// Persists the active language code so background isolates (e.g. the FCM
+  /// push handler) can translate notifications without the Provider tree.
+  Future<void> _persistLanguageCode(String code) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(kAppLanguagePrefKey, code);
+    } catch (_) {}
+  }
+
   Future<void> setLanguageCode(String code) async {
     final normalizedCode = _normalizeCode(code);
+
+    // Always persist, even when unchanged, so the stored value stays in sync.
+    await _persistLanguageCode(normalizedCode);
 
     if (_languageCode == normalizedCode) return;
 
