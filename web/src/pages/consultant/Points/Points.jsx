@@ -822,7 +822,7 @@ export default function Points() {
 													: <span className={styles.cellEmpty}>—</span>
 												}
 											</td>
-											<td className={styles.cellPoints}>+{row.points_delta}</td>
+											<td className={styles.cellPoints}>{row.points_delta > 0 ? '+' : ''}{row.points_delta}</td>
 											<td>
 												<span className={`${styles.statusBadge} ${styles[`status_${statusKey}`]}`}>
 													{t(`points.statusType.${statusKey}`)}
