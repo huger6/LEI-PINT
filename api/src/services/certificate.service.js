@@ -21,7 +21,7 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null, al
             {
                 model: models.badges,
                 as: 'badge',
-                attributes: ['badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'service_line_id']
+                attributes: ['badge_title', 'badge_description', 'badge_img_url', 'badge_points', 'badge_slug', 'service_line_id']
             },
             {
                 model: models.consultants,
@@ -72,7 +72,8 @@ const fetchCertificateData = async (applicationGuid, requestingUserId = null, al
         application,
         badge: {
             title: application.badge?.badge_title || 'Certificate',
-            description: application.badge?.badge_description || null
+            description: application.badge?.badge_description || null,
+            slug: application.badge?.badge_slug || null
         },
         consultant: {
             fullName: application.user?.user?.full_name || 'Unknown',
@@ -140,7 +141,7 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         }
     }
 
-    const verificationUrl = `${(process.env.FRONTEND_VERIFY_BADGE_URL || 'http://localhost:5173/softinsa/badges').replace(/\/$/, '')}/${applicationGuid}`;
+    const verificationUrl = `${(process.env.FRONTEND_VERIFY_BADGE_URL || 'http://localhost:5173/softinsa/badges').replace(/\/$/, '')}/${data.badge.slug}`;
 
     const pdfBuffer = await generateCertificatePDF({
         lang,
