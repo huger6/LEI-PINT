@@ -53,11 +53,15 @@ BEGIN
             u.full_name,
             u.profile_img_url,
             COALESCE((
+                -- Ranking shows points EARNED only: positive deltas exclude points
+                -- spent on rewards / lost, so a consultant's net balance changing
+                -- never drops them down the leaderboard.
                 SELECT SUM(ph.points_delta)
                 FROM points_history ph
                 LEFT JOIN badge_requirements br ON ph.requirement_id = br.requirement_id
                 LEFT JOIN badges b ON (ph.badge_id = b.badge_id OR br.badge_id = b.badge_id)
                 WHERE ph.user_id = u.user_id
+                  AND ph.points_delta > 0
                   AND (p_learning_path_id IS NULL OR b.learning_path_id = p_learning_path_id)
                   AND (p_service_line_id  IS NULL OR b.service_line_id  = p_service_line_id)
                   AND (p_area_id          IS NULL OR b.area_id          = p_area_id)

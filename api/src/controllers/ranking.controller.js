@@ -59,7 +59,9 @@ const getRanking = async (req, res) => {
                     u.full_name,
                     u.username,
                     u.profile_img_url,
-                    COALESCE(SUM(ph.points_delta), 0) AS total_points,
+                    -- Earned-only total (positive deltas): excludes points spent on
+                    -- rewards / lost, matching the get_ranking() stored function.
+                    COALESCE(SUM(ph.points_delta) FILTER (WHERE ph.points_delta > 0), 0) AS total_points,
                     (
                         SELECT COUNT(ab.awarded_badges_id)
                         FROM awarded_badges ab
@@ -198,11 +200,14 @@ const getMyPosition = async (req, res) => {
                 SELECT
                     u.user_id,
                     COALESCE((
+                        -- Earned-only total (positive deltas) so the position matches
+                        -- the leaderboard: spending points in the store never reranks.
                         SELECT SUM(ph.points_delta)
                         FROM points_history ph
                         LEFT JOIN badge_requirements br ON ph.requirement_id = br.requirement_id
                         LEFT JOIN badges b ON (ph.badge_id = b.badge_id OR br.badge_id = b.badge_id)
                         WHERE ph.user_id = u.user_id
+                          AND ph.points_delta > 0
                           AND (:learningPathId IS NULL OR b.learning_path_id = :learningPathId)
                           AND (:serviceLineId  IS NULL OR b.service_line_id  = :serviceLineId)
                           AND (:areaId          IS NULL OR b.area_id          = :areaId)

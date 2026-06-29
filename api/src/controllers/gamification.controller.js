@@ -262,7 +262,9 @@ const getConsultantStats = async (req, res) => {
                 SELECT
                     c.user_id,
                     ROW_NUMBER() OVER (
-                        ORDER BY COALESCE(SUM(ph.points_delta), 0) DESC, c.user_id ASC
+                        -- Rank on earned points only (positive deltas), matching the
+                        -- leaderboard; points spent on rewards never change the rank.
+                        ORDER BY COALESCE(SUM(ph.points_delta) FILTER (WHERE ph.points_delta > 0), 0) DESC, c.user_id ASC
                     ) AS position
                 FROM consultants c
                 LEFT JOIN points_history ph ON ph.user_id = c.user_id

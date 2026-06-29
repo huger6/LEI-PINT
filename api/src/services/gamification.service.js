@@ -75,16 +75,25 @@ const getConsultantPointsSummary = async (userId) => {
   POINTS + GLOBAL RANK FOR A SINGLE CONSULTANT
   Lightweight lookup (no history rows) used to enrich views that
   already gate access to the consultant, e.g. application detail.
-  Ordering matches the global ranking (getMyPosition with no filters).
+  total_points is the consultant's REAL balance (net of rewards
+  spent / lost); the ranking position is computed on EARNED points
+  only, matching the global leaderboard (getMyPosition no filters).
 ──────────────────────────────────────────────────────────────*/
 const getConsultantPointsAndRank = async (userId) => {
     const rows = await sequelize.query(
         `WITH computed AS (
             SELECT
                 u.user_id,
+                -- Real balance shown in the application detail (net of rewards spent).
                 COALESCE((
                     SELECT SUM(ph.points_delta) FROM points_history ph WHERE ph.user_id = u.user_id
                 ), 0) AS total_points,
+                -- Earned-only total (positive deltas) drives the ranking position so
+                -- spending points in the rewards store never changes the rank.
+                COALESCE((
+                    SELECT SUM(ph.points_delta) FROM points_history ph
+                    WHERE ph.user_id = u.user_id AND ph.points_delta > 0
+                ), 0) AS earned_points,
                 (
                     SELECT COUNT(ab.awarded_badges_id) FROM awarded_badges ab WHERE ab.user_id = u.user_id
                 ) AS total_badges,
@@ -97,7 +106,7 @@ const getConsultantPointsAndRank = async (userId) => {
                 user_id,
                 total_points,
                 ROW_NUMBER() OVER (
-                    ORDER BY total_points DESC, total_badges DESC, full_name ASC
+                    ORDER BY earned_points DESC, total_badges DESC, full_name ASC
                 ) AS position
             FROM computed
         )
