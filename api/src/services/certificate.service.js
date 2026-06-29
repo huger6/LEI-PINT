@@ -140,7 +140,7 @@ const getOrCreateCertificate = async (applicationGuid, lang, requestingUserId = 
         }
     }
 
-    const verificationUrl = `${(process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '')}/public/certificate/${applicationGuid}`;
+    const verificationUrl = `${(process.env.FRONTEND_VERIFY_BADGE_URL || 'http://localhost:5173/softinsa/badges').replace(/\/$/, '')}/${applicationGuid}`;
 
     const pdfBuffer = await generateCertificatePDF({
         lang,
