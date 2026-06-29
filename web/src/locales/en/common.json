@@ -1589,6 +1589,15 @@
 		"latestUpdates": "Latest Updates",
 		"noUpdates": "No updates yet.",
 		"applicationStarted": "Application started",
+		"actions": {
+			"submitted": "Submitted",
+			"requestReview": "Forwarded for Review",
+			"accepted": "Accepted",
+			"rejected": "Rejected",
+			"sendBack": "Returned",
+			"approveEvidence": "Evidence Approved",
+			"rejectEvidence": "Evidence Rejected"
+		},
 		"feedback": "Notes & Feedback",
 		"uploadedEvidences": "Uploaded Evidence",
 		"expiration": "Expiration",

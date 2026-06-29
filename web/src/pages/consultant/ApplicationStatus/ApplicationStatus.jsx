@@ -69,7 +69,7 @@ export default function ApplicationStatus({ application, badge }) {
 
 	const SYSTEM_FUNCTIONS = ['trg_log_application_state_change', 'System'];
 	const userLogs = logs.filter((l) => !SYSTEM_FUNCTIONS.includes(l.validator_function || l.validatorFunction));
-	const sortedLogs = [...userLogs].sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
+	const sortedLogs = [...userLogs].sort((a, b) => new Date(b.validated_at || b.validatedAt) - new Date(a.validated_at || a.validatedAt));
 
 	// Format a date string into a localized date and time string
 	function formatDateTime(dateStr) {
@@ -297,7 +297,7 @@ export default function ApplicationStatus({ application, badge }) {
 										const role = log.validator_function || log.validatorFunction || '';
 										const userName = log.user?.full_name || log.user?.fullName || '';
 										const comment = log.validations_comments || log.validationsComments;
-										const date = log.created_at || log.createdAt;
+										const date = log.validated_at || log.validatedAt;
 
 										return (
 											<div key={idx} className={styles.feedbackItem}>

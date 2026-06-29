@@ -1589,6 +1589,15 @@
 		"latestUpdates": "Últimas Atualizações",
 		"noUpdates": "Sem atualizações.",
 		"applicationStarted": "Candidatura iniciada",
+		"actions": {
+			"submitted": "Submetida",
+			"requestReview": "Encaminhada para Revisão",
+			"accepted": "Aceite",
+			"rejected": "Rejeitada",
+			"sendBack": "Devolvida",
+			"approveEvidence": "Evidência Aprovada",
+			"rejectEvidence": "Evidência Rejeitada"
+		},
 		"feedback": "Observações e Feedback",
 		"uploadedEvidences": "Evidências Carregadas",
 		"expiration": "Expira em",
