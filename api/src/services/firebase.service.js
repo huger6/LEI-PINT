@@ -1,8 +1,12 @@
 const { logger } = require('../utils/logger');
 
 let admin;
+// SKIP_FIREBASE is a string env var. Only explicit on-values disable Firebase;
+// note that '0' is a non-empty (truthy) string, so a bare `!process.env.SKIP_FIREBASE`
+// would wrongly skip when SKIP_FIREBASE=0. This mirrors the check in app.js.
+const skipFirebase = ['1', 'true'].includes(String(process.env.SKIP_FIREBASE || '').toLowerCase());
 try {
-    if (!process.env.SKIP_FIREBASE) {
+    if (!skipFirebase) {
         admin = require('../config/firebase');
     }
 } catch (err) {
@@ -16,8 +20,10 @@ try {
 // meta in the data payload, and the mobile app translates and renders the
 // notification itself. We deliberately never set the OS-visible `notification`
 // block — doing so previously caused the raw i18n key to appear on screen.
-const sendPushToUser = async (tokens, { title, body, data = {} }) => {
-    if (!admin || !tokens.length) return [];
+const sendPushToUser = async (tokens, { title, body, data = {}, notification = null }) => {
+    // Always return the same shape so callers can safely destructure
+    // `staleTokenIds` even when Firebase is disabled or there are no tokens.
+    if (!admin || !tokens.length) return { results: [], staleTokenIds: [] };
 
     const results = [];
     const staleTokenIds = [];
@@ -46,6 +52,30 @@ const sendPushToUser = async (tokens, { title, body, data = {} }) => {
                 payload: { aps: { 'content-available': 1 } }
             }
         };
+
+        // When a pre-translated OS `notification` block is supplied, attach it so
+        // the operating system renders the push itself. Unlike the silent data-only
+        // path, this is reliably shown in every app state (foreground, background
+        // and terminated, including iOS). Used for the hardcoded PT demo push.
+        if (notification && (notification.title || notification.body)) {
+            message.notification = {
+                title: notification.title || '',
+                body: notification.body || ''
+            };
+            message.android = {
+                priority: 'high',
+                notification: { channelId: 'softinsa_default', sound: 'default' }
+            };
+            message.apns = {
+                headers: { 'apns-priority': '10', 'apns-push-type': 'alert' },
+                payload: {
+                    aps: {
+                        alert: { title: notification.title || '', body: notification.body || '' },
+                        sound: 'default'
+                    }
+                }
+            };
+        }
 
         try {
             const response = await admin.messaging().send(message);

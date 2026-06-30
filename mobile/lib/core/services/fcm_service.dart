@@ -41,7 +41,9 @@ class FCMService {
       );
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        _handleMessage(message);
+        // Foreground: the OS does not auto-display a notification block, so we
+        // render it ourselves.
+        _handleMessage(message, renderNotificationBlock: true);
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -114,8 +116,35 @@ class FCMService {
     );
   }
 
-  static Future<void> _handleMessage(RemoteMessage message) async {
+  static Future<void> _handleMessage(
+    RemoteMessage message, {
+    bool renderNotificationBlock = false,
+  }) async {
     final data = message.data;
+    final notification = message.notification;
+
+    // Server-sent OS notification block (already translated, e.g. the hardcoded
+    // PT "application submitted" push). When the app is in the background or
+    // terminated the OS renders it itself, so we only render it here in the
+    // foreground. Either way we still trigger a background sync.
+    if (notification != null) {
+      if (renderNotificationBlock) {
+        await LocalNotificationsService.show(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          payload: data['notification_url']?.toString(),
+        );
+      }
+
+      try {
+        final syncService = getIt<SyncService>();
+        await syncService.handleUpdate(
+          SyncCodes.notifications,
+          DateTime.now().toIso8601String(),
+        );
+      } catch (_) {}
+      return;
+    }
 
     if (data.containsKey('notification_id')) {
       // Build and fire the visible notification ourselves: the server sends a
