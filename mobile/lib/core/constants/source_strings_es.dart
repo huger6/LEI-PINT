@@ -589,6 +589,8 @@ const _sourceJsonEs = r'''
   "NOTIF_GOAL_REMINDER_BODY": "No olvides tu objetivo \"{{goalTitle}}\".",
   "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Plazo de objetivo próximo",
   "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "Tu objetivo \"{{goalTitle}}\" vence en {{daysRemaining}} días.",
+  "NOTIF_REWARD_REDEEMED_TITLE": "Recompensa canjeada",
+  "NOTIF_REWARD_REDEEMED_BODY": "Canjeaste \"{{rewardName}}\" por {{points}} puntos.",
 
   "policyTypePrivacy": "Política de Privacidad",
   "policyTypeTerms": "Términos y Condiciones",

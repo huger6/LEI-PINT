@@ -592,6 +592,8 @@ const _sourceJson = r'''
   "NOTIF_GOAL_REMINDER_BODY": "Não se esqueça do seu objetivo \"{{goalTitle}}\".",
   "NOTIF_GOAL_DEADLINE_APPROACHING_TITLE": "Prazo de objetivo a aproximar-se",
   "NOTIF_GOAL_DEADLINE_APPROACHING_BODY": "O seu objetivo \"{{goalTitle}}\" termina em {{daysRemaining}} dias.",
+  "NOTIF_REWARD_REDEEMED_TITLE": "Recompensa resgatada",
+  "NOTIF_REWARD_REDEEMED_BODY": "Resgatou \"{{rewardName}}\" por {{points}} pontos.",
 
   "policyTypePrivacy": "Política de Privacidade",
   "policyTypeTerms": "Termos e Condições",
