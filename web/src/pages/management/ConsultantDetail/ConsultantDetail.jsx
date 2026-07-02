@@ -169,7 +169,7 @@ export default function ConsultantDetail() {
 					<ContentCard className={styles.section}>
 						<CardHeader icon="evolution" iconBg="var(--color-secondary-container)" iconColor="var(--color-secondary)" title={t('consultantDetail.timelineTitle')} />
 						{timelineData.length > 0 ? (
-							<LineAreaChart data={timelineData} xAxisKey="label" yAxisKey="cumulativeBadges" />
+							<LineAreaChart data={timelineData} xAxisKey="label" yAxisKey="cumulativeBadges" yAxisLabel={t('consultantDetail.timelineBadges')} />
 						) : (
 							<p className={styles.empty}>{t('consultantDetail.timelineEmpty')}</p>
 						)}

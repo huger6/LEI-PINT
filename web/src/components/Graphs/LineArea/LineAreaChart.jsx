@@ -19,6 +19,7 @@ export default function LineAreaChart({
 	data = [],
 	xAxisKey,
 	yAxisKey,
+	yAxisLabel,
 	strokeColor = '#00B8E0',
 	fillColor = 'rgba(0, 184, 224, 0.15)',
 	height = 300,
@@ -39,6 +40,7 @@ export default function LineAreaChart({
 					<Area
 						type="monotone"
 						dataKey={yAxisKey}
+						name={yAxisLabel || yAxisKey}
 						stroke={strokeColor}
 						strokeWidth={2}
 						fill={fillColor}
