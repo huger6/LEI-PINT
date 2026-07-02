@@ -62,12 +62,14 @@ export default function PropertiesPanel({
 						<div className={styles.propRow}>
 							<div className={styles.toggleGroup}>
 								<button
+									type="button"
 									className={props.fillMode === 'solid' ? styles.toggleBtnActive : styles.toggleBtn}
 									onClick={() => onUpdateProp('fillMode', 'solid')}
 								>
 									{t('badgeEditor.solidFill')}
 								</button>
 								<button
+									type="button"
 									className={props.fillMode === 'gradient' ? styles.toggleBtnActive : styles.toggleBtn}
 									onClick={() => onUpdateProp('fillMode', 'gradient')}
 								>
@@ -197,6 +199,7 @@ export default function PropertiesPanel({
 								<span className={styles.propLabel}>{t('badgeEditor.fontStyle')}</span>
 								<div className={styles.toggleGroup}>
 									<button
+										type="button"
 										className={props.fontWeight === 'bold' ? styles.toggleBtnActive : styles.toggleBtn}
 										onClick={() => {
 											onUpdateProp('fontWeight', props.fontWeight === 'bold' ? 'normal' : 'bold');
@@ -206,6 +209,7 @@ export default function PropertiesPanel({
 										B
 									</button>
 									<button
+										type="button"
 										className={props.fontStyle === 'italic' ? styles.toggleBtnActive : styles.toggleBtn}
 										onClick={() => {
 											onUpdateProp('fontStyle', props.fontStyle === 'italic' ? 'normal' : 'italic');
@@ -222,6 +226,7 @@ export default function PropertiesPanel({
 								<span className={styles.propLabel}>{t('badgeEditor.textAlign')}</span>
 								<div className={styles.toggleGroup}>
 									<button
+										type="button"
 										className={props.textAlign === 'left' ? styles.toggleBtnActive : styles.toggleBtn}
 										onClick={() => { onUpdateProp('textAlign', 'left'); onSaveState(); }}
 										title={t('badgeEditor.alignLeft')}
@@ -229,6 +234,7 @@ export default function PropertiesPanel({
 										<i className="bi bi-text-left" />
 									</button>
 									<button
+										type="button"
 										className={props.textAlign === 'center' ? styles.toggleBtnActive : styles.toggleBtn}
 										onClick={() => { onUpdateProp('textAlign', 'center'); onSaveState(); }}
 										title={t('badgeEditor.alignCenter')}
@@ -236,6 +242,7 @@ export default function PropertiesPanel({
 										<i className="bi bi-text-center" />
 									</button>
 									<button
+										type="button"
 										className={props.textAlign === 'right' ? styles.toggleBtnActive : styles.toggleBtn}
 										onClick={() => { onUpdateProp('textAlign', 'right'); onSaveState(); }}
 										title={t('badgeEditor.alignRight')}

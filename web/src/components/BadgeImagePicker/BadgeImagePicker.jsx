@@ -5,6 +5,7 @@ import { uploadProfileImageToTemp } from '../../services/storage';
 import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
 import BadgeEditor from '../BadgeEditor/BadgeEditor';
+import ConfirmToast from '../ConfirmToast/ConfirmToast';
 import styles from './BadgeImagePicker.module.css';
 
 // Badge artwork is vector-only: the in-app designer exports SVG and uploads
@@ -29,6 +30,8 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 	const [error, setError] = useState('');
 	// Controls whether the in-app badge designer modal is open.
 	const [showDesigner, setShowDesigner] = useState(false);
+	// Controls the exit confirmation prompt when closing the designer.
+	const [showExitConfirm, setShowExitConfirm] = useState(false);
 
 	// Sets the uploading state and notifies the parent via onUploadingChange.
 	const setBusy = useCallback((busy) => {
@@ -141,11 +144,19 @@ export default function BadgeImagePicker({ value, onChange, onUploadingChange, d
 				<Modal
 					title={t('badgeImage.designerTitle', { defaultValue: 'Desenhar badge' })}
 					size="xl"
-					onClose={() => setShowDesigner(false)}
+					onClose={() => setShowExitConfirm(true)}
 				>
 					<BadgeEditor
 						onExport={onDesignerExport}
 						exportLabel={t('badgeImage.useDesign', { defaultValue: 'Usar este desenho' })}
+					/>
+					<ConfirmToast
+						open={showExitConfirm}
+						message={t('badgeImage.exitConfirm', { defaultValue: 'Deseja sair? Todas as alterações serão perdidas.' })}
+						confirmLabel={t('confirmToast.yes', { defaultValue: 'Yes' })}
+						cancelLabel={t('confirmToast.no', { defaultValue: 'No' })}
+						onConfirm={() => { setShowExitConfirm(false); setShowDesigner(false); }}
+						onCancel={() => setShowExitConfirm(false)}
 					/>
 				</Modal>
 			)}

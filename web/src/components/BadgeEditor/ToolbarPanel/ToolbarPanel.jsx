@@ -33,25 +33,25 @@ export default function ToolbarPanel({
 			<div className={styles.panel}>
 				<p className={styles.panelTitle}>{t('badgeEditor.shapes')}</p>
 				<div className={styles.shapeGrid}>
-					<button className={styles.shapeBtn} onClick={() => onAddShape('circle')}>
+					<button type="button" className={styles.shapeBtn} onClick={() => onAddShape('circle')}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<circle cx="12" cy="12" r="9" />
 						</svg>
 						{t('badgeEditor.circle')}
 					</button>
-					<button className={styles.shapeBtn} onClick={() => onAddShape('hexagon')}>
+					<button type="button" className={styles.shapeBtn} onClick={() => onAddShape('hexagon')}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" />
 						</svg>
 						{t('badgeEditor.hexagon')}
 					</button>
-					<button className={styles.shapeBtn} onClick={() => onAddShape('shield')}>
+					<button type="button" className={styles.shapeBtn} onClick={() => onAddShape('shield')}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<path d="M3 5l9-3 9 3v6c0 5.25-3.75 9.75-9 11.25C6.75 20.75 3 16.25 3 11V5z" />
 						</svg>
 						{t('badgeEditor.shield')}
 					</button>
-					<button className={styles.shapeBtn} onClick={() => onAddShape('rect')}>
+					<button type="button" className={styles.shapeBtn} onClick={() => onAddShape('rect')}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<rect x="3" y="3" width="18" height="18" rx="3" />
 						</svg>
@@ -63,7 +63,7 @@ export default function ToolbarPanel({
 			{/* Text */}
 			<div className={styles.panel}>
 				<p className={styles.panelTitle}>{t('badgeEditor.text')}</p>
-				<button className={styles.textBtn} onClick={onAddText}>
+				<button type="button" className={styles.textBtn} onClick={onAddText}>
 					<i className="bi bi-fonts" /> {t('badgeEditor.addText')}
 				</button>
 			</div>
@@ -71,7 +71,7 @@ export default function ToolbarPanel({
 			{/* Image import */}
 			<div className={styles.panel}>
 				<p className={styles.panelTitle}>{t('badgeEditor.importImage')}</p>
-				<button className={styles.textBtn} onClick={() => fileRef.current?.click()}>
+				<button type="button" className={styles.textBtn} onClick={() => fileRef.current?.click()}>
 					<i className="bi bi-image" /> {t('badgeEditor.importImage')}
 				</button>
 				<input
@@ -88,38 +88,38 @@ export default function ToolbarPanel({
 				<p className={styles.panelTitle}>{t('badgeEditor.actions')}</p>
 				<div className={styles.actionRow}>
 					<Tooltip text={t('badgeEditor.undo')}>
-						<button className={styles.actionBtn} onClick={onUndo} disabled={!canUndo}>
+						<button type="button" className={styles.actionBtn} onClick={onUndo} disabled={!canUndo}>
 							<i className="bi bi-arrow-counterclockwise" />
 						</button>
 					</Tooltip>
 					<Tooltip text={t('badgeEditor.redo')}>
-						<button className={styles.actionBtn} onClick={onRedo} disabled={!canRedo}>
+						<button type="button" className={styles.actionBtn} onClick={onRedo} disabled={!canRedo}>
 							<i className="bi bi-arrow-clockwise" />
 						</button>
 					</Tooltip>
 					<Tooltip text={t('badgeEditor.duplicate')}>
-						<button className={styles.actionBtn} onClick={onDuplicate} disabled={!hasSelection}>
+						<button type="button" className={styles.actionBtn} onClick={onDuplicate} disabled={!hasSelection}>
 							<i className="bi bi-copy" />
 						</button>
 					</Tooltip>
 				</div>
 				<div className={styles.actionRow}>
 					<Tooltip text={t('badgeEditor.bringFront')}>
-						<button className={styles.actionBtn} onClick={onBringFront} disabled={!hasSelection}>
+						<button type="button" className={styles.actionBtn} onClick={onBringFront} disabled={!hasSelection}>
 							<i className="bi bi-front" /> {t('badgeEditor.bringFront')}
 						</button>
 					</Tooltip>
 					<Tooltip text={t('badgeEditor.sendBack')}>
-						<button className={styles.actionBtn} onClick={onSendBack} disabled={!hasSelection}>
+						<button type="button" className={styles.actionBtn} onClick={onSendBack} disabled={!hasSelection}>
 							<i className="bi bi-back" /> {t('badgeEditor.sendBack')}
 						</button>
 					</Tooltip>
 				</div>
 				<div className={styles.actionRow}>
-					<button className={styles.dangerBtn} onClick={onDelete} disabled={!hasSelection}>
+					<button type="button" className={styles.dangerBtn} onClick={onDelete} disabled={!hasSelection}>
 						<i className="bi bi-trash" /> {t('badgeEditor.delete')}
 					</button>
-					<button className={styles.dangerBtn} onClick={onClear}>
+					<button type="button" className={styles.dangerBtn} onClick={onClear}>
 						<i className="bi bi-x-circle" /> {t('badgeEditor.clear')}
 					</button>
 				</div>
@@ -131,6 +131,7 @@ export default function ToolbarPanel({
 				<div className={styles.templateGrid}>
 					{BADGE_TEMPLATES.map((tpl) => (
 						<button
+							type="button"
 							key={tpl.id}
 							className={styles.templateBtn}
 							onClick={() => onSelectTemplate(tpl.id)}

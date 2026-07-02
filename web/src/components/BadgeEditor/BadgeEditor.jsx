@@ -427,20 +427,20 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 				</div>
 				<div className={styles.controlBar}>
 					<div className={styles.zoomControls}>
-						<button className={styles.zoomBtn} onClick={zoomOut} title={t('badgeEditor.zoomOut')}>
+						<button type="button" className={styles.zoomBtn} onClick={zoomOut} title={t('badgeEditor.zoomOut')}>
 							<i className="bi bi-dash" />
 						</button>
 						<span className={styles.zoomLabel}>{Math.round(zoomLevel * 100)}%</span>
-						<button className={styles.zoomBtn} onClick={zoomIn} title={t('badgeEditor.zoomIn')}>
+						<button type="button" className={styles.zoomBtn} onClick={zoomIn} title={t('badgeEditor.zoomIn')}>
 							<i className="bi bi-plus" />
 						</button>
 						{zoomLevel !== 1 && (
-							<button className={styles.zoomBtn} onClick={zoomReset} title={t('badgeEditor.zoomReset')}>
+							<button type="button" className={styles.zoomBtn} onClick={zoomReset} title={t('badgeEditor.zoomReset')}>
 								<i className="bi bi-arrow-counterclockwise" />
 							</button>
 						)}
 					</div>
-					<button className={styles.exportBtn} onClick={exportSvg}>
+					<button type="button" className={styles.exportBtn} onClick={exportSvg}>
 						<i className="bi bi-filetype-svg" /> {exportLabel || t('badgeEditor.exportSvg')}
 					</button>
 				</div>
@@ -463,7 +463,7 @@ export default function BadgeEditor({ onExport = null, exportLabel = null }) {
 					<div className={styles.svgModal} onClick={(e) => e.stopPropagation()}>
 						<h3>Exported SVG</h3>
 						<textarea className={styles.svgTextarea} readOnly value={svgOutput} />
-						<button onClick={() => setSvgOutput(null)}>Close</button>
+						<button type="button" onClick={() => setSvgOutput(null)}>Close</button>
 					</div>
 				</div>
 			)}

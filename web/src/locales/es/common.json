@@ -902,7 +902,8 @@
 		"useDesign": "Usar este diseño",
 		"uploadFailed": "Error al cargar la imagen.",
 		"svgOnly": "La imagen del badge debe estar en formato SVG.",
-		"previewAlt": "Vista previa del badge"
+		"previewAlt": "Vista previa del badge",
+		"exitConfirm": "¿Desea salir? Todos los cambios se perderán."
 	},
 	"badgeEditor": {
 		"shapes": "Formas",
