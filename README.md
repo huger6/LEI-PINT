@@ -2,6 +2,8 @@
 
 Projeto Integrado - Plataforma de Badges da Softinsa (2025/2026)
 
+## Grade: 19
+
 LEI-PINT is a multi-app platform for managing digital badges, learning paths, validations, gamification, and public badge verification for Softinsa. The repository contains:
 
 - `api/`: Node.js + Express backend with PostgreSQL, Redis, Socket.IO, email flows, exports, and badge/workflow logic.
